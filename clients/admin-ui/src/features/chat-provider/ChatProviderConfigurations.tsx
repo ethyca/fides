@@ -1,27 +1,25 @@
 /* eslint-disable react/no-unstable-nested-components */
+import type { ColumnsType } from "antd/es/table";
 import {
   Button,
-  ChakraFlex as Flex,
-  ChakraHStack as HStack,
-  ChakraText as Text,
-  ChakraVStack as VStack,
+  Flex,
   Icons,
   Modal,
   Space,
   Switch,
   Table,
   Tag,
+  Typography,
   useMessage,
 } from "fidesui";
-import type { ColumnsType } from "antd/es/table";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
-import { CHAT_PROVIDERS_CONFIGURE_ROUTE } from "~/features/common/nav/routes";
-import { TableSkeletonLoader } from "~/features/common/table/v2";
-import { useHasPermission } from "~/features/common/Restrict";
-import { ScopeRegistryEnum } from "~/types/api";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { CHAT_PROVIDERS_CONFIGURE_ROUTE } from "~/features/common/nav/routes";
+import { useHasPermission } from "~/features/common/Restrict";
+import { TableSkeletonLoader } from "~/features/common/table/v2";
+import { ScopeRegistryEnum } from "~/types/api";
 
 import {
   ChatProviderSettingsResponse,
@@ -30,6 +28,8 @@ import {
   useGetChatConfigsQuery,
 } from "./chatProvider.slice";
 import SlackIcon from "./icons/SlackIcon";
+
+const { Text } = Typography;
 
 // Define column keys for type safety
 enum ChatProviderColumnKeys {
@@ -41,26 +41,23 @@ enum ChatProviderColumnKeys {
 
 const EmptyTableNotice = () => {
   return (
-    <VStack
-      mt={6}
-      p={10}
-      spacing={4}
-      borderRadius="base"
-      maxW="70%"
+    <Space
+      direction="vertical"
+      size="middle"
       data-testid="no-results-notice"
-      alignSelf="center"
-      margin="auto"
+      style={{
+        margin: "24px auto",
+        padding: "40px",
+        maxWidth: "70%",
+        textAlign: "center",
+      }}
     >
-      <VStack>
-        <Text fontSize="md" fontWeight="600">
-          No chat providers found.
-        </Text>
-        <Text fontSize="sm">
-          Click &quot;Add a chat provider&quot; to configure Slack or other chat
-          integrations.
-        </Text>
-      </VStack>
-    </VStack>
+      <Text strong>No chat providers found.</Text>
+      <Text>
+        Click &quot;Add a chat provider&quot; to configure Slack or other chat
+        integrations.
+      </Text>
+    </Space>
   );
 };
 
@@ -90,7 +87,7 @@ export const ChatProviderConfigurations = () => {
     (configId: string) => {
       router.push(`${CHAT_PROVIDERS_CONFIGURE_ROUTE}?id=${configId}`);
     },
-    [router]
+    [router],
   );
 
   const handleDeleteConfiguration = useCallback(
@@ -98,7 +95,7 @@ export const ChatProviderConfigurations = () => {
       setConfigToDelete(config);
       setDeleteModalOpen(true);
     },
-    []
+    [],
   );
 
   const handleEnableConfiguration = useCallback(
@@ -115,7 +112,7 @@ export const ChatProviderConfigurations = () => {
         message.error("Failed to enable chat provider");
       }
     },
-    [enableConfig, message, refetch]
+    [enableConfig, message, refetch],
   );
 
   const confirmDelete = useCallback(async () => {
@@ -166,10 +163,10 @@ export const ChatProviderConfigurations = () => {
               : providerLabel;
 
           return (
-            <HStack>
+            <Space>
               {getProviderIcon()}
               <Text>{displayName}</Text>
-            </HStack>
+            </Space>
           );
         },
       },
@@ -191,9 +188,7 @@ export const ChatProviderConfigurations = () => {
               </Tag>
             );
           }
-          return (
-            <Tag data-testid="status-not-configured">Not configured</Tag>
-          );
+          return <Tag data-testid="status-not-configured">Not configured</Tag>;
         },
       },
       {
@@ -221,7 +216,7 @@ export const ChatProviderConfigurations = () => {
         title: "Actions",
         key: ChatProviderColumnKeys.ACTIONS,
         render: (_, record: ChatProviderSettingsResponse) => (
-          <HStack>
+          <Space>
             {userCanUpdate && !record.authorized && record.client_id && (
               <Button
                 onClick={(e) => {
@@ -263,7 +258,7 @@ export const ChatProviderConfigurations = () => {
                 data-testid="delete-chat-config-btn"
               />
             )}
-          </HStack>
+          </Space>
         ),
       },
     ],
@@ -272,7 +267,7 @@ export const ChatProviderConfigurations = () => {
       handleEditConfiguration,
       handleDeleteConfiguration,
       handleEnableConfiguration,
-    ]
+    ],
   );
 
   // Delete confirmation modal
@@ -295,7 +290,7 @@ export const ChatProviderConfigurations = () => {
           <Text>
             Are you sure you want to delete the Slack provider for{" "}
             <strong>
-              {configToDelete?.workspace_name || configToDelete?.workspace_url}
+              {configToDelete?.workspace_name ?? configToDelete?.workspace_url}
             </strong>
             ?
           </Text>
@@ -303,25 +298,18 @@ export const ChatProviderConfigurations = () => {
         </Space>
       </Modal>
     ),
-    [deleteModalOpen, configToDelete, cancelDelete, confirmDelete]
+    [deleteModalOpen, configToDelete, cancelDelete, confirmDelete],
   );
 
   return (
     <>
-      <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "70%" }}>
+      <Text className="mb-8" style={{ maxWidth: "70%" }}>
         Configure chat providers to enable notifications, alerts, and AI-powered
         privacy assessment questionnaires through platforms like Slack.
       </Text>
-      <Flex flex={1} direction="column" overflow="auto">
+      <Flex flex={1} vertical style={{ overflow: "auto" }}>
         {userCanUpdate && (
-          <Space
-            direction="horizontal"
-            style={{
-              width: "100%",
-              justifyContent: "flex-end",
-              marginBottom: 16,
-            }}
-          >
+          <Flex justify="flex-end" className="mb-4 w-full">
             <Button
               onClick={() => {
                 router.push(CHAT_PROVIDERS_CONFIGURE_ROUTE);
@@ -334,7 +322,7 @@ export const ChatProviderConfigurations = () => {
             >
               Add a chat provider
             </Button>
-          </Space>
+          </Flex>
         )}
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={3} />

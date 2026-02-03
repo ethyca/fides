@@ -1,15 +1,11 @@
-import {
-  ChakraBox as Box,
-  ChakraHeading as Heading,
-  ChakraSpinner as Spinner,
-  Form,
-  Select,
-} from "fidesui";
+import { Flex, Form, Select, Spin, Typography } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { useGetChatConfigQuery } from "./chatProvider.slice";
 import SlackChatProviderForm from "./forms/SlackChatProviderForm";
+
+const { Title } = Typography;
 
 // Chat provider types
 export const chatProviders = {
@@ -26,7 +22,7 @@ const ChatProviderConfiguration = () => {
 
   // Get config ID from URL if editing
   const configId = useMemo(() => {
-    const id = router.query.id;
+    const { id } = router.query;
     return typeof id === "string" ? id : undefined;
   }, [router.query.id]);
 
@@ -58,14 +54,9 @@ const ChatProviderConfiguration = () => {
   // Show loading state
   if (isLoading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="200px"
-      >
-        <Spinner />
-      </Box>
+      <Flex justify="center" align="center" style={{ height: "200px" }}>
+        <Spin size="large" />
+      </Flex>
     );
   }
 
@@ -79,34 +70,33 @@ const ChatProviderConfiguration = () => {
   };
 
   return (
-    <Box>
+    <div>
       {/* Provider Selection - only show in create mode (when no existing config) */}
       {!isEditMode && (
-        <Box
-          maxWidth="720px"
-          border="1px"
-          borderColor="gray.200"
-          borderRadius={6}
-          overflow="visible"
-          mt={6}
-          mb={4}
+        <div
+          className="mb-4 mt-6"
+          style={{
+            maxWidth: "720px",
+            border: "1px solid #e5e7eb",
+            borderRadius: 6,
+            overflow: "visible",
+          }}
         >
-          <Box
-            backgroundColor="gray.50"
-            px={6}
-            py={4}
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            borderBottom="1px"
-            borderColor="gray.200"
-            borderTopRadius={6}
+          <Flex
+            align="center"
+            style={{
+              backgroundColor: "#f9fafb",
+              padding: "16px 24px",
+              borderBottom: "1px solid #e5e7eb",
+              borderTopLeftRadius: 6,
+              borderTopRightRadius: 6,
+            }}
           >
-            <Heading as="h3" size="xs">
+            <Title level={5} style={{ margin: 0 }}>
               Select chat provider
-            </Heading>
-          </Box>
-          <Box px={6} py={6}>
+            </Title>
+          </Flex>
+          <div style={{ padding: "24px" }}>
             <Form layout="vertical">
               <Form.Item
                 label="Provider type"
@@ -118,19 +108,20 @@ const ChatProviderConfiguration = () => {
                 <Select
                   placeholder="Choose a chat provider..."
                   aria-label="Select a chat provider"
-                  value={selectedProviderType || undefined}
+                  data-testid="chat-provider-type-select"
+                  value={selectedProviderType ?? undefined}
                   onChange={(value) => setSelectedProviderType(value)}
                   options={providerOptions}
                 />
               </Form.Item>
             </Form>
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
       {/* Render the appropriate form based on selected provider */}
       {selectedProviderType && renderProviderForm()}
-    </Box>
+    </div>
   );
 };
 

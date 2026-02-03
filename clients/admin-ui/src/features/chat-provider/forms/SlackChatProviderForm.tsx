@@ -1,12 +1,11 @@
 import {
   Button,
-  ChakraBox as Box,
-  ChakraHeading as Heading,
-  ChakraHStack as HStack,
-  ChakraText as Text,
+  Flex,
   Form,
   GreenCheckCircleIcon,
   Input,
+  Space,
+  Typography,
   useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -24,6 +23,8 @@ import {
   useUpdateChatConfigMutation,
 } from "../chatProvider.slice";
 import SlackIcon from "../icons/SlackIcon";
+
+const { Title, Text } = Typography;
 
 interface SlackChatProviderFormProps {
   configId?: string;
@@ -184,11 +185,8 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
     setIsDirty(hasChanges);
   };
 
-  // If already authorized, show as verified immediately
-  const isFullyAuthorized = isAuthorized;
-
   return (
-    <Box position="relative">
+    <div style={{ position: "relative" }}>
       <Form
         form={form}
         layout="vertical"
@@ -196,34 +194,34 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
         onFinish={handleSubmit}
         onValuesChange={handleFormValuesChange}
       >
-        <Box
-          maxWidth="720px"
-          border="1px"
-          borderColor="gray.200"
-          borderRadius={6}
-          overflow="visible"
-          mt={6}
+        <div
+          className="mt-6"
+          style={{
+            maxWidth: "720px",
+            border: "1px solid #e5e7eb",
+            borderRadius: 6,
+            overflow: "visible",
+          }}
         >
-          <Box
-            backgroundColor="gray.50"
-            px={6}
-            py={4}
-            display="flex"
-            flexDirection="row"
-            alignItems="center"
-            borderBottom="1px"
-            borderColor="gray.200"
-            borderTopRadius={6}
+          <Flex
+            align="center"
+            style={{
+              backgroundColor: "#f9fafb",
+              padding: "16px 24px",
+              borderBottom: "1px solid #e5e7eb",
+              borderTopLeftRadius: 6,
+              borderTopRightRadius: 6,
+            }}
           >
-            <HStack>
+            <Space>
               <SlackIcon />
-              <Heading as="h3" size="xs">
+              <Title level={5} style={{ margin: 0 }}>
                 Slack chat provider configuration
-              </Heading>
-            </HStack>
-          </Box>
+              </Title>
+            </Space>
+          </Flex>
 
-          <Box px={6} py={6}>
+          <div style={{ padding: "24px" }}>
             <Form.Item
               name="workspace_url"
               label="Workspace URL"
@@ -298,15 +296,14 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
               />
             </Form.Item>
 
-            <Box mt={6} className="flex justify-end">
-              <Box className="flex">
+            <Flex justify="flex-end" className="mt-6">
+              <Space>
                 {isEditMode ? (
                   <>
                     {/* Authorize button - show when not authorized */}
                     {!isAuthorized && (
                       <Button
                         onClick={handleAuthorize}
-                        className="mr-2"
                         disabled={isDirty}
                         data-testid="authorize-chat-btn"
                       >
@@ -314,20 +311,17 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
                       </Button>
                     )}
                     {/* Authorized status - show when OAuth is complete */}
-                    {isFullyAuthorized && (
-                      <HStack className="mr-4" data-testid="authorize-status">
+                    {isAuthorized && (
+                      <Space data-testid="authorize-status">
                         <GreenCheckCircleIcon />
-                        <Text color="green.500" fontWeight="medium">
+                        <Text style={{ color: "#52c41a", fontWeight: 500 }}>
                           Authorized
                         </Text>
-                      </HStack>
+                      </Space>
                     )}
                   </>
                 ) : (
-                  <Button
-                    onClick={() => router.push(CHAT_PROVIDERS_ROUTE)}
-                    className="mr-2"
-                  >
+                  <Button onClick={() => router.push(CHAT_PROVIDERS_ROUTE)}>
                     Cancel
                   </Button>
                 )}
@@ -339,12 +333,12 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
                 >
                   Save
                 </Button>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+              </Space>
+            </Flex>
+          </div>
+        </div>
       </Form>
-    </Box>
+    </div>
   );
 };
 
