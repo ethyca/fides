@@ -32,7 +32,7 @@ import {
 
 export const UserPermissionsCell = ({ userId }: { userId: string }) => {
   const { flags } = useFlags();
-  const isRbacEnabled = flags.rbacManagement;
+  const isRbacEnabled = flags.alphaRbac;
 
   // Legacy permissions query
   const { data: userPermissions } = useGetUserPermissionsQuery(userId, {

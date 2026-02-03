@@ -1,7 +1,7 @@
 /**
  * RolesForm - RBAC-enabled role assignment form
  *
- * This component is used when the rbacManagement feature flag is enabled.
+ * This component is used when the alphaRbac feature flag is enabled.
  * It displays roles from the database (including custom roles) and uses
  * the RBAC APIs for role assignment.
  */

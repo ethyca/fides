@@ -1,0 +1,3 @@
+type: Added
+description: Admin UI for dynamic role-based access control (alpha feature flag)
+pr: 7284
