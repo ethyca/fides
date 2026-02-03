@@ -28,7 +28,6 @@ import {
   Icons,
   Input,
   List,
-  LocationSelect,
   Modal,
   Result,
   Space,
@@ -37,10 +36,6 @@ import {
   Tooltip,
   Typography,
 } from "fidesui";
-import {
-  formatIsoLocation,
-  isoStringToEntry,
-} from "fidesui/src/components/data-display/location.utils";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
@@ -170,9 +165,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [form] = Form.useForm();
   const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
   const [evidenceExpandedSections, setEvidenceExpandedSections] = useState<
@@ -181,6 +174,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [focusedQuestionId, setFocusedQuestionId] = useState<string | null>(
     null,
   );
+  const [highlightedSourceIndex, setHighlightedSourceIndex] = useState<
+    number | null
+  >(null);
   // Track expanded items per section (for "Show X more" functionality)
   const [expandedSystemItems, setExpandedSystemItems] = useState<
     Record<string, boolean>
@@ -227,11 +223,11 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     // Section 2
     framework: "GDPR-DPIA",
     nature:
-      "The system uses machine learning algorithms to analyze customer purchase history and browsing behavior to generate personalized product recommendations. Data is ingested via API from the core commerce engine and processed in a secure isolated environment.",
+      "The system uses machine learning algorithms to analyze customer purchase history and browsing behavior to generate personalized product recommendations [1]. Data is ingested via API from the core commerce engine and processed in a secure isolated environment. Privacy request processing averages 4.2 days [2].",
     scope:
-      "Names, email addresses, IP addresses, purchase history, and clickstream data.",
+      "Names, email addresses, IP addresses, purchase history, and clickstream data. Categories include PII and behavioral data [3]. Consent rates show 78% opt-in for marketing profiling [4].",
     context:
-      "Data subjects are existing customers who have opted-in to marketing communications. The relationship is direct B2C. There are no known vulnerable groups in the standard customer base.",
+      "Data subjects are existing customers who have opted-in to marketing communications [5]. The relationship is direct B2C. There are no known vulnerable groups in the standard customer base.",
     purposes: "",
     // Section 3
     stakeholderConsultation:
@@ -252,15 +248,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     consultationReviewedBy: "",
     dpiaReviewBy: "",
   });
-
-  // Format region code to display name
-  const formatRegionDisplay = (regionCode: string): string => {
-    const entry = isoStringToEntry(regionCode);
-    if (entry) {
-      return formatIsoLocation({ isoEntry: entry, showFlag: true });
-    }
-    return regionCode;
-  };
 
   // Mock evidence data grouped by question
   // In a real implementation, this would come from an API and be organized by question
@@ -529,13 +516,21 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           onClick={(e) => {
             e.stopPropagation();
             setFocusedQuestionId(questionId);
+            setHighlightedSourceIndex(parseInt(sourceNum, 10) - 1); // Convert to 0-based index
             setIsDrawerOpen(true);
+            // Expand the evidence section for this question
             if (!evidenceExpandedSections.includes(questionId)) {
               setEvidenceExpandedSections([
                 ...evidenceExpandedSections,
                 questionId,
               ]);
             }
+            // Expand the system section inside the evidence tray
+            const systemKey = `${questionId}-system`;
+            setCollapsedSystemSections((prev) => ({
+              ...prev,
+              [systemKey]: false, // false = expanded
+            }));
           }}
         >
           {sourceNum}
@@ -609,6 +604,12 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     if (!evidenceExpandedSections.includes(sectionKey)) {
       setEvidenceExpandedSections([...evidenceExpandedSections, sectionKey]);
     }
+    // Reset system section to collapsed by default when opening via button
+    const systemKey = `${sectionKey}-system`;
+    setCollapsedSystemSections((prev) => ({
+      ...prev,
+      [systemKey]: true, // true = collapsed
+    }));
     setIsDrawerOpen(true);
   };
 
@@ -1187,62 +1188,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 >
                   GDPR DPIA
                 </Tag>
-                {selectedRegions.length > 0 && (
-                  <Flex
-                    align="center"
-                    gap="small"
-                    wrap="wrap"
-                    style={{ flexShrink: 0 }}
-                  >
-                    <GlobalOutlined
-                      style={{
-                        fontSize: 12,
-                        color: palette.FIDESUI_NEUTRAL_500,
-                      }}
-                    />
-                    <Flex gap="small" wrap="wrap">
-                      {selectedRegions.slice(0, 2).map((region) => (
-                        <Tag key={region} style={{ fontSize: 11, margin: 0 }}>
-                          {formatRegionDisplay(region)}
-                        </Tag>
-                      ))}
-                      {selectedRegions.length > 2 && (
-                        <Tag style={{ fontSize: 11, margin: 0 }}>
-                          +{selectedRegions.length - 2}
-                        </Tag>
-                      )}
-                    </Flex>
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={() => setIsRegionModalOpen(true)}
-                      style={{
-                        padding: 0,
-                        height: "auto",
-                        fontSize: 11,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      Edit
-                    </Button>
-                  </Flex>
-                )}
-                {selectedRegions.length === 0 && (
-                  <Button
-                    type="link"
-                    size="small"
-                    icon={<GlobalOutlined />}
-                    onClick={() => setIsRegionModalOpen(true)}
-                    style={{
-                      padding: 0,
-                      height: "auto",
-                      fontSize: 12,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Configure regions
-                  </Button>
-                )}
               </Flex>
             ),
           },
@@ -1271,7 +1216,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 </svg>
               </Button>
             </Tooltip>
-            <Button style={{ whiteSpace: "nowrap" }}>Save as draft</Button>
             <Button
               type="primary"
               onClick={() => setIsReportModalOpen(true)}
@@ -1315,22 +1259,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               onChange={() => {}}
               style={{ flex: "1 1 300px", minWidth: 200, maxWidth: 400 }}
             />
-            <Flex gap="small" wrap="wrap" style={{ flexShrink: 0 }}>
-              <Button
-                type="link"
-                onClick={handleExpandAll}
-                style={{ whiteSpace: "nowrap", fontSize: 13 }}
-              >
-                Expand all
-              </Button>
-              <Button
-                type="link"
-                onClick={handleCollapseAll}
-                style={{ whiteSpace: "nowrap", fontSize: 13 }}
-              >
-                Collapse all
-              </Button>
-            </Flex>
+            <Button icon={<SlackOutlined />}>Request input from team</Button>
           </Flex>
 
           {/* Controller Details Section - Compact Inline */}
@@ -1553,7 +1482,34 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
           {/* Processing Overview - Single instance at assessment level */}
           {/* Show filled state for all existing assessments, empty state only for brand new assessments with id "new" */}
-          <Card title="PROCESSING OVERVIEW" style={{ marginBottom: 24 }}>
+          <Card
+            title={
+              <Flex
+                justify="space-between"
+                align="center"
+                style={{ width: "100%" }}
+              >
+                <span>PROCESSING OVERVIEW</span>
+                {assessmentId !== "new" && (
+                  <Flex align="center" gap="small">
+                    <CheckCircleOutlined
+                      style={{
+                        color: palette.FIDESUI_SUCCESS,
+                        fontSize: 14,
+                      }}
+                    />
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: 12, fontWeight: "normal" }}
+                    >
+                      Overview populated from system data
+                    </Text>
+                  </Flex>
+                )}
+              </Flex>
+            }
+            style={{ marginBottom: 24 }}
+          >
             <Flex gap="large" wrap="wrap" style={{ marginBottom: 24 }}>
               {/* Scope Card */}
               <Card
@@ -1745,23 +1701,30 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 )}
               </Card>
             </Flex>
-
-            {assessmentId !== "new" && (
-              <Flex justify="flex-end" align="center" wrap="wrap" gap="small">
-                <Flex align="center" gap="small">
-                  <CheckCircleOutlined
-                    style={{
-                      color: palette.FIDESUI_SUCCESS,
-                      fontSize: 14,
-                    }}
-                  />
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Overview populated from system data
-                  </Text>
-                </Flex>
-              </Flex>
-            )}
           </Card>
+
+          {/* Section Controls - Expand/Collapse */}
+          <Flex
+            gap="small"
+            wrap="wrap"
+            justify="flex-end"
+            style={{ marginBottom: 0, flexShrink: 0 }}
+          >
+            <Button
+              type="link"
+              onClick={handleExpandAll}
+              style={{ whiteSpace: "nowrap", fontSize: 13 }}
+            >
+              Expand all
+            </Button>
+            <Button
+              type="link"
+              onClick={handleCollapseAll}
+              style={{ whiteSpace: "nowrap", fontSize: 13 }}
+            >
+              Collapse all
+            </Button>
+          </Flex>
 
           <Form
             form={form}
@@ -1853,37 +1816,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               <Text style={{ fontSize: 11 }}>Risk: Low</Text>
                             </Flex>
                           </Flex>
-                          <Flex
-                            align="center"
-                            gap="small"
-                            style={{ marginTop: 12 }}
-                          >
-                            <Button
-                              type="default"
-                              icon={<Icons.Document />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEvidence("1");
-                              }}
-                              size="small"
-                            >
-                              View evidence
-                            </Button>
-                            <Button icon={<SlackOutlined />} size="small">
-                              Request input from team
-                            </Button>
-                            <Flex align="center" gap="small">
-                              <CheckCircleOutlined
-                                style={{
-                                  color: palette.FIDESUI_SUCCESS,
-                                  fontSize: 14,
-                                }}
-                              />
-                              <Text type="secondary" style={{ fontSize: 11 }}>
-                                Request sent 2h ago to @DataSteward
-                              </Text>
-                            </Flex>
-                          </Flex>
                         </div>
                       </Flex>
                     ) : (
@@ -1961,9 +1893,26 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </div>
                       </Flex>
                     )}
-                    <div className="status-tag-container">
+                    <Flex
+                      className="status-tag-container"
+                      align="center"
+                      gap="small"
+                    >
+                      {expandedKeys.includes("1") && (
+                        <Button
+                          type="primary"
+                          icon={<Icons.Document />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEvidence("1");
+                          }}
+                          size="small"
+                        >
+                          View evidence
+                        </Button>
+                      )}
                       <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
-                    </div>
+                    </Flex>
                   </>
                 }
                 key="1"
@@ -2088,37 +2037,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               <Text style={{ fontSize: 11 }}>Risk: Low</Text>
                             </Flex>
                           </Flex>
-                          <Flex
-                            align="center"
-                            gap="small"
-                            style={{ marginTop: 12 }}
-                          >
-                            <Button
-                              type="default"
-                              icon={<Icons.Document />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEvidence("2");
-                              }}
-                              size="small"
-                            >
-                              View evidence
-                            </Button>
-                            <Button icon={<SlackOutlined />} size="small">
-                              Request input from team
-                            </Button>
-                            <Flex align="center" gap="small">
-                              <CheckCircleOutlined
-                                style={{
-                                  color: palette.FIDESUI_SUCCESS,
-                                  fontSize: 14,
-                                }}
-                              />
-                              <Text type="secondary" style={{ fontSize: 11 }}>
-                                Request sent 1h ago to @PrivacyTeam
-                              </Text>
-                            </Flex>
-                          </Flex>
                         </div>
                       </Flex>
                     ) : (
@@ -2196,9 +2114,26 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </div>
                       </Flex>
                     )}
-                    <div className="status-tag-container">
+                    <Flex
+                      className="status-tag-container"
+                      align="center"
+                      gap="small"
+                    >
+                      {expandedKeys.includes("2") && (
+                        <Button
+                          type="primary"
+                          icon={<Icons.Document />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEvidence("2");
+                          }}
+                          size="small"
+                        >
+                          View evidence
+                        </Button>
+                      )}
                       <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
-                    </div>
+                    </Flex>
                   </>
                 }
                 key="2"
@@ -2474,37 +2409,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               <Text style={{ fontSize: 11 }}>Risk: Low</Text>
                             </Flex>
                           </Flex>
-                          <Flex
-                            align="center"
-                            gap="small"
-                            style={{ marginTop: 12 }}
-                          >
-                            <Button
-                              type="default"
-                              icon={<Icons.Document />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEvidence("3");
-                              }}
-                              size="small"
-                            >
-                              View evidence
-                            </Button>
-                            <Button icon={<SlackOutlined />} size="small">
-                              Request input from team
-                            </Button>
-                            <Flex align="center" gap="small">
-                              <CheckCircleOutlined
-                                style={{
-                                  color: palette.FIDESUI_SUCCESS,
-                                  fontSize: 14,
-                                }}
-                              />
-                              <Text type="secondary" style={{ fontSize: 11 }}>
-                                Request sent 30m ago to @LegalTeam
-                              </Text>
-                            </Flex>
-                          </Flex>
                         </div>
                       </Flex>
                     ) : (
@@ -2566,13 +2470,30 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </div>
                       </Flex>
                     )}
-                    <div className="status-tag-container">
+                    <Flex
+                      className="status-tag-container"
+                      align="center"
+                      gap="small"
+                    >
+                      {expandedKeys.includes("3") && (
+                        <Button
+                          type="primary"
+                          icon={<Icons.Document />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEvidence("3");
+                          }}
+                          size="small"
+                        >
+                          View evidence
+                        </Button>
+                      )}
                       {isCompletedAssessment ? (
                         <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
                       ) : (
                         <Tag color={CUSTOM_TAG_COLOR.WARNING}>In progress</Tag>
                       )}
-                    </div>
+                    </Flex>
                   </>
                 }
                 key="3"
@@ -2697,37 +2618,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               <Text style={{ fontSize: 11 }}>Risk: Low</Text>
                             </Flex>
                           </Flex>
-                          <Flex
-                            align="center"
-                            gap="small"
-                            style={{ marginTop: 12 }}
-                          >
-                            <Button
-                              type="default"
-                              icon={<Icons.Document />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEvidence("4");
-                              }}
-                              size="small"
-                            >
-                              View evidence
-                            </Button>
-                            <Button icon={<SlackOutlined />} size="small">
-                              Request input from team
-                            </Button>
-                            <Flex align="center" gap="small">
-                              <CheckCircleOutlined
-                                style={{
-                                  color: palette.FIDESUI_SUCCESS,
-                                  fontSize: 14,
-                                }}
-                              />
-                              <Text type="secondary" style={{ fontSize: 11 }}>
-                                Request sent 15m ago to @ComplianceTeam
-                              </Text>
-                            </Flex>
-                          </Flex>
                         </div>
                       </Flex>
                     ) : (
@@ -2805,9 +2695,26 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </div>
                       </Flex>
                     )}
-                    <div className="status-tag-container">
+                    <Flex
+                      className="status-tag-container"
+                      align="center"
+                      gap="small"
+                    >
+                      {expandedKeys.includes("4") && (
+                        <Button
+                          type="primary"
+                          icon={<Icons.Document />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEvidence("4");
+                          }}
+                          size="small"
+                        >
+                          View evidence
+                        </Button>
+                      )}
                       <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
-                    </div>
+                    </Flex>
                   </>
                 }
                 key="4"
@@ -2945,37 +2852,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               <Text style={{ fontSize: 11 }}>Risk: Medium</Text>
                             </Flex>
                           </Flex>
-                          <Flex
-                            align="center"
-                            gap="small"
-                            style={{ marginTop: 12 }}
-                          >
-                            <Button
-                              type="default"
-                              icon={<Icons.Document />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEvidence("5");
-                              }}
-                              size="small"
-                            >
-                              View evidence
-                            </Button>
-                            <Button icon={<SlackOutlined />} size="small">
-                              Request input from team
-                            </Button>
-                            <Flex align="center" gap="small">
-                              <CheckCircleOutlined
-                                style={{
-                                  color: palette.FIDESUI_SUCCESS,
-                                  fontSize: 14,
-                                }}
-                              />
-                              <Text type="secondary" style={{ fontSize: 11 }}>
-                                Request sent 4h ago to @RiskTeam
-                              </Text>
-                            </Flex>
-                          </Flex>
                         </div>
                       </Flex>
                     ) : (
@@ -3041,13 +2917,30 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </div>
                       </Flex>
                     )}
-                    <div className="status-tag-container">
+                    <Flex
+                      className="status-tag-container"
+                      align="center"
+                      gap="small"
+                    >
+                      {expandedKeys.includes("5") && (
+                        <Button
+                          type="primary"
+                          icon={<Icons.Document />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEvidence("5");
+                          }}
+                          size="small"
+                        >
+                          View evidence
+                        </Button>
+                      )}
                       {isCompletedAssessment ? (
                         <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
                       ) : (
                         <Tag color={CUSTOM_TAG_COLOR.WARNING}>In progress</Tag>
                       )}
-                    </div>
+                    </Flex>
                   </>
                 }
                 key="5"
@@ -3178,26 +3071,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               </Flex>
                             )}
                           </Flex>
-                          <Flex
-                            align="center"
-                            gap="small"
-                            style={{ marginTop: 12 }}
-                          >
-                            <Button
-                              type="default"
-                              icon={<Icons.Document />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEvidence("6");
-                              }}
-                              size="small"
-                            >
-                              View evidence
-                            </Button>
-                            <Button icon={<SlackOutlined />} size="small">
-                              Request input from team
-                            </Button>
-                          </Flex>
                         </div>
                       </Flex>
                     ) : (
@@ -3281,13 +3154,30 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </div>
                       </Flex>
                     )}
-                    <div className="status-tag-container">
+                    <Flex
+                      className="status-tag-container"
+                      align="center"
+                      gap="small"
+                    >
+                      {expandedKeys.includes("6") && (
+                        <Button
+                          type="primary"
+                          icon={<Icons.Document />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEvidence("6");
+                          }}
+                          size="small"
+                        >
+                          View evidence
+                        </Button>
+                      )}
                       {isCompletedAssessment ? (
                         <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
                       ) : (
                         <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>Incomplete</Tag>
                       )}
-                    </div>
+                    </Flex>
                   </>
                 }
                 key="6"
@@ -3416,26 +3306,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               </Flex>
                             )}
                           </Flex>
-                          <Flex
-                            align="center"
-                            gap="small"
-                            style={{ marginTop: 12 }}
-                          >
-                            <Button
-                              type="default"
-                              icon={<Icons.Document />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEvidence("7");
-                              }}
-                              size="small"
-                            >
-                              View evidence
-                            </Button>
-                            <Button icon={<SlackOutlined />} size="small">
-                              Request input from team
-                            </Button>
-                          </Flex>
                         </div>
                       </Flex>
                     ) : (
@@ -3519,13 +3389,30 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </div>
                       </Flex>
                     )}
-                    <div className="status-tag-container">
+                    <Flex
+                      className="status-tag-container"
+                      align="center"
+                      gap="small"
+                    >
+                      {expandedKeys.includes("7") && (
+                        <Button
+                          type="primary"
+                          icon={<Icons.Document />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEvidence("7");
+                          }}
+                          size="small"
+                        >
+                          View evidence
+                        </Button>
+                      )}
                       {isCompletedAssessment ? (
                         <Tag color={CUSTOM_TAG_COLOR.SUCCESS}>Completed</Tag>
                       ) : (
                         <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>Incomplete</Tag>
                       )}
-                    </div>
+                    </Flex>
                   </>
                 }
                 key="7"
@@ -3831,15 +3718,40 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             }
             // Scroll to focused question after drawer opens
             setTimeout(() => {
-              const element = document.querySelector(
+              // First scroll to the question section
+              const questionElement = document.querySelector(
                 `[data-question-id="${focusedQuestionId}"]`,
               );
-              if (element) {
-                element.scrollIntoView({ behavior: "smooth", block: "start" });
+              if (questionElement) {
+                questionElement.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }
+
+              // Then scroll to the specific source if highlighted
+              if (highlightedSourceIndex !== null) {
+                setTimeout(() => {
+                  const sourceElement = document.querySelector(
+                    `[data-question-id="${focusedQuestionId}"] [data-source-index="${highlightedSourceIndex}"]`,
+                  );
+                  if (sourceElement) {
+                    sourceElement.scrollIntoView({
+                      behavior: "smooth",
+                      block: "center",
+                    });
+                  }
+                  // Clear highlight after animation
+                  setTimeout(() => {
+                    setHighlightedSourceIndex(null);
+                    setFocusedQuestionId(null);
+                  }, 5000);
+                }, 300);
+              } else {
                 // Remove focus highlight after a delay
                 setTimeout(() => {
                   setFocusedQuestionId(null);
-                }, 3000);
+                }, 5000);
               }
             }, 200);
           }
@@ -4203,18 +4115,33 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                               size="middle"
                               style={{ width: "100%" }}
                             >
-                              {visibleSystemItems.map((item) => (
-                                <div key={item.id}>
-                                  {item.type === "analysis" ? (
-                                    renderSystemItem(item)
-                                  ) : (
-                                    <List
-                                      dataSource={[item]}
-                                      renderItem={renderSystemItem}
-                                    />
-                                  )}
-                                </div>
-                              ))}
+                              {visibleSystemItems.map((item, index) => {
+                                const isHighlighted =
+                                  focusedQuestionId === questionId &&
+                                  highlightedSourceIndex === index &&
+                                  item.type === "system";
+                                return (
+                                  <div
+                                    key={item.id}
+                                    data-source-index={index}
+                                    style={{
+                                      outline: `2px solid ${isHighlighted ? palette.FIDESUI_MINOS : "transparent"}`,
+                                      outlineOffset: -1,
+                                      borderRadius: 8,
+                                      transition: "outline-color 0.5s ease",
+                                    }}
+                                  >
+                                    {item.type === "analysis" ? (
+                                      renderSystemItem(item)
+                                    ) : (
+                                      <List
+                                        dataSource={[item]}
+                                        renderItem={renderSystemItem}
+                                      />
+                                    )}
+                                  </div>
+                                );
+                              })}
                               {!isSystemExpanded &&
                                 remainingSystemCount > 0 && (
                                   <Button
@@ -4941,85 +4868,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               Sign Document
             </Button>
           </Flex>
-        </Space>
-      </Modal>
-
-      <Modal
-        title="Configure Applicable Regions"
-        open={isRegionModalOpen}
-        onCancel={() => setIsRegionModalOpen(false)}
-        onOk={() => setIsRegionModalOpen(false)}
-        okText="Save"
-        width={600}
-      >
-        <Space
-          direction="vertical"
-          size="large"
-          style={{ width: "100%", marginTop: 16 }}
-        >
-          <Text type="secondary" style={{ display: "block", fontSize: 13 }}>
-            Select the regions where this assessment applies. This allows you to
-            scope a template (e.g., GDPR) to specific jurisdictions.
-          </Text>
-
-          <div>
-            <Text
-              strong
-              style={{ display: "block", marginBottom: 12, fontSize: 13 }}
-            >
-              Selected Regions
-            </Text>
-            {selectedRegions.length > 0 ? (
-              <Flex gap="small" wrap="wrap" style={{ marginBottom: 16 }}>
-                {selectedRegions.map((region) => (
-                  <Tag
-                    key={region}
-                    closable
-                    onClose={() =>
-                      setSelectedRegions(
-                        selectedRegions.filter((r) => r !== region),
-                      )
-                    }
-                    style={{ margin: 0, fontSize: 12 }}
-                  >
-                    {formatRegionDisplay(region)}
-                  </Tag>
-                ))}
-              </Flex>
-            ) : (
-              <Text
-                type="secondary"
-                style={{
-                  display: "block",
-                  marginBottom: 16,
-                  fontSize: 12,
-                  fontStyle: "italic",
-                }}
-              >
-                No regions selected. The assessment will apply to all regions by
-                default.
-              </Text>
-            )}
-          </div>
-
-          <div>
-            <Text
-              strong
-              style={{ display: "block", marginBottom: 12, fontSize: 13 }}
-            >
-              Add Regions
-            </Text>
-            <LocationSelect
-              mode="multiple"
-              value={selectedRegions}
-              onChange={(value) => setSelectedRegions(value ?? [])}
-              placeholder="Search and select regions..."
-              style={{ width: "100%" }}
-              allowClear
-              showSearch
-              includeCountryOnlyOptions
-            />
-          </div>
         </Space>
       </Modal>
 
