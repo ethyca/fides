@@ -451,9 +451,10 @@ export const PrivacyExperienceForm = ({
         <>
           {hasGppNoticesInValues && (
             <Alert
-              message="GPP notices are not currently supported in TCF experiences. Please remove any GPP notices from the list below."
+              message="GPP notices are not currently supported in TCF experiences. Please remove any GPP notices from the list below to avoid unexpected behavior."
               type="error"
               closable={false}
+              data-testid="gpp-notices-not-supported-alert"
             />
           )}
           <ScrollableList<string>

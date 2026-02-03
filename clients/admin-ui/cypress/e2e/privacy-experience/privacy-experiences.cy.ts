@@ -2,7 +2,6 @@ import {
   stubExperienceConfig,
   stubFidesCloud,
   stubLocations,
-  stubPrivacyNoticesCrud,
   stubProperties,
   stubTranslationConfig,
 } from "cypress/support/stubs";
@@ -19,7 +18,6 @@ describe("Privacy experiences", () => {
     stubProperties();
     stubExperienceConfig();
     stubFidesCloud();
-    stubPrivacyNoticesCrud();
     stubTranslationConfig(false);
     stubLocations();
   });
