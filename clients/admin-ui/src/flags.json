@@ -70,9 +70,9 @@
     "test": false,
     "production": false
   },
-  "rbacManagement": {
-    "label": "RBAC Management",
-    "description": "Dynamic role-based access control management for creating and managing custom roles",
+  "alphaRbac": {
+    "label": "Alpha RBAC",
+    "description": "Dynamic role-based access control system for roles, permissions, and user assignments",
     "development": true,
     "test": false,
     "production": false

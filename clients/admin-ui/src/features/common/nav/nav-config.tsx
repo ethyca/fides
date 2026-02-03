@@ -189,7 +189,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Role Management",
         path: routes.RBAC_ROUTE,
         requiresPlus: true,
-        requiresFlag: "rbacManagement",
+        requiresFlag: "alphaRbac",
         scopes: [
           // Only Owners can access Role Management - they have assign_owners scope
           ScopeRegistryEnum.USER_PERMISSION_ASSIGN_OWNERS,

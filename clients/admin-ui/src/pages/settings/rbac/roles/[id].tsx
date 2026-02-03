@@ -266,7 +266,7 @@ const RoleDetailPage: NextPage = () => {
               {resourceType === "system" && (
                 <Alert
                   message="System permissions apply globally"
-                  description="Note: system:read permission currently grants access to ALL systems in the organization, regardless of any resource scoping. Fine-grained per-system access control is not yet implemented."
+                  description="Note: system:read permission currently grants access to ALL systems in the organization, regardless of any resource scoping."
                   type="warning"
                   showIcon
                   className="mb-4"

@@ -21,7 +21,7 @@ const UserManagementTabs = ({
 }: UserFormProps) => {
   const activeUserId = useAppSelector(selectActiveUserId);
   const { flags } = useFlags();
-  const isRbacEnabled = flags.rbacManagement;
+  const isRbacEnabled = flags.alphaRbac;
 
   // Subscribe to active user
   useGetUserByIdQuery(activeUserId as string, { skip: !activeUserId });

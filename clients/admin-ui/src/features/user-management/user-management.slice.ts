@@ -249,7 +249,7 @@ export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
     [(RootState) => RootState, selectUser, selectEnvFlags],
     (RootState, user, flags) => {
       // When RBAC is enabled, prefer RBAC-derived permissions
-      if (flags.rbacManagement) {
+      if (flags.alphaRbac) {
         // Access the RBAC permissions cache dynamically to avoid circular imports
         const rbacPermissions = (
           RootState.api?.queries?.["getMyRBACPermissions(undefined)"] as
