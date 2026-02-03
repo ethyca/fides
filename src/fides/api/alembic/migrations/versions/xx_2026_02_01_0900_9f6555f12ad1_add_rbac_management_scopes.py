@@ -93,7 +93,7 @@ def upgrade():
         existing_mapping = conn.execute(
             text(
                 """
-            SELECT id FROM rbac_role_permission
+            SELECT 1 FROM rbac_role_permission
             WHERE role_id = :role_id AND permission_id = :permission_id
             """
             ),
@@ -102,16 +102,14 @@ def upgrade():
 
         if not existing_mapping:
             # Assign permission to Owner role
-            mapping_id = f"rba_{uuid4()}"
             conn.execute(
                 text(
                     """
-                INSERT INTO rbac_role_permission (id, role_id, permission_id, created_at, updated_at)
-                VALUES (:id, :role_id, :permission_id, now(), now())
+                INSERT INTO rbac_role_permission (role_id, permission_id, created_at)
+                VALUES (:role_id, :permission_id, now())
                 """
                 ),
                 {
-                    "id": mapping_id,
                     "role_id": owner_role_id,
                     "permission_id": permission_id,
                 },

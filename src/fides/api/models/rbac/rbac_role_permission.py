@@ -19,6 +19,11 @@ class RBACRolePermission(Base):
 
     __tablename__ = "rbac_role_permission"
 
+    # Override Base.id - junction table uses composite PK instead
+    id = None  # type: ignore[assignment]
+    # Override Base.updated_at - junction table doesn't need this
+    updated_at = None  # type: ignore[assignment]
+
     # Composite primary key: (role_id, permission_id)
     role_id = Column(
         String(255),

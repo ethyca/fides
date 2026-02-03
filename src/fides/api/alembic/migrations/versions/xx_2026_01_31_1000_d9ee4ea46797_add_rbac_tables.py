@@ -1,7 +1,7 @@
 """Add RBAC tables for dynamic role-based access control
 
 Revision ID: d9ee4ea46797
-Revises: 6d5f70dd0ba5
+Revises: 627c230d9917
 Create Date: 2026-01-31 10:00:00.000000
 
 """
@@ -148,24 +148,17 @@ def upgrade():
         unique=False,
     )
 
-    # Create rbac_role_permission junction table
+    # Create rbac_role_permission junction table (composite PK)
     op.create_table(
         "rbac_role_permission",
-        sa.Column("id", sa.String(length=255), nullable=False),
+        sa.Column("role_id", sa.String(length=255), nullable=False),
+        sa.Column("permission_id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
-            nullable=True,
-        ),
-        sa.Column("role_id", sa.String(length=255), nullable=False),
-        sa.Column("permission_id", sa.String(length=255), nullable=False),
         sa.ForeignKeyConstraint(
             ["role_id"],
             ["rbac_role.id"],
@@ -176,13 +169,7 @@ def upgrade():
             ["rbac_permission.id"],
             ondelete="CASCADE",
         ),
-        sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint(
-            "role_id", "permission_id", name="uq_rbac_role_permission_mapping"
-        ),
-    )
-    op.create_index(
-        op.f("ix_rbac_role_permission_id"), "rbac_role_permission", ["id"], unique=False
+        sa.PrimaryKeyConstraint("role_id", "permission_id"),
     )
     op.create_index(
         op.f("ix_rbac_role_permission_role_id"),
@@ -416,7 +403,6 @@ def downgrade():
     op.drop_index(
         op.f("ix_rbac_role_permission_role_id"), table_name="rbac_role_permission"
     )
-    op.drop_index(op.f("ix_rbac_role_permission_id"), table_name="rbac_role_permission")
     op.drop_table("rbac_role_permission")
 
     op.drop_index(

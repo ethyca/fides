@@ -373,16 +373,14 @@ def upgrade():
         role_id = role_ids[role_key]
         for scope_code in scope_codes:
             if scope_code in permission_ids:
-                mapping_id = f"rpm_{uuid4()}"
                 connection.execute(
                     text(
                         """
-                        INSERT INTO rbac_role_permission (id, role_id, permission_id)
-                        VALUES (:id, :role_id, :permission_id)
+                        INSERT INTO rbac_role_permission (role_id, permission_id)
+                        VALUES (:role_id, :permission_id)
                     """
                     ),
                     {
-                        "id": mapping_id,
                         "role_id": role_id,
                         "permission_id": permission_ids[scope_code],
                     },
