@@ -608,6 +608,9 @@ export const stubProperties = () => {
 };
 
 export const stubExperienceConfig = () => {
+  cy.intercept("GET", "/api/v1/privacy-notice*", {
+    fixture: "privacy-experiences/notices.json",
+  }).as("getExperienceNotices");
   cy.intercept("GET", "/api/v1/experience-config*", {
     fixture: "privacy-experiences/list.json",
   }).as("getExperiences");
