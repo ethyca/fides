@@ -29,6 +29,9 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
   const message = useMessage();
   const [form] = Form.useForm();
 
+  // Watch any form field change to trigger re-render for button state
+  Form.useWatch([], form);
+
   // Fetch existing config if editing
   const { data: existingConfig, refetch } = useGetChatConfigQuery(configId!, {
     skip: !configId,
