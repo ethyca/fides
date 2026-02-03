@@ -9,6 +9,7 @@ import {
   ChakraText as Text,
   Icons,
   Select,
+  SelectProps,
   Space,
 } from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
@@ -126,11 +127,13 @@ const ScrollableListAdd = ({
   options,
   onOptionSelected,
   baseTestId,
+  selectStyles,
 }: {
   label: string;
   options: Option[];
   onOptionSelected: (opt: Option) => void;
   baseTestId: string;
+  selectStyles?: SelectProps["styles"];
 }) => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectValue, setSelectValue] = useState<Option | undefined>(undefined);
@@ -157,6 +160,7 @@ const ScrollableListAdd = ({
         aria-label={label}
         optionFilterProp="label"
         popupMatchSelectWidth={false}
+        styles={selectStyles}
       />
     </Box>
   ) : (
@@ -192,6 +196,7 @@ const ScrollableList = <T extends unknown>({
   maxHeight = 36,
   baseTestId,
   isItemDisabled,
+  selectStyles,
 }: {
   label?: string;
   tooltip?: string;
@@ -212,6 +217,7 @@ const ScrollableList = <T extends unknown>({
   maxHeight?: number;
   baseTestId: string;
   isItemDisabled?: (item: T) => boolean;
+  selectStyles?: SelectProps["styles"];
 }) => {
   const getItemId = (item: T) =>
     item instanceof Object && idField && idField in item
@@ -352,6 +358,7 @@ const ScrollableList = <T extends unknown>({
           )}
           onOptionSelected={handleAddNewValue}
           baseTestId={baseTestId}
+          selectStyles={selectStyles}
         />
       ) : null}
     </Flex>
@@ -361,6 +368,7 @@ const ScrollableList = <T extends unknown>({
       options={unselectedValues.map((value) => createOptionFromValue(value))}
       onOptionSelected={handleAddNewValue}
       baseTestId={baseTestId}
+      selectStyles={selectStyles}
     />
   );
 };
