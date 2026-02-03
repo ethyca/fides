@@ -28,7 +28,8 @@ class RBACRole(Base):
     and all permissions inherited from ancestor roles.
     """
 
-    __tablename__ = "rbac_role"
+    def __tablename__(self) -> str:
+        return "rbac_role"
 
     name = Column(
         String(255),

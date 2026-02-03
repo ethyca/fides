@@ -30,7 +30,8 @@ class RBACUserRole(Base):
     - Temporary access: valid_from=now, valid_until=now+30days
     """
 
-    __tablename__ = "rbac_user_role"
+    def __tablename__(self) -> str:
+        return "rbac_user_role"
 
     user_id = Column(
         String(255),

@@ -17,7 +17,8 @@ class RBACRolePermission(Base):
     computed at runtime via the role hierarchy.
     """
 
-    __tablename__ = "rbac_role_permission"
+    def __tablename__(self) -> str:
+        return "rbac_role_permission"
 
     # Override Base.id - junction table uses composite PK instead
     id = None  # type: ignore[assignment]
