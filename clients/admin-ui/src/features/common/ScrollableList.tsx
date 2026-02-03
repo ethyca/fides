@@ -156,6 +156,7 @@ const ScrollableListAdd = ({
         data-testid={`select-${baseTestId}`}
         aria-label={label}
         optionFilterProp="label"
+        popupMatchSelectWidth={false}
       />
     </Box>
   ) : (
