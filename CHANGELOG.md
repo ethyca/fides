@@ -75,6 +75,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed monitor filter state syncing [#7239](https://github.com/ethyca/fides/pull/7239)
 - Fixed GPC and automated consent being evaluated after FidesInitialized fires [#7222](https://github.com/ethyca/fides/pull/7222)
 - Added FidesLocaleUpdated event to FidesJS to notify when a user changes the language [#7234](https://github.com/ethyca/fides/pull/7234)
+- Fixed Snowflake connection failing when using private key authentication without passphrase [#7294](https://github.com/ethyca/fides/pull/7294)
 
 ### Removed
 - Removed cypress-e2e test suite and associated GitHub workflow [#7193](https://github.com/ethyca/fides/pull/7193)
