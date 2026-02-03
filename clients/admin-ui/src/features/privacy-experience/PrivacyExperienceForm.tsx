@@ -209,10 +209,9 @@ export const PrivacyExperienceForm = ({
   const allPrivacyNoticesWithTcfPlaceholder: LimitedPrivacyNoticeResponseSchema[] =
     useMemo(() => {
       // Filter out GPP notices for TCF experiences
-      const nonGppNotices = filterGppNotices(allPrivacyNotices);
+      const noticesWithTcfPlaceholder = filterGppNotices(allPrivacyNotices);
       const hasFilteredGppNotices =
-        nonGppNotices.length < allPrivacyNotices.length;
-      const noticesWithTcfPlaceholder = [...nonGppNotices];
+        noticesWithTcfPlaceholder.length < allPrivacyNotices.length;
       if (!noticesWithTcfPlaceholder.some((n) => n.id === TCF_PLACEHOLDER_ID)) {
         noticesWithTcfPlaceholder.push({
           name: "TCF Purposes",
