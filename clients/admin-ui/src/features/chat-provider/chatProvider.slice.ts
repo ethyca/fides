@@ -1,59 +1,14 @@
 import { baseApi } from "~/features/common/api.slice";
-
-export interface ChatProviderSettingsResponse {
-  id: string;
-  enabled: boolean;
-  provider_type: string;
-  workspace_url?: string;
-  client_id?: string;
-  authorized: boolean;
-  has_signing_secret: boolean;
-  created_at: string;
-  updated_at: string;
-  workspace_name?: string;
-  connected_by_email?: string;
-}
-
-export interface ChatProviderConfigCreate {
-  provider_type?: "slack";
-  workspace_url: string; // Required - used as unique identifier
-  client_id?: string;
-  client_secret?: string;
-  signing_secret?: string;
-}
-
-export interface ChatProviderConfigUpdate {
-  provider_type?: "slack";
-  workspace_url?: string;
-  client_id?: string;
-  client_secret?: string;
-  signing_secret?: string;
-}
-
-export interface ChatProviderSecrets {
-  client_secret?: string;
-  signing_secret?: string;
-}
-
-export interface ChatProviderConfigListResponse {
-  items: ChatProviderSettingsResponse[];
-  total: number;
-}
-
-export interface ChatProviderTestResponse {
-  success: boolean;
-  message: string;
-}
-
-export interface SendMessageRequest {
-  channel_id: string;
-  message: string;
-}
-
-export interface SendMessageResponse {
-  success: boolean;
-  message: string;
-}
+import type {
+  ChatProviderConfigCreate,
+  ChatProviderConfigListResponse,
+  ChatProviderConfigUpdate,
+  ChatProviderSecrets,
+  ChatProviderSettingsResponse,
+  ChatProviderTestResponse,
+  SendMessageRequest,
+  SendMessageResponse,
+} from "~/types/api";
 
 const chatProviderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
