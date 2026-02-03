@@ -5,10 +5,7 @@ import { useEffect } from "react";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
-import {
-  ChatConfigCreate,
-  ChatConfigUpdate,
-} from "~/types/api";
+import { ChatConfigCreate, ChatConfigUpdate } from "~/types/api";
 
 import {
   useCreateChatConfigMutation,
