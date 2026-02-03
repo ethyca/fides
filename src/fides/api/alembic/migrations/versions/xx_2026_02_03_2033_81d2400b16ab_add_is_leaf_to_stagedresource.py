@@ -64,6 +64,7 @@ def downgrade():
     op.drop_column("stagedresource", "is_leaf")
 
     # Clear backfill tracking to allow re-execution if migration is re-applied
+    logger.info("Clearing backfill tracking for stagedresource-is_leaf")
     op.execute(
         "DELETE FROM backfill_history WHERE backfill_name = 'stagedresource-is_leaf'"
     )

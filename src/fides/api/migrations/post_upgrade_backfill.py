@@ -13,7 +13,10 @@ The backfill tasks are:
 - Error-resilient: Retries transient errors, tracks failures, fails gracefully
 """
 
+from typing import Optional
+
 from loguru import logger
+from redis.lock import Lock
 from sqlalchemy.orm import Session
 
 from fides.api.db.session import get_db_session
@@ -53,6 +56,7 @@ def run_all_backfills(
     db: Session,
     batch_size: int = BATCH_SIZE,
     batch_delay_seconds: float = BATCH_DELAY_SECONDS,
+    lock: Optional[Lock] = None,
 ) -> list[BackfillResult]:
     """
     Run all pending backfill tasks.
@@ -63,16 +67,17 @@ def run_all_backfills(
         db: Database session
         batch_size: Number of rows to update per batch
         batch_delay_seconds: Delay between batches in seconds
+        lock: Redis lock for refreshing TTL during long operations
 
     Returns a list of BackfillResult objects for each backfill.
     """
     results: list[BackfillResult] = []
 
     # Backfill is_leaf column (added in migration 81d2400b16ab)
-    results.append(backfill_stagedresource_is_leaf(db, batch_size, batch_delay_seconds))
+    results.append(backfill_stagedresource_is_leaf(db, batch_size, batch_delay_seconds, lock=lock))
 
     # Add future backfills here:
-    # results.append(backfill_some_other_column(db, batch_size, batch_delay_seconds))
+    # results.append(backfill_some_other_column(db, batch_size, batch_delay_seconds, lock=lock))
     #
     # IMPORTANT: For each backfill added here, ensure its related migration's downgrade()
     # clears the backfill tracking to allow re-execution after rollback:
@@ -95,7 +100,8 @@ def post_upgrade_backfill_task() -> None:
     """
     logger.info("Starting post-upgrade backfill task")
 
-    if not acquire_backfill_lock():
+    lock = acquire_backfill_lock()
+    if not lock:
         logger.info(
             "Post-upgrade backfill: Another backfill is already running, skipping"
         )
@@ -104,7 +110,7 @@ def post_upgrade_backfill_task() -> None:
     try:
         SessionLocal = get_db_session(CONFIG)
         with SessionLocal() as db:
-            results = run_all_backfills(db)
+            results = run_all_backfills(db, lock=lock)
 
         # Log summary
         all_success = all(r.success for r in results)
@@ -126,7 +132,7 @@ def post_upgrade_backfill_task() -> None:
         logger.error(f"Post-upgrade backfill task failed with unexpected error: {e}")
         raise
     finally:
-        release_backfill_lock()
+        release_backfill_lock(lock)
 
 
 def initiate_post_upgrade_backfill() -> None:
@@ -149,6 +155,7 @@ def initiate_post_upgrade_backfill() -> None:
 
 
 def run_backfill_manually(
+    lock: Lock,
     batch_size: int = BATCH_SIZE,
     batch_delay_seconds: float = BATCH_DELAY_SECONDS,
 ) -> list[BackfillResult]:
@@ -159,6 +166,7 @@ def run_backfill_manually(
     This function will release the lock when done.
 
     Args:
+        lock: Redis lock acquired by the caller
         batch_size: Number of rows to update per batch (default: 5000)
         batch_delay_seconds: Delay between batches in seconds (default: 1.0)
 
@@ -172,7 +180,7 @@ def run_backfill_manually(
     try:
         SessionLocal = get_db_session(CONFIG)
         with SessionLocal() as db:
-            results = run_all_backfills(db, batch_size, batch_delay_seconds)
+            results = run_all_backfills(db, batch_size, batch_delay_seconds, lock=lock)
 
         all_success = all(r.success for r in results)
         if all_success:
@@ -182,4 +190,4 @@ def run_backfill_manually(
 
         return results
     finally:
-        release_backfill_lock()
+        release_backfill_lock(lock)

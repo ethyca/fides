@@ -6,8 +6,12 @@ import pytest
 from sqlalchemy.exc import DBAPIError, OperationalError
 from sqlalchemy.orm import Session
 
-from fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf import backfill_stagedresource_is_leaf
+from fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf import (
+    backfill_stagedresource_is_leaf,
+)
 from fides.api.migrations.backfill_scripts.utils import (
+    BACKFILL_LOCK_KEY,
+    BACKFILL_LOCK_TTL,
     BackfillResult,
     acquire_backfill_lock,
     is_transient_error,
@@ -99,53 +103,99 @@ class TestIsTransientError:
 class TestBackfillLock:
     """Tests for backfill lock functions."""
 
-    @pytest.mark.parametrize(
-        "cache_set_return,expected",
-        [
-            (True, True),  # Lock acquired successfully
-            (None, False),  # Lock already held (Redis SET NX returns None if key exists)
-        ],
-    )
-    def test_acquire_backfill_lock(self, cache_set_return, expected):
-        """Verify lock acquisition returns correct result based on cache state."""
-        mock_cache = MagicMock()
-        mock_cache.set.return_value = cache_set_return
+    def test_acquire_backfill_lock_success(self):
+        """Verify lock acquisition returns lock object when successful."""
+        mock_lock = MagicMock()
+        mock_lock.acquire.return_value = True
 
         with patch(
-            "fides.api.migrations.backfill_scripts.utils.get_cache",
-            return_value=mock_cache,
-        ):
+            "fides.api.migrations.backfill_scripts.utils.get_redis_lock",
+            return_value=mock_lock,
+        ) as mock_get_lock:
             result = acquire_backfill_lock()
 
-        assert result is expected
-        mock_cache.set.assert_called_once()
+        mock_get_lock.assert_called_once_with(
+            BACKFILL_LOCK_KEY, timeout=BACKFILL_LOCK_TTL
+        )
+        assert result is mock_lock
+        mock_lock.acquire.assert_called_once_with(blocking=False)
 
-    def test_release_backfill_lock(self):
-        """Verify lock is released."""
-        mock_cache = MagicMock()
+    def test_acquire_backfill_lock_failure(self):
+        """Verify lock acquisition returns None when lock is already held."""
+        mock_lock = MagicMock()
+        mock_lock.acquire.return_value = False
 
         with patch(
-            "fides.api.migrations.backfill_scripts.utils.get_cache",
+            "fides.api.migrations.backfill_scripts.utils.get_redis_lock",
+            return_value=mock_lock,
+        ) as mock_get_lock:
+            result = acquire_backfill_lock()
+
+        mock_get_lock.assert_called_once_with(
+            BACKFILL_LOCK_KEY, timeout=BACKFILL_LOCK_TTL
+        )
+        assert result is None
+        mock_lock.acquire.assert_called_once_with(blocking=False)
+
+    def test_release_backfill_lock(self):
+        """Verify lock is released when owned."""
+        mock_lock = MagicMock()
+        mock_lock.owned.return_value = True
+
+        release_backfill_lock(mock_lock)
+
+        mock_lock.release.assert_called_once()
+
+    def test_release_backfill_lock_not_owned(self):
+        """Verify release is skipped when lock is not owned."""
+        mock_lock = MagicMock()
+        mock_lock.owned.return_value = False
+
+        release_backfill_lock(mock_lock)
+
+        mock_lock.release.assert_not_called()
+
+    def test_refresh_backfill_lock(self):
+        """Verify lock TTL is extended when owned."""
+        from fides.api.migrations.backfill_scripts.utils import refresh_backfill_lock
+
+        mock_lock = MagicMock()
+        mock_lock.owned.return_value = True
+
+        refresh_backfill_lock(mock_lock)
+
+        mock_lock.extend.assert_called_once_with(BACKFILL_LOCK_TTL)
+
+    def test_refresh_backfill_lock_not_owned(self):
+        """Verify refresh is skipped when lock is not owned."""
+        from fides.api.migrations.backfill_scripts.utils import refresh_backfill_lock
+
+        mock_lock = MagicMock()
+        mock_lock.owned.return_value = False
+
+        refresh_backfill_lock(mock_lock)
+
+        mock_lock.extend.assert_not_called()
+
+    def test_is_backfill_running_uses_correct_key(self):
+        """Verify is_backfill_running checks the correct Redis key."""
+        from fides.api.migrations.post_upgrade_backfill import is_backfill_running
+
+        mock_cache = MagicMock()
+        mock_cache.exists.return_value = True
+
+        with patch(
+            "fides.api.migrations.post_upgrade_backfill.get_cache",
             return_value=mock_cache,
         ):
-            release_backfill_lock()
+            result = is_backfill_running()
 
-        mock_cache.delete.assert_called_once_with("fides:backfill:running")
+        mock_cache.exists.assert_called_once_with(BACKFILL_LOCK_KEY)
+        assert result is True
 
 
 class TestBackfillStagedresourceIsLeaf:
     """Tests for backfill_stagedresource_is_leaf function."""
-
-    @pytest.fixture(autouse=True)
-    def mock_backfill_tracking(self):
-        """Mock backfill tracking functions to avoid dependency on backfill_history table."""
-        with patch(
-            "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
-            return_value=False,
-        ), patch(
-            "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed",
-        ):
-            yield
 
     @pytest.fixture
     def staged_resources_needing_backfill(self, db: Session):
@@ -234,29 +284,47 @@ class TestBackfillStagedresourceIsLeaf:
         for resource in resources:
             resource.delete(db)
 
-    def test_backfill_no_pending_rows(self, db: Session):
+    @patch("fides.api.migrations.backfill_scripts.utils.mark_backfill_completed")
+    @patch(
+        "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
+        return_value=False,
+    )
+    def test_backfill_no_pending_rows(
+        self, mock_is_completed, mock_mark_completed, db: Session
+    ):
         """Verify no-op when all rows have is_leaf set."""
         # Mock to simulate no pending rows
         with patch(
             "fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf.get_pending_is_leaf_count",
             return_value=0,
         ):
-            result = backfill_stagedresource_is_leaf(db, batch_size=100, batch_delay_seconds=0)
+            result = backfill_stagedresource_is_leaf(
+                db, batch_size=100, batch_delay_seconds=0
+            )
 
         assert result.name == "stagedresource-is_leaf"
         assert result.total_updated == 0
         assert result.total_batches == 0
         assert result.success is True
 
+    @patch("fides.api.migrations.backfill_scripts.utils.mark_backfill_completed")
+    @patch(
+        "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
+        return_value=False,
+    )
     def test_backfill_with_pending_rows(
-        self, db: Session, staged_resources_needing_backfill
+        self,
+        mock_is_completed,
+        mock_mark_completed,
+        db: Session,
+        staged_resources_needing_backfill,
     ):
         """Verify is_leaf is correctly set based on resource_type, children, and meta."""
         # Run backfill with small batch and no delay for testing
-        with patch(
-            "fides.api.migrations.backfill_scripts.utils.refresh_backfill_lock"
-        ):
-            result = backfill_stagedresource_is_leaf(db, batch_size=100, batch_delay_seconds=0)
+        with patch("fides.api.migrations.backfill_scripts.utils.refresh_backfill_lock"):
+            result = backfill_stagedresource_is_leaf(
+                db, batch_size=100, batch_delay_seconds=0
+            )
 
         assert result.name == "stagedresource-is_leaf"
         assert result.success is True
@@ -282,12 +350,21 @@ class TestBackfillStagedresourceIsLeaf:
         # Table (not a Field) -> False
         assert table_resource.is_leaf is False
 
-    def test_backfill_result_has_correct_name(self, db: Session):
+    @patch("fides.api.migrations.backfill_scripts.utils.mark_backfill_completed")
+    @patch(
+        "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
+        return_value=False,
+    )
+    def test_backfill_result_has_correct_name(
+        self, mock_is_completed, mock_mark_completed, db: Session
+    ):
         """Verify the backfill result has the correct name."""
         with patch(
             "fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf.get_pending_is_leaf_count",
             return_value=0,
         ):
-            result = backfill_stagedresource_is_leaf(db, batch_size=100, batch_delay_seconds=0)
+            result = backfill_stagedresource_is_leaf(
+                db, batch_size=100, batch_delay_seconds=0
+            )
 
         assert result.name == "stagedresource-is_leaf"
