@@ -27,11 +27,13 @@ from fides.api.oauth.roles import (
 from fides.api.oauth.utils import (
     _has_direct_scopes,
     _has_scope_via_role,
+    clear_permission_checker,
     extract_payload,
     get_root_client,
     has_permissions,
     has_scope_subset,
     is_token_expired,
+    register_permission_checker,
     verify_oauth_client,
     verify_oauth_client_async,
 )
@@ -786,3 +788,158 @@ class TestVerifyOauthClientAsyncRoles:
                 token,
                 db=async_session,
             )
+
+
+class TestCustomPermissionChecker:
+    """Tests for the pluggable permission checker callback mechanism.
+
+    This allows extensions like fidesplus RBAC to override the default
+    permission checking logic.
+    """
+
+    def setup_method(self):
+        """Clear any custom permission checker before each test."""
+        clear_permission_checker()
+
+    def teardown_method(self):
+        """Clear custom permission checker after each test."""
+        clear_permission_checker()
+
+    def test_default_behavior_without_custom_checker(self, oauth_client):
+        """Without a custom checker, has_permissions uses default logic."""
+        token_data = {
+            JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
+        }
+        # Should use default permission checking
+        assert has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+
+    def test_custom_checker_is_called(self, oauth_client):
+        """When a custom checker is registered, it should be called."""
+        checker_calls = []
+
+        def custom_checker(db, token_data, client, endpoint_scopes):
+            checker_calls.append({
+                "db": db,
+                "token_data": token_data,
+                "client": client,
+                "scopes": endpoint_scopes.scopes,
+            })
+            return True
+
+        register_permission_checker(custom_checker)
+
+        token_data = {JWE_PAYLOAD_SCOPES: [USER_READ]}
+        has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+
+        assert len(checker_calls) == 1
+        assert checker_calls[0]["token_data"] == token_data
+        assert checker_calls[0]["client"] == oauth_client
+        assert checker_calls[0]["scopes"] == [DATASET_CREATE_OR_UPDATE]
+
+    def test_custom_checker_grants_permission(self, oauth_client):
+        """Custom checker returning True grants permission."""
+        def always_allow(db, token_data, client, endpoint_scopes):
+            return True
+
+        register_permission_checker(always_allow)
+
+        # Even with empty token data, custom checker grants permission
+        token_data = {}
+        assert has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+
+    def test_custom_checker_denies_permission(self, oauth_client):
+        """Custom checker returning False denies permission."""
+        def always_deny(db, token_data, client, endpoint_scopes):
+            return False
+
+        register_permission_checker(always_deny)
+
+        # Even with valid scopes, custom checker denies permission
+        token_data = {
+            JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
+        }
+        assert not has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+
+    def test_clear_permission_checker_reverts_to_default(self, oauth_client):
+        """Clearing the custom checker reverts to default behavior."""
+        def always_deny(db, token_data, client, endpoint_scopes):
+            return False
+
+        register_permission_checker(always_deny)
+
+        token_data = {
+            JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
+        }
+
+        # Custom checker denies
+        assert not has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+
+        # Clear the custom checker
+        clear_permission_checker()
+
+        # Default behavior should now allow (scopes match)
+        assert has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+
+    def test_db_parameter_passed_to_custom_checker(self, oauth_client):
+        """The db parameter should be passed through to the custom checker."""
+        received_db = []
+
+        def capture_db(db, token_data, client, endpoint_scopes):
+            received_db.append(db)
+            return True
+
+        register_permission_checker(capture_db)
+
+        mock_db = "mock_db_session"
+        has_permissions(
+            {},
+            oauth_client,
+            endpoint_scopes=SecurityScopes([USER_READ]),
+            db=mock_db,
+        )
+
+        assert len(received_db) == 1
+        assert received_db[0] == mock_db
+
+    def test_db_parameter_none_when_not_provided(self, oauth_client):
+        """When db is not provided, it should be None in the custom checker."""
+        received_db = []
+
+        def capture_db(db, token_data, client, endpoint_scopes):
+            received_db.append(db)
+            return True
+
+        register_permission_checker(capture_db)
+
+        has_permissions(
+            {},
+            oauth_client,
+            endpoint_scopes=SecurityScopes([USER_READ]),
+        )
+
+        assert len(received_db) == 1
+        assert received_db[0] is None
