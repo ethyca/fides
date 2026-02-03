@@ -103,7 +103,11 @@ class RBACUserRole(Base):
     )
 
     def __repr__(self) -> str:
-        scope = f"{self.resource_type}:{self.resource_id}" if self.resource_type else "global"
+        scope = (
+            f"{self.resource_type}:{self.resource_id}"
+            if self.resource_type
+            else "global"
+        )
         return f"<RBACUserRole(user_id='{self.user_id}', role_id='{self.role_id}', scope='{scope}')>"
 
     def is_valid(self) -> bool:
