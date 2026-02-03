@@ -81,7 +81,9 @@ const chatProviderApi = baseApi.injectEndpoints({
     }),
     getChatConfig: build.query<ChatProviderSettingsResponse, string>({
       query: (configId) => ({ url: `plus/chat/config/${configId}` }),
-      providesTags: (_result, _error, id) => [{ type: "Chat Provider Config", id }],
+      providesTags: (_result, _error, id) => [
+        { type: "Chat Provider Config", id },
+      ],
     }),
     updateChatConfig: build.mutation<
       ChatProviderSettingsResponse,

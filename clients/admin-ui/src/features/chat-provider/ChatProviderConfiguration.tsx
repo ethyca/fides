@@ -24,7 +24,7 @@ const ChatProviderConfiguration = () => {
   const configId = useMemo(() => {
     const { id } = router.query;
     return typeof id === "string" ? id : undefined;
-  }, [router.query.id]);
+  }, [router.query]);
 
   // Check if we're in edit mode based on URL parameter
   const isEditMode = !!configId;

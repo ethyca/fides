@@ -116,7 +116,9 @@ export const ChatProviderConfigurations = () => {
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!configToDelete) return;
+    if (!configToDelete) {
+      return;
+    }
     try {
       const result = await deleteConfig(configToDelete.id);
       if (isErrorResult(result)) {
@@ -156,11 +158,13 @@ export const ChatProviderConfigurations = () => {
           const providerLabel =
             record.provider_type.charAt(0).toUpperCase() +
             record.provider_type.slice(1);
-          const displayName = record.workspace_name
-            ? `${providerLabel} (${record.workspace_name})`
-            : record.workspace_url
-              ? `${providerLabel} (${record.workspace_url})`
-              : providerLabel;
+
+          let displayName = providerLabel;
+          if (record.workspace_name) {
+            displayName = `${providerLabel} (${record.workspace_name})`;
+          } else if (record.workspace_url) {
+            displayName = `${providerLabel} (${record.workspace_url})`;
+          }
 
           return (
             <Space>
