@@ -16,7 +16,7 @@ import { selectThisUsersScopes } from "../user-management";
 const NotificationTabs = () => {
   const router = useRouter();
   const currentPath = router.pathname;
-  const { plus } = useFeatures();
+  const { plus, flags } = useFeatures();
 
   // Determine which tab is active based on the current path
   let selectedKey = "email-providers"; // Default to email providers for non-Plus
@@ -56,6 +56,7 @@ const NotificationTabs = () => {
       key: "chat-providers",
       label: "Chat providers",
       requiresPlus: true,
+      requiresFlag: "alphaDataProtectionAssessments" as const,
       scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       path: CHAT_PROVIDERS_ROUTE,
     },
@@ -65,6 +66,14 @@ const NotificationTabs = () => {
   if (!plus) {
     menuItems = menuItems.filter((item) => !item.requiresPlus);
   }
+
+  // Remove tabs that require a feature flag that isn't enabled
+  menuItems = menuItems.filter(
+    (item) =>
+      !("requiresFlag" in item) ||
+      (item.requiresFlag === "alphaDataProtectionAssessments" &&
+        flags?.alphaDataProtectionAssessments),
+  );
 
   // Filter scopes
   const userScopes = useAppSelector(selectThisUsersScopes);
