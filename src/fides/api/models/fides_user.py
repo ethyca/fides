@@ -117,7 +117,7 @@ class FidesUser(Base):
     @property
     def stewarded_monitor_ids(self) -> List[str]:
         """Returns list of monitor IDs for which this user is a steward."""
-        return [monitor.id for monitor in self.stewarded_monitors]
+        return [monitor.id for monitor in self.stewarded_monitors]  # type: ignore[attr-defined]
 
     @classmethod
     def hash_password(cls, password: str, encoding: str = "UTF-8") -> tuple[str, str]:

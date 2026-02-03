@@ -218,6 +218,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: monitors
+      data_categories:
+        - system.operations
   - name: systemmanager
     fields:
       - name: id
