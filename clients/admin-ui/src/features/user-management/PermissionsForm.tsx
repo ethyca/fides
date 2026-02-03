@@ -49,7 +49,7 @@ const PermissionsForm = () => {
   const toast = useToast();
   const router = useRouter();
   const { flags } = useFlags();
-  const isRbacEnabled = flags.rbacManagement;
+  const isRbacEnabled = flags.alphaRbac;
 
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {

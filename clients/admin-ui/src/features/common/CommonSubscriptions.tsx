@@ -16,9 +16,9 @@ const useCommonSubscriptions = () => {
   useAppSelector(selectThisUsersScopes);
   useGetConfigurationSettingsQuery({ api_set: false });
 
-  // Fetch RBAC permissions when RBAC management is enabled
+  // Fetch RBAC permissions when RBAC is enabled
   // This populates the cache so selectThisUsersScopes can use it
-  useGetMyRBACPermissionsQuery(undefined, { skip: !flags.rbacManagement });
+  useGetMyRBACPermissionsQuery(undefined, { skip: !flags.alphaRbac });
 };
 
 /**
