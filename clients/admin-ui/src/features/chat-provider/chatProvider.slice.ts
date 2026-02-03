@@ -1,8 +1,8 @@
 import { baseApi } from "~/features/common/api.slice";
 import type {
-  ChatProviderConfigCreate,
-  ChatProviderConfigListResponse,
-  ChatProviderConfigUpdate,
+  ChatConfigCreate,
+  ChatConfigListResponse,
+  ChatConfigUpdate,
   ChatProviderSecrets,
   ChatProviderSettingsResponse,
   ChatProviderTestResponse,
@@ -19,13 +19,13 @@ const chatProviderApi = baseApi.injectEndpoints({
       }),
     }),
     // Chat Provider Configuration CRUD endpoints
-    getChatConfigs: build.query<ChatProviderConfigListResponse, void>({
+    getChatConfigs: build.query<ChatConfigListResponse, void>({
       query: () => ({ url: "plus/chat/config" }),
       providesTags: ["Chat Provider Config"],
     }),
     createChatConfig: build.mutation<
       ChatProviderSettingsResponse,
-      ChatProviderConfigCreate
+      ChatConfigCreate
     >({
       query: (body) => ({
         url: "plus/chat/config",
@@ -42,7 +42,7 @@ const chatProviderApi = baseApi.injectEndpoints({
     }),
     updateChatConfig: build.mutation<
       ChatProviderSettingsResponse,
-      { configId: string; data: ChatProviderConfigUpdate }
+      { configId: string; data: ChatConfigUpdate }
     >({
       query: ({ configId, data }) => ({
         url: `plus/chat/config/${configId}`,

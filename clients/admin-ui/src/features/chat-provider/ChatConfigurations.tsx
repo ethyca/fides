@@ -56,7 +56,7 @@ const EmptyTableNotice = () => {
   );
 };
 
-export const ChatProviderConfigurations = () => {
+export const ChatConfigurations = () => {
   const router = useRouter();
   const message = useMessage();
   const { data: configsData, isLoading, refetch } = useGetChatConfigsQuery();
@@ -358,4 +358,4 @@ export const ChatProviderConfigurations = () => {
   );
 };
 
-export default ChatProviderConfigurations;
+export default ChatConfigurations;

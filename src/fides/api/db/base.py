@@ -7,7 +7,7 @@ from fides.api.models.asset import Asset
 from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.authentication_request import AuthenticationRequest
-from fides.api.models.chat_provider_config import ChatProviderConfig
+from fides.api.models.chat_config import ChatConfig
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connection_oauth_credentials import OAuthConfig

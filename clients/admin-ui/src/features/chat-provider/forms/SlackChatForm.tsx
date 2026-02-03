@@ -6,8 +6,8 @@ import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import {
-  ChatProviderConfigCreate,
-  ChatProviderConfigUpdate,
+  ChatConfigCreate,
+  ChatConfigUpdate,
 } from "~/types/api";
 
 import {
@@ -21,11 +21,11 @@ import { SECRET_PLACEHOLDER } from "../constants";
 import SlackIcon from "../icons/SlackIcon";
 import { cleanupUrlParams, getOAuthErrorMessage } from "../utils/urlHelpers";
 
-interface SlackChatProviderFormProps {
+interface SlackChatFormProps {
   configId?: string;
 }
 
-const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
+const SlackChatForm = ({ configId }: SlackChatFormProps) => {
   const router = useRouter();
   const { handleError } = useAPIHelper();
   const message = useMessage();
@@ -92,7 +92,7 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
     try {
       if (isEditMode && configId) {
         // Update existing config
-        const payload: ChatProviderConfigUpdate = {
+        const payload: ChatConfigUpdate = {
           workspace_url: values.workspace_url || undefined,
           client_id: values.client_id || undefined,
           // Only send secrets if they're not the placeholder
@@ -123,7 +123,7 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
         }
       } else {
         // Create new config
-        const payload: ChatProviderConfigCreate = {
+        const payload: ChatConfigCreate = {
           provider_type: "slack",
           workspace_url: values.workspace_url,
           client_id: values.client_id || undefined,
@@ -283,4 +283,4 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
   );
 };
 
-export default SlackChatProviderForm;
+export default SlackChatForm;

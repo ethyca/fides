@@ -1,4 +1,4 @@
-"""SQLAlchemy model for chat provider configuration (Slack, Teams, etc.)."""
+"""SQLAlchemy model for chat configuration (Slack, Teams, etc.)."""
 
 from sqlalchemy import Boolean, Column, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
@@ -11,19 +11,17 @@ from fides.api.db.base_class import Base
 from fides.config import CONFIG
 
 
-class ChatProviderConfig(Base):
+class ChatConfig(Base):
     """
     Stores configuration for chat providers (Slack, Microsoft Teams, etc.).
 
     Multiple configurations can exist (e.g., different Slack workspaces),
     but only one can be enabled at a time globally.
-
-    Note: All query operations are handled by ChatProviderService in fidesplus.
     """
 
     @declared_attr
     def __tablename__(self) -> str:
-        return "chat_provider_config"
+        return "chat_config"
 
     provider_type = Column(String, nullable=False, default="slack")
     workspace_url = Column(String, nullable=True)
@@ -61,7 +59,7 @@ class ChatProviderConfig(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "workspace_url", name="chat_provider_config_workspace_url_unique"
+            "workspace_url", name="chat_config_workspace_url_unique"
         ),
     )
 

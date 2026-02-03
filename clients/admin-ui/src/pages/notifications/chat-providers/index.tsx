@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 
-import { ChatProviderConfigurations } from "~/features/chat-provider/ChatProviderConfigurations";
+import { ChatConfigurations } from "~/features/chat-provider/ChatConfigurations";
 import Layout from "~/features/common/Layout";
 import NotificationTabs from "~/features/common/NotificationTabs";
 import PageHeader from "~/features/common/PageHeader";
@@ -13,7 +13,7 @@ const ChatProvidersPage: NextPage = () => {
       <Restrict scopes={[ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE]}>
         <PageHeader heading="Notifications" />
         <NotificationTabs />
-        <ChatProviderConfigurations />
+        <ChatConfigurations />
       </Restrict>
     </Layout>
   );

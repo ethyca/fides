@@ -5,9 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useGetChatConfigQuery } from "./chatProvider.slice";
 import ConfigurationCard from "./components/ConfigurationCard";
 import { CHAT_PROVIDER_LABELS, CHAT_PROVIDER_TYPES } from "./constants";
-import SlackChatProviderForm from "./forms/SlackChatProviderForm";
+import SlackChatForm from "./forms/SlackChatForm";
 
-const ChatProviderConfiguration = () => {
+const ChatConfiguration = () => {
   const router = useRouter();
   const [selectedProviderType, setSelectedProviderType] = useState("");
 
@@ -54,7 +54,7 @@ const ChatProviderConfiguration = () => {
   const renderProviderForm = () => {
     switch (selectedProviderType) {
       case CHAT_PROVIDER_TYPES.SLACK:
-        return <SlackChatProviderForm configId={configId} />;
+        return <SlackChatForm configId={configId} />;
       default:
         return null;
     }
@@ -92,4 +92,4 @@ const ChatProviderConfiguration = () => {
   );
 };
 
-export default ChatProviderConfiguration;
+export default ChatConfiguration;

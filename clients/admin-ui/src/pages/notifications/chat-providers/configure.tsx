@@ -1,9 +1,9 @@
 import { NextPage } from "next";
 
-import { CreateChatProviderConfiguration } from "~/features/chat-provider/CreateChatProviderConfiguration";
+import { CreateChatConfiguration } from "~/features/chat-provider/CreateChatConfiguration";
 
 const ConfigureChatProviderPage: NextPage = () => {
-  return <CreateChatProviderConfiguration />;
+  return <CreateChatConfiguration />;
 };
 
 export default ConfigureChatProviderPage;

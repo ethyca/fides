@@ -4,21 +4,21 @@ import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/BackButton";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 
-import ChatProviderConfiguration from "./ChatProviderConfiguration";
+import ChatConfiguration from "./ChatConfiguration";
 
 const { Title } = Typography;
 
-export const CreateChatProviderConfiguration = () => {
+export const CreateChatConfiguration = () => {
   return (
-    <Layout title="Create chat provider configuration">
+    <Layout title="Create chat configuration">
       <BackButton backPath={CHAT_PROVIDERS_ROUTE} />
 
       <Title level={2} style={{ marginBottom: 24 }}>
         Configure your chat provider
       </Title>
-      <ChatProviderConfiguration />
+      <ChatConfiguration />
     </Layout>
   );
 };
 
-export default CreateChatProviderConfiguration;
+export default CreateChatConfiguration;

@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 /**
- * Schema for updating an existing chat provider configuration.
+ * Schema for updating an existing chat configuration.
  */
-export type ChatProviderConfigUpdate = {
+export type ChatConfigUpdate = {
   provider_type?: string | null;
   workspace_url?: string | null;
   client_id?: string | null;

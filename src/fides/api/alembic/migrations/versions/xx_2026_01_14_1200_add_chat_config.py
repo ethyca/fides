@@ -1,4 +1,4 @@
-"""add chat provider config
+"""add chat config
 
 Revision ID: c1d2e3f4a5b6
 Revises: 6d5f70dd0ba5
@@ -19,7 +19,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "chat_provider_config",
+        "chat_config",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -55,13 +55,13 @@ def upgrade():
         sa.Column("workspace_name", sa.String(), nullable=True),
         sa.Column("connected_by_email", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("workspace_url", name="chat_provider_config_workspace_url_unique"),
+        sa.UniqueConstraint("workspace_url", name="chat_config_workspace_url_unique"),
     )
     op.create_index(
-        op.f("ix_chat_provider_config_id"), "chat_provider_config", ["id"], unique=False
+        op.f("ix_chat_config_id"), "chat_config", ["id"], unique=False
     )
 
 
 def downgrade():
-    op.drop_index(op.f("ix_chat_provider_config_id"), table_name="chat_provider_config")
-    op.drop_table("chat_provider_config")
+    op.drop_index(op.f("ix_chat_config_id"), table_name="chat_config")
+    op.drop_table("chat_config")

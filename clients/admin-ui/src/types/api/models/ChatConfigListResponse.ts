@@ -5,9 +5,9 @@
 import type { ChatProviderSettingsResponse } from "./ChatProviderSettingsResponse";
 
 /**
- * Response schema for list of chat provider configurations.
+ * Response schema for list of chat configurations.
  */
-export type ChatProviderConfigListResponse = {
+export type ChatConfigListResponse = {
   items: Array<ChatProviderSettingsResponse>;
   total: number;
 };
