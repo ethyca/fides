@@ -1,4 +1,0 @@
-type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Fixed consent and erasure email check to only check relevant connectors
-pr: 7271 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

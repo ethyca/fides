@@ -101,7 +101,8 @@ export const MESSAGING_PROVIDERS_NEW_ROUTE = "/notifications/providers/new";
 
 // Chat providers (Slack, Teams, etc.)
 export const CHAT_PROVIDERS_ROUTE = "/notifications/chat-providers";
-export const CHAT_PROVIDERS_CONFIGURE_ROUTE = "/notifications/chat-providers/configure";
+export const CHAT_PROVIDERS_CONFIGURE_ROUTE =
+  "/notifications/chat-providers/configure";
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
