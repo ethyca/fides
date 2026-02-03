@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy.exc import DBAPIError, OperationalError
 from sqlalchemy.orm import Session
 
-from fides.api.migrations.backfill_scripts.backfill_is_leaf import backfill_is_leaf
+from fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf import backfill_stagedresource_is_leaf
 from fides.api.migrations.backfill_scripts.utils import (
     BackfillResult,
     acquire_backfill_lock,
@@ -133,8 +133,19 @@ class TestBackfillLock:
         mock_cache.delete.assert_called_once_with("fides:backfill:running")
 
 
-class TestBackfillIsLeaf:
-    """Tests for backfill_is_leaf function."""
+class TestBackfillStagedresourceIsLeaf:
+    """Tests for backfill_stagedresource_is_leaf function."""
+
+    @pytest.fixture(autouse=True)
+    def mock_backfill_tracking(self):
+        """Mock backfill tracking functions to avoid dependency on backfill_history table."""
+        with patch(
+            "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
+            return_value=False,
+        ), patch(
+            "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed",
+        ):
+            yield
 
     @pytest.fixture
     def staged_resources_needing_backfill(self, db: Session):
@@ -227,10 +238,10 @@ class TestBackfillIsLeaf:
         """Verify no-op when all rows have is_leaf set."""
         # Mock to simulate no pending rows
         with patch(
-            "fides.api.migrations.backfill_scripts.backfill_is_leaf.get_pending_is_leaf_count",
+            "fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf.get_pending_is_leaf_count",
             return_value=0,
         ):
-            result = backfill_is_leaf(db, batch_size=100, batch_delay_seconds=0)
+            result = backfill_stagedresource_is_leaf(db, batch_size=100, batch_delay_seconds=0)
 
         assert result.name == "stagedresource-is_leaf"
         assert result.total_updated == 0
@@ -245,7 +256,7 @@ class TestBackfillIsLeaf:
         with patch(
             "fides.api.migrations.backfill_scripts.utils.refresh_backfill_lock"
         ):
-            result = backfill_is_leaf(db, batch_size=100, batch_delay_seconds=0)
+            result = backfill_stagedresource_is_leaf(db, batch_size=100, batch_delay_seconds=0)
 
         assert result.name == "stagedresource-is_leaf"
         assert result.success is True
@@ -274,9 +285,9 @@ class TestBackfillIsLeaf:
     def test_backfill_result_has_correct_name(self, db: Session):
         """Verify the backfill result has the correct name."""
         with patch(
-            "fides.api.migrations.backfill_scripts.backfill_is_leaf.get_pending_is_leaf_count",
+            "fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf.get_pending_is_leaf_count",
             return_value=0,
         ):
-            result = backfill_is_leaf(db, batch_size=100, batch_delay_seconds=0)
+            result = backfill_stagedresource_is_leaf(db, batch_size=100, batch_delay_seconds=0)
 
         assert result.name == "stagedresource-is_leaf"

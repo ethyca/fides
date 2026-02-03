@@ -4,6 +4,7 @@ from functools import wraps
 from typing import Callable
 
 from loguru import logger
+from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -63,6 +64,36 @@ def release_backfill_lock() -> None:
     cache = get_cache()
     cache.delete(BACKFILL_LOCK_KEY)
     logger.info(f"Released lock for '{BACKFILL_LOCK_KEY}'.")
+
+
+def is_backfill_completed(db: Session, backfill_name: str) -> bool:
+    """
+    Check if a backfill has already been completed.
+
+    Returns True if the backfill is recorded in backfill_history, False otherwise.
+    """
+    result = db.execute(
+        text("SELECT 1 FROM backfill_history WHERE backfill_name = :name"),
+        {"name": backfill_name},
+    )
+    return result.scalar() is not None
+
+
+def mark_backfill_completed(db: Session, backfill_name: str) -> None:
+    """
+    Record that a backfill has completed successfully.
+
+    Uses ON CONFLICT DO NOTHING as a safety net for duplicate calls.
+    """
+    db.execute(
+        text(
+            "INSERT INTO backfill_history (backfill_name) VALUES (:name) "
+            "ON CONFLICT (backfill_name) DO NOTHING"
+        ),
+        {"name": backfill_name},
+    )
+    db.commit()
+    logger.info(f"Marked backfill '{backfill_name}' as completed in backfill_history")
 
 
 @dataclass
@@ -210,6 +241,12 @@ def batched_backfill(
             batch_delay_seconds: float = BATCH_DELAY_SECONDS,
         ) -> BackfillResult:
             result = BackfillResult(name=name)
+
+            # Check if this backfill has already been completed
+            if is_backfill_completed(db, name):
+                logger.debug(f"{name} backfill: Already completed, skipping")
+                return result
+
             consecutive_failures = 0
             start_time = time.time()
 
@@ -223,6 +260,7 @@ def batched_backfill(
 
             if pending_count == 0:
                 logger.debug(f"{name} backfill: No rows need backfilling")
+                mark_backfill_completed(db, name)
                 return result
 
             logger.info(
@@ -303,6 +341,7 @@ def batched_backfill(
                     f"Updated {result.total_updated} rows in {result.total_batches} batches "
                     f"({total_duration:.1f}s total)"
                 )
+                mark_backfill_completed(db, name)
             else:
                 logger.warning(
                     f"{name} backfill: Completed with errors. "

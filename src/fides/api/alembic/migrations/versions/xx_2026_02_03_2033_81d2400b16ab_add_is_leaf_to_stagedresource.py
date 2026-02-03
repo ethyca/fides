@@ -1,8 +1,8 @@
 """add is_leaf to stagedresource
 
-Revision ID: d05acec55c64
-Revises: 6d5f70dd0ba5
-Create Date: 2026-01-26 14:51:03.086087
+Revision ID: 81d2400b16ab
+Revises: 841e0b148993
+Create Date: 2026-02-03 20:33:18.257565
 
 """
 
@@ -12,8 +12,8 @@ from loguru import logger
 from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
-revision = "d05acec55c64"
-down_revision = "6d5f70dd0ba5"
+revision = "81d2400b16ab"
+down_revision = "841e0b148993"
 branch_labels = None
 depends_on = None
 
@@ -62,3 +62,8 @@ def downgrade():
         )
 
     op.drop_column("stagedresource", "is_leaf")
+
+    # Clear backfill tracking to allow re-execution if migration is re-applied
+    op.execute(
+        "DELETE FROM backfill_history WHERE backfill_name = 'stagedresource-is_leaf'"
+    )

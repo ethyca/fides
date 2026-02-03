@@ -17,7 +17,9 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.db.session import get_db_session
-from fides.api.migrations.backfill_scripts.backfill_is_leaf import backfill_is_leaf
+from fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf import (
+    backfill_stagedresource_is_leaf,
+)
 from fides.api.migrations.backfill_scripts.utils import (
     BACKFILL_LOCK_KEY,
     BATCH_DELAY_SECONDS,
@@ -66,11 +68,15 @@ def run_all_backfills(
     """
     results: list[BackfillResult] = []
 
-    # Backfill is_leaf column (added in migration d05acec55c64)
-    results.append(backfill_is_leaf(db, batch_size, batch_delay_seconds))
+    # Backfill is_leaf column (added in migration 81d2400b16ab)
+    results.append(backfill_stagedresource_is_leaf(db, batch_size, batch_delay_seconds))
 
     # Add future backfills here:
     # results.append(backfill_some_other_column(db, batch_size, batch_delay_seconds))
+    #
+    # IMPORTANT: For each backfill added here, ensure its related migration's downgrade()
+    # clears the backfill tracking to allow re-execution after rollback:
+    #   op.execute("DELETE FROM backfill_history WHERE backfill_name = 'your-backfill-name'")
 
     return results
 
