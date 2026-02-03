@@ -472,6 +472,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           task_types?: string[];
           statuses?: ExecutionLogStatus[];
           return_dismissed?: boolean;
+          monitor_config_key?: string;
         }
     >({
       query: ({
@@ -481,6 +482,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         task_types,
         statuses,
         return_dismissed = false,
+        monitor_config_key,
       }) => {
         const params = new URLSearchParams({
           page: page.toString(),
@@ -498,6 +500,10 @@ const actionCenterApi = baseApi.injectEndpoints({
 
         if (statuses?.length) {
           statuses.forEach((status) => params.append("status", status));
+        }
+
+        if (monitor_config_key) {
+          params.append("monitor_config_key", monitor_config_key);
         }
 
         return {

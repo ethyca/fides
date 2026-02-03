@@ -227,6 +227,24 @@ describe("getConsentContext", () => {
     expect(context.migrationMethod).toBe(ConsentMethod.EXTERNAL_PROVIDER);
   });
 
+  it("returns migrated consent from Transcend", () => {
+    const mockMigratedConsent = {
+      analytics: true,
+      data_sales: false,
+      advertising: true,
+    };
+
+    (readConsentFromAnyProvider as jest.Mock).mockReturnValue({
+      consent: mockMigratedConsent,
+      method: ConsentMethod.EXTERNAL_PROVIDER,
+    });
+
+    const context = getConsentContext(mockOptions, {});
+
+    expect(context.migratedConsent).toEqual(mockMigratedConsent);
+    expect(context.migrationMethod).toBe(ConsentMethod.EXTERNAL_PROVIDER);
+  });
+
   it("returns notice consent string from fidesString", () => {
     const mockNoticeConsentString = "analytics:false,marketing:true";
     (decodeFidesString as jest.Mock).mockReturnValue({
