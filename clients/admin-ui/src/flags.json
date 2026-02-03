@@ -74,7 +74,7 @@
     "label": "RBAC Management",
     "description": "Dynamic role-based access control management for creating and managing custom roles",
     "development": true,
-    "test": true,
+    "test": false,
     "production": false
   }
 }
