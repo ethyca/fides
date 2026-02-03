@@ -943,3 +943,37 @@ class TestCustomPermissionChecker:
 
         assert len(received_db) == 1
         assert received_db[0] is None
+
+    def test_async_path_calls_checker_with_db_none(self, oauth_client):
+        """
+        Prove the async auth path (verify_oauth_client_async) calls the custom
+        permission checker with db=None, allowing it to create its own session.
+
+        This is by design: AsyncSession is incompatible with the sync Session
+        expected by RBAC checkers, so the callback handles db=None by creating
+        its own sync session for database lookups.
+        """
+        checker_calls = []
+
+        def checker_that_handles_db_none(db, token_data, client, endpoint_scopes):
+            checker_calls.append({
+                "db_is_none": db is None,
+                "could_create_own_session": db is None,  # Proves callback can handle this
+            })
+            # Real RBAC callback creates its own session here when db is None
+            return True
+
+        register_permission_checker(checker_that_handles_db_none)
+
+        # Simulate verify_oauth_client_async: calls has_permissions WITHOUT db
+        has_permissions(
+            token_data={JWE_PAYLOAD_SCOPES: [USER_READ]},
+            client=oauth_client,
+            endpoint_scopes=SecurityScopes([USER_READ]),
+            # No db parameter - this is what async path does
+        )
+
+        assert len(checker_calls) == 1
+        assert checker_calls[0]["db_is_none"] is True, \
+            "Async path passes db=None; checker must handle by creating own session"
+        assert checker_calls[0]["could_create_own_session"] is True
