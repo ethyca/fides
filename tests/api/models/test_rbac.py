@@ -1,7 +1,8 @@
 """Tests for the RBAC models."""
 
-import pytest
 from datetime import datetime, timedelta, timezone
+
+import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.fides_user import FidesUser
