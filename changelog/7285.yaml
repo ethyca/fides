@@ -1,0 +1,4 @@
+type: Added
+description: Database migrations and models for dynamic RBAC system (roles, permissions, user assignments, constraints)
+pr: 7285
+labels: ["db-migration"]
