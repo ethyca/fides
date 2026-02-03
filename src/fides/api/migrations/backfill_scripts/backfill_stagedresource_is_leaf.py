@@ -24,7 +24,7 @@ def get_pending_is_leaf_count(db: Session) -> int:
     name="stagedresource-is_leaf",
     pending_count_fn=get_pending_is_leaf_count,
 )
-def backfill_is_leaf(db: Session, batch_size: int) -> int:
+def backfill_stagedresource_is_leaf(db: Session, batch_size: int) -> int:
     """
     Execute one batch of is_leaf backfill.
 
