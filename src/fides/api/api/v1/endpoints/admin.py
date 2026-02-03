@@ -8,9 +8,11 @@ from sqlalchemy.orm import Session
 from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.database import configure_db, migrate_db, reset_db
-from fides.api.migrations.post_upgrade_backfill import (
-    acquire_backfill_lock,
+from fides.api.migrations.backfill_scripts.backfill_is_leaf import (
     get_pending_is_leaf_count,
+)
+from fides.api.migrations.backfill_scripts.utils import acquire_backfill_lock
+from fides.api.migrations.post_upgrade_backfill import (
     is_backfill_running,
     run_backfill_manually,
 )
