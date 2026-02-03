@@ -166,7 +166,7 @@ export const rbacApi = baseApi.injectEndpoints({
     // Get current user's effective permissions from RBAC
     getMyRBACPermissions: build.query<string[], void>({
       query: () => ({ url: `plus/rbac/me/permissions` }),
-      providesTags: ["RBAC User Roles"],
+      providesTags: ["RBAC User Roles", "RBAC Roles"],
     }),
   }),
 });
