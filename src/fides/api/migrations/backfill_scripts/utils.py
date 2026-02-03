@@ -1,14 +1,15 @@
 import time
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Callable
+from typing import Callable, Optional
 
 from loguru import logger
+from redis.lock import Lock
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from fides.api.util.cache import get_cache
+from fides.api.util.lock import get_redis_lock
 
 # Batch configuration - tuned for minimal database lock impact
 BATCH_SIZE = 5000  # Smaller batches = shorter lock duration per batch
@@ -24,46 +25,44 @@ BACKFILL_LOCK_KEY = "fides:backfill:running"
 BACKFILL_LOCK_TTL = 300  # 5 minutes TTL, refreshed every 10 batches
 
 
-def acquire_backfill_lock() -> bool:
+def acquire_backfill_lock() -> Optional[Lock]:
     """
     Try to acquire the backfill lock.
 
-    Returns True if the lock was acquired, False if another backfill is already running.
-    Uses Redis SET with NX (only set if not exists) and EX (expiration).
+    Returns the Lock object if acquired, None if another backfill is already running.
+    Uses native Redis Lock for proper ownership tracking.
     """
-    cache = get_cache()
-    result = cache.set(BACKFILL_LOCK_KEY, "1", ex=BACKFILL_LOCK_TTL, nx=True)
-    acquired = bool(result)
+    lock = get_redis_lock(BACKFILL_LOCK_KEY, timeout=BACKFILL_LOCK_TTL)
 
-    if acquired:
+    if lock.acquire(blocking=False):
         logger.info(
             f"Acquired lock for '{BACKFILL_LOCK_KEY}' (TTL: {BACKFILL_LOCK_TTL}s)."
         )
-    else:
-        logger.info(f"Failed to acquire lock for '{BACKFILL_LOCK_KEY}'.")
+        return lock
 
-    return acquired
+    logger.info(f"Failed to acquire lock for '{BACKFILL_LOCK_KEY}'.")
+    return None
 
 
-def refresh_backfill_lock() -> None:
+def refresh_backfill_lock(lock: Optional[Lock]) -> None:
     """
     Extend the lock TTL.
 
     Call this periodically during long backfills to prevent the lock from expiring
     while the backfill is still running.
     """
-    cache = get_cache()
-    cache.expire(BACKFILL_LOCK_KEY, BACKFILL_LOCK_TTL)
-    logger.debug(
-        f"Refreshed lock for '{BACKFILL_LOCK_KEY}' (TTL: {BACKFILL_LOCK_TTL}s)."
-    )
+    if lock is not None and lock.owned():
+        lock.extend(BACKFILL_LOCK_TTL)
+        logger.debug(
+            f"Refreshed lock for '{BACKFILL_LOCK_KEY}' (TTL: {BACKFILL_LOCK_TTL}s)."
+        )
 
 
-def release_backfill_lock() -> None:
-    """Release the backfill lock."""
-    cache = get_cache()
-    cache.delete(BACKFILL_LOCK_KEY)
-    logger.info(f"Released lock for '{BACKFILL_LOCK_KEY}'.")
+def release_backfill_lock(lock: Optional[Lock]) -> None:
+    """Release the backfill lock if we own it."""
+    if lock is not None and lock.owned():
+        lock.release()
+        logger.info(f"Released lock for '{BACKFILL_LOCK_KEY}'.")
 
 
 def is_backfill_completed(db: Session, backfill_name: str) -> bool:
@@ -239,6 +238,7 @@ def batched_backfill(
             db: Session,
             batch_size: int = BATCH_SIZE,
             batch_delay_seconds: float = BATCH_DELAY_SECONDS,
+            lock: Optional[Lock] = None,
         ) -> BackfillResult:
             result = BackfillResult(name=name)
 
@@ -306,7 +306,7 @@ def batched_backfill(
                             )
 
                             # Refresh the lock to prevent it from expiring during long backfills
-                            refresh_backfill_lock()
+                            refresh_backfill_lock(lock)
 
                     if rows_updated < batch_size:
                         # No more rows to process

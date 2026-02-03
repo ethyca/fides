@@ -165,7 +165,8 @@ def trigger_backfill(
 
     Only one backfill can run at a time. Returns 409 Conflict if a backfill is already running.
     """
-    if not acquire_backfill_lock():
+    lock = acquire_backfill_lock()
+    if not lock:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A backfill is already running. Check server logs for progress.",
@@ -178,6 +179,7 @@ def trigger_backfill(
 
     background_tasks.add_task(
         run_backfill_manually,
+        lock,
         request.batch_size,
         request.batch_delay_seconds,
     )
