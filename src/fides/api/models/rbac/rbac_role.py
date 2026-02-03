@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, Set
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
 from fides.api.db.base_class import Base
 
@@ -75,7 +75,7 @@ class RBACRole(Base):
     )
 
     # Self-referential relationship for hierarchy
-    parent_role: Optional["RBACRole"] = relationship(
+    parent_role: RelationshipProperty[Optional["RBACRole"]] = relationship(
         "RBACRole",
         remote_side="RBACRole.id",
         backref="child_roles",
@@ -83,7 +83,7 @@ class RBACRole(Base):
     )
 
     # Permissions assigned directly to this role
-    permissions: List["RBACPermission"] = relationship(
+    permissions: RelationshipProperty[List["RBACPermission"]] = relationship(
         "RBACPermission",
         secondary="rbac_role_permission",
         back_populates="roles",
@@ -91,7 +91,7 @@ class RBACRole(Base):
     )
 
     # User assignments for this role
-    user_assignments: List["RBACUserRole"] = relationship(
+    user_assignments: RelationshipProperty[List["RBACUserRole"]] = relationship(
         "RBACUserRole",
         back_populates="role",
         cascade="all, delete-orphan",
