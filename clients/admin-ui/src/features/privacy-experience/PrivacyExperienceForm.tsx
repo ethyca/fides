@@ -221,6 +221,11 @@ export const PrivacyExperienceForm = ({
     }, [allPrivacyNotices]);
 
   const getPrivacyNoticeName = (id: string) => {
+    const notice = allPrivacyNotices.find((n) => n.id === id);
+    return notice?.name ?? id;
+  };
+
+  const getTcfPrivacyNoticeName = (id: string) => {
     const notice = allPrivacyNoticesWithTcfPlaceholder.find((n) => n.id === id);
     return notice?.name ?? id;
   };
@@ -230,9 +235,7 @@ export const PrivacyExperienceForm = ({
   ): LimitedPrivacyNoticeResponseSchema[] => {
     const childrenNoticeIds: FlatArray<(string[] | undefined)[], 1>[] =
       allNotices.map((n) => n.children?.map((child) => child.id)).flat();
-    return (
-      allPrivacyNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? []
-    );
+    return allNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? [];
   };
 
   useGetLocationsRegulationsQuery();
@@ -434,9 +437,15 @@ export const PrivacyExperienceForm = ({
             }
             return undefined;
           }}
-          getItemLabel={getPrivacyNoticeName}
+          getItemLabel={getTcfPrivacyNoticeName}
           draggable={false}
           baseTestId="privacy-notice"
+          isItemDisabled={(id: string) => {
+            const notice = allPrivacyNoticesWithTcfPlaceholder.find(
+              (n) => n.id === id,
+            );
+            return notice?.disabled ?? false;
+          }}
         />
       ) : (
         <ScrollableList<string>
@@ -451,6 +460,10 @@ export const PrivacyExperienceForm = ({
           getItemLabel={getPrivacyNoticeName}
           draggable={false}
           baseTestId="privacy-notice"
+          isItemDisabled={(id: string) => {
+            const notice = allPrivacyNotices.find((n) => n.id === id);
+            return notice?.disabled ?? false;
+          }}
         />
       )}
       {values.component === ComponentType.BANNER_AND_MODAL &&
