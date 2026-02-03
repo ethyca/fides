@@ -52,9 +52,7 @@ class PrivacyRequestConvenienceFields(Enum):
 
 
 class ConsentPrivacyRequestConvenienceFields(Enum):
-    """Convenience fields available for consent privacy request conditions.
-
-    """
+    """Convenience fields available for consent privacy request conditions."""
 
     # Policy convenience fields (all available for consent)
     rule_action_types = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_action_types.value}"
@@ -65,6 +63,10 @@ class ConsentPrivacyRequestConvenienceFields(Enum):
     rule_count = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_count.value}"
     rule_names = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_names.value}"
     has_storage_destination = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_storage_destination.value}"
+    # Location hierarchy convenience fields (derived from user_geography)
+    location_country = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_country.value}"
+    location_groups = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_groups.value}"
+    location_regulations = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_regulations.value}"
 
 
 class PrivacyRequestFields(Enum):
@@ -83,14 +85,13 @@ class PrivacyRequestFields(Enum):
 
 
 class ConsentPrivacyRequestFields(Enum):
-    """Fields available for consent privacy request conditions.
-
-    """
+    """Fields available for consent privacy request conditions."""
 
     created_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.created_at"
     identity_verified_at = (
         f"{PrivacyRequestTopLevelFields.privacy_request.value}.identity_verified_at"
     )
+    location = f"{PrivacyRequestTopLevelFields.privacy_request.value}.location"
     origin = f"{PrivacyRequestTopLevelFields.privacy_request.value}.origin"
     requested_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.requested_at"
     source = f"{PrivacyRequestTopLevelFields.privacy_request.value}.source"
@@ -111,9 +112,7 @@ class PolicyFields(Enum):
 
 
 class ConsentPolicyFields(Enum):
-    """Policy fields available for consent privacy request conditions.
-
-    """
+    """Policy fields available for consent privacy request conditions."""
 
     id = "privacy_request.policy.id"
     name = f"{PrivacyRequestTopLevelFields.policy.value}.name"
@@ -210,12 +209,7 @@ ConsentConditionalDependencyFieldPath = Union[
 CONSENT_UNAVAILABLE_FIELDS: set[str] = {
     # Direct fields
     PrivacyRequestFields.due_date.value,
-    PrivacyRequestFields.location.value,
     PolicyFields.execution_timeframe.value,
-    # Location convenience fields
-    PrivacyRequestConvenienceFields.location_country.value,
-    PrivacyRequestConvenienceFields.location_groups.value,
-    PrivacyRequestConvenienceFields.location_regulations.value,
 }
 
 
@@ -230,11 +224,7 @@ def get_consent_unavailable_field_message(field_path: str) -> Optional[str]:
     """
     field_messages = {
         PrivacyRequestFields.due_date.value: "due_date is not available for consent requests (no execution timeframe)",
-        PrivacyRequestFields.location.value: "location is not captured in the consent request workflow",
         PolicyFields.execution_timeframe.value: "execution_timeframe is not applicable to consent requests",
-        PrivacyRequestConvenienceFields.location_country.value: "location_country is not available (location not captured for consent)",
-        PrivacyRequestConvenienceFields.location_groups.value: "location_groups is not available (location not captured for consent)",
-        PrivacyRequestConvenienceFields.location_regulations.value: "location_regulations is not available (location not captured for consent)",
     }
     return field_messages.get(field_path)
 

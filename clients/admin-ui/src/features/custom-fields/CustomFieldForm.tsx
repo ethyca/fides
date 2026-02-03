@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
 import {
-  AutoComplete,
   Button,
   Flex,
   Form,
@@ -13,6 +12,7 @@ import {
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -22,8 +22,12 @@ import {
   FIELD_TYPE_OPTIONS,
   FieldTypes,
   RESOURCE_TYPE_MAP,
+  VALUE_TYPE_RESOURCE_TYPE_MAP,
 } from "~/features/custom-fields/constants";
-import { CustomFieldsFormValues } from "~/features/custom-fields/CustomFieldFormValues";
+import {
+  CUSTOM_TEMPLATE_VALUE,
+  CustomFieldsFormValues,
+} from "~/features/custom-fields/CustomFieldFormValues";
 import useCreateOrUpdateCustomField from "~/features/custom-fields/useCreateOrUpdateCustomField";
 import useCustomFieldValueTypeOptions from "~/features/custom-fields/useCustomFieldValueTypeOptions";
 import { getCustomFieldType } from "~/features/custom-fields/utils";
@@ -74,7 +78,7 @@ const CustomFieldForm = ({
 }) => {
   const [form] = Form.useForm<CustomFieldsFormValues>();
   const valueType = Form.useWatch("value_type", form);
-  const name = Form.useWatch("name", form);
+  const selectedTemplate = Form.useWatch("template", form);
   const router = useRouter();
   const { resource_type: queryResourceType } = router.query;
 
@@ -92,6 +96,29 @@ const CustomFieldForm = ({
     useDeleteCustomFieldDefinitionMutation();
   const { data: locations, isLoading: isLocationsLoading } =
     useGetCustomFieldLocationsQuery();
+
+  const locationOptions = useMemo(() => {
+    if (!valueType) {
+      return (
+        locations?.map((loc: string) => ({
+          label: loc,
+          value: loc,
+        })) ?? []
+      );
+    }
+    return (
+      locations
+        ?.filter(
+          (loc: string) =>
+            loc !== VALUE_TYPE_RESOURCE_TYPE_MAP[valueType] &&
+            loc !== `taxonomy:${valueType}`,
+        )
+        .map((loc: string) => ({
+          label: loc,
+          value: loc,
+        })) ?? []
+    );
+  }, [locations, valueType]);
 
   const { valueTypeOptions } = useCustomFieldValueTypeOptions();
 
@@ -135,7 +162,8 @@ const CustomFieldForm = ({
   };
 
   const onSubmit = async (values: CustomFieldsFormValues) => {
-    const result = await createOrUpdate(values, initialField, allowList);
+    const { template, ...payload } = values;
+    const result = await createOrUpdate(payload, initialField, allowList);
     if (!result) {
       messageApi.error("An unexpected error occurred");
       return;
@@ -156,10 +184,18 @@ const CustomFieldForm = ({
     if (!field) {
       return undefined;
     }
+    const fieldType = getCustomFieldType(field);
+    const template =
+      fieldType === FieldTypes.OPEN_TEXT ||
+      fieldType === FieldTypes.SINGLE_SELECT ||
+      fieldType === FieldTypes.MULTIPLE_SELECT
+        ? CUSTOM_TEMPLATE_VALUE
+        : undefined;
     return {
       ...field,
       value_type: field.field_type,
-      field_type: getCustomFieldType(field),
+      template,
+      field_type: fieldType,
       resource_type: parseResourceType(field.resource_type),
       options: allowList?.allowed_values ?? [],
     };
@@ -178,10 +214,6 @@ const CustomFieldForm = ({
     return <SkeletonCustomFieldForm />;
   }
 
-  const isTaxonomyType = valueTypeOptions.some(
-    (option) => option.value === valueType,
-  );
-
   return (
     <Form
       form={form}
@@ -195,54 +227,58 @@ const CustomFieldForm = ({
         name="name"
         rules={[{ required: true, message: "Please enter a name" }]}
       >
-        <AutoComplete
-          options={valueTypeOptions}
-          onSelect={(_, option) => {
-            form.setFieldsValue({
-              name: option.label as string,
-              value_type: option.value as string,
-            });
-          }}
-          disabled={isTaxonomyType}
-          data-testid="input-name-autocomplete"
-        >
-          <Input
-            data-testid="input-name"
-            suffix={
-              isTaxonomyType ? (
-                <Button
-                  size="small"
-                  type="text"
-                  icon={<Icons.Close />}
-                  onClick={() => {
-                    form.setFieldsValue({
-                      name: undefined,
-                      value_type: undefined,
-                    });
-                  }}
-                />
-              ) : undefined
-            }
-          />
-        </AutoComplete>
+        <Input data-testid="input-name" />
       </Form.Item>
 
-      <Form.Item label="Type" name="value_type" hidden>
+      <Form.Item label="Description" name="description">
+        <Input.TextArea rows={2} data-testid="input-description" />
+      </Form.Item>
+
+      <Form.Item
+        label="Template"
+        name="template"
+        rules={[
+          {
+            required: true,
+            message: "Select a template",
+          },
+        ]}
+      >
         <Select
-          options={valueTypeOptions}
+          options={[
+            { label: "Custom", value: CUSTOM_TEMPLATE_VALUE },
+            {
+              label: "Taxonomy",
+              title: "Taxonomy",
+              options: valueTypeOptions,
+            },
+          ]}
+          onChange={(value) => {
+            if (value === CUSTOM_TEMPLATE_VALUE) {
+              form.setFieldValue("value_type", undefined);
+            } else {
+              form.setFieldValue("value_type", value);
+            }
+          }}
+          data-testid="select-template"
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }
-          data-testid="select-value-type"
         />
       </Form.Item>
 
-      {!!name && !isTaxonomyType && (
-        <>
-          <Form.Item label="Description" name="description">
-            <Input.TextArea rows={2} data-testid="input-description" />
-          </Form.Item>
+      <Form.Item name="value_type" hidden>
+        <Select
+          options={valueTypeOptions}
+          data-testid="select-value-type"
+          getPopupContainer={(trigger) =>
+            trigger.parentElement || document.body
+          }
+        />
+      </Form.Item>
 
+      {selectedTemplate === CUSTOM_TEMPLATE_VALUE && (
+        <>
           <Form.Item
             label="Field type"
             name="field_type"
@@ -250,9 +286,6 @@ const CustomFieldForm = ({
           >
             <Select
               options={FIELD_TYPE_OPTIONS}
-              getPopupContainer={(trigger) =>
-                trigger.parentElement || document.body
-              }
               data-testid="select-field-type"
             />
           </Form.Item>
@@ -373,12 +406,7 @@ const CustomFieldForm = ({
         tooltip="Choose where this field applies, including taxonomies"
       >
         <Select
-          options={
-            locations?.map((loc: string) => ({
-              label: loc,
-              value: loc,
-            })) ?? []
-          }
+          options={locationOptions}
           getPopupContainer={(trigger) =>
             trigger.parentElement || document.body
           }

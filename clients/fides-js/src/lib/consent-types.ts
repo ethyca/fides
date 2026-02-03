@@ -79,7 +79,7 @@ export interface FidesInitOptions {
 
   // ID of the DOM element that should trigger the consent modal (default: "fides-modal-link")
   // If set to empty string "", fides.js will not attempt to bind the modal link to the click handler
-  modalLinkId: string | null;
+  modalLinkId: string;
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;
@@ -148,6 +148,9 @@ export interface FidesInitOptions {
 
   // If defined, maps OT cookie consent to Fides cookie consent
   otFidesMapping?: string | null;
+
+  // If defined, maps Transcend cookie consent to Fides cookie consent
+  transcendFidesMapping?: string | null;
 
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
@@ -265,6 +268,18 @@ export interface FidesGlobal
  *   }
  */
 export interface OtToFidesConsentMapping {
+  [key: string]: string[];
+}
+
+/**
+ * Store the Transcend to Fides consent mappings from transcend_purpose -> array of fides notice keys, e.g.
+ * {
+ *     Analytics: ["analytics_opt_out"],
+ *     SaleOfInfo: ["data_sales"],
+ *     Advertising: ["advertising", "marketing"],
+ *   }
+ */
+export interface TranscendToFidesConsentMapping {
   [key: string]: string[];
 }
 
@@ -879,6 +894,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesClearCookie"
   | "fidesConsentOverride"
   | "otFidesMapping"
+  | "transcendFidesMapping"
   | "fidesDisabledNotices"
   | "fidesDisabledSystems"
   | "fidesConsentNonApplicableFlagMode"

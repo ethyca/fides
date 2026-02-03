@@ -1,79 +1,99 @@
-import { format, parseISO } from "date-fns";
+import { skipToken } from "@reduxjs/toolkit/query";
+import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import {
   Button,
-  ChakraText as Text,
+  DatePicker,
   Flex,
   Form,
+  Input,
   isoCodesToOptions,
+  LocationSelect,
+  Select,
+  Text,
 } from "fidesui";
-import { getIn, useFormik } from "formik";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import * as Yup from "yup";
+import { useEffect, useState } from "react";
 
-import { FormikDateTimeInput } from "~/features/common/form/FormikDateTimeInput";
-import { FormikLocationSelect } from "~/features/common/form/FormikLocationSelect";
-import { FormikSelect } from "~/features/common/form/FormikSelect";
-import { FormikTextInput } from "~/features/common/form/FormikTextInput";
-import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import { formatUser } from "~/features/common/utils";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
+import { useGetSystemByFidesKeyQuery } from "~/features/system";
+import { useGetAllUsersQuery } from "~/features/user-management";
 import {
-  MonitorConfig,
+  EditableMonitorConfig,
   MonitorFrequency,
   WebsiteMonitorParams,
 } from "~/types/api";
 
 import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
 
+dayjs.extend(utc);
+
 interface WebsiteMonitorConfig
-  extends Omit<MonitorConfig, "datasource_params"> {
+  extends Omit<EditableMonitorConfig, "datasource_params"> {
   datasource_params?: WebsiteMonitorParams;
   url: string;
 }
 
+interface WebsiteMonitorConfigFormValues {
+  name: string;
+  url: string;
+  execution_frequency?: MonitorFrequency;
+  datasource_params?: WebsiteMonitorParams;
+  execution_start_date: Dayjs;
+  shared_config_id?: string;
+  stewards?: string[];
+}
 const FORM_COPY = `This monitor allows you to simulate and verify user consent actions, such as 'accept,' 'reject,' or 'opt-out,' on consent experiences. For each detected activity, the monitor will record whether it occurred before or after the configured user actions, ensuring compliance with user consent choices.`;
 
 const REGIONS_TOOLTIP_COPY = `Specify the region(s) to include in the scan. The monitor will scan the same URL across these locations to identify tracking technologies, such as cookies served by ad tech vendors.`;
 
 export const START_TIME_TOOLTIP_COPY = `Set the start time for the scan. For optimal performance and minimal disruption, schedule scans during periods of low traffic.`;
 
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required().label("Name"),
-  execution_frequency: Yup.string().nullable().label("Execution frequency"),
-  execution_start_date: Yup.date().nullable().label("Execution start date"),
-  datasource_params: Yup.object().shape({
-    locations: Yup.array().label("Locations"),
-    exclude_domains: Yup.array().label("Exclude domains"),
-    sitemap_url: Yup.string().nullable().url().label("Sitemap URL"),
-  }),
-});
-
 const ConfigureWebsiteMonitorForm = ({
   monitor,
   url,
+  integrationSystem,
   onClose,
   onSubmit,
 }: {
-  monitor?: MonitorConfig;
+  monitor?: EditableMonitorConfig;
   url: string;
+  integrationSystem?: string | null;
   onClose: () => void;
-  onSubmit: (values: MonitorConfig) => Promise<void>;
+  onSubmit: (values: EditableMonitorConfig) => Promise<void>;
 }) => {
+  const [form] = Form.useForm<WebsiteMonitorConfigFormValues>();
+  const [submittable, setSubmittable] = useState(false);
+  const formValues = Form.useWatch([], form);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
     ? router.query.id[0]
     : (router.query.id as string);
-  const initialDate = monitor?.execution_start_date
-    ? parseISO(monitor.execution_start_date)
-    : Date.now();
 
   const { data: locationRegulationResponse, isLoading: locationsLoading } =
     useGetOnlyCountryLocationsQuery();
+
+  const { data: systemData, isLoading: isLoadingSystem } =
+    useGetSystemByFidesKeyQuery(integrationSystem || skipToken);
+
+  const { data: eligibleUsersData } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    include_external: false,
+    exclude_approvers: true,
+  });
+
+  const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
+    label: formatUser(user),
+    value: user.id,
+  }));
 
   const allSelectedRegions = [
     ...getSelectedRegionIds(locationRegulationResponse?.locations ?? []),
@@ -85,35 +105,35 @@ const ConfigureWebsiteMonitorForm = ({
     label: PRIVACY_NOTICE_REGION_RECORD[region],
   }));
 
-  const initialValues: WebsiteMonitorConfig = {
+  const initialValues: WebsiteMonitorConfigFormValues = {
     name: monitor?.name || "",
     shared_config_id: monitor?.shared_config_id ?? undefined,
     execution_frequency:
       monitor?.execution_frequency || MonitorFrequency.NOT_SCHEDULED,
-    execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
+    execution_start_date: dayjs(monitor?.execution_start_date ?? undefined),
     url,
-    connection_config_key: integrationId,
     datasource_params: (monitor?.datasource_params as WebsiteMonitorParams) ?? {
       locations: [],
       exclude_domains: [],
     },
+    stewards:
+      monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
   };
 
-  const handleSubmit = async (values: WebsiteMonitorConfig) => {
+  const handleSubmit = async (values: WebsiteMonitorConfigFormValues) => {
     setIsSubmitting(true);
     const executionInfo =
       values.execution_frequency !== MonitorFrequency.NOT_SCHEDULED
         ? {
             execution_frequency: values.execution_frequency,
-            execution_start_date: new Date(
-              values.execution_start_date!,
-            ).toISOString(),
+            execution_start_date: values.execution_start_date
+              .utc()
+              .format("YYYY-MM-DD[T]HH:mm:ss[Z]"),
           }
         : {
             execution_frequency: MonitorFrequency.NOT_SCHEDULED,
             execution_start_date: undefined,
           };
-
     const payload: WebsiteMonitorConfig = {
       ...monitor,
       ...values,
@@ -126,147 +146,123 @@ const ConfigureWebsiteMonitorForm = ({
     onSubmit(payload);
   };
 
-  const {
-    values,
-    resetForm,
-    handleSubmit: formikSubmit,
-    errors,
-    touched,
-    ...formik
-  } = useFormik({
-    initialValues,
-    onSubmit: handleSubmit,
-    validationSchema,
-  });
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, formValues]);
 
-  // Website monitors should only support
-  // monthly, quarterly, yearly, and not scheduled frequencies
-  const frequencyOptions = enumToOptions(MonitorFrequency).filter((option) =>
-    [
-      MonitorFrequency.MONTHLY,
-      MonitorFrequency.QUARTERLY,
-      MonitorFrequency.YEARLY,
-      MonitorFrequency.NOT_SCHEDULED,
-    ].includes(option.value as MonitorFrequency),
-  );
+  // TODO: build better pattern for async form initialization
+  useEffect(() => {
+    form.resetFields();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingSystem]);
 
   return (
     <Flex vertical className="pt-4">
       <FormInfoBox>
-        <Text fontSize="sm">{FORM_COPY}</Text>
+        <Text>{FORM_COPY}</Text>
       </FormInfoBox>
-      <Form onFinish={formikSubmit} layout="vertical">
-        <FormikTextInput
-          name="name"
-          id="name"
+      <Form
+        form={form}
+        initialValues={initialValues}
+        onFinish={handleSubmit}
+        layout="vertical"
+      >
+        <Form.Item
           label="Name"
-          required
-          error={errors.name}
-          touched={touched.name}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={values.name}
-        />
-        <FormikTextInput
-          name="datasource_params.sitemap_url"
-          id="sitemap_url"
+          name="name"
+          rules={[{ required: true, message: "Please enter a name" }]}
+        >
+          <Input data-testid="input-name" />
+        </Form.Item>
+        <Form.Item label="Stewards" name="stewards">
+          <Select
+            mode="multiple"
+            aria-label="Select stewards"
+            data-testid="controlled-select-stewards"
+            options={dataStewardOptions}
+          />
+        </Form.Item>
+        <Form.Item
           label="Sitemap URL"
-          error={getIn(errors, "datasource_params.sitemap_url")}
-          touched={getIn(touched, "datasource_params.sitemap_url")}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={values.datasource_params?.sitemap_url || ""}
-        />
-        <FormikSelect
-          name="datasource_params.exclude_domains"
-          placeholder="Enter domains to exclude"
-          id="exclude_domains"
+          name={["datasource_params", "sitemap_url"]}
+          rules={[{ type: "url" }]}
+        >
+          <Input data-testid="input-datasource_params.sitemap_url" />
+        </Form.Item>
+        <Form.Item
           label="Exclude domains"
-          mode="tags"
-          options={[]}
-          suffixIcon={null}
-          open={false}
-          error={getIn(errors, "datasource_params.exclude_domains")}
-          touched={getIn(touched, "datasource_params.exclude_domains")}
-          onChange={(value) =>
-            formik.setFieldValue("datasource_params.exclude_domains", value)
-          }
-          onBlur={formik.handleBlur}
-          value={values.datasource_params?.exclude_domains || []}
-        />
-        <FormikTextInput
-          name="url"
-          id="url"
-          label="URL"
-          required
-          disabled
-          error={errors.url}
-          touched={touched.url}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={values.url || ""}
-        />
-        <FormikLocationSelect
-          id="locations"
-          name="datasource_params.locations"
+          name={["datasource_params", "exclude_domains"]}
+        >
+          <Select
+            placeholder="Enter domains to exclude"
+            aria-label="Domains to exclude"
+            data-testid="controlled-select-exclude_domains"
+            mode="tags"
+            open={false}
+            suffixIcon={null}
+            options={[]}
+          />
+        </Form.Item>
+        <Form.Item label="URL" name="url">
+          <Input data-testid="input-url" disabled />
+        </Form.Item>
+        <Form.Item
+          name={["datasource_params", "locations"]}
           label="Locations"
-          loading={locationsLoading}
-          options={isoCodesToOptions(
-            regionOptions.map((option) => option.value),
-          )}
+          id="locations"
           tooltip={REGIONS_TOOLTIP_COPY}
-          mode="multiple"
-          error={getIn(errors, "datasource_params.locations")}
-          touched={getIn(touched, "datasource_params.locations")}
-          onChange={(value) =>
-            formik.setFieldValue("datasource_params.locations", value)
-          }
-          onBlur={formik.handleBlur}
-          value={values.datasource_params?.locations}
-        />
+        >
+          <LocationSelect
+            data-testid="controlled-select-datasource_params.locations"
+            loading={locationsLoading}
+            mode="multiple"
+            options={isoCodesToOptions(
+              regionOptions.map((option) => option.value),
+            )}
+          />
+        </Form.Item>
         <FormikSharedConfigSelect
           name="shared_config_id"
-          id="shared_config_id"
-          error={errors.shared_config_id}
-          touched={touched.shared_config_id}
-          onChange={(value) => formik.setFieldValue("shared_config_id", value)}
-          onBlur={formik.handleBlur}
-          value={values.shared_config_id}
+          onChange={(value) => form.setFieldValue("shared_config_id", value)}
+          value={form.getFieldValue("shared_config_id")}
         />
-        <FormikSelect
-          name="execution_frequency"
-          id="execution_frequency"
-          options={frequencyOptions}
+        <Form.Item
           label="Automatic execution frequency"
-          error={errors.execution_frequency}
-          touched={touched.execution_frequency}
-          onChange={(value) =>
-            formik.setFieldValue("execution_frequency", value)
-          }
-          onBlur={formik.handleBlur}
-          value={values.execution_frequency}
-        />
-        <FormikDateTimeInput
-          name="execution_start_date"
+          name="execution_frequency"
+          tooltip="Interval to run the monitor automatically after the start date"
+        >
+          <Select
+            aria-label="Select automatic execution frequency"
+            data-testid="controlled-select-execution_frequency"
+            options={[
+              MonitorFrequency.MONTHLY,
+              MonitorFrequency.QUARTERLY,
+              MonitorFrequency.YEARLY,
+              MonitorFrequency.NOT_SCHEDULED,
+            ].map((frequency) => ({ label: frequency, value: frequency }))}
+          />
+        </Form.Item>
+        <Form.Item
           label="Automatic execution start time"
-          disabled={
-            values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
-          }
-          id="execution_start_date"
+          name="execution_start_date"
           tooltip={START_TIME_TOOLTIP_COPY}
-          error={errors.execution_start_date}
-          touched={touched.execution_start_date}
-          onChange={(value) =>
-            value &&
-            formik.setFieldValue("execution_start_date", value.toISOString())
-          }
-          onBlur={formik.handleBlur}
-          value={dayjs(values.execution_start_date)}
-        />
+        >
+          <DatePicker
+            data-testid="input-execution_start_date"
+            disabled={
+              form.getFieldValue("execution_frequency") ===
+              MonitorFrequency.NOT_SCHEDULED
+            }
+            showTime
+          />
+        </Form.Item>
         <Flex gap="small" className="mt-2" justify="stretch">
           <Button
             onClick={() => {
-              resetForm();
+              form.resetFields();
               onClose();
             }}
             block
@@ -279,6 +275,7 @@ const ConfigureWebsiteMonitorForm = ({
             data-testid="save-btn"
             block
             loading={isSubmitting}
+            disabled={!submittable}
           >
             Save
           </Button>

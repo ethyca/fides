@@ -29,6 +29,10 @@ export const ACTION_CENTER_DATASTORE_MONITOR_ROUTE =
   "/data-discovery/action-center/datastore/[monitorId]";
 export const ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE =
   "/data-discovery/action-center/datastore/[monitorId]/activity";
+export const ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE =
+  "/data-discovery/action-center/infrastructure/[monitorId]";
+export const ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE =
+  "/data-discovery/action-center/infrastructure/[monitorId]/activity";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
 
 export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";

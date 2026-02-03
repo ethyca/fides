@@ -1318,6 +1318,19 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: policy_condition
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: policy_id
+      data_categories: [system.operations]
+    - name: condition_tree
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: policypostwebhook
     data_categories: []
     fields:

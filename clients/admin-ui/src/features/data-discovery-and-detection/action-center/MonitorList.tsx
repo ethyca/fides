@@ -5,45 +5,65 @@ import {
   Pagination,
   useChakraToast as useToast,
 } from "fidesui";
-import { NextPage } from "next";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { useFeatures } from "~/features/common/features";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
+import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 
-const MonitorList: NextPage = () => {
+import MonitorListSearchForm from "./forms/MonitorListSearchForm";
+import { SearchFormQueryState } from "./MonitorList.const";
+
+const MonitorList = () => {
   const toast = useToast();
   const {
-    flags: { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled },
+    flags: {
+      webMonitor: webMonitorEnabled,
+      heliosV2: heliosV2Enabled,
+      oktaMonitor: oktaMonitorEnabled,
+    },
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // Build monitor_type filter based on enabled feature flags
-  const monitorTypes = [
+  const availableMonitorTypes = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
     ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+    ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
   ] as const;
 
-  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
-    page: pageIndex,
-    size: pageSize,
-    search: searchQuery,
-    monitor_type: monitorTypes.length > 0 ? [...monitorTypes] : undefined,
+  const { requestData, ...formProps } = useSearchForm({
+    queryState: SearchFormQueryState([...availableMonitorTypes]),
+    translate: ({
+      steward_key,
+      search,
+      monitor_type,
+    }): Omit<
+      Parameters<typeof useGetAggregateMonitorResultsQuery>[0],
+      "page" | "size"
+    > => {
+      return {
+        search: search || undefined,
+        monitor_type: monitor_type ? [monitor_type] : undefined,
+        steward_user_id:
+          typeof steward_key === "undefined" || !steward_key
+            ? []
+            : [steward_key],
+      };
+    },
   });
 
-  useEffect(() => {
-    resetPagination();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+  const { data, isError, isLoading } = useGetAggregateMonitorResultsQuery({
+    ...(typeof requestData === "object" ? requestData : {}),
+    page: pageIndex,
+    size: pageSize,
+  });
 
   useEffect(() => {
     if (isError) {
@@ -60,15 +80,20 @@ const MonitorList: NextPage = () => {
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
 
-  if (!webMonitorEnabled && !heliosV2Enabled) {
+  if (!webMonitorEnabled && !heliosV2Enabled && !oktaMonitorEnabled) {
     return <DisabledMonitorsPage />;
   }
 
   return (
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
-      <Flex className="justify-between ">
-        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
-      </Flex>
+      <MonitorListSearchForm
+        {...formProps}
+        onFieldsChange={(...args) => {
+          resetPagination();
+          formProps.onFieldsChange(...args);
+        }}
+        availableMonitorTypes={availableMonitorTypes}
+      />
       <List
         loading={isLoading}
         dataSource={results}

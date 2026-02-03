@@ -1,42 +1,10 @@
-from unittest import mock
-
 import pytest
-from fastapi import Request
 
 from fides.api.util.rate_limit import (
-    InvalidClientIPError,
     _extract_hostname_from_ip,
-    get_client_ip_from_header,
+    extract_and_validate_ip,
     validate_client_ip,
 )
-from fides.config import CONFIG
-
-
-@pytest.fixture(scope="function")
-def set_rate_limit_client_ip_header_none(db):
-    """Set the rate limit client IP header to None for the duration of a test."""
-    original_value = CONFIG.security.rate_limit_client_ip_header
-    CONFIG.security.rate_limit_client_ip_header = None
-    yield
-    CONFIG.security.rate_limit_client_ip_header = original_value
-
-
-@pytest.fixture(scope="function")
-def set_rate_limit_client_ip_header_x_real_ip(db):
-    """Set the rate limit client IP header to X-Real-IP for the duration of a test."""
-    original_value = CONFIG.security.rate_limit_client_ip_header
-    CONFIG.security.rate_limit_client_ip_header = "X-Real-IP"
-    yield
-    CONFIG.security.rate_limit_client_ip_header = original_value
-
-
-@pytest.fixture(scope="function")
-def set_rate_limit_client_ip_header_cloudfront_viewer_address(db):
-    """Set the rate limit client IP header to CloudFront-Viewer-Address for the duration of a test."""
-    original_value = CONFIG.security.rate_limit_client_ip_header
-    CONFIG.security.rate_limit_client_ip_header = "CloudFront-Viewer-Address"
-    yield
-    CONFIG.security.rate_limit_client_ip_header = original_value
 
 
 class TestValidateClientIp:
@@ -143,139 +111,54 @@ class TestExtractIpFromValue:
             _extract_hostname_from_ip(header_value)
 
 
-class TestGetClientIpFromHeader:
-    @pytest.mark.usefixtures("set_rate_limit_client_ip_header_x_real_ip")
-    def test_get_client_ip_from_header_configured_and_present(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {"X-Real-IP": "150.51.100.10"}
-        mock_request.client.host = "127.0.0.1"
-        try:
-            result = get_client_ip_from_header(mock_request)
-        except ValueError as err:  # explicit guard: should never raise ValueError
-            pytest.fail(f"Unexpected ValueError: {err}")
-        assert result == "150.51.100.10"
+class TestExtractAndValidateIp:
+    """Tests for the shared IP extraction and validation helper."""
 
-    @pytest.mark.usefixtures("set_rate_limit_client_ip_header_x_real_ip")
-    def test_get_client_ip_from_header_with_port(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {"X-Real-IP": "150.51.100.10:46532"}
-        mock_request.client.host = "127.0.0.1"
-        try:
-            result = get_client_ip_from_header(mock_request)
-        except ValueError as err:
-            pytest.fail(f"Unexpected ValueError: {err}")
-        assert result == "150.51.100.10"
-
-    @pytest.mark.usefixtures("set_rate_limit_client_ip_header_x_real_ip")
-    def test_get_client_ip_from_header_ipv6_with_port(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {"X-Real-IP": "[2001:4860:4860::8888]:443"}
-        mock_request.client.host = "127.0.0.1"
-        try:
-            result = get_client_ip_from_header(mock_request)
-        except ValueError as err:
-            pytest.fail(f"Unexpected ValueError: {err}")
-        assert result == "2001:4860:4860::8888"
-
-    @pytest.mark.usefixtures(
-        "set_rate_limit_client_ip_header_cloudfront_viewer_address"
+    @pytest.mark.parametrize(
+        "ip_value, expected_ip",
+        [
+            # Valid public IPv4
+            ("150.51.100.10", "150.51.100.10"),
+            ("8.8.8.8", "8.8.8.8"),
+            # Valid public IPv4 with port
+            ("150.51.100.10:46532", "150.51.100.10"),
+            # Valid public IPv6
+            ("2001:4860:4860::8888", "2001:4860:4860::8888"),
+            ("2606:4700:4700::1111", "2606:4700:4700::1111"),
+            # Valid public IPv6 with port
+            ("[2001:4860:4860::8888]:443", "2001:4860:4860::8888"),
+        ],
     )
-    def test_get_client_ip_from_header_missing(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {}
-        mock_request.client.host = "192.0.2.1"
-        try:
-            result = get_client_ip_from_header(mock_request)
-        except ValueError as err:
-            pytest.fail(f"Unexpected ValueError: {err}")
-        assert result == "192.0.2.1"
+    def test_valid_ips(self, ip_value, expected_ip):
+        is_valid, extracted_ip = extract_and_validate_ip(ip_value)
+        assert is_valid is True
+        assert extracted_ip == expected_ip
 
-    @pytest.mark.usefixtures(
-        "set_rate_limit_client_ip_header_cloudfront_viewer_address"
+    @pytest.mark.parametrize(
+        "ip_value",
+        [
+            # Private IPs
+            "192.168.1.1",
+            "10.0.0.1",
+            "172.16.0.1",
+            # Loopback
+            "127.0.0.1",
+            "::1",
+            # Reserved
+            "198.51.100.10",
+            "2001:db8::1",
+            # Link-local
+            "169.254.1.1",
+            "fe80::1",
+            # Malformed
+            "not-an-ip",
+            # Multiple IPs
+            "203.0.113.195, 70.41.3.18",
+            # Empty
+            "",
+        ],
     )
-    def test_get_client_ip_from_header_mismatch(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {"X-Real-IP": "150.51.100.10:46532"}
-        mock_request.client.host = "192.0.2.1"
-        try:
-            result = get_client_ip_from_header(mock_request)
-        except ValueError as err:
-            pytest.fail(f"Unexpected ValueError: {err}")
-        assert result == "192.0.2.1"
-
-    @pytest.mark.usefixtures("set_rate_limit_client_ip_header_none")
-    def test_get_client_ip_header_not_configured(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {"CloudFront-Viewer-Address": "150.51.100.10"}
-        mock_request.client.host = "192.0.2.1"
-        try:
-            result = get_client_ip_from_header(mock_request)
-        except ValueError as err:
-            pytest.fail(f"Unexpected ValueError: {err}")
-        assert result == "192.0.2.1"
-
-    @pytest.mark.usefixtures(
-        "set_rate_limit_client_ip_header_cloudfront_viewer_address"
-    )
-    def test_get_client_ip_from_header_invalid_ip_raises_exception(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {
-            "CloudFront-Viewer-Address": "127.0.0.1"
-        }  # Loopback - invalid
-        mock_request.client.host = "192.0.2.1"
-
-        with pytest.raises(InvalidClientIPError) as exc_info:
-            get_client_ip_from_header(mock_request)
-
-        assert exc_info.value.detail == "Invalid IP address format"
-        assert exc_info.value.header_value == "127.0.0.1"
-        assert exc_info.value.header_name == "CloudFront-Viewer-Address"
-
-    @pytest.mark.usefixtures(
-        "set_rate_limit_client_ip_header_cloudfront_viewer_address"
-    )
-    def test_get_client_ip_from_header_multiple_ips_raises_exception(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {
-            "CloudFront-Viewer-Address": "203.0.113.195, 70.41.3.18"
-        }
-        mock_request.client.host = "192.0.2.1"
-
-        with pytest.raises(InvalidClientIPError) as exc_info:
-            get_client_ip_from_header(mock_request)
-
-        assert exc_info.value.detail == "Invalid IP address format"
-        assert exc_info.value.header_value == "203.0.113.195, 70.41.3.18"
-        assert exc_info.value.header_name == "CloudFront-Viewer-Address"
-
-    @pytest.mark.usefixtures(
-        "set_rate_limit_client_ip_header_cloudfront_viewer_address"
-    )
-    def test_get_client_ip_from_header_malformed_ip_raises_exception(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {"CloudFront-Viewer-Address": "not-an-ip"}
-        mock_request.client.host = "192.0.2.1"
-
-        with pytest.raises(InvalidClientIPError) as exc_info:
-            get_client_ip_from_header(mock_request)
-
-        assert exc_info.value.detail == "Invalid IP address format"
-        assert exc_info.value.header_value == "not-an-ip"
-        assert exc_info.value.header_name == "CloudFront-Viewer-Address"
-
-    @pytest.mark.usefixtures(
-        "set_rate_limit_client_ip_header_cloudfront_viewer_address"
-    )
-    def test_get_client_ip_from_header_private_ip_raises_exception(self, config):
-        mock_request = mock.Mock(spec=Request)
-        mock_request.headers = {
-            "CloudFront-Viewer-Address": "192.168.1.1"
-        }  # Private IP
-        mock_request.client.host = "192.0.2.1"
-
-        with pytest.raises(InvalidClientIPError) as exc_info:
-            get_client_ip_from_header(mock_request)
-
-        assert exc_info.value.detail == "Invalid IP address format"
-        assert exc_info.value.header_value == "192.168.1.1"
-        assert exc_info.value.header_name == "CloudFront-Viewer-Address"
+    def test_invalid_ips(self, ip_value):
+        is_valid, extracted_ip = extract_and_validate_ip(ip_value)
+        assert is_valid is False
+        assert extracted_ip is None

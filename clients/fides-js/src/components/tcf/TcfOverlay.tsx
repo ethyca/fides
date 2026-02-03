@@ -23,7 +23,7 @@ import {
   experienceIsValid,
   isPrivacyExperience,
 } from "../../lib/consent-utils";
-import { consentCookieObjHasSomeConsentSet } from "../../lib/cookie";
+import { tcfCookieIsProperlySet } from "../../lib/cookie";
 import {
   dispatchFidesEvent,
   FidesEventDetailsPreference,
@@ -274,6 +274,8 @@ export const TcfOverlay = () => {
       loadMessagesFromExperience(i18n, experienceFull, translationOverrides);
 
       // Set the locale to the best locale
+      window.Fides.locale = bestLocale;
+      setFidesGlobal(window.Fides as InitializedFidesGlobal);
       setCurrentLocale(bestLocale);
 
       const shouldUseEnglish = bestLocale === DEFAULT_LOCALE;
@@ -393,11 +395,18 @@ export const TcfOverlay = () => {
 
     // Use full experience if available and the current locale is English
     if (experienceFull && currentLocale === DEFAULT_LOCALE) {
-      const fullPurposeNames =
+      const fullPurposeConsents =
         experienceFull.tcf_purpose_consents?.map((p) => p.name) || [];
+      const fullPurposeLegitimateInterests =
+        experienceFull.tcf_purpose_legitimate_interests?.map((p) => p.name) ||
+        [];
       const fullSpecialFeatureNames =
         experienceFull.tcf_special_features?.map((sf) => sf.name) || [];
-      return [...fullPurposeNames, ...fullSpecialFeatureNames];
+      return [
+        ...fullPurposeConsents,
+        ...fullPurposeLegitimateInterests,
+        ...fullSpecialFeatureNames,
+      ];
     }
 
     // Otherwise, use the minimal experience
@@ -648,10 +657,14 @@ export const TcfOverlay = () => {
   );
 
   const handleDismiss = useCallback(() => {
-    if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
+    // For TCF experiences, check if a proper TCF cookie exists (with fides_string,
+    // tcf_consent, or tcf_version_hash), not just if cookie.consent is set.
+    // This is important because GPC may automatically set cookie.consent for custom
+    // notices without setting TCF-specific fields.
+    if (!tcfCookieIsProperlySet(parsedCookie)) {
       handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
     }
-  }, [handleUpdateAllPreferences, draftIds, parsedCookie?.consent]);
+  }, [handleUpdateAllPreferences, draftIds, parsedCookie]);
 
   const handleToggleChange = useCallback(
     (updatedIds: EnabledIds, preference: FidesEventDetailsPreference) => {

@@ -489,7 +489,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         for postprocessor in postprocessors or []:
             strategy: PostProcessorStrategy = PostProcessorStrategy.get_strategy(
-                postprocessor.strategy,
+                postprocessor.strategy,  # type: ignore[attr-defined]
                 postprocessor.configuration,  # type: ignore
             )
             logger.info(
