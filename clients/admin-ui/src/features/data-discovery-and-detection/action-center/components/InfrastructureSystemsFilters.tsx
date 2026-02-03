@@ -7,6 +7,7 @@ import {
   InfrastructureStatusFilterOptionValue,
   parseFiltersToFilterValue,
 } from "~/features/data-discovery-and-detection/action-center/fields/utils";
+import { DiffStatus } from "~/types/api";
 
 import { useGetIdentityProviderMonitorFiltersQuery } from "../../discovery-detection.slice";
 import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
@@ -43,7 +44,6 @@ export const InfrastructureSystemsFilters = ({
   setVendorFilters,
   dataUsesFilters,
   setDataUsesFilters,
-  reset,
 }: InfrastructureSystemsFiltersProps) => {
   const { getDataUseDisplayName } = useTaxonomies();
 
@@ -53,7 +53,6 @@ export const InfrastructureSystemsFilters = ({
     { skip: !monitorId },
   );
 
-  // Map the actual filter values back to the dropdown option value
   const statusFilterValue = useMemo(
     () => parseFiltersToFilterValue(statusFilters, vendorFilters),
     [statusFilters, vendorFilters],
@@ -82,10 +81,11 @@ export const InfrastructureSystemsFilters = ({
     setDataUsesFilters(value.length > 0 ? value : []);
   };
 
-  const hasActiveFilters =
-    (statusFilters && statusFilters.length > 0) ||
-    (vendorFilters && vendorFilters.length > 0) ||
-    (dataUsesFilters && dataUsesFilters.length > 0);
+  const handleResetFilters = () => {
+    setStatusFilters([DiffStatus.ADDITION]);
+    setVendorFilters([]);
+    setDataUsesFilters([]);
+  };
 
   const renderTagPlaceholder = (omittedValues: DisplayValueType[]) => (
     <Tooltip
@@ -103,14 +103,14 @@ export const InfrastructureSystemsFilters = ({
 
   return (
     <Flex gap="small" align="center">
-      {hasActiveFilters && (
+      {statusFilterValue !== InfrastructureStatusFilterOptionValue.NEW && (
         <Button
           type="text"
-          onClick={reset}
-          data-testid="clear-filters-button"
-          aria-label="Clear all filters"
+          onClick={handleResetFilters}
+          data-testid="reset-filters-button"
+          aria-label="Reset filters to default"
         >
-          Clear filters
+          Reset filters
         </Button>
       )}
       <Select
@@ -118,7 +118,6 @@ export const InfrastructureSystemsFilters = ({
         options={STATUS_FILTER_OPTIONS}
         value={statusFilterValue}
         onChange={handleStatusChange}
-        allowClear
         className="w-40"
         data-testid="status-filter-select"
         aria-label="Filter by status"
