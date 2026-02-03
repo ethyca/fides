@@ -10,8 +10,18 @@
       
         <link rel="canonical" href="https://ethyca.github.io/fides/cli/">
       
+      
+        <link rel="prev" href="../api/">
+      
+      
+        <link rel="next" href="../config/">
+      
+      
+        
+      
+      
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.2.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
@@ -19,13 +29,17 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.9d5733d3.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.e6a45f82.min.css">
-        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
+      
+
+
     
+    
+      
     
     
       
@@ -47,7 +61,7 @@
     
       <link rel="stylesheet" href="../css/taxonomy.css">
     
-    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -63,11 +77,8 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
   
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -84,9 +95,9 @@
       
     </div>
     
-      <div data-md-component="outdated" hidden>
-        <aside class="md-banner md-banner--warning">
-          
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
 You're not viewing the latest version.
@@ -95,9 +106,9 @@ You're not viewing the latest version.
 </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),outdated=__md_get("__outdated",sessionStorage);!0===outdated&&el&&(el.hidden=!1)</script>
-          
-        </aside>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
       </div>
     
     
@@ -111,7 +122,8 @@ You're not viewing the latest version.
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -130,69 +142,83 @@ You're not viewing the latest version.
       </div>
     </div>
     
-      <form class="md-header__option" data-md-component="palette">
-        
-          
-          
-          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
-          
-            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-            </label>
-          
-        
-          
-          
-          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
-          
-            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
-            </label>
-          
-        
-      </form>
+      
+        <form class="md-header__option" data-md-component="palette">
+  
     
     
     
-      <label class="md-header__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
       </label>
-      <div class="md-search" data-md-component="search" role="dialog">
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
   </div>
 </div>
+      
     
     
       <div class="md-header__source">
         <a href="https://github.com/ethyca/fides" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -211,40 +237,48 @@ You're not viewing the latest version.
           
             
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-tabs__inner md-grid">
+  <div class="md-grid">
     <ul class="md-tabs__list">
       
         
   
   
+  
     
   
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href=".." class="md-tabs__link">
+          
+  
+  
+  Fides
 
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link md-tabs__link--active">
-        Fides
-      </a>
-    </li>
+        </a>
+      </li>
+    
   
 
       
         
   
   
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ethyca/" class="md-tabs__link">
+          
+  
+  
+  About Ethyca
 
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../ethyca/" class="md-tabs__link">
-        About Ethyca
-      </a>
-    </li>
+        </a>
+      </li>
+    
   
 
       
@@ -264,6 +298,7 @@ You're not viewing the latest version.
                   <div class="md-sidebar__inner">
                     
 
+
   
 
 
@@ -281,7 +316,7 @@ You're not viewing the latest version.
       <a href="https://github.com/ethyca/fides" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -293,84 +328,164 @@ You're not viewing the latest version.
     
       
       
-      
-
   
   
     
   
   
+  
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    
+    
+      
+        
+        
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1">
-          Fides
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Fides" data-md-level="1">
-        <label class="md-nav__title" for="__nav_1">
-          <span class="md-nav__icon md-icon"></span>
-          Fides
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        
           
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href=".." class="md-nav__link">
-        What is Fides?
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What is Fides?
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../api/" class="md-nav__link">
-        API
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
   
   
     
   
   
+  
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
         
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          CLI
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        CLI
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
       </a>
       
         
@@ -390,7 +505,11 @@ You're not viewing the latest version.
       
         <li class="md-nav__item">
   <a href="#fides" class="md-nav__link">
-    fides
+    <span class="md-ellipsis">
+      
+        fides
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="fides">
@@ -398,7 +517,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-annotate" class="md-nav__link">
-    annotate
+    <span class="md-ellipsis">
+      
+        annotate
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="annotate">
@@ -406,7 +529,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-annotate-dataset" class="md-nav__link">
-    dataset
+    <span class="md-ellipsis">
+      
+        dataset
+      
+    </span>
   </a>
   
 </li>
@@ -418,7 +545,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-db" class="md-nav__link">
-    db
+    <span class="md-ellipsis">
+      
+        db
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="db">
@@ -426,21 +557,33 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-db-init" class="md-nav__link">
-    init
+    <span class="md-ellipsis">
+      
+        init
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-db-reset" class="md-nav__link">
-    reset
+    <span class="md-ellipsis">
+      
+        reset
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-db-upgrade" class="md-nav__link">
-    upgrade
+    <span class="md-ellipsis">
+      
+        upgrade
+      
+    </span>
   </a>
   
 </li>
@@ -452,14 +595,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-delete" class="md-nav__link">
-    delete
+    <span class="md-ellipsis">
+      
+        delete
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-deploy" class="md-nav__link">
-    deploy
+    <span class="md-ellipsis">
+      
+        deploy
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="deploy">
@@ -467,14 +618,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-deploy-down" class="md-nav__link">
-    down
+    <span class="md-ellipsis">
+      
+        down
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-deploy-up" class="md-nav__link">
-    up
+    <span class="md-ellipsis">
+      
+        up
+      
+    </span>
   </a>
   
 </li>
@@ -486,14 +645,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-evaluate" class="md-nav__link">
-    evaluate
+    <span class="md-ellipsis">
+      
+        evaluate
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-generate" class="md-nav__link">
-    generate
+    <span class="md-ellipsis">
+      
+        generate
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="generate">
@@ -501,7 +668,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset" class="md-nav__link">
-    dataset
+    <span class="md-ellipsis">
+      
+        dataset
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="dataset">
@@ -509,7 +680,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-aws" class="md-nav__link">
-    aws
+    <span class="md-ellipsis">
+      
+        aws
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="aws">
@@ -517,7 +692,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-aws-dynamodb" class="md-nav__link">
-    dynamodb
+    <span class="md-ellipsis">
+      
+        dynamodb
+      
+    </span>
   </a>
   
 </li>
@@ -529,14 +708,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-db" class="md-nav__link">
-    db
+    <span class="md-ellipsis">
+      
+        db
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-gcp" class="md-nav__link">
-    gcp
+    <span class="md-ellipsis">
+      
+        gcp
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="gcp">
@@ -544,7 +731,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-gcp-bigquery" class="md-nav__link">
-    bigquery
+    <span class="md-ellipsis">
+      
+        bigquery
+      
+    </span>
   </a>
   
 </li>
@@ -561,7 +752,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-system" class="md-nav__link">
-    system
+    <span class="md-ellipsis">
+      
+        system
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="system">
@@ -569,14 +764,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-system-aws" class="md-nav__link">
-    aws
+    <span class="md-ellipsis">
+      
+        aws
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-generate-system-okta" class="md-nav__link">
-    okta
+    <span class="md-ellipsis">
+      
+        okta
+      
+    </span>
   </a>
   
 </li>
@@ -593,35 +796,55 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-get" class="md-nav__link">
-    get
+    <span class="md-ellipsis">
+      
+        get
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-init" class="md-nav__link">
-    init
+    <span class="md-ellipsis">
+      
+        init
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-ls" class="md-nav__link">
-    ls
+    <span class="md-ellipsis">
+      
+        ls
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-parse" class="md-nav__link">
-    parse
+    <span class="md-ellipsis">
+      
+        parse
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull" class="md-nav__link">
-    pull
+    <span class="md-ellipsis">
+      
+        pull
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="pull">
@@ -629,42 +852,66 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-pull-all" class="md-nav__link">
-    all
+    <span class="md-ellipsis">
+      
+        all
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-data_category" class="md-nav__link">
-    data_category
+    <span class="md-ellipsis">
+      
+        data_category
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-data_subject" class="md-nav__link">
-    data_subject
+    <span class="md-ellipsis">
+      
+        data_subject
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-data_use" class="md-nav__link">
-    data_use
+    <span class="md-ellipsis">
+      
+        data_use
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-dataset" class="md-nav__link">
-    dataset
+    <span class="md-ellipsis">
+      
+        dataset
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-system" class="md-nav__link">
-    system
+    <span class="md-ellipsis">
+      
+        system
+      
+    </span>
   </a>
   
 </li>
@@ -676,14 +923,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-push" class="md-nav__link">
-    push
+    <span class="md-ellipsis">
+      
+        push
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-scan" class="md-nav__link">
-    scan
+    <span class="md-ellipsis">
+      
+        scan
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="scan">
@@ -691,7 +946,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-scan-dataset" class="md-nav__link">
-    dataset
+    <span class="md-ellipsis">
+      
+        dataset
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="dataset">
@@ -699,7 +958,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-scan-dataset-db" class="md-nav__link">
-    db
+    <span class="md-ellipsis">
+      
+        db
+      
+    </span>
   </a>
   
 </li>
@@ -711,7 +974,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-scan-system" class="md-nav__link">
-    system
+    <span class="md-ellipsis">
+      
+        system
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="system">
@@ -719,14 +986,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-scan-system-aws" class="md-nav__link">
-    aws
+    <span class="md-ellipsis">
+      
+        aws
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-scan-system-okta" class="md-nav__link">
-    okta
+    <span class="md-ellipsis">
+      
+        okta
+      
+    </span>
   </a>
   
 </li>
@@ -743,14 +1018,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-status" class="md-nav__link">
-    status
+    <span class="md-ellipsis">
+      
+        status
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-user" class="md-nav__link">
-    user
+    <span class="md-ellipsis">
+      
+        user
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="user">
@@ -758,21 +1041,33 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-user-create" class="md-nav__link">
-    create
+    <span class="md-ellipsis">
+      
+        create
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-user-login" class="md-nav__link">
-    login
+    <span class="md-ellipsis">
+      
+        login
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-user-permissions" class="md-nav__link">
-    permissions
+    <span class="md-ellipsis">
+      
+        permissions
+      
+    </span>
   </a>
   
 </li>
@@ -784,7 +1079,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-view" class="md-nav__link">
-    view
+    <span class="md-ellipsis">
+      
+        view
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="view">
@@ -792,14 +1091,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-view-config" class="md-nav__link">
-    config
+    <span class="md-ellipsis">
+      
+        config
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-view-credentials" class="md-nav__link">
-    credentials
+    <span class="md-ellipsis">
+      
+        credentials
+      
+    </span>
   </a>
   
 </li>
@@ -811,14 +1118,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-webserver" class="md-nav__link">
-    webserver
+    <span class="md-ellipsis">
+      
+        webserver
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-worker" class="md-nav__link">
-    worker
+    <span class="md-ellipsis">
+      
+        worker
+      
+    </span>
   </a>
   
 </li>
@@ -835,423 +1150,802 @@ You're not viewing the latest version.
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../config/" class="md-nav__link">
-        Configuration
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     
+    
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1_5">
-          Contributing
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Contributing" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_5">
-          <span class="md-nav__icon md-icon"></span>
-          Contributing
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
+        
           
+          <label class="md-nav__link" for="__nav_1_5" id="__nav_1_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/overview/" class="md-nav__link">
-        Overview
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/developing_fides/" class="md-nav__link">
-        Developing Fides
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developing Fides
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/development_tips/" class="md-nav__link">
-        Development Tips
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Tips
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/testing/" class="md-nav__link">
-        Testing
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/code_style/" class="md-nav__link">
-        Code Style
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code Style
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     
+    
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5_6" type="checkbox" id="__nav_1_5_6" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1_5_6">
-          UI Development
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="UI Development" data-md-level="3">
-        <label class="md-nav__title" for="__nav_1_5_6">
-          <span class="md-nav__icon md-icon"></span>
-          UI Development
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5_6" >
+        
           
+          <label class="md-nav__link" for="__nav_1_5_6" id="__nav_1_5_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_5_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_5_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    UI Development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/ui/overview/" class="md-nav__link">
-        Overview
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/ui/privacy_center/" class="md-nav__link">
-        Privacy Center
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy Center
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/ui/admin_ui/" class="md-nav__link">
-        Admin UI
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Admin UI
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/documentation/" class="md-nav__link">
-        Documentation
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/pull_requests/" class="md-nav__link">
-        Pull Requests
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pull Requests
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/releases/" class="md-nav__link">
-        Releases
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/postman/using_postman/" class="md-nav__link">
-        Using Postman
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using Postman
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/update_erd_diagram/" class="md-nav__link">
-        Updating the Database Diagram
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Updating the Database Diagram
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../development/fideslog/" class="md-nav__link">
-        User Analytics
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Analytics
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     
+    
+    
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6" type="checkbox" id="__nav_1_6" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1_6">
-          Community
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Community" data-md-level="2">
-        <label class="md-nav__title" for="__nav_1_6">
-          <span class="md-nav__icon md-icon"></span>
-          Community
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_6" >
+        
           
+          <label class="md-nav__link" for="__nav_1_6" id="__nav_1_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Community
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../community/overview/" class="md-nav__link">
-        Github, Slack, and Discord
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Github, Slack, and Discord
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../community/hints_tips/" class="md-nav__link">
-        Community Hints and Tips
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community Hints and Tips
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../community/code_of_conduct/" class="md-nav__link">
-        Code of Conduct
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code of Conduct
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
     
       
       
+  
+  
+  
+  
+    
+    
+    
+    
       
-
-  
-  
-  
+      
+    
     
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
-      
-      
-      
-      
-        <label class="md-nav__link" for="__nav_2">
-          About Ethyca
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="About Ethyca" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
-          <span class="md-nav__icon md-icon"></span>
-          About Ethyca
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About Ethyca
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    About Ethyca
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../ethyca/" class="md-nav__link">
-        About Ethyca
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About Ethyca
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../license/" class="md-nav__link">
-        License
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    License
+  
+
+    
+  </span>
+  
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -1284,7 +1978,11 @@ You're not viewing the latest version.
       
         <li class="md-nav__item">
   <a href="#fides" class="md-nav__link">
-    fides
+    <span class="md-ellipsis">
+      
+        fides
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="fides">
@@ -1292,7 +1990,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-annotate" class="md-nav__link">
-    annotate
+    <span class="md-ellipsis">
+      
+        annotate
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="annotate">
@@ -1300,7 +2002,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-annotate-dataset" class="md-nav__link">
-    dataset
+    <span class="md-ellipsis">
+      
+        dataset
+      
+    </span>
   </a>
   
 </li>
@@ -1312,7 +2018,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-db" class="md-nav__link">
-    db
+    <span class="md-ellipsis">
+      
+        db
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="db">
@@ -1320,21 +2030,33 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-db-init" class="md-nav__link">
-    init
+    <span class="md-ellipsis">
+      
+        init
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-db-reset" class="md-nav__link">
-    reset
+    <span class="md-ellipsis">
+      
+        reset
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-db-upgrade" class="md-nav__link">
-    upgrade
+    <span class="md-ellipsis">
+      
+        upgrade
+      
+    </span>
   </a>
   
 </li>
@@ -1346,14 +2068,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-delete" class="md-nav__link">
-    delete
+    <span class="md-ellipsis">
+      
+        delete
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-deploy" class="md-nav__link">
-    deploy
+    <span class="md-ellipsis">
+      
+        deploy
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="deploy">
@@ -1361,14 +2091,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-deploy-down" class="md-nav__link">
-    down
+    <span class="md-ellipsis">
+      
+        down
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-deploy-up" class="md-nav__link">
-    up
+    <span class="md-ellipsis">
+      
+        up
+      
+    </span>
   </a>
   
 </li>
@@ -1380,14 +2118,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-evaluate" class="md-nav__link">
-    evaluate
+    <span class="md-ellipsis">
+      
+        evaluate
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-generate" class="md-nav__link">
-    generate
+    <span class="md-ellipsis">
+      
+        generate
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="generate">
@@ -1395,7 +2141,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset" class="md-nav__link">
-    dataset
+    <span class="md-ellipsis">
+      
+        dataset
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="dataset">
@@ -1403,7 +2153,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-aws" class="md-nav__link">
-    aws
+    <span class="md-ellipsis">
+      
+        aws
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="aws">
@@ -1411,7 +2165,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-aws-dynamodb" class="md-nav__link">
-    dynamodb
+    <span class="md-ellipsis">
+      
+        dynamodb
+      
+    </span>
   </a>
   
 </li>
@@ -1423,14 +2181,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-db" class="md-nav__link">
-    db
+    <span class="md-ellipsis">
+      
+        db
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-gcp" class="md-nav__link">
-    gcp
+    <span class="md-ellipsis">
+      
+        gcp
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="gcp">
@@ -1438,7 +2204,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-dataset-gcp-bigquery" class="md-nav__link">
-    bigquery
+    <span class="md-ellipsis">
+      
+        bigquery
+      
+    </span>
   </a>
   
 </li>
@@ -1455,7 +2225,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-system" class="md-nav__link">
-    system
+    <span class="md-ellipsis">
+      
+        system
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="system">
@@ -1463,14 +2237,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-generate-system-aws" class="md-nav__link">
-    aws
+    <span class="md-ellipsis">
+      
+        aws
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-generate-system-okta" class="md-nav__link">
-    okta
+    <span class="md-ellipsis">
+      
+        okta
+      
+    </span>
   </a>
   
 </li>
@@ -1487,35 +2269,55 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-get" class="md-nav__link">
-    get
+    <span class="md-ellipsis">
+      
+        get
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-init" class="md-nav__link">
-    init
+    <span class="md-ellipsis">
+      
+        init
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-ls" class="md-nav__link">
-    ls
+    <span class="md-ellipsis">
+      
+        ls
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-parse" class="md-nav__link">
-    parse
+    <span class="md-ellipsis">
+      
+        parse
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull" class="md-nav__link">
-    pull
+    <span class="md-ellipsis">
+      
+        pull
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="pull">
@@ -1523,42 +2325,66 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-pull-all" class="md-nav__link">
-    all
+    <span class="md-ellipsis">
+      
+        all
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-data_category" class="md-nav__link">
-    data_category
+    <span class="md-ellipsis">
+      
+        data_category
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-data_subject" class="md-nav__link">
-    data_subject
+    <span class="md-ellipsis">
+      
+        data_subject
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-data_use" class="md-nav__link">
-    data_use
+    <span class="md-ellipsis">
+      
+        data_use
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-dataset" class="md-nav__link">
-    dataset
+    <span class="md-ellipsis">
+      
+        dataset
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-pull-system" class="md-nav__link">
-    system
+    <span class="md-ellipsis">
+      
+        system
+      
+    </span>
   </a>
   
 </li>
@@ -1570,14 +2396,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-push" class="md-nav__link">
-    push
+    <span class="md-ellipsis">
+      
+        push
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-scan" class="md-nav__link">
-    scan
+    <span class="md-ellipsis">
+      
+        scan
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="scan">
@@ -1585,7 +2419,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-scan-dataset" class="md-nav__link">
-    dataset
+    <span class="md-ellipsis">
+      
+        dataset
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="dataset">
@@ -1593,7 +2431,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-scan-dataset-db" class="md-nav__link">
-    db
+    <span class="md-ellipsis">
+      
+        db
+      
+    </span>
   </a>
   
 </li>
@@ -1605,7 +2447,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-scan-system" class="md-nav__link">
-    system
+    <span class="md-ellipsis">
+      
+        system
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="system">
@@ -1613,14 +2459,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-scan-system-aws" class="md-nav__link">
-    aws
+    <span class="md-ellipsis">
+      
+        aws
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-scan-system-okta" class="md-nav__link">
-    okta
+    <span class="md-ellipsis">
+      
+        okta
+      
+    </span>
   </a>
   
 </li>
@@ -1637,14 +2491,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-status" class="md-nav__link">
-    status
+    <span class="md-ellipsis">
+      
+        status
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-user" class="md-nav__link">
-    user
+    <span class="md-ellipsis">
+      
+        user
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="user">
@@ -1652,21 +2514,33 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-user-create" class="md-nav__link">
-    create
+    <span class="md-ellipsis">
+      
+        create
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-user-login" class="md-nav__link">
-    login
+    <span class="md-ellipsis">
+      
+        login
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-user-permissions" class="md-nav__link">
-    permissions
+    <span class="md-ellipsis">
+      
+        permissions
+      
+    </span>
   </a>
   
 </li>
@@ -1678,7 +2552,11 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-view" class="md-nav__link">
-    view
+    <span class="md-ellipsis">
+      
+        view
+      
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="view">
@@ -1686,14 +2564,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-view-config" class="md-nav__link">
-    config
+    <span class="md-ellipsis">
+      
+        config
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-view-credentials" class="md-nav__link">
-    credentials
+    <span class="md-ellipsis">
+      
+        credentials
+      
+    </span>
   </a>
   
 </li>
@@ -1705,14 +2591,22 @@ You're not viewing the latest version.
         
           <li class="md-nav__item">
   <a href="#fides-webserver" class="md-nav__link">
-    webserver
+    <span class="md-ellipsis">
+      
+        webserver
+      
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#fides-worker" class="md-nav__link">
-    worker
+    <span class="md-ellipsis">
+      
+        worker
+      
+    </span>
   </a>
   
 </li>
@@ -1730,453 +2624,191 @@ You're not viewing the latest version.
               </div>
             
           
-          <div class="md-content" data-md-component="content">
-            <article class="md-content__inner md-typeset">
+          
+            <div class="md-content" data-md-component="content">
               
+              <article class="md-content__inner md-typeset">
                 
-<a href="https://github.com/ethyca/fides/blob/main/docs/fides/docs/cli/index.md" title="Edit this page" class="md-content__button md-icon">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
-</a>
+                  
 
+
+  
+  
 
 
 <h1 id="cli">CLI</h1>
 <p>These are autogenerated CLI docs that reflect the latest PyPI release.</p>
 <hr />
 <h2 id="fides">fides</h2>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>__Command-line tool for the Fides privacy engineering platform.__
-
----
-
-_Note: The common MANIFESTS_DIR argument _always_ defaults to &quot;.fides/&quot; if not specified._
-</code></pre></div></td></tr></table></div>
+<p><strong>Command-line tool for the Fides privacy engineering platform.</strong></p>
+<hr />
+<p><em>Note: The common MANIFESTS_DIR argument _always</em> defaults to ".fides/" if not specified._</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>  --version               Show the version and exit.
-  -f, --config-path TEXT  Path to a Fides config file. _Defaults to
-                          `.fides/fides.toml`._
-  --local                 Run in `local_mode`. Where possible, this will force
-                          commands to run without the need for a server.
-  --help                  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-annotate">fides annotate</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Interactively annotate Fides resources.
-</code></pre></div></td></tr></table></div>
+<p>Interactively annotate Fides resources.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides annotate [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides annotate[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-annotate-dataset">fides annotate dataset</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Interactively annotate a dataset file in-place.
-</code></pre></div></td></tr></table></div>
+<p>Interactively annotate a dataset file in-place.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides annotate dataset [OPTIONS] INPUT_FILENAME
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  -a, --all-members  Annotate all parts of the dataset including schemas and
-                     tables.
-  -v, --validate     Validate annotation inputs.
-  --help             Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides annotate dataset[0m [[1;92mOPTIONS[0m] [1;92mINPUT_FILENAME[0m
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-db">fides db</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Run actions against the application database.
-</code></pre></div></td></tr></table></div>
+<p>Run actions against the application database.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides db[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-db-init">fides db init</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>Runs all upgrade migrations for the Fides database.
-
-Will also automatically initialize a fresh database.
-
-**WARNING**: Deprecated, use `upgrade` instead.
-</code></pre></div></td></tr></table></div>
+<p>Runs all upgrade migrations for the Fides database.</p>
+<p>Will also automatically initialize a fresh database.</p>
+<p><strong>WARNING</strong>: Deprecated, use <code>upgrade</code> instead.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db init [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides db init[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-db-reset">fides db reset</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Reset the database back to its initial state.
-</code></pre></div></td></tr></table></div>
+<p>Reset the database back to its initial state.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db reset [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  -y, --yes  Automatically responds `yes` to any prompts.
-  --help     Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides db reset[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-db-upgrade">fides db upgrade</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Runs all upgrade migrations for the Fides database.
-
-Will also automatically initialize a fresh database.
-</code></pre></div></td></tr></table></div>
+<p>Runs all upgrade migrations for the Fides database.</p>
+<p>Will also automatically initialize a fresh database.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides db upgrade [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides db upgrade[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-delete">fides delete</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Delete an object from the server.
-</code></pre></div></td></tr></table></div>
+<p>Delete an object from the server.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>fides delete [OPTIONS] {data_category|data_subject|data_use|dataset|organizati
-             on|policy|system|evaluation} FIDES_KEY
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>[33m                                                                              [0m 
+ [1mfides delete                                                                  [0m 
+ [[1;92mOPTIONS[0m]                                                                      
+ {[1;92mdata_category[0m|[1;92mdata_subject[0m|[1;92mdata_use[0m|[1;92mdataset[0m|[1;92morganization[0m|[1;92mpolicy[0m|[1;92msystem[0m|[1;92mevalu…[0m 
+ [1;92mFIDES_KEY[0m
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-deploy">fides deploy</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Deploy a sample project locally to try out Fides.
-</code></pre></div></td></tr></table></div>
+<p>Deploy a sample project locally to try out Fides.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides deploy [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides deploy[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-deploy-down">fides deploy down</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Stops the sample project and removes all volumes.
-</code></pre></div></td></tr></table></div>
+<p>Stops the sample project and removes all volumes.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides deploy down [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides deploy down[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-deploy-up">fides deploy up</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Starts a sample project via docker compose.
-</code></pre></div></td></tr></table></div>
+<p>Starts a sample project via docker compose.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides deploy up [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>  --no-pull        Use a local image instead of trying to pull from DockerHub.
-  --no-init        Disable the initialization of the Fides CLI, to run in
-                   headless mode.
-  --env-file PATH  Use a custom ENV file for the Fides container to override
-                   settings.
-  --image TEXT     Use a custom image for the Fides container instead of the
-                   default (&#39;ethyca/fides&#39;).
-  --help           Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides deploy up[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-evaluate">fides evaluate</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Evaluate System-level Privacy Declarations against Organization-level Policy Rules.
-</code></pre></div></td></tr></table></div>
+<p>Evaluate System-level Privacy Declarations against Organization-level Policy Rules.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides evaluate [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>  -k, --fides-key TEXT  The fides_key of a specific policy to evaluate.
-  -m, --message TEXT    Describe the context of this evaluation.
-  -a, --audit           Validate that the objects in this evaluation produce a
-                        valid data map.
-  --dry                 Do not upload objects or results to the Fides
-                        webserver.
-  --help                Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides evaluate[0m [[1;92mOPTIONS[0m] [[1;92mMANIFESTS_DIR[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-generate">fides generate</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Programmatically generate Fides objects.
-</code></pre></div></td></tr></table></div>
+<p>Programmatically generate Fides objects.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-generate-dataset">fides generate dataset</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate Fides datasets.
-</code></pre></div></td></tr></table></div>
+<p>Generate Fides datasets.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate dataset[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h5 id="fides-generate-dataset-aws">fides generate dataset aws</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate Fides datasets from specific Amazon Web Services.
-</code></pre></div></td></tr></table></div>
+<p>Generate Fides datasets from specific Amazon Web Services.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset aws [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate dataset aws[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h6 id="fides-generate-dataset-aws-dynamodb">fides generate dataset aws dynamodb</h6>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generates a dataset object from DynamoDB using the AWS boto3 connection config.
-</code></pre></div></td></tr></table></div>
+<p>Generates a dataset object from DynamoDB using the AWS boto3 connection config.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset aws dynamodb [OPTIONS] OUTPUT_FILENAME
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
-  --access_key_id TEXT      Connect to AWS using an `Access Key ID`. _Requires
-                            options `--access_key_id`, `--secret_access_key` &amp;
-                            `--region`._
-  --secret_access_key TEXT  Connect to AWS using an `Access Key`. _Requires
-                            options `--access_key_id`, `--secret_access_key` &amp;
-                            `--region`._
-  --session_token TEXT      Connect to AWS using a temporary `Access Key`.
-                            _Requires options `--access_key_id`,
-                            `--secret_access_key`, `--session_token`, &amp;
-                            `--region`._
-  --region TEXT             Connect to AWS using a specific `Region`.
-                            _Requires options `--access_key_id`,
-                            `--secret_access_key` &amp; `--region`._
-  --single-dataset BOOLEAN
-  --include-null            Include null attributes.
-  --help                    Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate dataset aws dynamodb[0m [[1;92mOPTIONS[0m] [1;92mOUTPUT_FILENAME[0m
 </code></pre></div></td></tr></table></div>
 <h5 id="fides-generate-dataset-db">fides generate dataset db</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate a Fides dataset by walking a database and recording every schema/table/field.
-</code></pre></div></td></tr></table></div>
+<p>Generate a Fides dataset by walking a database and recording every schema/table/field.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset db [OPTIONS] OUTPUT_FILENAME
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate dataset db[0m [[1;92mOPTIONS[0m] [1;92mOUTPUT_FILENAME[0m
 </code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
+<h5 id="fides-generate-dataset-gcp">fides generate dataset gcp</h5>
+<p>Generate Fides datasets from Google Cloud Platform.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate dataset gcp[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
+</code></pre></div></td></tr></table></div>
+<h6 id="fides-generate-dataset-gcp-bigquery">fides generate dataset gcp bigquery</h6>
+<p>Generate a dataset object from BigQuery using a SQLAlchemy connection string.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate dataset gcp bigquery[0m [[1;92mOPTIONS[0m] [1;92mDATASET_NAME[0m [1;92mOUTPUT_FILENAME[0m
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-generate-system">fides generate system</h4>
+<p>Generate Fides systems.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate system[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
+</code></pre></div></td></tr></table></div>
+<h5 id="fides-generate-system-aws">fides generate system aws</h5>
+<p>Connect to an aws account and generate a system manifest file that consists of every
+tracked resource.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate system aws[0m [[1;92mOPTIONS[0m] [1;92mOUTPUT_FILENAME[0m
+</code></pre></div></td></tr></table></div>
+<h5 id="fides-generate-system-okta">fides generate system okta</h5>
+<p>Generates systems from your Okta applications. Connects via
+OAuth2 client credentials.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides generate system okta[0m [[1;92mOPTIONS[0m] [1;92mOUTPUT_FILENAME[0m
+</code></pre></div></td></tr></table></div>
+<h3 id="fides-get">fides get</h3>
+<p>View an object from the server.</p>
+<p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
-  --connection-string TEXT  Use the connection string option to connect to a
-                            database.
-  --include-null            Include null attributes.
-  --help                    Show this message and exit.
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>[33m                                                                              [0m 
+ [1mfides get                                                                     [0m 
+ [[1;92mOPTIONS[0m]                                                                      
+ {[1;92mdata_category[0m|[1;92mdata_subject[0m|[1;92mdata_use[0m|[1;92mdataset[0m|[1;92morganization[0m|[1;92mpolicy[0m|[1;92msystem[0m|[1;92mevalu…[0m 
+ [1;92mFIDES_KEY[0m
 </code></pre></div></td></tr></table></div>
-<h5 id="fides-generate-dataset-gcp">fides generate dataset gcp</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate Fides datasets from Google Cloud Platform.
-</code></pre></div></td></tr></table></div>
+<h3 id="fides-init">fides init</h3>
+<p>Initializes a Fides instance by creating the default directory and
+configuration file if not present.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset gcp [OPTIONS] COMMAND [ARGS]...
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides init[0m [[1;92mOPTIONS[0m] [[1;92mFIDES_DIR[0m]
 </code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h6 id="fides-generate-dataset-gcp-bigquery">fides generate dataset gcp bigquery</h6>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate a dataset object from BigQuery using a SQLAlchemy connection string.
-</code></pre></div></td></tr></table></div>
+<h3 id="fides-ls">fides ls</h3>
+<p>View all objects of a single type from the server.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate dataset gcp bigquery [OPTIONS] DATASET_NAME OUTPUT_FILENAME
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials keys defined within Fides config.
-  --keyfile-path TEXT
-  --include-null         Include null attributes.
-  --help                 Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h4 id="fides-generate-system">fides generate system</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Generate Fides systems.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate system [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h5 id="fides-generate-system-aws">fides generate system aws</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Connect to an aws account and generate a system manifest file that consists of every
-tracked resource.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate system aws [OPTIONS] OUTPUT_FILENAME
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT     Use credentials keys defined within Fides config.
-  --access_key_id TEXT      Connect to AWS using an `Access Key ID`. _Requires
-                            options `--access_key_id`, `--secret_access_key` &amp;
-                            `--region`._
-  --secret_access_key TEXT  Connect to AWS using an `Access Key`. _Requires
-                            options `--access_key_id`, `--secret_access_key` &amp;
-                            `--region`._
-  --session_token TEXT      Connect to AWS using a temporary `Access Key`.
-                            _Requires options `--access_key_id`,
-                            `--secret_access_key`, `--session_token`, &amp;
-                            `--region`._
-  --region TEXT             Connect to AWS using a specific `Region`.
-                            _Requires options `--access_key_id`,
-                            `--secret_access_key` &amp; `--region`._
-  --include-null            Include null attributes.
-  -k, --org-key TEXT        The `organization_fides_key` of the `Organization`
-                            you want to specify.  [default:
-                            default_organization]
-  --help                    Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h5 id="fides-generate-system-okta">fides generate system okta</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Generates systems from your Okta applications. Connects via
-OAuth2 client credentials.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides generate system okta [OPTIONS] OUTPUT_FILENAME
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT  Use credentials keys defined within Fides config.
-  --org-url TEXT         Connect to Okta using an &#39;Org URL&#39;. _Requires options
-                         `--org-url`, `--client-id` &amp; `--private-key`._
-  --client-id TEXT       Connect to Okta using an OAuth2 Client ID. _Requires
-                         options `--org-url`, `--client-id` &amp; `--private-
-                         key`._
-  --private-key TEXT     Connect to Okta using a private key (JWK JSON
-                         format). _Requires options `--org-url`, `--client-id`
-                         &amp; `--private-key`._
-  --include-null         Include null attributes.
-  -k, --org-key TEXT     The `organization_fides_key` of the `Organization`
-                         you want to specify.  [default: default_organization]
-  --help                 Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h3 id="fides-get">fides get</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>View an object from the server.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>fides get [OPTIONS] {data_category|data_subject|data_use|dataset|organization|
-          policy|system|evaluation} FIDES_KEY
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h3 id="fides-init">fides init</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Initializes a Fides instance by creating the default directory and
-configuration file if not present.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides init [OPTIONS] [FIDES_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  --opt-in  Automatically opt-in to anonymous usage analytics.
-  --help    Show this message and exit.
-</code></pre></div></td></tr></table></div>
-<h3 id="fides-ls">fides ls</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>View all objects of a single type from the server.
-</code></pre></div></td></tr></table></div>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>fides ls [OPTIONS] {data_category|data_subject|data_use|dataset|organization|p
-         olicy|system|evaluation}
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  -v, --verbose  Displays the entire object list as YAML.
-  --help         Show this message and exit.
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>[33m                                                                              [0m 
+ [1mfides ls                                                                      [0m 
+ [[1;92mOPTIONS[0m]                                                                      
+ {[1;92mdata_category[0m|[1;92mdata_subject[0m|[1;92mdata_use[0m|[1;92mdataset[0m|[1;92morganization[0m|[1;92mpolicy[0m|[1;92msystem[0m|[1;92mevalu…[0m
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-parse">fides parse</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Parse all Fides objects located in the supplied directory.
-</code></pre></div></td></tr></table></div>
+<p>Parse all Fides objects located in the supplied directory.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides parse [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  -v, --verbose  Enable verbose output.
-  --help         Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides parse[0m [[1;92mOPTIONS[0m] [[1;92mMANIFESTS_DIR[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-pull">fides pull</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Update local resource files based on the state of the objects on the server.
-</code></pre></div></td></tr></table></div>
+<p>Update local resource files based on the state of the objects on the server.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull [OPTIONS] COMMAND [ARGS]...
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  -h, --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-pull-all">fides pull all</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve all resources from the server and update the local manifest files.
-</code></pre></div></td></tr></table></div>
+<p>Retrieve all resources from the server and update the local manifest files.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull all [OPTIONS] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
@@ -2185,46 +2817,37 @@ configuration file if not present.
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -a, --all-resources TEXT  Pulls all locally missing resources from the
                             server into this file.
-  --help                    Show this message and exit.
+  -h, --help                Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-pull-data_category">fides pull data_category</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific data_category from the server and update the local manifest files.
-</code></pre></div></td></tr></table></div>
+<p>Retrieve a specific data_category from the server and update the local manifest files.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull data_category [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  -h, --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-pull-data_subject">fides pull data_subject</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific data_subject from the server and update the local manifest files.
-</code></pre></div></td></tr></table></div>
+<p>Retrieve a specific data_subject from the server and update the local manifest files.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull data_subject [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  -h, --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-pull-data_use">fides pull data_use</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific data_use from the server and update the local manifest files.
-</code></pre></div></td></tr></table></div>
+<p>Retrieve a specific data_use from the server and update the local manifest files.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull data_use [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  -h, --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-pull-dataset">fides pull dataset</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve datasets from the server and update the local manifest files.
-
-If FIDES_KEY is provided, only that dataset will be pulled.
+<p>Retrieve datasets from the server and update the local manifest files.</p>
+<p>If FIDES_KEY is provided, only that dataset will be pulled.
 If --all-resources is specified, all datasets will be pulled.
-If --separate-files is specified, each dataset will be written to a separate file.
-</code></pre></div></td></tr></table></div>
+If --separate-files is specified, each dataset will be written to a separate file.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull dataset [OPTIONS] [FIDES_KEY] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
@@ -2235,314 +2858,132 @@ If --separate-files is specified, each dataset will be written to a separate fil
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  -a, --all-resources  Pull all datasets from the server.
   --separate-files     Write each dataset to a separate file named after its
                        fides_key.
-  --help               Show this message and exit.
+  -h, --help           Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-pull-system">fides pull system</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific system from the server and update the local manifest files.
-</code></pre></div></td></tr></table></div>
+<p>Retrieve a specific system from the server and update the local manifest files.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull system [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  -h, --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-push">fides push</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Parse local manifest files and upload them to the server.
-</code></pre></div></td></tr></table></div>
+<p>Parse local manifest files and upload them to the server.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides push [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  --dry   Do not upload results to the Fides webserver.
-  --diff  Print any diffs between the local &amp; server objects
-  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides push[0m [[1;92mOPTIONS[0m] [[1;92mMANIFESTS_DIR[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-scan">fides scan</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan and report on discrepancies between Fides resource files and real infrastructure.
-</code></pre></div></td></tr></table></div>
+<p>Scan and report on discrepancies between Fides resource files and real infrastructure.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides scan [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides scan[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-scan-dataset">fides scan dataset</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan and report on Fides Dataset resources.
-</code></pre></div></td></tr></table></div>
+<p>Scan and report on Fides Dataset resources.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides scan dataset [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides scan dataset[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h5 id="fides-scan-dataset-db">fides scan dataset db</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan a database directly using a SQLAlchemy-style connection string.
-
-_If there are fields within the database that aren&#39;t listed and categorized
-within one of the datasets, this counts as lacking coverage._
-</code></pre></div></td></tr></table></div>
+<p>Scan a database directly using a SQLAlchemy-style connection string.</p>
+<p><em>If there are fields within the database that aren't listed and categorized
+within one of the datasets, this counts as lacking coverage.</em></p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides scan dataset db [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials keys defined within Fides
-                                  config.
-  --connection-string TEXT        Use the connection string option to connect
-                                  to a database.
-  -c, --coverage-threshold INTEGER RANGE
-                                  Set the coverage percentage for a passing
-                                  scan.  [0&lt;=x&lt;=100]
-  --help                          Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides scan dataset db[0m [[1;92mOPTIONS[0m] [[1;92mMANIFESTS_DIR[0m]
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-scan-system">fides scan system</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan and report on Fides System resources.
-</code></pre></div></td></tr></table></div>
+<p>Scan and report on Fides System resources.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides scan system [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides scan system[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h5 id="fides-scan-system-aws">fides scan system aws</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan an AWS account and compare objects with annotated Fides Systems.
-
-_Scannable resources: [Redshift, RDS, DynamoDb, S3]_
-</code></pre></div></td></tr></table></div>
+<p>Scan an AWS account and compare objects with annotated Fides Systems.</p>
+<p><em>Scannable resources: [Redshift, RDS, DynamoDb, S3]</em></p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides scan system aws [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials keys defined within Fides
-                                  config.
-  --access_key_id TEXT            Connect to AWS using an `Access Key ID`.
-                                  _Requires options `--access_key_id`,
-                                  `--secret_access_key` &amp; `--region`._
-  --secret_access_key TEXT        Connect to AWS using an `Access Key`.
-                                  _Requires options `--access_key_id`,
-                                  `--secret_access_key` &amp; `--region`._
-  --session_token TEXT            Connect to AWS using a temporary `Access
-                                  Key`. _Requires options `--access_key_id`,
-                                  `--secret_access_key`, `--session_token`, &amp;
-                                  `--region`._
-  --region TEXT                   Connect to AWS using a specific `Region`.
-                                  _Requires options `--access_key_id`,
-                                  `--secret_access_key` &amp; `--region`._
-  -k, --org-key TEXT              The `organization_fides_key` of the
-                                  `Organization` you want to specify.
-                                  [default: default_organization]
-  -c, --coverage-threshold INTEGER RANGE
-                                  Set the coverage percentage for a passing
-                                  scan.  [0&lt;=x&lt;=100]
-  --help                          Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides scan system aws[0m [[1;92mOPTIONS[0m] [[1;92mMANIFESTS_DIR[0m]
 </code></pre></div></td></tr></table></div>
 <h5 id="fides-scan-system-okta">fides scan system okta</h5>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Scan an Okta account and compare applications with annotated Fides Systems.
-</code></pre></div></td></tr></table></div>
+<p>Scan an Okta account and compare applications with annotated Fides Systems.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides scan system okta [OPTIONS] [MANIFESTS_DIR]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code>  --credentials-id TEXT           Use credentials keys defined within Fides
-                                  config.
-  --org-url TEXT                  Connect to Okta using an &#39;Org URL&#39;.
-                                  _Requires options `--org-url`, `--client-id`
-                                  &amp; `--private-key`._
-  --client-id TEXT                Connect to Okta using an OAuth2 Client ID.
-                                  _Requires options `--org-url`, `--client-id`
-                                  &amp; `--private-key`._
-  --private-key TEXT              Connect to Okta using a private key (JWK
-                                  JSON format). _Requires options `--org-url`,
-                                  `--client-id` &amp; `--private-key`._
-  -k, --org-key TEXT              The `organization_fides_key` of the
-                                  `Organization` you want to specify.
-                                  [default: default_organization]
-  -c, --coverage-threshold INTEGER RANGE
-                                  Set the coverage percentage for a passing
-                                  scan.  [0&lt;=x&lt;=100]
-  --help                          Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides scan system okta[0m [[1;92mOPTIONS[0m] [[1;92mMANIFESTS_DIR[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-status">fides status</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Check Fides server availability.
-</code></pre></div></td></tr></table></div>
+<p>Check Fides server availability.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides status [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides status[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-user">fides user</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Click command group for interacting with user-related functionality.
-</code></pre></div></td></tr></table></div>
+<p>Click command group for interacting with user-related functionality.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides user [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides user[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-user-create">fides user create</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Use the credentials file to create a new user. Gives full permissions to the new user.
-</code></pre></div></td></tr></table></div>
+<p>Use the credentials file to create a new user. Gives full permissions to the new user.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides user create [OPTIONS] USERNAME PASSWORD EMAIL_ADDRESS
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -f, --first-name TEXT
-  -l, --last-name TEXT
-  --help                 Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides user create[0m [[1;92mOPTIONS[0m] [1;92mUSERNAME[0m [1;92mPASSWORD[0m [1;92mEMAIL_ADDRESS[0m
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-user-login">fides user login</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>Authenticate with the webserver and generate a user access token.
-Then store those credentials in a credentials file.
-</code></pre></div></td></tr></table></div>
+<p>Authenticate with the webserver and generate a user access token.
+Then store those credentials in a credentials file.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides user login [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>  -u, --username TEXT  If not provided, will be pulled from the config file or
-                       prompted for.
-  -p, --password TEXT  If not provided, will be pulled from the config file or
-                       prompted for.
-  --help               Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides user login[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-user-permissions">fides user permissions</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>List the directly-assigned scopes and roles available to the current user.
-</code></pre></div></td></tr></table></div>
+<p>List the directly-assigned scopes and roles available to the current user.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides user permissions [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides user permissions[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-view">fides view</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>View various resources types.
-</code></pre></div></td></tr></table></div>
+<p>View various resources types.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides view [OPTIONS] COMMAND [ARGS]...
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides view[0m [[1;92mOPTIONS[0m] [1;92mCOMMAND[0m [[1;92mARGS[0m]...
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-view-config">fides view config</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Prints the configuration values being used for this command-line instance.
-
-_Note: To see the configuration values being used by the webserver, `GET` the `/api/v1/config` endpoint._
-</code></pre></div></td></tr></table></div>
+<p>Prints the configuration values being used for this command-line instance.</p>
+<p><em>Note: To see the configuration values being used by the webserver, <code>GET</code> the <code>/api/v1/config</code> endpoint.</em></p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides view config [OPTIONS] [SECTION]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  --exclude-unset  Only print configuration values explicitly set by the user.
-  --help           Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides view config[0m [[1;92mOPTIONS[0m] [[1;92mSECTION[0m]
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-view-credentials">fides view credentials</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Prints the credentials file.
-</code></pre></div></td></tr></table></div>
+<p>Prints the credentials file.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides view credentials [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides view credentials[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-webserver">fides webserver</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>Start the Fides webserver.
-
-_Requires Redis and Postgres to be configured and running_
-</code></pre></div></td></tr></table></div>
+<p>Start the Fides webserver.</p>
+<p><em>Requires Redis and Postgres to be configured and running</em></p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides webserver [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>  -p, --port INTEGER
-  --help              Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides webserver[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h3 id="fides-worker">fides worker</h3>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Start a Celery worker for the Fides webserver.
-</code></pre></div></td></tr></table></div>
+<p>Start a Celery worker for the Fides webserver.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides worker [OPTIONS]
-</code></pre></div></td></tr></table></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>  -q, --queues TEXT
-  --exclude-queues TEXT
-  --help                 Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides worker[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 
-              
-            </article>
-          </div>
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
-          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
-            Back to top
-          </a>
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
         
       </main>
       
@@ -2577,7 +3018,7 @@ _Requires Redis and Postgres to be configured and running_
   
     <nav
       class="md-footer__inner md-grid"
-      aria-label="Footer"
+      aria-label="footer.title"
     >
       <div class="nav-wrap">
       <!-- Link to previous page -->
@@ -2590,7 +3031,7 @@ _Requires Redis and Postgres to be configured and running_
           rel="prev"
         >
           <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
           </div>
           <div class="md-footer__title">
             <div class="md-ellipsis">
@@ -2621,7 +3062,7 @@ _Requires Redis and Postgres to be configured and running_
             </div>
           </div>
           <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
           </div>
         </a>
       
@@ -2688,10 +3129,15 @@ _Requires Redis and Postgres to be configured and running_
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.top", "navigation.instant", "navigation.tabs"], "search": "../assets/javascripts/workers/search.5e67fbfe.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.e87a5f81.min.js"></script>
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.top", "navigation.instant", "navigation.tabs"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
       
