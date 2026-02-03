@@ -54,14 +54,14 @@ class SnowflakeConnector(SQLConnector):
         connect_args: Dict[str, Union[str, bytes]] = {}
         if config.private_key:
             config.private_key = config.private_key.replace("\\n", "\n")
-            
+
             # Determine password (None if no passphrase)
             password = (
                 config.private_key_passphrase.encode()
                 if config.private_key_passphrase
                 else None
             )
-            
+
             # Load and convert the private key to DER/PKCS8 format
             # This is required by Snowflake connector regardless of passphrase
             private_key_encoded = serialization.load_pem_private_key(
