@@ -2,6 +2,7 @@
 import type { ColumnsType } from "antd/es/table";
 import {
   Button,
+  Empty,
   Flex,
   Icons,
   Modal,
@@ -41,23 +42,18 @@ enum ChatProviderColumnKeys {
 
 const EmptyTableNotice = () => {
   return (
-    <Space
-      direction="vertical"
-      size="middle"
+    <Empty
+      description={
+        <Space direction="vertical" size="small">
+          <Text strong>No chat providers found.</Text>
+          <Text type="secondary">
+            Click &quot;Add a chat provider&quot; to configure Slack or other
+            chat integrations.
+          </Text>
+        </Space>
+      }
       data-testid="no-results-notice"
-      style={{
-        margin: "24px auto",
-        padding: "40px",
-        maxWidth: "70%",
-        textAlign: "center",
-      }}
-    >
-      <Text strong>No chat providers found.</Text>
-      <Text>
-        Click &quot;Add a chat provider&quot; to configure Slack or other chat
-        integrations.
-      </Text>
-    </Space>
+    />
   );
 };
 
@@ -144,7 +140,7 @@ export const ChatProviderConfigurations = () => {
       {
         title: "Provider",
         key: ChatProviderColumnKeys.PROVIDER,
-        render: (_: unknown, record: ChatProviderSettingsResponse) => {
+        render: (_value: unknown, record: ChatProviderSettingsResponse) => {
           const getProviderIcon = () => {
             switch (record.provider_type) {
               case "slack":
@@ -177,7 +173,7 @@ export const ChatProviderConfigurations = () => {
       {
         title: "Status",
         key: ChatProviderColumnKeys.STATUS,
-        render: (_, record: ChatProviderSettingsResponse) => {
+        render: (_value: unknown, record: ChatProviderSettingsResponse) => {
           if (record.authorized) {
             return (
               <Tag color="success" data-testid="status-authorized">
@@ -199,7 +195,7 @@ export const ChatProviderConfigurations = () => {
         title: "Enabled",
         key: ChatProviderColumnKeys.ENABLED,
         width: 100,
-        render: (_, record: ChatProviderSettingsResponse) => (
+        render: (_value: unknown, record: ChatProviderSettingsResponse) => (
           <Switch
             checked={record.enabled}
             disabled={!userCanUpdate || record.enabled}
@@ -213,13 +209,14 @@ export const ChatProviderConfigurations = () => {
                 ? "This provider is currently active"
                 : "Click to enable this provider"
             }
+            data-testid="enable-chat-provider-switch"
           />
         ),
       },
       {
         title: "Actions",
         key: ChatProviderColumnKeys.ACTIONS,
-        render: (_, record: ChatProviderSettingsResponse) => (
+        render: (_value: unknown, record: ChatProviderSettingsResponse) => (
           <Space>
             {userCanUpdate && !record.authorized && record.client_id && (
               <Button
@@ -282,10 +279,20 @@ export const ChatProviderConfigurations = () => {
         open={deleteModalOpen}
         onCancel={cancelDelete}
         footer={[
-          <Button key="cancel" onClick={cancelDelete}>
+          <Button
+            key="cancel"
+            onClick={cancelDelete}
+            data-testid="modal-cancel-btn"
+          >
             Cancel
           </Button>,
-          <Button key="delete" type="primary" danger onClick={confirmDelete}>
+          <Button
+            key="delete"
+            type="primary"
+            danger
+            onClick={confirmDelete}
+            data-testid="modal-delete-btn"
+          >
             Delete
           </Button>,
         ]}
@@ -307,13 +314,15 @@ export const ChatProviderConfigurations = () => {
 
   return (
     <>
-      <Text className="mb-8" style={{ maxWidth: "70%" }}>
-        Configure chat providers to enable notifications, alerts, and AI-powered
-        privacy assessment questionnaires through platforms like Slack.
-      </Text>
-      <Flex flex={1} vertical style={{ overflow: "auto" }}>
+      <Flex vertical gap="middle">
+        <Text style={{ maxWidth: "70%" }}>
+          Configure chat providers to enable notifications, alerts, and
+          AI-powered privacy assessment questionnaires through platforms like
+          Slack.
+        </Text>
+
         {userCanUpdate && (
-          <Flex justify="flex-end" className="mb-4 w-full">
+          <Flex justify="flex-end">
             <Button
               onClick={() => {
                 router.push(CHAT_PROVIDERS_CONFIGURE_ROUTE);
@@ -328,6 +337,7 @@ export const ChatProviderConfigurations = () => {
             </Button>
           </Flex>
         )}
+
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={3} />
         ) : (

@@ -1,20 +1,11 @@
-import { Flex, Form, Select, Spin, Typography } from "fidesui";
+import { Flex, Form, Select, Spin } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { useGetChatConfigQuery } from "./chatProvider.slice";
+import ConfigurationCard from "./components/ConfigurationCard";
+import { CHAT_PROVIDER_LABELS, CHAT_PROVIDER_TYPES } from "./constants";
 import SlackChatProviderForm from "./forms/SlackChatProviderForm";
-
-const { Title } = Typography;
-
-// Chat provider types
-export const chatProviders = {
-  slack: "slack",
-} as const;
-
-export const chatProviderLabels = {
-  slack: "Slack",
-} as const;
 
 const ChatProviderConfiguration = () => {
   const router = useRouter();
@@ -45,8 +36,8 @@ const ChatProviderConfiguration = () => {
   const providerOptions = useMemo(() => {
     return [
       {
-        value: chatProviders.slack,
-        label: chatProviderLabels.slack,
+        value: CHAT_PROVIDER_TYPES.SLACK,
+        label: CHAT_PROVIDER_LABELS[CHAT_PROVIDER_TYPES.SLACK],
       },
     ];
   }, []);
@@ -62,7 +53,7 @@ const ChatProviderConfiguration = () => {
 
   const renderProviderForm = () => {
     switch (selectedProviderType) {
-      case chatProviders.slack:
+      case CHAT_PROVIDER_TYPES.SLACK:
         return <SlackChatProviderForm configId={configId} />;
       default:
         return null;
@@ -73,50 +64,26 @@ const ChatProviderConfiguration = () => {
     <div>
       {/* Provider Selection - only show in create mode (when no existing config) */}
       {!isEditMode && (
-        <div
-          className="mb-4 mt-6"
-          style={{
-            maxWidth: "720px",
-            border: "1px solid #e5e7eb",
-            borderRadius: 6,
-            overflow: "visible",
-          }}
-        >
-          <Flex
-            align="center"
-            style={{
-              backgroundColor: "#f9fafb",
-              padding: "16px 24px",
-              borderBottom: "1px solid #e5e7eb",
-              borderTopLeftRadius: 6,
-              borderTopRightRadius: 6,
-            }}
-          >
-            <Title level={5} style={{ margin: 0 }}>
-              Select chat provider
-            </Title>
-          </Flex>
-          <div style={{ padding: "24px" }}>
-            <Form layout="vertical">
-              <Form.Item
-                label="Provider type"
-                name="provider_type"
-                rules={[
-                  { required: true, message: "Please select a provider type" },
-                ]}
-              >
-                <Select
-                  placeholder="Choose a chat provider..."
-                  aria-label="Select a chat provider"
-                  data-testid="chat-provider-type-select"
-                  value={selectedProviderType ?? undefined}
-                  onChange={(value) => setSelectedProviderType(value)}
-                  options={providerOptions}
-                />
-              </Form.Item>
-            </Form>
-          </div>
-        </div>
+        <ConfigurationCard title="Select chat provider">
+          <Form layout="vertical">
+            <Form.Item
+              label="Provider type"
+              name="provider_type"
+              rules={[
+                { required: true, message: "Please select a provider type" },
+              ]}
+            >
+              <Select
+                placeholder="Choose a chat provider..."
+                aria-label="Select a chat provider"
+                data-testid="chat-provider-type-select"
+                value={selectedProviderType ?? undefined}
+                onChange={(value) => setSelectedProviderType(value)}
+                options={providerOptions}
+              />
+            </Form.Item>
+          </Form>
+        </ConfigurationCard>
       )}
 
       {/* Render the appropriate form based on selected provider */}

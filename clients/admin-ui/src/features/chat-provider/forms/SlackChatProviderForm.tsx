@@ -1,13 +1,4 @@
-import {
-  Button,
-  Flex,
-  Form,
-  GreenCheckCircleIcon,
-  Input,
-  Space,
-  Typography,
-  useMessage,
-} from "fidesui";
+import { Button, Flex, Form, Input, Space, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -22,9 +13,11 @@ import {
   useGetChatConfigQuery,
   useUpdateChatConfigMutation,
 } from "../chatProvider.slice";
+import AuthorizationStatus from "../components/AuthorizationStatus";
+import ConfigurationCard from "../components/ConfigurationCard";
+import { SECRET_PLACEHOLDER } from "../constants";
 import SlackIcon from "../icons/SlackIcon";
-
-const { Title, Text } = Typography;
+import { cleanupUrlParams, getOAuthErrorMessage } from "../utils/urlHelpers";
 
 interface SlackChatProviderFormProps {
   configId?: string;
@@ -56,47 +49,32 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
     if (chatSuccess === "true") {
       message.success("Slack authorization successful!");
       refetch();
-      // Clean up URL but keep id param
-      const newUrl = configId
-        ? `${window.location.pathname}?id=${configId}`
-        : window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
+      cleanupUrlParams(configId ? { id: configId } : undefined);
     } else if (chatError) {
-      const errorMessages: Record<string, string> = {
-        invalid_state:
-          "Authorization failed: Invalid state token. Please try again.",
-        not_configured: "Authorization failed: Chat provider not configured.",
-        token_failed: "Authorization failed: Could not obtain access token.",
-        no_token: "Authorization failed: No token received from Slack.",
-      };
-      message.error(
-        errorMessages[chatError] || "Authorization failed. Please try again.",
-      );
-      // Clean up URL but keep id param
-      const newUrl = configId
-        ? `${window.location.pathname}?id=${configId}`
-        : window.location.pathname;
-      window.history.replaceState({}, "", newUrl);
+      message.error(getOAuthErrorMessage(chatError));
+      cleanupUrlParams(configId ? { id: configId } : undefined);
     }
   }, [refetch, message, configId]);
 
   const hasSigningSecret = existingConfig?.has_signing_secret;
 
   const initialValues = {
-    workspace_url: existingConfig?.workspace_url || "",
-    client_id: existingConfig?.client_id || "",
-    client_secret: isEditMode ? "**********" : "",
-    signing_secret: isEditMode && hasSigningSecret ? "**********" : "",
+    workspace_url: existingConfig?.workspace_url ?? "",
+    client_id: existingConfig?.client_id ?? "",
+    client_secret: isEditMode ? SECRET_PLACEHOLDER : "",
+    signing_secret: isEditMode && hasSigningSecret ? SECRET_PLACEHOLDER : "",
   };
 
   // Update form when existingConfig changes
   useEffect(() => {
     if (existingConfig) {
       form.setFieldsValue({
-        workspace_url: existingConfig.workspace_url || "",
-        client_id: existingConfig.client_id || "",
-        client_secret: "**********",
-        signing_secret: existingConfig.has_signing_secret ? "**********" : "",
+        workspace_url: existingConfig.workspace_url ?? "",
+        client_id: existingConfig.client_id ?? "",
+        client_secret: SECRET_PLACEHOLDER,
+        signing_secret: existingConfig.has_signing_secret
+          ? SECRET_PLACEHOLDER
+          : "",
       });
       setIsDirty(false);
     }
@@ -116,11 +94,12 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
           client_id: values.client_id || undefined,
           // Only send secrets if they're not the placeholder
           client_secret:
-            values.client_secret && values.client_secret !== "**********"
+            values.client_secret && values.client_secret !== SECRET_PLACEHOLDER
               ? values.client_secret
               : undefined,
           signing_secret:
-            values.signing_secret && values.signing_secret !== "**********"
+            values.signing_secret &&
+            values.signing_secret !== SECRET_PLACEHOLDER
               ? values.signing_secret
               : undefined,
         };
@@ -136,8 +115,8 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
           // Reset form with current values but clear the secrets
           form.setFieldsValue({
             ...values,
-            client_secret: "**********",
-            signing_secret: values.signing_secret ? "**********" : "",
+            client_secret: SECRET_PLACEHOLDER,
+            signing_secret: values.signing_secret ? SECRET_PLACEHOLDER : "",
           });
         }
       } else {
@@ -177,168 +156,142 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
     const hasChanges =
       currentValues.workspace_url !== initialValues.workspace_url ||
       currentValues.client_id !== initialValues.client_id ||
-      (currentValues.client_secret !== "**********" &&
+      (currentValues.client_secret !== SECRET_PLACEHOLDER &&
         currentValues.client_secret !== "") ||
-      (currentValues.signing_secret !== "**********" &&
+      (currentValues.signing_secret !== SECRET_PLACEHOLDER &&
         currentValues.signing_secret !== "" &&
         currentValues.signing_secret !== initialValues.signing_secret);
     setIsDirty(hasChanges);
   };
 
   return (
-    <div style={{ position: "relative" }}>
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={initialValues}
-        onFinish={handleSubmit}
-        onValuesChange={handleFormValuesChange}
+    <Form
+      form={form}
+      layout="vertical"
+      initialValues={initialValues}
+      onFinish={handleSubmit}
+      onValuesChange={handleFormValuesChange}
+    >
+      <ConfigurationCard
+        title="Slack chat provider configuration"
+        icon={<SlackIcon />}
       >
-        <div
-          className="mt-6"
-          style={{
-            maxWidth: "720px",
-            border: "1px solid #e5e7eb",
-            borderRadius: 6,
-            overflow: "visible",
-          }}
+        <Form.Item
+          name="workspace_url"
+          label="Workspace URL"
+          rules={[
+            { required: true, message: "Workspace URL is required" },
+            {
+              type: "string",
+              min: 1,
+              message: "Workspace URL cannot be empty",
+            },
+          ]}
         >
-          <Flex
-            align="center"
-            style={{
-              backgroundColor: "#f9fafb",
-              padding: "16px 24px",
-              borderBottom: "1px solid #e5e7eb",
-              borderTopLeftRadius: 6,
-              borderTopRightRadius: 6,
-            }}
-          >
-            <Space>
-              <SlackIcon />
-              <Title level={5} style={{ margin: 0 }}>
-                Slack chat provider configuration
-              </Title>
-            </Space>
-          </Flex>
+          <Input
+            placeholder="your-company.slack.com"
+            data-testid="workspace-url-input"
+          />
+        </Form.Item>
 
-          <div style={{ padding: "24px" }}>
-            <Form.Item
-              name="workspace_url"
-              label="Workspace URL"
-              rules={[
-                { required: true, message: "Workspace URL is required" },
-                {
-                  type: "string",
-                  min: 1,
-                  message: "Workspace URL cannot be empty",
-                },
-              ]}
-              style={{ marginBottom: 24 }}
-            >
-              <Input placeholder="your-company.slack.com" />
-            </Form.Item>
+        <Form.Item
+          name="client_id"
+          label="Client ID"
+          rules={[
+            { required: true, message: "Client ID is required" },
+            {
+              type: "string",
+              min: 1,
+              message: "Client ID cannot be empty",
+            },
+          ]}
+        >
+          <Input
+            placeholder="Enter your Slack App Client ID"
+            data-testid="client-id-input"
+          />
+        </Form.Item>
 
-            <Form.Item
-              name="client_id"
-              label="Client ID"
-              rules={[
-                { required: true, message: "Client ID is required" },
-                {
-                  type: "string",
-                  min: 1,
-                  message: "Client ID cannot be empty",
-                },
-              ]}
-              style={{ marginBottom: 24 }}
-            >
-              <Input placeholder="Enter your Slack App Client ID" />
-            </Form.Item>
+        <Form.Item
+          name="client_secret"
+          label="Client secret"
+          required
+          rules={[
+            {
+              required: !isEditMode,
+              message: "Client secret is required",
+            },
+          ]}
+        >
+          <Input.Password
+            placeholder={
+              isEditMode
+                ? "Enter new client secret to change"
+                : "Enter your Slack App Client Secret"
+            }
+            data-testid="client-secret-input"
+          />
+        </Form.Item>
 
-            <Form.Item
-              name="client_secret"
-              label="Client secret"
-              required
-              rules={[
-                {
-                  required: !isEditMode,
-                  message: "Client secret is required",
-                },
-              ]}
-              style={{ marginBottom: 24 }}
-            >
-              <Input.Password
-                placeholder={
-                  isEditMode
-                    ? "Enter new client secret to change"
-                    : "Enter your Slack App Client Secret"
-                }
-              />
-            </Form.Item>
+        <Form.Item
+          name="signing_secret"
+          label="Signing secret"
+          required
+          tooltip="Used to verify that webhook events are from Slack. Found in your Slack App's Basic Information page."
+          rules={[
+            {
+              required: !isEditMode || !hasSigningSecret,
+              message: "Signing secret is required",
+            },
+          ]}
+        >
+          <Input.Password
+            placeholder={
+              isEditMode && hasSigningSecret
+                ? "Enter new signing secret to change"
+                : "Enter your Slack App Signing Secret"
+            }
+            data-testid="signing-secret-input"
+          />
+        </Form.Item>
 
-            <Form.Item
-              name="signing_secret"
-              label="Signing secret"
-              required
-              tooltip="Used to verify that webhook events are from Slack. Found in your Slack App's Basic Information page."
-              rules={[
-                {
-                  required: !isEditMode || !hasSigningSecret,
-                  message: "Signing secret is required",
-                },
-              ]}
-            >
-              <Input.Password
-                placeholder={
-                  isEditMode && hasSigningSecret
-                    ? "Enter new signing secret to change"
-                    : "Enter your Slack App Signing Secret"
-                }
-              />
-            </Form.Item>
-
-            <Flex justify="flex-end" className="mt-6">
-              <Space>
-                {isEditMode ? (
-                  <>
-                    {/* Authorize button - show when not authorized */}
-                    {!isAuthorized && (
-                      <Button
-                        onClick={handleAuthorize}
-                        disabled={isDirty}
-                        data-testid="authorize-chat-btn"
-                      >
-                        Authorize with Slack
-                      </Button>
-                    )}
-                    {/* Authorized status - show when OAuth is complete */}
-                    {isAuthorized && (
-                      <Space data-testid="authorize-status">
-                        <GreenCheckCircleIcon />
-                        <Text style={{ color: "#52c41a", fontWeight: 500 }}>
-                          Authorized
-                        </Text>
-                      </Space>
-                    )}
-                  </>
-                ) : (
-                  <Button onClick={() => router.push(CHAT_PROVIDERS_ROUTE)}>
-                    Cancel
+        <Flex justify="flex-end" className="mt-6">
+          <Space>
+            {isEditMode ? (
+              <>
+                {/* Authorize button - show when not authorized */}
+                {!isAuthorized && (
+                  <Button
+                    onClick={handleAuthorize}
+                    disabled={isDirty}
+                    data-testid="authorize-chat-btn"
+                  >
+                    Authorize with Slack
                   </Button>
                 )}
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  data-testid="save-btn"
-                  disabled={!isDirty}
-                >
-                  Save
-                </Button>
-              </Space>
-            </Flex>
-          </div>
-        </div>
-      </Form>
-    </div>
+                {/* Authorized status - show when OAuth is complete */}
+                {isAuthorized && <AuthorizationStatus authorized />}
+              </>
+            ) : (
+              <Button
+                onClick={() => router.push(CHAT_PROVIDERS_ROUTE)}
+                data-testid="cancel-btn"
+              >
+                Cancel
+              </Button>
+            )}
+            <Button
+              htmlType="submit"
+              type="primary"
+              data-testid="save-btn"
+              disabled={!isDirty}
+            >
+              Save
+            </Button>
+          </Space>
+        </Flex>
+      </ConfigurationCard>
+    </Form>
   );
 };
 
