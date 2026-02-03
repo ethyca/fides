@@ -1,0 +1,4 @@
+type: Added
+description: Pluggable permission checker mechanism to allow RBAC extensions to override default permission logic
+pr: 7296
+labels: []
