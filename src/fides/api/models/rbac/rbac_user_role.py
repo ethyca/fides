@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, String, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
 
@@ -75,18 +75,18 @@ class RBACUserRole(Base):
     )
 
     # Relationships
-    user: "FidesUser" = relationship(
+    user: RelationshipProperty["FidesUser"] = relationship(
         "FidesUser",
         foreign_keys=[user_id],
         backref="rbac_role_assignments",
         passive_deletes=True,  # Let database handle CASCADE delete
     )
-    role: "RBACRole" = relationship(
+    role: RelationshipProperty["RBACRole"] = relationship(
         "RBACRole",
         back_populates="user_assignments",
         lazy="selectin",
     )
-    assigner: Optional["FidesUser"] = relationship(
+    assigner: RelationshipProperty[Optional["FidesUser"]] = relationship(
         "FidesUser",
         foreign_keys=[assigned_by],
     )
@@ -103,7 +103,11 @@ class RBACUserRole(Base):
     )
 
     def __repr__(self) -> str:
-        scope = f"{self.resource_type}:{self.resource_id}" if self.resource_type else "global"
+        scope = (
+            f"{self.resource_type}:{self.resource_id}"
+            if self.resource_type
+            else "global"
+        )
         return f"<RBACUserRole(user_id='{self.user_id}', role_id='{self.role_id}', scope='{scope}')>"
 
     def is_valid(self) -> bool:
