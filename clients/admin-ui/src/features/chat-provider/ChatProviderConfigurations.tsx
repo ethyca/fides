@@ -20,10 +20,12 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CHAT_PROVIDERS_CONFIGURE_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { TableSkeletonLoader } from "~/features/common/table/v2";
-import { ScopeRegistryEnum } from "~/types/api";
-
 import {
   ChatProviderSettingsResponse,
+  ScopeRegistryEnum,
+} from "~/types/api";
+
+import {
   useDeleteChatConfigMutation,
   useEnableChatConfigMutation,
   useGetChatConfigsQuery,
