@@ -6,7 +6,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
 
@@ -93,12 +93,12 @@ class RBACRoleConstraint(Base):
     )
 
     # Relationships
-    role_1: "RBACRole" = relationship(
+    role_1: RelationshipProperty["RBACRole"] = relationship(
         "RBACRole",
         foreign_keys=[role_id_1],
         lazy="selectin",
     )
-    role_2: Optional["RBACRole"] = relationship(
+    role_2: RelationshipProperty[Optional["RBACRole"]] = relationship(
         "RBACRole",
         foreign_keys=[role_id_2],
         lazy="selectin",
