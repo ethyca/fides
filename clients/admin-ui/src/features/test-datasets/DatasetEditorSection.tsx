@@ -9,7 +9,7 @@ import {
   Space,
   Tooltip,
   Typography,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useEffect, useMemo, useState } from "react";
@@ -17,7 +17,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Editor } from "~/features/common/yaml/helpers";
 import { useUpdateDatasetMutation } from "~/features/dataset";
 import {
@@ -54,7 +53,7 @@ const getReachabilityMessage = (details: any) => {
 };
 
 const EditorSection = ({ connectionKey }: EditorSectionProps) => {
-  const toast = useToast();
+  const messageApi = useMessage();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
 
@@ -153,14 +152,12 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     try {
       datasetValues = yaml.load(editorContent) as Dataset;
     } catch (yamlError) {
-      toast(
-        errorToastParams(
-          `YAML Parsing Error: ${
-            yamlError instanceof YAMLException
-              ? `${yamlError.reason} ${yamlError.mark ? `at line ${yamlError.mark.line}` : ""}`
-              : "Invalid YAML format"
-          }`,
-        ),
+      messageApi.error(
+        `YAML Parsing Error: ${
+          yamlError instanceof YAMLException
+            ? `${yamlError.reason} ${yamlError.mark ? `at line ${yamlError.mark.line}` : ""}`
+            : "Invalid YAML format"
+        }`,
       );
       return;
     }
@@ -169,7 +166,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     const result = await updateDataset(datasetValues);
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      messageApi.error(getErrorMessage(result.error));
       return;
     }
 
@@ -179,7 +176,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
         ctl_dataset: result.data,
       }),
     );
-    toast(successToastParams("Successfully modified dataset"));
+    messageApi.success("Successfully modified dataset");
     await refetchDatasets();
     await refetchReachability();
   };
@@ -193,9 +190,9 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       if (refreshedDataset?.ctl_dataset) {
         setEditorContent(yaml.dump(removeNulls(refreshedDataset.ctl_dataset)));
       }
-      toast(successToastParams("Successfully refreshed datasets"));
+      messageApi.success("Successfully refreshed datasets");
     } catch (error) {
-      toast(errorToastParams(getErrorMessage(error as FetchBaseQueryError)));
+      messageApi.error(getErrorMessage(error as FetchBaseQueryError));
     }
   };
 
