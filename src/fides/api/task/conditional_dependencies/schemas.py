@@ -140,11 +140,14 @@ class PolicyEvaluationResult(BaseModel):
     evaluation_result: Optional[EvaluationResult] = Field(
         None, description="Detailed evaluation report (None for default policy)"
     )
-    is_default: bool = Field(
-        False, description="Whether the default policy was used"
-    )
+    is_default: bool = Field(False, description="Whether the default policy was used")
 
-    model_config = {"from_attributes": True, "frozen": True, "arbitrary_types_allowed": True}
+    model_config = {
+        "from_attributes": True,
+        "frozen": True,
+        "arbitrary_types_allowed": True,
+    }
+
 
 class PolicyEvaluationSpecificity(BaseModel):
     """Specificity of a policy evaluation.
