@@ -127,12 +127,14 @@ const ScrollableListAdd = ({
   options,
   onOptionSelected,
   baseTestId,
+  popupMatchSelectWidth = true,
   selectStyles,
 }: {
   label: string;
   options: Option[];
   onOptionSelected: (opt: Option) => void;
   baseTestId: string;
+  popupMatchSelectWidth?: boolean;
   selectStyles?: SelectProps["styles"];
 }) => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
@@ -159,7 +161,7 @@ const ScrollableListAdd = ({
         data-testid={`select-${baseTestId}`}
         aria-label={label}
         optionFilterProp="label"
-        popupMatchSelectWidth={false}
+        popupMatchSelectWidth={popupMatchSelectWidth}
         styles={selectStyles}
       />
     </Box>
@@ -196,6 +198,7 @@ const ScrollableList = <T extends unknown>({
   maxHeight = 36,
   baseTestId,
   isItemDisabled,
+  popupMatchSelectWidth,
   selectStyles,
 }: {
   label?: string;
@@ -217,6 +220,7 @@ const ScrollableList = <T extends unknown>({
   maxHeight?: number;
   baseTestId: string;
   isItemDisabled?: (item: T) => boolean;
+  popupMatchSelectWidth?: boolean;
   selectStyles?: SelectProps["styles"];
 }) => {
   const getItemId = (item: T) =>
@@ -359,6 +363,7 @@ const ScrollableList = <T extends unknown>({
           onOptionSelected={handleAddNewValue}
           baseTestId={baseTestId}
           selectStyles={selectStyles}
+          popupMatchSelectWidth={popupMatchSelectWidth}
         />
       ) : null}
     </Flex>
@@ -369,6 +374,7 @@ const ScrollableList = <T extends unknown>({
       onOptionSelected={handleAddNewValue}
       baseTestId={baseTestId}
       selectStyles={selectStyles}
+      popupMatchSelectWidth={popupMatchSelectWidth}
     />
   );
 };

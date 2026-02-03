@@ -482,6 +482,7 @@ export const PrivacyExperienceForm = ({
               );
               return notice?.disabled ?? false;
             }}
+            popupMatchSelectWidth={false}
             selectStyles={{
               popup: {
                 root: {
@@ -542,6 +543,7 @@ export const PrivacyExperienceForm = ({
         }}
         draggable
         baseTestId="location"
+        popupMatchSelectWidth={false}
       />
       {translationsEnabled ? (
         <>
@@ -603,6 +605,7 @@ export const PrivacyExperienceForm = ({
         draggable
         maxHeight={100}
         baseTestId="property"
+        popupMatchSelectWidth={false}
       />
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
