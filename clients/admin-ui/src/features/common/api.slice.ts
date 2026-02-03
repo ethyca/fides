@@ -92,8 +92,8 @@ export const baseApi = createApi({
     "Identity Provider Monitor Results",
     "Identity Provider Monitor Filters",
     "Privacy Assessment",
-    "Questionnaire",
-    "Evidence",
+    "Privacy Assessment Questionnaire",
+    "Privacy Assessment Evidence",
   ],
   endpoints: () => ({}),
 });
