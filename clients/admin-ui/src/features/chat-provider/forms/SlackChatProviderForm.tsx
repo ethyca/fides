@@ -1,6 +1,6 @@
 import { Button, Flex, Form, Input, Space, useMessage } from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
@@ -28,7 +28,6 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
   const { handleError } = useAPIHelper();
   const message = useMessage();
   const [form] = Form.useForm();
-  const [isDirty, setIsDirty] = useState(false);
 
   // Fetch existing config if editing
   const { data: existingConfig, refetch } = useGetChatConfigQuery(configId!, {
@@ -76,7 +75,6 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
           ? SECRET_PLACEHOLDER
           : "",
       });
-      setIsDirty(false);
     }
   }, [existingConfig, form]);
 
@@ -110,7 +108,6 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
           handleError(result.error);
         } else {
           message.success("Slack configuration saved successfully.");
-          setIsDirty(false);
           refetch();
           // Reset form with current values but clear the secrets
           form.setFieldsValue({
@@ -151,26 +148,12 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
     window.location.href = authorizeUrl;
   };
 
-  const handleFormValuesChange = () => {
-    const currentValues = form.getFieldsValue();
-    const hasChanges =
-      currentValues.workspace_url !== initialValues.workspace_url ||
-      currentValues.client_id !== initialValues.client_id ||
-      (currentValues.client_secret !== SECRET_PLACEHOLDER &&
-        currentValues.client_secret !== "") ||
-      (currentValues.signing_secret !== SECRET_PLACEHOLDER &&
-        currentValues.signing_secret !== "" &&
-        currentValues.signing_secret !== initialValues.signing_secret);
-    setIsDirty(hasChanges);
-  };
-
   return (
     <Form
       form={form}
       layout="vertical"
       initialValues={initialValues}
       onFinish={handleSubmit}
-      onValuesChange={handleFormValuesChange}
     >
       <ConfigurationCard
         title="Slack chat provider configuration"
@@ -263,7 +246,7 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
                 {!isAuthorized && (
                   <Button
                     onClick={handleAuthorize}
-                    disabled={isDirty}
+                    disabled={form.isFieldsTouched()}
                     data-testid="authorize-chat-btn"
                   >
                     Authorize with Slack
@@ -284,7 +267,7 @@ const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
               htmlType="submit"
               type="primary"
               data-testid="save-btn"
-              disabled={!isDirty}
+              disabled={!form.isFieldsTouched()}
             >
               Save
             </Button>
