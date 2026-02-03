@@ -5,9 +5,10 @@ import {
   Form,
   Select,
 } from "fidesui";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { useGetChatSettingsQuery } from "./chatProvider.slice";
+import { useGetChatConfigQuery } from "./chatProvider.slice";
 import SlackChatProviderForm from "./forms/SlackChatProviderForm";
 
 // Chat provider types
@@ -20,20 +21,29 @@ export const chatProviderLabels = {
 } as const;
 
 const ChatProviderConfiguration = () => {
+  const router = useRouter();
   const [selectedProviderType, setSelectedProviderType] = useState("");
 
-  // Get existing chat provider settings
-  const { data: existingSettings, isLoading } = useGetChatSettingsQuery();
+  // Get config ID from URL if editing
+  const configId = useMemo(() => {
+    const id = router.query.id;
+    return typeof id === "string" ? id : undefined;
+  }, [router.query.id]);
 
-  // Check if there's an existing configuration (edit mode)
-  const isEditMode = !!existingSettings?.client_id;
+  // Check if we're in edit mode based on URL parameter
+  const isEditMode = !!configId;
 
-  // Auto-select provider if one is already configured
+  // Fetch existing config if editing
+  const { data: existingConfig, isLoading } = useGetChatConfigQuery(configId!, {
+    skip: !configId,
+  });
+
+  // Auto-select provider if one is already configured (edit mode)
   useEffect(() => {
-    if (existingSettings?.provider_type) {
-      setSelectedProviderType(existingSettings.provider_type);
+    if (existingConfig?.provider_type) {
+      setSelectedProviderType(existingConfig.provider_type);
     }
-  }, [existingSettings?.provider_type]);
+  }, [existingConfig?.provider_type]);
 
   // Provider options for the dropdown
   const providerOptions = useMemo(() => {
@@ -41,11 +51,9 @@ const ChatProviderConfiguration = () => {
       {
         value: chatProviders.slack,
         label: chatProviderLabels.slack,
-        disabled: isEditMode,
-        title: isEditMode ? "Slack is already configured" : undefined,
       },
     ];
-  }, [isEditMode]);
+  }, []);
 
   // Show loading state
   if (isLoading) {
@@ -64,7 +72,7 @@ const ChatProviderConfiguration = () => {
   const renderProviderForm = () => {
     switch (selectedProviderType) {
       case chatProviders.slack:
-        return <SlackChatProviderForm />;
+        return <SlackChatProviderForm configId={configId} />;
       default:
         return null;
     }

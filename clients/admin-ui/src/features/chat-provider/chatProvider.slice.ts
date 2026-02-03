@@ -23,6 +23,32 @@ export interface ChatProviderSettingsResponse {
   connected_by_email?: string;
 }
 
+export interface ChatProviderConfigCreate {
+  provider_type?: "slack";
+  workspace_url: string; // Required - used as unique identifier
+  client_id?: string;
+  client_secret?: string;
+  signing_secret?: string;
+}
+
+export interface ChatProviderConfigUpdate {
+  provider_type?: "slack";
+  workspace_url?: string;
+  client_id?: string;
+  client_secret?: string;
+  signing_secret?: string;
+}
+
+export interface ChatProviderSecrets {
+  client_secret?: string;
+  signing_secret?: string;
+}
+
+export interface ChatProviderConfigListResponse {
+  items: ChatProviderSettingsResponse[];
+  total: number;
+}
+
 export interface ChatProviderTestResponse {
   success: boolean;
   message: string;
@@ -154,6 +180,68 @@ const chatProviderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Chat Provider"],
     }),
+    // Chat Provider Configuration CRUD endpoints
+    getChatConfigs: build.query<ChatProviderConfigListResponse, void>({
+      query: () => ({ url: "plus/chat/config" }),
+      providesTags: ["Chat Provider"],
+    }),
+    createChatConfig: build.mutation<
+      ChatProviderSettingsResponse,
+      ChatProviderConfigCreate
+    >({
+      query: (body) => ({
+        url: "plus/chat/config",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Chat Provider"],
+    }),
+    getChatConfig: build.query<ChatProviderSettingsResponse, string>({
+      query: (configId) => ({ url: `plus/chat/config/${configId}` }),
+      providesTags: (_result, _error, id) => [{ type: "Chat Provider", id }],
+    }),
+    updateChatConfig: build.mutation<
+      ChatProviderSettingsResponse,
+      { configId: string; data: ChatProviderConfigUpdate }
+    >({
+      query: ({ configId, data }) => ({
+        url: `plus/chat/config/${configId}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { configId }) => [
+        "Chat Provider",
+        { type: "Chat Provider", id: configId },
+      ],
+    }),
+    deleteChatConfig: build.mutation<void, string>({
+      query: (configId) => ({
+        url: `plus/chat/config/${configId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Chat Provider"],
+    }),
+    enableChatConfig: build.mutation<ChatProviderSettingsResponse, string>({
+      query: (configId) => ({
+        url: `plus/chat/config/${configId}/enable`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Chat Provider"],
+    }),
+    updateChatConfigSecrets: build.mutation<
+      ChatProviderSettingsResponse,
+      { configId: string; secrets: ChatProviderSecrets }
+    >({
+      query: ({ configId, secrets }) => ({
+        url: `plus/chat/config/${configId}/secret`,
+        method: "PUT",
+        body: secrets,
+      }),
+      invalidatesTags: (_result, _error, { configId }) => [
+        "Chat Provider",
+        { type: "Chat Provider", id: configId },
+      ],
+    }),
     sendChatMessage: build.mutation<SendMessageResponse, SendMessageRequest>({
       query: (body) => ({
         url: "plus/chat/send",
@@ -197,11 +285,21 @@ const chatProviderApi = baseApi.injectEndpoints({
 });
 
 export const {
+  // Legacy settings endpoints (backward compatibility)
   useGetChatSettingsQuery,
   useUpdateChatSettingsMutation,
   useTestChatConnectionMutation,
   useGetChatChannelsQuery,
   useDeleteChatConnectionMutation,
+  // Chat Provider Configuration CRUD hooks
+  useGetChatConfigsQuery,
+  useCreateChatConfigMutation,
+  useGetChatConfigQuery,
+  useUpdateChatConfigMutation,
+  useDeleteChatConfigMutation,
+  useEnableChatConfigMutation,
+  useUpdateChatConfigSecretsMutation,
+  // Messaging
   useSendChatMessageMutation,
   usePostQuestionsMutation,
   useGetQuestionsQuery,

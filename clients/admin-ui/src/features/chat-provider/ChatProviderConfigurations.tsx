@@ -25,14 +25,15 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 
 import {
   ChatProviderSettingsResponse,
-  useDeleteChatConnectionMutation,
-  useGetChatSettingsQuery,
+  useDeleteChatConfigMutation,
+  useEnableChatConfigMutation,
+  useGetChatConfigsQuery,
 } from "./chatProvider.slice";
 import SlackIcon from "./icons/SlackIcon";
 
 // Define column keys for type safety
 enum ChatProviderColumnKeys {
-  NAME = "name",
+  PROVIDER = "provider",
   STATUS = "status",
   ENABLED = "enabled",
   ACTIONS = "actions",
@@ -66,8 +67,9 @@ const EmptyTableNotice = () => {
 export const ChatProviderConfigurations = () => {
   const router = useRouter();
   const message = useMessage();
-  const { data: settings, isLoading, refetch } = useGetChatSettingsQuery();
-  const [deleteConnection] = useDeleteChatConnectionMutation();
+  const { data: configsData, isLoading, refetch } = useGetChatConfigsQuery();
+  const [deleteConfig] = useDeleteChatConfigMutation();
+  const [enableConfig] = useEnableChatConfigMutation();
 
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -76,51 +78,76 @@ export const ChatProviderConfigurations = () => {
 
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [configToDelete, setConfigToDelete] =
+    useState<ChatProviderSettingsResponse | null>(null);
 
-  // Transform single config into array for table
+  // Use items from the list response
   const tableData = useMemo(() => {
-    if (!settings || !settings.client_id) {
-      return [];
-    }
-    return [settings];
-  }, [settings]);
+    return configsData?.items ?? [];
+  }, [configsData]);
 
-  const handleEditConfiguration = useCallback(() => {
-    router.push(CHAT_PROVIDERS_CONFIGURE_ROUTE);
-  }, [router]);
+  const handleEditConfiguration = useCallback(
+    (configId: string) => {
+      router.push(`${CHAT_PROVIDERS_CONFIGURE_ROUTE}?id=${configId}`);
+    },
+    [router]
+  );
 
-  const handleDeleteConfiguration = useCallback(() => {
-    setDeleteModalOpen(true);
-  }, []);
+  const handleDeleteConfiguration = useCallback(
+    (config: ChatProviderSettingsResponse) => {
+      setConfigToDelete(config);
+      setDeleteModalOpen(true);
+    },
+    []
+  );
+
+  const handleEnableConfiguration = useCallback(
+    async (configId: string) => {
+      try {
+        const result = await enableConfig(configId);
+        if (isErrorResult(result)) {
+          message.error(getErrorMessage(result.error, "Failed to enable"));
+        } else {
+          message.success("Chat provider enabled");
+          refetch();
+        }
+      } catch {
+        message.error("Failed to enable chat provider");
+      }
+    },
+    [enableConfig, message, refetch]
+  );
 
   const confirmDelete = useCallback(async () => {
+    if (!configToDelete) return;
     try {
-      const result = await deleteConnection();
+      const result = await deleteConfig(configToDelete.id);
       if (isErrorResult(result)) {
-        message.error(getErrorMessage(result.error, "Failed to disconnect"));
+        message.error(getErrorMessage(result.error, "Failed to delete"));
       } else {
-        message.success("Chat provider disconnected successfully");
+        message.success("Chat provider deleted successfully");
         refetch();
       }
     } finally {
       setDeleteModalOpen(false);
+      setConfigToDelete(null);
     }
-  }, [deleteConnection, message, refetch]);
+  }, [configToDelete, deleteConfig, message, refetch]);
 
   const cancelDelete = useCallback(() => {
     setDeleteModalOpen(false);
+    setConfigToDelete(null);
   }, []);
 
   // Column definitions
   const columns: ColumnsType<ChatProviderSettingsResponse> = useMemo(
     () => [
       {
-        title: "Provider type",
-        dataIndex: "provider_type",
-        key: ChatProviderColumnKeys.NAME,
-        render: (providerType: string, record: ChatProviderSettingsResponse) => {
+        title: "Provider",
+        key: ChatProviderColumnKeys.PROVIDER,
+        render: (_: unknown, record: ChatProviderSettingsResponse) => {
           const getProviderIcon = () => {
-            switch (providerType) {
+            switch (record.provider_type) {
               case "slack":
                 return <SlackIcon />;
               default:
@@ -128,21 +155,20 @@ export const ChatProviderConfigurations = () => {
             }
           };
 
-          const getProviderName = () => {
-            switch (providerType) {
-              case "slack":
-                return record.workspace_name
-                  ? `Slack (${record.workspace_name})`
-                  : "Slack";
-              default:
-                return providerType;
-            }
-          };
+          // Display as "Slack (workspace_name)" if authorized, otherwise "Slack (workspace_url)"
+          const providerLabel =
+            record.provider_type.charAt(0).toUpperCase() +
+            record.provider_type.slice(1);
+          const displayName = record.workspace_name
+            ? `${providerLabel} (${record.workspace_name})`
+            : record.workspace_url
+              ? `${providerLabel} (${record.workspace_url})`
+              : providerLabel;
 
           return (
             <HStack>
               {getProviderIcon()}
-              <Text>{getProviderName()}</Text>
+              <Text>{displayName}</Text>
             </HStack>
           );
         },
@@ -166,9 +192,7 @@ export const ChatProviderConfigurations = () => {
             );
           }
           return (
-            <Tag data-testid="status-not-configured">
-              Not configured
-            </Tag>
+            <Tag data-testid="status-not-configured">Not configured</Tag>
           );
         },
       },
@@ -177,7 +201,20 @@ export const ChatProviderConfigurations = () => {
         key: ChatProviderColumnKeys.ENABLED,
         width: 100,
         render: (_, record: ChatProviderSettingsResponse) => (
-          <Switch checked={record.enabled} disabled />
+          <Switch
+            checked={record.enabled}
+            disabled={!userCanUpdate || record.enabled}
+            onChange={() => {
+              if (!record.enabled) {
+                handleEnableConfiguration(record.id);
+              }
+            }}
+            title={
+              record.enabled
+                ? "This provider is currently active"
+                : "Click to enable this provider"
+            }
+          />
         ),
       },
       {
@@ -185,11 +222,26 @@ export const ChatProviderConfigurations = () => {
         key: ChatProviderColumnKeys.ACTIONS,
         render: (_, record: ChatProviderSettingsResponse) => (
           <HStack>
+            {userCanUpdate && !record.authorized && record.client_id && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/api/v1/plus/chat/authorize?config_id=${record.id}`;
+                }}
+                size="small"
+                type="primary"
+                title="Authorize with Slack"
+                aria-label="Authorize with Slack"
+                data-testid="authorize-chat-config-btn"
+              >
+                Authorize
+              </Button>
+            )}
             {userCanUpdate && (
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleEditConfiguration();
+                  handleEditConfiguration(record.id);
                 }}
                 size="small"
                 icon={<Icons.Edit />}
@@ -198,16 +250,16 @@ export const ChatProviderConfigurations = () => {
                 data-testid="edit-chat-config-btn"
               />
             )}
-            {userCanUpdate && record.authorized && (
+            {userCanUpdate && (
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDeleteConfiguration();
+                  handleDeleteConfiguration(record);
                 }}
                 size="small"
                 icon={<Icons.TrashCan />}
-                title="Disconnect"
-                aria-label="Disconnect chat provider"
+                title="Delete"
+                aria-label="Delete chat provider"
                 data-testid="delete-chat-config-btn"
               />
             )}
@@ -215,14 +267,19 @@ export const ChatProviderConfigurations = () => {
         ),
       },
     ],
-    [userCanUpdate, handleEditConfiguration, handleDeleteConfiguration],
+    [
+      userCanUpdate,
+      handleEditConfiguration,
+      handleDeleteConfiguration,
+      handleEnableConfiguration,
+    ]
   );
 
   // Delete confirmation modal
   const deleteModal = useMemo(
     () => (
       <Modal
-        title="Disconnect chat provider"
+        title="Delete chat provider"
         open={deleteModalOpen}
         onCancel={cancelDelete}
         footer={[
@@ -230,28 +287,23 @@ export const ChatProviderConfigurations = () => {
             Cancel
           </Button>,
           <Button key="delete" type="primary" danger onClick={confirmDelete}>
-            Disconnect
+            Delete
           </Button>,
         ]}
       >
         <Space direction="vertical">
           <Text>
-            Are you sure you want to disconnect{" "}
+            Are you sure you want to delete the Slack provider for{" "}
             <strong>
-              {settings?.workspace_name
-                ? `Slack (${settings.workspace_name})`
-                : "Slack"}
+              {configToDelete?.workspace_name || configToDelete?.workspace_url}
             </strong>
             ?
           </Text>
-          <Text>
-            Your OAuth credentials will be preserved, but you will need to
-            re-authorize to use the integration.
-          </Text>
+          <Text>This action cannot be undone.</Text>
         </Space>
       </Modal>
     ),
-    [deleteModalOpen, settings?.workspace_name, cancelDelete, confirmDelete],
+    [deleteModalOpen, configToDelete, cancelDelete, confirmDelete]
   );
 
   return (

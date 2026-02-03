@@ -17,24 +17,34 @@ import { useAPIHelper } from "~/features/common/hooks";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 
 import {
-  ChatProviderSettings,
-  useGetChatSettingsQuery,
-  useUpdateChatSettingsMutation,
+  ChatProviderConfigCreate,
+  ChatProviderConfigUpdate,
+  useCreateChatConfigMutation,
+  useGetChatConfigQuery,
+  useUpdateChatConfigMutation,
 } from "../chatProvider.slice";
 import SlackIcon from "../icons/SlackIcon";
 
-const SlackChatProviderForm = () => {
+interface SlackChatProviderFormProps {
+  configId?: string;
+}
+
+const SlackChatProviderForm = ({ configId }: SlackChatProviderFormProps) => {
   const router = useRouter();
   const { handleError } = useAPIHelper();
   const message = useMessage();
   const [form] = Form.useForm();
   const [isDirty, setIsDirty] = useState(false);
 
-  const { data: existingSettings, refetch } = useGetChatSettingsQuery();
-  const [updateSettings] = useUpdateChatSettingsMutation();
+  // Fetch existing config if editing
+  const { data: existingConfig, refetch } = useGetChatConfigQuery(configId!, {
+    skip: !configId,
+  });
+  const [createConfig] = useCreateChatConfigMutation();
+  const [updateConfig] = useUpdateChatConfigMutation();
 
-  const isEditMode = !!existingSettings?.client_id;
-  const isAuthorized = !!existingSettings?.authorized;
+  const isEditMode = !!configId;
+  const isAuthorized = !!existingConfig?.authorized;
 
   // Check for OAuth callback results in URL
   useEffect(() => {
@@ -45,8 +55,11 @@ const SlackChatProviderForm = () => {
     if (chatSuccess === "true") {
       message.success("Slack authorization successful!");
       refetch();
-      // Clean up URL
-      window.history.replaceState({}, "", window.location.pathname);
+      // Clean up URL but keep id param
+      const newUrl = configId
+        ? `${window.location.pathname}?id=${configId}`
+        : window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
     } else if (chatError) {
       const errorMessages: Record<string, string> = {
         invalid_state:
@@ -58,32 +71,35 @@ const SlackChatProviderForm = () => {
       message.error(
         errorMessages[chatError] || "Authorization failed. Please try again.",
       );
-      // Clean up URL
-      window.history.replaceState({}, "", window.location.pathname);
+      // Clean up URL but keep id param
+      const newUrl = configId
+        ? `${window.location.pathname}?id=${configId}`
+        : window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
     }
-  }, [refetch, message]);
+  }, [refetch, message, configId]);
 
-  const hasSigningSecret = existingSettings?.has_signing_secret;
+  const hasSigningSecret = existingConfig?.has_signing_secret;
 
   const initialValues = {
-    workspace_url: existingSettings?.workspace_url || "",
-    client_id: existingSettings?.client_id || "",
+    workspace_url: existingConfig?.workspace_url || "",
+    client_id: existingConfig?.client_id || "",
     client_secret: isEditMode ? "**********" : "",
     signing_secret: isEditMode && hasSigningSecret ? "**********" : "",
   };
 
-  // Update form when existingSettings changes
+  // Update form when existingConfig changes
   useEffect(() => {
-    if (existingSettings) {
+    if (existingConfig) {
       form.setFieldsValue({
-        workspace_url: existingSettings.workspace_url || "",
-        client_id: existingSettings.client_id || "",
+        workspace_url: existingConfig.workspace_url || "",
+        client_id: existingConfig.client_id || "",
         client_secret: "**********",
-        signing_secret: existingSettings.has_signing_secret ? "**********" : "",
+        signing_secret: existingConfig.has_signing_secret ? "**********" : "",
       });
       setIsDirty(false);
     }
-  }, [existingSettings, form]);
+  }, [existingConfig, form]);
 
   const handleSubmit = async (values: {
     workspace_url: string;
@@ -92,36 +108,56 @@ const SlackChatProviderForm = () => {
     signing_secret: string;
   }) => {
     try {
-      const payload: ChatProviderSettings = {
-        enabled: true,
-        provider_type: "slack",
-        workspace_url: values.workspace_url || undefined,
-        client_id: values.client_id || undefined,
-        // Only send secrets if they're not the placeholder
-        client_secret:
-          values.client_secret && values.client_secret !== "**********"
-            ? values.client_secret
-            : undefined,
-        signing_secret:
-          values.signing_secret && values.signing_secret !== "**********"
-            ? values.signing_secret
-            : undefined,
-      };
+      if (isEditMode && configId) {
+        // Update existing config
+        const payload: ChatProviderConfigUpdate = {
+          workspace_url: values.workspace_url || undefined,
+          client_id: values.client_id || undefined,
+          // Only send secrets if they're not the placeholder
+          client_secret:
+            values.client_secret && values.client_secret !== "**********"
+              ? values.client_secret
+              : undefined,
+          signing_secret:
+            values.signing_secret && values.signing_secret !== "**********"
+              ? values.signing_secret
+              : undefined,
+        };
 
-      const result = await updateSettings(payload);
+        const result = await updateConfig({ configId, data: payload });
 
-      if (isErrorResult(result)) {
-        handleError(result.error);
+        if (isErrorResult(result)) {
+          handleError(result.error);
+        } else {
+          message.success("Slack configuration saved successfully.");
+          setIsDirty(false);
+          refetch();
+          // Reset form with current values but clear the secrets
+          form.setFieldsValue({
+            ...values,
+            client_secret: "**********",
+            signing_secret: values.signing_secret ? "**********" : "",
+          });
+        }
       } else {
-        message.success("Slack configuration saved successfully.");
-        setIsDirty(false);
-        refetch();
-        // Reset form with current values but clear the secrets
-        form.setFieldsValue({
-          ...values,
-          client_secret: "**********",
-          signing_secret: values.signing_secret ? "**********" : "",
-        });
+        // Create new config
+        const payload: ChatProviderConfigCreate = {
+          provider_type: "slack",
+          workspace_url: values.workspace_url,
+          client_id: values.client_id || undefined,
+          client_secret: values.client_secret || undefined,
+          signing_secret: values.signing_secret || undefined,
+        };
+
+        const result = await createConfig(payload);
+
+        if (isErrorResult(result)) {
+          handleError(result.error);
+        } else if ("data" in result && result.data) {
+          message.success("Slack configuration created successfully.");
+          // Redirect to edit mode with the new config ID
+          router.push(`${CHAT_PROVIDERS_ROUTE}/configure?id=${result.data.id}`);
+        }
       }
     } catch (error) {
       handleError(error);
@@ -129,7 +165,10 @@ const SlackChatProviderForm = () => {
   };
 
   const handleAuthorize = () => {
-    window.location.href = "/api/v1/plus/chat/authorize";
+    const authorizeUrl = configId
+      ? `/api/v1/plus/chat/authorize?config_id=${configId}`
+      : "/api/v1/plus/chat/authorize";
+    window.location.href = authorizeUrl;
   };
 
   const handleFormValuesChange = () => {
@@ -258,24 +297,6 @@ const SlackChatProviderForm = () => {
                 }
               />
             </Form.Item>
-
-            {/* Connection Status Section - only show in edit mode when not authorized */}
-            {isEditMode && !isAuthorized && (
-              <Box
-                borderWidth={1}
-                borderColor="orange.200"
-                backgroundColor="orange.50"
-                borderRadius="md"
-                padding={4}
-                marginTop={6}
-                marginBottom={6}
-              >
-                <Text color="orange.600" fontSize="sm">
-                  Configuration saved. Click &quot;Authorize with Slack&quot;
-                  below to complete the setup.
-                </Text>
-              </Box>
-            )}
 
             <Box mt={6} className="flex justify-end">
               <Box className="flex">
