@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed Snowflake connection failing when using private key authentication without passphrase
-pr: 7294
-labels: []
