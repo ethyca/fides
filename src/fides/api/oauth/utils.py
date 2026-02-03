@@ -422,7 +422,7 @@ async def verify_oauth_client(
     """
     token_data, client = extract_token_and_load_client(authorization, db)
     if not has_permissions(
-        token_data=token_data, client=client, endpoint_scopes=security_scopes
+        token_data=token_data, client=client, endpoint_scopes=security_scopes, db=db
     ):
         raise AuthorizationError(
             detail=f"Not Authorized for this action. Required scope(s): [{', '.join(security_scopes.scopes)}]"
@@ -771,6 +771,7 @@ def verify_client_can_assign_scopes(
         token_data=token_data,
         client=requesting_client,
         endpoint_scopes=SecurityScopes(scopes),
+        db=db,
     )
 
     # If they don't have all scopes via direct assignment or roles, check individual scopes
