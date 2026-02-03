@@ -70,6 +70,7 @@ export const USER_PROFILE_ROUTE = "/user-management/profile/[id]";
 export const USER_DETAIL_ROUTE = "/user-management/profile/[id]";
 export const INTEGRATION_MANAGEMENT_ROUTE = "/integrations";
 export const INTEGRATION_DETAIL_ROUTE = "/integrations/[id]";
+export const NOTIFICATION_INTEGRATIONS_ROUTE = "/settings/notification-integrations";
 export const ORGANIZATION_MANAGEMENT_ROUTE = "/settings/organization";
 export const LOCATIONS_ROUTE = "/settings/locations";
 export const REGULATIONS_ROUTE = "/settings/regulations";
@@ -93,10 +94,14 @@ export const NOTIFICATIONS_DIGESTS_ROUTE = "/notifications/digests";
 export const NOTIFICATIONS_ADD_DIGEST_ROUTE = "/notifications/digests/new";
 export const NOTIFICATIONS_EDIT_DIGEST_ROUTE = "/notifications/digests/[id]";
 
-// Messaging providers (now part of notifications)
+// Email providers (messaging providers, now part of notifications)
 export const MESSAGING_PROVIDERS_ROUTE = "/notifications/providers";
 export const MESSAGING_PROVIDERS_EDIT_ROUTE = "/notifications/providers/[key]";
 export const MESSAGING_PROVIDERS_NEW_ROUTE = "/notifications/providers/new";
+
+// Chat providers (Slack, Teams, etc.)
+export const CHAT_PROVIDERS_ROUTE = "/notifications/chat-providers";
+export const CHAT_PROVIDERS_CONFIGURE_ROUTE = "/notifications/chat-providers/configure";
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
