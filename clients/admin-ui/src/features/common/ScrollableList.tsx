@@ -155,6 +155,7 @@ const ScrollableListAdd = ({
         className="w-full"
         data-testid={`select-${baseTestId}`}
         aria-label={label}
+        optionFilterProp="label"
       />
     </Box>
   ) : (
@@ -189,6 +190,7 @@ const ScrollableList = <T extends unknown>({
   createNewValue,
   maxHeight = 36,
   baseTestId,
+  isItemDisabled,
 }: {
   label?: string;
   tooltip?: string;
@@ -208,6 +210,7 @@ const ScrollableList = <T extends unknown>({
   createNewValue?: (opt: Option) => T;
   maxHeight?: number;
   baseTestId: string;
+  isItemDisabled?: (item: T) => boolean;
 }) => {
   const getItemId = (item: T) =>
     item instanceof Object && idField && idField in item
@@ -240,7 +243,13 @@ const ScrollableList = <T extends unknown>({
       item instanceof Object && idField && idField in item
         ? (item[idField] as string)
         : (item as string);
-    return { label: getItemDisplayName(item), value };
+    const option: Option = { label: getItemDisplayName(item), value };
+
+    if (isItemDisabled) {
+      option.disabled = isItemDisabled(item);
+    }
+
+    return option;
   };
 
   const getValueFromOption = (opt: Option) =>
