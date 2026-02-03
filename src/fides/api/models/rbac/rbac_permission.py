@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Boolean, Column, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
 
@@ -52,7 +52,7 @@ class RBACPermission(Base):
     )
 
     # Relationships
-    roles: List["RBACRole"] = relationship(
+    roles: RelationshipProperty[List["RBACRole"]] = relationship(
         "RBACRole",
         secondary="rbac_role_permission",
         back_populates="permissions",
