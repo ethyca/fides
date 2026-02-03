@@ -249,6 +249,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
+  const [highlightedCitationNumber, setHighlightedCitationNumber] = useState<
+    string | null
+  >(null);
   const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
 
   // Local state for optimistic answer updates
@@ -389,8 +392,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     }
   };
 
-  const handleViewEvidence = (groupId: string) => {
+  const handleViewEvidence = (groupId: string, citationNumber?: string) => {
     setFocusedGroupId(groupId);
+    setHighlightedCitationNumber(citationNumber ?? null);
     setIsDrawerOpen(true);
   };
 
@@ -929,8 +933,8 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                 : undefined
                             }
                             renderContent={(text) =>
-                              renderTextWithReferences(text, () =>
-                                handleViewEvidence(group.id)
+                              renderTextWithReferences(text, (label) =>
+                                handleViewEvidence(group.id, label)
                               )
                             }
                           />
@@ -996,6 +1000,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         onClose={() => {
           setIsDrawerOpen(false);
           setFocusedGroupId(null);
+          setHighlightedCitationNumber(null);
           setEvidenceSearchQuery("");
         }}
         open={isDrawerOpen}
@@ -1008,6 +1013,23 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             height: "100%",
             backgroundColor: "#FAFBFC",
           },
+        }}
+        afterOpenChange={(open) => {
+          if (open && highlightedCitationNumber) {
+            // Scroll to the highlighted evidence item after drawer opens
+            setTimeout(() => {
+              const element = document.querySelector(
+                `[data-citation-number="${highlightedCitationNumber}"]`
+              );
+              if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "start" });
+                // Remove highlight after a delay (but keep content visible)
+                setTimeout(() => {
+                  setHighlightedCitationNumber(null);
+                }, 3000);
+              }
+            }, 200);
+          }
         }}
       >
         <div
@@ -1044,6 +1066,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 group={questionGroups.find((g) => g.id === focusedGroupId)}
                 evidence={getFilteredEvidence(focusedGroupId)}
                 formatTimestamp={formatTimestamp}
+                highlightedCitationNumber={highlightedCitationNumber}
               />
             )}
           </Space>
@@ -1059,11 +1082,13 @@ const EvidenceSection = ({
   group,
   evidence,
   formatTimestamp,
+  highlightedCitationNumber,
 }: {
   groupId: string;
   group: QuestionGroup | undefined;
   evidence: EvidenceItem[];
   formatTimestamp: (ts: string) => string;
+  highlightedCitationNumber?: string | null;
 }) => {
   if (!group) return null;
 
@@ -1076,6 +1101,20 @@ const EvidenceSection = ({
   const slackEvidence = evidence.filter(
     (e) => e.type === "slack_communication"
   ) as SlackCommunicationEvidenceItem[];
+
+  // Helper to get highlight styles for a specific citation number
+  const getHighlightStyles = (citationNumber: number | null | undefined) => {
+    if (
+      citationNumber != null &&
+      String(citationNumber) === highlightedCitationNumber
+    ) {
+      return {
+        border: "1px solid #4A6CF7",
+        boxShadow: "0 0 0 2px rgba(74, 108, 247, 0.12)",
+      };
+    }
+    return {};
+  };
 
   return (
     <div data-group-id={groupId}>
@@ -1124,11 +1163,14 @@ const EvidenceSection = ({
             {systemEvidence.map((item) => (
               <div
                 key={item.id}
+                data-citation-number={item.citation_number}
                 style={{
                   padding: "12px 16px",
                   backgroundColor: "#FFFFFF",
                   borderRadius: 8,
                   border: "1px solid #E8EBED",
+                  transition: "all 0.3s ease",
+                  ...getHighlightStyles(item.citation_number),
                 }}
               >
                 <Flex
@@ -1205,11 +1247,14 @@ const EvidenceSection = ({
             {manualEvidence.map((item) => (
               <div
                 key={item.id}
+                data-citation-number={item.citation_number}
                 style={{
                   padding: "12px 16px",
                   backgroundColor: "#FFFFFF",
                   borderRadius: 8,
                   border: "1px solid #E8EBED",
+                  transition: "all 0.3s ease",
+                  ...getHighlightStyles(item.citation_number),
                 }}
               >
                 <Flex
@@ -1285,11 +1330,14 @@ const EvidenceSection = ({
             {slackEvidence.map((item) => (
               <div
                 key={item.id}
+                data-citation-number={item.citation_number}
                 style={{
                   padding: "8px 16px 12px 16px",
                   backgroundColor: "#FFFFFF",
                   borderRadius: 8,
                   border: "1px solid #E8EBED",
+                  transition: "all 0.3s ease",
+                  ...getHighlightStyles(item.citation_number),
                 }}
               >
                 <Flex
