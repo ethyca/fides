@@ -295,6 +295,7 @@ const ConfigureMonitorForm = ({
             MonitorFrequency.NOT_SCHEDULED
           }
           showTime
+          className="w-full"
         />
       </Form.Item>
       {showLLMOption && (
