@@ -124,6 +124,7 @@ const bannerButtonOptions: SelectProps["options"] = [
 const GPC_ADAPTIVE_TOOLTIP = `Enabling ${bannerButtonOptions.find((b) => b.value === Layer1ButtonOption.GPC_CONDITIONAL)?.label} will show the acknowledge button when GPC is on, and the opt in/opt out buttons when GPC is off.`;
 
 const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
+const GPP_PLACEHOLDER_ID = "gpp_notices_not_supported_placeholder";
 
 export const PrivacyExperienceConfigColumnLayout = ({
   buttonPanel,
@@ -206,6 +207,8 @@ export const PrivacyExperienceForm = ({
     useMemo(() => {
       // Filter out GPP notices for TCF experiences
       const nonGppNotices = filterGppNotices(allPrivacyNotices);
+      const hasFilteredGppNotices =
+        nonGppNotices.length < allPrivacyNotices.length;
       const noticesWithTcfPlaceholder = [...nonGppNotices];
       if (!noticesWithTcfPlaceholder.some((n) => n.id === TCF_PLACEHOLDER_ID)) {
         noticesWithTcfPlaceholder.push({
@@ -215,6 +218,16 @@ export const PrivacyExperienceForm = ({
           data_uses: [],
           consent_mechanism: ConsentMechanism.NOTICE_ONLY,
           disabled: false,
+        });
+      }
+      if (hasFilteredGppNotices) {
+        noticesWithTcfPlaceholder.push({
+          name: "GPP notices not supported in TCF",
+          id: GPP_PLACEHOLDER_ID,
+          notice_key: GPP_PLACEHOLDER_ID,
+          data_uses: [],
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          disabled: true,
         });
       }
       return noticesWithTcfPlaceholder;
