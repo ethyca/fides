@@ -258,6 +258,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [localAnswers, setLocalAnswers] = useState<Record<string, string>>({});
 
   // API queries and mutations
+  // Poll for updates when a questionnaire is active (to get real-time Slack responses)
+  const [pollingEnabled, setPollingEnabled] = useState(false);
+
   const {
     data: assessment,
     isLoading,
@@ -265,7 +268,18 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     refetch,
   } = useGetPrivacyAssessmentQuery(assessmentId, {
     skip: !assessmentId,
+    pollingInterval: pollingEnabled ? 5000 : 0,
+    refetchOnFocus: true,
   });
+
+  // Enable polling when questionnaire is active
+  useEffect(() => {
+    const hasActiveQuestionnaire =
+      assessment?.questionnaire?.total_questions &&
+      assessment?.questionnaire?.answered_questions <
+        assessment?.questionnaire?.total_questions;
+    setPollingEnabled(!!hasActiveQuestionnaire);
+  }, [assessment?.questionnaire]);
 
   const [updateAnswer, { isLoading: isSavingAnswer }] =
     useUpdateAssessmentAnswerMutation();
@@ -367,10 +381,10 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     try {
       await createQuestionnaire({
         id: assessmentId,
-        body: { channel: "#privacy-team" },
+        body: { channel: "#privacy-assessment-collab" },
       }).unwrap();
 
-      message.success("Questionnaire sent to #privacy-team on Slack.");
+      message.success("Questionnaire sent to #privacy-assessment-collab on Slack.");
       refetch();
     } catch (error) {
       console.error("Failed to send questionnaire:", error);
@@ -384,7 +398,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         id: assessmentId,
       }).unwrap();
 
-      message.success("Reminder sent to #privacy-team.");
+      message.success("Reminder sent to #privacy-assessment-collab.");
       refetch();
     } catch (error) {
       console.error("Failed to send reminder:", error);
@@ -676,7 +690,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         </Text>
                       </Flex>
                       <Text type="secondary" style={{ fontSize: 12 }}>
-                        Sent {timeSinceSent} to #privacy-team
+                        Sent {timeSinceSent} to #privacy-assessment-collab
                       </Text>
                       <Flex align="center" gap="small">
                         <Text style={{ fontSize: 12 }}>Progress:</Text>
