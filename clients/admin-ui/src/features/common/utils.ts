@@ -36,8 +36,14 @@ export const debounce = (fn: (props?: any) => void, ms = 0) => {
   };
 };
 
-export const formatDate = (value: string | number | Date): string =>
-  format(new Date(value), "MMMM d, y, hh:mm:ss aaa z");
+export const formatDate = (
+  value: string | number | Date,
+  options?: { showTime?: boolean },
+): string =>
+  format(
+    new Date(value),
+    options?.showTime === false ? "MM/dd/yy" : "MMMM d, y, hh:mm:ss aaa z",
+  );
 
 export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
