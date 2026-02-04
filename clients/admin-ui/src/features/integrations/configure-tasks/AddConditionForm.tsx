@@ -58,7 +58,9 @@ const AddConditionForm = ({
   const isEditing = !!editingCondition;
 
   const [fieldSource, setFieldSource] = useState<FieldSource>(
-    getInitialFieldSource(editingCondition),
+    isConsentOnly
+      ? FieldSource.PRIVACY_REQUEST
+      : getInitialFieldSource(editingCondition),
   );
 
   // Get custom field metadata hook
@@ -99,7 +101,9 @@ const AddConditionForm = ({
   // Set initial values if editing
   const initialValues = editingCondition
     ? {
-        fieldSource: getInitialFieldSource(editingCondition),
+        fieldSource: isConsentOnly
+          ? FieldSource.PRIVACY_REQUEST
+          : getInitialFieldSource(editingCondition),
         fieldAddress: editingCondition.field_address,
         operator: editingCondition.operator,
         value: parseStoredValueForForm(
@@ -201,7 +205,7 @@ const AddConditionForm = ({
         }
         validateTrigger={["onBlur", "onSubmit"]}
       >
-        {fieldSource === FieldSource.PRIVACY_REQUEST || isConsentOnly ? (
+        {isConsentOnly || fieldSource === FieldSource.PRIVACY_REQUEST ? (
           <PrivacyRequestFieldPicker
             connectionKey={connectionKey}
             isConsentOnly={isConsentOnly}
