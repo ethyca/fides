@@ -26,6 +26,29 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.saas_util import load_config_from_string
 
 
+def _get_connection_type_metadata_fields(
+    connection_type: ConnectionType,
+) -> Dict[str, Optional[Any]]:
+    """
+    Extract metadata fields for a given connection type.
+    Performs a single lookup to avoid repeated property access.
+
+    Returns a dict for the ConnectionSystemTypeMap fields.
+    """
+    metadata = connection_type.connection_type_metadata
+    if metadata:
+        return {
+            "category": metadata.category,
+            "tags": metadata.tags,
+            "enabled_features": metadata.enabled_features,
+        }
+    return {
+        "category": None,
+        "tags": None,
+        "enabled_features": None,
+    }
+
+
 def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:
     """Transform connection secrets from Pydantic V2 format to V1 format for backwards compatibility
     since Connection secrets UI is built off of this data.
@@ -301,6 +324,8 @@ def get_connection_types(
                     type=item.system_type,
                     human_readable=item.human_readable,
                     supported_actions=[ActionType.access, ActionType.erasure],
+                    # Add discovery metadata if this connection type supports discovery monitors
+                    **_get_connection_type_metadata_fields(item),
                 )
                 for item in database_types
             ]

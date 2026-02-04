@@ -157,6 +157,46 @@ class TestConnectionConfigModel:
         with pytest.raises(ValueError):
             ConnectionType("nonmapped_type").system_type
 
+    def test_connection_type_metadata(self):
+        """Test that connection_type_metadata property returns correct metadata for types that have it"""
+        # Test connection types with metadata
+        postgres_metadata = ConnectionType.postgres.connection_type_metadata
+        assert postgres_metadata is not None
+        assert postgres_metadata.category.value == "DATABASE"
+        assert "Discovery" in postgres_metadata.tags
+        assert "Detection" in postgres_metadata.tags
+
+        # Test connection type without metadata
+        manual_metadata = ConnectionType.manual_webhook.connection_type_metadata
+        assert manual_metadata is None
+
+        # Test that metadata exists for ALL expected discovery-enabled types
+        # This list is the source of truth - if someone removes a type from the mapping,
+        # this test will fail and force a discussion about whether it was intentional
+        expected_discovery_types = [
+            ConnectionType.postgres,
+            ConnectionType.mysql,
+            ConnectionType.mssql,
+            ConnectionType.rds_postgres,
+            ConnectionType.rds_mysql,
+            ConnectionType.google_cloud_sql_postgres,
+            ConnectionType.google_cloud_sql_mysql,
+            ConnectionType.scylla,
+            ConnectionType.dynamodb,
+            ConnectionType.snowflake,
+            ConnectionType.bigquery,
+            ConnectionType.okta,
+            ConnectionType.website,
+            ConnectionType.s3,
+        ]
+
+        for conn_type in expected_discovery_types:
+            metadata = conn_type.connection_type_metadata
+            assert metadata is not None, f"{conn_type.value} should have metadata"
+            assert metadata.category is not None
+            assert len(metadata.tags) > 0
+            assert len(metadata.enabled_features) > 0
+
     def test_system_key(self, db, connection_config, system):
         assert connection_config.system_key == connection_config.name
 
