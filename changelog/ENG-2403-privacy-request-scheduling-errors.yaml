@@ -1,3 +1,0 @@
-type: Fixed
-description: Added error handling and execution logs for privacy request scheduling failures, improving visibility of errors in the activity timeline
-pr: 7233

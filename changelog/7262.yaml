@@ -1,4 +1,0 @@
-type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Updated monitor list empty state to reflect new designs and copy
-pr: 7262 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

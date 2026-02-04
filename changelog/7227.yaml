@@ -1,3 +1,0 @@
-description: Fixed TCF dismissal to check for proper TCF cookie with GPC enabled
-type: Fixed
-pr: 7227

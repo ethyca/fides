@@ -17,6 +17,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.task.conditional_dependencies.privacy_request.schemas import (
     PrivacyRequestTopLevelFields,
 )
+from fides.api.task.conditional_dependencies.util import extract_field_addresses
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 PRIVACY_REQUEST_CONFIG_TYPES = {
@@ -293,31 +294,3 @@ def create_manual_task_artificial_graphs(
         manual_task_graphs.append(graph_dataset)
 
     return manual_task_graphs
-
-
-def extract_field_addresses(
-    tree: Optional[dict[str, Any]],
-) -> set[str]:
-    """Recursively extract dataset field addresses from a JSONB condition tree.
-
-    This function is used to extract all field addresses from a condition tree
-    stored as JSONB. It's useful for determining upstream dependencies when
-    building the dataset graph for conditional dependencies.
-
-    Returns:
-        Set of field addresses found in the tree, excluding privacy_request.* fields
-    """
-    if not tree:
-        return set()
-
-    field_addresses: set[str] = set()
-
-    # Check if this is a leaf condition (has field_address)
-    if "field_address" in tree:
-        field_addresses.add(tree["field_address"])
-    # Check if this is a group condition (has conditions list)
-    elif "conditions" in tree:
-        for condition in tree.get("conditions", []):
-            field_addresses.update(extract_field_addresses(condition))
-
-    return field_addresses

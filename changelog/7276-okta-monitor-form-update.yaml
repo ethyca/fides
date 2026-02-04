@@ -1,0 +1,4 @@
+type: Changed
+description: Updated Okta monitor form to use the standard monitor endpoints
+pr: 7276
+labels: []

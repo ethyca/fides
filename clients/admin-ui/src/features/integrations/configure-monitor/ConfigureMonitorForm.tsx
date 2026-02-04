@@ -263,7 +263,7 @@ const ConfigureMonitorForm = ({
         <Select
           mode="multiple"
           aria-label="Select stewards"
-          data-testid="controlled-select"
+          data-testid="controlled-select-stewards"
           options={dataStewardOptions}
         />
       </Form.Item>
@@ -295,6 +295,7 @@ const ConfigureMonitorForm = ({
             MonitorFrequency.NOT_SCHEDULED
           }
           showTime
+          className="w-full"
         />
       </Form.Item>
       {showLLMOption && (

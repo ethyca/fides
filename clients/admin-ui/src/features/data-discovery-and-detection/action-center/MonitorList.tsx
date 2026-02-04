@@ -7,8 +7,6 @@ import {
 } from "fidesui";
 import { useEffect } from "react";
 
-import { useAppSelector } from "~/app/hooks";
-import { selectUser } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
@@ -40,16 +38,8 @@ const MonitorList = () => {
     ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
   ] as const;
 
-  const currentUser = useAppSelector(selectUser);
-
   const { requestData, ...formProps } = useSearchForm({
-    queryState: SearchFormQueryState(
-      [...availableMonitorTypes],
-      currentUser?.isRootUser ? undefined : currentUser?.id,
-    ),
-    initialValues: {
-      steward_key: currentUser?.isRootUser ? null : (currentUser?.id ?? null),
-    },
+    queryState: SearchFormQueryState([...availableMonitorTypes]),
     translate: ({
       steward_key,
       search,

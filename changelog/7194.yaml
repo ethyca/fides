@@ -1,7 +1,0 @@
-# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
-# Fill in the required fields and delete this comment block
-
-type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Added headers to http connector secrets so that they can be forwarded along in DSR webhook requests.
-pr: 7194 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]
