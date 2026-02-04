@@ -65,6 +65,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added a nox script to compile changelog fragments into CHANGELOG.md [#7177](https://github.com/ethyca/fides/pull/7177)
 
 ### Fixed
+- Fixed consent and erasure email check to only check relevant connectors [#7271] (https://github.com/ethyca/fides/pull/7271)
+- syncing url and search form for the action center and removing default monitor filter [#7279] (https://github.com/ethyca/fides/pull/7279)
 - Fixed TCF dismissal to check for proper TCF cookie with GPC enabled [#7227](https://github.com/ethyca/fides/pull/7227)
 - Included vendors disclosed segment in TC string for __tcfapi getTCData [#7266](https://github.com/ethyca/fides/pull/7266)
 - Adds CSP headers for docs pages [#7235](https://github.com/ethyca/fides/pull/7235)
@@ -75,6 +77,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed monitor filter state syncing [#7239](https://github.com/ethyca/fides/pull/7239)
 - Fixed GPC and automated consent being evaluated after FidesInitialized fires [#7222](https://github.com/ethyca/fides/pull/7222)
 - Added FidesLocaleUpdated event to FidesJS to notify when a user changes the language [#7234](https://github.com/ethyca/fides/pull/7234)
+- Fixed Snowflake connection failing when using private key authentication without passphrase [#7294](https://github.com/ethyca/fides/pull/7294)
 
 ### Removed
 - Removed cypress-e2e test suite and associated GitHub workflow [#7193](https://github.com/ethyca/fides/pull/7193)
