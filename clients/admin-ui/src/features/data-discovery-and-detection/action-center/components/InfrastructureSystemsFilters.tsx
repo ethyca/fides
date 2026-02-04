@@ -68,11 +68,15 @@ export const InfrastructureSystemsFilters = ({
     }));
   }, [availableFilters?.data_uses, getDataUseDisplayName]);
 
-  const handleStatusChange = (value: string | undefined) => {
-    const { diffStatusFilter, vendorIdFilter } =
-      INFRASTRUCTURE_STATUS_FILTER_MAP[
-        value as InfrastructureStatusFilterOptionValue
-      ] ?? { diffStatusFilter: [], vendorIdFilter: [] };
+  const handleStatusChange = (newStatusValue: string | undefined) => {
+    const statusKey = Object.values(InfrastructureStatusFilterOptionValue).find(
+      (value) => value === newStatusValue,
+    );
+
+    const { diffStatusFilter, vendorIdFilter } = statusKey
+      ? INFRASTRUCTURE_STATUS_FILTER_MAP[statusKey]
+      : { diffStatusFilter: [], vendorIdFilter: [] };
+
     setStatusFilters(diffStatusFilter);
     setVendorFilters(vendorIdFilter);
   };
