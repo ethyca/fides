@@ -38,6 +38,12 @@ interface AddConditionFormProps {
   editingCondition?: ConditionLeaf | null;
   isSubmitting?: boolean;
   connectionKey: string;
+  /**
+   * When true, hides the dataset field source option and filters privacy request
+   * fields to only those available for consent requests.
+   * This should be set when only consent manual tasks are configured.
+   */
+  isConsentOnly?: boolean;
 }
 
 const AddConditionForm = ({
@@ -46,6 +52,7 @@ const AddConditionForm = ({
   editingCondition,
   isSubmitting = false,
   connectionKey,
+  isConsentOnly = false,
 }: AddConditionFormProps) => {
   const [form] = Form.useForm();
   const isEditing = !!editingCondition;
@@ -159,23 +166,29 @@ const AddConditionForm = ({
       layout="vertical"
       initialValues={initialValues}
     >
-      <Form.Item
-        name="fieldSource"
-        label="Field source"
-        rules={[{ required: true, message: "Field source is required" }]}
-      >
-        <Radio.Group onChange={handleFieldSourceChange}>
-          <Radio
-            value={FieldSource.PRIVACY_REQUEST}
-            data-testid="field-source-privacy-request"
-          >
-            Privacy request field
-          </Radio>
-          <Radio value={FieldSource.DATASET} data-testid="field-source-dataset">
-            Dataset field
-          </Radio>
-        </Radio.Group>
-      </Form.Item>
+      {/* Hide field source selection when consent-only, as dataset fields are not available */}
+      {!isConsentOnly && (
+        <Form.Item
+          name="fieldSource"
+          label="Field source"
+          rules={[{ required: true, message: "Field source is required" }]}
+        >
+          <Radio.Group onChange={handleFieldSourceChange}>
+            <Radio
+              value={FieldSource.PRIVACY_REQUEST}
+              data-testid="field-source-privacy-request"
+            >
+              Privacy request field
+            </Radio>
+            <Radio
+              value={FieldSource.DATASET}
+              data-testid="field-source-dataset"
+            >
+              Dataset field
+            </Radio>
+          </Radio.Group>
+        </Form.Item>
+      )}
 
       <Form.Item
         name="fieldAddress"
@@ -188,8 +201,11 @@ const AddConditionForm = ({
         }
         validateTrigger={["onBlur", "onSubmit"]}
       >
-        {fieldSource === FieldSource.PRIVACY_REQUEST ? (
-          <PrivacyRequestFieldPicker connectionKey={connectionKey} />
+        {fieldSource === FieldSource.PRIVACY_REQUEST || isConsentOnly ? (
+          <PrivacyRequestFieldPicker
+            connectionKey={connectionKey}
+            isConsentOnly={isConsentOnly}
+          />
         ) : (
           <DatasetReferencePicker />
         )}

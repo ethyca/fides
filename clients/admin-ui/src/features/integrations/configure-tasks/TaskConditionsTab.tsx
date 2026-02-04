@@ -20,6 +20,7 @@ import { ConditionLeaf } from "~/types/api";
 
 import AddEditConditionModal from "./AddEditConditionModal";
 import { operatorLabels } from "./constants";
+import { useConfiguredRequestTypes } from "./hooks/useConfiguredRequestTypes";
 import { useSaveConditions } from "./hooks/useSaveConditions";
 import { formatConditionValue, formatFieldDisplay } from "./utils";
 
@@ -41,6 +42,8 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
   } | null>(null);
 
   const message = useMessage();
+
+  const { isConsentOnly } = useConfiguredRequestTypes({ connectionKey });
 
   const {
     isOpen: isDeleteOpen,
@@ -294,6 +297,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         onConditionSaved={handleConditionSaved}
         editingCondition={editingCondition}
         connectionKey={connectionKey}
+        isConsentOnly={isConsentOnly}
       />
 
       <ConfirmationModal
