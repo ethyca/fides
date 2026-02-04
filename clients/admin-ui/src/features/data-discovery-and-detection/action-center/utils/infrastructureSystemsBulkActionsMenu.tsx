@@ -20,6 +20,12 @@ export const getBulkActionsMenuItems = ({
   if (isIgnoredTab) {
     return [
       {
+        key: InfrastructureSystemBulkActionType.ADD,
+        label: "Add",
+        onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
+        disabled: isBulkActionInProgress,
+      },
+      {
         key: InfrastructureSystemBulkActionType.RESTORE,
         label: "Restore",
         onClick: () => onBulkAction(InfrastructureSystemBulkActionType.RESTORE),
@@ -59,4 +65,16 @@ export const shouldAllowIgnore = (
     return !activeDiffStatusFilters.includes(DiffStatus.MUTED);
   }
   return activeDiffStatusFilters !== DiffStatus.MUTED;
+};
+
+export const shouldAllowRestore = (
+  activeDiffStatusFilters: DiffStatus[] | DiffStatus | undefined,
+): boolean => {
+  if (!activeDiffStatusFilters) {
+    return false;
+  }
+  if (Array.isArray(activeDiffStatusFilters)) {
+    return activeDiffStatusFilters.includes(DiffStatus.MUTED);
+  }
+  return activeDiffStatusFilters === DiffStatus.MUTED;
 };

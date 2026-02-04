@@ -13,6 +13,7 @@ import {
 import { useCallback, useMemo } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { DiffStatus } from "~/types/api";
 
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
 import { InfrastructureSystemsFilters } from "../components/InfrastructureSystemsFilters";
@@ -25,6 +26,7 @@ import { useInfrastructureSystemsSelection } from "../hooks/useInfrastructureSys
 import {
   getBulkActionsMenuItems,
   shouldAllowIgnore,
+  shouldAllowRestore,
 } from "../utils/infrastructureSystemsBulkActionsMenu";
 
 interface DiscoveredInfrastructureSystemsTableProps {
@@ -79,8 +81,8 @@ export const DiscoveredInfrastructureSystemsTable = ({
       },
     });
 
-  const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
   const allowIgnore = shouldAllowIgnore(diffStatusFilters);
+  const allowRestore = shouldAllowRestore(diffStatusFilters);
 
   const handleBulkActionWithSelectedItems = useCallback(
     (action: InfrastructureSystemBulkActionType) => {
@@ -92,13 +94,13 @@ export const DiscoveredInfrastructureSystemsTable = ({
   const bulkActionsMenuItems = useMemo(
     () =>
       getBulkActionsMenuItems({
-        isIgnoredTab,
+        isIgnoredTab: diffStatusFilters?.includes(DiffStatus.MUTED),
         allowIgnore,
         isBulkActionInProgress,
         onBulkAction: handleBulkActionWithSelectedItems,
       }),
     [
-      isIgnoredTab,
+      diffStatusFilters,
       allowIgnore,
       isBulkActionInProgress,
       handleBulkActionWithSelectedItems,
@@ -177,6 +179,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
             monitorId={monitorId}
             activeTab={activeTab as ActionCenterTabHash | null}
             allowIgnore={allowIgnore}
+            allowRestore={allowRestore}
             onPromoteSuccess={refetch}
           />
         )}
