@@ -131,9 +131,11 @@ const AddConditionForm = ({
 
   const handleCancel = useCallback(() => {
     form.resetFields();
-    setFieldSource(FieldSource.DATASET);
+    setFieldSource(
+      isConsentOnly ? FieldSource.PRIVACY_REQUEST : FieldSource.DATASET,
+    );
     onCancel();
-  }, [form, onCancel]);
+  }, [form, onCancel, isConsentOnly]);
 
   // Handle field source change
   const handleFieldSourceChange = useCallback(
