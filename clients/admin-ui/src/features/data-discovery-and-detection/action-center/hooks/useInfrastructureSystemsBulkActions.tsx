@@ -178,12 +178,14 @@ export const useInfrastructureSystemsBulkActions = ({
         toast(errorToastParams(getErrorMessage(result.error)));
       } else {
         // Use count from response if available, otherwise use estimated count
-        const finalCount =
-          count > 0
-            ? count
-            : selectionData.mode === "explicit"
-              ? selectionData.selectedItems.length
-              : 0;
+        let finalCount: number;
+        if (count > 0) {
+          finalCount = count;
+        } else if (selectionData.mode === "explicit") {
+          finalCount = selectionData.selectedItems.length;
+        } else {
+          finalCount = 0;
+        }
 
         if (action === InfrastructureSystemBulkActionType.ADD) {
           successMessage = `${finalCount} system${finalCount > 1 ? "s" : ""} ${finalCount > 1 ? "have" : "has"} been promoted to the system inventory.`;

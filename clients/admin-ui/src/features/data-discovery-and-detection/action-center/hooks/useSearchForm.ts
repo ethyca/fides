@@ -47,7 +47,7 @@ const useSearchForm = <RequestData, QueryState extends UseQueryStatesKeysMap>({
     form.setFieldsValue(
       translatedValues as Parameters<typeof form.setFieldsValue>[0],
     ); // Casting again due to weird ant types
-  }, [searchForm]);
+  }, [searchForm, form]);
 
   return {
     form,
