@@ -78,7 +78,7 @@ class HealthCheckServer(bootsteps.StartStopStep):
             )
         )
 
-        super().__init__(**kwargs)
+        super().__init__(parent, **kwargs)
 
     # The mypy hints for an HTTP handler are strange, so ignoring them here
     def http_handler(self, *args) -> None:  # type: ignore [arg-type, no-untyped-def]
