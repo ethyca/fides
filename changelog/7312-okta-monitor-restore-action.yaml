@@ -1,0 +1,4 @@
+type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Fixed "ignore" option showing up on already-ignored items in Okta monitor results
+pr: 7312 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
