@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Flex,
   List,
@@ -43,7 +44,8 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
 
   const message = useMessage();
 
-  const { isConsentOnly } = useConfiguredRequestTypes({ connectionKey });
+  const { isConsentOnly, hasConsentTasks, hasAccessOrErasureTasks } =
+    useConfiguredRequestTypes({ connectionKey });
 
   const {
     isOpen: isDeleteOpen,
@@ -212,6 +214,18 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
           </Text>
         </Paragraph>
       </div>
+
+      {/* Warning banner for mixed consent + access/erasure configurations */}
+      {hasConsentTasks && hasAccessOrErasureTasks && (
+        <Alert
+          message="Consent task limitations"
+          description="Dataset field conditions and some privacy request fields (like due date) are not evaluated for consent manual tasks. These conditions will only apply to access and erasure tasks."
+          type="warning"
+          showIcon
+          className="mb-4"
+          data-testid="consent-conditions-warning"
+        />
+      )}
 
       <div className="mb-4 flex items-center justify-end gap-2">
         <Button

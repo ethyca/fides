@@ -109,6 +109,10 @@ describe("Integration Management - Manual Task Conditions", () => {
         .find(".ant-list-item")
         .should("have.length", 2);
     });
+
+    it("should not show consent warning banner when no consent tasks exist", () => {
+      cy.getByTestId("consent-conditions-warning").should("not.exist");
+    });
   });
 
   describe("Add New Condition", () => {
@@ -442,6 +446,49 @@ describe("Integration Management - Manual Task Conditions", () => {
       // Verify success message
       cy.contains("Condition added successfully!").should("be.visible");
     });
+  });
+});
+
+describe("Integration Management - Mixed Manual Task Conditions", () => {
+  beforeEach(() => {
+    cy.login();
+    stubPlus(true);
+    stubLocations();
+    stubPrivacyRequestsConfigurationCrud();
+    stubManualTaskConfig();
+    stubSystemIntegrations();
+    stubPrivacyRequests();
+
+    // Mock manual fields endpoint with MIXED tasks (both consent and access)
+    cy.intercept("GET", "/api/v1/plus/connection/*/manual-fields", {
+      fixture: "integration-management/manual-tasks/mixed-manual-fields.json",
+    }).as("getMixedManualFields");
+
+    // Navigate directly to conditions tab
+    cy.visitWithLanguage(
+      `${INTEGRATION_MANAGEMENT_ROUTE}/demo_manual_task_integration#conditions`,
+      "en-US",
+    );
+    cy.wait("@getConnection");
+    cy.wait("@getMixedManualFields");
+  });
+
+  it("should show warning banner when both consent and access/erasure tasks exist", () => {
+    cy.getByTestId("consent-conditions-warning").should("be.visible");
+    cy.getByTestId("consent-conditions-warning").should(
+      "contain",
+      "Consent task limitations",
+    );
+    cy.getByTestId("consent-conditions-warning").should(
+      "contain",
+      "Dataset field conditions and some privacy request fields",
+    );
+  });
+
+  it("should allow adding all field types including dataset fields in mixed configuration", () => {
+    cy.getByTestId("add-condition-btn").click();
+    cy.getByTestId("field-source-dataset").should("exist");
+    cy.getByTestId("field-source-privacy-request").should("exist");
   });
 });
 
