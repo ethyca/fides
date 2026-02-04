@@ -1,7 +1,7 @@
 """add monitors to client
 
 Revision ID: a1b2c3d4e5f7
-Revises: 6d5f70dd0ba5
+Revises: c1d2e3f4a5b6
 Create Date: 2026-02-02 02:30:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a1b2c3d4e5f7"
-down_revision = "6d5f70dd0ba5"
+down_revision = "c1d2e3f4a5b6"
 branch_labels = None
 depends_on = None
 
