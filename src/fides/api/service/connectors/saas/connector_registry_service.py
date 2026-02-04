@@ -6,12 +6,12 @@ from zipfile import ZipFile
 
 from fideslang.models import Dataset
 from loguru import logger
-from packaging.version import parse as parse_version
 from sqlalchemy.orm import Session
 
 from fides.api.api.deps import get_api_session
 from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.saas.connector_template import (
@@ -114,43 +114,10 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         logger.info("Loading connectors templates from the database.")
         db = get_api_session()
         for template in CustomConnectorTemplate.all(db=db):
-            if (
-                template.replaceable
-                and CustomConnectorTemplateLoader._replacement_available(template)
-            ):
-                logger.info(
-                    f"Replacing {template.key} connector template with newer version."
-                )
-                template.delete(db=db)
-                template_dataset = SaasTemplateDataset.get_by(
-                    db=db, field="connection_type", value=template.key
-                )
-                if template_dataset:
-                    template_dataset.delete(db=db)
-                continue
             try:
                 CustomConnectorTemplateLoader._register_template(template)
             except Exception:
                 logger.exception("Unable to load {} connector", template.key)
-
-    @staticmethod
-    def _replacement_available(template: CustomConnectorTemplate) -> bool:
-        """
-        Check the connector templates in the FileConnectorTemplateLoader and return if a newer version is available.
-        """
-        replacement_connector = (
-            FileConnectorTemplateLoader.get_connector_templates().get(template.key)
-        )
-        if not replacement_connector:
-            return False
-
-        custom_saas_config = SaaSConfig(**load_config_from_string(template.config))
-        replacement_saas_config = SaaSConfig(
-            **load_config_from_string(replacement_connector.config)
-        )
-        return parse_version(replacement_saas_config.version) > parse_version(
-            custom_saas_config.version
-        )
 
     @classmethod
     def _register_template(
@@ -172,6 +139,11 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
 
         display_info = extract_display_info_from_config(config)
 
+        # Check if a file-based connector template exists for this connector type
+        file_connector_template = (
+            FileConnectorTemplateLoader.get_connector_templates().get(template.key)
+        )
+
         connector_template = ConnectorTemplate(
             config=template.config,
             dataset=template.dataset,
@@ -180,6 +152,8 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             authorization_required=authorization_required,
             user_guide=config.user_guide,
             supported_actions=config.supported_actions,
+            is_custom=True,
+            default_connector_available=file_connector_template is not None,
             **display_info,
         )
 
@@ -187,6 +161,15 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         CustomConnectorTemplateLoader.get_connector_templates()[template.key] = (
             connector_template
         )
+
+    @classmethod
+    def delete_template(cls, db: Session, key: str) -> None:
+        """
+        Deletes a custom connector template from the database.
+        """
+        CustomConnectorTemplate.filter(
+            db, conditions=(CustomConnectorTemplate.key == key)
+        ).delete()
 
     # pylint: disable=too-many-branches
     @classmethod
@@ -245,27 +228,20 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         saas_config = SaaSConfig(**load_config_from_string(config_contents))
         Dataset(**load_dataset_from_string(dataset_contents))
 
-        # extract connector_type, human_readable, and replaceable values from the SaaS config
+        # extract connector_type and human_readable values from the SaaS config
         connector_type = saas_config.type
         human_readable = saas_config.name
-        replaceable = saas_config.replaceable
 
-        # if the incoming connector is flagged as replaceable we will update the version to match
-        # that of the existing connector template this way the custom connector template can be
-        # removed once a newer version is bundled with Fides
-        if replaceable:
-            existing_connector = (
-                FileConnectorTemplateLoader.get_connector_templates().get(
-                    connector_type
-                )
+        # Update the version to match that of the existing file connector template
+        # if one exists, to maintain consistency
+        existing_connector = FileConnectorTemplateLoader.get_connector_templates().get(
+            connector_type
+        )
+        if existing_connector:
+            existing_config = SaaSConfig(
+                **load_config_from_string(existing_connector.config)
             )
-            if existing_connector:
-                existing_config = SaaSConfig(
-                    **load_config_from_string(existing_connector.config)
-                )
-                config_contents = replace_version(
-                    config_contents, existing_config.version
-                )
+            config_contents = replace_version(config_contents, existing_config.version)
 
         template = CustomConnectorTemplate(
             key=connector_type,
@@ -273,7 +249,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             config=config_contents,
             dataset=dataset_contents,
             icon=icon_contents,
-            replaceable=replaceable,
         )
 
         # attempt to register the template, raises an exception if validation fails
@@ -289,7 +264,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 "dataset": dataset_contents,
                 "icon": icon_contents,
                 "functions": function_contents,
-                "replaceable": replaceable,
             },
         )
 
@@ -301,6 +275,19 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             connector_type=connector_type,
             dataset_json=template_dataset_json,
         )
+
+        # update any existing connection configs that use this connector type
+        connector_template = ConnectorRegistry.get_connector_template(connector_type)
+        if connector_template:
+            # Import here to avoid circular import with connection_service
+            from fides.service.connection.connection_service import ConnectionService
+            from fides.service.event_audit_service import EventAuditService
+
+            event_audit_service = EventAuditService(db)
+            connection_service = ConnectionService(db, event_audit_service)
+            connection_service.update_existing_connection_configs_for_connector_type(
+                connector_type, connector_template
+            )
 
 
 class ConnectorRegistry:

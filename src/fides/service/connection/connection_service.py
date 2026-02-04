@@ -1,4 +1,4 @@
-from typing import Any, Optional, Set, Tuple
+from typing import Any, Iterable, Optional, Set, Tuple
 
 import yaml
 from fideslang.models import System
@@ -749,3 +749,34 @@ class ConnectionService:
         }
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config
+
+    def update_existing_connection_configs_for_connector_type(
+        self, connector_type: str, template: ConnectorTemplate
+    ) -> None:
+        """
+        Updates all existing connection configs that use the specified connector type
+        with the provided template.
+        """
+        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
+            db=self.db,
+            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+        ).all()
+
+        for connection_config in connection_configs:
+            saas_config_instance = SaaSConfig.model_validate(connection_config.saas_config)
+            try:
+                self.update_saas_instance(
+                    connection_config,
+                    template,
+                    saas_config_instance,
+                )
+                logger.info(
+                    "Updated SaaS config instance '{}' of type '{}'",
+                    saas_config_instance.fides_key,
+                    connector_type,
+                )
+            except Exception:
+                logger.exception(
+                    "Encountered error attempting to update SaaS config instance {}",
+                    saas_config_instance.fides_key,
+                )

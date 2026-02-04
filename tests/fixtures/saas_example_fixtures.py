@@ -798,6 +798,21 @@ def planet_express_functions() -> str:
 
 
 @pytest.fixture
+def hubspot_yaml_config() -> str:
+    return load_yaml_as_string("data/saas/config/hubspot_config.yml")
+
+
+@pytest.fixture
+def hubspot_yaml_dataset() -> str:
+    return load_yaml_as_string("data/saas/dataset/hubspot_dataset.yml")
+
+
+@pytest.fixture
+def hubspot_yaml_icon() -> str:
+    return load_as_string("data/saas/icon/hubspot.svg")
+
+
+@pytest.fixture
 def saas_async_config() -> Dict:
     return load_config("tests/fixtures/saas/test_data/saas_async_callback_config.yml")
 

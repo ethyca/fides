@@ -25,4 +25,6 @@ class ConnectionSystemTypeMap(BaseModel):
     category: Optional[ConnectionCategory] = None
     tags: Optional[List[str]] = None
     enabled_features: Optional[List[IntegrationFeature]] = None
+    is_custom: bool = False
+    default_connector_available: bool = False
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)

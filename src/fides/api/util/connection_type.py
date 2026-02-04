@@ -250,6 +250,8 @@ def get_saas_connection_types(
                     category=connector_template.category,
                     tags=connector_template.tags,
                     enabled_features=connector_template.enabled_features,
+                    is_custom=connector_template.is_custom,
+                    default_connector_available=connector_template.default_connector_available,
                 )
             )
 

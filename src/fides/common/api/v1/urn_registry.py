@@ -198,6 +198,7 @@ CONNECTOR_TEMPLATES = "/connector-templates"
 CONNECTOR_TEMPLATES_REGISTER = "/connector-templates/register"
 CONNECTOR_TEMPLATES_CONFIG = "/connector-templates/{connector_template_type}/config"
 CONNECTOR_TEMPLATES_DATASET = "/connector-templates/{connector_template_type}/dataset"
+DELETE_CUSTOM_TEMPLATE = "/connector-templates/{saas_connector_type}"
 
 # Deprecated: Old connector template register URL
 REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
