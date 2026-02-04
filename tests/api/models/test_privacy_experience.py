@@ -12,6 +12,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
     RejectAllMechanism,
+    ResurfaceBehavior,
     link_notices_to_experience_config,
     upsert_privacy_experiences_after_config_update,
 )
@@ -679,6 +680,187 @@ class TestExperienceConfig:
         # Refresh the experience config to ensure the TCF configuration is set to None
         db.refresh(experience_config_tcf_overlay)
         assert experience_config_tcf_overlay.tcf_configuration is None
+
+    def test_create_privacy_experience_config_with_resurface_behavior(
+        self, db, privacy_notice
+    ):
+        """Test that PrivacyExperienceConfig can be created with resurface_behavior"""
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": "banner_and_modal",
+                "regions": [PrivacyNoticeRegion.us_ca],
+                "privacy_notice_ids": [privacy_notice.id],
+                "name": "Test Banner with Resurface",
+                "resurface_behavior": [
+                    ResurfaceBehavior.REJECT,
+                    ResurfaceBehavior.DISMISS,
+                ],
+                "translations": [
+                    {
+                        "language": "en",
+                        "description": "We care about your privacy.",
+                        "privacy_preferences_link_label": "Manage preferences",
+                        "modal_link_label": "Manage my consent preferences",
+                        "privacy_policy_link_label": "View our privacy policy",
+                        "privacy_policy_url": "http://example.com/privacy",
+                        "reject_button_label": "Reject all",
+                        "save_button_label": "Save",
+                        "title": "Control your privacy",
+                        "accept_button_label": "Accept all",
+                        "acknowledge_button_label": "OK",
+                        "banner_description": "You can accept, reject, or manage your preferences.",
+                        "banner_title": "Control Your Privacy",
+                        "is_default": True,
+                    }
+                ],
+            },
+        )
+
+        assert config.resurface_behavior == [
+            ResurfaceBehavior.REJECT,
+            ResurfaceBehavior.DISMISS,
+        ]
+
+        # Verify it's stored in the history as well
+        history = config.translations[0].histories[0]
+        assert history.resurface_behavior == [
+            ResurfaceBehavior.REJECT,
+            ResurfaceBehavior.DISMISS,
+        ]
+
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
+
+    def test_create_privacy_experience_config_with_single_resurface_behavior(self, db):
+        """Test that resurface_behavior can be set with a single value"""
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": "banner_and_modal",
+                "name": "Test Banner Reject Only",
+                "resurface_behavior": [ResurfaceBehavior.REJECT],
+                "translations": [
+                    {
+                        "language": "en",
+                        "description": "Privacy description",
+                        "privacy_preferences_link_label": "Manage",
+                        "modal_link_label": "Manage",
+                        "privacy_policy_link_label": "Policy",
+                        "privacy_policy_url": "http://example.com",
+                        "reject_button_label": "Reject",
+                        "save_button_label": "Save",
+                        "title": "Privacy",
+                        "accept_button_label": "Accept",
+                        "acknowledge_button_label": "OK",
+                        "banner_description": "Description",
+                        "banner_title": "Title",
+                        "is_default": True,
+                    }
+                ],
+            },
+        )
+
+        assert config.resurface_behavior == [ResurfaceBehavior.REJECT]
+
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
+
+    def test_create_privacy_experience_config_without_resurface_behavior(self, db):
+        """Test that resurface_behavior defaults to None"""
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": "banner_and_modal",
+                "name": "Test Banner No Resurface",
+                "translations": [
+                    {
+                        "language": "en",
+                        "description": "Privacy description",
+                        "privacy_preferences_link_label": "Manage",
+                        "modal_link_label": "Manage",
+                        "privacy_policy_link_label": "Policy",
+                        "privacy_policy_url": "http://example.com",
+                        "reject_button_label": "Reject",
+                        "save_button_label": "Save",
+                        "title": "Privacy",
+                        "accept_button_label": "Accept",
+                        "acknowledge_button_label": "OK",
+                        "banner_description": "Description",
+                        "banner_title": "Title",
+                        "is_default": True,
+                    }
+                ],
+            },
+        )
+
+        assert config.resurface_behavior is None
+
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
+
+    def test_update_privacy_experience_config_resurface_behavior(self, db):
+        """Test that resurface_behavior can be updated"""
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": "banner_and_modal",
+                "name": "Test Update Resurface",
+                "resurface_behavior": [ResurfaceBehavior.REJECT],
+                "translations": [
+                    {
+                        "language": "en",
+                        "description": "Privacy description",
+                        "privacy_preferences_link_label": "Manage",
+                        "modal_link_label": "Manage",
+                        "privacy_policy_link_label": "Policy",
+                        "privacy_policy_url": "http://example.com",
+                        "reject_button_label": "Reject",
+                        "save_button_label": "Save",
+                        "title": "Privacy",
+                        "accept_button_label": "Accept",
+                        "acknowledge_button_label": "OK",
+                        "banner_description": "Description",
+                        "banner_title": "Title",
+                        "is_default": True,
+                    }
+                ],
+            },
+        )
+
+        assert config.resurface_behavior == [ResurfaceBehavior.REJECT]
+
+        # Update to include both
+        config.resurface_behavior = [
+            ResurfaceBehavior.REJECT,
+            ResurfaceBehavior.DISMISS,
+        ]
+        config.save(db)
+
+        assert config.resurface_behavior == [
+            ResurfaceBehavior.REJECT,
+            ResurfaceBehavior.DISMISS,
+        ]
+
+        config.resurface_behavior = None
+        config.save(db)
+
+        assert config.resurface_behavior is None
+
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
 
 
 class TestPrivacyExperience:
