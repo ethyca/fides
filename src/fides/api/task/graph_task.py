@@ -47,6 +47,7 @@ from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
+from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.task.refine_target_path import FieldPathNodeInput
 from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.task.task_resources import TaskResources
@@ -282,8 +283,17 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return self.connector.dry_run_query(self.execution_node)
 
     def can_write_data(self) -> bool:
-        """Checks if the relevant ConnectionConfig has been granted "write" access to its data"""
+        """Checks if the relevant ConnectionConfig has been granted "write" access to its data.
+
+        Manual task connections always return True since they don't actually write to
+        external systems - humans manually record/confirm actions instead.
+        """
         connection_config: ConnectionConfig = self.connector.configuration
+        # Manual tasks don't connect to external systems, so the write access
+        # concept doesn't apply. Humans manually record erasure confirmations
+        # or consent preferences.
+        if connection_config.connection_type == ConnectionType.manual_task:
+            return True
         return connection_config.access == AccessLevel.write
 
     def _combine_seed_data(
@@ -302,7 +312,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             ROOT_COLLECTION_ADDRESS
         ]:
             dependent_values = consolidate_query_matches(
-                row=seed_data, target_path=foreign_field_path  # type: ignore
+                row=seed_data,  # type: ignore[arg-type]
+                target_path=foreign_field_path,  # type: ignore
             )
             grouped_data[local_field_path.string_path] = dependent_values
         return grouped_data
@@ -1016,9 +1027,9 @@ def build_affected_field_logs(
             if not rule_categories:
                 continue
 
-            collection_categories: Dict[
-                str, List[FieldPath]
-            ] = node.collection.field_paths_by_category  # type: ignore
+            collection_categories: Dict[str, List[FieldPath]] = (
+                node.collection.field_paths_by_category
+            )  # type: ignore
             for rule_cat in rule_categories:
                 for collection_cat, field_paths in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
@@ -1042,11 +1053,22 @@ def build_affected_field_logs(
         return ret
 
 
-def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
+def build_consent_dataset_graph(
+    datasets: List[DatasetConfig], session: Optional[Session] = None
+) -> DatasetGraph:
     """
     Build the starting DatasetGraph for consent requests.
 
-    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
+    Consent Graph has one node per dataset. Nodes must be of saas type and have consent
+    requests defined, or be manual tasks with consent configurations.
+
+    Args:
+        datasets: List of DatasetConfig objects to build the graph from
+        session: Optional database session for loading manual task graphs.
+            If provided, manual tasks with consent configs will be included.
+
+    Returns:
+        DatasetGraph containing all consent-capable nodes
     """
     consent_datasets: List[GraphDataset] = []
 
@@ -1064,5 +1086,12 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
             consent_datasets.append(
                 dataset_config.get_dataset_with_stubbed_collection()
             )
+
+    # Add manual task graphs if session is provided
+    if session:
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            session, config_types=[ActionType.consent]
+        )
+        consent_datasets.extend(manual_task_graphs)
 
     return DatasetGraph(*consent_datasets)

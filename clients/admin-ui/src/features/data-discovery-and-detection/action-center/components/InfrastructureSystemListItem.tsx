@@ -9,12 +9,20 @@ import {
   SparkleIcon,
   Tag,
   Text,
+  useMessage,
 } from "fidesui";
 import { useMemo } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import { getBrandIconUrl, getDomain } from "~/features/common/utils";
-import { IdentityProviderApplicationMetadata } from "~/types/api/models/IdentityProviderApplicationMetadata";
+import { useUpdateInfrastructureSystemDataUsesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { StagedResourceAPIResponse } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
+import {
+  INFRASTRUCTURE_DIFF_STATUS_COLOR,
+  INFRASTRUCTURE_DIFF_STATUS_LABEL,
+} from "../constants";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import InfrastructureClassificationSelect from "./InfrastructureClassificationSelect";
 import { InfrastructureSystemActionsCell } from "./InfrastructureSystemActionsCell";
@@ -53,29 +61,15 @@ const tagRender: TagRender = (props) => {
 };
 
 interface InfrastructureSystemListItemProps {
-  item: {
-    id?: string | null;
-    urn?: string;
-    name?: string | null;
-    system_key?: string | null;
-    vendor_id?: string | null;
-    metadata?: IdentityProviderApplicationMetadata | null;
-    diff_status?: string | null;
-    data_uses?: string[];
-    description?: string | null;
-    preferred_data_categories?: string[] | null;
-    classifications?: Array<{ label: string }> | null;
-  };
+  item: StagedResourceAPIResponse;
   selected?: boolean;
   onSelect?: (key: string, selected: boolean) => void;
   onNavigate?: (url: string) => void;
-  rowClickUrl?: (item: InfrastructureSystemListItemProps["item"]) => string;
+  rowClickUrl?: (item: StagedResourceAPIResponse) => string;
   monitorId: string;
   activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;
-  onSetDataCategories?: (urn: string, dataCategories: string[]) => void;
-  onSelectDataCategory?: (value: string) => void;
-  dataCategoriesDisabled?: boolean;
+  dataUsesDisabled?: boolean;
   onPromoteSuccess?: () => void;
 }
 
@@ -88,16 +82,28 @@ export const InfrastructureSystemListItem = ({
   monitorId,
   activeTab,
   allowIgnore,
-  onSetDataCategories,
-  onSelectDataCategory,
-  dataCategoriesDisabled,
+  dataUsesDisabled,
   onPromoteSuccess,
 }: InfrastructureSystemListItemProps) => {
-  const itemKey = item.urn ?? item.id ?? "";
+  const itemKey = item.urn;
   const url = rowClickUrl?.(item);
-  const { metadata } = item;
+  const { metadata, diff_status: diffStatus } = item;
   const systemName = item.name ?? "Uncategorized";
-  const systemType = metadata?.app_type ?? "System type";
+
+  const messageApi = useMessage();
+
+  const [updateDataUses] = useUpdateInfrastructureSystemDataUsesMutation();
+
+  const handleUpdateDataUses = async (dataUses: string[]) => {
+    const result = await updateDataUses({
+      monitorId,
+      dataUses,
+      urn: itemKey,
+    });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+    }
+  };
 
   // Get logo URL: prefer vendor_logo_url, then try brandfetch, then use generic icon
   const logoUrl = useMemo(() => {
@@ -135,15 +141,11 @@ export const InfrastructureSystemListItem = ({
     }
   };
 
-  // Handle data category selection
-  const handleSelectDataCategory = (value: string) => {
-    if (onSelectDataCategory) {
-      onSelectDataCategory(value);
-    } else if (onSetDataCategories && itemKey) {
-      const currentCategories = item.preferred_data_categories ?? [];
-      if (!currentCategories.includes(value)) {
-        onSetDataCategories(itemKey, [...currentCategories, value]);
-      }
+  // Handle data use selection
+  const handleSelectDataUse = (value: string) => {
+    const currentDataUses = item.preferred_data_uses ?? [];
+    if (!currentDataUses.includes(value)) {
+      handleUpdateDataUses([...currentDataUses, value]);
     }
   };
 
@@ -182,39 +184,41 @@ export const InfrastructureSystemListItem = ({
             <Button type="text" size="small" onClick={handleClick}>
               <Text strong>{systemName}</Text>
             </Button>
-            <Text type="secondary" style={{ fontWeight: 400 }}>
-              {systemType}
-            </Text>
+            {diffStatus && INFRASTRUCTURE_DIFF_STATUS_LABEL[diffStatus] && (
+              <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[diffStatus]}>
+                {INFRASTRUCTURE_DIFF_STATUS_LABEL[diffStatus]}
+              </Tag>
+            )}
           </Flex>
         }
         description={
           <InfrastructureClassificationSelect
             mode="multiple"
-            value={item.preferred_data_categories ?? []}
+            value={item.preferred_data_uses ?? []}
             urn={itemKey}
             tagRender={(props) => {
-              const isFromClassifier = !!item.classifications?.find(
-                (classification) => classification.label === props.value,
+              // Show sparkle icon if the data use was auto-detected (in data_uses)
+              // and not manually assigned (not in user_assigned_data_uses)
+              const isAutoDetectedFromCompass = item.data_uses?.includes(
+                props.value as string,
               );
 
               const handleClose = () => {
-                if (onSetDataCategories && itemKey) {
-                  const newDataCategories =
-                    item.preferred_data_categories?.filter(
-                      (category) => category !== props.value,
-                    ) ?? [];
-                  onSetDataCategories(itemKey, newDataCategories);
-                }
+                const newDataUses =
+                  item.preferred_data_uses?.filter(
+                    (dataUse) => dataUse !== props.value,
+                  ) ?? [];
+                handleUpdateDataUses(newDataUses);
               };
 
               return tagRender({
                 ...props,
-                isFromClassifier,
+                isFromClassifier: isAutoDetectedFromCompass,
                 onClose: handleClose,
               });
             }}
-            onSelectDataCategory={handleSelectDataCategory}
-            disabled={dataCategoriesDisabled}
+            onSelectDataUse={handleSelectDataUse}
+            disabled={dataUsesDisabled}
           />
         }
       />

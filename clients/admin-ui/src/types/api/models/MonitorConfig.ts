@@ -6,6 +6,7 @@ import type { BigQueryMonitorParams } from "./BigQueryMonitorParams";
 import type { DynamoDBMonitorParams } from "./DynamoDBMonitorParams";
 import type { MonitorClassifyParams } from "./MonitorClassifyParams";
 import type { MonitorFrequency } from "./MonitorFrequency";
+import type { MonitorStewardUserResponse } from "./MonitorStewardUserResponse";
 import type { S3MonitorParams } from "./S3MonitorParams";
 import type { TestMonitorParams } from "./TestMonitorParams";
 import type { TestWebsiteMonitorParams } from "./TestWebsiteMonitorParams";
@@ -51,5 +52,9 @@ export type MonitorConfig = {
    * Reference to a shared monitor configuration
    */
   shared_config_id?: string | null;
+  /**
+   * List of users assigned as stewards for this monitor
+   */
+  stewards?: Array<MonitorStewardUserResponse>;
   last_monitored?: string | null;
 };

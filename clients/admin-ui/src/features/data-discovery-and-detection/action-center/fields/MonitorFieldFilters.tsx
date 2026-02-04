@@ -1,6 +1,6 @@
 import { Filter, TreeDataNode as DataNode } from "fidesui";
 import { uniq } from "lodash";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { capitalize } from "~/features/common/utils";
 import { useGetDatastoreFiltersQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -10,8 +10,8 @@ import { useLazyGetTaxonomyQuery } from "~/features/taxonomy/taxonomy.slice";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 
 import {
+  DEFAULT_FILTER_STATUSES,
   FIELDS_FILTER_SECTION_KEYS,
-  getFilterableStatuses,
   RESOURCE_STATUS,
   ResourceStatusLabel,
 } from "./MonitorFields.const";
@@ -23,7 +23,7 @@ const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
   ConfidenceBucket.MEDIUM,
   ConfidenceBucket.LOW,
   ConfidenceBucket.MANUAL,
-];
+] as const;
 
 /**
  * Build a nested tree structure from flat data category strings.
@@ -175,32 +175,6 @@ export const MonitorFieldFilters = ({
     FIELDS_FILTER_SECTION_KEYS.STATUS,
   ]);
 
-  // Sync local state when external state changes
-  useEffect(() => {
-    setLocalResourceStatus(resourceStatus);
-  }, [resourceStatus]);
-
-  useEffect(() => {
-    setLocalConfidenceBucket(confidenceBucket);
-  }, [confidenceBucket]);
-
-  useEffect(() => {
-    setLocalDataCategory(dataCategory);
-  }, [dataCategory]);
-
-  // Reset filters to default state when stagedResourceUrn changes (but not on initial mount)
-  // Use join to compare array contents, not reference
-  const stagedResourceUrnKey = stagedResourceUrn.join(",");
-  const isInitialMount = useRef(true);
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    resetToInitialState();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stagedResourceUrnKey]);
-
   const { data: datastoreFilterResponse, refetch: refetchDatastoreFilters } =
     useGetDatastoreFiltersQuery(
       {
@@ -302,35 +276,17 @@ export const MonitorFieldFilters = ({
   ];
 
   // Get current checked keys from LOCAL state
-  const checkedKeys = useMemo(
-    () =>
-      uniq([
-        ...(localResourceStatus ?? []),
-        ...(localDataCategory ?? []),
-        ...(localConfidenceBucket ?? []),
-      ]),
-    [localResourceStatus, localDataCategory, localConfidenceBucket],
-  );
+  const checkedKeys = uniq([
+    ...(localResourceStatus ?? []),
+    ...(localDataCategory ?? []),
+    ...(localConfidenceBucket ?? []),
+  ]);
 
   // Calculate active filters count from APPLIED state (not local)
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (resourceStatus) {
-      // Deduplicate to get accurate count
-      count += new Set(resourceStatus).size;
-    }
-    if (dataCategory) {
-      // Deduplicate to get accurate count
-      count += new Set(dataCategory).size;
-    }
-
-    if (confidenceBucket) {
-      // Deduplicate to get accurate count
-      count += new Set(confidenceBucket).size;
-    }
-
-    return count;
-  }, [resourceStatus, dataCategory, confidenceBucket]);
+  const activeFiltersCount =
+    new Set(resourceStatus || []).size +
+    new Set(dataCategory || []).size +
+    new Set(confidenceBucket || []).size;
 
   const handleCheck = (
     checked: React.Key[] | { checked: React.Key[]; halfChecked: React.Key[] },
@@ -388,7 +344,7 @@ export const MonitorFieldFilters = ({
   const handleReset = () => {
     // Reset to initial state (preselect statuses except excluded ones)
     resetToInitialState();
-    setLocalResourceStatus(getFilterableStatuses([...RESOURCE_STATUS]));
+    setLocalResourceStatus(DEFAULT_FILTER_STATUSES);
     setLocalConfidenceBucket([]);
     setLocalDataCategory([]);
   };
@@ -427,13 +383,7 @@ export const MonitorFieldFilters = ({
     if (open) {
       // When popover opens, refetch data categories to ensure they're up-to-date
       refetchDatastoreFilters();
-      return;
     }
-
-    // When popover closes without applying, reset local state to match applied state
-    setLocalResourceStatus(resourceStatus);
-    setLocalConfidenceBucket(confidenceBucket);
-    setLocalDataCategory(dataCategory);
   };
 
   return (

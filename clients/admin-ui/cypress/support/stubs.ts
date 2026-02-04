@@ -1,5 +1,5 @@
 import { PrivacyRequestResponse } from "~/features/privacy-requests/types";
-import { HealthCheck, PrivacyRequestStatus } from "~/types/api";
+import { HealthCheck, PrivacyRequestStatus, Schema } from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
@@ -1080,4 +1080,28 @@ export const stubOktaApps = () => {
   cy.intercept("GET", "/api/v1/plus/identity-provider-monitors/*/results", {
     fixture: "detection-discovery/results/okta-apps-list.json",
   }).as("getOktaApps");
+};
+
+export const stubInfrastructureSystems = (options?: {
+  fixture?: string;
+  patchStatus?: number;
+  patchResponse?: Partial<Schema> | { detail: string };
+}) => {
+  const fixture =
+    options?.fixture ||
+    "detection-discovery/results/infrastructure-systems-with-data-uses.json";
+
+  // GET - Identity Provider Monitor Results
+  cy.intercept("GET", "/api/v1/plus/identity-provider-monitors/*/results*", {
+    fixture,
+  }).as("getInfrastructureSystems");
+
+  // PATCH - Update infrastructure system data uses
+  cy.intercept("PATCH", "/api/v1/plus/identity-provider-monitors/*/results/*", {
+    statusCode: options?.patchStatus ?? 200,
+    body: options?.patchResponse ?? {
+      urn: "urn:okta:app:12345678-1234-1234-1234-123456789012",
+      user_assigned_data_uses: [],
+    },
+  }).as("updateInfrastructureSystemDataUses");
 };

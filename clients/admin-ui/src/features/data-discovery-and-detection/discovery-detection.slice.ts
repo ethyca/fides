@@ -5,13 +5,13 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   DiffStatus,
+  EditableMonitorConfig,
   MonitorConfig,
-  MonitorFrequency,
   Page_MonitorStatusResponse_,
   Page_StagedResourceAPIResponse_,
   Page_str_,
+  Schema,
 } from "~/types/api";
-import { MonitorClassifyParams } from "~/types/api/models/MonitorClassifyParams";
 
 interface State {
   page?: number;
@@ -64,23 +64,6 @@ interface ChangeResourceCategoryQueryParam {
 }
 
 // Identity Provider Monitor interfaces (Okta-specific)
-interface IdentityProviderMonitorConfig {
-  name: string;
-  key?: string;
-  provider: "okta";
-  connection_config_key: string;
-  enabled: boolean;
-  execution_start_date?: string;
-  execution_frequency?: MonitorFrequency;
-  classify_params?: MonitorClassifyParams;
-}
-
-interface IdentityProviderMonitorListQueryParams {
-  page?: number;
-  size?: number;
-  connection_config_key?: string;
-}
-
 interface IdentityProviderMonitorResultsQueryParams {
   monitor_config_key: string;
   page?: number;
@@ -89,6 +72,7 @@ interface IdentityProviderMonitorResultsQueryParams {
   diff_status?: DiffStatus | DiffStatus[];
   status?: string | string[];
   vendor_id?: string | string[];
+  data_uses?: string[];
 }
 
 interface IdentityProviderMonitorExecuteParams {
@@ -105,6 +89,19 @@ interface IdentityProviderResourceBulkActionParam {
   urns: string[];
 }
 
+interface IdentityProviderMonitorFiltersQueryParams {
+  monitor_config_key: string;
+  diff_status?: DiffStatus | DiffStatus[];
+  vendor_id?: string | string[];
+  data_uses?: string[];
+}
+
+export interface IDPMonitorFiltersResponse {
+  diff_status: string[];
+  vendor_id: string[];
+  data_uses: string[];
+}
+
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getMonitorsByIntegration: build.query<Page_MonitorStatusResponse_, any>({
@@ -115,7 +112,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Discovery Monitor Configs"],
     }),
-    putDiscoveryMonitor: build.mutation<MonitorConfig, MonitorConfig>({
+    putDiscoveryMonitor: build.mutation<MonitorConfig, EditableMonitorConfig>({
       query: (body) => ({
         method: "PUT",
         url: `/plus/discovery-monitor`,
@@ -324,49 +321,31 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       ],
     }),
     // Identity Provider Monitor endpoints (Okta-specific)
-    createIdentityProviderMonitor: build.mutation<
-      MonitorConfig,
-      IdentityProviderMonitorConfig
-    >({
-      query: (body) => ({
-        method: "POST",
-        url: `/plus/identity-provider-monitors`,
-        body,
-      }),
-      invalidatesTags: ["Discovery Monitor Configs"],
-    }),
-    putIdentityProviderMonitor: build.mutation<
-      MonitorConfig,
-      IdentityProviderMonitorConfig
-    >({
-      query: (body) => ({
-        method: "PUT",
-        url: `/plus/identity-provider-monitors`,
-        body,
-      }),
-      invalidatesTags: ["Discovery Monitor Configs"],
-    }),
-    getIdentityProviderMonitors: build.query<
-      Page_MonitorStatusResponse_,
-      IdentityProviderMonitorListQueryParams
-    >({
-      query: (params) => ({
-        method: "GET",
-        url: `/plus/identity-provider-monitors`,
-        params,
-      }),
-      providesTags: ["Discovery Monitor Configs"],
-    }),
     getIdentityProviderMonitorResults: build.query<
       Page_StagedResourceAPIResponse_,
       IdentityProviderMonitorResultsQueryParams
     >({
       query: ({ monitor_config_key, ...params }) => ({
         method: "GET",
-        url: `/plus/identity-provider-monitors/${monitor_config_key}/results`,
-        params,
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results?${queryString.stringify(
+          params,
+          { arrayFormat: "none" },
+        )}`,
       }),
       providesTags: () => ["Identity Provider Monitor Results"],
+    }),
+    getIdentityProviderMonitorFilters: build.query<
+      IDPMonitorFiltersResponse,
+      IdentityProviderMonitorFiltersQueryParams
+    >({
+      query: ({ monitor_config_key, ...params }) => ({
+        method: "GET",
+        url: `/plus/filters/idp_monitor_resources?${queryString.stringify(
+          { monitor_config_id: monitor_config_key, ...params },
+          { arrayFormat: "none" },
+        )}`,
+      }),
+      providesTags: () => ["Identity Provider Monitor Filters"],
     }),
     executeIdentityProviderMonitor: build.mutation<
       { monitor_execution_id: string; task_id: string | null },
@@ -410,6 +389,20 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
+    updateInfrastructureSystemDataUses: build.mutation<
+      Schema,
+      { monitorId: string; urn: string; dataUses: string[] }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/identity-provider-monitors/${params.monitorId}/results/${params.urn}`,
+        body: {
+          urn: params.urn,
+          user_assigned_data_uses: params.dataUses,
+        },
+      }),
+      invalidatesTags: ["Identity Provider Monitor Results"],
+    }),
     bulkPromoteIdentityProviderMonitorResults: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
@@ -417,7 +410,9 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       query: ({ monitor_config_key, urns }) => ({
         method: "POST",
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
-        body: urns,
+        body: {
+          urns,
+        },
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
@@ -464,14 +459,13 @@ export const {
   useUnmuteResourcesMutation,
   useUpdateResourceCategoryMutation,
   useReviewStagedResourcesMutation,
-  useCreateIdentityProviderMonitorMutation,
-  usePutIdentityProviderMonitorMutation,
-  useGetIdentityProviderMonitorsQuery,
   useGetIdentityProviderMonitorResultsQuery,
+  useGetIdentityProviderMonitorFiltersQuery,
   useExecuteIdentityProviderMonitorMutation,
   usePromoteIdentityProviderMonitorResultMutation,
   useMuteIdentityProviderMonitorResultMutation,
   useUnmuteIdentityProviderMonitorResultMutation,
+  useUpdateInfrastructureSystemDataUsesMutation,
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,

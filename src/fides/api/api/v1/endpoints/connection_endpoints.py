@@ -200,7 +200,9 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
+    configs: Annotated[
+        List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)
+    ],  # type: ignore
 ) -> BulkPutConnectionConfiguration:
     """
     Given a list of connection config data elements, optionally containing the secrets,
@@ -419,7 +421,11 @@ def patch_connection_oauth_config(
 
     patched_oauth_config = {
         **patched_oauth_config,
-        **{k: v for (k, v) in oauth_config.model_dump(mode="json").items() if v is not None},  # type: ignore[dict-item]
+        **{
+            k: v
+            for (k, v) in oauth_config.model_dump(mode="json").items()
+            if v is not None
+        },  # type: ignore[dict-item]
     }
 
     logger.info("Patching OAuth2 config for '{}'", connection_key)

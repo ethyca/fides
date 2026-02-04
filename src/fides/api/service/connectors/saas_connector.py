@@ -489,7 +489,8 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         for postprocessor in postprocessors or []:
             strategy: PostProcessorStrategy = PostProcessorStrategy.get_strategy(
-                postprocessor.strategy, postprocessor.configuration  # type: ignore
+                postprocessor.strategy,  # type: ignore[attr-defined]
+                postprocessor.configuration,  # type: ignore
             )
             logger.info(
                 "Starting postprocessing of '{}' collection with '{}' strategy.",
@@ -850,12 +851,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 if consent_request.request_override:
                     # if we're dealing with notice-based consent, get_override with the UPDATE_CONSENT request type
                     # else: opt-in/opt-out...
-                    override_function: RequestOverrideFunction = (
-                        SaaSRequestOverrideFactory.get_override(
-                            # query_config.action currently looks at yml "opt_out" or "opt_in" keys
-                            consent_request.request_override,
-                            SaaSRequestType(query_config.action),
-                        )
+                    override_function: RequestOverrideFunction = SaaSRequestOverrideFactory.get_override(
+                        # query_config.action currently looks at yml "opt_out" or "opt_in" keys
+                        consent_request.request_override,
+                        SaaSRequestType(query_config.action),
                     )
                     consent_propagation_status = self._invoke_consent_request_override(
                         override_function,

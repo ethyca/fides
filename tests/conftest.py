@@ -792,7 +792,6 @@ def celery_session_worker(
         celery_session_app.register_task(class_task)
 
     try:
-
         logger.info("Starting safe celery session worker...")
         with worker.start_worker(
             celery_session_app,
@@ -2000,11 +1999,11 @@ def viewer_and_approver_auth_header(viewer_and_approver_user):
 
 @pytest.mark.asyncio
 @pytest.fixture(scope="function")
-def seed_data(session):
+def seed_data(db: Session):
     """
     Fixture to load default resources into the database before a test.
     """
-    seed_db(session)
+    seed_db(db)
 
 
 @pytest.fixture(scope="function")

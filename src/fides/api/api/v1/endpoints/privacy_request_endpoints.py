@@ -373,7 +373,9 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     if action_required_details:
         action_required_details.step = action_required_details.step.value  # type: ignore
         action_required_details.collection = (
-            action_required_details.collection.value if action_required_details.collection else None  # type: ignore
+            action_required_details.collection.value
+            if action_required_details.collection
+            else None  # type: ignore
         )
 
     privacy_request.action_required_details = action_required_details
@@ -509,9 +511,7 @@ def get_request_status(
     params: Params = Depends(),
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
-    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
-        default=None
-    ),  # type:ignore
+    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(default=None),  # type:ignore
     fuzzy_search_str: Optional[str] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -1444,9 +1444,7 @@ def privacy_request_data_transfer(
             detail=f"No privacy request with id {privacy_request_id} found",
         )
 
-    rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key)
-    ).first()  # pylint: disable=superfluous-parens
+    rule = Rule.filter(db=db, conditions=(Rule.key == rule_key)).first()  # pylint: disable=superfluous-parens
     if not rule:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -1775,9 +1773,14 @@ def get_individual_privacy_request_tasks(
 
     logger.info(f"Getting Request Tasks for '{privacy_request_id}'")
 
-    return pr.request_tasks.order_by(
-        RequestTask.created_at.asc(), RequestTask.collection_address.asc()
-    ).all()
+    # Use deferred loading to avoid loading large JSON columns (_access_data, _data_for_erasures, etc.)
+    # which can cause OOM errors when listing many tasks
+    return (
+        RequestTask.query_with_deferred_data(db.query(RequestTask))
+        .filter(RequestTask.privacy_request_id == privacy_request_id)
+        .order_by(RequestTask.created_at.asc(), RequestTask.collection_address.asc())
+        .all()
+    )
 
 
 @router.post(
@@ -2057,7 +2060,10 @@ def get_test_privacy_request_results(
     results = json.loads(escaped_json)
 
     filtered_results: Dict[str, Any] = filter_access_results(
-        db, results, dataset_key, privacy_request.policy_id  # type: ignore[arg-type]
+        db,
+        results,
+        dataset_key,
+        privacy_request.policy_id,  # type: ignore[arg-type]
     )
 
     with logger.contextualize(

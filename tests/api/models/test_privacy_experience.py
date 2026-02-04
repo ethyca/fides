@@ -852,7 +852,9 @@ class TestUpsertPrivacyExperiencesOnConfigChange:
         assert config.experiences.count() == 1
 
         upsert_privacy_experiences_after_config_update(
-            db, config, regions=[]  # Empty region list will remove regions
+            db,
+            config,
+            regions=[],  # Empty region list will remove regions
         )
 
         assert config.experiences.count() == 0

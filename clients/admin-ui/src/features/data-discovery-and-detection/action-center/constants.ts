@@ -1,3 +1,5 @@
+import { CUSTOM_TAG_COLOR } from "fidesui";
+
 import {
   ConsentStatus,
   DatastoreMonitorUpdates,
@@ -137,65 +139,48 @@ export const INFRASTRUCTURE_SYSTEMS_TABS = [
   },
 ] as const;
 
-export const INFRASTRUCTURE_SYSTEM_FILTERS = [
-  "all",
-  "new",
-  "active",
-  "inactive",
-  "known",
-  "unknown",
-  "removed",
-] as const;
-
-export type InfrastructureSystemFilterLabel =
-  (typeof INFRASTRUCTURE_SYSTEM_FILTERS)[number];
-
-export const INFRASTRUCTURE_SYSTEM_FILTER_LABELS: Record<
-  InfrastructureSystemFilterLabel,
-  string
-> = {
-  all: "All apps",
-  new: "New apps",
-  active: "Active",
-  inactive: "Inactive",
-  known: "Known Vendors",
-  unknown: "Unknown Vendors",
-  removed: "Removed",
-} as const;
-
 export const INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS = {
   STATUS: "status-section",
   VENDOR: "vendor-section",
+  DATA_USES: "data-uses-section",
 } as const;
 
 /**
- * Maps infrastructure system filter labels to API parameters
+ * Vendor filter options - hardcoded as per requirements
  */
-export const mapStatusFilterToDiffStatus = (
-  filter: InfrastructureSystemFilterLabel,
-): DiffStatus | null => {
-  switch (filter) {
-    case "new":
-      return DiffStatus.ADDITION;
-    case "removed":
-      return DiffStatus.REMOVAL;
-    default:
-      return null;
-  }
+export const VENDOR_FILTER_OPTIONS = [
+  { key: "known", label: "Known vendors" },
+  { key: "unknown", label: "Unknown vendors" },
+] as const;
+
+/**
+ * Maps DiffStatus to display labels for infrastructure systems
+ */
+export const INFRASTRUCTURE_DIFF_STATUS_LABEL: Record<DiffStatus, string> = {
+  [DiffStatus.ADDITION]: "New",
+  [DiffStatus.CLASSIFICATION_ADDITION]: "Classified",
+  [DiffStatus.CLASSIFICATION_UPDATE]: "Classified",
+  [DiffStatus.REVIEWED]: "Reviewed",
+  [DiffStatus.MONITORED]: "Approved",
+  [DiffStatus.REMOVAL]: "Removed",
+  [DiffStatus.MUTED]: "Ignored",
+  [DiffStatus.CLASSIFICATION_QUEUED]: "Classifying",
+  [DiffStatus.CLASSIFYING]: "Classifying",
+  [DiffStatus.PROMOTING]: "Approving",
+  [DiffStatus.REMOVING]: "Removing",
+  [DiffStatus.CLASSIFICATION_ERROR]: "Error",
+  [DiffStatus.PROMOTION_ERROR]: "Error",
+  [DiffStatus.REMOVAL_PROMOTION_ERROR]: "Error",
 };
 
 /**
- * Maps infrastructure system filter labels to status values for metadata
+ * Maps DiffStatus to tag colors for infrastructure systems
  */
-export const mapStatusFilterToMetadataStatus = (
-  filter: InfrastructureSystemFilterLabel,
-): string | null => {
-  switch (filter) {
-    case "active":
-      return "ACTIVE";
-    case "inactive":
-      return "INACTIVE";
-    default:
-      return null;
-  }
+export const INFRASTRUCTURE_DIFF_STATUS_COLOR: Partial<
+  Record<DiffStatus, CUSTOM_TAG_COLOR>
+> = {
+  [DiffStatus.ADDITION]: CUSTOM_TAG_COLOR.SUCCESS,
+  [DiffStatus.REMOVAL]: CUSTOM_TAG_COLOR.ERROR,
+  [DiffStatus.MONITORED]: CUSTOM_TAG_COLOR.DEFAULT,
+  [DiffStatus.MUTED]: CUSTOM_TAG_COLOR.DEFAULT,
 };

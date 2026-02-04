@@ -6,6 +6,7 @@ import pytest
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.ctl.types import FixtureRequest
 
 from fides.api.db.crud import (
     create_resource,
@@ -18,7 +19,6 @@ from fides.api.models import sql_models
 from fides.api.util.errors import QueryError
 from fides.config import FidesConfig
 from fides.core import api as _api
-from tests.ctl.types import FixtureRequest
 
 
 @pytest.fixture(name="created_resources")

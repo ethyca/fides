@@ -14,6 +14,7 @@ import {
 } from "./consent-types";
 import {
   decodeNoticeConsentString,
+  DEFAULT_MODAL_LINK_ID,
   defaultShowModal,
   encodeNoticeConsentString,
   shouldResurfaceBanner,
@@ -90,7 +91,7 @@ export const getCoreFides = ({
       isGeolocationEnabled: false,
       geolocationApiUrl: "",
       overlayParentId: null,
-      modalLinkId: null,
+      modalLinkId: DEFAULT_MODAL_LINK_ID,
       privacyCenterUrl: "",
       fidesApiUrl: "",
       tcfEnabled,
@@ -112,6 +113,7 @@ export const getCoreFides = ({
       showFidesBrandLink: !tcfEnabled,
       fidesConsentOverride: null,
       otFidesMapping: null,
+      transcendFidesMapping: null,
       fidesDisabledNotices: null,
       fidesDisabledSystems: null,
       fidesConsentNonApplicableFlagMode: null,

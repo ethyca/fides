@@ -112,7 +112,7 @@ export const useDiscoveredAssetsTable = ({
     updatePageSize,
   } = tableState;
 
-  const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
+  const { data, error, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     page: pageIndex,
     size: pageSize,
@@ -660,6 +660,7 @@ export const useDiscoveredAssetsTable = ({
     // Table state and data
     columns,
     data,
+    error,
     isLoading,
     isFetching,
     tableState,

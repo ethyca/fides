@@ -1162,9 +1162,18 @@ describe("Consent overlay", () => {
         });
 
         it("sends GPC consent override downstream to Fides API", () => {
+          // Verify consent is immediately available in window.Fides.consent
+          cy.window()
+            .its("Fides")
+            .its("consent")
+            .should("eql", {
+              [PRIVACY_NOTICE_KEY_1]: false,
+            });
+
           // check that consent was sent to Fides API
           let generatedUserDeviceId: string;
-          cy.wait("@patchPrivacyPreference").then((interception) => {
+          cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+          cy.get("@patchPrivacyPreference").then((interception: any) => {
             const { body } = interception.request;
             const expected = {
               // browser_identity.fides_user_device_id is intentionally left out here
@@ -1403,17 +1412,22 @@ describe("Consent overlay", () => {
         });
 
         it("does not get overridden by banner acknowledge button", () => {
-          cy.get("@FidesUpdated")
-            .should("have.been.calledOnce")
-            .its("lastCall.args.0.detail.extraDetails.consentMethod")
-            .then((consentMethod) => {
-              expect(consentMethod).to.eql(ConsentMethod.GPC);
-            });
+          // Check that automated GPC consent was saved to the API
+          cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+          cy.get("@patchPrivacyPreference").then((gpcInterception: any) => {
+            expect(gpcInterception.request.body.method).to.eql(
+              ConsentMethod.GPC,
+            );
+          });
+
+          // Click the acknowledge button
           cy.get("div#fides-banner").within(() => {
             cy.get("button").contains("OK").click();
           });
+
+          // The acknowledge click should trigger FidesUpdated with ACKNOWLEDGE method
           cy.get("@FidesUpdated")
-            .should("have.been.calledTwice")
+            .should("have.been.calledOnce")
             .its("lastCall.args.0.detail.extraDetails.consentMethod")
             .then((consentMethod) => {
               expect(consentMethod).to.eql(ConsentMethod.ACKNOWLEDGE);
@@ -1687,6 +1701,136 @@ describe("Consent overlay", () => {
           // Verify the GPC badge shows as overridden
           cy.get("#fides-modal-link").click();
           cy.getByTestId("gpc-advertising").contains("Overridden");
+        });
+      });
+
+      describe("when Notice Consent string is found and takes precedence over existing cookie values", () => {
+        const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
+
+        beforeEach(() => {
+          const originalCookie = {
+            identity: { fides_user_device_id: uuid },
+            fides_meta: {
+              version: "0.9.0",
+              createdAt: "2022-12-24T12:00:00.000Z",
+              updatedAt: "2022-12-25T12:00:00.000Z",
+            },
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
+              [PRIVACY_NOTICE_KEY_3]: false,
+            },
+          };
+          cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+          const scriptedConsent = {
+            [PRIVACY_NOTICE_KEY_1]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          };
+          const noticeConsentString =
+            encodeNoticeConsentString(scriptedConsent);
+
+          cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+            (config) => {
+              stubConfig({
+                experience: config.experience,
+                options: {
+                  fidesString: `,,,${noticeConsentString}`,
+                },
+              });
+            },
+          );
+        });
+
+        it("applies fidesString preferences and overrides existing cookie values", () => {
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.window()
+              .its("Fides")
+              .its("consent")
+              .should("eql", {
+                [PRIVACY_NOTICE_KEY_1]: true,
+                [PRIVACY_NOTICE_KEY_2]: true,
+                [PRIVACY_NOTICE_KEY_3]: true,
+              });
+          });
+        });
+
+        it("sends scripted consent to API with SCRIPT method", () => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { body } = interception.request;
+
+            expect(body.method).to.eql(ConsentMethod.SCRIPT);
+            expect(body.browser_identity.fides_user_device_id).to.eql(uuid);
+            expect(body.preferences).to.have.lengthOf(3);
+
+            const advertisingPref = body.preferences.find(
+              (p) =>
+                p.privacy_notice_history_id ===
+                "pri_notice-history-advertising-en-000",
+            );
+            expect(advertisingPref).to.exist;
+            expect(advertisingPref.preference).to.eql("opt_in");
+
+            const analyticsPref = body.preferences.find(
+              (p) =>
+                p.privacy_notice_history_id ===
+                "pri_notice-history-analytics-en-000",
+            );
+            expect(analyticsPref).to.exist;
+            expect(analyticsPref.preference).to.eql("opt_in");
+
+            const essentialPref = body.preferences.find(
+              (p) =>
+                p.privacy_notice_history_id ===
+                "pri_notice-history-essential-en-000",
+            );
+            expect(essentialPref).to.exist;
+            expect(essentialPref.preference).to.eql("acknowledge");
+          });
+        });
+
+        it("stores updated consent in cookie", () => {
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value),
+              );
+
+              expect(cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_1]).to.eql(
+                true,
+              );
+              expect(cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_2]).to.eql(
+                true,
+              );
+              expect(cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_3]).to.eql(
+                true,
+              );
+              expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+                ConsentMethod.SCRIPT,
+              );
+              expect(cookieKeyConsent.identity.fides_user_device_id).to.eql(
+                uuid,
+              );
+            });
+          });
+        });
+
+        it("displays correct values in modal UI", () => {
+          cy.get("#fides-modal-link").click();
+
+          cy.get(".fides-notice-toggle")
+            .contains("Advertising")
+            .parents(".fides-notice-toggle")
+            .within(() => {
+              cy.get("input[type='checkbox']").should("be.checked");
+            });
+
+          cy.get(".fides-notice-toggle")
+            .contains("Analytics")
+            .parents(".fides-notice-toggle")
+            .within(() => {
+              cy.get("input[type='checkbox']").should("be.checked");
+            });
         });
       });
     });
@@ -3072,8 +3216,14 @@ describe("Consent overlay", () => {
       let automatedServedNoticeHistoryId: string;
       let manualServedNoticeHistoryId: string;
 
-      // First, automated consent should be applied via GPC
-      cy.wait("@patchPrivacyPreference").then((gpcInterception) => {
+      // First, verify automated consent is immediately available via GPC
+      cy.window().its("Fides").its("consent").should("include", {
+        advertising_gpc: false,
+      });
+
+      // Then verify automated consent was sent to API
+      cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+      cy.get("@patchPrivacyPreference").then((gpcInterception: any) => {
         const { served_notice_history_id } = gpcInterception.request.body;
         expect(served_notice_history_id).to.be.a("string");
         automatedServedNoticeHistoryId = served_notice_history_id;
@@ -3101,7 +3251,10 @@ describe("Consent overlay", () => {
         cy.get("button").contains("Save").click();
       });
 
-      cy.wait("@patchPrivacyPreference").then((manualInterception) => {
+      // Wait for the second patchPrivacyPreference call (the manual save)
+      // Note: The first call was for automated GPC consent, checked above
+      cy.get("@patchPrivacyPreference.all").should("have.length", 2);
+      cy.get("@patchPrivacyPreference.2").then((manualInterception: any) => {
         const { served_notice_history_id } = manualInterception.request.body;
         expect(served_notice_history_id).to.be.a("string");
         expect(manualInterception.request.body.method).to.eql(

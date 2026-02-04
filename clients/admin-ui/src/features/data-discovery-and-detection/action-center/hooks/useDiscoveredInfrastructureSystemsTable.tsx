@@ -6,39 +6,27 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import {
-  StagedResourceAPIResponse,
-  SystemStagedResourcesAggregateRecord,
-} from "~/types/api";
+import { StagedResourceAPIResponse } from "~/types/api";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 import { useGetIdentityProviderMonitorResultsQuery } from "../../discovery-detection.slice";
-import {
-  InfrastructureSystemFilterLabel,
-  mapStatusFilterToDiffStatus,
-  mapStatusFilterToMetadataStatus,
-} from "../constants";
 import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "./useActionCenterTabs";
 
 interface UseDiscoveredInfrastructureSystemsTableConfig {
-  monitorId: string;
-  statusFilters?: InfrastructureSystemFilterLabel[] | null;
+  monitorId?: string;
+  statusFilters?: string[] | null;
   vendorFilters?: string[] | null;
+  dataUsesFilters?: string[] | null;
 }
-
-// Extended type to include diff_status for list items
-type InfrastructureSystemListItem = SystemStagedResourcesAggregateRecord & {
-  diff_status?: string | null;
-  urn?: string;
-};
 
 export const useDiscoveredInfrastructureSystemsTable = ({
   monitorId,
   statusFilters,
   vendorFilters,
+  dataUsesFilters,
 }: UseDiscoveredInfrastructureSystemsTableConfig) => {
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
@@ -49,21 +37,16 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   const tabs = useActionCenterTabs();
   const { activeTab, filterTabs, activeParams, onTabChange } = tabs;
 
-  // Map status filters to diff_status and status parameters
+  // Map status filters to diff_status parameter
+  // Status filters now come directly as diff_status values from the API
   const diffStatusFilters = useMemo(() => {
     if (!statusFilters || statusFilters.length === 0) {
       return activeParams.diff_status;
     }
 
-    const diffStatuses: DiffStatus[] = [];
-    statusFilters.forEach((filter) => {
-      const diffStatus = mapStatusFilterToDiffStatus(filter);
-      if (diffStatus) {
-        diffStatuses.push(diffStatus);
-      }
-    });
+    // Status filters are now diff_status values directly
+    const diffStatuses = statusFilters as DiffStatus[];
 
-    // If we have filters from statusFilters, use them; otherwise fall back to activeParams
     // Convert single-element array to string for API compatibility
     if (diffStatuses.length === 1) {
       return diffStatuses[0];
@@ -71,64 +54,42 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     return diffStatuses.length > 0 ? diffStatuses : activeParams.diff_status;
   }, [statusFilters, activeParams.diff_status]);
 
-  // Map status filters to metadata status
-  const metadataStatusFilters = useMemo(() => {
-    if (!statusFilters || statusFilters.length === 0) {
-      return undefined;
-    }
-
-    const statuses: string[] = [];
-    statusFilters.forEach((filter) => {
-      const status = mapStatusFilterToMetadataStatus(filter);
-      if (status) {
-        statuses.push(status);
-      }
-    });
-
-    return statuses.length > 0 ? statuses : undefined;
-  }, [statusFilters]);
-
   // Map vendor filters to vendor_id parameter
-  // "known" = has vendor_id, "unknown" = no vendor_id
-  // The backend API uses "null" to filter for items without vendor_id
+  // Pass "known" and "unknown" directly to the API
   const vendorIdFilters = useMemo(() => {
     if (!vendorFilters || vendorFilters.length === 0) {
       return undefined;
     }
-
-    const vendorIds: string[] = [];
-    if (vendorFilters.includes("unknown")) {
-      vendorIds.push("null");
-    }
-    // Note: "known" filter would require getting all possible vendor IDs,
-    // which isn't practical. If both filters are selected or only "known" is selected,
-    // we don't apply any vendor filter (show all).
-    if (vendorFilters.includes("known") && !vendorFilters.includes("unknown")) {
-      // Backend should support filtering for items WITH vendor_id
-      // Using "not_null" as a special indicator (backend implementation required)
-      return "not_null";
-    }
-
-    return vendorIds.length > 0 ? vendorIds : undefined;
+    return vendorFilters;
   }, [vendorFilters]);
+
+  // Map data uses filters
+  const dataUsesFilterParams = useMemo(() => {
+    if (!dataUsesFilters || dataUsesFilters.length === 0) {
+      return undefined;
+    }
+    return dataUsesFilters;
+  }, [dataUsesFilters]);
 
   // Reset pagination when filters change
   useEffect(() => {
     resetPagination();
-  }, [statusFilters, vendorFilters, resetPagination]);
+  }, [statusFilters, vendorFilters, dataUsesFilters, resetPagination]);
 
   const oktaDataQuery = useGetIdentityProviderMonitorResultsQuery(
     {
+      // @ts-expect-error - will skip query if monitorId is not defined
       monitor_config_key: monitorId,
       page: pageIndex,
       size: pageSize,
       search: search.searchQuery,
       diff_status: diffStatusFilters,
-      status: metadataStatusFilters,
       vendor_id: vendorIdFilters,
+      data_uses: dataUsesFilterParams,
     },
     {
       refetchOnMountOrArgChange: true,
+      skip: !monitorId,
     },
   );
 
@@ -139,40 +100,13 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     refetch: refetchOktaData,
   } = oktaDataQuery;
 
-  // Transform API data to table format
-  // Vendor filters are now applied server-side via the vendor_id query parameter
-  const transformedData = useMemo((): {
-    items: InfrastructureSystemListItem[];
-    total: number;
-  } => {
-    if (!oktaData?.items) {
-      return { items: [], total: 0 };
-    }
-
-    const items: InfrastructureSystemListItem[] = oktaData.items.map(
-      (item: StagedResourceAPIResponse): InfrastructureSystemListItem => {
-        return {
-          id: item.urn,
-          urn: item.urn,
-          name: item.name ?? null,
-          system_key: item.system_key ?? null,
-          data_uses: item.data_uses ?? [],
-          vendor_id: item.vendor_id ?? null,
-          total_updates: 1,
-          locations: item.locations ?? [],
-          domains: item.domain ? [item.domain] : [],
-          consent_status: null,
-          metadata: item.metadata ?? null,
-          diff_status: item.diff_status ?? null,
-        };
-      },
-    );
-
-    return {
-      items,
-      total: oktaData.total ?? 0,
-    };
-  }, [oktaData]);
+  const data = useMemo(
+    () => ({
+      items: oktaData?.items ?? [],
+      total: oktaData?.total ?? 0,
+    }),
+    [oktaData],
+  );
 
   const handleTabChange = useCallback(
     async (tab: string | ActionCenterTabHash) => {
@@ -185,8 +119,8 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   );
 
   const rowClickUrl = useCallback(
-    (record: InfrastructureSystemListItem) => {
-      const recordId = record.urn ?? record.id ?? UNCATEGORIZED_SEGMENT;
+    (record: StagedResourceAPIResponse) => {
+      const recordId = record.urn ?? UNCATEGORIZED_SEGMENT;
       const activeTabHash = activeTab ? `#${activeTab}` : "";
       return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.INFRASTRUCTURE}/${monitorId}/${recordId}${activeTabHash}`;
     },
@@ -195,10 +129,13 @@ export const useDiscoveredInfrastructureSystemsTable = ({
 
   return {
     // Data
-    data: transformedData,
+    data,
     isLoading: oktaIsLoading,
     isFetching: oktaIsFetching,
     refetch: refetchOktaData,
+
+    // Errors
+    error: oktaDataQuery.error,
 
     // Search
     searchQuery: search.searchQuery,
@@ -218,12 +155,8 @@ export const useDiscoveredInfrastructureSystemsTable = ({
 
     // Selection helpers
     getRecordKey: useCallback(
-      (record: InfrastructureSystemListItem) =>
-        record.urn ??
-        record.id ??
-        record.vendor_id ??
-        record.name ??
-        UNCATEGORIZED_SEGMENT,
+      (record: StagedResourceAPIResponse) =>
+        record.urn ?? record.vendor_id ?? record.name ?? UNCATEGORIZED_SEGMENT,
       [],
     ),
   };

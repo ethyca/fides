@@ -305,7 +305,9 @@ def get_messaging_status(
             messaging_config.service_type, details
         )
     except Exception as e:
-        logger.error(f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}")  # type: ignore
+        logger.error(
+            f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
+        )
         return MessagingConfigStatusMessage(
             config_status=MessagingConfigStatus.not_configured,
             detail=f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration",  # type: ignore
@@ -325,7 +327,9 @@ def get_messaging_status(
         )
     except (ValidationError, ValueError, KeyError) as e:
         if isinstance(e, (ValueError, KeyError)):
-            logger.error(f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}")  # type: ignore
+            logger.error(
+                f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
+            )
         return MessagingConfigStatusMessage(
             config_status=MessagingConfigStatus.not_configured,
             detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
@@ -460,7 +464,10 @@ def update_config_secrets(
         messaging_config.key,
     )
     try:
-        messaging_config.set_secrets(db=db, messaging_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
+        messaging_config.set_secrets(
+            db=db,
+            messaging_secrets=secrets_schema.model_dump(mode="json"),  # type: ignore[arg-type]
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

@@ -253,3 +253,70 @@ export interface FidesEvent extends CustomEvent {
     };
   };
 }
+
+/**
+ * FidesJS dispatches a `FidesLocaleUpdated` event when the user changes the
+ * language using the language selector in the UI. This event is separate from
+ * the consent-focused {@link FidesEvent} types and has a simple structure
+ * containing only the newly selected locale.
+ *
+ * This event extends the standard
+ * [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
+ * interface and includes a {@link detail} object with the locale and timestamp.
+ *
+ * @example
+ * ```ts
+ * window.addEventListener("FidesLocaleUpdated", (evt) => {
+ *   console.log(`Language changed to: ${evt.detail.locale}`);
+ * });
+ * ```
+ *
+ * For more information on working with these kind of `CustomEvent` objects in
+ * the browser, see the MDN docs:
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent}
+ *
+ * ### Event Type
+ *
+ * - `FidesLocaleUpdated`: Dispatched when the user changes the language using
+ * the language selector in the FidesJS UI. This event fires after the locale
+ * has been successfully changed and applied to the UI.
+ *
+ * **Note**: This event is intentionally separate from consent-related
+ * {@link FidesEvent} types. It does not include consent data or the complex
+ * `extraDetails` structure. It will not be forwarded to GTM or other
+ * consent-focused integrations.
+ */
+export interface FidesLocaleEvent extends CustomEvent {
+  /**
+   * Event properties passed when the locale is updated.
+   *
+   * @example
+   * ```ts
+   * window.addEventListener("FidesLocaleUpdated", (evt) => {
+   *   console.log(`Locale: ${evt.detail.locale}`);
+   *   console.log(`Timestamp: ${evt.detail.timestamp}ms`);
+   * });
+   * ```
+   */
+  detail: {
+    /**
+     * The newly selected locale (e.g., "en", "fr", "es", "de") which will match the Fides.locale value. See {@link Fides.locale} for detail.
+     */
+    locale: string;
+
+    /**
+     * High-precision timestamp from {@link https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark performance.mark()}
+     * representing when this event was created. The timestamp is measured in milliseconds since page load.
+     *
+     * May be undefined if the Performance API is not available.
+     */
+    timestamp?: number;
+  };
+}
+
+// Extend WindowEventMap for type safety when using addEventListener
+declare global {
+  interface WindowEventMap {
+    FidesLocaleUpdated: FidesLocaleEvent;
+  }
+}

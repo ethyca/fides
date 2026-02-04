@@ -100,9 +100,9 @@ def initiate_poll_for_exited_privacy_request_tasks() -> None:
     if CONFIG.test_mode:
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot add Privacy Request Status Change job."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot add Privacy Request Status Change job."
+    )
 
     logger.info("Initiating scheduler for Privacy Request Status Change")
     scheduler.add_job(
@@ -166,7 +166,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                 RequestTask.action_type == task_type,
             )
 
-            statuses = set(status for status, in tasks_statuses_query.all())
+            statuses = set(status for (status,) in tasks_statuses_query.all())
             all_exited = all(
                 status in EXITED_EXECUTION_LOG_STATUSES for status in statuses
             )
@@ -207,9 +207,9 @@ def initiate_scheduled_dsr_data_removal() -> None:
     if CONFIG.test_mode:
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot add DSR data removal job."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot add DSR data removal job."
+    )
 
     logger.info("Initiating scheduler for DSR Data Removal")
     scheduler.add_job(
@@ -288,9 +288,9 @@ def initiate_interrupted_task_requeue_poll() -> None:
     if CONFIG.test_mode:
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot add interrupted task requeue job."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot add interrupted task requeue job."
+    )
 
     logger.info("Initiating scheduler for interrupted task requeue")
     scheduler.add_job(
@@ -309,9 +309,9 @@ def initiate_polling_task_requeue() -> None:
     if CONFIG.test_mode:
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot add async tasks status polling job."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot add async tasks status polling job."
+    )
 
     logger.info("Initiating scheduler for async tasks status polling")
     scheduler.add_job(
@@ -694,12 +694,13 @@ def requeue_polling_tasks(self: DatabaseTask) -> None:
             logger.debug("Polling for async tasks status")
 
             # Get all tasks that are polling and are from polling async tasks
-            async_tasks = (
+            # Defer large columns since we only need metadata to queue tasks
+            base_query = (
                 db.query(RequestTask)
                 .filter(RequestTask.status == ExecutionLogStatus.polling)
                 .filter(RequestTask.async_type == AsyncTaskType.polling)
-                .all()
             )
+            async_tasks = RequestTask.query_with_deferred_data(base_query).all()
             logger.info(f"Found {len(async_tasks)} async polling tasks")
 
             if async_tasks:
