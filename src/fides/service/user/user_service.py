@@ -134,7 +134,8 @@ class UserService:
 
         logger.info("Creating login access token")
         access_code = client.create_access_code_jwe(
-            self.config.security.app_encryption_key
+            self.config.security.app_encryption_key,
+            token_expire_minutes=self.config.security.oauth_access_token_expire_minutes,
         )
 
         return user, access_code

@@ -44,7 +44,8 @@ def test_token_expired(oauth_client):
 
     # Create a token now
     access_token = oauth_client.create_access_code_jwe(
-        CONFIG.security.app_encryption_key
+        CONFIG.security.app_encryption_key,
+        token_expire_minutes=CONFIG.security.oauth_access_token_expire_minutes,
     )
     extracted = json.loads(
         extract_payload(access_token, CONFIG.security.app_encryption_key)

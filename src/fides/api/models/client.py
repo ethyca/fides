@@ -14,6 +14,7 @@ from fides.api.cryptography.cryptographic_util import (
     hash_credential_with_salt,
 )
 from fides.api.cryptography.schemas.jwt import (
+    JWE_EXPIRES_AT,
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_CONNECTIONS,
@@ -132,13 +133,20 @@ class ClientDetail(Base):
             return _get_root_client_detail(config, scopes=scopes, roles=roles)
         return super().get(db, object_id=object_id)
 
-    def create_access_code_jwe(self, encryption_key: str) -> str:
-        """Generates a JWE from the client detail provided"""
+    def create_access_code_jwe(
+        self, encryption_key: str, token_expire_minutes: int
+    ) -> str:
+        """Generates a JWE from the client detail provided.
+
+        Includes iat (issued-at) and exp (expires-at, Unix timestamp) for
+        server-side expiration enforcement and client-facing expiry info.
+        """
+        now = datetime.now()
         payload = {
-            # client id may not be necessary
             JWE_PAYLOAD_CLIENT_ID: self.id,
             JWE_PAYLOAD_SCOPES: self.scopes,
-            JWE_ISSUED_AT: datetime.now().isoformat(),
+            JWE_ISSUED_AT: now.isoformat(),
+            JWE_EXPIRES_AT: int(now.timestamp()) + (token_expire_minutes * 60),
             JWE_PAYLOAD_ROLES: self.roles,
             JWE_PAYLOAD_SYSTEMS: self.systems,
             JWE_PAYLOAD_CONNECTIONS: self.connections,
