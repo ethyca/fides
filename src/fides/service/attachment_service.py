@@ -49,6 +49,18 @@ class AttachmentService:
             )
         return self.db
 
+    def get_by_id(self, attachment_id: str) -> Optional[Attachment]:
+        """Get an attachment by ID.
+
+        Args:
+            attachment_id: The ID of the attachment to retrieve.
+
+        Returns:
+            The Attachment if found, None otherwise.
+        """
+        db = self._require_db()
+        return Attachment.get_by_key_or_id(db, data={"id": attachment_id})
+
     def _get_provider_and_bucket(self, attachment: Attachment) -> Tuple[Any, str]:
         """Get the storage provider and bucket for an attachment's config.
 
