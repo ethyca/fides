@@ -5,6 +5,7 @@ import type { RootState } from "~/app/store";
 import { selectUser } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
 import {
+  EditableMonitorConfig,
   RoleRegistryEnum,
   ScopeRegistryEnum,
   System,
@@ -167,8 +168,14 @@ const userApi = baseApi.injectEndpoints({
     // Data steward endpoints
     getUserManagedSystems: build.query<System[], string>({
       query: (id) => ({ url: `user/${id}/system-manager` }),
-      providesTags: (result, error, arg) => [
+      providesTags: (_result, _error, arg) => [
         { type: "Managed Systems" as const, id: arg },
+      ],
+    }),
+    getUserMonitors: build.query<EditableMonitorConfig[], { id: string }>({
+      query: ({ id }) => ({ url: `user/${id}/monitor-steward` }),
+      providesTags: (_result, _error, { id }) => [
+        { type: "User Monitors" as const, id },
       ],
     }),
     updateUserManagedSystems: build.mutation<
@@ -284,6 +291,7 @@ export const {
   useForceResetUserPasswordMutation,
 
   useGetUserManagedSystemsQuery,
+  useGetUserMonitorsQuery,
   useUpdateUserManagedSystemsMutation,
   useRemoveUserManagedSystemMutation,
 } = userApi;
