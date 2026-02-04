@@ -1,6 +1,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
+import { IdentityProviderMonitorResultFilters } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+
 import {
   mockInfrastructureSystems,
   mockOktaApp,
@@ -12,12 +14,9 @@ import {
  * @param filters - Filter object containing search, diff_status, vendor_id, and data_uses
  * @returns Filtered array of infrastructure systems
  */
-const applyInfrastructureSystemsFilters = (filters?: {
-  search?: string;
-  diff_status?: string | string[];
-  vendor_id?: string | string[];
-  data_uses?: string[];
-}) => {
+const applyInfrastructureSystemsFilters = (
+  filters?: IdentityProviderMonitorResultFilters,
+) => {
   let filteredItems = [...mockInfrastructureSystems];
 
   if (!filters) {
@@ -40,9 +39,12 @@ const applyInfrastructureSystemsFilters = (filters?: {
     const statuses = Array.isArray(filters.diff_status)
       ? filters.diff_status
       : [filters.diff_status];
-    filteredItems = filteredItems.filter((item) =>
-      statuses.includes(item.diff_status || ""),
-    );
+    filteredItems = filteredItems.filter((item) => {
+      if (!item.diff_status) {
+        return false;
+      }
+      return statuses.includes(item.diff_status);
+    });
   }
 
   // Apply vendor_id filter if provided

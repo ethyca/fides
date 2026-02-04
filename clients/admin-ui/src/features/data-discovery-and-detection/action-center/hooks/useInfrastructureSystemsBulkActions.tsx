@@ -4,21 +4,14 @@ import { useCallback } from "react";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { StagedResourceAPIResponse } from "~/types/api";
-import { DiffStatus } from "~/types/api/models/DiffStatus";
 
 import {
+  IdentityProviderMonitorResultFilters,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,
 } from "../../discovery-detection.slice";
 import { InfrastructureSystemBulkActionType } from "../constants";
-
-interface InfrastructureSystemsFilters {
-  search?: string;
-  diff_status?: DiffStatus | DiffStatus[];
-  vendor_id?: string | string[];
-  data_uses?: string[];
-}
 
 interface UseInfrastructureSystemsBulkActionsConfig {
   monitorId: string;
@@ -59,7 +52,7 @@ export const useInfrastructureSystemsBulkActions = ({
           }
         | {
             mode: "all";
-            filters: InfrastructureSystemsFilters;
+            filters: IdentityProviderMonitorResultFilters;
             excludeUrns: string[];
           },
     ) => {
@@ -107,12 +100,7 @@ export const useInfrastructureSystemsBulkActions = ({
         const { filters, excludeUrns } = selectionData;
 
         // Build filter payload - only include non-empty filters
-        const filterPayload: {
-          search?: string;
-          diff_status?: DiffStatus | DiffStatus[];
-          vendor_id?: string | string[];
-          data_uses?: string[];
-        } = {};
+        const filterPayload: IdentityProviderMonitorResultFilters = {};
 
         if (filters.search) {
           filterPayload.search = filters.search;

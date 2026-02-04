@@ -64,6 +64,12 @@ interface ChangeResourceCategoryQueryParam {
 }
 
 // Identity Provider Monitor interfaces (Okta-specific)
+export interface IdentityProviderMonitorResultFilters {
+  search?: string;
+  diff_status?: DiffStatus | DiffStatus[];
+  vendor_id?: string | string[];
+  data_uses?: string[];
+}
 interface IdentityProviderMonitorResultsQueryParams {
   monitor_config_key: string;
   page?: number;
@@ -88,12 +94,7 @@ interface IdentityProviderResourceBulkActionParam {
   monitor_config_key: string;
   urns?: string[];
   bulkSelection?: {
-    filters?: {
-      search?: string;
-      diff_status?: DiffStatus | DiffStatus[];
-      vendor_id?: string | string[];
-      data_uses?: string[];
-    };
+    filters?: IdentityProviderMonitorResultFilters;
     exclude_urns?: string[];
   };
 }
@@ -416,68 +417,36 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       any,
       IdentityProviderResourceBulkActionParam
     >({
-      query: ({ monitor_config_key, urns, bulkSelection }) => {
-        // Backward compatibility: if urns is provided, use it
-        if (urns && urns.length > 0) {
-          return {
-            method: "POST",
-            url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
-            body: {
-              urns,
-            },
-          };
-        }
-        // Otherwise use bulkSelection (filters-based)
-        return {
-          method: "POST",
-          url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
-          body: bulkSelection || {},
-        };
-      },
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
+      }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     bulkMuteIdentityProviderMonitorResults: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
     >({
-      query: ({ monitor_config_key, urns, bulkSelection }) => {
-        // Backward compatibility: if urns is provided, use it
-        if (urns && urns.length > 0) {
-          return {
-            method: "POST",
-            url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
-            body: urns,
-          };
-        }
-        // Otherwise use bulkSelection (filters-based)
-        return {
-          method: "POST",
-          url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
-          body: bulkSelection || {},
-        };
-      },
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
+      }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
     bulkUnmuteIdentityProviderMonitorResults: build.mutation<
       any,
       IdentityProviderResourceBulkActionParam
     >({
-      query: ({ monitor_config_key, urns, bulkSelection }) => {
-        // Backward compatibility: if urns is provided, use it
-        if (urns && urns.length > 0) {
-          return {
-            method: "POST",
-            url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
-            body: urns,
-          };
-        }
-        // Otherwise use bulkSelection (filters-based)
-        return {
-          method: "POST",
-          url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
-          body: bulkSelection || {},
-        };
-      },
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
+        method: "POST",
+        url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
+      }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
   }),

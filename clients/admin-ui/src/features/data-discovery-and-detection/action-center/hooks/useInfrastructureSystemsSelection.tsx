@@ -1,16 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { StagedResourceAPIResponse } from "~/types/api";
-import { DiffStatus } from "~/types/api/models/DiffStatus";
+
+import { IdentityProviderMonitorResultFilters } from "../../discovery-detection.slice";
 
 type SelectionMode = "explicit" | "all";
-
-interface InfrastructureSystemsFilters {
-  search?: string;
-  diff_status?: DiffStatus | DiffStatus[];
-  vendor_id?: string | string[];
-  data_uses?: string[];
-}
 
 interface UseInfrastructureSystemsSelectionConfig<
   T extends StagedResourceAPIResponse,
@@ -18,7 +12,7 @@ interface UseInfrastructureSystemsSelectionConfig<
   items: T[] | undefined;
   getRecordKey: (item: T) => string;
   totalCount?: number;
-  filters?: InfrastructureSystemsFilters;
+  filters?: IdentityProviderMonitorResultFilters;
 }
 
 export const useInfrastructureSystemsSelection = <
