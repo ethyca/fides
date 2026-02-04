@@ -58,9 +58,7 @@ class ChatConfig(Base):
     connected_by_email = Column(String, nullable=True)
 
     __table_args__ = (
-        UniqueConstraint(
-            "workspace_url", name="chat_config_workspace_url_unique"
-        ),
+        UniqueConstraint("workspace_url", name="chat_config_workspace_url_unique"),
     )
 
     @property
