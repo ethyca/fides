@@ -293,6 +293,16 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+  - name: backfill_history
+    description: 'Table used to track completed database backfill operations'
+    data_categories: [system.operations]
+    fields:
+    - name: backfill_name
+      description: 'Unique name of the backfill operation'
+      data_categories: [system.operations]
+    - name: completed_at
+      description: 'Timestamp when the backfill completed successfully'
+      data_categories: [system.operations]
   - name: chat_config
     description: 'Configuration for chat providers (Slack, Microsoft Teams, etc.)'
     data_categories: []
