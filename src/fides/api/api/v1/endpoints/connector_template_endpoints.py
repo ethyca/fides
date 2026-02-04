@@ -24,8 +24,6 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     CustomConnectorTemplateLoader,
     FileConnectorTemplateLoader,
 )
-from fides.service.connection.connection_service import ConnectionService
-from fides.service.event_audit_service import EventAuditService
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     CONNECTOR_TEMPLATE_READ,
@@ -41,6 +39,8 @@ from fides.common.api.v1.urn_registry import (
     REGISTER_CONNECTOR_TEMPLATE,
     V1_URL_PREFIX,
 )
+from fides.service.connection.connection_service import ConnectionService
+from fides.service.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["Connector Templates"], prefix=V1_URL_PREFIX)
 

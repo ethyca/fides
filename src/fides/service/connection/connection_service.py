@@ -763,7 +763,9 @@ class ConnectionService:
         ).all()
 
         for connection_config in connection_configs:
-            saas_config_instance = SaaSConfig.model_validate(connection_config.saas_config)
+            saas_config_instance = SaaSConfig.model_validate(
+                connection_config.saas_config
+            )
             try:
                 self.update_saas_instance(
                     connection_config,
