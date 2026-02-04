@@ -76,5 +76,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaDataProtectionAssessments": {
+    "label": "Alpha data protection assessments",
+    "description": "Enable data protection impact assessments feature",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
