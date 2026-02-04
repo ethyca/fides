@@ -88,10 +88,7 @@ export const generateMockInfrastructureSystems = () => {
     "product_improvement",
     "security",
   ];
-  const diffStatuses = [
-    DiffStatus.ADDITION,
-    DiffStatus.REMOVAL,
-  ];
+  const diffStatuses = [DiffStatus.ADDITION, DiffStatus.REMOVAL];
   const appNames = [
     "Salesforce",
     "Slack",
