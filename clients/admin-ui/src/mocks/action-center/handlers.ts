@@ -8,6 +8,69 @@ import {
 } from "./data";
 
 /**
+ * Helper function to apply filters to infrastructure systems
+ * @param filters - Filter object containing search, diff_status, vendor_id, and data_uses
+ * @returns Filtered array of infrastructure systems
+ */
+const applyInfrastructureSystemsFilters = (filters?: {
+  search?: string;
+  diff_status?: string | string[];
+  vendor_id?: string | string[];
+  data_uses?: string[];
+}) => {
+  let filteredItems = [...mockInfrastructureSystems];
+
+  if (!filters) {
+    return filteredItems;
+  }
+
+  // Apply search filter if provided
+  if (filters.search) {
+    const searchLower = filters.search.toLowerCase();
+    filteredItems = filteredItems.filter(
+      (item) =>
+        item.name?.toLowerCase().includes(searchLower) ||
+        item.vendor_id?.toLowerCase().includes(searchLower) ||
+        item.description?.toLowerCase().includes(searchLower),
+    );
+  }
+
+  // Apply diff_status filter if provided
+  if (filters.diff_status) {
+    const statuses = Array.isArray(filters.diff_status)
+      ? filters.diff_status
+      : [filters.diff_status];
+    filteredItems = filteredItems.filter((item) =>
+      statuses.includes(item.diff_status || ""),
+    );
+  }
+
+  // Apply vendor_id filter if provided
+  if (filters.vendor_id) {
+    const vendorIds = Array.isArray(filters.vendor_id)
+      ? filters.vendor_id
+      : [filters.vendor_id];
+    filteredItems = filteredItems.filter(
+      (item) => item.vendor_id && vendorIds.includes(item.vendor_id),
+    );
+  }
+
+  // Apply data_uses filter if provided
+  if (filters.data_uses) {
+    filteredItems = filteredItems.filter((item) => {
+      if (!item.data_uses || item.data_uses.length === 0) {
+        return false;
+      }
+      return item.data_uses.some((du: string) =>
+        filters.data_uses!.includes(du),
+      );
+    });
+  }
+
+  return filteredItems;
+};
+
+/**
  * MSW handlers for discovery monitor aggregate results
  */
 export const discoveryMonitorHandlers = () => {
@@ -95,7 +158,6 @@ export const discoveryMonitorHandlers = () => {
     rest.get(
       `${apiBase}/plus/identity-provider-monitors/:monitor_config_key/results`,
       (_req, res, ctx) => {
-        // const { monitor_config_key } = _req.params;
         const page = parseInt(_req.url.searchParams.get("page") || "1", 10);
         const size = parseInt(_req.url.searchParams.get("size") || "50", 10);
         const search = _req.url.searchParams.get("search");
@@ -209,46 +271,7 @@ export const discoveryMonitorHandlers = () => {
         } else if (body.bulkSelection) {
           // Handle new format (bulkSelection with filters)
           const { filters, exclude_urns: excludeUrns } = body.bulkSelection;
-          let filteredItems = [...mockInfrastructureSystems];
-
-          // Apply filters
-          if (filters) {
-            if (filters.search) {
-              const searchLower = filters.search.toLowerCase();
-              filteredItems = filteredItems.filter(
-                (item) =>
-                  item.name?.toLowerCase().includes(searchLower) ||
-                  item.vendor_id?.toLowerCase().includes(searchLower) ||
-                  item.description?.toLowerCase().includes(searchLower),
-              );
-            }
-            if (filters.diff_status) {
-              const statuses = Array.isArray(filters.diff_status)
-                ? filters.diff_status
-                : [filters.diff_status];
-              filteredItems = filteredItems.filter((item) =>
-                statuses.includes(item.diff_status || ""),
-              );
-            }
-            if (filters.vendor_id) {
-              const vendorIds = Array.isArray(filters.vendor_id)
-                ? filters.vendor_id
-                : [filters.vendor_id];
-              filteredItems = filteredItems.filter(
-                (item) => item.vendor_id && vendorIds.includes(item.vendor_id),
-              );
-            }
-            if (filters.data_uses) {
-              filteredItems = filteredItems.filter((item) => {
-                if (!item.data_uses || item.data_uses.length === 0) {
-                  return false;
-                }
-                return item.data_uses.some((du: string) =>
-                  filters.data_uses.includes(du),
-                );
-              });
-            }
-          }
+          let filteredItems = applyInfrastructureSystemsFilters(filters);
 
           // Exclude URNs
           if (excludeUrns && Array.isArray(excludeUrns)) {
@@ -287,46 +310,7 @@ export const discoveryMonitorHandlers = () => {
         } else if (body.bulkSelection) {
           // Handle new format (bulkSelection with filters)
           const { filters, exclude_urns: excludeUrns } = body.bulkSelection;
-          let filteredItems = [...mockInfrastructureSystems];
-
-          // Apply filters (same logic as bulk-promote)
-          if (filters) {
-            if (filters.search) {
-              const searchLower = filters.search.toLowerCase();
-              filteredItems = filteredItems.filter(
-                (item) =>
-                  item.name?.toLowerCase().includes(searchLower) ||
-                  item.vendor_id?.toLowerCase().includes(searchLower) ||
-                  item.description?.toLowerCase().includes(searchLower),
-              );
-            }
-            if (filters.diff_status) {
-              const statuses = Array.isArray(filters.diff_status)
-                ? filters.diff_status
-                : [filters.diff_status];
-              filteredItems = filteredItems.filter((item) =>
-                statuses.includes(item.diff_status || ""),
-              );
-            }
-            if (filters.vendor_id) {
-              const vendorIds = Array.isArray(filters.vendor_id)
-                ? filters.vendor_id
-                : [filters.vendor_id];
-              filteredItems = filteredItems.filter(
-                (item) => item.vendor_id && vendorIds.includes(item.vendor_id),
-              );
-            }
-            if (filters.data_uses) {
-              filteredItems = filteredItems.filter((item) => {
-                if (!item.data_uses || item.data_uses.length === 0) {
-                  return false;
-                }
-                return item.data_uses.some((du: string) =>
-                  filters.data_uses.includes(du),
-                );
-              });
-            }
-          }
+          let filteredItems = applyInfrastructureSystemsFilters(filters);
 
           // Exclude URNs
           if (excludeUrns && Array.isArray(excludeUrns)) {
@@ -365,46 +349,7 @@ export const discoveryMonitorHandlers = () => {
         } else if (body.bulkSelection) {
           // Handle new format (bulkSelection with filters)
           const { filters, exclude_urns: excludeUrns } = body.bulkSelection;
-          let filteredItems = [...mockInfrastructureSystems];
-
-          // Apply filters (same logic as bulk-promote)
-          if (filters) {
-            if (filters.search) {
-              const searchLower = filters.search.toLowerCase();
-              filteredItems = filteredItems.filter(
-                (item) =>
-                  item.name?.toLowerCase().includes(searchLower) ||
-                  item.vendor_id?.toLowerCase().includes(searchLower) ||
-                  item.description?.toLowerCase().includes(searchLower),
-              );
-            }
-            if (filters.diff_status) {
-              const statuses = Array.isArray(filters.diff_status)
-                ? filters.diff_status
-                : [filters.diff_status];
-              filteredItems = filteredItems.filter((item) =>
-                statuses.includes(item.diff_status || ""),
-              );
-            }
-            if (filters.vendor_id) {
-              const vendorIds = Array.isArray(filters.vendor_id)
-                ? filters.vendor_id
-                : [filters.vendor_id];
-              filteredItems = filteredItems.filter(
-                (item) => item.vendor_id && vendorIds.includes(item.vendor_id),
-              );
-            }
-            if (filters.data_uses) {
-              filteredItems = filteredItems.filter((item) => {
-                if (!item.data_uses || item.data_uses.length === 0) {
-                  return false;
-                }
-                return item.data_uses.some((du: string) =>
-                  filters.data_uses.includes(du),
-                );
-              });
-            }
-          }
+          let filteredItems = applyInfrastructureSystemsFilters(filters);
 
           // Exclude URNs
           if (excludeUrns && Array.isArray(excludeUrns)) {
