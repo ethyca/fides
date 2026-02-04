@@ -209,4 +209,4 @@ class AccessManualWebhook(Base):
         """Delete the attachment associated with the manual webhook"""
         attachment = self.get_attachment_by_id(db, attachment_id)
         if attachment:
-            AttachmentService.delete(db, attachment)
+            AttachmentService(db).delete(attachment)

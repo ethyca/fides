@@ -28,6 +28,7 @@ from fides.api.models.attachment import (
     AttachmentReferenceType,
     AttachmentType,
 )
+from fides.service.attachment_service import AttachmentService
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -1339,14 +1340,13 @@ class TestPrivacyRequestAttachments:
         attachment_type: AttachmentType = AttachmentType.include_with_access_package,
     ) -> Attachment:
         """Helper function to create a test attachment"""
-        return Attachment.create_and_upload(
-            db=db,
+        return AttachmentService(db).create_and_upload(
             data={
                 "file_name": file_name,
                 "attachment_type": attachment_type,
                 "storage_key": storage_config.key,
             },
-            attachment_file=BytesIO(content),
+            file_data=BytesIO(content),
         )
 
     def create_attachment_reference(
@@ -1957,9 +1957,9 @@ class TestConsentManualTaskIntegration:
             )
             .first()
         )
-        assert instance is None, (
-            "ManualTaskInstance should NOT be created when condition is false"
-        )
+        assert (
+            instance is None
+        ), "ManualTaskInstance should NOT be created when condition is false"
 
 
 class TestConsentEmailStep:

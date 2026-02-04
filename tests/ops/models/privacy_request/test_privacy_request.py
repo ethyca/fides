@@ -26,6 +26,7 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
+from fides.service.attachment_service import AttachmentService
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
@@ -1395,10 +1396,9 @@ class TestPrivacyRequestAttachments:
         """Fixture to create a single attachment"""
 
         def _create_attachment(contents: bytes = b"test contents"):
-            return Attachment.create_and_upload(
-                db=db,
+            return AttachmentService(db).create_and_upload(
                 data=attachment_data,
-                attachment_file=BytesIO(contents),
+                file_data=BytesIO(contents),
             )
 
         return _create_attachment
@@ -1617,9 +1617,9 @@ class TestPrivacyRequestAttachments:
             sqlalchemy_warnings = [
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
-            assert len(sqlalchemy_warnings) == 0, (
-                f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
-            )
+            assert (
+                len(sqlalchemy_warnings) == 0
+            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
 
             # Cleanup
             if db.query(AttachmentReference).filter_by(id=attachment_ref.id).first():
@@ -1759,9 +1759,9 @@ class TestPrivacyRequestComments:
             sqlalchemy_warnings = [
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
-            assert len(sqlalchemy_warnings) == 0, (
-                f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
-            )
+            assert (
+                len(sqlalchemy_warnings) == 0
+            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
 
             # Cleanup
             if db.query(CommentReference).filter_by(id=comment_ref.id).first():

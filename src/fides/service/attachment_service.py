@@ -5,7 +5,7 @@ This service handles all storage-related operations for attachments,
 keeping the Attachment model focused on data representation only.
 """
 
-from typing import IO, Any, Tuple
+from typing import IO, Any, Optional, Tuple
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
@@ -27,12 +27,29 @@ MAX_TTL_SECONDS = 604800
 class AttachmentService:
     """Service for attachment storage operations.
 
-    Provides static methods for uploading, retrieving, and deleting
+    Provides methods for uploading, retrieving, and deleting
     attachments from storage backends (S3, GCS, local filesystem).
+
+    Args:
+        db: Database session for attachment operations. Optional for
+            storage-only operations (upload, retrieve_url, retrieve_content,
+            delete_from_storage).
     """
 
-    @staticmethod
-    def _get_provider_and_bucket(attachment: Attachment) -> Tuple[Any, str]:
+    def __init__(self, db: Optional[Session] = None):
+        """Initialize the service with an optional database session."""
+        self.db = db
+
+    def _require_db(self) -> Session:
+        """Get the db session, raising if not available."""
+        if self.db is None:
+            raise ValueError(
+                "Database session required for this operation. "
+                "Initialize AttachmentService with a db session."
+            )
+        return self.db
+
+    def _get_provider_and_bucket(self, attachment: Attachment) -> Tuple[Any, str]:
         """Get the storage provider and bucket for an attachment's config.
 
         Args:
@@ -45,8 +62,7 @@ class AttachmentService:
         bucket = StorageProviderFactory.get_bucket_from_config(attachment.config)
         return provider, bucket
 
-    @staticmethod
-    def upload(attachment: Attachment, file_data: IO[bytes]) -> None:
+    def upload(self, attachment: Attachment, file_data: IO[bytes]) -> None:
         """Upload attachment content to storage.
 
         Args:
@@ -56,7 +72,7 @@ class AttachmentService:
         Raises:
             ValueError: If the file extension is invalid or not allowed.
         """
-        provider, bucket = AttachmentService._get_provider_and_bucket(attachment)
+        provider, bucket = self._get_provider_and_bucket(attachment)
 
         # Validate content type (catches invalid file extensions)
         try:
@@ -85,8 +101,7 @@ class AttachmentService:
             result.file_size,
         )
 
-    @staticmethod
-    def retrieve_url(attachment: Attachment) -> Tuple[int, AnyHttpUrlString]:
+    def retrieve_url(self, attachment: Attachment) -> Tuple[int, AnyHttpUrlString]:
         """Get presigned URL for attachment download.
 
         Args:
@@ -95,7 +110,7 @@ class AttachmentService:
         Returns:
             Tuple of (file_size, presigned_url)
         """
-        provider, bucket = AttachmentService._get_provider_and_bucket(attachment)
+        provider, bucket = self._get_provider_and_bucket(attachment)
 
         size = provider.get_file_size(bucket, attachment.file_key)
         url = provider.generate_presigned_url(
@@ -104,8 +119,7 @@ class AttachmentService:
 
         return size, url
 
-    @staticmethod
-    def retrieve_content(attachment: Attachment) -> Tuple[int, IO[bytes]]:
+    def retrieve_content(self, attachment: Attachment) -> Tuple[int, IO[bytes]]:
         """Download attachment content.
 
         Args:
@@ -114,43 +128,45 @@ class AttachmentService:
         Returns:
             Tuple of (file_size, file_content)
         """
-        provider, bucket = AttachmentService._get_provider_and_bucket(attachment)
+        provider, bucket = self._get_provider_and_bucket(attachment)
 
         size = provider.get_file_size(bucket, attachment.file_key)
         content = provider.download(bucket, attachment.file_key)
 
         return size, content
 
-    @staticmethod
-    def delete_from_storage(attachment: Attachment) -> None:
+    def delete_from_storage(self, attachment: Attachment) -> None:
         """Delete attachment from storage.
 
         Args:
             attachment: The attachment to delete from storage.
         """
-        provider, bucket = AttachmentService._get_provider_and_bucket(attachment)
+        provider, bucket = self._get_provider_and_bucket(attachment)
 
         # Use delete_prefix to delete the attachment folder (id/)
         prefix = f"{attachment.id}/"
         provider.delete_prefix(bucket, prefix)
 
-    @staticmethod
     def create_and_upload(
-        db: Session,
+        self,
         data: dict[str, Any],
         file_data: IO[bytes],
+        references: Optional[list[dict[str, str]]] = None,
         check_name: bool = False,
     ) -> Attachment:
-        """Create attachment record and upload file.
+        """Create attachment record, upload file, and optionally create references.
 
-        Creates a new attachment record in the database and uploads
-        the file to storage. If upload fails, the database record
-        is rolled back.
+        Creates a new attachment record in the database, uploads the file to
+        storage, and creates any specified references. If upload fails, the
+        database record is rolled back.
 
         Args:
-            db: Database session.
-            data: Attachment data dictionary.
+            data: Attachment data dictionary with keys: file_name, user_id,
+                attachment_type, storage_key.
             file_data: File-like object to upload.
+            references: Optional list of reference dicts with keys:
+                - reference_id: ID of the entity to reference
+                - reference_type: Type from AttachmentReferenceType enum
             check_name: Whether to check for name conflicts.
 
         Returns:
@@ -162,13 +178,28 @@ class AttachmentService:
         # Import here to avoid circular imports - Base.create is used
         from fides.api.db.base_class import Base
 
+        db = self._require_db()
+        
         # Create the attachment record using Base.create directly
         attachment = Base.create.__func__(
             Attachment, db=db, data=data, check_name=check_name
         )
 
         try:
-            AttachmentService.upload(attachment, file_data)
+            self.upload(attachment, file_data)
+
+            # Create references if provided
+            if references:
+                for ref in references:
+                    AttachmentReference.create(
+                        db=db,
+                        data={
+                            "attachment_id": attachment.id,
+                            "reference_id": ref["reference_id"],
+                            "reference_type": ref["reference_type"],
+                        },
+                    )
+
             return attachment
         except Exception as e:
             logger.error("Failed to upload attachment: {}", e)
@@ -177,19 +208,19 @@ class AttachmentService:
             db.flush()
             raise
 
-    @staticmethod
-    def delete(db: Session, attachment: Attachment) -> None:
+    def delete(self, attachment: Attachment) -> None:
         """Delete attachment from DB and storage.
 
         Removes the attachment file from storage and deletes
         the database record along with all references.
 
         Args:
-            db: Database session.
             attachment: The attachment to delete.
         """
+        db = self._require_db()
+        
         # Delete from storage first
-        AttachmentService.delete_from_storage(attachment)
+        self.delete_from_storage(attachment)
 
         # Delete all references to the attachment
         for reference in attachment.references:
@@ -199,9 +230,8 @@ class AttachmentService:
         db.delete(attachment)
         db.flush()
 
-    @staticmethod
     def delete_for_reference(
-        db: Session, reference_id: str, reference_type: AttachmentReferenceType
+        self, reference_id: str, reference_type: AttachmentReferenceType
     ) -> None:
         """Delete all attachments for a given reference.
 
@@ -209,21 +239,22 @@ class AttachmentService:
         and reference_type, including their storage files and references.
 
         Args:
-            db: Database session.
             reference_id: ID of the reference.
             reference_type: Type of the reference.
 
         Examples:
             Delete all attachments associated with a comment:
-                AttachmentService.delete_for_reference(
-                    db, comment.id, AttachmentReferenceType.comment
+                attachment_service.delete_for_reference(
+                    comment.id, AttachmentReferenceType.comment
                 )
 
             Delete all attachments associated with a privacy request:
-                AttachmentService.delete_for_reference(
-                    db, privacy_request.id, AttachmentReferenceType.privacy_request
+                attachment_service.delete_for_reference(
+                    privacy_request.id, AttachmentReferenceType.privacy_request
                 )
         """
+        db = self._require_db()
+        
         # Query attachments explicitly to avoid lazy loading
         attachments = (
             db.query(Attachment)
@@ -236,4 +267,4 @@ class AttachmentService:
         )
 
         for attachment in attachments:
-            AttachmentService.delete(db, attachment)
+            self.delete(attachment)

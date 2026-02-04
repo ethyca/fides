@@ -75,7 +75,7 @@ def get_attachments_content(
 
         try:
             # Get size and download URL using AttachmentService
-            size, url = AttachmentService.retrieve_url(attachment)
+            size, url = AttachmentService().retrieve_url(attachment)
             total_size += size if size else 0
             if url is None:
                 logger.warning(

@@ -495,8 +495,8 @@ class PrivacyRequest(
         """
         self.clear_cached_values()
         self.cleanup_external_storage()
-        AttachmentService.delete_for_reference(
-            db, self.id, AttachmentReferenceType.privacy_request
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.privacy_request
         )
         Comment.delete_comments_for_reference_and_type(
             db, self.id, CommentReferenceType.privacy_request

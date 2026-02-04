@@ -128,8 +128,8 @@ class Comment(Base):
     def delete(self, db: Session) -> None:
         """Delete the comment and all associated references."""
         # Delete attachments associated with this comment
-        AttachmentService.delete_for_reference(
-            db, self.id, AttachmentReferenceType.comment
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.comment
         )
         for reference in self.references:
             reference.delete(db)

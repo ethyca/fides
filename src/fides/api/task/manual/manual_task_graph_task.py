@@ -438,7 +438,7 @@ class ManualTaskGraphTask(GraphTask):
             submission.attachments,
         ):
             try:
-                size, url = AttachmentService.retrieve_url(attachment)
+                size, url = AttachmentService().retrieve_url(attachment)
                 attachment_list.append(
                     {
                         "file_name": attachment.file_name,

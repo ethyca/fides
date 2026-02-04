@@ -18,6 +18,7 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
+from fides.service.attachment_service import AttachmentService
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -574,14 +575,13 @@ def attachment_for_access_package(
     """Create an attachment for access package inclusion."""
 
     # Create attachment with proper upload
-    attachment = Attachment.create_and_upload(
-        db=db,
+    attachment = AttachmentService(db).create_and_upload(
         data={
             "file_name": "test_document.pdf",
             "attachment_type": "include_with_access_package",
             "storage_key": storage_config.key,
         },
-        attachment_file=BytesIO(b"test document content"),
+        file_data=BytesIO(b"test document content"),
     )
 
     # Create attachment reference
@@ -610,14 +610,13 @@ def attachment_for_erasure_package(
     """Create an attachment for erasure package inclusion."""
 
     # Create attachment with proper upload
-    attachment = Attachment.create_and_upload(
-        db=db,
+    attachment = AttachmentService(db).create_and_upload(
         data={
             "file_name": "erasure_document.pdf",
             "attachment_type": "internal_use_only",  # Use valid enum value
             "storage_key": storage_config.key,
         },
-        attachment_file=BytesIO(b"erasure document content"),
+        file_data=BytesIO(b"erasure document content"),
     )
 
     # Create attachment reference
@@ -648,25 +647,23 @@ def multiple_attachments_for_access(
     attachments = []
 
     # Create first attachment
-    attachment1 = Attachment.create_and_upload(
-        db=db,
+    attachment1 = AttachmentService(db).create_and_upload(
         data={
             "file_name": "document1.pdf",
             "attachment_type": "include_with_access_package",
             "storage_key": storage_config.key,
         },
-        attachment_file=BytesIO(b"document 1 content"),
+        file_data=BytesIO(b"document 1 content"),
     )
 
     # Create second attachment
-    attachment2 = Attachment.create_and_upload(
-        db=db,
+    attachment2 = AttachmentService(db).create_and_upload(
         data={
             "file_name": "document2.pdf",
             "attachment_type": "include_with_access_package",
             "storage_key": storage_config.key,
         },
-        attachment_file=BytesIO(b"document 2 content"),
+        file_data=BytesIO(b"document 2 content"),
     )
 
     # Create attachment references
@@ -698,14 +695,13 @@ def attachment_with_retrieval_error(
     """Create an attachment that will fail retrieval for testing error handling."""
 
     # Create attachment with proper upload
-    attachment = Attachment.create_and_upload(
-        db=db,
+    attachment = AttachmentService(db).create_and_upload(
         data={
             "file_name": "error_document.pdf",
             "attachment_type": "include_with_access_package",
             "storage_key": storage_config.key,
         },
-        attachment_file=BytesIO(b"error document content"),
+        file_data=BytesIO(b"error document content"),
     )
 
     # Create attachment reference

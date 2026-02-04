@@ -764,8 +764,8 @@ class ManualTaskSubmission(Base):
         from fides.service.attachment_service import AttachmentService
 
         # Delete attachments associated with this submission
-        AttachmentService.delete_for_reference(
-            db, self.id, AttachmentReferenceType.manual_task_submission
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.manual_task_submission
         )
         # Delete the submission itself
         db.delete(self)

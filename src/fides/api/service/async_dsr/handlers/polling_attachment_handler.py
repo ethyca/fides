@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.attachment import (
     Attachment,
-    AttachmentReference,
     AttachmentReferenceType,
     AttachmentType,
 )
@@ -24,7 +23,7 @@ class PollingAttachmentHandler:
 
     @staticmethod
     def store_attachment(
-        session: Session,
+        db: Session,
         request_task: RequestTask,
         attachment_data: bytes,
         filename: str,
@@ -53,34 +52,24 @@ class PollingAttachmentHandler:
             if not storage_config:
                 raise PrivacyRequestError("No active storage configuration found")
 
-            # Create attachment record and upload to storage
-            attachment = AttachmentService.create_and_upload(
-                db=session,
+            # Create attachment record and upload to storage with references
+            attachment = AttachmentService(db).create_and_upload(
                 data={
                     "file_name": filename,
                     "attachment_type": AttachmentType.include_with_access_package,
                     "storage_key": storage_config.key,
                 },
                 file_data=BytesIO(attachment_data),
-            )
-
-            # Create attachment references
-            AttachmentReference.create(
-                db=session,
-                data={
-                    "attachment_id": attachment.id,
-                    "reference_id": request_task.id,
-                    "reference_type": AttachmentReferenceType.request_task,
-                },
-            )
-
-            AttachmentReference.create(
-                db=session,
-                data={
-                    "attachment_id": attachment.id,
-                    "reference_id": request_task.privacy_request.id,
-                    "reference_type": AttachmentReferenceType.privacy_request,
-                },
+                references=[
+                    {
+                        "reference_id": request_task.id,
+                        "reference_type": AttachmentReferenceType.request_task.value,
+                    },
+                    {
+                        "reference_id": request_task.privacy_request.id,
+                        "reference_type": AttachmentReferenceType.privacy_request.value,
+                    },
+                ],
             )
 
             logger.info(
@@ -126,7 +115,7 @@ class PollingAttachmentHandler:
 
         if attachment_record:
             try:
-                size, url = AttachmentService.retrieve_url(attachment_record)
+                size, url = AttachmentService().retrieve_url(attachment_record)
                 attachment_info = {
                     "file_name": attachment_record.file_name,
                     "download_url": str(url) if url else None,

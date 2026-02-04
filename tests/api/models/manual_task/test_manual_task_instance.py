@@ -6,6 +6,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.attachment import Attachment, AttachmentReference
+from fides.service.attachment_service import AttachmentService
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_task import (
     ManualTask,
@@ -146,10 +147,9 @@ class TestManualTaskInstance:
         )
 
         # Create an attachment
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
 
         # Link attachment to submission
@@ -269,10 +269,9 @@ class TestManualTaskInstance:
         assert len(manual_task_instance.attachments) == 0
 
         # Create and link an attachment
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
 
         AttachmentReference.create(
@@ -452,10 +451,9 @@ class TestManualTaskSubmission:
     ):
         """Test submission attachments."""
         # Create an attachment
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
         # Link attachment to submission
         AttachmentReference.create(
@@ -595,10 +593,9 @@ class TestManualTaskSubmission:
         assert len(manual_task_submission.attachments) == 0
 
         # Create first attachment
-        attachment1 = Attachment.create_and_upload(
-            db=db,
+        attachment1 = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents 1"),
+            file_data=BytesIO(b"test contents 1"),
         )
 
         AttachmentReference.create(
@@ -617,10 +614,9 @@ class TestManualTaskSubmission:
         # Create second attachment
         attachment_data2 = attachment_data.copy()
         attachment_data2["file_name"] = "file2.txt"
-        attachment2 = Attachment.create_and_upload(
-            db=db,
+        attachment2 = AttachmentService(db).create_and_upload(
             data=attachment_data2,
-            attachment_file=BytesIO(b"test contents 2"),
+            file_data=BytesIO(b"test contents 2"),
         )
 
         AttachmentReference.create(
@@ -697,10 +693,9 @@ class TestManualTaskSubmission:
         )
 
         # Create and link attachment
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
 
         attachment_ref = AttachmentReference.create(
@@ -786,10 +781,9 @@ class TestManualTaskSubmission:
         assert len(initial_attachments) == 0
 
         # Create attachment in a separate transaction
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
 
         AttachmentReference.create(
