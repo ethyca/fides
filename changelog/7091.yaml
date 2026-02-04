@@ -1,0 +1,7 @@
+# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
+# Fill in the required fields and delete this comment block
+
+type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Celery workers now have an HTTP healthcheck endpoint that can be used to check if the workers are running for environments that do not support running a command to check if the workers are running.
+pr: 7091 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
