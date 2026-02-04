@@ -143,7 +143,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
   );
 
   return (
-    <Flex vertical gap="middle" className="h-full">
+    <Flex vertical gap="middle" className="h-full overflow-hidden">
       <Flex justify="space-between">
         <Flex gap="small">
           <DebouncedSearchInput
@@ -202,35 +202,37 @@ export const DiscoveredInfrastructureSystemsTable = ({
           </Text>
         )}
       </Flex>
-      <List
-        dataSource={data?.items}
-        loading={isLoading}
-        className="h-full overflow-y-scroll"
-        locale={{
-          emptyText: (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="All caught up!"
+      <Flex flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+        <List
+          dataSource={data?.items}
+          loading={isLoading}
+          className="size-full overflow-y-auto overflow-x-clip"
+          locale={{
+            emptyText: (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="All caught up!"
+              />
+            ),
+          }}
+          renderItem={(item) => (
+            <InfrastructureSystemListItem
+              item={item}
+              selected={isItemSelected(item)}
+              onSelect={(key, selected) => {
+                // Use getRecordKey to ensure consistent key matching
+                const recordKey = getRecordKey(item);
+                handleSelectItem(recordKey, selected);
+              }}
+              rowClickUrl={rowClickUrl}
+              monitorId={monitorId}
+              activeTab={activeTab as ActionCenterTabHash | null}
+              allowIgnore={allowIgnore}
+              onPromoteSuccess={refetch}
             />
-          ),
-        }}
-        renderItem={(item) => (
-          <InfrastructureSystemListItem
-            item={item}
-            selected={isItemSelected(item)}
-            onSelect={(key, selected) => {
-              // Use getRecordKey to ensure consistent key matching
-              const recordKey = getRecordKey(item);
-              handleSelectItem(recordKey, selected);
-            }}
-            rowClickUrl={rowClickUrl}
-            monitorId={monitorId}
-            activeTab={activeTab as ActionCenterTabHash | null}
-            allowIgnore={allowIgnore}
-            onPromoteSuccess={refetch}
-          />
-        )}
-      />
+          )}
+        />
+      </Flex>
       <Pagination
         {...paginationProps}
         total={data?.total || 0}
