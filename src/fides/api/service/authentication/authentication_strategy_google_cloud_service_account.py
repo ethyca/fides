@@ -238,7 +238,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
 
             return access_token
 
-        except (TransportError, GoogleAuthError, ValueError, Exception) as exc:
+        except Exception as exc:
             self._handle_token_refresh_error(exc, connection_config)
 
     def _handle_token_refresh_error(
