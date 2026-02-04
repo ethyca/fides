@@ -43,7 +43,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
     updateSearch,
     paginationProps,
     activeTab,
-    activeParams,
+    diffStatusFilters,
     rowClickUrl,
     getRecordKey,
     refetch,
@@ -80,7 +80,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
     });
 
   const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
-  const allowIgnore = shouldAllowIgnore(activeParams);
+  const allowIgnore = shouldAllowIgnore(diffStatusFilters);
 
   const handleBulkActionWithSelectedItems = useCallback(
     (action: InfrastructureSystemBulkActionType) => {

@@ -49,11 +49,14 @@ export const getBulkActionsMenuItems = ({
   ];
 };
 
-export const shouldAllowIgnore = (activeParams: {
-  diff_status?: DiffStatus | DiffStatus[] | null;
-}): boolean => {
-  return (
-    !!activeParams.diff_status &&
-    !activeParams.diff_status.includes(DiffStatus.MUTED)
-  );
+export const shouldAllowIgnore = (
+  activeDiffStatusFilters: DiffStatus[] | DiffStatus | undefined,
+): boolean => {
+  if (!activeDiffStatusFilters) {
+    return false;
+  }
+  if (Array.isArray(activeDiffStatusFilters)) {
+    return !activeDiffStatusFilters.includes(DiffStatus.MUTED);
+  }
+  return activeDiffStatusFilters !== DiffStatus.MUTED;
 };
