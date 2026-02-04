@@ -1,6 +1,4 @@
 import pytest
-
-import pytest
 import requests
 from loguru import logger
 
