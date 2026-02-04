@@ -119,7 +119,7 @@ async def prewarmed_async_readonly_session() -> AsyncGenerator[Any, Any]:
             )
             ASYNC_READONLY_POOL_WARMED = True
 
-    session = readonly_async_session_factory()
+        session = readonly_async_session_factory()
 
     try:
         yield session
