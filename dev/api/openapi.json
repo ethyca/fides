@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.0"
+    "version": "2.77.2b1.post0.dev46"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -27506,6 +27506,17 @@
               }
             ],
             "title": "Enable Property Specific Messaging"
+          },
+          "privacy_assessments_channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Privacy Assessments Channel"
           }
         },
         "additionalProperties": false,
