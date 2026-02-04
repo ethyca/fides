@@ -134,26 +134,25 @@ export const InfrastructureSystemActionsCell = ({
           </Button>
         </Tooltip>
       )}
-      {isIgnoredTab ||
-        (allowRestore && (
-          <Tooltip
-            title={
-              !system.urn
-                ? `This system cannot be restored: URN is missing.`
-                : "Restore"
-            }
-          >
-            <Button
-              data-testid="restore-btn"
-              size="small"
-              onClick={handleRestore}
-              disabled={!system.urn || isActionInProgress}
-              loading={isUnmuting}
-              icon={<Icons.View />}
-              aria-label="Restore"
-            />
-          </Tooltip>
-        ))}
+      {(isIgnoredTab || allowRestore) && (
+        <Tooltip
+          title={
+            !system.urn
+              ? `This system cannot be restored: URN is missing.`
+              : "Restore"
+          }
+        >
+          <Button
+            data-testid="restore-btn"
+            size="small"
+            onClick={handleRestore}
+            disabled={!system.urn || isActionInProgress}
+            loading={isUnmuting}
+            icon={<Icons.View />}
+            aria-label="Restore"
+          />
+        </Tooltip>
+      )}
 
       <Tooltip
         title={
