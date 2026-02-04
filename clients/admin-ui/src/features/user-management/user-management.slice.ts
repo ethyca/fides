@@ -173,7 +173,7 @@ const userApi = baseApi.injectEndpoints({
       ],
     }),
     getUserMonitors: build.query<EditableMonitorConfig[], { id: string }>({
-      query: ({ id }) => ({ url: `user/${id}/monitor-steward` }),
+      query: ({ id }) => ({ url: `user/${id}/monitor` }),
       providesTags: (_result, _error, { id }) => [
         { type: "User Monitors" as const, id },
       ],
