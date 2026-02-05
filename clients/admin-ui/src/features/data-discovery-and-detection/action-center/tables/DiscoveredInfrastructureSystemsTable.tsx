@@ -15,8 +15,8 @@ import { useCallback, useMemo } from "react";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
+import { InfrastructureSystemsFilters } from "../components/InfrastructureSystemsFilters";
 import { InfrastructureSystemBulkActionType } from "../constants";
-import { InfrastructureSystemsFilters } from "../fields/InfrastructureSystemsFilters";
 import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredInfrastructureSystemsTable } from "../hooks/useDiscoveredInfrastructureSystemsTable";
@@ -107,7 +107,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
 
   return (
     <Flex vertical gap="middle" className="h-full">
-      <Flex justify="space-between">
+      <Flex justify="space-between" gap="middle">
         <Flex gap="small">
           <DebouncedSearchInput
             value={searchQuery}

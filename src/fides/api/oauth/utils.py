@@ -21,6 +21,7 @@ from fides.api.api.deps import get_db
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.cryptography.cryptographic_util import generate_secure_random_string
 from fides.api.cryptography.schemas.jwt import (
+    JWE_EXPIRES_AT,
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
@@ -71,6 +72,30 @@ def is_token_expired(
     if issued_at is None:
         return True
     return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_minutes
+
+
+def is_token_expired_by_payload(
+    token_data: Dict[str, Any],
+    token_duration_minutes: int,
+) -> bool:
+    """
+    Check if a token has expired using exp (Unix timestamp) when present,
+    otherwise fall back to iat + token_duration_minutes for backward compatibility.
+    """
+    exp = token_data.get(JWE_EXPIRES_AT)
+    if exp is not None:
+        try:
+            return datetime.now().timestamp() > float(exp)
+        except (TypeError, ValueError):
+            pass
+    issued_at = token_data.get(JWE_ISSUED_AT)
+    if not issued_at:
+        return True
+    try:
+        issued_at_dt = datetime.fromisoformat(issued_at)
+    except (TypeError, ValueError):
+        return True
+    return is_token_expired(issued_at_dt, token_duration_minutes)
 
 
 def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
@@ -416,18 +441,18 @@ def extract_token_and_load_client(
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
-    issued_at = token_data.get(JWE_ISSUED_AT, None)
-    if not issued_at:
+    if is_token_expired_by_payload(
+        token_data,
+        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
+    ):
         logger.debug("Auth token expired.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    issued_at_dt = datetime.fromisoformat(issued_at)
-
-    if is_token_expired(
-        issued_at_dt,
-        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
-    ):
+    issued_at = token_data.get(JWE_ISSUED_AT, None)
+    if not issued_at:
+        logger.debug("Auth token missing issued_at.")
         raise AuthorizationError(detail="Not Authorized for this action")
+    issued_at_dt = datetime.fromisoformat(issued_at)
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if not client_id:
@@ -489,18 +514,18 @@ async def extract_token_and_load_client_async(
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
-    issued_at = token_data.get(JWE_ISSUED_AT, None)
-    if not issued_at:
+    if is_token_expired_by_payload(
+        token_data,
+        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
+    ):
         logger.debug("Auth token expired.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    issued_at_dt = datetime.fromisoformat(issued_at)
-
-    if is_token_expired(
-        issued_at_dt,
-        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
-    ):
+    issued_at = token_data.get(JWE_ISSUED_AT, None)
+    if not issued_at:
+        logger.debug("Auth token missing issued_at.")
         raise AuthorizationError(detail="Not Authorized for this action")
+    issued_at_dt = datetime.fromisoformat(issued_at)
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if not client_id:
