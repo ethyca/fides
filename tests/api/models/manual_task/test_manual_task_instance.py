@@ -6,7 +6,6 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.attachment import Attachment, AttachmentReference
-from fides.service.attachment_service import AttachmentService
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_task import (
     ManualTask,
@@ -17,6 +16,7 @@ from fides.api.models.manual_task import (
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.service.attachment_service import AttachmentService
 
 
 @pytest.fixture

@@ -81,7 +81,8 @@ class TestAttachmentCreation:
         """Test creating an attachment without an attachment file raises an error."""
         with mock_aws():
             with pytest.raises(TypeError) as excinfo:
-                AttachmentService(db).create_and_upload(data=attachment_data, file_data=None
+                AttachmentService(db).create_and_upload(
+                    data=attachment_data, file_data=None
                 )
             assert "file-like object" in str(excinfo.value)
 
@@ -98,7 +99,8 @@ class TestAttachmentCreation:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = AttachmentService(db).create_and_upload(data=attachment_data, file_data=attachment_file[1]
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=attachment_file[1]
         )
         retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
@@ -130,7 +132,8 @@ class TestAttachmentCreation:
         attachment_file[1].seek(0)  # Reset the file pointer again for the test
 
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=attachment_file[1]
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=attachment_file[1]
         )
         retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
@@ -164,7 +167,8 @@ class TestAttachmentCreation:
             "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
             return_value=mock_gcs_client,
         ):
-            attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=attachment_file[1]
+            attachment = AttachmentService(db).create_and_upload(
+                data=attachment_data, file_data=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
@@ -207,9 +211,7 @@ class TestAttachmentCreation:
 
         # Verify reference was created
         reference = (
-            db.query(AttachmentReference)
-            .filter_by(attachment_id=attachment.id)
-            .first()
+            db.query(AttachmentReference).filter_by(attachment_id=attachment.id).first()
         )
         assert reference is not None
         assert reference.reference_id == fake_reference_id
@@ -235,7 +237,8 @@ class TestAttachmentRetrieval:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = AttachmentService(db).create_and_upload(data=attachment_data, file_data=attachment_file[1]
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=attachment_file[1]
         )
         verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
         AttachmentService(db).delete(attachment)
@@ -248,7 +251,8 @@ class TestAttachmentRetrieval:
         attachment_file_copy = attachment_file[1].read()
         attachment_file[1].seek(0)  # Reset the file pointer again for the test
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=attachment_file[1]
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=attachment_file[1]
         )
 
         verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
@@ -275,7 +279,8 @@ class TestAttachmentRetrieval:
             "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
             return_value=mock_gcs_client,
         ):
-            attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=attachment_file[1]
+            attachment = AttachmentService(db).create_and_upload(
+                data=attachment_data, file_data=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
@@ -303,7 +308,8 @@ class TestAttachmentDeletion:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = AttachmentService(db).create_and_upload(data=attachment_data, file_data=attachment_file[1]
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=attachment_file[1]
         )
         verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
 
@@ -328,7 +334,8 @@ class TestAttachmentDeletion:
         attachment_file_copy = attachment_file[1].read()
         attachment_file[1].seek(0)  # Reset the file pointer again for the test
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=attachment_file[1]
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=attachment_file[1]
         )
         verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
 
@@ -360,7 +367,8 @@ class TestAttachmentDeletion:
             "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
             return_value=mock_gcs_client,
         ):
-            attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=attachment_file[1]
+            attachment = AttachmentService(db).create_and_upload(
+                data=attachment_data, file_data=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
@@ -463,7 +471,8 @@ class TestAttachmentConstraints:
     ):
         """Test that deleting storage config cascades."""
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=BytesIO(b"test file content")
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=BytesIO(b"test file content")
         )
         attachment_id = attachment.id
 
@@ -547,7 +556,8 @@ class TestAttachmentBulkOperations:
 
         # delete all attachments associated with the comment
         # should delete all attachments and references to the attachment
-        AttachmentService(db).delete_for_reference( reference_id=comment.id, reference_type=AttachmentReferenceType.comment
+        AttachmentService(db).delete_for_reference(
+            reference_id=comment.id, reference_type=AttachmentReferenceType.comment
         )
         retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
         assert retrieved_attachment is None
@@ -660,7 +670,8 @@ class TestAttachmentContentRetrieval:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = AttachmentService(db).create_and_upload(data=attachment_data, file_data=attachment_file[1]
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=attachment_file[1]
         )
 
         size, content = AttachmentService().retrieve_content(attachment)
@@ -677,7 +688,8 @@ class TestAttachmentContentRetrieval:
         attachment_file_copy = attachment_file[1].read()
         attachment_file[1].seek(0)  # Reset the file pointer again for the test
         attachment_data["storage_key"] = storage_config_local.key
-        attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=attachment_file[1]
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=attachment_file[1]
         )
         size, content = AttachmentService().retrieve_content(attachment)
         assert size == len(attachment_file_copy)
@@ -709,7 +721,8 @@ class TestAttachmentContentRetrieval:
             "fides.api.service.storage.providers.gcs_provider.get_gcs_client",
             return_value=mock_gcs_client,
         ):
-            attachment = AttachmentService(db).create_and_upload( data=attachment_data, file_data=attachment_file[1]
+            attachment = AttachmentService(db).create_and_upload(
+                data=attachment_data, file_data=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
@@ -730,7 +743,8 @@ class TestAttachmentContentRetrieval:
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-        attachment = AttachmentService(db).create_and_upload(data=attachment_data, file_data=BytesIO(b"test content")
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=BytesIO(b"test content")
         )
         AttachmentService().delete_from_storage(attachment)
 
@@ -755,7 +769,8 @@ class TestAttachmentContentRetrieval:
 
         for filename, expected_content_type in test_cases:
             attachment_data["file_name"] = filename
-            attachment = AttachmentService(db).create_and_upload(data=attachment_data, file_data=BytesIO(b"test content")
+            attachment = AttachmentService(db).create_and_upload(
+                data=attachment_data, file_data=BytesIO(b"test content")
             )
             assert attachment.content_type == expected_content_type
             AttachmentService(db).delete(attachment)
@@ -770,5 +785,6 @@ class TestAttachmentContentRetrieval:
 
         attachment_data["file_name"] = "test.invalid"
         with pytest.raises(ValueError, match="Invalid or unallowed file extension"):
-            AttachmentService(db).create_and_upload(data=attachment_data, file_data=BytesIO(b"test content")
+            AttachmentService(db).create_and_upload(
+                data=attachment_data, file_data=BytesIO(b"test content")
             )

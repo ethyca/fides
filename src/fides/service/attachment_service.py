@@ -191,7 +191,7 @@ class AttachmentService:
         from fides.api.db.base_class import Base
 
         db = self._require_db()
-        
+
         # Create the attachment record using Base.create directly
         attachment = Base.create.__func__(
             Attachment, db=db, data=data, check_name=check_name
@@ -230,7 +230,7 @@ class AttachmentService:
             attachment: The attachment to delete.
         """
         db = self._require_db()
-        
+
         # Delete from storage first
         self.delete_from_storage(attachment)
 
@@ -266,7 +266,7 @@ class AttachmentService:
                 )
         """
         db = self._require_db()
-        
+
         # Query attachments explicitly to avoid lazy loading
         attachments = (
             db.query(Attachment)

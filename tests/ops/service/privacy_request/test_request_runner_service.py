@@ -28,7 +28,6 @@ from fides.api.models.attachment import (
     AttachmentReferenceType,
     AttachmentType,
 )
-from fides.service.attachment_service import AttachmentService
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -74,6 +73,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
+from fides.service.attachment_service import AttachmentService
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
@@ -1957,9 +1957,9 @@ class TestConsentManualTaskIntegration:
             )
             .first()
         )
-        assert (
-            instance is None
-        ), "ManualTaskInstance should NOT be created when condition is false"
+        assert instance is None, (
+            "ManualTaskInstance should NOT be created when condition is false"
+        )
 
 
 class TestConsentEmailStep:

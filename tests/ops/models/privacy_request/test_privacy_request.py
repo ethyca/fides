@@ -26,7 +26,6 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
-from fides.service.attachment_service import AttachmentService
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
@@ -52,6 +51,7 @@ from fides.api.util.cache import (
 )
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
+from fides.service.attachment_service import AttachmentService
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -1617,9 +1617,9 @@ class TestPrivacyRequestAttachments:
             sqlalchemy_warnings = [
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
-            assert (
-                len(sqlalchemy_warnings) == 0
-            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            assert len(sqlalchemy_warnings) == 0, (
+                f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            )
 
             # Cleanup
             if db.query(AttachmentReference).filter_by(id=attachment_ref.id).first():
@@ -1759,9 +1759,9 @@ class TestPrivacyRequestComments:
             sqlalchemy_warnings = [
                 w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
             ]
-            assert (
-                len(sqlalchemy_warnings) == 0
-            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            assert len(sqlalchemy_warnings) == 0, (
+                f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            )
 
             # Cleanup
             if db.query(CommentReference).filter_by(id=comment_ref.id).first():

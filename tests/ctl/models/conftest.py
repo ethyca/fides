@@ -22,15 +22,18 @@ def multiple_attachments(s3_client, db, attachment_data, user, monkeypatch):
 
     attachment_data["user_id"] = user.id
     attachment_data["file_name"] = "file_1.txt"
-    attachment_1 = AttachmentService(db).create_and_upload(data=attachment_data, file_data=BytesIO(b"file content 1")
+    attachment_1 = AttachmentService(db).create_and_upload(
+        data=attachment_data, file_data=BytesIO(b"file content 1")
     )
 
     attachment_data["file_name"] = "file_2.txt"
-    attachment_2 = AttachmentService(db).create_and_upload(data=attachment_data, file_data=BytesIO(b"file content 2")
+    attachment_2 = AttachmentService(db).create_and_upload(
+        data=attachment_data, file_data=BytesIO(b"file content 2")
     )
 
     attachment_data["file_name"] = "file_3.txt"
-    attachment_3 = AttachmentService(db).create_and_upload(data=attachment_data, file_data=BytesIO(b"file content 3")
+    attachment_3 = AttachmentService(db).create_and_upload(
+        data=attachment_data, file_data=BytesIO(b"file content 3")
     )
 
     yield attachment_1, attachment_2, attachment_3

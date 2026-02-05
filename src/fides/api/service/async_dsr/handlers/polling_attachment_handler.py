@@ -48,7 +48,7 @@ class PollingAttachmentHandler:
         """
         try:
             # Get active storage config
-            storage_config = get_active_default_storage_config(session)
+            storage_config = get_active_default_storage_config(db)
             if not storage_config:
                 raise PrivacyRequestError("No active storage configuration found")
 
