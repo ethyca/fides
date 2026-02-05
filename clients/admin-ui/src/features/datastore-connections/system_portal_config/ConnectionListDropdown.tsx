@@ -15,7 +15,7 @@ import {
   SearchLineIcon,
   Tooltip,
 } from "fidesui";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -136,6 +136,19 @@ export const useConnectionListDropDown = ({
       setSelectedValue(initialSelectedValue);
     }
   }, [connectionConfig, connectionOptions]);
+
+  // Sync selectedValue with latest connectionOptions when data refreshes
+  // This ensures the selected value is updated after operations like deleting a custom template
+  useEffect(() => {
+    if (selectedValue && connectionOptions.length > 0) {
+      const updatedValue = connectionOptions.find(
+        (ct) => ct.identifier === selectedValue.identifier,
+      );
+      if (updatedValue && updatedValue !== selectedValue) {
+        setSelectedValue(updatedValue);
+      }
+    }
+  }, [connectionOptions, selectedValue]);
 
   return { dropDownOptions, selectedValue, setSelectedValue, systemType };
 };
