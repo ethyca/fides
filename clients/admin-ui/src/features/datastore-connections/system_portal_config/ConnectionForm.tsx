@@ -14,6 +14,8 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
 import {
@@ -76,6 +78,22 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   }, [data]);
 
   const uploadTemplateModal = useDisclosure();
+  const deleteTemplateModal = useDisclosure();
+  const [deleteConnectorTemplate, { isLoading: isDeleting }] =
+    useDeleteConnectorTemplateMutation();
+
+  const handleDeleteCustomIntegration = async () => {
+    if (selectedConnectionOption?.identifier) {
+      try {
+        await deleteConnectorTemplate(
+          selectedConnectionOption.identifier,
+        ).unwrap();
+        deleteTemplateModal.onClose();
+      } catch {
+        // Error handling is managed by RTK Query
+      }
+    }
+  };
 
   /* STEPS TO UNIFY the database and saas forms
   7. Get it working for manual connectors
@@ -116,12 +134,34 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             >
               Upload integration
             </Button>
+            {selectedConnectionOption?.custom &&
+              selectedConnectionOption?.default_connector_available && (
+                <Button
+                  danger
+                  data-testid="delete-custom-integration-btn"
+                  onClick={deleteTemplateModal.onOpen}
+                  className="ml-2"
+                >
+                  Delete custom integration
+                </Button>
+              )}
           </Restrict>
         </Stack>
 
         <ConnectorTemplateUploadModal
           isOpen={uploadTemplateModal.isOpen}
           onClose={uploadTemplateModal.onClose}
+        />
+        <ConfirmationModal
+          isOpen={deleteTemplateModal.isOpen}
+          onClose={deleteTemplateModal.onClose}
+          onConfirm={handleDeleteCustomIntegration}
+          title="Delete custom integration"
+          message="Deleting this custom integration will update all connection configs that use it by falling back to the Fides-provided template. Are you sure you want to proceed?"
+          cancelButtonText="No"
+          continueButtonText="Yes"
+          isLoading={isDeleting}
+          testId="delete-custom-integration-modal"
         />
       </Flex>
       {selectedConnectionOption?.type &&
