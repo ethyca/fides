@@ -41,11 +41,7 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   // Status filters now come directly as diff_status values from the API
   const diffStatusFilters = useMemo(() => {
     // If statusFilters is null/undefined (not provided), use activeParams default
-    if (
-      statusFilters === null ||
-      statusFilters === undefined ||
-      statusFilters.length === 0
-    ) {
+    if (!statusFilters || statusFilters.length === 0) {
       return [DiffStatus.ADDITION, DiffStatus.MUTED];
     }
 
