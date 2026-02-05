@@ -3200,6 +3200,8 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+      - name: distance
+        data_categories: [system.operations]
   - name: monitortask
     fields:
       - name: id

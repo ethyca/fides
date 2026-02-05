@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import Enum, StrEnum
 from re import match
 from typing import Any, Dict, Iterable, List, Optional, Set, Type
 
@@ -63,9 +63,6 @@ class MonitorFrequency(Enum):
 # used to represent the months of the year that the monitor will run
 # on quarterly basis, in cron format
 QUARTERLY_MONTH_PATTERN = r"^\d+,\d+,\d+,\d+$"
-
-
-from enum import StrEnum
 
 
 class StagedResourceType(StrEnum):
@@ -434,6 +431,8 @@ class StagedResourceAncestor(Base):
         nullable=False,
     )
 
+    distance = Column(Integer, nullable=True)
+
     ancestor_staged_resource = relationship(
         "StagedResource",
         back_populates="ancestor_links",
@@ -454,18 +453,25 @@ class StagedResourceAncestor(Base):
         Index("ix_staged_resource_ancestor_pkey", "id", unique=True),
         Index("ix_staged_resource_ancestor_ancestor", "ancestor_urn"),
         Index("ix_staged_resource_ancestor_descendant", "descendant_urn"),
+        # Add index for distance?
+        Index(
+            "ix_staged_resource_ancestor_desc_anc_dist",
+            "descendant_urn",
+            "ancestor_urn",
+            "distance",
+        ),
     )
 
     @classmethod
     def create_all_staged_resource_ancestor_links(
         cls,
         db: Session,
-        ancestor_links: Dict[str, Set[str]],
+        ancestor_links: Dict[str, Set[tuple[str, int]]],
         batch_size: int = 10000,  # Conservative batch size
     ) -> None:
         """
         Bulk inserts all entries in the StagedResourceAncestor table
-        based on the provided mapping of descendant URNs to their ancestor URN sets.
+        based on the provided mapping of descendant URNs to their ancestor URN and distance sets.
 
         We execute the bulk INSERT with the provided (synchronous) db session,
         but the transaction is _not_ committed, so the caller must commit the transaction
@@ -475,12 +481,12 @@ class StagedResourceAncestor(Base):
 
         Args:
             db: Database session
-            ancestor_links: Dict mapping descendant URNs to sets of ancestor URNs
+            ancestor_links: Dict mapping descendant URNs to sets of ancestor URNs and distances
         """
         stmt_text = text(
             """
-            INSERT INTO stagedresourceancestor (id, ancestor_urn, descendant_urn)
-            VALUES ('srl_' || gen_random_uuid(), :ancestor_urn, :descendant_urn)
+            INSERT INTO stagedresourceancestor (id, ancestor_urn, descendant_urn, distance)
+            VALUES ('srl_' || gen_random_uuid(), :ancestor_urn, :descendant_urn, :distance)
             ON CONFLICT (ancestor_urn, descendant_urn) DO NOTHING;
             """
         )
@@ -489,9 +495,13 @@ class StagedResourceAncestor(Base):
 
         for descendant_urn, ancestor_urns in ancestor_links.items():
             if ancestor_urns:  # Only create links if there are ancestors
-                for ancestor_urn in ancestor_urns:
+                for ancestor_urn, distance in ancestor_urns:
                     current_batch.append(
-                        {"ancestor_urn": ancestor_urn, "descendant_urn": descendant_urn}
+                        {
+                            "ancestor_urn": ancestor_urn,
+                            "descendant_urn": descendant_urn,
+                            "distance": distance,
+                        }
                     )
 
                     # Execute batch when it reaches the desired size
