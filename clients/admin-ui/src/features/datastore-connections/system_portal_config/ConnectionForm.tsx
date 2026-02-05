@@ -8,6 +8,7 @@ import {
   ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraStack as Stack,
+  Tooltip,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import React, { useEffect, useState } from "react";
@@ -84,7 +85,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   return (
     <Box id="con-wrapper" px={6}>
       <Flex py={5}>
-        <Stack direction={{ base: "column", lg: "row" }}>
+        <Stack direction={{ base: "column", lg: "row" }} alignItems="center">
           <ConnectionListDropdown
             list={dropDownOptions}
             label="Integration type"
@@ -92,6 +93,13 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             onChange={setSelectedConnectionOption}
             disabled={Boolean(connectionConfig && connectionConfig !== null)}
           />
+          {selectedConnectionOption?.is_custom && (
+            <Tooltip title="Custom integration" placement="top">
+              <Box as="span" cursor="pointer" fontSize="lg">
+                🛠️
+              </Box>
+            </Tooltip>
+          )}
           {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
             <OrphanedConnectionModal
               connectionConfigs={orphanedConnectionConfigs}
