@@ -134,7 +134,8 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             >
               Upload integration
             </Button>
-            {selectedConnectionOption?.custom &&
+            {connectionConfig &&
+              selectedConnectionOption?.custom &&
               selectedConnectionOption?.default_connector_available && (
                 <Button
                   danger
