@@ -18,6 +18,7 @@ export const baseApi = createApi({
   }),
   tagTypes: [
     "Allow List",
+    "Asset Reporting",
     "Auth",
     "Catalog Systems",
     "Catalog Projects",
