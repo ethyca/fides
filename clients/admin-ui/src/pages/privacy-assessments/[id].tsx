@@ -1,9 +1,13 @@
 import {
   CheckCircleOutlined,
   DownloadOutlined,
+  FilePdfOutlined,
+  SafetyOutlined,
   SearchOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
 import {
+  Avatar,
   Button,
   Collapse,
   CUSTOM_TAG_COLOR,
@@ -25,7 +29,9 @@ import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 
+import type { RootState } from "~/app/store";
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
@@ -128,7 +134,7 @@ const collapseStyles = `
 // Helper function to render text with reference badges
 const renderTextWithReferences = (
   text: string,
-  onReferenceClick?: (label: string) => void
+  onReferenceClick?: (label: string) => void,
 ): React.ReactNode => {
   const referencePattern = /\[([^\]]+)\]/g;
   const parts: React.ReactNode[] = [];
@@ -192,7 +198,7 @@ const renderTextWithReferences = (
         }}
       >
         {label}
-      </span>
+      </span>,
     );
     lastIndex = match.index + match[0].length;
     match = referencePattern.exec(text);
@@ -246,6 +252,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
   // UI state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
@@ -289,6 +296,8 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     useCreateQuestionnaireMutation();
   const [createReminder, { isLoading: isSendingReminder }] =
     useCreateQuestionnaireReminderMutation();
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const authToken = useSelector((state: RootState) => state.auth.token);
 
   // Get question groups from assessment
   const questionGroups = assessment?.question_groups ?? [];
@@ -296,19 +305,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   // Flatten all questions for progress calculations
   const allQuestions = useMemo(
     () => questionGroups.flatMap((g) => g.questions),
-    [questionGroups]
+    [questionGroups],
   );
 
   // Get current answer value (local override or from API)
   const getAnswerValue = useCallback(
     (questionId: string, apiAnswer: string): string =>
       localAnswers[questionId] ?? apiAnswer,
-    [localAnswers]
+    [localAnswers],
   );
 
   // Calculate progress for slack questions
   const slackQuestions = allQuestions.filter(
-    (q) => q.answer_source === "slack" || q.answer_status === "needs_input"
+    (q) => q.answer_source === "slack" || q.answer_status === "needs_input",
   );
   const answeredSlackQuestions = slackQuestions.filter((q) => {
     const answer = getAnswerValue(q.question_id, q.answer_text);
@@ -340,7 +349,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       // Optimistic update
       setLocalAnswers((prev) => ({ ...prev, [questionId]: newAnswer }));
     },
-    []
+    [],
   );
 
   // Save answer to API when user clicks Save
@@ -364,7 +373,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         message.error("Failed to save answer. Please try again.");
       }
     },
-    [assessmentId, message, updateAnswer]
+    [assessmentId, message, updateAnswer],
   );
 
   const handleComment = (selection: {
@@ -373,7 +382,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     end: number;
   }) => {
     message.success(
-      `Comment added on "${selection.text.substring(0, 30)}${selection.text.length > 30 ? "..." : ""}"`
+      `Comment added on "${selection.text.substring(0, 30)}${selection.text.length > 30 ? "..." : ""}"`,
     );
   };
 
@@ -384,7 +393,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         body: { channel: "#privacy-assessment-collab" },
       }).unwrap();
 
-      message.success("Questionnaire sent to #privacy-assessment-collab on Slack.");
+      message.success(
+        "Questionnaire sent to #privacy-assessment-collab on Slack.",
+      );
       refetch();
     } catch (error) {
       console.error("Failed to send questionnaire:", error);
@@ -441,7 +452,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
       return Array.from(uniqueEvidence.values());
     },
-    [questionGroups]
+    [questionGroups],
   );
 
   // Filter evidence based on search query
@@ -477,7 +488,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         return false;
       });
     },
-    [evidenceSearchQuery, getGroupEvidence]
+    [evidenceSearchQuery, getGroupEvidence],
   );
 
   // Feature flag check
@@ -588,7 +599,11 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   : undefined
               }
             >
-              <Button type="primary" disabled={!isComplete}>
+              <Button
+                type="primary"
+                disabled={false /* TEMP: removed !isComplete for testing */}
+                onClick={() => setIsReportModalOpen(true)}
+              >
                 Generate report
               </Button>
             </Tooltip>
@@ -604,7 +619,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               </Title>
               <Tag
                 color={
-                  isComplete ? CUSTOM_TAG_COLOR.SUCCESS : CUSTOM_TAG_COLOR.DEFAULT
+                  isComplete
+                    ? CUSTOM_TAG_COLOR.SUCCESS
+                    : CUSTOM_TAG_COLOR.DEFAULT
                 }
               >
                 {isComplete ? "Completed" : "In progress"}
@@ -883,7 +900,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                     {group.questions.map((q) => {
                       const currentAnswer = getAnswerValue(
                         q.question_id,
-                        q.answer_text
+                        q.answer_text,
                       );
                       const sourceLabel =
                         q.answer_source === "system"
@@ -948,7 +965,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                             }
                             renderContent={(text) =>
                               renderTextWithReferences(text, (label) =>
-                                handleViewEvidence(group.id, label)
+                                handleViewEvidence(group.id, label),
                               )
                             }
                           />
@@ -977,6 +994,215 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             This action cannot be undone. All assessment data, including any
             responses and documentation, will be permanently removed.
           </Text>
+        </Space>
+      </Modal>
+
+      {/* Report Generation Modal */}
+      <Modal
+        title={
+          <Flex align="center" gap="small">
+            <CheckCircleOutlined
+              style={{ color: palette.FIDESUI_SUCCESS, fontSize: 20 }}
+            />
+            <span>Assessment Report</span>
+          </Flex>
+        }
+        open={isReportModalOpen}
+        onCancel={() => setIsReportModalOpen(false)}
+        footer={null}
+        width={600}
+      >
+        <Space
+          direction="vertical"
+          size="large"
+          style={{ width: "100%", marginTop: 8 }}
+        >
+          <div
+            style={{
+              paddingBottom: 24,
+              borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+            }}
+          >
+            <Title
+              level={5}
+              style={{
+                marginBottom: 16,
+                textTransform: "uppercase",
+                fontSize: 11,
+                letterSpacing: 1,
+                fontWeight: 600,
+                color: palette.FIDESUI_NEUTRAL_700,
+              }}
+            >
+              Executive Summary
+            </Title>
+            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+              <Flex align="center" gap="small">
+                <div
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    backgroundColor:
+                      assessment?.risk_level === "high"
+                        ? palette.FIDESUI_ERROR
+                        : assessment?.risk_level === "medium"
+                          ? palette.FIDESUI_WARNING
+                          : palette.FIDESUI_SUCCESS,
+                  }}
+                />
+                <Text style={{ fontSize: 14 }}>
+                  <Text strong style={{ marginRight: 8 }}>
+                    Risk Level:
+                  </Text>
+                  {assessment?.risk_level || "Not assessed"}
+                </Text>
+              </Flex>
+              <Flex align="center" gap="small">
+                <SafetyOutlined
+                  style={{ color: palette.FIDESUI_MINOS, fontSize: 16 }}
+                />
+                <Text style={{ fontSize: 14 }}>
+                  <Text strong style={{ marginRight: 8 }}>
+                    Template:
+                  </Text>
+                  {assessment?.template_name || "CPRA Risk Assessment"}
+                </Text>
+              </Flex>
+              <Flex align="center" gap="small">
+                <ThunderboltOutlined
+                  style={{ color: palette.FIDESUI_MINOS, fontSize: 16 }}
+                />
+                <Text style={{ fontSize: 14 }}>
+                  <Text strong style={{ marginRight: 8 }}>
+                    Completion:
+                  </Text>
+                  {Math.round(assessment?.completeness || 0)}%
+                </Text>
+              </Flex>
+            </Space>
+          </div>
+
+          <div
+            style={{
+              paddingBottom: 24,
+              borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+            }}
+          >
+            <Title
+              level={5}
+              style={{
+                marginBottom: 16,
+                textTransform: "uppercase",
+                fontSize: 11,
+                letterSpacing: 1,
+                fontWeight: 600,
+                color: palette.FIDESUI_NEUTRAL_700,
+              }}
+            >
+              Document Details
+            </Title>
+            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+              <Flex justify="space-between" align="center">
+                <Text type="secondary" style={{ fontSize: 14 }}>
+                  System:
+                </Text>
+                <Text strong style={{ fontSize: 14 }}>
+                  {assessment?.system_name}
+                </Text>
+              </Flex>
+              <Flex justify="space-between" align="center">
+                <Text type="secondary" style={{ fontSize: 14 }}>
+                  Data Use:
+                </Text>
+                <Text strong style={{ fontSize: 14 }}>
+                  {assessment?.data_use_name}
+                </Text>
+              </Flex>
+              <Flex justify="space-between" align="center">
+                <Text type="secondary" style={{ fontSize: 14 }}>
+                  Questions:
+                </Text>
+                <Text strong style={{ fontSize: 14 }}>
+                  {assessment?.question_groups?.reduce(
+                    (acc: number, g: { total_count?: number }) =>
+                      acc + (g.total_count || 0),
+                    0,
+                  ) || 0}{" "}
+                  total
+                </Text>
+              </Flex>
+            </Space>
+          </div>
+
+          <Flex
+            gap="small"
+            style={{
+              marginTop: 8,
+              paddingTop: 24,
+              borderTop: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              icon={<FilePdfOutlined />}
+              loading={isDownloadingPdf}
+              onClick={async () => {
+                if (!assessment?.id) return;
+
+                setIsDownloadingPdf(true);
+                try {
+                  const baseUrl = process.env.NEXT_PUBLIC_FIDESCTL_API;
+                  const response = await fetch(
+                    `${baseUrl}/plus/privacy-assessments/${assessment.id}/pdf`,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${authToken}`,
+                      },
+                    },
+                  );
+
+                  if (!response.ok) {
+                    message.error("Failed to download PDF. Please try again.");
+                    return;
+                  }
+
+                  // Extract filename from Content-Disposition header
+                  const contentDisposition = response.headers.get(
+                    "content-disposition",
+                  );
+                  let filename = `privacy_assessment_${assessment.id}.pdf`;
+                  if (contentDisposition) {
+                    const match =
+                      contentDisposition.match(/filename="?([^"]+)"?/);
+                    if (match) {
+                      [, filename] = match;
+                    }
+                  }
+
+                  // Download the PDF
+                  const arrayBuffer = await response.arrayBuffer();
+                  const blob = new Blob([arrayBuffer], {
+                    type:
+                      response.headers.get("content-type") || "application/pdf",
+                  });
+                  const fileSaver = await import("file-saver");
+                  // file-saver exports saveAs as both named and default
+                  const saveAs = fileSaver.saveAs || fileSaver.default;
+                  saveAs(blob, filename);
+
+                  message.success("PDF downloaded successfully");
+                  setIsReportModalOpen(false);
+                } catch {
+                  message.error("Failed to download PDF. Please try again.");
+                } finally {
+                  setIsDownloadingPdf(false);
+                }
+              }}
+            >
+              {isDownloadingPdf ? "Generating PDF..." : "Download PDF"}
+            </Button>
+          </Flex>
         </Space>
       </Modal>
 
@@ -1033,7 +1259,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             // Scroll to the highlighted evidence item after drawer opens
             setTimeout(() => {
               const element = document.querySelector(
-                `[data-citation-number="${highlightedCitationNumber}"]`
+                `[data-citation-number="${highlightedCitationNumber}"]`,
               );
               if (element) {
                 element.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1107,13 +1333,13 @@ const EvidenceSection = ({
   if (!group) return null;
 
   const systemEvidence = evidence.filter(
-    (e) => e.type === "system"
+    (e) => e.type === "system",
   ) as SystemEvidenceItem[];
   const manualEvidence = evidence.filter(
-    (e) => e.type === "manual_entry"
+    (e) => e.type === "manual_entry",
   ) as ManualEntryEvidenceItem[];
   const slackEvidence = evidence.filter(
-    (e) => e.type === "slack_communication"
+    (e) => e.type === "slack_communication",
   ) as SlackCommunicationEvidenceItem[];
 
   // Helper to get highlight styles for a specific citation number
@@ -1443,13 +1669,15 @@ const EvidenceSection = ({
                                             day: "numeric",
                                             hour: "2-digit",
                                             minute: "2-digit",
-                                          }
+                                          },
                                         )}
                                       </Text>
                                     </Flex>
                                   }
                                   description={
-                                    <Text style={{ fontSize: 13, marginTop: 4 }}>
+                                    <Text
+                                      style={{ fontSize: 13, marginTop: 4 }}
+                                    >
                                       {msg.content.text}
                                     </Text>
                                   }
