@@ -1097,14 +1097,18 @@ class TestConnectionService:
 
         # Verify collections include both the template collection and the monitored collection
         collection_names = {col["name"] for col in ctl_dataset.collections}
-        assert "users" in collection_names, "Template collection 'users' should be present"
-        assert (
-            "monitored_collection" in collection_names
-        ), "Monitored collection should be preserved even without customer dataset"
+        assert "users" in collection_names, (
+            "Template collection 'users' should be present"
+        )
+        assert "monitored_collection" in collection_names, (
+            "Monitored collection should be preserved even without customer dataset"
+        )
 
         # Verify the monitored collection has the correct fields
         monitored_collection = next(
-            col for col in ctl_dataset.collections if col["name"] == "monitored_collection"
+            col
+            for col in ctl_dataset.collections
+            if col["name"] == "monitored_collection"
         )
         field_names = {field["name"] for field in monitored_collection["fields"]}
         assert field_names == {"email", "name"}
@@ -1118,9 +1122,7 @@ class TestConnectionService:
         assert "user.contact.email" in email_field_dict["data_categories"]
 
         name_field_dict = next(
-            field
-            for field in monitored_collection["fields"]
-            if field["name"] == "name"
+            field for field in monitored_collection["fields"] if field["name"] == "name"
         )
         assert "user.name" in name_field_dict["data_categories"]
 
