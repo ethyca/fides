@@ -1,7 +1,7 @@
 """add backfill history
 
 Revision ID: 841e0b148993
-Revises: c1d2e3f4a5b6
+Revises: a1b2c3d4e5f7
 Create Date: 2026-02-03 20:29:57.879185
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "841e0b148993"
-down_revision = "c1d2e3f4a5b6"
+down_revision = "a1b2c3d4e5f7"
 branch_labels = None
 depends_on = None
 
