@@ -143,6 +143,58 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+  - name: chat_config
+    description: 'Configuration for chat providers (Slack, Microsoft Teams, etc.)'
+    data_categories: []
+    fields:
+    - name: access_token
+      description: 'Encrypted OAuth access token for the chat provider'
+      data_categories:
+      - system.operations
+    - name: client_id
+      description: 'OAuth client ID for the chat provider'
+      data_categories:
+      - system.operations
+    - name: client_secret
+      description: 'Encrypted OAuth client secret for the chat provider'
+      data_categories:
+      - system.operations
+    - name: connected_by_email
+      description: 'Email address of the user who connected the chat provider'
+      data_categories:
+      - user.contact.email
+    - name: created_at
+      description: 'Timestamp when the configuration was created'
+      data_categories:
+      - system.operations
+    - name: enabled
+      description: 'Whether the chat configuration is enabled'
+      data_categories:
+      - system.operations
+    - name: id
+      description: 'Unique identifier for the chat configuration'
+      data_categories:
+      - system.operations
+    - name: provider_type
+      description: 'Type of chat provider (slack, teams, etc.)'
+      data_categories:
+      - system.operations
+    - name: signing_secret
+      description: 'Encrypted signing secret for verifying chat provider requests'
+      data_categories:
+      - system.operations
+    - name: updated_at
+      description: 'Timestamp when the configuration was last updated'
+      data_categories:
+      - system.operations
+    - name: workspace_name
+      description: 'Name of the chat workspace'
+      data_categories:
+      - system.operations
+    - name: workspace_url
+      description: 'URL of the chat workspace'
+      data_categories:
+      - system.operations
   - name: comment
     fields:
     - name: comment_text
@@ -218,6 +270,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: monitors
+      data_categories:
+        - system.operations
   - name: systemmanager
     fields:
       - name: id
