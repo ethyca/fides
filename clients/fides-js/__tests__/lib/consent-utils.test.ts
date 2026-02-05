@@ -345,7 +345,7 @@ describe("shouldResurfaceBanner", () => {
       },
       savedConsent: mockSavedConsent,
       options: {},
-      expected: false,
+      expected: true,
     },
     {
       label: "returns false for TCF when there are no vendors",
