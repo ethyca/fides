@@ -19,6 +19,7 @@ interface InfrastructureSystemListItemProps {
   monitorId: string;
   activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;
+  allowRestore?: boolean;
   dataUsesDisabled?: boolean;
   onPromoteSuccess?: () => void;
 }
@@ -32,6 +33,7 @@ export const InfrastructureSystemListItem = ({
   monitorId,
   activeTab,
   allowIgnore,
+  allowRestore,
   dataUsesDisabled,
   onPromoteSuccess,
 }: InfrastructureSystemListItemProps) => {
@@ -82,6 +84,10 @@ export const InfrastructureSystemListItem = ({
   const handleClick = () => {
     if (url && onNavigate) {
       onNavigate(url);
+      return;
+    }
+    if (onSelect && itemKey) {
+      onSelect(itemKey, !selected);
     }
   };
 
@@ -108,6 +114,7 @@ export const InfrastructureSystemListItem = ({
           monitorId={monitorId}
           system={item}
           allowIgnore={allowIgnore}
+          allowRestore={allowRestore}
           activeTab={activeTab}
           onPromoteSuccess={onPromoteSuccess}
         />,
