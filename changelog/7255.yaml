@@ -1,4 +1,0 @@
-type: Changed
-description: Removed Redis check from health endpoint by default for improved performance
-pr: 7255
-labels: []

@@ -1,60 +1,14 @@
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Flex,
-  Icons,
-  List,
-  SelectProps,
-  SparkleIcon,
-  Tag,
-  Text,
-} from "fidesui";
-import { useMemo } from "react";
+import { Button, Checkbox, Flex, List, Text, useMessage } from "fidesui";
 
-import { getBrandIconUrl, getDomain } from "~/features/common/utils";
+import { getErrorMessage } from "~/features/common/helpers";
+import { tagRender } from "~/features/data-discovery-and-detection/action-center/fields/MonitorFieldListItem";
+import { useUpdateInfrastructureSystemDataUsesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { StagedResourceAPIResponse } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
-import {
-  INFRASTRUCTURE_DIFF_STATUS_COLOR,
-  INFRASTRUCTURE_DIFF_STATUS_LABEL,
-} from "../constants";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import InfrastructureClassificationSelect from "./InfrastructureClassificationSelect";
 import { InfrastructureSystemActionsCell } from "./InfrastructureSystemActionsCell";
-
-type TagRenderParams = Parameters<NonNullable<SelectProps["tagRender"]>>[0];
-
-type TagRender = (
-  props: TagRenderParams & {
-    isFromClassifier?: boolean;
-  },
-) => ReturnType<NonNullable<SelectProps["tagRender"]>>;
-
-const tagRender: TagRender = (props) => {
-  const { label, closable, onClose, isFromClassifier } = props;
-
-  const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  return (
-    <Tag
-      color="white"
-      bordered
-      onMouseDown={onPreventMouseDown}
-      closable={closable}
-      onClose={onClose}
-      style={{
-        marginInlineEnd: "calc((var(--ant-padding-xs) * 0.5))",
-      }}
-      icon={isFromClassifier && <SparkleIcon />}
-    >
-      <Text size="sm">{label}</Text>
-    </Tag>
-  );
-};
 
 interface InfrastructureSystemListItemProps {
   item: StagedResourceAPIResponse;
@@ -65,8 +19,6 @@ interface InfrastructureSystemListItemProps {
   monitorId: string;
   activeTab?: ActionCenterTabHash | null;
   allowIgnore?: boolean;
-  onSetDataUses?: (urn: string, dataUses: string[]) => void;
-  onSelectDataUse?: (value: string) => void;
   dataUsesDisabled?: boolean;
   onPromoteSuccess?: () => void;
 }
@@ -80,43 +32,60 @@ export const InfrastructureSystemListItem = ({
   monitorId,
   activeTab,
   allowIgnore,
-  onSetDataUses,
-  onSelectDataUse,
   dataUsesDisabled,
   onPromoteSuccess,
 }: InfrastructureSystemListItemProps) => {
   const itemKey = item.urn;
   const url = rowClickUrl?.(item);
-  const { metadata, diff_status: diffStatus } = item;
   const systemName = item.name ?? "Uncategorized";
 
+  const messageApi = useMessage();
+
+  const [updateDataUses] = useUpdateInfrastructureSystemDataUsesMutation();
+
+  const handleUpdateDataUses = async (dataUses: string[]) => {
+    const result = await updateDataUses({
+      monitorId,
+      dataUses,
+      urn: itemKey,
+    });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+    }
+  };
+
+  // TODO: uncomment with ENG-2391
   // Get logo URL: prefer vendor_logo_url, then try brandfetch, then use generic icon
-  const logoUrl = useMemo(() => {
-    // First priority: vendor logo URL from metadata (usually from brandfetch)
-    if (metadata?.vendor_logo_url) {
-      return metadata.vendor_logo_url;
-    }
+  // const logoUrl = useMemo(() => {
+  //   // First priority: vendor logo URL from metadata (usually from brandfetch)
+  //   if (metadata?.vendor_logo_url) {
+  //     return metadata.vendor_logo_url;
+  //   }
 
-    // Second priority: try to get logo from brandfetch using vendor_id or system name
-    const vendorId = item.vendor_id || systemName;
-    if (vendorId && vendorId !== "Uncategorized") {
-      try {
-        // Try to extract domain from vendor ID or system name
-        const domain = getDomain(vendorId);
-        if (domain) {
-          return getBrandIconUrl(domain, 36); // 18px * 2 for retina
-        }
-      } catch {
-        // If domain extraction fails, continue to fallback
-      }
-    }
+  //   // Second priority: try to get logo from brandfetch using vendor_id or system name
+  //   const vendorId = item.vendor_id || systemName;
+  //   if (vendorId && vendorId !== "Uncategorized") {
+  //     try {
+  //       // Try to extract domain from vendor ID or system name
+  //       const domain = getDomain(vendorId);
+  //       if (domain) {
+  //         return getBrandIconUrl(domain, 36); // 18px * 2 for retina
+  //       }
+  //     } catch {
+  //       // If domain extraction fails, continue to fallback
+  //     }
+  //   }
 
-    return undefined;
-  }, [metadata?.vendor_logo_url, item.vendor_id, systemName]);
+  //   return undefined;
+  // }, [metadata?.vendor_logo_url, item.vendor_id, systemName]);
 
   const handleClick = () => {
     if (url && onNavigate) {
       onNavigate(url);
+      return;
+    }
+    if (onSelect && itemKey) {
+      onSelect(itemKey, !selected);
     }
   };
 
@@ -128,13 +97,9 @@ export const InfrastructureSystemListItem = ({
 
   // Handle data use selection
   const handleSelectDataUse = (value: string) => {
-    if (onSelectDataUse) {
-      onSelectDataUse(value);
-    } else if (onSetDataUses && itemKey) {
-      const currentDataUses = item.preferred_data_uses ?? [];
-      if (!currentDataUses.includes(value)) {
-        onSetDataUses(itemKey, [...currentDataUses, value]);
-      }
+    const currentDataUses = item.preferred_data_uses ?? [];
+    if (!currentDataUses.includes(value)) {
+      handleUpdateDataUses([...currentDataUses, value]);
     }
   };
 
@@ -160,12 +125,13 @@ export const InfrastructureSystemListItem = ({
               onChange={(e) => handleCheckboxChange(e.target.checked)}
               onClick={(e) => e.stopPropagation()}
             />
-            <Avatar
+            {/* TODO: uncomment with ENG-2391 */}
+            {/* <Avatar
               size={18}
               src={logoUrl}
               icon={<Icons.Settings />}
               alt={systemName}
-            />
+            /> */}
           </Flex>
         }
         title={
@@ -173,11 +139,6 @@ export const InfrastructureSystemListItem = ({
             <Button type="text" size="small" onClick={handleClick}>
               <Text strong>{systemName}</Text>
             </Button>
-            {diffStatus && INFRASTRUCTURE_DIFF_STATUS_LABEL[diffStatus] && (
-              <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[diffStatus]}>
-                {INFRASTRUCTURE_DIFF_STATUS_LABEL[diffStatus]}
-              </Tag>
-            )}
           </Flex>
         }
         description={
@@ -193,13 +154,11 @@ export const InfrastructureSystemListItem = ({
               );
 
               const handleClose = () => {
-                if (onSetDataUses && itemKey) {
-                  const newDataUses =
-                    item.preferred_data_uses?.filter(
-                      (dataUse) => dataUse !== props.value,
-                    ) ?? [];
-                  onSetDataUses(itemKey, newDataUses);
-                }
+                const newDataUses =
+                  item.preferred_data_uses?.filter(
+                    (dataUse) => dataUse !== props.value,
+                  ) ?? [];
+                handleUpdateDataUses(newDataUses);
               };
 
               return tagRender({

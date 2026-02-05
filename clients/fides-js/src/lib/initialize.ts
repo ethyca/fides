@@ -298,7 +298,8 @@ export const initialize = async ({
       );
 
       /**
-       * Apply calculated automated consent to experience defaults BEFORE updating cookie
+      /**
+       * Apply calculated automated consent to experience defaults and save to browser cookie
        */
       if (automatedApplied && fides.experience.privacy_notices) {
         // Update experience privacy_notices with calculated automated consent
@@ -319,6 +320,22 @@ export const initialize = async ({
           },
         );
         fidesDebugger("Applied automated consent to experience defaults");
+
+        // save the cookie to the browser prior to updating the experience
+        Object.assign(fides.cookie.fides_meta, {
+          consentMethod: automatedMethod,
+        });
+        // eslint-disable-next-line no-param-reassign
+        fides.cookie = {
+          ...fides.cookie,
+          consent: automatedNoticeConsent,
+        };
+        await saveFidesCookie(fides.cookie, options);
+
+        fidesDebugger(
+          "Saved automated consent to browser cookie",
+          fides.cookie,
+        );
       }
 
       /**
@@ -375,20 +392,6 @@ export const initialize = async ({
       );
       // eslint-disable-next-line no-param-reassign
       fides.cookie = updatedCookie;
-
-      // If automated consent was applied, save the cookie to the browser
-      if (automatedApplied) {
-        // Set the consentMethod on fides_meta before saving
-        Object.assign(fides.cookie.fides_meta, {
-          consentMethod: automatedMethod,
-        });
-
-        await saveFidesCookie(fides.cookie, options);
-        fidesDebugger(
-          "Saved automated consent to browser cookie",
-          fides.cookie,
-        );
-      }
 
       // Initialize the i18n singleton before we render the overlay
       const i18n = setupI18n();

@@ -1,5 +1,8 @@
 import { Flex, Form, Select } from "fidesui";
+import _ from "lodash";
 
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import SearchInput from "~/features/common/SearchInput";
 import { formatUser } from "~/features/common/utils";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
@@ -26,6 +29,8 @@ const MonitorListSearchForm = ({
 > & {
   availableMonitorTypes: readonly MONITOR_TYPES[];
 }) => {
+  const currentUser = useAppSelector(selectUser);
+
   const { data: eligibleUsersData, isLoading: isLoadingUserOptions } =
     useGetAllUsersQuery({
       page: 1,
@@ -34,24 +39,37 @@ const MonitorListSearchForm = ({
       exclude_approvers: true,
     });
 
-  const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
-    label: formatUser(user),
-    value: user.id,
-  }));
+  const dataStewardOptions = _.uniqBy(
+    [
+      ...(currentUser
+        ? [
+            {
+              label: "Assigned to me",
+              value: currentUser.id,
+            },
+          ]
+        : []),
+      ...(eligibleUsersData?.items || []).map((user) => ({
+        label: formatUser(user),
+        value: user.id,
+      })),
+    ],
+    "value",
+  );
 
   return (
     <Form
       form={form}
       {...formProps}
       layout="inline"
-      className="flex grow gap-4"
+      className="flex grow gap-2"
     >
       <Flex className="grow justify-between self-stretch">
         <Form.Item name="search" className="self-end">
           <SearchInput />
         </Form.Item>
       </Flex>
-      <Form.Item name="monitor_type" className="self-end">
+      <Form.Item name="monitor_type" className="!me-0 self-end">
         <Select
           options={availableMonitorTypes.map((monitorType) => ({
             value: monitorType,
@@ -64,7 +82,7 @@ const MonitorListSearchForm = ({
           aria-label="Filter by monitor type"
         />
       </Form.Item>
-      <Form.Item name="steward_key" className="self-end">
+      <Form.Item name="steward_key" className="!me-0 self-end">
         <Select
           options={dataStewardOptions}
           loading={isLoadingUserOptions}

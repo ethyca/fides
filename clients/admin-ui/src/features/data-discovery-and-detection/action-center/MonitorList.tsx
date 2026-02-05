@@ -1,3 +1,4 @@
+import { skipToken } from "@reduxjs/toolkit/query";
 import {
   Flex,
   Icons,
@@ -18,6 +19,7 @@ import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/act
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { useGetUserMonitorsQuery } from "~/features/user-management";
 
 import MonitorListSearchForm from "./forms/MonitorListSearchForm";
 import { SearchFormQueryState } from "./MonitorList.const";
@@ -42,13 +44,23 @@ const MonitorList = () => {
 
   const currentUser = useAppSelector(selectUser);
 
+  const { data: userMonitors } = useGetUserMonitorsQuery(
+    currentUser?.id
+      ? {
+          id: currentUser.id,
+        }
+      : skipToken,
+  );
+
+  const defaultStewardFilter =
+    (userMonitors ?? []).length > 0 ? currentUser?.id : undefined;
   const { requestData, ...formProps } = useSearchForm({
     queryState: SearchFormQueryState(
       [...availableMonitorTypes],
-      currentUser?.isRootUser ? undefined : currentUser?.id,
+      defaultStewardFilter,
     ),
     initialValues: {
-      steward_key: currentUser?.isRootUser ? null : (currentUser?.id ?? null),
+      steward_key: defaultStewardFilter,
     },
     translate: ({
       steward_key,

@@ -15,8 +15,8 @@ import { useCallback, useMemo } from "react";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 
 import { InfrastructureSystemListItem } from "../components/InfrastructureSystemListItem";
+import { InfrastructureSystemsFilters } from "../components/InfrastructureSystemsFilters";
 import { InfrastructureSystemBulkActionType } from "../constants";
-import { InfrastructureSystemsFilters } from "../fields/InfrastructureSystemsFilters";
 import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 import { useDiscoveredInfrastructureSystemsTable } from "../hooks/useDiscoveredInfrastructureSystemsTable";
@@ -54,8 +54,32 @@ export const DiscoveredInfrastructureSystemsTable = ({
     dataUsesFilters: infrastructureSystemsFilters.dataUsesFilters,
   });
 
+  // Build filters object for selection hook
+  const filters = useMemo(
+    () => ({
+      search: searchQuery || undefined,
+      diff_status: infrastructureSystemsFilters.statusFilters?.length
+        ? (infrastructureSystemsFilters.statusFilters as any)
+        : undefined,
+      vendor_id: infrastructureSystemsFilters.vendorFilters?.length
+        ? infrastructureSystemsFilters.vendorFilters
+        : undefined,
+      data_uses: infrastructureSystemsFilters.dataUsesFilters?.length
+        ? infrastructureSystemsFilters.dataUsesFilters
+        : undefined,
+    }),
+    [
+      searchQuery,
+      infrastructureSystemsFilters.statusFilters,
+      infrastructureSystemsFilters.vendorFilters,
+      infrastructureSystemsFilters.dataUsesFilters,
+    ],
+  );
+
   const {
     selectedItems,
+    excludedUrns,
+    selectionMode,
     hasSelectedRows,
     selectedRowsCount,
     isAllSelected,
@@ -67,12 +91,13 @@ export const DiscoveredInfrastructureSystemsTable = ({
   } = useInfrastructureSystemsSelection({
     items: data?.items,
     getRecordKey,
+    totalCount: data?.total,
+    filters,
   });
 
   const { handleBulkAction, isBulkActionInProgress } =
     useInfrastructureSystemsBulkActions({
       monitorId,
-      getRecordKey,
       onSuccess: () => {
         clearSelection();
         refetch();
@@ -84,9 +109,21 @@ export const DiscoveredInfrastructureSystemsTable = ({
 
   const handleBulkActionWithSelectedItems = useCallback(
     (action: InfrastructureSystemBulkActionType) => {
-      handleBulkAction(action, selectedItems);
+      if (selectionMode === "all") {
+        // excludedUrns already contains all URNs that should be excluded
+        handleBulkAction(action, {
+          mode: "all",
+          filters,
+          excludeUrns: excludedUrns,
+        });
+      } else {
+        handleBulkAction(action, {
+          mode: "explicit",
+          selectedItems,
+        });
+      }
     },
-    [handleBulkAction, selectedItems],
+    [handleBulkAction, selectedItems, selectionMode, excludedUrns, filters],
   );
 
   const bulkActionsMenuItems = useMemo(
@@ -106,8 +143,8 @@ export const DiscoveredInfrastructureSystemsTable = ({
   );
 
   return (
-    <Flex vertical gap="middle" className="h-full">
-      <Flex justify="space-between">
+    <Flex vertical gap="middle" className="h-full overflow-hidden">
+      <Flex justify="space-between" gap="middle">
         <Flex gap="small">
           <DebouncedSearchInput
             value={searchQuery}
@@ -150,37 +187,52 @@ export const DiscoveredInfrastructureSystemsTable = ({
           indeterminate={isIndeterminate}
           onChange={(e) => handleSelectAll(e.target.checked)}
           title="Select all"
-        />
-        <span className="ml-2">Select all</span>
+        >
+          Select all
+        </Checkbox>
         {selectedRowsCount > 0 && (
-          <Text strong>{selectedRowsCount.toLocaleString()} selected</Text>
+          <Text strong>
+            {selectedRowsCount.toLocaleString()}
+            {selectionMode === "all" &&
+            data?.total &&
+            selectedRowsCount < data.total
+              ? ` of ${data.total.toLocaleString()}`
+              : ""}{" "}
+            selected
+          </Text>
         )}
       </Flex>
-      <List
-        dataSource={data?.items}
-        loading={isLoading}
-        className="h-full overflow-y-scroll"
-        locale={{
-          emptyText: (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="All caught up!"
+      <Flex flex={1} style={{ minHeight: 0, overflow: "hidden" }}>
+        <List
+          dataSource={data?.items}
+          loading={isLoading}
+          className="size-full overflow-y-auto overflow-x-clip"
+          locale={{
+            emptyText: (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="All caught up!"
+              />
+            ),
+          }}
+          renderItem={(item) => (
+            <InfrastructureSystemListItem
+              item={item}
+              selected={isItemSelected(item)}
+              onSelect={(key, selected) => {
+                // Use getRecordKey to ensure consistent key matching
+                const recordKey = getRecordKey(item);
+                handleSelectItem(recordKey, selected);
+              }}
+              rowClickUrl={rowClickUrl}
+              monitorId={monitorId}
+              activeTab={activeTab as ActionCenterTabHash | null}
+              allowIgnore={allowIgnore}
+              onPromoteSuccess={refetch}
             />
-          ),
-        }}
-        renderItem={(item) => (
-          <InfrastructureSystemListItem
-            item={item}
-            selected={isItemSelected(item)}
-            onSelect={handleSelectItem}
-            rowClickUrl={rowClickUrl}
-            monitorId={monitorId}
-            activeTab={activeTab as ActionCenterTabHash | null}
-            allowIgnore={allowIgnore}
-            onPromoteSuccess={refetch}
-          />
-        )}
-      />
+          )}
+        />
+      </Flex>
       <Pagination
         {...paginationProps}
         total={data?.total || 0}

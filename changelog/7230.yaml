@@ -1,4 +1,0 @@
-type: Changed
-description: Rewrote BaseHTTPMiddleware-based middlewares as pure ASGI middlewares for improved performance
-pr: 7230
-labels: ["high-risk"]

@@ -1,4 +1,0 @@
-type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Updated infrastructure monitor form to not show classification options, use a password input for the key, and use consistent wording.
-pr: 7240 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

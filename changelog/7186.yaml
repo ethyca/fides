@@ -1,4 +1,0 @@
-type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Added a monitor type fitler to the root action center.
-pr: 7186
-labels: [] # Optional: ["high-risk", "db-migration"]

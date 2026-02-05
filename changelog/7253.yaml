@@ -1,0 +1,4 @@
+type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Added a Policy Condition Evaluator.
+pr: 7253 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
