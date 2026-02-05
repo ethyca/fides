@@ -75,17 +75,19 @@ const CustomTaxonomyEditDrawer = ({
       onClose={onClose}
       destroyOnHidden
       footer={
-        <Flex justify="space-between" className="w-full">
-          {isCustom && <Button onClick={onDelete}>Delete</Button>}
-          <Button
-            type="primary"
-            htmlType="submit"
-            form={FORM_ID}
-            loading={isUpdating}
-          >
-            Save
-          </Button>
-        </Flex>
+        isCustom && (
+          <Flex justify="space-between" className="w-full">
+            <Button onClick={onDelete}>Delete</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              form={FORM_ID}
+              loading={isUpdating}
+            >
+              Save
+            </Button>
+          </Flex>
+        )
       }
     >
       <Tabs
