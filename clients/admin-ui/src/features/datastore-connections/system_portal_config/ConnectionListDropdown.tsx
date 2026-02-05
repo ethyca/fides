@@ -294,6 +294,13 @@ const ConnectionListDropdown = ({
                   >
                     {key}
                   </Text>
+                  {option.value.is_custom && (
+                    <Tooltip title="Custom integration" placement="top">
+                      <Box as="span" ml={2} cursor="pointer">
+                        🛠️
+                      </Box>
+                    </Tooltip>
+                  )}
                 </MenuItem>
               </Tooltip>
             ))}
