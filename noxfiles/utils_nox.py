@@ -53,10 +53,11 @@ def teardown(session: nox.Session, volumes: bool = False, images: bool = False) 
 
 
 def install_requirements(session: nox.Session, include_optional: bool = False) -> None:
-    session.install("-r", "requirements.txt")
-    session.install("-r", "dev-requirements.txt")
+    """Install project with dev dependencies; optionally include mssql/all extras."""
     if include_optional:
-        session.install("-r", "optional-requirements.txt")
+        session.install("-e", ".[dev,all]")
+    else:
+        session.install("-e", ".[dev]")
 
 
 @nox.session()

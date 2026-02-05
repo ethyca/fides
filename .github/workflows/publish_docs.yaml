@@ -20,23 +20,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
       - name: Echo the Release Tag
         run: echo ${{ env.TAG }}
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Install Docs Requirements
-        run: pip install -r docs/fides/requirements.txt
-
-      - name: Install fides
-        run: pip install -e ./[all]
+      - name: Install fides and docs dependencies
+        run: uv sync --extra dev --extra all && uv pip install -r docs/fides/requirements.txt
 
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1

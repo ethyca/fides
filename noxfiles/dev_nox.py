@@ -194,7 +194,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     install_requirements(session)
     session.install("-e", ".", "--no-deps")
     session.run("fides", "--version")
-    timestamps.append({"time": time.monotonic(), "label": "pip install"})
+    timestamps.append({"time": time.monotonic(), "label": "uv install"})
 
     # Configure the args for 'fides deploy up' for testing
     env_file_path = Path(__file__, "../../.env").resolve()

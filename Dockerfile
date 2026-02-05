@@ -9,6 +9,7 @@ FROM python:${PYTHON_VERSION}-slim-bookworm AS compile_image
 # Install auxiliary software
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    curl \
     g++ \
     git \
     gnupg \
@@ -31,20 +32,13 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Activate a Python venv
-RUN python3 -m venv /opt/fides
-ENV PATH="/opt/fides/bin:${PATH}"
-
-# Install Python Dependencies
-RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY optional-requirements.txt .
-RUN pip install --no-cache-dir -r optional-requirements.txt
-
-COPY dev-requirements.txt .
-RUN pip install --no-cache-dir -r dev-requirements.txt
+# Install uv (standalone) and sync dependencies from pyproject.toml (no project, no dev, with optional [all])
+WORKDIR /build
+ENV UV_COMPILE_BYTECODE=0
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /bin/uv
+COPY pyproject.toml README.md ./
+RUN uv sync --no-install-project --no-dev --extra all
 
 ##################
 ## Backend Base ##
@@ -66,8 +60,9 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Loads compiled requirements and adds the to the path
-COPY --from=compile_image /opt/fides /opt/fides
+# Load compiled venv and uv binary from compile stage
+COPY --from=compile_image /build/.venv /opt/fides
+COPY --from=compile_image /bin/uv /bin/uv
 ENV PATH=/opt/fides/bin:$PATH
 
 # General Application Setup ##
@@ -88,8 +83,11 @@ RUN git rm --cached -r .
 # This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
 RUN git config --global --add safe.directory /fides
 
-# Export the version to a file for frontend use
-RUN python -c "import versioneer, json; print(json.dumps({'version': versioneer.get_version()}))" > /fides/version.json
+# Export the version to a file for frontend use (hatch-vcs from git tags)
+RUN uv venv /tmp/hatch-env && \
+    uv pip install --python /tmp/hatch-env/bin/python hatch hatch-vcs && \
+    cd /fides && /tmp/hatch-env/bin/hatch version > /fides/version.txt && \
+    /opt/fides/bin/python -c "import json; v=open('/fides/version.txt').read().strip(); print(json.dumps({'version': v}))" > /fides/version.json && rm /fides/version.txt && rm -rf /tmp/hatch-env
 
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
@@ -104,7 +102,7 @@ FROM backend AS dev
 
 USER root
 
-RUN pip install -e . --no-deps
+RUN uv pip install --python /opt/fides/bin/python -e . --no-deps
 
 USER fidesuser
 
@@ -171,13 +169,9 @@ FROM backend AS prod
 # Copy frontend build over
 COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
 USER root
-# Install without a symlink
-RUN pip install --no-cache-dir setuptools wheel
-RUN pip install --no-cache-dir --upgrade packaging
-RUN python setup.py sdist
-
-# USER root commented out for debugging
-RUN pip install dist/ethyca_fides-*.tar.gz
+# Build sdist with uv and install
+RUN cd /fides && uv build --sdist && \
+    uv pip install --python /opt/fides/bin/python dist/ethyca_fides-*.tar.gz
 
 # Remove this directory to prevent issues with catch all
 RUN rm -r /fides/src/fides/ui-build

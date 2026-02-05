@@ -34,9 +34,7 @@ jobs:
             backend:
               - '**/*.py'
               - '**/*.pxl'
-              - '**/*requirements.txt'
               - 'pyproject.toml'
-              - 'setup.cfg'
               - 'noxfile.py'
               - '.github/workflows/static_checks.yml'
 
@@ -66,14 +64,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -82,9 +84,6 @@ jobs:
           key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.session_name }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.session_name }}
-
-      - name: Install Dev Requirements
-        run: pip install -r dev-requirements.txt
 
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}

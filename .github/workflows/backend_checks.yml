@@ -43,11 +43,9 @@ jobs:
             backend:
               - '**/*.py'
               - '**/*.pxl'
-              - '**/*requirements.txt'
               - 'Dockerfile'
               - 'Makefile'
               - 'pyproject.toml'
-              - 'setup.cfg'
               - 'noxfile.py'
               - 'data/**'
               - '.github/workflows/backend_checks.yml'
@@ -64,14 +62,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -137,11 +139,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
       - name: Install Rust/Cargo
         run: curl -y https://sh.rustup.rs -sSf | sh
@@ -149,8 +155,8 @@ jobs:
       - name: Install Drill
         run: cargo install drill
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -197,14 +203,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -251,14 +261,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -304,14 +318,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -377,14 +395,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -440,14 +462,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -508,14 +534,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
@@ -622,14 +652,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: uv sync --extra dev
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4

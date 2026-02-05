@@ -112,7 +112,6 @@ def xenon(session: nox.Session) -> None:
         "--max-modules=B",
         "--max-average=A",
         "--ignore=data,docs",
-        "--exclude=src/fides/_version.py",
     )
     session.run(*command, success_codes=[0, 1])
     session.warn(
@@ -451,13 +450,8 @@ def pytest(session: nox.Session, test_group: str) -> None:
 )
 def python_build(session: nox.Session, dist: str) -> None:
     "Build the Python distribution."
-    session.run(
-        *RUN_NO_DEPS,
-        "python",
-        "setup.py",
-        dist,
-        external=True,
-    )
+    build_arg = "--sdist" if dist == "sdist" else "--wheel"
+    session.run(*RUN_NO_DEPS, "uv", "build", build_arg, external=True)
 
 
 @nox_session()
