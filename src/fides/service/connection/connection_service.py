@@ -692,6 +692,24 @@ class ConnectionService:
             else None
         )
 
+        # Get endpoint resources and preserve monitored collections in the dataset
+        # This runs regardless of whether there's an existing customer dataset
+        monitored_endpoints = get_endpoint_resources(self.db, connection_config)
+        if monitored_endpoints:
+            # Get monitor config IDs for this connection
+            monitor_configs = MonitorConfig.filter(
+                db=self.db,
+                conditions=(MonitorConfig.connection_config_id == connection_config.id),
+            ).all()
+            monitor_config_ids = [mc.key for mc in monitor_configs]
+
+            upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
+                monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
+            )
+            normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
+            if normalized_upcoming is not None:
+                upcoming_dataset = normalized_upcoming
+
         final_dataset = upcoming_dataset
         if customer_dataset_config and customer_dataset_config.ctl_dataset:
             # Get the existing dataset structure
@@ -705,25 +723,6 @@ class ConnectionService:
                 "collections": ctl_dataset.collections,
                 "fides_meta": ctl_dataset.fides_meta,
             }
-
-            # Get endpoint resources and preserve collections from customer dataset
-            monitored_endpoints = get_endpoint_resources(self.db, connection_config)
-            if monitored_endpoints:
-                # Get monitor config IDs for this connection
-                monitor_configs = MonitorConfig.filter(
-                    db=self.db,
-                    conditions=(
-                        MonitorConfig.connection_config_id == connection_config.id
-                    ),
-                ).all()
-                monitor_config_ids = [mc.key for mc in monitor_configs]
-
-                upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
-                    monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
-                )
-                normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
-                if normalized_upcoming is not None:
-                    upcoming_dataset = normalized_upcoming
 
             if stored_dataset_template and isinstance(
                 stored_dataset_template.dataset_json, dict
@@ -763,6 +762,36 @@ class ConnectionService:
         }
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config
+
+    def delete_datasets_for_connector_type(self, connector_type: str) -> None:
+        """
+        Deletes all DatasetConfigs (and their associated CTL datasets) for
+        connection configs that use the specified connector type.
+
+        This is useful when switching from a custom template to a file template
+        to avoid merging custom modifications with the official template.
+        """
+        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
+            db=self.db,
+            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+        ).all()
+
+        for connection_config in connection_configs:
+            dataset_configs = DatasetConfig.filter(
+                db=self.db,
+                conditions=(DatasetConfig.connection_config_id == connection_config.id),
+            ).all()
+
+            for dataset_config in dataset_configs:
+                ctl_dataset = dataset_config.ctl_dataset
+                logger.info(
+                    "Deleting DatasetConfig '{}' for connection config '{}'",
+                    dataset_config.fides_key,
+                    connection_config.key,
+                )
+                dataset_config.delete(self.db)
+                if ctl_dataset:
+                    ctl_dataset.delete(db=self.db)
 
     def update_existing_connection_configs_for_connector_type(
         self, connector_type: str, template: ConnectorTemplate

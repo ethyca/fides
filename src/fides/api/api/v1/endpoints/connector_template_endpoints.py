@@ -14,6 +14,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.saas.connector_template import (
     ConnectorTemplate,
@@ -25,6 +26,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     FileConnectorTemplateLoader,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.saas_util import load_dataset_from_string
 from fides.common.api.scope_registry import (
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -79,18 +81,30 @@ def register_connector_template(
     The endpoint performs the following steps:
     1. Validates the uploaded file is a proper zip file.
     2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.
+    3. Updates any existing connection configs that use this connector type.
 
     If the uploaded file is not a valid zip file or there are any validation errors
     when creating the ConnectorTemplates an HTTP 400 status code with error details is returned.
     """
     try:
         with ZipFile(BytesIO(file), "r") as zip_file:
-            CustomConnectorTemplateLoader.save_template(db=db, zip_file=zip_file)
+            connector_type = CustomConnectorTemplateLoader.save_template(
+                db=db, zip_file=zip_file
+            )
     except BadZipFile:
         raise HTTPException(status_code=400, detail="Invalid zip file")
     except Exception as exc:
         logger.exception("Error loading connector template from zip file.")
         raise HTTPException(status_code=400, detail=str(exc))
+
+    # Update any existing connection configs that use this connector type
+    connector_template = ConnectorRegistry.get_connector_template(connector_type)
+    if connector_template:
+        event_audit_service = EventAuditService(db)
+        connection_service = ConnectionService(db, event_audit_service)
+        connection_service.update_existing_connection_configs_for_connector_type(
+            connector_type, connector_template
+        )
 
     return JSONResponse(
         content={"message": "Connector template successfully registered."}
@@ -253,8 +267,33 @@ def _delete_custom_template(db: Session, saas_connector_type: str) -> None:
         )
 
     try:
+        # Update the SaasTemplateDataset to use the file template's dataset
+        file_template_dataset_json = load_dataset_from_string(
+            file_connector_template.dataset
+        )
+        stored_template_dataset = SaasTemplateDataset.get_by(
+            db=db, field="connection_type", value=saas_connector_type
+        )
+        if stored_template_dataset:
+            stored_template_dataset.update(
+                db=db, data={"dataset_json": file_template_dataset_json}
+            )
+        else:
+            SaasTemplateDataset.create(
+                db=db,
+                data={
+                    "connection_type": saas_connector_type,
+                    "dataset_json": file_template_dataset_json,
+                },
+            )
+
+        # Delete existing datasets to avoid merging custom template modifications
+        # with the official file template
         event_audit_service = EventAuditService(db)
         connection_service = ConnectionService(db, event_audit_service)
+        connection_service.delete_datasets_for_connector_type(saas_connector_type)
+
+        # Update existing connection configs to use the file template
         connection_service.update_existing_connection_configs_for_connector_type(
             saas_connector_type, file_connector_template
         )

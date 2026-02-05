@@ -8,6 +8,7 @@ from starlette.testclient import TestClient
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
@@ -895,6 +896,27 @@ class TestDeleteCustomConnectorTemplate:
         assert template is not None
         assert template.is_custom is False
         assert template.default_connector_available is False
+
+        # 5b. Verify the SaasTemplateDataset exists and has the file template's dataset
+        stored_template_dataset = SaasTemplateDataset.get_by(
+            db=db, field="connection_type", value=connector_type
+        )
+        assert stored_template_dataset is not None
+        assert stored_template_dataset.dataset_json is not None
+        # The stored dataset should have the template placeholder fides_key
+        # (SaasTemplateDataset stores the raw template with placeholders for merging/comparison)
+        assert (
+            stored_template_dataset.dataset_json["fides_key"] == "<instance_fides_key>"
+        )
+
+        # 5c. Verify the DatasetConfig was recreated with the file template's dataset
+        new_dataset_config = DatasetConfig.filter(
+            db=db, conditions=(DatasetConfig.fides_key == instance_key)
+        ).first()
+        assert new_dataset_config is not None
+        assert new_dataset_config.ctl_dataset is not None
+        # The dataset should have been recreated with the instance key as fides_key
+        assert new_dataset_config.ctl_dataset.fides_key == instance_key
 
         # 6. Verify the connection was updated to use the file template
         # Refresh the connection config from the database
