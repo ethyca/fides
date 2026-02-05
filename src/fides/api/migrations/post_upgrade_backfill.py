@@ -23,6 +23,9 @@ from fides.api.db.session import get_db_session
 from fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf import (
     backfill_stagedresource_is_leaf,
 )
+from fides.api.migrations.backfill_scripts.backfill_stagedresrouceancestor_distance import (
+    backfill_stagedresourceancestor_distance,
+)
 from fides.api.migrations.backfill_scripts.utils import (
     BACKFILL_LOCK_KEY,
     BATCH_DELAY_SECONDS,
@@ -75,6 +78,9 @@ def run_all_backfills(
 
     # Backfill is_leaf column (added in migration 81d2400b16ab)
     results.append(backfill_stagedresource_is_leaf(db, batch_size, batch_delay_seconds, lock=lock))
+
+    # Backfill distance column (added in migration 7bf63ecd48c2)
+    results.append(backfill_stagedresourceancestor_distance(db, batch_size, batch_delay_seconds, lock=lock))
 
     # Add future backfills here:
     # results.append(backfill_some_other_column(db, batch_size, batch_delay_seconds, lock=lock))
