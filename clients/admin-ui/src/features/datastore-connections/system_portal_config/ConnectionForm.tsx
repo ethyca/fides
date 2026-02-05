@@ -158,7 +158,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           onClose={deleteTemplateModal.onClose}
           onConfirm={handleDeleteCustomIntegration}
           title="Delete custom integration"
-          message="Deleting this custom integration will update all connection configs that use it by falling back to the Fides-provided template. Are you sure you want to proceed?"
+          message="Deleting this custom integration will update all connections that use it by falling back to the Fides-provided template. Are you sure you want to proceed?"
           cancelButtonText="No"
           continueButtonText="Yes"
           isLoading={isDeleting}
