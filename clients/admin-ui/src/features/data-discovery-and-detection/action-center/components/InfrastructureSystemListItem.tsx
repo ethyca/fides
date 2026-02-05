@@ -84,6 +84,10 @@ export const InfrastructureSystemListItem = ({
   const handleClick = () => {
     if (url && onNavigate) {
       onNavigate(url);
+      return;
+    }
+    if (onSelect && itemKey) {
+      onSelect(itemKey, !selected);
     }
   };
 
