@@ -49,7 +49,7 @@ class AttachmentService:
             )
         return self.db
 
-    def get_by_id(self, attachment_id: str) -> Optional[Attachment]:
+    def get_attachment(self, attachment_id: str) -> Optional[Attachment]:
         """Get an attachment by ID.
 
         Args:
