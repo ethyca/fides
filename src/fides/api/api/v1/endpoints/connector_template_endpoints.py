@@ -14,6 +14,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.saas.connector_template import (
     ConnectorTemplate,
@@ -22,8 +23,10 @@ from fides.api.schemas.saas.connector_template import (
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.saas_util import load_dataset_from_string
 from fides.common.api.scope_registry import (
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
