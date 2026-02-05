@@ -176,6 +176,7 @@ dev = [
 
 [project.scripts]
 fides = "fides.cli:cli"
+webserver = "fides.api.main:start_webserver"
 
 [tool.hatch.version]
 source = "vcs"
