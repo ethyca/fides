@@ -88,4 +88,4 @@ jobs:
       - name: Validate changelog entries
         if: success()
         run: |
-          nox -s "changelog(validate)" -- --files "${{ steps.check-changelog-files.outputs.changelog_files }}"
+          uv run nox -s "changelog(validate)" -- --files "${{ steps.check-changelog-files.outputs.changelog_files }}"

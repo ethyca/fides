@@ -86,7 +86,7 @@ jobs:
             ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.session_name }}
 
       - name: Run Static Check
-        run: nox -s ${{ matrix.session_name }}
+        run: uv run nox -s ${{ matrix.session_name }}
 
 
 

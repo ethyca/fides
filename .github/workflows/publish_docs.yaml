@@ -40,7 +40,7 @@ jobs:
         run: git fetch origin gh-pages --depth=1
 
       - name: Build docs
-        run: nox -s generate_docs
+        run: uv run nox -s generate_docs
 
       # This is required by "mike"
       - name: Set the Git Username & Email

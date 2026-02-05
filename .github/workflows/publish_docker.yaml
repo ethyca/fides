@@ -102,7 +102,7 @@ jobs:
         env:
           DOCKER_PLATFORMS: linux/${{ matrix.arch }}
           IMAGE_SUFFIX: -${{ matrix.arch }}
-        run: nox -s "push(${{ matrix.application }},dev)"
+        run: uv run nox -s "push(${{ matrix.application }},dev)"
 
       # if a prod git tag, then we run the prod job to publish images tagged with the version number and a constant ":latest" tag
       # prod pushes a versioned image, git-tagged images not needed
@@ -111,7 +111,7 @@ jobs:
         env:
           DOCKER_PLATFORMS: linux/${{ matrix.arch }}
           IMAGE_SUFFIX: -${{ matrix.arch }}
-        run: nox -s "push(${{ matrix.application }},prod)"
+        run: uv run nox -s "push(${{ matrix.application }},prod)"
 
       # if an RC git tag, then we run the rc job to publish images with an ":rc" tag
       # git-tagged images are also pushed
@@ -120,7 +120,7 @@ jobs:
         env:
           DOCKER_PLATFORMS: linux/${{ matrix.arch }}
           IMAGE_SUFFIX: -${{ matrix.arch }}
-        run: nox -s "push(${{ matrix.application }},rc)" -- git_tag
+        run: uv run nox -s "push(${{ matrix.application }},rc)" -- git_tag
 
       # if an alpha or beta git tag, then we run the prerelease job to publish images with an ":prerelease" tag
       # git-tagged images are also pushed
@@ -129,7 +129,7 @@ jobs:
         env:
           DOCKER_PLATFORMS: linux/${{ matrix.arch }}
           IMAGE_SUFFIX: -${{ matrix.arch }}
-        run: nox -s "push(${{ matrix.application }},prerelease)" -- git_tag
+        run: uv run nox -s "push(${{ matrix.application }},prerelease)" -- git_tag
 
   CreateManifests:
     needs: [Push, ParseTags]

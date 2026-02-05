@@ -84,7 +84,7 @@ jobs:
             ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Run Static Check
-        run: nox -s collect_tests
+        run: uv run nox -s collect_tests
 
   Build:
     needs: [Check-Backend-Changes, Collect-Tests]
@@ -173,7 +173,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run Performance Tests
-        run: nox -s performance_tests
+        run: uv run nox -s performance_tests
 
   #################
   ## Misc Checks ##
@@ -231,10 +231,10 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run Fides webserver startup check
-        run: nox -s check_container_startup
+        run: uv run nox -s check_container_startup
 
       - name: Run Celery worker startup check
-        run: nox -s check_worker_startup
+        run: uv run nox -s check_worker_startup
 
   Migration-Checks:
     needs: [Check-Backend-Changes, Check-Container-Startup]
@@ -289,7 +289,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run migration test
-        run: nox -s "${{ matrix.test_selection }}"
+        run: uv run nox -s "${{ matrix.test_selection }}"
 
   Misc-Tests:
     needs: [Check-Backend-Changes, Check-Container-Startup]
@@ -346,7 +346,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run test suite
-        run: nox -s "${{ matrix.test_selection }}"
+        run: uv run nox -s "${{ matrix.test_selection }}"
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
@@ -423,7 +423,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run test suite
-        run: nox -s "pytest(${{ matrix.test_selection }})"
+        run: uv run nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
@@ -510,7 +510,7 @@ jobs:
           SNOWFLAKE_FIDESCTL_PASSWORD: op://github-actions/ctl/SNOWFLAKE_FIDESCTL_PASSWORD
 
       - name: Run external test suite
-        run: nox -s "pytest(ctl-external)"
+        run: uv run nox -s "pytest(ctl-external)"
         env:
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
@@ -624,10 +624,10 @@ jobs:
           MONGODB_ATLAS_SSL_ENABLED: op://github-actions/mongodb-atlas/MONGODB_ATLAS_SSL_ENABLED
 
       - name: Integration Tests (Misc)
-        run: nox -s "pytest(misc-integration-external)"
+        run: uv run nox -s "pytest(misc-integration-external)"
 
       - name: Integration Tests (External)
-        run: nox -s "pytest(ops-external-datastores)"
+        run: uv run nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
     needs: [Check-Backend-Changes, Check-Container-Startup]
@@ -683,7 +683,7 @@ jobs:
         env:
           SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.SAAS_OP_SERVICE_ACCOUNT_TOKEN }}
           SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
-        run: nox -s "pytest(ops-saas)"
+        run: uv run nox -s "pytest(ops-saas)"
 
   # Summary job for branch protection - passes if all jobs pass or are skipped
   Backend-Checks-Summary:
