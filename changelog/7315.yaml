@@ -1,4 +1,0 @@
-type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Explicitly set USER environment variable to fidesuser
-pr: 7315
-labels: [] # Optional: ["high-risk", "db-migration"]
