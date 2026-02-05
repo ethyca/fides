@@ -10,7 +10,9 @@ from fides.api.db.seed import (
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.policy.conditional_dependency import PolicyCondition
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.policy import ActionType
+from fides.api.util.default_policy_config import DEFAULT_POLICY_CONFIG_KEY
 from fides.api.task.conditional_dependencies.policy_evaluation import (
     PolicyEvaluationError,
     PolicyEvaluator,
@@ -279,3 +281,122 @@ class TestPolicySpecificity:
         assert "Ambiguous policy match" in str(exc_info.value)
         assert "policy_a" in str(exc_info.value)
         assert "policy_b" in str(exc_info.value)
+
+
+
+@pytest.mark.usefixtures("seed_data")
+class TestCustomDefaultPolicy:
+    """Test custom default policy configuration via ApplicationConfig."""
+
+    def test_uses_custom_default_when_configured(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
+        """Uses custom default policy when configured in ApplicationConfig."""
+        # Create a custom policy to use as default
+        custom_policy = _create_policy_with_rule(db, "custom_access_policy", ActionType.access)
+
+        # Configure it as the custom default
+        ApplicationConfig.update_api_set(
+            db,
+            {DEFAULT_POLICY_CONFIG_KEY: {ActionType.access.value: custom_policy.key}},
+            merge_updates=True,
+        )
+
+        # Request that doesn't match any conditions
+        pr = _create_request("XX")  # Non-matching location
+
+        result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
+
+        assert result.policy.key == custom_policy.key
+        assert result.is_default
+
+    def test_falls_back_to_system_default_when_no_custom_configured(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
+        """Falls back to system default when no custom default is configured."""
+        # Ensure no custom default is configured
+        ApplicationConfig.update_api_set(
+            db,
+            {DEFAULT_POLICY_CONFIG_KEY: {}},
+            merge_updates=True,
+        )
+
+        pr = _create_request("XX")
+
+        result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
+
+        assert result.policy.key == DEFAULT_ACCESS_POLICY
+        assert result.is_default
+
+    def test_falls_back_to_system_default_when_custom_policy_deleted(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
+        """Falls back to system default when configured custom default policy is deleted."""
+        # Configure a non-existent policy as custom default
+        ApplicationConfig.update_api_set(
+            db,
+            {DEFAULT_POLICY_CONFIG_KEY: {ActionType.access.value: "deleted_policy"}},
+            merge_updates=True,
+        )
+
+        pr = _create_request("XX")
+
+        # Should fall back to system default, not raise an error
+        result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
+
+        assert result.policy.key == DEFAULT_ACCESS_POLICY
+        assert result.is_default
+
+    def test_falls_back_to_system_default_when_custom_policy_has_wrong_action_type(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
+        """Falls back to system default when custom default doesn't have rules for the action type."""
+        # Create a policy with only erasure rules
+        erasure_only_policy = _create_policy_with_rule(
+            db, "erasure_only_policy", ActionType.erasure
+        )
+
+        # Configure it as the access default (mismatch)
+        ApplicationConfig.update_api_set(
+            db,
+            {DEFAULT_POLICY_CONFIG_KEY: {ActionType.access.value: erasure_only_policy.key}},
+            merge_updates=True,
+        )
+
+        pr = _create_request("XX")
+
+        # Should fall back to system default since policy doesn't have access rules
+        result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
+
+        assert result.policy.key == DEFAULT_ACCESS_POLICY
+        assert result.is_default
+
+    def test_custom_defaults_per_action_type(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
+        """Each action type can have its own custom default."""
+        custom_access = _create_policy_with_rule(db, "custom_access", ActionType.access)
+        custom_erasure = _create_policy_with_rule(db, "custom_erasure", ActionType.erasure)
+
+        ApplicationConfig.update_api_set(
+            db,
+            {
+                DEFAULT_POLICY_CONFIG_KEY: {
+                    ActionType.access.value: custom_access.key,
+                    ActionType.erasure.value: custom_erasure.key,
+                    # consent not configured - should use system default
+                }
+            },
+            merge_updates=True,
+        )
+
+        pr = _create_request("XX")
+
+        access_result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
+        assert access_result.policy.key == custom_access.key
+
+        erasure_result = evaluator.evaluate_policy_conditions(pr, ActionType.erasure)
+        assert erasure_result.policy.key == custom_erasure.key
+
+        consent_result = evaluator.evaluate_policy_conditions(pr, ActionType.consent)
+        assert consent_result.policy.key == DEFAULT_CONSENT_POLICY  # System default

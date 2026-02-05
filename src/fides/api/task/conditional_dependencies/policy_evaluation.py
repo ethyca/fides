@@ -8,6 +8,7 @@ from fides.api.db.seed import (
     DEFAULT_CONSENT_POLICY,
     DEFAULT_ERASURE_POLICY,
 )
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.conditional_dependency.conditional_dependency_base import (
     ConditionTypeAdapter,
 )
@@ -28,6 +29,7 @@ from fides.api.task.conditional_dependencies.schemas import (
     PolicyEvaluationSpecificity,
 )
 from fides.api.task.conditional_dependencies.util import extract_field_addresses
+from fides.api.util.default_policy_config import DEFAULT_POLICY_CONFIG_KEY
 
 # Location hierarchy tiers for tiebreaking (higher = more specific)
 # if 2 policies have the same specificity, the one with the higher tier will be selected
@@ -92,12 +94,15 @@ class PolicyEvaluator:
     taking into account conditional logic defined in PolicyCondition records.
     """
 
-    # Map action types to their default policy keys
-    DEFAULT_POLICY_KEYS: dict[ActionType, str] = {
+    # Map action types to their system default policy keys (used as fallback)
+    SYSTEM_DEFAULT_POLICY_KEYS: dict[ActionType, str] = {
         ActionType.access: DEFAULT_ACCESS_POLICY,
         ActionType.erasure: DEFAULT_ERASURE_POLICY,
         ActionType.consent: DEFAULT_CONSENT_POLICY,
     }
+
+    # Keep legacy alias for backward compatibility
+    DEFAULT_POLICY_KEYS = SYSTEM_DEFAULT_POLICY_KEYS
 
     def __init__(self, db: Session):
         """Initialize the policy evaluator.
@@ -107,6 +112,21 @@ class PolicyEvaluator:
         """
         self.db = db
         self.condition_evaluator = ConditionEvaluator(db)
+
+    def _get_configured_default_policy_key(
+        self, action_type: ActionType
+    ) -> Optional[str]:
+        """Get the configured default policy key from ApplicationConfig.
+
+        Args:
+            action_type: Action type to get the default for
+
+        Returns:
+            Policy key if a custom default is configured, None otherwise
+        """
+        api_set = ApplicationConfig.get_api_set(self.db)
+        default_config = api_set.get(DEFAULT_POLICY_CONFIG_KEY, {})
+        return default_config.get(action_type.value)
 
     def evaluate_policy_conditions(
         self,
@@ -227,8 +247,10 @@ class PolicyEvaluator:
     def _get_default_policy(self, action_type: ActionType) -> PolicyEvaluationResult:
         """Get default policy for the given action type.
 
-        Finds the system default policy for the action type by querying
-        for the specific default policy key (e.g., "default_access_policy").
+        First checks for a custom default policy configured via the API.
+        If the custom default exists and is valid, uses it.
+        Falls back to the system default if no custom default is configured
+        or if the configured custom default policy no longer exists.
 
         Args:
             action_type: Action type to filter policies
@@ -237,23 +259,52 @@ class PolicyEvaluator:
             PolicyEvaluationResult with default policy
 
         Raises:
-            PolicyEvaluationError: If no default policy configured or found
+            PolicyEvaluationError: If no default policy found (neither custom nor system)
         """
-        # Get the default policy key for this action type
-        default_key = self.DEFAULT_POLICY_KEYS.get(action_type)
+        # First, check for a custom default policy
+        custom_default_key = self._get_configured_default_policy_key(action_type)
 
-        # Query for the specific default policy by key
+        if custom_default_key:
+            policy = Policy.get_by(self.db, field="key", value=custom_default_key)
+            if policy:
+                # Verify the policy still has rules for this action type
+                if policy.get_rules_for_action(action_type):
+                    logger.debug(
+                        f"Using custom default policy '{custom_default_key}' for action type {action_type}"
+                    )
+                    return PolicyEvaluationResult(
+                        policy=policy, evaluation_result=None, is_default=True
+                    )
+                else:
+                    logger.warning(
+                        f"Custom default policy '{custom_default_key}' no longer has rules "
+                        f"for action type {action_type}, falling back to system default"
+                    )
+            else:
+                logger.warning(
+                    f"Custom default policy '{custom_default_key}' not found, "
+                    f"falling back to system default"
+                )
+
+        # Fall back to system default policy
+        system_default_key = self.SYSTEM_DEFAULT_POLICY_KEYS.get(action_type)
+
         policy = (
-            Policy.get_by(self.db, field="key", value=default_key)
-            if default_key
+            Policy.get_by(self.db, field="key", value=system_default_key)
+            if system_default_key
             else None
         )
 
         if not policy:
             raise PolicyEvaluationError(
-                f"Default policy '{default_key}' not found for action type: {action_type}. "
+                f"Default policy not found for action type: {action_type}. "
+                f"No custom default is configured and system default '{system_default_key}' does not exist. "
                 f"Ensure the system has been properly seeded."
             )
+
+        logger.debug(
+            f"Using system default policy '{system_default_key}' for action type {action_type}"
+        )
 
         return PolicyEvaluationResult(
             policy=policy, evaluation_result=None, is_default=True
