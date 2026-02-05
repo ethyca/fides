@@ -102,8 +102,14 @@ class ExternalDataStorageService:
             provider.upload(bucket, storage_path, BytesIO(encrypted_data))
 
             # Create and return metadata
+            # storage_config.type is StorageType from SQLAlchemy Enum column
+            storage_type = (
+                storage_config.type
+                if isinstance(storage_config.type, StorageType)
+                else StorageType(storage_config.type)
+            )
             metadata = ExternalStorageMetadata(
-                storage_type=StorageType(storage_config.type.value),
+                storage_type=storage_type,
                 file_key=storage_path,
                 filesize=file_size,
                 storage_key=storage_config.key,

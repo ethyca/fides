@@ -11,7 +11,7 @@ from fides.api.models.attachment import AttachmentReferenceType
 from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
-    from fides.api.models.attachment import AttachmentReference
+    from fides.api.models.attachment import Attachment, AttachmentReference
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
 

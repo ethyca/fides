@@ -63,8 +63,10 @@ class StorageProviderFactory:
             config.key,
         )
 
+        # config.type is already StorageType from SQLAlchemy Enum column
+        storage_type = config.type if isinstance(config.type, StorageType) else StorageType(config.type)
         return StorageProviderFactory.create_from_type(
-            storage_type=config.type,
+            storage_type=storage_type,
             details=config.details or {},
             secrets=config.secrets,
         )

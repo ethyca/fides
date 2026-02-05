@@ -104,10 +104,13 @@ class AttachmentService:
         bucket_name = attachment.config.details.get(
             StorageDetails.BUCKET.value, "local"
         )
+        # Get storage type value safely for logging
+        storage_type = attachment.config.type
+        storage_type_str = storage_type.value if hasattr(storage_type, "value") else str(storage_type)
         logger.info(
             "Uploaded {} to {} storage at {}/{} (size: {})",
             attachment.file_name,
-            attachment.config.type.value,
+            storage_type_str,
             bucket_name,
             attachment.id,
             result.file_size,
@@ -187,15 +190,10 @@ class AttachmentService:
         Raises:
             Exception: If upload fails (after rolling back DB record).
         """
-        # Import here to avoid circular imports - Base.create is used
-        from fides.api.db.base_class import Base
-
         db = self._require_db()
 
-        # Create the attachment record using Base.create directly
-        attachment = Base.create.__func__(
-            Attachment, db=db, data=data, check_name=check_name
-        )
+        # Create the attachment record using Attachment.create
+        attachment = Attachment.create(db=db, data=data, check_name=check_name)
 
         try:
             self.upload(attachment, file_data)

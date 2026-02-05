@@ -7,11 +7,12 @@ compatibility while providing a unified interface.
 """
 
 from io import BytesIO
-from typing import IO, Any, Dict, Iterator, Optional
+from typing import IO, Any, Dict, Iterator, Optional, cast
 
 from botocore.exceptions import ClientError, ParamValidationError
 from loguru import logger
 
+from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.providers.base import (
     ObjectInfo,
     StorageProvider,
@@ -93,7 +94,7 @@ class S3StorageProvider(StorageProvider):
         logger.debug("S3StorageProvider.upload: bucket={}, key={}", bucket, key)
 
         file_size, presigned_url = generic_upload_to_s3(
-            storage_secrets=self._secrets,
+            storage_secrets=cast(Dict[StorageSecrets, Any], self._secrets),
             bucket_name=bucket,
             file_key=key,
             auth_method=self._auth_method,
@@ -102,7 +103,7 @@ class S3StorageProvider(StorageProvider):
 
         return UploadResult(
             file_size=file_size,
-            location=presigned_url,
+            location=str(presigned_url),
         )
 
     def download(self, bucket: str, key: str) -> IO[bytes]:
@@ -120,7 +121,7 @@ class S3StorageProvider(StorageProvider):
         logger.debug("S3StorageProvider.download: bucket={}, key={}", bucket, key)
 
         _, content = generic_retrieve_from_s3(
-            storage_secrets=self._secrets,
+            storage_secrets=cast(Dict[StorageSecrets, Any], self._secrets),
             bucket_name=bucket,
             file_key=key,
             auth_method=self._auth_method,
@@ -130,6 +131,9 @@ class S3StorageProvider(StorageProvider):
         # Ensure we return a file-like object
         if isinstance(content, bytes):
             return BytesIO(content)
+        if isinstance(content, str):
+            # Shouldn't happen with get_content=True, but handle for type safety
+            return BytesIO(content.encode("utf-8"))
         return content
 
     def delete(self, bucket: str, key: str) -> None:
@@ -144,7 +148,7 @@ class S3StorageProvider(StorageProvider):
         logger.debug("S3StorageProvider.delete: bucket={}, key={}", bucket, key)
 
         generic_delete_from_s3(
-            storage_secrets=self._secrets,
+            storage_secrets=cast(Dict[StorageSecrets, Any], self._secrets),
             bucket_name=bucket,
             file_key=key,
             auth_method=self._auth_method,
@@ -168,7 +172,7 @@ class S3StorageProvider(StorageProvider):
             prefix = f"{prefix}/"
 
         generic_delete_from_s3(
-            storage_secrets=self._secrets,
+            storage_secrets=cast(Dict[StorageSecrets, Any], self._secrets),
             bucket_name=bucket,
             file_key=prefix,
             auth_method=self._auth_method,
@@ -197,12 +201,16 @@ class S3StorageProvider(StorageProvider):
             ttl_seconds,
         )
 
-        s3_client = maybe_get_s3_client(self._auth_method, self._secrets)
-        return create_presigned_url_for_s3(
-            s3_client=s3_client,
-            bucket_name=bucket,
-            file_key=key,
-            ttl_seconds=ttl_seconds,
+        s3_client = maybe_get_s3_client(
+            self._auth_method, cast(Dict[StorageSecrets, Any], self._secrets)
+        )
+        return str(
+            create_presigned_url_for_s3(
+                s3_client=s3_client,
+                bucket_name=bucket,
+                file_key=key,
+                ttl_seconds=ttl_seconds,
+            )
         )
 
     def get_file_size(self, bucket: str, key: str) -> int:
@@ -217,7 +225,9 @@ class S3StorageProvider(StorageProvider):
         """
         logger.debug("S3StorageProvider.get_file_size: bucket={}, key={}", bucket, key)
 
-        s3_client = maybe_get_s3_client(self._auth_method, self._secrets)
+        s3_client = maybe_get_s3_client(
+            self._auth_method, cast(Dict[StorageSecrets, Any], self._secrets)
+        )
         return get_file_size(s3_client, bucket, key)
 
     def exists(self, bucket: str, key: str) -> bool:
@@ -233,7 +243,9 @@ class S3StorageProvider(StorageProvider):
         logger.debug("S3StorageProvider.exists: bucket={}, key={}", bucket, key)
 
         try:
-            s3_client = maybe_get_s3_client(self._auth_method, self._secrets)
+            s3_client = maybe_get_s3_client(
+                self._auth_method, cast(Dict[StorageSecrets, Any], self._secrets)
+            )
             s3_client.head_object(Bucket=bucket, Key=key)
             return True
         except (ClientError, ParamValidationError):
@@ -255,7 +267,9 @@ class S3StorageProvider(StorageProvider):
             "S3StorageProvider.list_objects: bucket={}, prefix={}", bucket, prefix
         )
 
-        s3_client = maybe_get_s3_client(self._auth_method, self._secrets)
+        s3_client = maybe_get_s3_client(
+            self._auth_method, cast(Dict[StorageSecrets, Any], self._secrets)
+        )
         paginator = s3_client.get_paginator("list_objects_v2")
 
         for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
