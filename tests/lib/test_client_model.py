@@ -10,6 +10,7 @@ from fides.api.cryptography.cryptographic_util import (
     hash_credential_with_salt,
 )
 from fides.api.cryptography.schemas.jwt import (
+    JWE_EXPIRES_AT,
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_CONNECTIONS,
@@ -224,20 +225,27 @@ def test_get_root_client_detail_no_root_client_hash(config):
 
 
 def test_client_create_access_code_jwe(oauth_client, config):
-    jwe = oauth_client.create_access_code_jwe(config.security.app_encryption_key)
+    jwe = oauth_client.create_access_code_jwe(
+        config.security.app_encryption_key,
+        token_expire_minutes=config.security.oauth_access_token_expire_minutes,
+    )
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
 
     assert token_data[JWE_PAYLOAD_CLIENT_ID] == oauth_client.id
     assert token_data[JWE_PAYLOAD_SCOPES] == oauth_client.scopes
     assert token_data[JWE_ISSUED_AT] is not None
+    assert token_data[JWE_EXPIRES_AT] is not None
     assert token_data[JWE_PAYLOAD_ROLES] == []
     assert token_data[JWE_PAYLOAD_SYSTEMS] == []
     assert token_data[JWE_PAYLOAD_CONNECTIONS] == []
 
 
 def test_client_create_access_code_jwe_owner_client(owner_client, config):
-    jwe = owner_client.create_access_code_jwe(config.security.app_encryption_key)
+    jwe = owner_client.create_access_code_jwe(
+        config.security.app_encryption_key,
+        token_expire_minutes=config.security.oauth_access_token_expire_minutes,
+    )
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
 
@@ -250,7 +258,10 @@ def test_client_create_access_code_jwe_owner_client(owner_client, config):
 
 
 def test_client_create_access_code_jwe_viewer_client(viewer_client, config):
-    jwe = viewer_client.create_access_code_jwe(config.security.app_encryption_key)
+    jwe = viewer_client.create_access_code_jwe(
+        config.security.app_encryption_key,
+        token_expire_minutes=config.security.oauth_access_token_expire_minutes,
+    )
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
 
@@ -264,7 +275,8 @@ def test_client_create_access_code_jwe_viewer_client(viewer_client, config):
 
 def test_client_create_access_code_with_systems(system_manager_client, config, system):
     jwe = system_manager_client.create_access_code_jwe(
-        config.security.app_encryption_key
+        config.security.app_encryption_key,
+        token_expire_minutes=config.security.oauth_access_token_expire_minutes,
     )
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
@@ -280,7 +292,10 @@ def test_client_create_access_code_with_systems(system_manager_client, config, s
 def test_client_create_access_code_with_connections(
     connection_client, config, connection_config
 ):
-    jwe = connection_client.create_access_code_jwe(config.security.app_encryption_key)
+    jwe = connection_client.create_access_code_jwe(
+        config.security.app_encryption_key,
+        token_expire_minutes=config.security.oauth_access_token_expire_minutes,
+    )
 
     token_data = json.loads(extract_payload(jwe, config.security.app_encryption_key))
 
