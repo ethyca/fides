@@ -106,7 +106,9 @@ class AttachmentService:
         )
         # Get storage type value safely for logging
         storage_type = attachment.config.type
-        storage_type_str = storage_type.value if hasattr(storage_type, "value") else str(storage_type)
+        storage_type_str = (
+            storage_type.value if hasattr(storage_type, "value") else str(storage_type)
+        )
         logger.info(
             "Uploaded {} to {} storage at {}/{} (size: {})",
             attachment.file_name,
