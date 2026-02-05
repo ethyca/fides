@@ -35,6 +35,7 @@ import {
   Tag,
   Tooltip,
   Typography,
+  useMessage,
 } from "fidesui";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -161,6 +162,7 @@ const generateSectionSummary = async (
 const PrivacyAssessmentDetailPage: NextPage = () => {
   const { flags } = useFeatures();
   const router = useRouter();
+  const message = useMessage();
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -195,6 +197,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [selectedSectionKey, setSelectedSectionKey] = useState<string | null>(
     null,
   );
+  const [requestSentTime, setRequestSentTime] = useState<Date | null>(null);
 
   // Inline editing state for controller details
   const [isEditingControllerDetails, setIsEditingControllerDetails] =
@@ -1259,7 +1262,39 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               onChange={() => {}}
               style={{ flex: "1 1 300px", minWidth: 200, maxWidth: 400 }}
             />
-            <Button icon={<SlackOutlined />}>Request input from team</Button>
+            <Flex align="center" gap="small">
+              {requestSentTime && (
+                <Flex align="center" gap="small">
+                  <CheckCircleOutlined
+                    style={{
+                      color: palette.FIDESUI_SUCCESS,
+                      fontSize: 14,
+                    }}
+                  />
+                  <Text
+                    type="secondary"
+                    style={{ fontSize: 12, fontWeight: "normal" }}
+                  >
+                    Request sent at{" "}
+                    {requestSentTime.toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </Text>
+                </Flex>
+              )}
+              <Button
+                icon={<SlackOutlined />}
+                onClick={() => {
+                  setRequestSentTime(new Date());
+                  message.success(
+                    "Request sent! Your team will be notified via Slack to provide input on this assessment.",
+                  );
+                }}
+              >
+                Request input from team
+              </Button>
+            </Flex>
           </Flex>
 
           {/* Controller Details Section - Compact Inline */}
@@ -1268,7 +1303,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               marginBottom: 20,
               padding: "10px 14px",
               backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      width: "100%",
+              width: "100%",
               borderRadius: 6,
               border: `1px solid ${palette.FIDESUI_NEUTRAL_200}`,
               position: "relative",
@@ -1521,7 +1556,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   borderRadius: 8,
                   padding: 16,
                   backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      width: "100%",
+                  width: "100%",
                 }}
                 bodyStyle={{ padding: 0 }}
               >
@@ -1584,7 +1619,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   borderRadius: 8,
                   padding: 16,
                   backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      width: "100%",
+                  width: "100%",
                 }}
                 bodyStyle={{ padding: 0 }}
               >
@@ -1649,7 +1684,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   borderRadius: 8,
                   padding: 16,
                   backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      width: "100%",
+                  width: "100%",
                 }}
                 bodyStyle={{ padding: 0 }}
               >
@@ -1786,7 +1821,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                 color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
-                                JG
+                                AI
                               </Tag>
                             </Text>
                             <Text
@@ -1860,7 +1895,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                 color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
-                                JG
+                                AI
                               </Tag>
                             </Text>
                             <Text
@@ -1940,7 +1975,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Identify the need for a DPIA</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpiaNeed}
@@ -2082,7 +2117,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                 color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
-                                JG
+                                AI
                               </Tag>
                             </Text>
                             <Text
@@ -2162,7 +2197,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Assessment framework</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.framework}
@@ -2242,7 +2277,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         <Text type="success" style={{ fontSize: 12 }}>
                           MEDIUM CONFIDENCE
                         </Text>
-                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG + AI</Tag>
+                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                       </Flex>
                     </Flex>
                     <EditableTextBlock
@@ -2280,7 +2315,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Context of the processing</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.context}
@@ -2317,7 +2352,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Purposes of the processing</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.purposes}
@@ -2383,7 +2418,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                 color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
-                                JG
+                                AI
                               </Tag>
                             </Text>
                             <Text
@@ -2459,7 +2494,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                 color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
-                                JG
+                                AI
                               </Tag>
                             </Text>
                             <Text
@@ -2527,7 +2562,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Stakeholder consultation</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.stakeholderConsultation}
@@ -2739,7 +2774,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                     <div
                       style={{
                         backgroundColor: palette.FIDESUI_BG_CORINTH,
-                      width: "100%",
+                        width: "100%",
                         padding: "16px 16px 8px 16px",
                         borderRadius: 8,
                       }}
@@ -2824,7 +2859,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                 color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
-                                JG
+                                AI
                               </Tag>
                               <span style={{ marginLeft: 4, marginRight: 4 }}>
                                 +
@@ -2904,7 +2939,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                 color={CUSTOM_TAG_COLOR.DEFAULT}
                                 style={{ marginLeft: 4 }}
                               >
-                                JG
+                                AI
                               </Tag>
                               <span style={{ marginLeft: 8, marginRight: 8 }}>
                                 +
@@ -2980,7 +3015,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         <Text type="success" style={{ fontSize: 12 }}>
                           MEDIUM CONFIDENCE
                         </Text>
-                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG + AI</Tag>
+                        <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                       </Flex>
                     </Flex>
                     <EditableTextBlock
@@ -3045,7 +3080,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                   color={CUSTOM_TAG_COLOR.DEFAULT}
                                   style={{ marginLeft: 4 }}
                                 >
-                                  JG
+                                  AI
                                 </Tag>
                               </Text>
                             )}
@@ -3125,7 +3160,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                   color={CUSTOM_TAG_COLOR.DEFAULT}
                                   style={{ marginLeft: 4 }}
                                 >
-                                  JG
+                                  AI
                                 </Tag>
                               </Text>
                             )}
@@ -3214,7 +3249,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Measures to reduce or eliminate risk</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.measures}
@@ -3281,7 +3316,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                   color={CUSTOM_TAG_COLOR.DEFAULT}
                                   style={{ marginLeft: 4 }}
                                 >
-                                  JG
+                                  AI
                                 </Tag>
                               </Text>
                             )}
@@ -3361,7 +3396,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                                   color={CUSTOM_TAG_COLOR.DEFAULT}
                                   style={{ marginLeft: 4 }}
                                 >
-                                  JG
+                                  AI
                                 </Tag>
                               </Text>
                             )}
@@ -3450,7 +3485,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Measures approved by</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.measuresApprovedBy}
@@ -3484,7 +3519,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Residual risks approved by</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.residualRisksApprovedBy}
@@ -3518,7 +3553,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>DPO advice provided</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpoAdviceProvided}
@@ -3552,7 +3587,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Summary of DPO advice</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpoAdviceSummary}
@@ -3586,7 +3621,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>DPO advice accepted or overruled by</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpoAdviceAccepted}
@@ -3620,7 +3655,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>Consultation responses reviewed by</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.consultationReviewedBy}
@@ -3654,7 +3689,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                       style={{ marginBottom: 12 }}
                     >
                       <Text strong>This DPIA will be kept under review by</Text>
-                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>JG</Tag>
+                      <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>AI</Tag>
                     </Flex>
                     <EditableTextBlock
                       value={documentContent.dpiaReviewBy}
