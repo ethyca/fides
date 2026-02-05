@@ -170,13 +170,20 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         CustomConnectorTemplate.filter(
             db, conditions=(CustomConnectorTemplate.key == key)
         ).delete()
+        template_dataset = SaasTemplateDataset.get_by(
+            db=db, field="connection_type", value=key
+        )
+        if template_dataset:
+            template_dataset.delete(db=db)
 
     # pylint: disable=too-many-branches
     @classmethod
-    def save_template(cls, db: Session, zip_file: ZipFile) -> None:
+    def save_template(cls, db: Session, zip_file: ZipFile) -> str:
         """
         Extracts and validates the contents of a zip file containing a
         custom connector template, registers the template, and saves it to the database.
+
+        Returns the connector_type of the saved template.
         """
 
         # verify the zip file before we use it
@@ -276,18 +283,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             dataset_json=template_dataset_json,
         )
 
-        # update any existing connection configs that use this connector type
-        connector_template = ConnectorRegistry.get_connector_template(connector_type)
-        if connector_template:
-            # Import here to avoid circular import with connection_service
-            from fides.service.connection.connection_service import ConnectionService
-            from fides.service.event_audit_service import EventAuditService
-
-            event_audit_service = EventAuditService(db)
-            connection_service = ConnectionService(db, event_audit_service)
-            connection_service.update_existing_connection_configs_for_connector_type(
-                connector_type, connector_template
-            )
+        return connector_type
 
 
 class ConnectorRegistry:

@@ -219,7 +219,7 @@ class TestCustomConnectorTemplateLoader:
     ):
         db = MagicMock()
 
-        CustomConnectorTemplateLoader.save_template(
+        connector_type = CustomConnectorTemplateLoader.save_template(
             db,
             ZipFile(
                 create_zip_file(
@@ -231,6 +231,7 @@ class TestCustomConnectorTemplateLoader:
                 )
             ),
         )
+        assert connector_type == "planet_express"
 
         # verify that a connector template can updated with no issue
         CustomConnectorTemplateLoader.save_template(
