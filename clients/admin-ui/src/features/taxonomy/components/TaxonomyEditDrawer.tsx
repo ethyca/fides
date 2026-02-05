@@ -5,7 +5,7 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { FIDES_KEY_RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
 import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
 import { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
-import TaxonomyDetails from "~/features/taxonomy/components/CustomTaxonomyDetails";
+import TaxonomyDetails from "~/features/taxonomy/components/TaxonomyDetails";
 import TaxonomyHistory from "~/features/taxonomy/components/TaxonomyHistory";
 import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 import { useUpdateCustomTaxonomyMutation } from "~/features/taxonomy/taxonomy.slice";
