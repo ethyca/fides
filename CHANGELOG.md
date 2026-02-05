@@ -23,6 +23,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [2.78.1](https://github.com/ethyca/fides/compare/2.78.0..2.78.1)
 
+### Changed
+- Explicitly set USER environment variable to fidesuser [#7315](https://github.com/ethyca/fides/pull/7315)
+
 ## [2.78.0](https://github.com/ethyca/fides/compare/2.77.1..2.78.0)
 
 ### Added
