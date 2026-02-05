@@ -29,6 +29,8 @@ def test_get_connection_types():
         "category": None,
         "tags": None,
         "enabled_features": None,
+        "is_custom": False,
+        "default_connector_available": False,
     } in data
     first_saas_type = ConnectorRegistry.connector_types().pop()
     first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -70,6 +72,8 @@ def test_get_connection_types():
         "category": None,
         "tags": None,
         "enabled_features": None,
+        "is_custom": False,
+        "default_connector_available": False,
     } in data
 
 
@@ -98,6 +102,8 @@ def connection_type_objects():
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "is_custom": False,
+            "default_connector_available": False,
         },
         ConnectionType.manual_webhook.value: {
             "identifier": ConnectionType.manual_webhook.value,
@@ -110,6 +116,8 @@ def connection_type_objects():
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "is_custom": False,
+            "default_connector_available": False,
         },
         HUBSPOT: actual_connection_types[HUBSPOT],
         MAILCHIMP: actual_connection_types[MAILCHIMP],
@@ -125,6 +133,8 @@ def connection_type_objects():
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "is_custom": False,
+            "default_connector_available": False,
         },
         ConnectionType.attentive_email.value: {
             "identifier": ConnectionType.attentive_email.value,
@@ -137,6 +147,8 @@ def connection_type_objects():
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "is_custom": False,
+            "default_connector_available": False,
         },
     }
 
