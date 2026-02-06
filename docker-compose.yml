@@ -126,7 +126,7 @@ services:
         condition: service_started
     restart: always
     healthcheck:
-      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
       timeout: 5s
@@ -150,7 +150,7 @@ services:
         condition: service_started
     restart: always
     healthcheck:
-      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
       timeout: 5s
@@ -174,7 +174,7 @@ services:
         condition: service_started
     restart: always
     healthcheck:
-      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
       timeout: 5s
