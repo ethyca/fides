@@ -1,0 +1,4 @@
+type: Changed
+description: Removed replaceable flag from custom connector template and add custom and file_template_available flags
+pr: 7319
+labels: []
