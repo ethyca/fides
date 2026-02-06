@@ -4,6 +4,7 @@ import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import DocsLink from "~/features/common/DocsLink";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
@@ -27,7 +28,7 @@ import {
   selectOrganizationFidesKey,
   setSystemsForReview,
 } from "./config-wizard.slice";
-import { AWS_REGION_OPTIONS } from "./constants";
+import { AWS_REGION_OPTIONS, DOCS_URL_AWS_PERMISSIONS } from "./constants";
 import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerLoading from "./ScannerLoading";
@@ -139,14 +140,33 @@ const AuthenticateAwsForm = () => {
             )}
 
             {scannerError && (
-              <ErrorPage
-                error={scannerError}
-                defaultMessage="Fides was unable to scan your infrastructure. Please ensure your
-        credentials are accurate and inspect the error log below for more
-        details."
-                fullScreen={false}
-                showReload={false}
-              />
+              <>
+                <ErrorPage
+                  error={scannerError}
+                  defaultMessage={
+                    scannerError.status === 403
+                      ? "Fides was unable to scan AWS. It appears that the credentials were valid to login but they did not have adequate permission to complete the scan."
+                      : "Fides was unable to scan your infrastructure. Please ensure your credentials are accurate and inspect the error log below for more details."
+                  }
+                  fullScreen={false}
+                  showReload={false}
+                />
+                {scannerError.status === 403 && (
+                  <Typography.Paragraph
+                    type="secondary"
+                    data-testid="permission-msg"
+                  >
+                    To fix this issue, double check that you have granted the
+                    required permissions to these creden t ials as part of your
+                    IAM policy. If you need more help in configuring IAM
+                    policies, you can read about them in the{" "}
+                    <DocsLink href="https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html">
+                      AWS documentation
+                    </DocsLink>
+                    .
+                  </Typography.Paragraph>
+                )}
+              </>
             )}
             <Form data-testid="authenticate-aws-form">
               <Flex vertical gap="large">
