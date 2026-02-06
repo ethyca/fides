@@ -122,7 +122,7 @@ const AuthenticateAwsForm = () => {
               handleCancel();
             },
           },
-          { title: "Authenticate AWS Scanner" },
+          { title: "Authenticate AWS scanner" },
         ]}
       />
       <Formik
@@ -157,7 +157,7 @@ const AuthenticateAwsForm = () => {
                     data-testid="permission-msg"
                   >
                     To fix this issue, double check that you have granted the
-                    required permissions to these creden t ials as part of your
+                    required permissions to these credentials as part of your
                     IAM policy. If you need more help in configuring IAM
                     policies, you can read about them in the{" "}
                     <DocsLink href="https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html">

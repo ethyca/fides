@@ -160,7 +160,7 @@ const AuthenticateOktaForm = () => {
               handleCancel();
             },
           },
-          { title: "Authenticate Okta Scanner" },
+          { title: "Authenticate Okta scanner" },
         ]}
       />
       <Formik
@@ -180,9 +180,7 @@ const AuthenticateOktaForm = () => {
             {scannerError && (
               <ErrorPage
                 error={scannerError}
-                defaultMessage="Fides was unable to scan your infrastructure. Please ensure your
-        credentials are accurate and inspect the error log below for more
-        details."
+                defaultMessage="Fides was unable to scan your infrastructure. Please ensure your credentials are accurate and inspect the error log below for more details."
                 fullScreen={false}
                 showReload={false}
               />
