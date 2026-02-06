@@ -1,0 +1,4 @@
+type: Added
+description: Added endpoint to delete custom connector templates and fall back to Fides-provided template
+pr: 7320
+labels: []
