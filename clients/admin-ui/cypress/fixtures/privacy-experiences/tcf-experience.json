@@ -50,7 +50,7 @@
   "component": "tcf_overlay",
   "privacy_notices": [
     {
-      "id": "pri_b46f8339-2136-4464-9bbf-692b6aa99958",
+      "id": "pri_95e74b96-a386-4a58-96fb-73b1a3444f1c",
       "name": "Analytics"
     },
     {
@@ -58,11 +58,7 @@
       "name": "Custom Notice Title"
     },
     {
-      "id": "pri_9d74c917-acdc-43e3-98d3-0336942b3853",
-      "name": "Data Sales, Sharing, and Targeted Advertising (GPP - US National)1"
-    },
-    {
-      "id": "pri_3e5490b6-29fe-48b6-81a1-466e386e878b",
+      "id": "pri_b1244715-2adb-499f-abb2-e86b6c0040c2",
       "name": "Data Sales and Sharing"
     }
   ],

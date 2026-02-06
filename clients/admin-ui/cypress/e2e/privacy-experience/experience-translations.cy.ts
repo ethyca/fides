@@ -2,7 +2,6 @@ import {
   stubExperienceConfig,
   stubFidesCloud,
   stubLocations,
-  stubPrivacyNoticesCrud,
   stubProperties,
   stubTranslationConfig,
 } from "cypress/support/stubs";
@@ -17,7 +16,6 @@ describe("Experience translations", () => {
     stubProperties();
     stubExperienceConfig();
     stubFidesCloud();
-    stubPrivacyNoticesCrud();
     stubTranslationConfig(true);
     stubLocations();
     cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
