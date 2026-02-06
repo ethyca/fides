@@ -26,9 +26,11 @@ const isParsedError = (error: ErrorPageError): error is ParsedError =>
   typeof error.status === "number" &&
   !("data" in error);
 
+const DEFAULT_MESSAGE = "An unexpected error occurred.  Please try again";
+
 const ErrorPage = ({
   error,
-  defaultMessage = "An unexpected error occurred.  Please try again",
+  defaultMessage,
   actions,
   showReload = true,
   fullScreen = true,
@@ -40,8 +42,8 @@ const ErrorPage = ({
   fullScreen?: boolean;
 }) => {
   const errorMessage = isParsedError(error)
-    ? error.message
-    : getErrorMessage(error, defaultMessage);
+    ? (defaultMessage ?? error.message)
+    : getErrorMessage(error, defaultMessage ?? DEFAULT_MESSAGE);
   // handle FetchBaseQueryError, SerializedError, and ParsedError
   const getDataString = () => {
     if (isParsedError(error)) {
