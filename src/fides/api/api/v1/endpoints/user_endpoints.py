@@ -127,6 +127,7 @@ def verify_user_read_scopes(
         token_data=token_data,
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ]),
+        db=db,
     ):
         return client
 
@@ -134,6 +135,7 @@ def verify_user_read_scopes(
         token_data=token_data,
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ_OWN]),
+        db=db,
     ):
         return client
 
@@ -583,6 +585,7 @@ def get_user(
         token_data=token_data,
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ]),
+        db=db,
     ):
         logger.debug("Returning user with id: '{}'.", user_id)
         return user
@@ -623,6 +626,7 @@ def get_users(
         token_data=token_data,
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ]),
+        db=db,
     ):
         # User has USER_READ scope, can see all users
         if username:
