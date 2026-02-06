@@ -158,6 +158,7 @@ dev = [
     "pytest-rerunfailures==14.0",
     "pytest-xdist==3.8.0",
     "pytest==8.4.2",
+    "py==1.11.0",
     "pyyaml==6.0.1",
     "requests-mock==1.10.0",
     "setuptools>=64.0.2",
