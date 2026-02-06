@@ -6,6 +6,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
@@ -49,7 +50,9 @@ class RBACRoleConstraint(Base):
     - Cardinality: Only 3 users can be owners
     """
 
-    __tablename__ = "rbac_role_constraint"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "rbac_role_constraint"
 
     name = Column(
         String(255),
