@@ -767,6 +767,7 @@ def create_temporary_user_for_login_flow(config: FidesConfig) -> FidesUser:
         scopes=[],  # type: ignore
         roles=user.permissions.roles,  # type: ignore
         systems=user.system_ids,  # type: ignore
+        monitors=user.stewarded_monitor_ids,  # type: ignore
         user_id="temp_user_id",
         in_memory=True,
     )
