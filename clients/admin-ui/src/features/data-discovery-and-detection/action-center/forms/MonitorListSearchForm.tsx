@@ -89,6 +89,8 @@ const MonitorListSearchForm = ({
           popupMatchSelectWidth
           placeholder="Data steward"
           allowClear
+          showSearch
+          optionFilterProp="label"
           aria-label="Filter by data steward"
           className="min-w-[220px]"
         />
