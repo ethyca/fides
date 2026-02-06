@@ -177,9 +177,7 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
                 f"got '{cred_type}'."
             )
 
-    def _is_close_to_expiration(
-        self, expires_at: int
-    ) -> bool:
+    def _is_close_to_expiration(self, expires_at: int) -> bool:
         """
         Check if the access token is close to expiration.
 
@@ -271,7 +269,10 @@ class GoogleCloudServiceAccountAuthenticationStrategy(AuthenticationStrategy):
             )
         elif isinstance(exc, ValueError):
             # ValueError typically indicates malformed credentials
-            if "private_key" in error_msg.lower() or "Could not deserialize" in error_msg:
+            if (
+                "private_key" in error_msg.lower()
+                or "Could not deserialize" in error_msg
+            ):
                 user_message = (
                     "Invalid private_key format. The private key must be a valid PEM-encoded "
                     "RSA private key. Ensure the key includes '-----BEGIN PRIVATE KEY-----' "

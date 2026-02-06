@@ -58,7 +58,9 @@ if CONFIG.database.async_readonly_database_uri:
         ssl_ctx.verify_mode = ssl.CERT_REQUIRED
         readonly_connect_args["ssl"] = ssl_ctx
 
-    logger.info(f"Read-only async settings: max-overflow: {CONFIG.database.api_async_engine_max_overflow}, pool-size: {CONFIG.database.async_readonly_database_pool_size},  pre-warm = {CONFIG.database.async_readonly_database_prewarm}, autocommit = {CONFIG.database.async_readonly_database_autocommit}, skip rollback = {CONFIG.database.async_readonly_database_pool_skip_rollback}")
+    logger.info(
+        f"Read-only async settings: max-overflow: {CONFIG.database.api_async_engine_max_overflow}, pool-size: {CONFIG.database.async_readonly_database_pool_size},  pre-warm = {CONFIG.database.async_readonly_database_prewarm}, autocommit = {CONFIG.database.async_readonly_database_autocommit}, skip rollback = {CONFIG.database.async_readonly_database_pool_skip_rollback}"
+    )
     readonly_async_engine = create_async_engine(
         CONFIG.database.async_readonly_database_uri,
         connect_args=readonly_connect_args,
