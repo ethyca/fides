@@ -1,4 +1,0 @@
-type: Added 
-description: Added UI support for selecting all items across pages in Okta monitor results
-pr: 7307 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]
