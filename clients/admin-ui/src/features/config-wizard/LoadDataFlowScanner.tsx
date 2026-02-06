@@ -1,4 +1,4 @@
-import { useMessage } from "fidesui";
+import { Flex, useMessage } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -87,7 +87,7 @@ const LoadDataFlowScanner = () => {
 
   if (scannerError) {
     return (
-      <div className="w-full">
+      <Flex className="w-full">
         <ErrorPage
           error={scannerError}
           fullScreen={false}
@@ -100,7 +100,7 @@ const LoadDataFlowScanner = () => {
             },
           ]}
         />
-      </div>
+      </Flex>
     );
   }
 

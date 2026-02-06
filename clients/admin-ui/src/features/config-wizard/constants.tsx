@@ -5,7 +5,7 @@ export const STEPS = [
   },
   {
     number: 2,
-    name: "Add Systems",
+    name: "Add systems",
   },
   {
     number: 3,
