@@ -25,7 +25,7 @@ import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
 import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 import { isErrorResult } from "~/types/errors";
 
-interface CustomTaxonomyDetailsProps {
+interface TaxonomyDetailsProps {
   taxonomy?: TaxonomyResponse | null;
   onSubmit: (values: TaxonomyUpdate) => void;
   formId: string;
@@ -33,13 +33,13 @@ interface CustomTaxonomyDetailsProps {
   isCustom?: boolean;
 }
 
-const CustomTaxonomyDetails = ({
+const TaxonomyDetails = ({
   taxonomy,
   onSubmit,
   formId,
   customFields,
   isCustom = false,
-}: CustomTaxonomyDetailsProps) => {
+}: TaxonomyDetailsProps) => {
   const { fides_key: fidesKey, ...initialValues } = taxonomy ?? {};
 
   const [isAdding, setIsAdding] = useState(false);
@@ -195,4 +195,4 @@ const CustomTaxonomyDetails = ({
   );
 };
 
-export default CustomTaxonomyDetails;
+export default TaxonomyDetails;
