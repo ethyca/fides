@@ -833,13 +833,3 @@ class TestDeleteCustomConnectorTemplate:
             connection_config.description == "Test HubSpot ConnectionConfig description"
         )
         assert connection_config.secrets["private_app_token"] == "test_hubspot_token"
-
-        # Clean up
-        dataset_config = DatasetConfig.filter(
-            db=db, conditions=(DatasetConfig.fides_key == instance_key)
-        ).first()
-        if dataset_config:
-            dataset_config.delete(db)
-            if dataset_config.ctl_dataset:
-                dataset_config.ctl_dataset.delete(db=db)
-        connection_config.delete(db)

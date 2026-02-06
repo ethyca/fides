@@ -54,6 +54,8 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
+    CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
 )
 from fides.api.util.event_audit_util import (
     generate_connection_audit_event_details,
@@ -62,6 +64,7 @@ from fides.api.util.event_audit_util import (
 )
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import (
+    load_dataset_from_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
@@ -825,3 +828,66 @@ class ConnectionService:
                     "Encountered error attempting to update SaaS config instance {}",
                     saas_config_instance.fides_key,
                 )
+
+    def delete_custom_connector_template(self, connector_type: str) -> None:
+        """
+        Deletes a custom connector template and updates all connection configs
+        to use the Fides-provided file template.
+
+        Args:
+            connector_type: The connector type identifier
+
+        Raises:
+            ConnectorTemplateNotFound: If the Fides-provided template is not found
+        """
+        # Verify the file template exists
+        if not FileConnectorTemplateLoader.get_connector_templates().get(
+            connector_type
+        ):
+            raise ConnectorTemplateNotFound(
+                f"Fides-provided template with type '{connector_type}' not found."
+            )
+
+        # Delete the custom template from the database and in-memory cache
+        CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
+        CustomConnectorTemplateLoader.get_connector_templates().pop(
+            connector_type, None
+        )
+
+        # Get the file template that is now active
+        file_connector_template = ConnectorRegistry.get_connector_template(
+            connector_type
+        )
+        if not file_connector_template:
+            raise ConnectorTemplateNotFound(
+                f"Fides-provided template with type '{connector_type}' not found in the registry."
+            )
+
+        # Update the SaasTemplateDataset to use the file template's dataset
+        file_template_dataset_json = load_dataset_from_string(
+            file_connector_template.dataset
+        )
+        stored_template_dataset = SaasTemplateDataset.get_by(
+            db=self.db, field="connection_type", value=connector_type
+        )
+        if stored_template_dataset:
+            stored_template_dataset.update(
+                db=self.db, data={"dataset_json": file_template_dataset_json}
+            )
+        else:
+            SaasTemplateDataset.create(
+                db=self.db,
+                data={
+                    "connection_type": connector_type,
+                    "dataset_json": file_template_dataset_json,
+                },
+            )
+
+        # Delete existing datasets to avoid merging custom template modifications
+        # with the official file template
+        self.delete_datasets_for_connector_type(connector_type)
+
+        # Update existing connection configs to use the file template
+        self.update_existing_connection_configs_for_connector_type(
+            connector_type, file_connector_template
+        )

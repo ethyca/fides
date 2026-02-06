@@ -14,7 +14,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.saas.connector_template import (
     ConnectorTemplate,
@@ -23,10 +22,8 @@ from fides.api.schemas.saas.connector_template import (
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
-    FileConnectorTemplateLoader,
 )
 from fides.api.util.api_router import APIRouter
-from fides.api.util.saas_util import load_dataset_from_string
 from fides.common.api.scope_registry import (
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -41,7 +38,10 @@ from fides.common.api.v1.urn_registry import (
     REGISTER_CONNECTOR_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fides.service.connection.connection_service import ConnectionService
+from fides.service.connection.connection_service import (
+    ConnectionService,
+    ConnectorTemplateNotFound,
+)
 from fides.service.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["Connector Templates"], prefix=V1_URL_PREFIX)
@@ -231,77 +231,24 @@ def delete_custom_connector_template(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"SaaS connector type '{connector_template_type}' does not have a Fides-provided template to fall back to.",
         )
-    _delete_custom_template(db, connector_template_type)
+    try:
+        event_audit_service = EventAuditService(db)
+        connection_service = ConnectionService(db, event_audit_service)
+        connection_service.delete_custom_connector_template(connector_template_type)
+    except ConnectorTemplateNotFound as exc:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+    except Exception:
+        logger.exception(
+            f"Error deleting custom connector template '{connector_template_type}'."
+        )
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting custom connector template '{connector_template_type}'.",
+        )
 
     return JSONResponse(
         content={"message": "Custom connector template successfully deleted."}
     )
-
-
-def _delete_custom_template(db: Session, saas_connector_type: str) -> None:
-    """
-    Deletes a custom template from the database and falls back to the Fides-provided template.
-    """
-
-    if not FileConnectorTemplateLoader.get_connector_templates().get(
-        saas_connector_type
-    ):
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"Fides-provided template with type '{saas_connector_type}' not found.",
-        )
-
-    # delete the template from the database
-    CustomConnectorTemplateLoader.delete_template(db, saas_connector_type)
-    CustomConnectorTemplateLoader.get_connector_templates().pop(
-        saas_connector_type, None
-    )
-
-    file_connector_template = ConnectorRegistry.get_connector_template(
-        saas_connector_type
-    )
-    if not file_connector_template:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"Fides-provided template with type '{saas_connector_type}' not found in the registry.",
-        )
-
-    try:
-        # Update the SaasTemplateDataset to use the file template's dataset
-        file_template_dataset_json = load_dataset_from_string(
-            file_connector_template.dataset
-        )
-        stored_template_dataset = SaasTemplateDataset.get_by(
-            db=db, field="connection_type", value=saas_connector_type
-        )
-        if stored_template_dataset:
-            stored_template_dataset.update(
-                db=db, data={"dataset_json": file_template_dataset_json}
-            )
-        else:
-            SaasTemplateDataset.create(
-                db=db,
-                data={
-                    "connection_type": saas_connector_type,
-                    "dataset_json": file_template_dataset_json,
-                },
-            )
-
-        # Delete existing datasets to avoid merging custom template modifications
-        # with the official file template
-        event_audit_service = EventAuditService(db)
-        connection_service = ConnectionService(db, event_audit_service)
-        connection_service.delete_datasets_for_connector_type(saas_connector_type)
-
-        # Update existing connection configs to use the file template
-        connection_service.update_existing_connection_configs_for_connector_type(
-            saas_connector_type, file_connector_template
-        )
-    except Exception:
-        logger.exception(
-            f"Error updating connection configs for connector type '{saas_connector_type}'."
-        )
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error updating connection configs for connector type '{saas_connector_type}'.",
-        )
