@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
@@ -30,7 +31,9 @@ class RBACUserRole(Base):
     - Temporary access: valid_from=now, valid_until=now+30days
     """
 
-    __tablename__ = "rbac_user_role"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "rbac_user_role"
 
     user_id = Column(
         String(255),

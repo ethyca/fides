@@ -1,6 +1,7 @@
 """RBAC Role-Permission junction table."""
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base
@@ -17,7 +18,9 @@ class RBACRolePermission(Base):
     computed at runtime via the role hierarchy.
     """
 
-    __tablename__ = "rbac_role_permission"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "rbac_role_permission"
 
     # Override Base.id - junction table uses composite PK instead
     id = None  # type: ignore[assignment]

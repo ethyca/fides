@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, Set
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
 from fides.api.db.base_class import Base
@@ -28,7 +29,9 @@ class RBACRole(Base):
     and all permissions inherited from ancestor roles.
     """
 
-    __tablename__ = "rbac_role"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "rbac_role"
 
     name = Column(
         String(255),

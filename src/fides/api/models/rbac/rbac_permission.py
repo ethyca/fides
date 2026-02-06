@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Boolean, Column, String, Text
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
@@ -24,7 +25,9 @@ class RBACPermission(Base):
     created manually in most cases.
     """
 
-    __tablename__ = "rbac_permission"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "rbac_permission"
 
     code = Column(
         String(255),
