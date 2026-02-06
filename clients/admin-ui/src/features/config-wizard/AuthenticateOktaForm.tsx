@@ -170,65 +170,68 @@ const AuthenticateOktaForm = () => {
       >
         {({ isValid, isSubmitting, dirty }) => (
           <>
-            {isSubmitting ? (
+            {isSubmitting && (
               <ScannerLoading
                 title="System scanning in progress"
                 onClose={handleCancel}
               />
-            ) : null}
+            )}
 
-            {scannerError ? (
+            {scannerError && (
               <ErrorPage
                 error={scannerError}
                 defaultMessage="Fides was unable to scan your infrastructure. Please ensure your
         credentials are accurate and inspect the error log below for more
         details."
                 fullScreen={false}
+                showReload={false}
               />
-            ) : null}
+            )}
             <Form data-testid="authenticate-okta-form">
               <Flex vertical gap="large">
-                {!isSubmitting && !scannerError ? (
-                  <>
-                    <Flex vertical gap="small" className="w-full max-w-xl">
-                      <Typography.Paragraph>
-                        {OKTA_AUTH_DESCRIPTION}
-                      </Typography.Paragraph>
-                      <CustomTextInput
-                        name="orgUrl"
-                        label="Organization URL"
-                        tooltip="The URL for your organization's Okta account (e.g. https://your-org.okta.com)"
-                        placeholder="https://your-org.okta.com"
-                        isRequired
-                      />
-                      <CustomTextInput
-                        name="clientId"
-                        label="Client ID"
-                        tooltip="The OAuth2 client ID from your Okta API Services application"
-                        placeholder="0oa1abc2def3ghi4jkl5"
-                        isRequired
-                      />
-                      <CustomTextArea
-                        name="privateKey"
-                        label="Private key"
-                        tooltip="RSA private key in JWK format for OAuth2 authentication"
-                        placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
-                        isRequired
-                        textAreaProps={{
-                          rows: 8,
-                          style: { fontFamily: "monospace", fontSize: "12px" },
-                        }}
-                      />
-                      <CustomTextInput
-                        name="scopes"
-                        label="Scopes"
-                        tooltip="OAuth2 scopes to request. Default is okta.apps.read for application discovery"
-                        placeholder="okta.apps.read"
-                        isRequired
-                      />
-                    </Flex>
-                    <Flex gap="small">
-                      <Button onClick={handleCancel}>Cancel</Button>
+                {!isSubmitting && !scannerError && (
+                  <Flex vertical gap="small" className="w-full max-w-xl">
+                    <Typography.Paragraph>
+                      {OKTA_AUTH_DESCRIPTION}
+                    </Typography.Paragraph>
+                    <CustomTextInput
+                      name="orgUrl"
+                      label="Organization URL"
+                      tooltip="The URL for your organization's Okta account (e.g. https://your-org.okta.com)"
+                      placeholder="https://your-org.okta.com"
+                      isRequired
+                    />
+                    <CustomTextInput
+                      name="clientId"
+                      label="Client ID"
+                      tooltip="The OAuth2 client ID from your Okta API Services application"
+                      placeholder="0oa1abc2def3ghi4jkl5"
+                      isRequired
+                    />
+                    <CustomTextArea
+                      name="privateKey"
+                      label="Private key"
+                      tooltip="RSA private key in JWK format for OAuth2 authentication"
+                      placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
+                      isRequired
+                      textAreaProps={{
+                        rows: 8,
+                        style: { fontFamily: "monospace", fontSize: "12px" },
+                      }}
+                    />
+                    <CustomTextInput
+                      name="scopes"
+                      label="Scopes"
+                      tooltip="OAuth2 scopes to request. Default is okta.apps.read for application discovery"
+                      placeholder="okta.apps.read"
+                      isRequired
+                    />
+                  </Flex>
+                )}
+                {!isSubmitting && (
+                  <Flex gap="small">
+                    <Button onClick={handleCancel}>Cancel</Button>
+                    {!scannerError && (
                       <Button
                         htmlType="submit"
                         type="primary"
@@ -238,9 +241,9 @@ const AuthenticateOktaForm = () => {
                       >
                         Save and continue
                       </Button>
-                    </Flex>
-                  </>
-                ) : null}
+                    )}
+                  </Flex>
+                )}
               </Flex>
             </Form>
           </>

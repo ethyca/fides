@@ -88,7 +88,18 @@ const LoadDataFlowScanner = () => {
   if (scannerError) {
     return (
       <div className="w-full">
-        <ErrorPage error={scannerError} fullScreen={false} />
+        <ErrorPage
+          error={scannerError}
+          fullScreen={false}
+          showReload={false}
+          actions={[
+            {
+              label: "Cancel",
+              onClick: handleCancel,
+              "data-testid": "cancel-btn",
+            },
+          ]}
+        />
       </div>
     );
   }
