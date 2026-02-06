@@ -1,5 +1,5 @@
 # pylint: disable=missing-docstring, redefined-outer-name
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from starlette.testclient import TestClient
@@ -137,9 +137,12 @@ class TestBackfillEndpoints:
         test_client: TestClient,
     ) -> None:
         """Test that backfill endpoint returns 202 and correct message."""
+        mock_lock = MagicMock()
+        mock_lock.owned.return_value = True
+
         with patch(
             "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
-            return_value=True,
+            return_value=mock_lock,
         ), patch(
             "fides.api.api.v1.endpoints.admin.run_backfill_manually",
         ):
@@ -164,7 +167,7 @@ class TestBackfillEndpoints:
         """Test that backfill endpoint returns 409 when backfill already running."""
         with patch(
             "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
-            return_value=False,
+            return_value=None,
         ):
             response = test_client.post(
                 test_config.cli.server_url + API_PREFIX + "/admin/backfill",
@@ -197,9 +200,12 @@ class TestBackfillEndpoints:
         expected_status: int,
     ) -> None:
         """Test that backfill endpoint validates request parameters."""
+        mock_lock = MagicMock()
+        mock_lock.owned.return_value = True
+
         with patch(
             "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
-            return_value=True,
+            return_value=mock_lock,
         ), patch(
             "fides.api.api.v1.endpoints.admin.run_backfill_manually",
         ):
