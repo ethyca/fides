@@ -1,4 +1,0 @@
-type: Added
-description: Added support for chat provider configurations
-pr: 7297
-labels: ["db-migration"]
