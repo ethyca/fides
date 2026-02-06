@@ -178,12 +178,15 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
 
     # pylint: disable=too-many-branches
     @classmethod
-    def save_template(cls, db: Session, zip_file: ZipFile) -> str:
+    def save_template(cls, db: Session, zip_file: ZipFile) -> tuple[str, bool]:
         """
         Extracts and validates the contents of a zip file containing a
         custom connector template, registers the template, and saves it to the database.
 
-        Returns the connector_type of the saved template.
+        Returns a tuple of:
+            - connector_type: The connector type of the saved template
+            - was_already_custom: Whether a custom template already existed for this
+              connector type (True = custom-to-custom update, False = fides-to-custom switch)
         """
 
         # verify the zip file before we use it
@@ -250,6 +253,15 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             )
             config_contents = replace_version(config_contents, existing_config.version)
 
+        # Check if a custom template already exists before saving
+        # This distinguishes fides-to-custom switches from custom-to-custom updates
+        was_already_custom = (
+            CustomConnectorTemplate.filter(
+                db, conditions=(CustomConnectorTemplate.key == connector_type)
+            ).first()
+            is not None
+        )
+
         template = CustomConnectorTemplate(
             key=connector_type,
             name=human_readable,
@@ -277,13 +289,22 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         # Store the original template dataset (with placeholders) instead of the modified version
         template_dataset_json = load_dataset_from_string(template.dataset)
 
-        SaasTemplateDataset.get_or_create(
+        _, stored_template = SaasTemplateDataset.get_or_create(
             db=db,
             connector_type=connector_type,
             dataset_json=template_dataset_json,
         )
 
-        return connector_type
+        if not was_already_custom:
+            # Fides-to-custom switch: replace the stored template immediately
+            # so datasets can be wiped and recreated fresh from the custom template.
+            # For custom-to-custom updates the existing stored template is preserved
+            # as the merge baseline
+            stored_template.update(
+                db=db, data={"dataset_json": template_dataset_json}
+            )
+
+        return connector_type, was_already_custom
 
 
 class ConnectorRegistry:
