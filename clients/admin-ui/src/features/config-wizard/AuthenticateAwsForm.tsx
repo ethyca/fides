@@ -131,62 +131,65 @@ const AuthenticateAwsForm = () => {
       >
         {({ isValid, isSubmitting, dirty }) => (
           <>
-            {isSubmitting ? (
+            {isSubmitting && (
               <ScannerLoading
                 title="System scanning in progress"
                 onClose={handleCancel}
               />
-            ) : null}
+            )}
 
-            {scannerError ? (
+            {scannerError && (
               <ErrorPage
                 error={scannerError}
                 defaultMessage="Fides was unable to scan your infrastructure. Please ensure your
         credentials are accurate and inspect the error log below for more
         details."
                 fullScreen={false}
+                showReload={false}
               />
-            ) : null}
+            )}
             <Form data-testid="authenticate-aws-form">
               <Flex vertical gap="large">
-                {!isSubmitting && !scannerError ? (
-                  <>
-                    <Flex vertical gap="small" className="w-full max-w-xl">
-                      <Typography.Paragraph>
-                        To use the scanner to inventory systems in AWS, you must
-                        first authenticate to your AWS cloud by providing the
-                        following information:
-                      </Typography.Paragraph>
-                      <CustomTextInput
-                        name="aws_access_key_id"
-                        label="Access Key ID"
-                        tooltip="The Access Key ID created by the cloud hosting provider."
-                        isRequired
-                      />
-                      <CustomTextInput
-                        type="password"
-                        name="aws_secret_access_key"
-                        label="Secret"
-                        tooltip="The secret associated with the Access Key ID used for authentication."
-                        isRequired
-                      />
-                      <CustomTextInput
-                        type="password"
-                        name="aws_session_token"
-                        label="Session Token"
-                        tooltip="The session token when using temporary credentials."
-                      />
-                      <ControlledSelect
-                        name="region_name"
-                        label="AWS Region"
-                        tooltip="The geographic region of the cloud hosting provider you would like to scan."
-                        options={AWS_REGION_OPTIONS}
-                        isRequired
-                        placeholder="Select a region"
-                      />
-                    </Flex>
-                    <Flex gap="small">
-                      <Button onClick={handleCancel}>Cancel</Button>
+                {!isSubmitting && !scannerError && (
+                  <Flex vertical gap="small" className="w-full max-w-xl">
+                    <Typography.Paragraph>
+                      To use the scanner to inventory systems in AWS, you must
+                      first authenticate to your AWS cloud by providing the
+                      following information:
+                    </Typography.Paragraph>
+                    <CustomTextInput
+                      name="aws_access_key_id"
+                      label="Access Key ID"
+                      tooltip="The Access Key ID created by the cloud hosting provider."
+                      isRequired
+                    />
+                    <CustomTextInput
+                      type="password"
+                      name="aws_secret_access_key"
+                      label="Secret"
+                      tooltip="The secret associated with the Access Key ID used for authentication."
+                      isRequired
+                    />
+                    <CustomTextInput
+                      type="password"
+                      name="aws_session_token"
+                      label="Session Token"
+                      tooltip="The session token when using temporary credentials."
+                    />
+                    <ControlledSelect
+                      name="region_name"
+                      label="AWS Region"
+                      tooltip="The geographic region of the cloud hosting provider you would like to scan."
+                      options={AWS_REGION_OPTIONS}
+                      isRequired
+                      placeholder="Select a region"
+                    />
+                  </Flex>
+                )}
+                {!isSubmitting && (
+                  <Flex gap="small">
+                    <Button onClick={handleCancel}>Cancel</Button>
+                    {!scannerError && (
                       <Button
                         htmlType="submit"
                         type="primary"
@@ -196,9 +199,9 @@ const AuthenticateAwsForm = () => {
                       >
                         Save and continue
                       </Button>
-                    </Flex>
-                  </>
-                ) : null}
+                    )}
+                  </Flex>
+                )}
               </Flex>
             </Form>
           </>
