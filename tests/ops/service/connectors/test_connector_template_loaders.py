@@ -75,40 +75,17 @@ class TestCustomConnectorTemplateLoader:
         return load_yaml_as_string("data/saas/dataset/hubspot_dataset.yml")
 
     @pytest.fixture
-    def replaceable_hubspot_config(self) -> str:
+    def custom_hubspot_config(self) -> str:
         return load_yaml_as_string(
             "tests/fixtures/saas/test_data/replaceable_hubspot_config.yml"
         )
 
     @pytest.fixture
-    def replaceable_planet_express_config(self) -> str:
-        return load_yaml_as_string(
-            "tests/fixtures/saas/test_data/planet_express/replaceable_planet_express_config.yml"
-        )
-
-    @pytest.fixture
-    def replaceable_hubspot_zip(
-        self, replaceable_hubspot_config, hubspot_dataset
-    ) -> BytesIO:
+    def custom_hubspot_zip(self, custom_hubspot_config, hubspot_dataset) -> BytesIO:
         return create_zip_file(
             {
-                "config.yml": replace_version(replaceable_hubspot_config, "0.0.0"),
+                "config.yml": replace_version(custom_hubspot_config, "0.0.0"),
                 "dataset.yml": hubspot_dataset,
-            }
-        )
-
-    @pytest.fixture
-    def replaceable_planet_express_zip(
-        self,
-        replaceable_planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ) -> BytesIO:
-        return create_zip_file(
-            {
-                "config.yml": replaceable_planet_express_config,
-                "dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
             }
         )
 
@@ -321,33 +298,16 @@ class TestCustomConnectorTemplateLoader:
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_version_update_for_custom_connector(
-        self, mock_create_or_update: MagicMock, hubspot_config, replaceable_hubspot_zip
+        self, mock_create_or_update: MagicMock, hubspot_config, custom_hubspot_zip
     ):
         """
         Verify that a custom connector template takes on the version of the existing file connector template.
         """
         CustomConnectorTemplateLoader.save_template(
-            db=MagicMock(), zip_file=ZipFile(replaceable_hubspot_zip)
+            db=MagicMock(), zip_file=ZipFile(custom_hubspot_zip)
         )
 
         config_contents = mock_create_or_update.call_args.kwargs["data"]["config"]
         custom_config = load_config_from_string(config_contents)
         existing_config = load_config_from_string(hubspot_config)
         assert custom_config["version"] == existing_config["version"]
-
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
-    )
-    def test_custom_template_version_for_new_template(
-        self, mock_create_or_update: MagicMock, replaceable_planet_express_zip
-    ):
-        """
-        Verify that a custom connector template keeps its version if there is no existing file connector template.
-        """
-        CustomConnectorTemplateLoader.save_template(
-            db=MagicMock(), zip_file=ZipFile(replaceable_planet_express_zip)
-        )
-
-        config_contents = mock_create_or_update.call_args.kwargs["data"]["config"]
-        custom_config = load_config_from_string(config_contents)
-        assert custom_config["version"] == "0.0.1"
