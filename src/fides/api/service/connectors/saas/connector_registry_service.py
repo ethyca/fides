@@ -166,15 +166,12 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
     def delete_template(cls, db: Session, key: str) -> None:
         """
         Deletes a custom connector template from the database.
+        The SaasTemplateDataset is intentionally preserved so it can serve as
+        the merge baseline when falling back to the file template.
         """
         CustomConnectorTemplate.filter(
             db, conditions=(CustomConnectorTemplate.key == key)
         ).delete()
-        template_dataset = SaasTemplateDataset.get_by(
-            db=db, field="connection_type", value=key
-        )
-        if template_dataset:
-            template_dataset.delete(db=db)
 
     # pylint: disable=too-many-branches
     @classmethod
