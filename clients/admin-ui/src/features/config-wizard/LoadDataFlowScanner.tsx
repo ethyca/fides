@@ -1,9 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraStack as Stack,
-  useChakraToast as useToast,
-} from "fidesui";
+import { useMessage } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -12,15 +7,14 @@ import {
   ParsedError,
   parseError,
 } from "~/features/common/helpers";
-import { successToastParams } from "~/features/common/toast";
 import {
   useLazyGetLatestScanDiffQuery,
   useUpdateScanMutation,
 } from "~/features/plus/plus.slice";
 import { isAPIError, RTKErrorResult } from "~/types/errors";
 
+import ErrorPage from "../common/errors/ErrorPage";
 import { changeStep, setSystemsForReview } from "./config-wizard.slice";
-import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 
 /**
@@ -30,7 +24,7 @@ import ScannerLoading from "./ScannerLoading";
  */
 const LoadDataFlowScanner = () => {
   const dispatch = useAppDispatch();
-  const toast = useToast();
+  const messageApi = useMessage();
   const [triggerGetDiff] = useLazyGetLatestScanDiffQuery();
   const [updateScanMutation, { data: scanResults }] = useUpdateScanMutation();
   const [scannerError, setScannerError] = useState<ParsedError>();
@@ -77,17 +71,15 @@ const LoadDataFlowScanner = () => {
           ? diff?.added_systems || []
           : scanResults.systems;
 
-        toast(
-          successToastParams(
-            `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`,
-          ),
+        messageApi.success(
+          `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`,
         );
         dispatch(setSystemsForReview(systemsToRegister));
         dispatch(changeStep());
       }
     };
     handleResults();
-  }, [scanResults, toast, dispatch, isRescan, triggerGetDiff]);
+  }, [scanResults, messageApi, dispatch, isRescan, triggerGetDiff]);
 
   const handleCancel = () => {
     dispatch(changeStep(2));
@@ -95,14 +87,9 @@ const LoadDataFlowScanner = () => {
 
   if (scannerError) {
     return (
-      <Stack>
-        <ScannerError error={scannerError} />
-        <Box>
-          <Button onClick={handleCancel} data-testid="cancel-btn">
-            Cancel
-          </Button>
-        </Box>
-      </Stack>
+      <div className="w-full">
+        <ErrorPage error={scannerError} fullScreen={false} />
+      </div>
     );
   }
 
