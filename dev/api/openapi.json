@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.2"
+    "version": "2.78.2.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -21010,6 +21010,16 @@
               }
             ],
             "title": "Enabled Features"
+          },
+          "custom": {
+            "type": "boolean",
+            "title": "Custom",
+            "default": false
+          },
+          "default_connector_available": {
+            "type": "boolean",
+            "title": "Default Connector Available",
+            "default": false
           }
         },
         "type": "object",
@@ -21201,6 +21211,11 @@
           "custom": {
             "type": "boolean",
             "title": "Custom"
+          },
+          "default_connector_available": {
+            "type": "boolean",
+            "title": "Default Connector Available",
+            "default": false
           }
         },
         "type": "object",
@@ -31881,11 +31896,6 @@
           "version": {
             "type": "string",
             "title": "Version"
-          },
-          "replaceable": {
-            "type": "boolean",
-            "title": "Replaceable",
-            "default": false
           },
           "connector_params": {
             "items": {
