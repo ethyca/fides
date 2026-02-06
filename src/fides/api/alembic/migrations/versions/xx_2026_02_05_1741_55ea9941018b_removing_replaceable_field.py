@@ -21,4 +21,13 @@ def upgrade():
 
 
 def downgrade():
-    op.add_column("custom_connector_template", sa.Column("replaceable", sa.BOOLEAN(), autoincrement=False, nullable=False))
+    op.add_column(
+        "custom_connector_template",
+        sa.Column(
+            "replaceable",
+            sa.BOOLEAN(),
+            autoincrement=False,
+            nullable=False,
+            server_default="f",
+        ),
+    )
