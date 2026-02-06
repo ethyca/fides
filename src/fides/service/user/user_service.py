@@ -80,6 +80,7 @@ class UserService:
                 scopes=[],  # type: ignore
                 roles=user.permissions.roles,  # type: ignore
                 systems=user.system_ids,  # type: ignore
+                monitors=user.stewarded_monitor_ids,  # type: ignore
                 user_id=user.id,
                 in_memory=skip_save,  # If login flow has already errored, don't persist this to the database
             )
@@ -87,6 +88,7 @@ class UserService:
             # Refresh the client just in case - for example, scopes and roles were added via the db directly.
             client.roles = user.permissions.roles  # type: ignore
             client.systems = user.system_ids  # type: ignore
+            client.monitors = user.stewarded_monitor_ids  # type: ignore
             if not skip_save:
                 client.save(self.db)
 

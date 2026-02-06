@@ -183,6 +183,7 @@ const ConfigureWebsiteMonitorForm = ({
             aria-label="Select stewards"
             data-testid="controlled-select-stewards"
             options={dataStewardOptions}
+            optionFilterProp="label"
           />
         </Form.Item>
         <Form.Item
