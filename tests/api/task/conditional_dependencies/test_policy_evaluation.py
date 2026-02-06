@@ -7,12 +7,11 @@ from fides.api.db.seed import (
     DEFAULT_CONSENT_POLICY,
     DEFAULT_ERASURE_POLICY,
 )
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.policy.conditional_dependency import PolicyCondition
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.policy import ActionType
-from fides.api.util.default_policy_config import DEFAULT_POLICY_CONFIG_KEY
 from fides.api.task.conditional_dependencies.policy_evaluation import (
     PolicyEvaluationError,
     PolicyEvaluator,
@@ -27,6 +26,7 @@ from fides.api.task.conditional_dependencies.schemas import (
     GroupOperator,
     Operator,
 )
+from fides.api.util.default_policy_config import DEFAULT_POLICY_CONFIG_KEY
 
 # Field address constants - using the same source of truth as the evaluator
 LOCATION_FIELD = PrivacyRequestFields.location.value

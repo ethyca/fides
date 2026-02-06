@@ -1,9 +1,9 @@
 from enum import Enum as EnumType
 from enum import StrEnum
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -55,7 +55,7 @@ class PolicyMaskingSpec(FidesSchema):
     """Models the masking strategy definition"""
 
     strategy: str
-    configuration: Dict[str, Any]
+    configuration: dict[str, Any]
 
 
 class PolicyMaskingSpecResponse(FidesSchema):
@@ -115,7 +115,7 @@ class RuleResponseWithTargets(RuleBase):
     configuration to avoid exposing secrets.
     """
 
-    targets: Optional[List[RuleTarget]] = None
+    targets: Optional[list[RuleTarget]] = None
     storage_destination: Optional[StorageDestinationResponse] = None
     masking_strategy: Optional[PolicyMaskingSpecResponse] = None
 
@@ -140,26 +140,39 @@ class Policy(FidesSchema):
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
 
-    rules: Optional[List[RuleResponse]] = None
+    rules: Optional[list[RuleResponse]] = None
     drp_action: Optional[DrpAction] = None
+    conditions: dict[str, Any] = {}
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_conditions(cls, values: Any) -> Any:
+        """Extract the condition tree from the ORM conditions relationship."""
+        if hasattr(values, "conditions"):
+            orm_conditions = values.conditions
+            if orm_conditions and orm_conditions[0].condition_tree:
+                values.__dict__["conditions"] = orm_conditions[0].condition_tree
+            else:
+                values.__dict__["conditions"] = {}
+        return values
 
 
 class BulkPutRuleTargetResponse(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of RuleTarget responses."""
 
-    succeeded: List[RuleTarget]
-    failed: List[BulkUpdateFailed]
+    succeeded: list[RuleTarget]
+    failed: list[BulkUpdateFailed]
 
 
 class BulkPutRuleResponse(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of Rule responses."""
 
-    succeeded: List[RuleResponse]
-    failed: List[BulkUpdateFailed]
+    succeeded: list[RuleResponse]
+    failed: list[BulkUpdateFailed]
 
 
 class BulkPutPolicyResponse(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of Policy responses."""
 
-    succeeded: List[PolicyResponse]
-    failed: List[BulkUpdateFailed]
+    succeeded: list[PolicyResponse]
+    failed: list[BulkUpdateFailed]
