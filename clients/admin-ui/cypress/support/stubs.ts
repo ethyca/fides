@@ -400,6 +400,16 @@ export const stubPrivacyRequests = (
           },
         },
       ).as("getPrivacyRequestManager");
+      cy.intercept("GET", "/api/v1/policy*", {
+        fixture: "policies/list.json",
+      }).as("getPolicies");
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/connection/*/manual-task/dependency-conditions/privacy-request-fields",
+        {
+          fixture: "integration-management/privacy-request-fields.json",
+        },
+      ).as("getPrivacyRequestFields");
     },
   );
 

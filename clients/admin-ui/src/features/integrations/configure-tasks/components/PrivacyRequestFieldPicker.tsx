@@ -6,6 +6,7 @@ import { useGetPrivacyRequestFieldsQuery } from "~/features/datastore-connection
 import { useCustomFieldMetadata } from "../hooks/useCustomFieldMetadata";
 import {
   ALLOWED_PRIVACY_REQUEST_FIELDS,
+  CONSENT_ALLOWED_PRIVACY_REQUEST_FIELDS,
   flattenPrivacyRequestFields,
   groupFieldsByCategory,
 } from "../utils";
@@ -15,6 +16,11 @@ interface PrivacyRequestFieldPickerProps {
   onChange?: (value: string | undefined) => void;
   connectionKey: string;
   disabled?: boolean;
+  /**
+   * When true, filters out fields that are not available for consent requests.
+   * This should be set when only consent manual tasks are configured.
+   */
+  isConsentOnly?: boolean;
 }
 
 export const PrivacyRequestFieldPicker = ({
@@ -22,6 +28,7 @@ export const PrivacyRequestFieldPicker = ({
   onChange,
   connectionKey,
   disabled = false,
+  isConsentOnly = false,
 }: PrivacyRequestFieldPickerProps) => {
   const { data, isLoading, error } = useGetPrivacyRequestFieldsQuery({
     connectionKey,
@@ -31,14 +38,19 @@ export const PrivacyRequestFieldPicker = ({
   const { customFieldsMap } = useCustomFieldMetadata();
 
   // Flatten the nested structure and filter to allowed fields
+  // Use consent-specific allowlist when only consent tasks are configured
   const fieldOptions = useMemo(() => {
     if (!data?.privacy_request) {
       return [];
     }
 
+    const allowedFields = isConsentOnly
+      ? CONSENT_ALLOWED_PRIVACY_REQUEST_FIELDS
+      : ALLOWED_PRIVACY_REQUEST_FIELDS;
+
     const flattenedFields = flattenPrivacyRequestFields(
       data.privacy_request as Record<string, unknown>,
-      ALLOWED_PRIVACY_REQUEST_FIELDS,
+      allowedFields,
     );
 
     const standardFieldOptions = groupFieldsByCategory(flattenedFields);
@@ -65,7 +77,7 @@ export const PrivacyRequestFieldPicker = ({
     }
 
     return standardFieldOptions;
-  }, [data, customFieldsMap]);
+  }, [data, customFieldsMap, isConsentOnly]);
 
   if (error) {
     return (
