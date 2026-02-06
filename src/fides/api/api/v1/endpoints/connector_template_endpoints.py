@@ -88,8 +88,8 @@ def register_connector_template(
     """
     try:
         with ZipFile(BytesIO(file), "r") as zip_file:
-            connector_type, was_already_custom = (
-                CustomConnectorTemplateLoader.save_template(db=db, zip_file=zip_file)
+            connector_type = CustomConnectorTemplateLoader.save_template(
+                db=db, zip_file=zip_file
             )
     except BadZipFile:
         raise HTTPException(status_code=400, detail="Invalid zip file")
@@ -102,12 +102,6 @@ def register_connector_template(
     if connector_template:
         event_audit_service = EventAuditService(db)
         connection_service = ConnectionService(db, event_audit_service)
-
-        if not was_already_custom:
-            # Switching from fides-provided to custom: wipe datasets so the
-            # customer starts fresh (stored template already replaced in save_template)
-            connection_service.delete_datasets_for_connector_type(connector_type)
-
         connection_service.update_existing_connection_configs_for_connector_type(
             connector_type, connector_template
         )
