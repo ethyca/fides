@@ -576,7 +576,10 @@ def upgrade() -> None:
             ["question_id"], ["assessment_question.id"], ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(
-            ["current_version_id"], ["answer_version.id"], ondelete="SET NULL"
+            ["current_version_id"],
+            ["answer_version.id"],
+            name="fk_assessment_answer_current_version_id",
+            ondelete="SET NULL",
         ),
         sa.PrimaryKeyConstraint("id"),
     )

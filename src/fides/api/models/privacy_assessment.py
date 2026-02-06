@@ -230,7 +230,12 @@ class AssessmentAnswer(Base):
     )
     current_version_id = Column(
         String,
-        ForeignKey("answer_version.id", ondelete="SET NULL"),
+        ForeignKey(
+            "answer_version.id",
+            ondelete="SET NULL",
+            use_alter=True,
+            name="fk_assessment_answer_current_version_id",
+        ),
         nullable=True,
     )
 
