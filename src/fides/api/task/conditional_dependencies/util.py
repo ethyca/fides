@@ -121,7 +121,7 @@ def set_nested_value(path: list[str], value: Any) -> dict[str, Any]:
 
 
 def extract_leaves(
-    condition: Union[ConditionLeaf, ConditionGroup, dict, None]
+    condition: Union[ConditionLeaf, ConditionGroup, dict, None],
 ) -> list[ConditionLeaf]:
     """
     Recursively extracts all leaf conditions from a condition tree.
@@ -162,7 +162,7 @@ def extract_leaves(
 
 
 def extract_field_addresses(
-    condition: Union[ConditionLeaf, ConditionGroup, dict, None]
+    condition: Union[ConditionLeaf, ConditionGroup, dict, None],
 ) -> set[str]:
     """
     Recursively extracts all field addresses from a condition tree.

@@ -44,6 +44,7 @@ FIELD_TEST_VALUES = {
     PrivacyRequestFields.origin.value: ("https://example.com", Operator.eq),
 }
 
+
 @pytest.fixture
 def evaluator(db: Session) -> PolicyEvaluator:
     return PolicyEvaluator(db)
@@ -71,14 +72,21 @@ def _create_policy_with_rule(
         "policy_id": policy.id,
     }
     if action_type == ActionType.erasure:
-        rule_data["masking_strategy"] = {"strategy": "null_rewrite", "configuration": {}}
+        rule_data["masking_strategy"] = {
+            "strategy": "null_rewrite",
+            "configuration": {},
+        }
     Rule.create(db=db, data=rule_data)
     return policy
 
 
 def _add_condition(db: Session, policy: Policy, condition_tree) -> None:
     """Add a condition tree to a policy"""
-    tree = condition_tree.model_dump() if hasattr(condition_tree, "model_dump") else condition_tree
+    tree = (
+        condition_tree.model_dump()
+        if hasattr(condition_tree, "model_dump")
+        else condition_tree
+    )
     PolicyCondition.create(db=db, data={"policy_id": policy.id, "condition_tree": tree})
 
 
@@ -125,11 +133,14 @@ class TestPolicySelection:
 
         assert result.policy.key == expected
 
-    def test_falls_back_when_specific_policy_doesnt_match(self, db: Session, evaluator: PolicyEvaluator):
+    def test_falls_back_when_specific_policy_doesnt_match(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
         """Falls back to less specific policy when more specific doesn't match"""
         _create_policy_with_condition(db, "general", _leaf(LOCATION_REGULATIONS_FIELD))
         _create_policy_with_condition(
-            db, "specific",
+            db,
+            "specific",
             ConditionGroup(
                 logical_operator=GroupOperator.and_,
                 conditions=[_leaf(LOCATION_COUNTRY_FIELD), _leaf(SOURCE_FIELD)],
@@ -149,7 +160,9 @@ class TestPolicySelection:
 class TestDefaultFallback:
     """Test default policy fallback"""
 
-    def test_uses_default_for_action_type(self, db: Session, evaluator: PolicyEvaluator):
+    def test_uses_default_for_action_type(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
         """Queries for specific default policy based on action type when no conditions match"""
         # Create a conditional policy that won't match
         _create_policy_with_condition(db, "conditional", _leaf(LOCATION_FIELD, "US"))
@@ -174,8 +187,9 @@ class TestDefaultFallback:
 
 
 class TestPolicyEvaluationError:
-
-    def test_raises_when_default_policy_missing(self, db: Session, evaluator: PolicyEvaluator):
+    def test_raises_when_default_policy_missing(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
         """Raises error when default policy for action type doesn't exist (no seed_data)"""
         pr = _create_request("US")
 
@@ -195,11 +209,14 @@ class TestPolicySpecificity:
     an error is raised since this is an ambiguous configuration.
     """
 
-    def test_more_conditions_beats_fewer_conditions(self, db: Session, evaluator: PolicyEvaluator):
+    def test_more_conditions_beats_fewer_conditions(
+        self, db: Session, evaluator: PolicyEvaluator
+    ):
         """Policy with more conditions wins, regardless of tier"""
         # Policy with 2 conditions (tier 3 from country)
         _create_policy_with_condition(
-            db, "two_conditions",
+            db,
+            "two_conditions",
             ConditionGroup(
                 logical_operator=GroupOperator.and_,
                 conditions=[_leaf(LOCATION_COUNTRY_FIELD), _leaf(SOURCE_FIELD)],
@@ -219,10 +236,22 @@ class TestPolicySpecificity:
         "winner_field,loser_field",
         [
             param(LOCATION_FIELD, LOCATION_COUNTRY_FIELD, id="exact_beats_country"),
-            param(LOCATION_COUNTRY_FIELD, LOCATION_GROUPS_FIELD, id="country_beats_groups"),
-            param(LOCATION_GROUPS_FIELD, LOCATION_REGULATIONS_FIELD, id="groups_beats_regulations"),
-            param(LOCATION_REGULATIONS_FIELD, SOURCE_FIELD, id="regulations_beats_non_location"),
-            param(LOCATION_COUNTRY_FIELD, SOURCE_FIELD, id="country_beats_non_location"),
+            param(
+                LOCATION_COUNTRY_FIELD, LOCATION_GROUPS_FIELD, id="country_beats_groups"
+            ),
+            param(
+                LOCATION_GROUPS_FIELD,
+                LOCATION_REGULATIONS_FIELD,
+                id="groups_beats_regulations",
+            ),
+            param(
+                LOCATION_REGULATIONS_FIELD,
+                SOURCE_FIELD,
+                id="regulations_beats_non_location",
+            ),
+            param(
+                LOCATION_COUNTRY_FIELD, SOURCE_FIELD, id="country_beats_non_location"
+            ),
         ],
     )
     def test_higher_tier_wins_for_equal_condition_count(

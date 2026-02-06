@@ -72,6 +72,10 @@ ENV PATH=/opt/fides/bin:$PATH
 
 # General Application Setup ##
 USER fidesuser
+
+# This prevents getpwuid() crashes when running as non-default UIDs
+ENV USER=fidesuser
+
 COPY --chown=fidesuser:fidesgroup . /fides
 WORKDIR /fides
 

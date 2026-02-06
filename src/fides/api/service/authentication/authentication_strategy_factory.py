@@ -15,6 +15,9 @@ from fides.api.service.authentication.authentication_strategy_basic import (
 from fides.api.service.authentication.authentication_strategy_bearer import (
     BearerAuthenticationStrategy,
 )
+from fides.api.service.authentication.authentication_strategy_google_cloud_service_account import (
+    GoogleCloudServiceAccountAuthenticationStrategy,
+)
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
@@ -36,6 +39,7 @@ class SupportedAuthenticationStrategies(Enum):
     query_param = QueryParamAuthenticationStrategy
     oauth2_authorization_code = OAuth2AuthorizationCodeAuthenticationStrategy
     oauth2_client_credentials = OAuth2ClientCredentialsAuthenticationStrategy
+    google_cloud_service_account = GoogleCloudServiceAccountAuthenticationStrategy
 
     @classmethod
     def __contains__(cls, item: str) -> bool:

@@ -19,7 +19,37 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.78.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.78.2..main)
+
+## [2.78.2](https://github.com/ethyca/fides/compare/2.78.1..2.78.2)
+
+### Added
+- Default data steward filter in action center is dependant on assigned monitors [#7309](https://github.com/ethyca/fides/pull/7309)
+- Support for stewarded monitors specified on user clients [#7299](https://github.com/ethyca/fides/pull/7299)
+- Added support for chat provider configurations [#7297](https://github.com/ethyca/fides/pull/7297) https://github.com/ethyca/fides/labels/db-migration
+- More descriptive error message for unauthorized actions in action center [#7314](https://github.com/ethyca/fides/pull/7314)
+- Added UI support for selecting all items across pages in Okta monitor results [#7307](https://github.com/ethyca/fides/pull/7307)
+- Added a Policy Condition Evaluator. [#7253](https://github.com/ethyca/fides/pull/7253)
+- Support Google Service Account authentication [#7257](https://github.com/ethyca/fides/pull/7257)
+- Added ability to modify data uses for Okta monitor results in infrastructure systems [#7280](https://github.com/ethyca/fides/pull/7280)
+- Added Transcend cookie migration support to fides.js [#7272](https://github.com/ethyca/fides/pull/7272)
+
+### Changed
+- Customers field deletion are now preserved when merging datasets. [#7277](https://github.com/ethyca/fides/pull/7277)
+- Updated Okta monitor infrastructure systems filter functionality [#7289](https://github.com/ethyca/fides/pull/7289)
+- Refactored activity tab to use monitor_config_key filter when scoped to a monitor [#7273](https://github.com/ethyca/fides/pull/7273)
+- Updated Okta monitor form to use the standard monitor endpoints [#7276](https://github.com/ethyca/fides/pull/7276)
+
+### Developer Experience
+- Added tests for fidesString overriding existing cookie values [#7290](https://github.com/ethyca/fides/pull/7290)
+
+### Fixed
+- Fixed "ignore" option showing up on already-ignored items in Okta monitor results [#7312](https://github.com/ethyca/fides/pull/7312)
+
+## [2.78.1](https://github.com/ethyca/fides/compare/2.78.0..2.78.1)
+
+### Changed
+- Explicitly set USER environment variable to fidesuser [#7315](https://github.com/ethyca/fides/pull/7315)
 
 ## [2.78.0](https://github.com/ethyca/fides/compare/2.77.1..2.78.0)
 
@@ -65,6 +95,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added a nox script to compile changelog fragments into CHANGELOG.md [#7177](https://github.com/ethyca/fides/pull/7177)
 
 ### Fixed
+- Fixed consent and erasure email check to only check relevant connectors [#7271] (https://github.com/ethyca/fides/pull/7271)
+- syncing url and search form for the action center and removing default monitor filter [#7279] (https://github.com/ethyca/fides/pull/7279)
 - Fixed TCF dismissal to check for proper TCF cookie with GPC enabled [#7227](https://github.com/ethyca/fides/pull/7227)
 - Included vendors disclosed segment in TC string for __tcfapi getTCData [#7266](https://github.com/ethyca/fides/pull/7266)
 - Adds CSP headers for docs pages [#7235](https://github.com/ethyca/fides/pull/7235)
@@ -75,6 +107,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed monitor filter state syncing [#7239](https://github.com/ethyca/fides/pull/7239)
 - Fixed GPC and automated consent being evaluated after FidesInitialized fires [#7222](https://github.com/ethyca/fides/pull/7222)
 - Added FidesLocaleUpdated event to FidesJS to notify when a user changes the language [#7234](https://github.com/ethyca/fides/pull/7234)
+- Fixed Snowflake connection failing when using private key authentication without passphrase [#7294](https://github.com/ethyca/fides/pull/7294)
 
 ### Removed
 - Removed cypress-e2e test suite and associated GitHub workflow [#7193](https://github.com/ethyca/fides/pull/7193)
