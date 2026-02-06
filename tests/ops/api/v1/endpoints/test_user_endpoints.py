@@ -1791,6 +1791,83 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == system_manager.id
 
+    def test_login_with_monitors(
+        self, db, url, monitor_steward, api_client, monitor_config
+    ):
+        """Test that login creates a client with monitors populated from stewarded_monitor_ids."""
+        # Delete existing client for test purposes
+        monitor_steward.client.delete(db)
+        body = {
+            "username": monitor_steward.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        assert monitor_steward.client is None  # client does not exist
+        assert monitor_steward.permissions is not None
+        assert monitor_steward.stewarded_monitor_ids == [monitor_config.id]
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(monitor_steward)
+        assert monitor_steward.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == monitor_steward.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
+        assert token_data["monitors"] == [monitor_config.id]
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == monitor_steward.id
+
+    def test_login_after_monitor_steward_removed(
+        self, db, url, monitor_steward, api_client, monitor_config
+    ):
+        """Test that client is updated on login when a user is removed as monitor steward.
+        This mirrors test_login_after_system_deleted but for monitors.
+        """
+        assert monitor_steward.client
+        assert monitor_steward.client.monitors == [monitor_config.id]
+        assert monitor_steward.stewarded_monitor_ids == [monitor_config.id]
+
+        monitor_steward.permissions.roles = [VIEWER]
+        monitor_steward.save(db=db)
+
+        # Remove user as steward of the monitor
+        monitor_config.stewards.remove(monitor_steward)
+        db.commit()
+        db.refresh(monitor_steward)
+
+        # User no longer stewards any monitors
+        assert monitor_steward.stewarded_monitor_ids == []
+
+        body = {
+            "username": monitor_steward.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(monitor_steward)
+        assert monitor_steward.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == monitor_steward.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
+        assert token_data["monitors"] == []  # Updated to reflect removed stewardship
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == monitor_steward.id
+
     def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
         viewer_user.permissions.roles = []
         viewer_user.save(db)  # Make sure user doesn't have roles or scopes
