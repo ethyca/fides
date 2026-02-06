@@ -1,0 +1,3 @@
+pr: 7295
+type: Changed
+description: Migrated consent reporting tables to Ant Design
