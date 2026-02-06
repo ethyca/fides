@@ -74,7 +74,7 @@ jobs:
 
       - name: Install dependencies and nox
         if: success()
-        run: uv sync --extra dev
+        run: uv sync
 
       - name: Cache Nox virtual environment
         if: success()

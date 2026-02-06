@@ -459,6 +459,11 @@ def check_worker_startup(session: Session) -> None:
     """
     Check that the main 'worker-dsr' service can start up successfully using docker compose --wait.
     Relies on the healthcheck defined in docker-compose.yml.
+
+    Uses image ethyca/fides:local. To match CI (prod image), build it first:
+      uv run nox -s "build(test)"
+    then run:
+      uv run nox -s check_worker_startup
     """
     worker_service = "worker-dsr"
     session.log(f"Attempting to start and wait for service: {worker_service}")

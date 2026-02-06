@@ -61,7 +61,7 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Install fides
-        run: uv sync --extra dev
+        run: uv sync
 
       - name: Run `fides --version`
         run: uv run fides --version

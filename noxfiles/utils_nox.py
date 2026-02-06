@@ -53,11 +53,13 @@ def teardown(session: nox.Session, volumes: bool = False, images: bool = False) 
 
 
 def install_requirements(session: nox.Session, include_optional: bool = False) -> None:
-    """Install project with dev dependencies; optionally include mssql/all extras."""
+    """Install project with dev dependencies (via uv sync); optionally include all extra.
+    uv sync includes the dev dependency group by default; use --no-dev to exclude it."""
+    # uv sync installs the project and dependency-groups (e.g. dev) into the given env
+    session.env["UV_PROJECT_ENVIRONMENT"] = str(session.virtualenv.location)
+    session.run("uv", "sync", external=True)
     if include_optional:
-        session.install("-e", ".[dev,all]")
-    else:
-        session.install("-e", ".[dev]")
+        session.run("uv", "sync", "--extra", "all", external=True)
 
 
 @nox.session()

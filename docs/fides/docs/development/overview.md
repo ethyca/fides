@@ -54,7 +54,7 @@ Explicitly set resource allocations in Docker Desktop
 Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend using [uv](https://docs.astral.sh/uv/) and a virtual environment:
 
 ```bash
-uv sync --extra dev
+uv sync
 ```
 
 ---

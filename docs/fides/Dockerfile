@@ -28,7 +28,7 @@ RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY . .
-RUN pip install -U uv && uv sync --extra dev --python /opt/venv/bin/python && /opt/venv/bin/uv pip install -r docs/fides/requirements.txt
+RUN pip install -U uv && uv sync --python /opt/venv/bin/python && /opt/venv/bin/uv pip install -r docs/fides/requirements.txt
 
 
 FROM python:3.13-slim-bookworm AS docs
