@@ -137,6 +137,8 @@ dependencies = [
 [project.optional-dependencies]
 mssql = ["pymssql==2.3.7"]
 all = ["pymssql==2.3.7"]
+
+[dependency-groups]
 dev = [
     "ruff>=0.14.11",
     "debugpy~=1.8.0",
