@@ -2,14 +2,11 @@ import { formatDistanceStrict } from "date-fns";
 import {
   Avatar,
   Button,
-  Col,
-  Divider,
   ExpandCollapse,
   Flex,
   List,
   ListItemProps,
   OpenCloseArrow,
-  Row,
   Space,
   SparkleIcon,
   Tag,
@@ -112,134 +109,139 @@ export const MonitorResult = ({
   );
 
   return (
-    <List.Item data-testid={`monitor-result-${key}`} {...props}>
-      <Flex vertical className="grow">
-        <Row gutter={{ xs: 6, lg: 12 }} className="items-center">
-          <Col span={heliosV2Enabled ? 14 : 17}>
-            <List.Item.Meta
-              avatar={
-                <ConnectionTypeLogo
-                  data={{
-                    kind: ConnectionLogoKind.CONNECTION,
-                    connectionType,
-                    name,
-                    key,
-                    saasType: saasConfig?.type,
-                    websiteUrl: secrets?.url,
-                  }}
-                />
-              }
-              title={
-                <Flex
-                  align="center"
-                  gap={4}
-                  className={styles["monitor-result__title"]}
-                >
-                  <NextLink href={href} data-testid="monitor-link">
-                    {name}
-                  </NextLink>
-                  <Text type="secondary">
-                    {nFormatter(totalUpdates ?? 0)} {monitorResultCountType}
-                  </Text>
-                  {consentStatus && (
-                    <DiscoveryStatusIcon consentStatus={consentStatus} />
-                  )}
-                  {isTestMonitor && <Tag color="nectar">test monitor</Tag>}
-                </Flex>
-              }
-              description={
-                !!updates && (
-                  <MonitorResultDescription
-                    updates={updates}
-                    isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
-                  />
-                )
-              }
-            />
-          </Col>
-          <Col span={2} className="flex justify-end">
-            {!!stewards && (
-              <Avatar.Group
-                max={{
-                  count: 5,
-                  style: { background: palette.FIDESUI_NEUTRAL_700 },
-                }}
-              >
-                {stewards.map((steward) => (
-                  <Tooltip title={formatUser(steward)} key={steward.id}>
-                    <Avatar style={{ background: palette.FIDESUI_MINOS }}>
-                      {steward.first_name?.charAt(0)}
-                      {steward.last_name?.charAt(0)}
-                    </Avatar>
-                  </Tooltip>
-                ))}
-              </Avatar.Group>
-            )}
-          </Col>
-
-          <Col span={3} className="flex justify-end">
-            {!!lastMonitoredDistance && (
-              <Tooltip title={formattedLastMonitored}>
-                <Text type="secondary" data-testid="monitor-date">
-                  <span className="hidden lg:inline">Last scan: </span>
-                  {lastMonitoredDistance}
-                </Text>
-              </Tooltip>
-            )}
-          </Col>
-          <Col
-            span={heliosV2Enabled ? 5 : 2}
-            className="flex items-center justify-end"
-          >
-            {heliosV2Enabled && showConfidenceRow && (
-              <>
-                <Button
-                  type="link"
-                  className="p-0"
-                  icon={<OpenCloseArrow isOpen={isConfidenceRowExpanded} />}
-                  iconPosition="end"
-                  onClick={() =>
-                    setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
-                  }
-                  aria-haspopup="true"
-                  aria-expanded={isConfidenceRowExpanded}
-                  aria-controls={`confidence-row-${key}`}
-                  aria-label={`${isConfidenceRowExpanded ? "Collapse" : "Expand"} findings`}
-                >
-                  <Space>
-                    <SparkleIcon />
-                    Findings
-                  </Space>
-                </Button>
-                <Divider type="vertical" orientationMargin={0} />
-              </>
-            )}
-            <NextLink key="review" href={href} passHref legacyBehavior>
-              <Button
-                type="link"
-                className="p-0"
-                data-testid={`review-button-${monitorSummary.key}`}
-              >
-                Review
-              </Button>
-            </NextLink>
-          </Col>
-        </Row>
-        {heliosV2Enabled && showConfidenceRow && confidenceCounts && (
+    <List.Item
+      data-testid={`monitor-result-${key}`}
+      {...props}
+      className={`flex-wrap gap-x-4 lg:gap-x-8 ${styles["monitor-result"]}`}
+      extra={
+        heliosV2Enabled &&
+        showConfidenceRow &&
+        confidenceCounts && (
           <ExpandCollapse
             isExpanded={isConfidenceRowExpanded}
             motionKey={`confidence-row-${key}`}
+            className="mt-4 w-full flex-auto"
           >
             <ConfidenceRow
               confidenceCounts={confidenceCounts}
               reviewHref={href}
               monitorId={key}
-              className="mt-6"
               id={`confidence-row-${key}`}
             />
           </ExpandCollapse>
-        )}
-      </Flex>
+        )
+      }
+      actions={[
+        ...(heliosV2Enabled && showConfidenceRow
+          ? [
+              <Button
+                key="findings"
+                type="link"
+                className="p-0"
+                icon={<OpenCloseArrow isOpen={isConfidenceRowExpanded} />}
+                iconPosition="end"
+                onClick={() =>
+                  setIsConfidenceRowExpanded(!isConfidenceRowExpanded)
+                }
+                aria-haspopup="true"
+                aria-expanded={isConfidenceRowExpanded}
+                aria-controls={`confidence-row-${key}`}
+                aria-label={`${isConfidenceRowExpanded ? "Collapse" : "Expand"} findings`}
+              >
+                <Space>
+                  <SparkleIcon />
+                  Findings
+                </Space>
+              </Button>,
+            ]
+          : []),
+        <NextLink key="review" href={href} passHref legacyBehavior>
+          <Button
+            type="link"
+            className="p-0"
+            data-testid={`review-button-${monitorSummary.key}`}
+          >
+            Review
+          </Button>
+        </NextLink>,
+      ]}
+    >
+      <List.Item.Meta
+        avatar={
+          <ConnectionTypeLogo
+            data={{
+              kind: ConnectionLogoKind.CONNECTION,
+              connectionType,
+              name,
+              key,
+              saasType: saasConfig?.type,
+              websiteUrl: secrets?.url,
+            }}
+          />
+        }
+        title={
+          <Flex
+            align="center"
+            gap={4}
+            className="flex-wrap overflow-hidden whitespace-nowrap font-normal"
+          >
+            <NextLink
+              href={href}
+              data-testid="monitor-link"
+              className="overflow-hidden font-semibold"
+            >
+              <Text ellipsis>{name}</Text>
+            </NextLink>
+            <Text type="secondary">
+              {nFormatter(totalUpdates ?? 0)} {monitorResultCountType}
+            </Text>
+            {consentStatus && (
+              <DiscoveryStatusIcon consentStatus={consentStatus} />
+            )}
+            {isTestMonitor && <Tag color="nectar">test monitor</Tag>}
+          </Flex>
+        }
+        description={
+          !!updates && (
+            <MonitorResultDescription
+              updates={updates}
+              isAssetList={monitorType === MONITOR_TYPES.WEBSITE}
+            />
+          )
+        }
+      />
+      {!!stewards && stewards.length > 0 && (
+        <Avatar.Group
+          max={{
+            count: 5,
+            style: { background: palette.FIDESUI_NEUTRAL_700 },
+          }}
+          className="hidden flex-[6.5rem] grow-0 justify-end lg:flex"
+          size="small"
+        >
+          {stewards.map((steward) => (
+            <Tooltip title={formatUser(steward)} key={steward.id}>
+              <Avatar style={{ background: palette.FIDESUI_MINOS }}>
+                {steward.first_name?.charAt(0)}
+                {steward.last_name?.charAt(0)}
+              </Avatar>
+            </Tooltip>
+          ))}
+        </Avatar.Group>
+      )}
+      {!!lastMonitoredDistance && (
+        <Tooltip title={formattedLastMonitored}>
+          <Text
+            className="!hidden flex-[6rem] !grow-0 text-center md:!flex lg:flex-[10rem]"
+            type="secondary"
+            data-testid="monitor-date"
+            ellipsis
+          >
+            <span className="hidden lg:contents">Last scan: </span>
+            {lastMonitoredDistance}
+          </Text>
+        </Tooltip>
+      )}
     </List.Item>
   );
 };
