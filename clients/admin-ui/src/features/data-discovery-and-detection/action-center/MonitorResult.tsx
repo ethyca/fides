@@ -17,7 +17,6 @@ import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useState } from "react";
 
-import { useFeatures } from "~/features/common/features";
 import {
   formatDate,
   formatUser,
@@ -54,7 +53,6 @@ export const MonitorResult = ({
   href,
   ...props
 }: MonitorResultProps) => {
-  const { flags } = useFeatures();
   const {
     name,
     consent_status: consentStatus,
