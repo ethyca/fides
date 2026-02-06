@@ -23,6 +23,7 @@ from sqlalchemy import (
 )
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
@@ -81,7 +82,9 @@ class AssessmentTemplate(Base):
     ORGANIZATION-ASSESSMENT-YYYY-MM-DD (e.g., CPPA-CPRA-RA-2024-03-29)
     """
 
-    __tablename__ = "assessment_template"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "assessment_template"
 
     key = Column(String, unique=True, nullable=False, index=True)
     version = Column(String, nullable=False)
@@ -114,7 +117,9 @@ class AssessmentQuestion(Base):
     Each group has a shared requirement_title for display (e.g., "Processing Scope and Purpose(s)").
     """
 
-    __tablename__ = "assessment_question"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "assessment_question"
 
     template_id = Column(
         String,
@@ -154,7 +159,9 @@ class PrivacyAssessment(Base):
     Represents a concrete assessment being conducted using a specific template.
     """
 
-    __tablename__ = "privacy_assessment"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "privacy_assessment"
 
     template_id = Column(
         String,
@@ -205,7 +212,9 @@ class AssessmentAnswer(Base):
     of changes is stored in the AnswerVersion table.
     """
 
-    __tablename__ = "assessment_answer"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "assessment_answer"
 
     assessment_id = Column(
         String,
@@ -251,7 +260,9 @@ class AnswerVersion(Base):
     This provides a complete audit trail of all changes.
     """
 
-    __tablename__ = "answer_version"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "answer_version"
 
     answer_id = Column(
         String,

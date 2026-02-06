@@ -375,18 +375,18 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("key"),
     )
-    op.create_index("ix_assessment_template_key", "assessment_template", ["key"])
+    op.create_index("ix_assessment_template_id", "assessment_template", ["id"])
+    op.create_index(
+        "ix_assessment_template_key", "assessment_template", ["key"], unique=True
+    )
 
     # Create assessment_question table
     op.create_table(
@@ -414,19 +414,18 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.ForeignKeyConstraint(
             ["template_id"], ["assessment_template.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index("ix_assessment_question_id", "assessment_question", ["id"])
     op.create_index(
         "ix_assessment_question_template_id", "assessment_question", ["template_id"]
     )
@@ -471,17 +470,16 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.ForeignKeyConstraint(["template_id"], ["assessment_template.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index("ix_privacy_assessment_id", "privacy_assessment", ["id"])
     op.create_index(
         "ix_privacy_assessment_template_id", "privacy_assessment", ["template_id"]
     )
@@ -491,6 +489,12 @@ def upgrade() -> None:
         ["system_fides_key"],
     )
     op.create_index("ix_privacy_assessment_status", "privacy_assessment", ["status"])
+    op.create_index(
+        "ix_privacy_assessment_created_by", "privacy_assessment", ["created_by"]
+    )
+    op.create_index(
+        "ix_privacy_assessment_declaration_id", "privacy_assessment", ["declaration_id"]
+    )
 
     # Create answer_version table (before assessment_answer due to FK)
     op.create_table(
@@ -535,16 +539,15 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index("ix_answer_version_id", "answer_version", ["id"])
     op.create_index("ix_answer_version_answer_id", "answer_version", ["answer_id"])
     op.create_index("ix_answer_version_change_type", "answer_version", ["change_type"])
     op.create_index("ix_answer_version_created_by", "answer_version", ["created_by"])
@@ -560,13 +563,11 @@ def upgrade() -> None:
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.Column(
             "updated_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
         ),
         sa.ForeignKeyConstraint(
             ["assessment_id"], ["privacy_assessment.id"], ondelete="CASCADE"
@@ -579,6 +580,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index("ix_assessment_answer_id", "assessment_answer", ["id"])
     op.create_index(
         "ix_assessment_answer_assessment_id", "assessment_answer", ["assessment_id"]
     )
