@@ -11,6 +11,9 @@ from fides.api.db.database import configure_db, migrate_db, reset_db
 from fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf import (
     get_pending_is_leaf_count,
 )
+from fides.api.migrations.backfill_scripts.backfill_stagedresrouceancestor_distance import (
+    get_pending_distance_count,
+)
 from fides.api.migrations.backfill_scripts.utils import acquire_backfill_lock
 from fides.api.migrations.post_upgrade_backfill import (
     is_backfill_running,
@@ -218,5 +221,6 @@ def get_backfill_status(
         is_running=is_backfill_running(),
         pending_count={
             "stagedresource-is_leaf": get_pending_is_leaf_count(db),
+            "stagedresourceancestor-distance": get_pending_distance_count(db),
         },
     )
