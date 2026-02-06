@@ -1,10 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraHStack as HStack,
-  ChakraStack as Stack,
-  ChakraText as Text,
-} from "fidesui";
+import { Button, Flex, Typography } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
@@ -27,6 +21,7 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
+import ErrorPage from "../common/errors/ErrorPage";
 import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {
   changeStep,
@@ -35,7 +30,6 @@ import {
 } from "./config-wizard.slice";
 import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
-import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 
 // OAuth2 config type for Okta authentication
@@ -155,14 +149,27 @@ const AuthenticateOktaForm = () => {
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={ValidationSchema}
-      onSubmit={handleSubmit}
-    >
-      {({ isValid, isSubmitting, dirty }) => (
-        <Form data-testid="authenticate-okta-form">
-          <Stack spacing={10}>
+    <Flex vertical gap="large">
+      <NextBreadcrumb
+        items={[
+          {
+            title: "Add systems",
+            href: "",
+            onClick: (e) => {
+              e.preventDefault();
+              handleCancel();
+            },
+          },
+          { title: "Authenticate Okta Scanner" },
+        ]}
+      />
+      <Formik
+        initialValues={initialValues}
+        validationSchema={ValidationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isValid, isSubmitting, dirty }) => (
+          <>
             {isSubmitting ? (
               <ScannerLoading
                 title="System scanning in progress"
@@ -170,76 +177,76 @@ const AuthenticateOktaForm = () => {
               />
             ) : null}
 
-            {scannerError ? <ScannerError error={scannerError} /> : null}
-            {!isSubmitting && !scannerError ? (
-              <>
-                <Box>
-                  <NextBreadcrumb
-                    className="mb-4"
-                    items={[
-                      {
-                        title: "Add systems",
-                        href: "",
-                        onClick: (e) => {
-                          e.preventDefault();
-                          handleCancel();
-                        },
-                      },
-                      { title: "Authenticate Okta Scanner" },
-                    ]}
-                  />
-                  <Text>{OKTA_AUTH_DESCRIPTION}</Text>
-                </Box>
-                <Stack>
-                  <CustomTextInput
-                    name="orgUrl"
-                    label="Organization URL"
-                    tooltip="The URL for your organization's Okta account (e.g. https://your-org.okta.com)"
-                    placeholder="https://your-org.okta.com"
-                  />
-                  <CustomTextInput
-                    name="clientId"
-                    label="Client ID"
-                    tooltip="The OAuth2 client ID from your Okta API Services application"
-                    placeholder="0oa1abc2def3ghi4jkl5"
-                  />
-                  <CustomTextArea
-                    name="privateKey"
-                    label="Private key"
-                    tooltip="RSA private key in JWK format for OAuth2 authentication"
-                    placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
-                    textAreaProps={{
-                      rows: 8,
-                      style: { fontFamily: "monospace", fontSize: "12px" },
-                    }}
-                  />
-                  <CustomTextInput
-                    name="scopes"
-                    label="Scopes"
-                    tooltip="OAuth2 scopes to request. Default is okta.apps.read for application discovery"
-                    placeholder="okta.apps.read"
-                  />
-                </Stack>
-              </>
+            {scannerError ? (
+              <ErrorPage
+                error={scannerError}
+                defaultMessage="Fides was unable to scan your infrastructure. Please ensure your
+        credentials are accurate and inspect the error log below for more
+        details."
+                fullScreen={false}
+              />
             ) : null}
-            {!isSubmitting ? (
-              <HStack>
-                <Button onClick={handleCancel}>Cancel</Button>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  disabled={!dirty || !isValid}
-                  loading={isLoading}
-                  data-testid="submit-btn"
-                >
-                  Save and continue
-                </Button>
-              </HStack>
-            ) : null}
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+            <Form data-testid="authenticate-okta-form">
+              <Flex vertical gap="large">
+                {!isSubmitting && !scannerError ? (
+                  <>
+                    <Flex vertical gap="small" className="w-full max-w-xl">
+                      <Typography.Paragraph>
+                        {OKTA_AUTH_DESCRIPTION}
+                      </Typography.Paragraph>
+                      <CustomTextInput
+                        name="orgUrl"
+                        label="Organization URL"
+                        tooltip="The URL for your organization's Okta account (e.g. https://your-org.okta.com)"
+                        placeholder="https://your-org.okta.com"
+                        isRequired
+                      />
+                      <CustomTextInput
+                        name="clientId"
+                        label="Client ID"
+                        tooltip="The OAuth2 client ID from your Okta API Services application"
+                        placeholder="0oa1abc2def3ghi4jkl5"
+                        isRequired
+                      />
+                      <CustomTextArea
+                        name="privateKey"
+                        label="Private key"
+                        tooltip="RSA private key in JWK format for OAuth2 authentication"
+                        placeholder='{"kty":"RSA","kid":"...","n":"...","e":"AQAB","d":"..."}'
+                        isRequired
+                        textAreaProps={{
+                          rows: 8,
+                          style: { fontFamily: "monospace", fontSize: "12px" },
+                        }}
+                      />
+                      <CustomTextInput
+                        name="scopes"
+                        label="Scopes"
+                        tooltip="OAuth2 scopes to request. Default is okta.apps.read for application discovery"
+                        placeholder="okta.apps.read"
+                        isRequired
+                      />
+                    </Flex>
+                    <Flex gap="small">
+                      <Button onClick={handleCancel}>Cancel</Button>
+                      <Button
+                        htmlType="submit"
+                        type="primary"
+                        disabled={!dirty || !isValid}
+                        loading={isLoading}
+                        data-testid="submit-btn"
+                      >
+                        Save and continue
+                      </Button>
+                    </Flex>
+                  </>
+                ) : null}
+              </Flex>
+            </Form>
+          </>
+        )}
+      </Formik>
+    </Flex>
   );
 };
 

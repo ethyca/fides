@@ -22,11 +22,13 @@ const ErrorPage = ({
   defaultMessage = "An unexpected error occurred.  Please try again",
   actions,
   showReload = true,
+  fullScreen = true,
 }: {
   error: FetchBaseQueryError | SerializedError;
   defaultMessage?: string;
   actions?: ActionProps[];
   showReload?: boolean;
+  fullScreen?: boolean;
 }) => {
   const errorMessage = getErrorMessage(error, defaultMessage);
   // handle both FetchBaseQueryError and SerializedError
@@ -45,7 +47,7 @@ const ErrorPage = ({
       vertical
       align="center"
       justify="center"
-      className="h-screen"
+      className={fullScreen ? "h-screen" : ""}
       data-testid="error-page-result"
     >
       <Result
