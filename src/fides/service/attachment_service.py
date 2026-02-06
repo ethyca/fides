@@ -240,7 +240,7 @@ class AttachmentService:
 
         # Delete the attachment record
         db.delete(attachment)
-        db.flush()
+        db.commit()
 
     def delete_for_reference(
         self, reference_id: str, reference_type: AttachmentReferenceType

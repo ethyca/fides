@@ -1343,7 +1343,7 @@ class PrivacyRequest(
         """Delete the attachment associated with the privacy request"""
         attachment = self.get_attachment_by_id(db, attachment_id)
         if attachment:
-            attachment.delete(db)
+            AttachmentService(db).delete(attachment)
 
     def _get_manual_webhook_attachments(
         self, db: Session, manual_webhook_id: str, reference_type: str
