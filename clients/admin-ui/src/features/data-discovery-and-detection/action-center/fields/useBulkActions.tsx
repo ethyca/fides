@@ -70,10 +70,18 @@ export const useBulkActions = (
       });
 
       if (isErrorResult(mutationResult)) {
+        /** Our error messages are bad. Purposefully out of place * */
+        const errorReason =
+          "error" in mutationResult &&
+          "status" in mutationResult.error &&
+          mutationResult.error.status === 403
+            ? "insufficient permissions to perform action"
+            : "";
+
         messageApi.open({
           key,
           type: "error",
-          content: getActionErrorMessage(actionType),
+          content: getActionErrorMessage(errorReason),
           duration: 5,
         });
 
