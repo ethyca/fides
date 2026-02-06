@@ -122,12 +122,12 @@ class AssessmentQuestion(Base):
         nullable=False,
         index=True,
     )
-    
+
     # Grouping fields
     requirement_key = Column(String, nullable=False, index=True)
     requirement_title = Column(String, nullable=False)  # Human-readable group title
     group_order = Column(Integer, nullable=False, default=0)  # Order of this group
-    
+
     # Question fields
     question_key = Column(String, nullable=False)
     question_text = Column(Text, nullable=False)

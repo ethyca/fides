@@ -65,7 +65,11 @@ CPRA_QUESTIONS = [
                 "guidance": "Describe the processing activity including its business purpose.",
                 "question_order": 1,
                 "required": True,
-                "fides_sources": ["system.name", "system.description", "privacy_declaration.name"],
+                "fides_sources": [
+                    "system.name",
+                    "system.description",
+                    "privacy_declaration.name",
+                ],
                 "expected_coverage": "partial",
             },
             {
@@ -74,7 +78,11 @@ CPRA_QUESTIONS = [
                 "guidance": "List all purposes/data uses for this processing activity.",
                 "question_order": 2,
                 "required": True,
-                "fides_sources": ["privacy_declaration.data_use", "data_use.name", "data_use.description"],
+                "fides_sources": [
+                    "privacy_declaration.data_use",
+                    "data_use.name",
+                    "data_use.description",
+                ],
                 "expected_coverage": "full",
             },
             {
@@ -144,7 +152,10 @@ CPRA_QUESTIONS = [
                 "guidance": "List all data categories using Fides taxonomy.",
                 "question_order": 1,
                 "required": True,
-                "fides_sources": ["privacy_declaration.data_categories", "data_category.name"],
+                "fides_sources": [
+                    "privacy_declaration.data_categories",
+                    "data_category.name",
+                ],
                 "expected_coverage": "full",
             },
             {
@@ -239,7 +250,10 @@ CPRA_QUESTIONS = [
                 "guidance": "List all vendors, processors, and other recipients.",
                 "question_order": 1,
                 "required": True,
-                "fides_sources": ["privacy_declaration.third_parties", "connection.name"],
+                "fides_sources": [
+                    "privacy_declaration.third_parties",
+                    "connection.name",
+                ],
                 "expected_coverage": "partial",
             },
             {
@@ -357,8 +371,18 @@ def upgrade() -> None:
         sa.Column("legal_reference", sa.Text(), nullable=True),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("key"),
     )
@@ -377,15 +401,40 @@ def upgrade() -> None:
         sa.Column("guidance", sa.Text(), nullable=True),
         sa.Column("question_order", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("required", sa.Boolean(), nullable=False, server_default="true"),
-        sa.Column("fides_sources", postgresql.ARRAY(sa.String()), nullable=False, server_default="{}"),
-        sa.Column("expected_coverage", sa.String(), nullable=False, server_default="none"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.ForeignKeyConstraint(["template_id"], ["assessment_template.id"], ondelete="CASCADE"),
+        sa.Column(
+            "fides_sources",
+            postgresql.ARRAY(sa.String()),
+            nullable=False,
+            server_default="{}",
+        ),
+        sa.Column(
+            "expected_coverage", sa.String(), nullable=False, server_default="none"
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["template_id"], ["assessment_template.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_assessment_question_template_id", "assessment_question", ["template_id"])
-    op.create_index("ix_assessment_question_requirement_key", "assessment_question", ["requirement_key"])
+    op.create_index(
+        "ix_assessment_question_template_id", "assessment_question", ["template_id"]
+    )
+    op.create_index(
+        "ix_assessment_question_requirement_key",
+        "assessment_question",
+        ["requirement_key"],
+    )
 
     # Create privacy_assessment table
     op.create_table(
@@ -393,8 +442,17 @@ def upgrade() -> None:
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("template_id", sa.String(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
-        sa.Column("status", sa.Enum("in_progress", "completed", "outdated", name="assessmentstatus"), nullable=False, server_default="in_progress"),
-        sa.Column("risk_level", sa.Enum("high", "medium", "low", name="risklevel"), nullable=True),
+        sa.Column(
+            "status",
+            sa.Enum("in_progress", "completed", "outdated", name="assessmentstatus"),
+            nullable=False,
+            server_default="in_progress",
+        ),
+        sa.Column(
+            "risk_level",
+            sa.Enum("high", "medium", "low", name="risklevel"),
+            nullable=True,
+        ),
         sa.Column("completeness", sa.Float(), nullable=False, server_default="0.0"),
         sa.Column("system_fides_key", sa.String(), nullable=False),
         sa.Column("system_name", sa.String(), nullable=True),
@@ -402,15 +460,36 @@ def upgrade() -> None:
         sa.Column("declaration_name", sa.String(), nullable=True),
         sa.Column("data_use", sa.String(), nullable=True),
         sa.Column("data_use_name", sa.String(), nullable=True),
-        sa.Column("data_categories", postgresql.ARRAY(sa.String()), nullable=False, server_default="{}"),
+        sa.Column(
+            "data_categories",
+            postgresql.ARRAY(sa.String()),
+            nullable=False,
+            server_default="{}",
+        ),
         sa.Column("created_by", sa.String(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.ForeignKeyConstraint(["template_id"], ["assessment_template.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_privacy_assessment_template_id", "privacy_assessment", ["template_id"])
-    op.create_index("ix_privacy_assessment_system_fides_key", "privacy_assessment", ["system_fides_key"])
+    op.create_index(
+        "ix_privacy_assessment_template_id", "privacy_assessment", ["template_id"]
+    )
+    op.create_index(
+        "ix_privacy_assessment_system_fides_key",
+        "privacy_assessment",
+        ["system_fides_key"],
+    )
     op.create_index("ix_privacy_assessment_status", "privacy_assessment", ["status"])
 
     # Create answer_version table (before assessment_answer due to FK)
@@ -420,16 +499,50 @@ def upgrade() -> None:
         sa.Column("answer_id", sa.String(), nullable=False),
         sa.Column("version_number", sa.Integer(), nullable=False, server_default="1"),
         sa.Column("answer_text", sa.Text(), nullable=True),
-        sa.Column("answer_status", sa.Enum("complete", "partial", "needs_input", name="answerstatus"), nullable=False, server_default="needs_input"),
-        sa.Column("answer_source", sa.Enum("system", "ai_analysis", "user_input", "slack", name="answersource"), nullable=False, server_default="system"),
+        sa.Column(
+            "answer_status",
+            sa.Enum("complete", "partial", "needs_input", name="answerstatus"),
+            nullable=False,
+            server_default="needs_input",
+        ),
+        sa.Column(
+            "answer_source",
+            sa.Enum(
+                "system", "ai_analysis", "user_input", "slack", name="answersource"
+            ),
+            nullable=False,
+            server_default="system",
+        ),
         sa.Column("confidence", sa.Float(), nullable=True),
-        sa.Column("change_type", sa.Enum("ai_generated", "human_edited", "approved", "rejected", name="answerchangetype"), nullable=False),
+        sa.Column(
+            "change_type",
+            sa.Enum(
+                "ai_generated",
+                "human_edited",
+                "approved",
+                "rejected",
+                name="answerchangetype",
+            ),
+            nullable=False,
+        ),
         sa.Column("created_by", sa.String(), nullable=False),
         sa.Column("evidence", postgresql.JSONB(), nullable=False, server_default="{}"),
-        sa.Column("source_references", postgresql.JSONB(), nullable=False, server_default="{}"),
+        sa.Column(
+            "source_references", postgresql.JSONB(), nullable=False, server_default="{}"
+        ),
         sa.Column("diff_from_previous", sa.Text(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index("ix_answer_version_answer_id", "answer_version", ["answer_id"])
@@ -443,15 +556,35 @@ def upgrade() -> None:
         sa.Column("assessment_id", sa.String(), nullable=False),
         sa.Column("question_id", sa.String(), nullable=False),
         sa.Column("current_version_id", sa.String(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.ForeignKeyConstraint(["assessment_id"], ["privacy_assessment.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["question_id"], ["assessment_question.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["current_version_id"], ["answer_version.id"], ondelete="SET NULL"),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["assessment_id"], ["privacy_assessment.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["question_id"], ["assessment_question.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["current_version_id"], ["answer_version.id"], ondelete="SET NULL"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index("ix_assessment_answer_assessment_id", "assessment_answer", ["assessment_id"])
-    op.create_index("ix_assessment_answer_question_id", "assessment_answer", ["question_id"])
+    op.create_index(
+        "ix_assessment_answer_assessment_id", "assessment_answer", ["assessment_id"]
+    )
+    op.create_index(
+        "ix_assessment_answer_question_id", "assessment_answer", ["question_id"]
+    )
 
     # Add FK from answer_version to assessment_answer (deferred due to circular reference)
     op.create_foreign_key(
@@ -521,15 +654,17 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     # Drop FK first
-    op.drop_constraint("fk_answer_version_answer_id", "answer_version", type_="foreignkey")
-    
+    op.drop_constraint(
+        "fk_answer_version_answer_id", "answer_version", type_="foreignkey"
+    )
+
     # Drop tables in reverse order
     op.drop_table("assessment_answer")
     op.drop_table("answer_version")
     op.drop_table("privacy_assessment")
     op.drop_table("assessment_question")
     op.drop_table("assessment_template")
-    
+
     # Drop enums
     op.execute("DROP TYPE IF EXISTS answerchangetype")
     op.execute("DROP TYPE IF EXISTS answersource")
