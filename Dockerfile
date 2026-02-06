@@ -171,7 +171,7 @@ COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-buil
 USER root
 # Build sdist with uv and install
 RUN cd /fides && uv build --sdist && \
-    uv pip install --python /opt/fides/bin/python dist/ethyca-fides-*.tar.gz
+    uv pip install --python /opt/fides/bin/python dist/ethyca_fides-*.tar.gz
 
 # Remove this directory to prevent issues with catch all
 RUN rm -r /fides/src/fides/ui-build
