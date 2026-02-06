@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.1"
+    "version": "2.78.2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -17629,6 +17629,26 @@
         "operationId": "accept_user_invite_api_v1_user_accept_invite_post",
         "parameters": [
           {
+            "name": "config_path_override",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Config Path Override"
+            }
+          },
+          {
+            "name": "verbose",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Verbose"
+            }
+          },
+          {
             "name": "username",
             "in": "query",
             "required": true,
@@ -19149,6 +19169,28 @@
             "const": "Bearer",
             "title": "Token Type",
             "default": "Bearer"
+          },
+          "expires_in": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires In"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
           }
         },
         "type": "object",
@@ -19156,7 +19198,7 @@
           "access_token"
         ],
         "title": "AccessToken",
-        "description": "A wrapper for the access_code returned upon successful authentication"
+        "description": "A wrapper for the access_code returned upon successful authentication."
       },
       "ActionType": {
         "type": "string",
@@ -27506,6 +27548,17 @@
               }
             ],
             "title": "Enable Property Specific Messaging"
+          },
+          "privacy_assessments_channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Privacy Assessments Channel"
           }
         },
         "additionalProperties": false,
