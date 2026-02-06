@@ -6,32 +6,28 @@ import CustomFieldRenderer, {
 } from "~/components/common/CustomFieldRenderer";
 import { ModalViews } from "~/components/modals/types";
 import { PhoneInput } from "~/components/phone-input";
-import { useConfig } from "~/features/common/config.slice";
 import { CustomConfigField, PrivacyRequestOption } from "~/types/config";
 
 import usePrivacyRequestForm from "./usePrivacyRequestForm";
 
 type PrivacyRequestFormProps = {
-  onClose: () => void;
-  openAction: number | null;
+  onExit: () => void;
+  openAction: PrivacyRequestOption | undefined;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  onSuccessWithoutVerification?: () => void;
 };
 
 const PrivacyRequestForm = ({
-  onClose,
+  onExit,
   openAction,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
+  onSuccessWithoutVerification,
 }: PrivacyRequestFormProps) => {
-  const config = useConfig();
-
-  const action =
-    typeof openAction === "number"
-      ? (config.actions[openAction] as PrivacyRequestOption)
-      : undefined;
+  const action = openAction;
 
   const {
     errors,
@@ -50,11 +46,12 @@ const PrivacyRequestForm = ({
     customIdentityFields,
     customPrivacyRequestFields,
   } = usePrivacyRequestForm({
-    onClose,
+    onExit,
     action,
     setCurrentView,
     setPrivacyRequestId,
     isVerificationRequired,
+    onSuccessWithoutVerification,
   });
 
   if (!action) {
@@ -197,7 +194,7 @@ const PrivacyRequestForm = ({
             ) : null;
           })}
         <Flex justify="stretch" gap="middle">
-          <Button type="default" variant="outlined" onClick={onClose} block>
+          <Button type="default" variant="outlined" onClick={onExit} block>
             {action.cancelButtonText || "Cancel"}
           </Button>
           <Button
