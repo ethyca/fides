@@ -1,5 +1,6 @@
 import { NextPage } from "next";
 import { useParams } from "next/navigation";
+
 import {
   ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE,
   ACTION_CENTER_DATASTORE_MONITOR_ROUTE,
@@ -12,7 +13,6 @@ export const MONITOR_ACTION_CENTER_CONFIG = {
   [ActionCenterRoute.ACTIVITY]: ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE,
   [ActionCenterRoute.ATTENTION_REQUIRED]: ACTION_CENTER_DATASTORE_MONITOR_ROUTE,
 } as const;
-
 
 const DatastoreMonitorResultSystems: NextPage = () => {
   const params = useParams<{ monitorId: string }>();

@@ -18,7 +18,6 @@ export const MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG = {
     ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE,
 } as const;
 
-
 const InfrastructureMonitorResultSystems: NextPage = () => {
   const params = useParams<{ monitorId: string }>();
 
