@@ -151,6 +151,7 @@ def initiate_post_upgrade_backfill() -> None:
     scheduler.add_job(
         func=post_upgrade_backfill_task,
         id=POST_UPGRADE_BACKFILL,
+        replace_existing=True,
     )
 
 
