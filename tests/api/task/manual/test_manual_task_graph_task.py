@@ -330,10 +330,13 @@ class TestManualTaskDataAggregation:
     ):
         """Test successful attachment field processing"""
         # Mock the attachment retrieval
-        with patch.object(
-            attachment_for_access_package, "retrieve_attachment", autospec=True
-        ) as mock_retrieve:
-            mock_retrieve.return_value = (1234, "https://example.com/file.pdf")
+        with patch(
+            "fides.api.task.manual.manual_task_graph_task.AttachmentService"
+        ) as mock_service:
+            mock_service.return_value.retrieve_url.return_value = (
+                1234,
+                "https://example.com/file.pdf",
+            )
 
             result = manual_task_graph_task._process_attachment_field(
                 manual_task_submission_attachment
