@@ -28,7 +28,7 @@ import {
   selectOrganizationFidesKey,
   setSystemsForReview,
 } from "./config-wizard.slice";
-import { AWS_REGION_OPTIONS, DOCS_URL_AWS_PERMISSIONS } from "./constants";
+import { AWS_REGION_OPTIONS } from "./constants";
 import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
 import ScannerLoading from "./ScannerLoading";

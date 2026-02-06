@@ -17,17 +17,6 @@ export const STEPS = [
   },
 ];
 
-// When more links like these are introduced we should move them to a single file.
-export const DOCS_URL_AWS_PERMISSIONS =
-  "https://docs.ethyca.com/fides/cli_support/infra_scanning#required-permissions";
-export const DOCS_URL_IAM_POLICY =
-  "https://docs.ethyca.com/fides/cli_support/infra_scanning#providing-credentials-1";
-export const DOCS_URL_ACCESS_MANAGEMENT =
-  "https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html";
-export const DOCS_URL_ISSUES = "https://github.com/ethyca/fides/issues";
-export const DOCS_URL_OKTA_TOKEN =
-  "https://help.okta.com/oie/en-us/Content/Topics/Security/API.htm";
-
 // Source: https://docs.aws.amazon.com/general/latest/gr/rande.html
 export const AWS_REGION_OPTIONS = [
   { label: "US East (Ohio)", value: "us-east-2" },
