@@ -64,7 +64,7 @@ jobs:
         run: uv sync --extra dev
 
       - name: Run `fides --version`
-        run: fides --version
+        run: uv run fides --version
 
   CLI-Checks-Summary:
     runs-on: ubuntu-latest
