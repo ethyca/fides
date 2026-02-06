@@ -1,6 +1,7 @@
 """Contains the nox sessions for running development environments."""
 
 import hashlib
+import os
 import socket
 import subprocess
 import time
@@ -166,8 +167,6 @@ def dev(session: Session) -> None:
     ports, container_suffix, image_suffix = check_for_conflicts(session)
 
     # Set IMAGE_SUFFIX env var for the build process
-    import os
-
     if image_suffix:
         os.environ["IMAGE_SUFFIX"] = image_suffix
 
