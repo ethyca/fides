@@ -19,12 +19,12 @@ export const ROOT_ACTION_CENTER_CONFIG = {
 
 const ActionCenterPage: NextPage = () => {
   const { flags } = useFeatures();
-  const { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled } = flags;
+  const { webMonitor: webMonitorEnabled } = flags;
 
   // Build monitor_type filter based on enabled feature flags
   const monitorTypes: MONITOR_TYPES[] = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+    MONITOR_TYPES.DATASTORE,
   ];
 
   const { error } = useGetAggregateMonitorResultsQuery({

@@ -2,11 +2,9 @@ import { Menu } from "fidesui";
 import _ from "lodash";
 import { PropsWithChildren } from "react";
 
-import { useFeatures } from "~/features/common/features";
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import useActionCenterNavigation, {
   ActionCenterRoute,
   ActionCenterRouteConfig,
@@ -27,13 +25,6 @@ const ActionCenterLayout = ({
     activeItem,
     setActiveItem,
   } = useActionCenterNavigation(routeConfig);
-  const {
-    flags: { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled },
-  } = useFeatures();
-
-  if (!webMonitorEnabled && !heliosV2Enabled) {
-    return <DisabledMonitorsPage />;
-  }
 
   return (
     <FixedLayout
