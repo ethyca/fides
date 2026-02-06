@@ -57,27 +57,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
       },
       {
-        title: "Activity",
-        path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidden: true,
-      },
-      {
-        title: "Data detection",
-        path: routes.DATA_DETECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidden: true,
-      },
-      {
-        title: "Data discovery",
-        path: routes.DATA_DISCOVERY_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidden: true,
-      },
-      {
         title: "Data catalog",
         path: routes.DATA_CATALOG_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
