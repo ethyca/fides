@@ -51,10 +51,10 @@ Explicitly set resource allocations in Docker Desktop
 * Memory:8GB
 * Disk Limit: 200GB
 
-Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend doing this in a virtual environment.
+Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend using [uv](https://docs.astral.sh/uv/) and a virtual environment:
 
 ```bash
-pip install -r dev-requirements.txt
+uv sync
 ```
 
 ---

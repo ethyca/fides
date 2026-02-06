@@ -2,7 +2,7 @@ services:
   fides:
     container_name: fides
     image: ethyca/fides:local
-    command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
+    command: python -m uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
       interval: 20s
@@ -126,10 +126,10 @@ services:
         condition: service_started
     restart: always
     healthcheck:
-      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
-      timeout: 5s
+      timeout: 20s
       retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
@@ -150,10 +150,10 @@ services:
         condition: service_started
     restart: always
     healthcheck:
-      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
-      timeout: 5s
+      timeout: 20s
       retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
@@ -174,10 +174,10 @@ services:
         condition: service_started
     restart: always
     healthcheck:
-      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
-      timeout: 5s
+      timeout: 20s
       retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
@@ -225,7 +225,7 @@ services:
   fides-1:
     container_name: fides-1
     image: ethyca/fides:local
-    command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
+    command: python -m uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
       interval: 20s
@@ -265,7 +265,7 @@ services:
   fides-2:
     container_name: fides-2
     image: ethyca/fides:local
-    command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
+    command: python -m uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
       interval: 20s
