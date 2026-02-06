@@ -129,7 +129,7 @@ services:
       test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
-      timeout: 5s
+      timeout: 20s
       retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
@@ -153,7 +153,7 @@ services:
       test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
-      timeout: 5s
+      timeout: 20s
       retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
@@ -177,7 +177,7 @@ services:
       test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
       start_period: 60s
       interval: 20s
-      timeout: 5s
+      timeout: 20s
       retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
