@@ -184,8 +184,12 @@ class TestCustomConnectorTemplateLoader:
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.filter"
+    )
     def test_custom_connector_save_template(
         self,
+        mock_filter: MagicMock,
         mock_create_or_update: MagicMock,
         planet_express_config,
         planet_express_dataset,
@@ -193,7 +197,10 @@ class TestCustomConnectorTemplateLoader:
     ):
         db = MagicMock()
 
-        connector_type = CustomConnectorTemplateLoader.save_template(
+        # First call: no existing custom template (fides-to-custom switch)
+        mock_filter.return_value.first.return_value = None
+
+        connector_type, was_already_custom = CustomConnectorTemplateLoader.save_template(
             db,
             ZipFile(
                 create_zip_file(
