@@ -400,7 +400,7 @@ def upgrade() -> None:
         sa.Column("question_text", sa.Text(), nullable=False),
         sa.Column("guidance", sa.Text(), nullable=True),
         sa.Column("question_order", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("required", sa.Boolean(), nullable=False, server_default="true"),
+        sa.Column("required", sa.Boolean(), nullable=False, server_default="t"),
         sa.Column(
             "fides_sources",
             postgresql.ARRAY(sa.String()),
