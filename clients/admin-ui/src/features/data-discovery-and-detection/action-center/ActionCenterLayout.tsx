@@ -28,10 +28,10 @@ const ActionCenterLayout = ({
     setActiveItem,
   } = useActionCenterNavigation(routeConfig);
   const {
-    flags: { webMonitor: webMonitorEnabled, heliosV2: heliosV2Enabled },
+    flags: { webMonitor: webMonitorEnabled },
   } = useFeatures();
 
-  if (!webMonitorEnabled && !heliosV2Enabled) {
+  if (!webMonitorEnabled) {
     return <DisabledMonitorsPage />;
   }
 

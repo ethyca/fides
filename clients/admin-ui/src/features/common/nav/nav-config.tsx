@@ -53,7 +53,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Action center",
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresAnyFlag: ["webMonitor", "heliosV2"],
+        requiresAnyFlag: ["webMonitor"],
         requiresPlus: true,
       },
       {
@@ -61,21 +61,21 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
-        hidesIfFlag: "heliosV2",
+        hidden: true,
       },
       {
         title: "Data detection",
         path: routes.DATA_DETECTION_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
-        hidesIfFlag: "heliosV2",
+        hidden: true,
       },
       {
         title: "Data discovery",
         path: routes.DATA_DISCOVERY_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
-        hidesIfFlag: "heliosV2",
+        hidden: true,
       },
       {
         title: "Data catalog",

@@ -29,7 +29,6 @@ const MonitorList = () => {
   const {
     flags: {
       webMonitor: webMonitorEnabled,
-      heliosV2: heliosV2Enabled,
       oktaMonitor: oktaMonitorEnabled,
     },
   } = useFeatures();
@@ -38,7 +37,7 @@ const MonitorList = () => {
 
   const availableMonitorTypes = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+    MONITOR_TYPES.DATASTORE,
     ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
   ] as const;
 
@@ -102,7 +101,7 @@ const MonitorList = () => {
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
 
-  if (!webMonitorEnabled && !heliosV2Enabled && !oktaMonitorEnabled) {
+  if (!webMonitorEnabled && !oktaMonitorEnabled) {
     return <DisabledMonitorsPage />;
   }
 
