@@ -59,7 +59,7 @@ class AnswerSource(str, EnumType):
     system = "system"
     ai_analysis = "ai_analysis"
     user_input = "user_input"
-    slack = "slack"
+    team_input = "team_input"
 
 
 class AnswerChangeType(str, EnumType):

@@ -512,7 +512,7 @@ def upgrade() -> None:
         sa.Column(
             "answer_source",
             sa.Enum(
-                "system", "ai_analysis", "user_input", "slack", name="answersource"
+                "system", "ai_analysis", "user_input", "team_input", name="answersource"
             ),
             nullable=False,
             server_default="system",
