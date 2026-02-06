@@ -47,6 +47,7 @@ from fides.api.common_exceptions import (
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
+    PrivacyRequestNotFound,
     PrivacyRequestError,
     TraversalError,
     ValidationError,
@@ -144,6 +145,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_DIAGNOSTICS,
     PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_FINALIZE,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
@@ -179,6 +181,10 @@ from fides.service.privacy_request.privacy_request_service import (
     _requeue_privacy_request,
     handle_approval,
     queue_privacy_request,
+)
+from fides.service.privacy_request.privacy_request_diagnostics import (
+    PrivacyRequestDiagnostics,
+    get_privacy_request_diagnostics,
 )
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
@@ -645,6 +651,32 @@ def get_request_status_logs(
         .order_by(ExecutionLog.updated_at.asc()),
         params,
     )
+
+
+@router.get(
+    PRIVACY_REQUEST_DIAGNOSTICS,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+    response_model=PrivacyRequestDiagnostics,
+    status_code=HTTP_200_OK,
+)
+def get_privacy_request_diagnostics_report(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> PrivacyRequestDiagnostics:
+    """
+    Return a diagnostics snapshot for a single privacy request.
+
+    This report intentionally excludes any fields that could contain PII.
+    """
+
+    try:
+        return get_privacy_request_diagnostics(privacy_request_id, db)
+    except PrivacyRequestNotFound:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No privacy request found with id '{privacy_request_id}'.",
+        )
 
 
 @router.get(
