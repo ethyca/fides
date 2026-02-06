@@ -385,10 +385,12 @@ class TestManualTaskDataAggregation:
     ):
         """Test attachment field processing with retrieval error"""
         # Mock the attachment retrieval to raise an exception
-        with patch.object(
-            attachment_for_access_package, "retrieve_attachment", autospec=True
-        ) as mock_retrieve:
-            mock_retrieve.side_effect = Exception("Storage error")
+        with patch(
+            "fides.api.task.manual.manual_task_graph_task.AttachmentService"
+        ) as mock_service:
+            mock_service.return_value.retrieve_url.side_effect = Exception(
+                "Storage error"
+            )
 
             result = manual_task_graph_task._process_attachment_field(
                 manual_task_submission_attachment
@@ -406,16 +408,14 @@ class TestManualTaskDataAggregation:
     ):
         """Test attachment field processing with multiple attachments"""
         # Mock the attachment retrieval for multiple attachments
-        with (
-            patch.object(
-                multiple_attachments_for_access[0], "retrieve_attachment", autospec=True
-            ) as mock_retrieve1,
-            patch.object(
-                multiple_attachments_for_access[1], "retrieve_attachment", autospec=True
-            ) as mock_retrieve2,
-        ):
-            mock_retrieve1.return_value = (2560, "https://example.com/doc1.pdf")
-            mock_retrieve2.return_value = (1024, "https://example.com/doc2.pdf")
+        with patch(
+            "fides.api.task.manual.manual_task_graph_task.AttachmentService"
+        ) as mock_service:
+            # Configure side_effect to return different values for each call
+            mock_service.return_value.retrieve_url.side_effect = [
+                (2560, "https://example.com/doc1.pdf"),
+                (1024, "https://example.com/doc2.pdf"),
+            ]
 
             result = manual_task_graph_task._process_attachment_field(
                 manual_task_submission_attachment
