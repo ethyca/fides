@@ -64,7 +64,6 @@ from fides.api.util.event_audit_util import (
 )
 from fides.api.util.logger import Pii
 from fides.api.util.saas_util import (
-    load_dataset_from_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
@@ -766,36 +765,6 @@ class ConnectionService:
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config
 
-    def delete_datasets_for_connector_type(self, connector_type: str) -> None:
-        """
-        Deletes all DatasetConfigs (and their associated CTL datasets) for
-        connection configs that use the specified connector type.
-
-        This is useful when switching from a custom template to a file template
-        to avoid merging custom modifications with the official template.
-        """
-        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
-            db=self.db,
-            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
-        ).all()
-
-        for connection_config in connection_configs:
-            dataset_configs = DatasetConfig.filter(
-                db=self.db,
-                conditions=(DatasetConfig.connection_config_id == connection_config.id),
-            ).all()
-
-            for dataset_config in dataset_configs:
-                ctl_dataset = dataset_config.ctl_dataset
-                logger.info(
-                    "Deleting DatasetConfig '{}' for connection config '{}'",
-                    dataset_config.fides_key,
-                    connection_config.key,
-                )
-                dataset_config.delete(self.db)
-                if ctl_dataset:
-                    ctl_dataset.delete(db=self.db)
-
     def update_existing_connection_configs_for_connector_type(
         self, connector_type: str, template: ConnectorTemplate
     ) -> None:
@@ -863,31 +832,7 @@ class ConnectionService:
                 f"Fides-provided template with type '{connector_type}' not found in the registry."
             )
 
-        # Update the SaasTemplateDataset to use the file template's dataset
-        file_template_dataset_json = load_dataset_from_string(
-            file_connector_template.dataset
-        )
-        stored_template_dataset = SaasTemplateDataset.get_by(
-            db=self.db, field="connection_type", value=connector_type
-        )
-        if stored_template_dataset:
-            stored_template_dataset.update(
-                db=self.db, data={"dataset_json": file_template_dataset_json}
-            )
-        else:
-            SaasTemplateDataset.create(
-                db=self.db,
-                data={
-                    "connection_type": connector_type,
-                    "dataset_json": file_template_dataset_json,
-                },
-            )
-
-        # Delete existing datasets to avoid merging custom template modifications
-        # with the official file template
-        self.delete_datasets_for_connector_type(connector_type)
-
-        # Update existing connection configs to use the file template
+        # Update existing connection configs to use the file template.
         self.update_existing_connection_configs_for_connector_type(
             connector_type, file_connector_template
         )
