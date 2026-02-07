@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "urn": "urn:okta:app:ignored-app",
+      "name": "Ignored App",
+      "description": "This app has been ignored",
+      "resource_type": "okta_app",
+      "diff_status": "muted",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "monitor_config_id": "my_infrastructure_monitor_1",
+      "system": "Okta Identity Provider",
+      "metadata": {
+        "app_type": "SAML_2_0",
+        "status": "ACTIVE"
+      },
+      "vendor_id": "fds.9999",
+      "system_id": "okta_system_999",
+      "system_key": null,
+      "preferred_data_uses": [],
+      "data_uses": [],
+      "user_assigned_data_categories": null,
+      "user_assigned_data_uses": null,
+      "user_assigned_system_key": null
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}
+
