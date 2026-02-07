@@ -8,11 +8,14 @@ import {
   ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraStack as Stack,
+  Tooltip,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
 import {
@@ -23,6 +26,7 @@ import {
   SystemType,
 } from "~/types/api";
 
+import { CUSTOM_INTEGRATION_INDICATOR } from "../constants";
 import {
   selectDatastoreConnectionFilters,
   useGetAllDatastoreConnectionsQuery,
@@ -75,6 +79,22 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   }, [data]);
 
   const uploadTemplateModal = useDisclosure();
+  const deleteTemplateModal = useDisclosure();
+  const [deleteConnectorTemplate, { isLoading: isDeleting }] =
+    useDeleteConnectorTemplateMutation();
+
+  const handleDeleteCustomIntegration = async () => {
+    if (selectedConnectionOption?.identifier) {
+      try {
+        await deleteConnectorTemplate(
+          selectedConnectionOption.identifier,
+        ).unwrap();
+        deleteTemplateModal.onClose();
+      } catch {
+        // Error handling is managed by RTK Query
+      }
+    }
+  };
 
   /* STEPS TO UNIFY the database and saas forms
   7. Get it working for manual connectors
@@ -84,7 +104,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   return (
     <Box id="con-wrapper" px={6}>
       <Flex py={5}>
-        <Stack direction={{ base: "column", lg: "row" }}>
+        <Stack direction={{ base: "column", lg: "row" }} alignItems="center">
           <ConnectionListDropdown
             list={dropDownOptions}
             label="Integration type"
@@ -92,6 +112,13 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             onChange={setSelectedConnectionOption}
             disabled={Boolean(connectionConfig && connectionConfig !== null)}
           />
+          {selectedConnectionOption?.custom && (
+            <Tooltip title="Custom integration" placement="top">
+              <Box as="span" cursor="pointer" fontSize="lg">
+                {CUSTOM_INTEGRATION_INDICATOR}
+              </Box>
+            </Tooltip>
+          )}
           {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
             <OrphanedConnectionModal
               connectionConfigs={orphanedConnectionConfigs}
@@ -108,12 +135,43 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             >
               Upload integration
             </Button>
+            {connectionConfig &&
+              selectedConnectionOption?.custom &&
+              selectedConnectionOption?.default_connector_available && (
+                <Button
+                  data-testid="delete-custom-integration-btn"
+                  onClick={deleteTemplateModal.onOpen}
+                  className="ml-2"
+                >
+                  Use Fides provided template
+                </Button>
+              )}
           </Restrict>
         </Stack>
 
         <ConnectorTemplateUploadModal
           isOpen={uploadTemplateModal.isOpen}
           onClose={uploadTemplateModal.onClose}
+        />
+        <ConfirmationModal
+          isOpen={deleteTemplateModal.isOpen}
+          onClose={deleteTemplateModal.onClose}
+          onConfirm={handleDeleteCustomIntegration}
+          title="Use Fides provided template"
+          message={
+            <>
+              This will remove the custom integration template and update all
+              connections that use it by falling back to the Fides provided
+              template.
+              <br />
+              <br />
+              Are you sure you want to proceed?
+            </>
+          }
+          cancelButtonText="No"
+          continueButtonText="Yes"
+          isLoading={isDeleting}
+          testId="delete-custom-integration-modal"
         />
       </Flex>
       {selectedConnectionOption?.type &&

@@ -15,9 +15,11 @@ import {
   SearchLineIcon,
   Tooltip,
 } from "fidesui";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { isEqual } from "lodash";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { CUSTOM_INTEGRATION_INDICATOR } from "~/features/datastore-connections/constants";
 import {
   selectConnectionTypeFilters,
   useGetAllConnectionTypesQuery,
@@ -136,6 +138,19 @@ export const useConnectionListDropDown = ({
       setSelectedValue(initialSelectedValue);
     }
   }, [connectionConfig, connectionOptions]);
+
+  // Sync selectedValue with latest connectionOptions when data refreshes
+  // This ensures the selected value is updated after operations like deleting a custom template
+  useEffect(() => {
+    if (selectedValue && connectionOptions.length > 0) {
+      const updatedValue = connectionOptions.find(
+        (ct) => ct.identifier === selectedValue.identifier,
+      );
+      if (updatedValue && !isEqual(updatedValue, selectedValue)) {
+        setSelectedValue(updatedValue);
+      }
+    }
+  }, [connectionOptions, selectedValue]);
 
   return { dropDownOptions, selectedValue, setSelectedValue, systemType };
 };
@@ -294,6 +309,13 @@ const ConnectionListDropdown = ({
                   >
                     {key}
                   </Text>
+                  {option.value.custom && (
+                    <Tooltip title="Custom integration" placement="top">
+                      <Box as="span" ml={2} cursor="pointer">
+                        {CUSTOM_INTEGRATION_INDICATOR}
+                      </Box>
+                    </Tooltip>
+                  )}
                 </MenuItem>
               </Tooltip>
             ))}
