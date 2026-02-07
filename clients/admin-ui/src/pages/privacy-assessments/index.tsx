@@ -18,7 +18,7 @@ import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
+import { PRIVACY_ASSESSMENTS_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   PrivacyAssessmentResponse,
@@ -44,59 +44,115 @@ const mapRiskLevel = (riskLevel: string): "High" | "Med" | "Low" => {
 const EmptyState = ({
   onGenerate,
   isGenerating,
+  hasDeclarations = true,
 }: {
   onGenerate: () => void;
   isGenerating: boolean;
-}) => (
-  <Flex
-    vertical
-    align="center"
-    justify="center"
-    style={{
-      padding: "80px 40px",
-      textAlign: "center",
-    }}
-  >
-    <div
+  hasDeclarations?: boolean;
+}) => {
+  const router = useRouter();
+
+  if (!hasDeclarations) {
+    return (
+      <Flex
+        vertical
+        align="center"
+        justify="center"
+        style={{
+          padding: "80px 40px",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 8,
+            backgroundColor: "#f5f5f5",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 24,
+          }}
+        >
+          <FileTextOutlined style={{ fontSize: 32, color: "#9ca3af" }} />
+        </div>
+        <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
+          No privacy declarations
+        </Title>
+        <Text
+          type="secondary"
+          style={{
+            fontSize: 14,
+            maxWidth: 400,
+            marginBottom: 24,
+            display: "block",
+          }}
+        >
+          Privacy assessments require systems with privacy declarations. Add
+          data uses to your systems to enable assessment generation.
+        </Text>
+        <Button
+          type="primary"
+          onClick={() => router.push(SYSTEM_ROUTE)}
+        >
+          Go to System inventory
+        </Button>
+      </Flex>
+    );
+  }
+
+  return (
+    <Flex
+      vertical
+      align="center"
+      justify="center"
       style={{
-        width: 64,
-        height: 64,
-        borderRadius: 8,
-        backgroundColor: "#f5f5f5",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 24,
+        padding: "80px 40px",
+        textAlign: "center",
       }}
     >
-      <FileTextOutlined style={{ fontSize: 32, color: "#9ca3af" }} />
-    </div>
-    <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
-      No privacy assessments yet
-    </Title>
-    <Text
-      type="secondary"
-      style={{
-        fontSize: 14,
-        maxWidth: 400,
-        marginBottom: 24,
-        display: "block",
-      }}
-    >
-      Generate privacy assessments to evaluate your systems against regulatory
-      frameworks and identify compliance gaps.
-    </Text>
-    <Button
-      type="primary"
-      icon={<PlusOutlined />}
-      onClick={onGenerate}
-      loading={isGenerating}
-      disabled={isGenerating}
-    >
-      {isGenerating ? "Generating..." : "Generate privacy assessments"}
-    </Button>
-  </Flex>
-);
+      <div
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 8,
+          backgroundColor: "#f5f5f5",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 24,
+        }}
+      >
+        <FileTextOutlined style={{ fontSize: 32, color: "#9ca3af" }} />
+      </div>
+      <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
+        No privacy assessments yet
+      </Title>
+      <Text
+        type="secondary"
+        style={{
+          fontSize: 14,
+          maxWidth: 400,
+          marginBottom: 24,
+          display: "block",
+        }}
+      >
+        Generate privacy assessments to evaluate your systems against regulatory
+        frameworks and identify compliance gaps.
+      </Text>
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        onClick={onGenerate}
+        loading={isGenerating}
+        disabled={isGenerating}
+      >
+        {isGenerating ? "Generating..." : "Generate privacy assessments"}
+      </Button>
+    </Flex>
+  );
+};
 
 const AssessmentCard = ({
   assessment,
@@ -387,14 +443,28 @@ const PrivacyAssessmentsPage: NextPage = () => {
         use_llm: true,
       }).unwrap();
 
+      if (result.total_created === 0) {
+        message.warning(
+          "No privacy declarations found. Add data uses to your systems to generate assessments."
+        );
+        return;
+      }
+
       message.success(
         `Generated assessments for ${result.total_created} privacy declaration(s)`
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Assessment generation failed:", error);
-      message.error(
-        `Assessment generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      const errorData = error as { status?: number; data?: { detail?: string } };
+      if (errorData?.status === 400) {
+        message.error(
+          "No privacy declarations found. Add data uses to your systems first."
+        );
+      } else {
+        message.error(
+          `Assessment generation failed: ${errorData?.data?.detail || "Unknown error"}`
+        );
+      }
     }
   };
 
