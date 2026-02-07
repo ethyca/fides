@@ -25,7 +25,7 @@ In order to get started quickly with Fides, a sample project is bundled within t
 #### Minimum requirements (for all platforms)
 
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
-* [Python](https://www.python.org/downloads/) (version 3.9 through 3.10)
+* [Python](https://www.python.org/downloads/) (version 3.13)
 
 #### Download and install Fides
 
@@ -94,7 +94,7 @@ For more information on getting started with Fides, how to configure and set up 
 Join the conversation on:
 
 * [Slack](https://fid.es/join-slack)
-* [Twitter](https://twitter.com/ethyca)
+* [X](https://x.com/ethyca)
 * [Discussions](https://github.com/ethyca/fides/discussions)
 
 ### Contributing

@@ -26,4 +26,3 @@ class TestConditionalDependencyBase:
             match="Subclasses of ConditionalDependencyBase must implement get_condition_tree",
         ):
             ConditionalDependencyBase.get_condition_tree(db, test_id="test_id")
-

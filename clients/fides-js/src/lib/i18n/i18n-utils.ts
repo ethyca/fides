@@ -690,7 +690,7 @@ export const localizeModalLinkText = (
 ): string => {
   let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
   if (!disableLocalization) {
-    if (i18n.t("exp.modal_link_label") !== "exp.modal_link_label") {
+    if (messageExists(i18n, "exp.modal_link_label")) {
       modalLinkText = i18n.t("exp.modal_link_label");
     }
   } else {

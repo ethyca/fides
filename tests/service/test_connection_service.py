@@ -2,7 +2,7 @@
 
 import copy
 from textwrap import dedent
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import pytest
 from sqlalchemy.orm import Session
@@ -15,6 +15,11 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery.core import (
+    MonitorConfig,
+    StagedResource,
+    StagedResourceAncestor,
+)
 from fides.api.models.event_audit import EventAuditType
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -920,6 +925,213 @@ class TestConnectionService:
         # Clean up
         connection_config.delete(db)
 
+    def test_upsert_dataset_preserves_monitored_endpoints_without_customer_dataset(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+    ):
+        """
+        Test that monitored endpoints are preserved in upsert_dataset_config_from_template
+        even when there is no existing customer dataset (DatasetConfig).
+
+        This tests the code path where:
+        1. Monitored endpoints exist for a connection
+        2. No existing DatasetConfig exists for the connection
+        3. The monitored collections should still be preserved in the final dataset
+        """
+        # Create connection config with SaaS config
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_monitored_connection",
+                "name": "Test Monitored Connection",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "saas_config": {
+                    "fides_key": "test_monitored_instance",
+                    "name": "Test Connector",
+                    "type": "test_monitored_connector",
+                    "description": "Test connector",
+                    "version": "0.1.0",
+                    "connector_params": [],
+                    "client_config": {"protocol": "https", "host": "api.example.com"},
+                    "test_request": {"method": "GET", "path": "/test"},
+                    "endpoints": [],
+                },
+            },
+        )
+
+        # Create MonitorConfig for this connection
+        monitor_config = MonitorConfig.create(
+            db=db,
+            data={
+                "key": "test_monitor_config",
+                "name": "Test Monitor Config",
+                "connection_config_id": connection_config.id,
+            },
+        )
+
+        # Create endpoint StagedResource for a monitored collection
+        endpoint = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_monitored_connector:monitored_collection",
+                "name": "monitored_collection",
+                "resource_type": "Endpoint",
+                "monitor_config_id": monitor_config.key,
+                "description": "Monitored collection from discovery",
+            },
+        )
+
+        # Create monitored field StagedResources
+        email_field = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_monitored_connector:monitored_collection:email",
+                "name": "email",
+                "resource_type": "Field",
+                "monitor_config_id": monitor_config.key,
+                "diff_status": "monitored",
+                "description": "User email address",
+                "user_assigned_data_categories": ["user.contact.email"],
+            },
+        )
+
+        name_field = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_monitored_connector:monitored_collection:name",
+                "name": "name",
+                "resource_type": "Field",
+                "monitor_config_id": monitor_config.key,
+                "diff_status": "monitored",
+                "user_assigned_data_categories": ["user.name"],
+            },
+        )
+
+        # Create ancestor relationships (endpoint -> fields)
+        StagedResourceAncestor.create(
+            db=db,
+            data={
+                "ancestor_urn": endpoint.urn,
+                "descendant_urn": email_field.urn,
+            },
+        )
+        StagedResourceAncestor.create(
+            db=db,
+            data={
+                "ancestor_urn": endpoint.urn,
+                "descendant_urn": name_field.urn,
+            },
+        )
+
+        # Create a template with a different collection (not the monitored one)
+        template_dataset_yaml = dedent(
+            """
+            dataset:
+              - fides_key: <instance_fides_key>
+                name: Test Dataset
+                description: Template dataset
+                collections:
+                  - name: users
+                    fields:
+                      - name: id
+                        data_categories: [user.unique_id]
+                        fides_meta:
+                          data_type: string
+                          primary_key: true
+                      - name: email
+                        data_categories: [user.contact.email]
+                        fides_meta:
+                          data_type: string
+            """
+        ).strip()
+
+        connector_template = ConnectorTemplate(
+            config=dedent(
+                """
+                saas_config:
+                  fides_key: <instance_fides_key>
+                  name: Test Connector
+                  type: test_monitored_connector
+                  description: Test connector
+                  version: 1.0.0
+                  connector_params: []
+                  client_config:
+                    protocol: https
+                    host: api.example.com
+                  test_request:
+                    method: GET
+                    path: /test
+                  endpoints: []
+            """
+            ).strip(),
+            dataset=template_dataset_yaml,
+            human_readable="Test Connector",
+            authorization_required=False,
+            supported_actions=[ActionType.access, ActionType.erasure],
+            category=ConnectionCategory.ANALYTICS,
+        )
+
+        # Verify no existing DatasetConfig exists
+        existing_dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "test_monitored_instance"),
+        ).first()
+        assert existing_dataset_config is None
+
+        # Execute upsert_dataset_config_from_template
+        result_dataset_config = connection_service.upsert_dataset_config_from_template(
+            connection_config=connection_config,
+            template=connector_template,
+            template_values=SaasConnectionTemplateValues(
+                secrets={}, instance_key="test_monitored_instance"
+            ),
+        )
+
+        # Verify the result
+        assert result_dataset_config is not None
+        ctl_dataset = result_dataset_config.ctl_dataset
+        assert ctl_dataset is not None
+        assert ctl_dataset.fides_key == "test_monitored_instance"
+
+        # Verify collections include both the template collection and the monitored collection
+        collection_names = {col["name"] for col in ctl_dataset.collections}
+        assert "users" in collection_names, (
+            "Template collection 'users' should be present"
+        )
+        assert "monitored_collection" in collection_names, (
+            "Monitored collection should be preserved even without customer dataset"
+        )
+
+        # Verify the monitored collection has the correct fields
+        monitored_collection = next(
+            col
+            for col in ctl_dataset.collections
+            if col["name"] == "monitored_collection"
+        )
+        field_names = {field["name"] for field in monitored_collection["fields"]}
+        assert field_names == {"email", "name"}
+
+        # Verify field data categories from monitored fields
+        email_field_dict = next(
+            field
+            for field in monitored_collection["fields"]
+            if field["name"] == "email"
+        )
+        assert "user.contact.email" in email_field_dict["data_categories"]
+
+        name_field_dict = next(
+            field for field in monitored_collection["fields"] if field["name"] == "name"
+        )
+        assert "user.name" in name_field_dict["data_categories"]
+
+        # Clean up
+        result_dataset_config.delete(db)
+        if result_dataset_config.ctl_dataset:
+            result_dataset_config.ctl_dataset.delete(db=db)
+        connection_config.delete(db)
+
     def _create_custom_field(self, name: str = "custom_attribute") -> Dict[str, Any]:
         """Helper method to create a custom field for testing."""
         return {
@@ -1007,13 +1219,14 @@ class TestConnectionService:
                 {"delete_fields": [2]},  # delete email field
                 {"clear_fields": True},
                 {
+                    # Since no protected_fields are passed, all customer deletions are allowed
                     "email": {"exists": False},
                     "custom_attribute": {"exists": False},
-                    "product_id": {"exists": True},
-                    "customer_id": {"exists": True},
-                    "address": {"exists": True},
+                    "product_id": {"exists": False},
+                    "customer_id": {"exists": False},
+                    "address": {"exists": False},
                 },
-                3,
+                0,
             ),
             (
                 "integration_deletes_all_fields",
@@ -1257,3 +1470,103 @@ class TestConnectionService:
         assert result_dataset_dict["fides_key"] == "test_instance_key"
         assert result_dataset_dict["name"] == upcoming_dataset["name"]
         assert result_dataset_dict["description"] == upcoming_dataset["description"]
+
+    @pytest.mark.parametrize(
+        "delete_from,protected_fields,expected_exists",
+        [
+            pytest.param(
+                "customer",
+                {("products", "email")},
+                True,
+                id="customer_cannot_delete_protected_field",
+            ),
+            pytest.param(
+                "customer",
+                set(),
+                False,
+                id="customer_can_delete_unprotected_field",
+            ),
+            pytest.param(
+                "integration",
+                {("products", "email")},
+                False,
+                id="integration_can_delete_protected_field",
+            ),
+            pytest.param(
+                "customer",
+                None,
+                False,
+                id="none_protected_fields_allows_deletion",
+            ),
+        ],
+    )
+    def test_protected_field_deletion_behavior(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+        delete_from: str,
+        protected_fields: Optional[set],
+        expected_exists: bool,
+    ):
+        """Test protected field deletion behavior for various scenarios."""
+        upcoming_dataset = copy.deepcopy(stored_dataset)
+        upcoming_dataset["fides_key"] = "test_instance_key"
+        customer_dataset = copy.deepcopy(stored_dataset)
+
+        # Delete from the appropriate dataset
+        if delete_from == "customer":
+            del customer_dataset["collections"][0]["fields"][2]
+        elif delete_from == "integration":
+            del upcoming_dataset["collections"][0]["fields"][2]
+
+        result = merge_datasets(
+            stored_dataset=stored_dataset,
+            customer_dataset=customer_dataset,
+            upcoming_dataset=upcoming_dataset,
+            instance_key="test_instance_key",
+            protected_fields=protected_fields,
+        )
+
+        field_names = {f["name"] for f in result["collections"][0]["fields"]}
+        assert ("email" in field_names) == expected_exists
+
+    def test_customer_cannot_delete_multiple_protected_fields(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+    ):
+        """Test that multiple protected fields across collections cannot be deleted by customer."""
+        stored_dataset_with_extra = copy.deepcopy(stored_dataset)
+        stored_dataset_with_extra["collections"].append(
+            self._create_test_collection("orders")
+        )
+        upcoming_dataset = copy.deepcopy(stored_dataset_with_extra)
+        upcoming_dataset["fides_key"] = "test_instance_key"
+        customer_dataset = copy.deepcopy(stored_dataset_with_extra)
+        del customer_dataset["collections"][0]["fields"][2]  # Remove email
+        del customer_dataset["collections"][1]["fields"][0]  # Remove orders_id
+
+        result = merge_datasets(
+            stored_dataset=stored_dataset_with_extra,
+            customer_dataset=customer_dataset,
+            upcoming_dataset=upcoming_dataset,
+            instance_key="test_instance_key",
+            protected_fields={("products", "email"), ("orders", "orders_id")},
+        )
+
+        products_fields = {
+            f["name"]
+            for f in next(c for c in result["collections"] if c["name"] == "products")[
+                "fields"
+            ]
+        }
+        orders_fields = {
+            f["name"]
+            for f in next(c for c in result["collections"] if c["name"] == "orders")[
+                "fields"
+            ]
+        }
+        assert "email" in products_fields
+        assert "orders_id" in orders_fields

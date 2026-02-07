@@ -694,12 +694,13 @@ def requeue_polling_tasks(self: DatabaseTask) -> None:
             logger.debug("Polling for async tasks status")
 
             # Get all tasks that are polling and are from polling async tasks
-            async_tasks = (
+            # Defer large columns since we only need metadata to queue tasks
+            base_query = (
                 db.query(RequestTask)
                 .filter(RequestTask.status == ExecutionLogStatus.polling)
                 .filter(RequestTask.async_type == AsyncTaskType.polling)
-                .all()
             )
+            async_tasks = RequestTask.query_with_deferred_data(base_query).all()
             logger.info(f"Found {len(async_tasks)} async polling tasks")
 
             if async_tasks:

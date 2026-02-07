@@ -11,6 +11,7 @@ import {
 } from "preact/hooks";
 
 import { FIDES_I18N_ICON } from "../consent-constants";
+import { dispatchLocaleEvent } from "../events";
 import type { I18n } from ".";
 
 interface I18nContextProps {
@@ -35,6 +36,7 @@ export const I18nProvider = ({ i18nInstance, children }: I18nProviderProps) => {
     (locale: string) => {
       i18nInstance.activate(locale);
       setCurrentLocale(locale);
+      dispatchLocaleEvent(locale);
     },
     [i18nInstance, setCurrentLocale],
   );

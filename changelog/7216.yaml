@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Bumped `Next.js` versions to resolve Vercel CI preview and deployment alerts
-pr: 7216
-labels: []

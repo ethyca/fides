@@ -1,6 +1,6 @@
 from typing import Dict, List, Literal, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from loguru import logger
 from pydantic import BaseModel
 from redis.exceptions import ResponseError
@@ -16,7 +16,7 @@ from fides.api.util.cache import get_cache, get_queue_counts
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 
-CacheHealth = Literal["healthy", "unhealthy", "no cache configured"]
+CacheHealth = Literal["healthy", "unhealthy", "no cache configured", "skipped"]
 HEALTH_ROUTER = APIRouter(tags=["Health"])
 
 
@@ -172,9 +172,21 @@ async def workers_health() -> Dict:
         },
     },
 )
-async def health() -> Dict:
-    """Confirm that the API is running and healthy."""
-    cache_health = get_cache_health()
+async def health(
+    include_cache: Optional[bool] = Query(default=False),
+) -> Dict:
+    """
+    Confirm that the API is running and healthy.
+
+    If include_cache is True, the cache health will be included in the response.
+    If include_cache is False, the cache health check will be skipped and set to "skipped".
+    """
+
+    if include_cache:
+        cache_health = get_cache_health()
+    else:
+        cache_health = "skipped"
+
     response = CoreHealthCheck(
         webserver="healthy",
         version=str(fides.__version__),

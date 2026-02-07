@@ -35,6 +35,7 @@ export const FormikLocationSelect = ({
       label={label}
       extra={extra}
       htmlFor={id ?? name}
+      name={name}
     >
       <LocationSelect
         id={id ?? name}

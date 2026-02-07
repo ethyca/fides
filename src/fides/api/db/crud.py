@@ -144,9 +144,9 @@ async def get_resource(
             sql_resource = result.scalars().first()
             if sql_resource is None and raise_not_found:
                 not_found_error = errors.NotFoundError(sql_model.__name__, fides_key)
-                log.bind(error=not_found_error.detail["error"]).info(
+                log.bind(error=not_found_error.detail["error"]).info(  # type: ignore[index]
                     "Resource not found"
-                )  # type: ignore[index]
+                )
                 raise not_found_error
 
             return sql_resource

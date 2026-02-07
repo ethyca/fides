@@ -391,7 +391,7 @@ def run_consent_request_deprecated(  # pylint: disable = too-many-arguments
         # terminator function waits for all keys
         dsk[TERMINATOR_ADDRESS] = (termination_fn, *graph_keys)
 
-        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))
+        v = delayed(get(dsk, TERMINATOR_ADDRESS, num_workers=1))  # type: ignore[arg-type]
 
         update_successes: Tuple[bool, ...] = v.compute()
         # we combine the output of the termination function with the input keys to provide

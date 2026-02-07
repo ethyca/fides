@@ -469,9 +469,11 @@ class PrivacyRequest(
             "paused_at": self.paused_at.isoformat() if self.paused_at else None,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "days_left": self.days_left,
-            "custom_fields": self.get_persisted_custom_privacy_request_fields()
-            if self.custom_fields
-            else None,  # type: ignore[attr-defined]
+            "custom_fields": (
+                self.get_persisted_custom_privacy_request_fields()
+                if self.custom_fields  # type: ignore[attr-defined]
+                else None
+            ),
             "location": self.location,
         }
 
@@ -1536,11 +1538,15 @@ class PrivacyRequest(
         """
         if self.erasure_tasks.count():
             # For DSR 3.0
-            return {
-                t.collection_address: t.rows_masked
-                for t in self.erasure_tasks.filter(
+            # Defer large columns since we only need metadata (collection_address, rows_masked, status)
+            tasks_query = RequestTask.query_with_deferred_data(
+                self.erasure_tasks.filter(
                     RequestTask.status.in_(COMPLETED_EXECUTION_LOG_STATUSES)
                 )
+            )
+            return {
+                t.collection_address: t.rows_masked
+                for t in tasks_query
                 if not t.is_root_task and not t.is_terminator_task
             }
 
@@ -1550,9 +1556,9 @@ class PrivacyRequest(
         # extract request id to return a map of address:value
         number_of_leading_strings_to_exclude = 2
         return {
-            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
+            extract_key_for_address(k, number_of_leading_strings_to_exclude): v  # type: ignore
             for k, v in value_dict.items()
-        }  # type: ignore
+        }
 
     def get_consent_results(self) -> Dict[str, int]:
         """For parity, return whether a consent request was sent for third
@@ -1562,11 +1568,15 @@ class PrivacyRequest(
         """
         if self.consent_tasks.count():
             # For DSR 3.0
-            return {
-                t.collection_address: t.consent_sent
-                for t in self.consent_tasks.filter(
+            # Defer large columns since we only need metadata (collection_address, consent_sent, status)
+            tasks_query = RequestTask.query_with_deferred_data(
+                self.consent_tasks.filter(
                     RequestTask.status.in_(EXITED_EXECUTION_LOG_STATUSES)
                 )
+            )
+            return {
+                t.collection_address: t.consent_sent
+                for t in tasks_query
                 if not t.is_root_task and not t.is_terminator_task
             }
         # DSR 2.0 does not cache the results so nothing to do here

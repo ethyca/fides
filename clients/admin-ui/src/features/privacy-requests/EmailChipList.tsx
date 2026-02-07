@@ -1,51 +1,45 @@
-import {
-  ChakraFormControl as FormControl,
-  ChakraFormErrorMessage as FormErrorMessage,
-  ChakraFormLabel as FormLabel,
-  chakraForwardRef as forwardRef,
-  ChakraInput as Input,
-  ChakraTag as Tag,
-  ChakraTagCloseButton as TagCloseButton,
-  ChakraTagLabel as TagLabel,
-  ChakraVStack as VStack,
-  ChakraWrap as Wrap,
-} from "fidesui";
-import { FieldArrayRenderProps } from "formik";
-import React, { useState } from "react";
+import { Flex, Input, InputRef, Tag } from "fidesui";
+import React, { forwardRef, useState } from "react";
 
 const EMAIL_REGEXP = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
 const isValidEmail = (email: string) => EMAIL_REGEXP.test(email);
 
-type EmailChipListProps = {
-  isRequired: boolean;
-};
+interface EmailChipListProps {
+  emails: string[];
+  onEmailsChange: (emails: string[]) => void;
+  disabled?: boolean;
+}
 
-const EmailChipList = forwardRef(
-  (
-    {
-      isRequired = false,
-      ...props
-    }: FieldArrayRenderProps & EmailChipListProps,
-    ref,
-  ) => {
-    const { emails }: { emails: string[] } = props.form.values;
+const EmailChipList = forwardRef<InputRef, EmailChipListProps>(
+  ({ emails, onEmailsChange, disabled = false }, ref) => {
     const [inputValue, setInputValue] = useState("");
 
     const emailChipExists = (email: string) => emails.includes(email);
 
     const addEmails = (emailsToAdd: string[]) => {
+      if (disabled) {
+        return;
+      }
       const validatedEmails = emailsToAdd
         .map((e) => e.trim())
         .filter((email) => isValidEmail(email) && !emailChipExists(email));
-      validatedEmails.forEach((email) => props.push(email));
-      setInputValue("");
+      if (validatedEmails.length > 0) {
+        onEmailsChange([...emails, ...validatedEmails]);
+        setInputValue("");
+      }
     };
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (disabled) {
+        return;
+      }
       setInputValue(event.target.value);
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (disabled) {
+        return;
+      }
       if (["Enter", "Tab", ","].includes(event.key)) {
         event.preventDefault();
         addEmails([inputValue]);
@@ -53,62 +47,54 @@ const EmailChipList = forwardRef(
     };
 
     const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+      if (disabled) {
+        return;
+      }
       event.preventDefault();
       const pastedData = event.clipboardData.getData("text");
       const pastedEmails = pastedData.split(",");
       addEmails(pastedEmails);
     };
 
+    const removeEmail = (emailToRemove: string) => {
+      if (disabled) {
+        return;
+      }
+      onEmailsChange(emails.filter((email) => email !== emailToRemove));
+    };
+
     return (
-      <FormControl
-        alignItems="baseline"
-        display="inline-flex"
-        isInvalid={!!props.form.errors[props.name]}
-        isRequired={isRequired}
-      >
-        <FormLabel fontSize="md" htmlFor="email">
-          Email
-        </FormLabel>
-        <VStack align="flex-start" w="inherit">
-          <Input
-            autoComplete="off"
-            placeholder="Type or paste email addresses separated by commas and press `Enter` or `Tab`..."
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            ref={ref}
-            size="sm"
-            type="email"
-            value={inputValue}
-          />
-          <FormErrorMessage>
-            {props.form.errors[props.name] as string}
-          </FormErrorMessage>
-          {emails.length > 0 && (
-            <Wrap spacing={1} mb={3} pt="8px">
-              {emails.map((email, index) => (
-                <Tag
-                  key={email}
-                  borderRadius="full"
-                  backgroundColor="primary.400"
-                  color="white"
-                  size="sm"
-                  variant="solid"
-                >
-                  <TagLabel>{email}</TagLabel>
-                  <TagCloseButton
-                    onClick={() => {
-                      props.remove(index);
-                    }}
-                  />
-                </Tag>
-              ))}
-            </Wrap>
-          )}
-        </VStack>
-      </FormControl>
+      <Flex vertical style={{ width: "100%" }}>
+        <Input
+          autoComplete="off"
+          placeholder="Enter one or more email addresses"
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          ref={ref}
+          type="email"
+          value={inputValue}
+          disabled={disabled}
+        />
+        {emails.length > 0 && (
+          <Flex wrap="wrap" gap={8} className="mt-2">
+            {emails.map((email) => (
+              <Tag
+                key={email}
+                closable={!disabled}
+                onClose={() => removeEmail(email)}
+                color="default"
+              >
+                {email}
+              </Tag>
+            ))}
+          </Flex>
+        )}
+      </Flex>
     );
   },
 );
+
+EmailChipList.displayName = "EmailChipList";
 
 export default EmailChipList;

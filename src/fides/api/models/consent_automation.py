@@ -47,7 +47,7 @@ class ConsentAutomation(Base):
 
     @classmethod
     def create_or_update(
-        cls, db: Session, *, data: Dict[str, Any]
+        cls, db: Session, *, data: Dict[str, Any], check_name: Optional[bool] = True
     ) -> "ConsentAutomation":  # type: ignore[override]
         consent_automation = ConsentAutomation.filter(
             db=db,

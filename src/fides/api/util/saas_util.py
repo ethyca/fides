@@ -336,6 +336,27 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
     return value
 
 
+def find_unresolved_placeholders(
+    value: Any, param_values: Dict[str, Any]
+) -> List[str]:
+    """
+    Finds all required placeholders in the value that cannot be resolved
+    from the provided param_values. Used for diagnostic error messages.
+    """
+    if not value or not isinstance(value, str):
+        return []
+    placeholders = re.findall("<([^<>]+)>", value)
+    unresolved = []
+    for full_placeholder in placeholders:
+        is_optional = full_placeholder.endswith("?")
+        if is_optional:
+            continue
+        placeholder_key = full_placeholder
+        if pydash.get(param_values, placeholder_key) is None:
+            unresolved.append(placeholder_key)
+    return unresolved
+
+
 def check_dataset_missing_reference_values(
     input_data: Dict[str, Any], param_values: Optional[List[ParamValue]]
 ) -> List[str]:
@@ -381,8 +402,10 @@ def map_param_values(
 
     path = assign_placeholders(current_request.path, param_values)
     if path is None:
+        unresolved = find_unresolved_placeholders(current_request.path, param_values)
         raise ValueError(
-            f"At least one param_value references an invalid field for the '{action}' request of {context}."
+            f"The following param_values reference invalid fields for the '{action}' "
+            f"request of {context}: {unresolved}"
         )
 
     headers: Dict[str, Any] = {}
@@ -402,8 +425,10 @@ def map_param_values(
     body = assign_placeholders(current_request.body, param_values)
     # if we declared a body and it's None after assigning placeholders we should error the request
     if current_request.body and body is None:
+        unresolved = find_unresolved_placeholders(current_request.body, param_values)
         raise ValueError(
-            f"Unable to replace placeholders in body for the '{action}' request of {context}"
+            f"Unable to replace placeholders in body for the '{action}' request of "
+            f"{context}. The following placeholders could not be resolved: {unresolved}"
         )
 
     # format the body based on the content type

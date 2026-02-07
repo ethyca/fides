@@ -216,6 +216,7 @@ export type {
   FlexProps,
   FormInstance,
   FormItemProps,
+  FormProps,
   GetProps,
   InputProps as InputPropsOriginal,
   InputRef,
