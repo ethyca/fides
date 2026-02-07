@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.2.post0.dev3"
+    "version": "2.78.2.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -8107,7 +8107,7 @@
           "Connector Templates"
         ],
         "summary": "Register Connector Template",
-        "description": "Registers a custom connector template from a zip file uploaded by the user.\n\nThe endpoint performs the following steps:\n1. Validates the uploaded file is a proper zip file.\n2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.\n\nIf the uploaded file is not a valid zip file or there are any validation errors\nwhen creating the ConnectorTemplates an HTTP 400 status code with error details is returned.",
+        "description": "Registers a custom connector template from a zip file uploaded by the user.\n\nThe endpoint performs the following steps:\n1. Validates the uploaded file is a proper zip file.\n2. Uses the CustomConnectorTemplateLoader to validate, register, and save the template to the database.\n3. Updates any existing connection configs that use this connector type.\n\nIf the uploaded file is not a valid zip file or there are any validation errors\nwhen creating the ConnectorTemplates an HTTP 400 status code with error details is returned.",
         "operationId": "register_connector_template_api_v1_connector_templates_register_post",
         "requestBody": {
           "content": {
@@ -8260,6 +8260,54 @@
           {
             "OAuth2ClientCredentialsBearer": [
               "connector_template:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connector_template_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connector Template Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connector-templates/{connector_template_type}": {
+      "delete": {
+        "tags": [
+          "Connector Templates"
+        ],
+        "summary": "Delete Custom Connector Template",
+        "description": "Deletes a custom connector template and updates the connection configs for the connector type\nto use the Fides-provided template if available.\n\nIf a Fides-provided template is not available, the custom template is not deleted\nand the connection configs for the connector type are not updated.\n\nThe endpoint performs the following:\n1. Verifies the connector template exists and is a custom template.\n2. Verifies a Fides-provided default template is available to fall back to.\n3. Deletes the custom template from the database.\n4. Updates all existing connection configs to use the Fides-provided template.",
+        "operationId": "delete_custom_connector_template_api_v1_connector_templates__connector_template_type__delete",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "connector_template:register"
             ]
           }
         ],

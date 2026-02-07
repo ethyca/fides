@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "4b75c5873e3da2e76d053e775f313693" # string
+analytics_id = "5d3fa60eac62ada2813d052d336d87cd" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
