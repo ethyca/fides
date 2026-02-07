@@ -64,6 +64,12 @@ interface ChangeResourceCategoryQueryParam {
 }
 
 // Identity Provider Monitor interfaces (Okta-specific)
+export interface IdentityProviderMonitorResultFilters {
+  search?: string;
+  diff_status?: DiffStatus | DiffStatus[];
+  vendor_id?: string | string[];
+  data_uses?: string[];
+}
 interface IdentityProviderMonitorResultsQueryParams {
   monitor_config_key: string;
   page?: number;
@@ -86,7 +92,11 @@ interface IdentityProviderResourceActionParam {
 
 interface IdentityProviderResourceBulkActionParam {
   monitor_config_key: string;
-  urns: string[];
+  urns?: string[];
+  bulkSelection?: {
+    filters?: IdentityProviderMonitorResultFilters;
+    exclude_urns?: string[];
+  };
 }
 
 interface IdentityProviderMonitorFiltersQueryParams {
@@ -407,12 +417,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       any,
       IdentityProviderResourceBulkActionParam
     >({
-      query: ({ monitor_config_key, urns }) => ({
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
         method: "POST",
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-promote`,
-        body: {
-          urns,
-        },
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
@@ -420,10 +429,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       any,
       IdentityProviderResourceBulkActionParam
     >({
-      query: ({ monitor_config_key, urns }) => ({
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
         method: "POST",
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-mute`,
-        body: urns,
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
@@ -431,10 +441,11 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       any,
       IdentityProviderResourceBulkActionParam
     >({
-      query: ({ monitor_config_key, urns }) => ({
+      query: ({ monitor_config_key, urns, bulkSelection }) => ({
         method: "POST",
         url: `/plus/identity-provider-monitors/${monitor_config_key}/results/bulk-unmute`,
-        body: urns,
+        // API errors if both URNs and bulk selection params are provided
+        body: urns && urns.length > 0 ? urns : bulkSelection || {},
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),

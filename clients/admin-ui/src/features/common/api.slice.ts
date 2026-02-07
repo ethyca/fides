@@ -95,6 +95,7 @@ export const baseApi = createApi({
     "Privacy Assessment",
     "Questionnaire",
     "Evidence",
+    "User Monitors",
   ],
   endpoints: () => ({}),
 });
