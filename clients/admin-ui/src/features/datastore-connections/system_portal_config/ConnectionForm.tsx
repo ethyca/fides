@@ -26,6 +26,7 @@ import {
   SystemType,
 } from "~/types/api";
 
+import { CUSTOM_INTEGRATION_INDICATOR } from "../constants";
 import {
   selectDatastoreConnectionFilters,
   useGetAllDatastoreConnectionsQuery,
@@ -114,7 +115,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           {selectedConnectionOption?.custom && (
             <Tooltip title="Custom integration" placement="top">
               <Box as="span" cursor="pointer" fontSize="lg">
-                🛠️
+                {CUSTOM_INTEGRATION_INDICATOR}
               </Box>
             </Tooltip>
           )}

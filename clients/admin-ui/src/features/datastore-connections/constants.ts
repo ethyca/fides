@@ -27,6 +27,11 @@ export enum TestingStatus {
 }
 
 /**
+ * Emoji indicator shown next to custom (user-uploaded) integrations
+ */
+export const CUSTOM_INTEGRATION_INDICATOR = "🛠️";
+
+/**
  * Relative folder path for connector logo images
  */
 export const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
