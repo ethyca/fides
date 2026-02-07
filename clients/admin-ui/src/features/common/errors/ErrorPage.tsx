@@ -42,7 +42,7 @@ const ErrorPage = ({
   const errorMessage = isFetchBaseQueryError(error)
     ? getErrorMessage(error, resolvedDefault)
     : (defaultMessage ??
-      ("message" in error ? error.message : DEFAULT_MESSAGE));
+      ("message" in error ? error.message : resolvedDefault));
   const dataString =
     "data" in error && !!error.data
       ? JSON.stringify(error.data)
