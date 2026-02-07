@@ -472,6 +472,10 @@ export type TCMobileData = {
    * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is opt-in true for special feature ID 1
    */
   IABTCF_SpecialFeaturesOptIns?: string;
+  /**
+   * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the status of disclosure in CMP for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is vendor disclosed true for vendor ID 1
+   */
+  IABTCF_DisclosedVendors?: string;
   IABTCF_PublisherConsent?: string;
   IABTCF_PublisherLegitimateInterests?: string;
   IABTCF_PublisherCustomPurposesConsents?: string;
