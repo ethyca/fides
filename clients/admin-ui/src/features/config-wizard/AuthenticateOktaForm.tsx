@@ -129,7 +129,9 @@ const AuthenticateOktaForm = () => {
 
     const config: OktaOAuth2Config = {
       ...values,
-      scopes: values.scopes ? [values.scopes] : ["okta.apps.read"],
+      scopes: values.scopes
+        ? values.scopes.split(",").map((s) => s.trim())
+        : ["okta.apps.read"],
     };
 
     const result = await generate({
