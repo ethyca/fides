@@ -139,7 +139,6 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
               selectedConnectionOption?.custom &&
               selectedConnectionOption?.default_connector_available && (
                 <Button
-                  danger
                   data-testid="delete-custom-integration-btn"
                   onClick={deleteTemplateModal.onOpen}
                   className="ml-2"
@@ -159,7 +158,16 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           onClose={deleteTemplateModal.onClose}
           onConfirm={handleDeleteCustomIntegration}
           title="Use Fides provided template"
-          message="This will remove the custom integration template and update all connections that use it by falling back to the Fides-provided template. Are you sure you want to proceed?"
+          message={
+            <>
+              This will remove the custom integration template and update all
+              connections that use it by falling back to the Fides provided
+              template.
+              <br />
+              <br />
+              Are you sure you want to proceed?
+            </>
+          }
           cancelButtonText="No"
           continueButtonText="Yes"
           isLoading={isDeleting}
