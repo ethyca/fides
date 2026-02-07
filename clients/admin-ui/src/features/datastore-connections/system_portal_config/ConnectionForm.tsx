@@ -144,7 +144,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
                   onClick={deleteTemplateModal.onOpen}
                   className="ml-2"
                 >
-                  Delete custom integration
+                  Use Fides provided template
                 </Button>
               )}
           </Restrict>
@@ -158,8 +158,8 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           isOpen={deleteTemplateModal.isOpen}
           onClose={deleteTemplateModal.onClose}
           onConfirm={handleDeleteCustomIntegration}
-          title="Delete custom integration"
-          message="Deleting this custom integration will update all connections that use it by falling back to the Fides-provided template. Are you sure you want to proceed?"
+          title="Use Fides provided template"
+          message="This will remove the custom integration template and update all connections that use it by falling back to the Fides-provided template. Are you sure you want to proceed?"
           cancelButtonText="No"
           continueButtonText="Yes"
           isLoading={isDeleting}
