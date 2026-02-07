@@ -13,18 +13,15 @@ import { ReactNode } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import ErrorImage from "~/features/common/errors/ErrorImage";
-import { getErrorMessage, ParsedError } from "~/features/common/helpers";
+import {
+  getErrorMessage,
+  isFetchBaseQueryError,
+  ParsedError,
+} from "~/features/common/helpers";
 
 type ActionProps = Omit<ButtonProps, "children"> & { label: ReactNode };
 
 type ErrorPageError = FetchBaseQueryError | SerializedError | ParsedError;
-
-const isParsedError = (error: ErrorPageError): error is ParsedError =>
-  "message" in error &&
-  "status" in error &&
-  typeof error.message === "string" &&
-  typeof error.status === "number" &&
-  !("data" in error);
 
 const DEFAULT_MESSAGE = "An unexpected error occurred.  Please try again";
 
@@ -41,20 +38,15 @@ const ErrorPage = ({
   showReload?: boolean;
   fullScreen?: boolean;
 }) => {
-  const errorMessage = isParsedError(error)
-    ? (defaultMessage ?? error.message)
-    : getErrorMessage(error, defaultMessage ?? DEFAULT_MESSAGE);
-  // handle FetchBaseQueryError, SerializedError, and ParsedError
-  const getDataString = () => {
-    if (isParsedError(error)) {
-      return error.message;
-    }
-    if ("data" in error && !!error.data) {
-      return JSON.stringify(error.data);
-    }
-    return JSON.stringify(error);
-  };
-  const dataString = getDataString();
+  const resolvedDefault = defaultMessage ?? DEFAULT_MESSAGE;
+  const errorMessage = isFetchBaseQueryError(error)
+    ? getErrorMessage(error, resolvedDefault)
+    : (defaultMessage ??
+      ("message" in error ? error.message : DEFAULT_MESSAGE));
+  const dataString =
+    "data" in error && !!error.data
+      ? JSON.stringify(error.data)
+      : JSON.stringify(error);
   const status = "status" in error && !!error.status ? error.status : undefined;
 
   const router = useRouter();
