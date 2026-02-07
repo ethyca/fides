@@ -14,6 +14,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     String,
     UniqueConstraint,
     func,
@@ -583,6 +584,10 @@ class StagedResource(Base):
     )
     parent = Column(String, nullable=True)
 
+    is_leaf = Column(
+        Boolean, nullable=True, default=None
+    )  # None = not applicable (non-datastore monitors), True = leaf resource, False = non-leaf resource
+
     # diff-related fields
     diff_status = Column(String, nullable=True, index=True)
 
@@ -683,6 +688,14 @@ class StagedResource(Base):
             "idx_stagedresource_user_categories_gin",
             "user_assigned_data_categories",
             postgresql_using="gin",
+        ),
+        Index(
+            "ix_stagedresource_monitor_leaf_status_urn",
+            "monitor_config_id",
+            "is_leaf",
+            "diff_status",
+            "urn",
+            postgresql_where=text("is_leaf IS NOT NULL"),
         ),
     )
 
