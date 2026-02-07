@@ -336,9 +336,7 @@ def assign_placeholders(value: Any, param_values: Dict[str, Any]) -> Optional[An
     return value
 
 
-def find_unresolved_placeholders(
-    value: Any, param_values: Dict[str, Any]
-) -> List[str]:
+def find_unresolved_placeholders(value: Any, param_values: Dict[str, Any]) -> List[str]:
     """
     Finds all required placeholders in the value that cannot be resolved
     from the provided param_values. Used for diagnostic error messages.

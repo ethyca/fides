@@ -539,9 +539,7 @@ class TestFindUnresolvedPlaceholders:
         assert find_unresolved_placeholders("<access_key>", {}) == ["access_key"]
 
     def test_multiple_unresolved_placeholders(self):
-        result = find_unresolved_placeholders(
-            "/user/<user_id>/order/<order_id>", {}
-        )
+        result = find_unresolved_placeholders("/user/<user_id>/order/<order_id>", {})
         assert "user_id" in result
         assert "order_id" in result
         assert len(result) == 2
@@ -553,12 +551,9 @@ class TestFindUnresolvedPlaceholders:
         assert result == ["order_id"]
 
     def test_optional_placeholders_excluded(self):
-        assert (
-            find_unresolved_placeholders(
-                '{"name": "<name?>", "age": <age>}', {}
-            )
-            == ["age"]
-        )
+        assert find_unresolved_placeholders(
+            '{"name": "<name?>", "age": <age>}', {}
+        ) == ["age"]
 
     def test_all_optional_placeholders(self):
         assert (
