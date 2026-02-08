@@ -1,8 +1,8 @@
 """add is_leaf to stagedresource
 
-Revision ID: 81d2400b16ab
-Revises: 841e0b148993
-Create Date: 2026-02-03 20:33:18.257565
+Revision ID: f85bd4c08401
+Revises: aa8e1bd48402
+Create Date: 2026-02-08 23:39:20.235277
 
 """
 
@@ -12,8 +12,8 @@ from loguru import logger
 from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
-revision = "81d2400b16ab"
-down_revision = "841e0b148993"
+revision = "f85bd4c08401"
+down_revision = "aa8e1bd48402"
 branch_labels = None
 depends_on = None
 
