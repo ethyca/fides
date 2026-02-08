@@ -23,9 +23,7 @@ class BackfillRequest(BaseModel):
 class BackfillStatusResponse(BaseModel):
     """Response body for backfill status endpoint."""
 
-    is_running: bool = Field(
-        description="Whether a backfill is currently running"
-    )
+    is_running: bool = Field(description="Whether a backfill is currently running")
     pending_count: dict[str, int] = Field(
         description="Count of rows pending backfill, keyed by backfill task name"
     )

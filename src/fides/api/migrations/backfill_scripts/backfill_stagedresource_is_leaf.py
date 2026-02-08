@@ -12,11 +12,15 @@ def get_pending_is_leaf_count(db: Session) -> int:
     """Returns the count of rows that still need is_leaf backfill."""
     try:
         result = db.execute(
-            text("SELECT COUNT(*) FROM stagedresource WHERE is_leaf IS NULL AND resource_type IN ('Database', 'Schema', 'Table', 'Field', 'Endpoint')")
+            text(
+                "SELECT COUNT(*) FROM stagedresource WHERE is_leaf IS NULL AND resource_type IN ('Database', 'Schema', 'Table', 'Field', 'Endpoint')"
+            )
         )
         return result.scalar() or 0
     except SQLAlchemyError as e:
-        logger.error(f"stagedresource-is_leaf backfill: Failed to get pending count: {e}")
+        logger.error(
+            f"stagedresource-is_leaf backfill: Failed to get pending count: {e}"
+        )
         raise
 
 

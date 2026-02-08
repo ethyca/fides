@@ -74,7 +74,9 @@ def run_all_backfills(
     results: list[BackfillResult] = []
 
     # Backfill is_leaf column (added in migration 81d2400b16ab)
-    results.append(backfill_stagedresource_is_leaf(db, batch_size, batch_delay_seconds, lock=lock))
+    results.append(
+        backfill_stagedresource_is_leaf(db, batch_size, batch_delay_seconds, lock=lock)
+    )
 
     # Add future backfills here:
     # results.append(backfill_some_other_column(db, batch_size, batch_delay_seconds, lock=lock))

@@ -140,11 +140,14 @@ class TestBackfillEndpoints:
         mock_lock = MagicMock()
         mock_lock.owned.return_value = True
 
-        with patch(
-            "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
-            return_value=mock_lock,
-        ), patch(
-            "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+        with (
+            patch(
+                "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+                return_value=mock_lock,
+            ),
+            patch(
+                "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+            ),
         ):
             response = test_client.post(
                 test_config.cli.server_url + API_PREFIX + "/admin/backfill",
@@ -203,11 +206,14 @@ class TestBackfillEndpoints:
         mock_lock = MagicMock()
         mock_lock.owned.return_value = True
 
-        with patch(
-            "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
-            return_value=mock_lock,
-        ), patch(
-            "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+        with (
+            patch(
+                "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+                return_value=mock_lock,
+            ),
+            patch(
+                "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+            ),
         ):
             response = test_client.post(
                 test_config.cli.server_url + API_PREFIX + "/admin/backfill",
@@ -244,12 +250,15 @@ class TestBackfillEndpoints:
         pending_count: int,
     ) -> None:
         """Test that GET backfill returns correct status."""
-        with patch(
-            "fides.api.api.v1.endpoints.admin.is_backfill_running",
-            return_value=is_running,
-        ), patch(
-            "fides.api.api.v1.endpoints.admin.get_pending_is_leaf_count",
-            return_value=pending_count,
+        with (
+            patch(
+                "fides.api.api.v1.endpoints.admin.is_backfill_running",
+                return_value=is_running,
+            ),
+            patch(
+                "fides.api.api.v1.endpoints.admin.get_pending_is_leaf_count",
+                return_value=pending_count,
+            ),
         ):
             response = test_client.get(
                 test_config.cli.server_url + API_PREFIX + "/admin/backfill",

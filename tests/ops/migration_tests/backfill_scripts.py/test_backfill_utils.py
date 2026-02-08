@@ -127,6 +127,7 @@ class TestBackfillLock:
         else:
             mock_lock.extend.assert_not_called()
 
+
 class TestBackfillHistory:
     """Tests for backfill completion tracking functions."""
 
@@ -242,12 +243,15 @@ class TestExecuteBatchWithRetry:
         mock_db = MagicMock()
         mock_fn = MagicMock(side_effect=SQLAlchemyError("Test error"))
 
-        with patch(
-            "fides.api.migrations.backfill_scripts.utils.is_transient_error",
-            return_value=is_transient,
-        ), patch(
-            "fides.api.migrations.backfill_scripts.utils.time.sleep"
-        ) as mock_sleep:
+        with (
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.is_transient_error",
+                return_value=is_transient,
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.time.sleep"
+            ) as mock_sleep,
+        ):
             # Execute and verify exception is raised
             with pytest.raises(SQLAlchemyError, match="Test error"):
                 execute_batch_with_retry(
@@ -295,14 +299,18 @@ class TestBatchedBackfillDecorator:
         def test_backfill(db, batch_size):
             return mock_batch_fn(db, batch_size)
 
-        with patch(
-            "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
-            return_value=is_completed,
-        ), patch(
-            "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
-        ) as mock_mark, patch(
-            "fides.api.migrations.backfill_scripts.utils.execute_batch_with_retry"
-        ) as mock_execute:
+        with (
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
+                return_value=is_completed,
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
+            ) as mock_mark,
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.execute_batch_with_retry"
+            ) as mock_execute,
+        ):
             # Execute
             result = test_backfill(mock_db)
 
@@ -345,18 +353,24 @@ class TestBatchedBackfillDecorator:
         def test_backfill(db, batch_size):
             return mock_batch_fn(db, batch_size)
 
-        with patch(
-            "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
-            return_value=False,
-        ), patch(
-            "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
-        ) as mock_mark, patch(
-            "fides.api.migrations.backfill_scripts.utils.execute_batch_with_retry"
-        ) as mock_execute, patch(
-            "fides.api.migrations.backfill_scripts.utils.refresh_backfill_lock"
-        ) as mock_refresh, patch(
-            "fides.api.migrations.backfill_scripts.utils.time.sleep"
-        ) as mock_sleep:
+        with (
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
+                return_value=False,
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
+            ) as mock_mark,
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.execute_batch_with_retry"
+            ) as mock_execute,
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.refresh_backfill_lock"
+            ) as mock_refresh,
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.time.sleep"
+            ) as mock_sleep,
+        ):
             # Setup execute_batch_with_retry to pass through to our mock function
             mock_execute.side_effect = lambda fn, **kwargs: fn()
 
@@ -401,17 +415,21 @@ class TestBatchedBackfillDecorator:
         def test_backfill(db, batch_size):
             return batch_returns.pop(0)
 
-        with patch(
-            "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
-            return_value=False,
-        ), patch(
-            "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
-        ), patch(
-            "fides.api.migrations.backfill_scripts.utils.execute_batch_with_retry"
-        ) as mock_execute, patch(
-            "fides.api.migrations.backfill_scripts.utils.refresh_backfill_lock"
-        ) as mock_refresh, patch(
-            "fides.api.migrations.backfill_scripts.utils.time.sleep"
+        with (
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
+                return_value=False,
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.execute_batch_with_retry"
+            ) as mock_execute,
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.refresh_backfill_lock"
+            ) as mock_refresh,
+            patch("fides.api.migrations.backfill_scripts.utils.time.sleep"),
         ):
             # Setup execute_batch_with_retry to pass through to our function
             call_count = [0]
@@ -470,15 +488,18 @@ class TestBatchedBackfillDecorator:
                 return 50  # Return less than batch_size to trigger exit
             return 100
 
-        with patch(
-            "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
-            return_value=False,
-        ), patch(
-            "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
-        ), patch(
-            "fides.api.migrations.backfill_scripts.utils.execute_batch_with_retry"
-        ) as mock_execute, patch(
-            "fides.api.migrations.backfill_scripts.utils.time.sleep"
+        with (
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
+                return_value=False,
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.execute_batch_with_retry"
+            ) as mock_execute,
+            patch("fides.api.migrations.backfill_scripts.utils.time.sleep"),
         ):
             # Setup execute_batch_with_retry to pass through exceptions
             def execute_side_effect(fn, **kwargs):

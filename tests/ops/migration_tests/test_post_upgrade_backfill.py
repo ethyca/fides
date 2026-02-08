@@ -23,16 +23,21 @@ class TestPostUpgradeBackfillTask:
         """Verify lock acquisition behavior and graceful skip when unavailable."""
         mock_lock = MagicMock() if lock_acquired else None
 
-        with patch(
-            "fides.api.migrations.post_upgrade_backfill.acquire_backfill_lock",
-            return_value=mock_lock,
-        ) as mock_acquire, patch(
-            "fides.api.migrations.post_upgrade_backfill.get_db_session"
-        ) as mock_get_db, patch(
-            "fides.api.migrations.post_upgrade_backfill.run_all_backfills"
-        ) as mock_run_backfills, patch(
-            "fides.api.migrations.post_upgrade_backfill.release_backfill_lock"
-        ) as mock_release:
+        with (
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.acquire_backfill_lock",
+                return_value=mock_lock,
+            ) as mock_acquire,
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.get_db_session"
+            ) as mock_get_db,
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.run_all_backfills"
+            ) as mock_run_backfills,
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.release_backfill_lock"
+            ) as mock_release,
+        ):
             # Setup
             mock_run_backfills.return_value = [
                 BackfillResult(name="test", total_updated=10)
@@ -64,16 +69,21 @@ class TestPostUpgradeBackfillTask:
         """Verify lock is released in finally block regardless of outcome."""
         mock_lock = MagicMock()
 
-        with patch(
-            "fides.api.migrations.post_upgrade_backfill.acquire_backfill_lock",
-            return_value=mock_lock,
-        ), patch(
-            "fides.api.migrations.post_upgrade_backfill.get_db_session"
-        ) as mock_get_db, patch(
-            "fides.api.migrations.post_upgrade_backfill.run_all_backfills"
-        ) as mock_run_backfills, patch(
-            "fides.api.migrations.post_upgrade_backfill.release_backfill_lock"
-        ) as mock_release:
+        with (
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.acquire_backfill_lock",
+                return_value=mock_lock,
+            ),
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.get_db_session"
+            ) as mock_get_db,
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.run_all_backfills"
+            ) as mock_run_backfills,
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.release_backfill_lock"
+            ) as mock_release,
+        ):
             # Setup
             if should_fail:
                 mock_run_backfills.side_effect = Exception("Test error")
@@ -109,13 +119,15 @@ class TestRunBackfillManually:
             BackfillResult(name="test2", total_updated=20),
         ]
 
-        with patch(
-            "fides.api.migrations.post_upgrade_backfill.get_db_session"
-        ) as mock_get_db, patch(
-            "fides.api.migrations.post_upgrade_backfill.run_all_backfills",
-            return_value=expected_results,
-        ) as mock_run_backfills, patch(
-            "fides.api.migrations.post_upgrade_backfill.release_backfill_lock"
+        with (
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.get_db_session"
+            ) as mock_get_db,
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.run_all_backfills",
+                return_value=expected_results,
+            ) as mock_run_backfills,
+            patch("fides.api.migrations.post_upgrade_backfill.release_backfill_lock"),
         ):
             # Setup
             mock_db = MagicMock()
@@ -141,13 +153,17 @@ class TestRunBackfillManually:
         """Verify lock is released in finally block regardless of outcome."""
         mock_lock = MagicMock()
 
-        with patch(
-            "fides.api.migrations.post_upgrade_backfill.get_db_session"
-        ) as mock_get_db, patch(
-            "fides.api.migrations.post_upgrade_backfill.run_all_backfills"
-        ) as mock_run_backfills, patch(
-            "fides.api.migrations.post_upgrade_backfill.release_backfill_lock"
-        ) as mock_release:
+        with (
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.get_db_session"
+            ) as mock_get_db,
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.run_all_backfills"
+            ) as mock_run_backfills,
+            patch(
+                "fides.api.migrations.post_upgrade_backfill.release_backfill_lock"
+            ) as mock_release,
+        ):
             # Setup
             if should_fail:
                 mock_run_backfills.side_effect = Exception("Test error")
