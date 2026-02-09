@@ -8,7 +8,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, subqueryload
 from starlette.exceptions import HTTPException
 from starlette.status import (
     HTTP_200_OK,
@@ -59,7 +59,10 @@ def get_policy_list(
     logger.debug("Finding all policies with pagination params '{}'", params)
     policies = (
         Policy.query(db=db)
-        .options(joinedload(Policy.conditions))
+        .options(
+            subqueryload(Policy.rules).joinedload(Rule.storage_destination),
+            joinedload(Policy.conditions),
+        )
         .order_by(Policy.created_at.desc())
     )
     return paginate(policies, params=params)

@@ -3,6 +3,7 @@ from enum import StrEnum
 from typing import Any, Optional
 
 from fideslang.validation import FidesKey
+from loguru import logger
 from pydantic import ConfigDict, model_validator
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
@@ -149,6 +150,7 @@ class PolicyResponse(Policy):
     def extract_conditions(cls, values: Any) -> Any:
         """Extract the condition tree from the ORM conditions relationship.
 
+        Each policy has at most one PolicyCondition row (enforced at creation).
         Returns a dict copy to avoid mutating the ORM object's relationship
         state, which would corrupt the SQLAlchemy session.
         """
@@ -156,13 +158,19 @@ class PolicyResponse(Policy):
             return values
         orm_conditions = values.conditions
         conditions_data: dict[str, Any] = {}
-        if orm_conditions and orm_conditions[0].condition_tree:
-            conditions_data = orm_conditions[0].condition_tree
-        data = {
-            field_name: getattr(values, field_name)
-            for field_name in cls.model_fields
-            if field_name != "conditions" and hasattr(values, field_name)
-        }
+        if orm_conditions:
+            if len(orm_conditions) > 1:
+                logger.warning(
+                    "Policy has %d condition rows; expected at most 1. "
+                    "Using the first row only.",
+                    len(orm_conditions),
+                )
+            if orm_conditions[0].condition_tree:
+                conditions_data = orm_conditions[0].condition_tree
+        # Use __dict__ to capture all attributes from the source object rather
+        # than selectively copying model_fields, which could silently drop
+        # fields if the source isn't the exact ORM model we expect.
+        data = {k: v for k, v in values.__dict__.items() if not k.startswith("_")}
         data["conditions"] = conditions_data
         return data
 
