@@ -36,7 +36,7 @@ RUN python3 -m venv /opt/fides
 ENV PATH="/opt/fides/bin:${PATH}"
 
 # Install Python Dependencies
-RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
+RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools==80.10.2 wheel
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
