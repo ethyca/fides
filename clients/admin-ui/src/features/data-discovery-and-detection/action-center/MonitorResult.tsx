@@ -231,15 +231,12 @@ export const MonitorResult = ({
       )}
       {!!lastMonitoredDistance && (
         <Tooltip title={formattedLastMonitored}>
-          <Text
-            className="!hidden flex-[6rem] !grow-0 text-center md:!flex lg:flex-[10rem]"
-            type="secondary"
-            data-testid="monitor-date"
-            ellipsis
-          >
-            <span className="hidden lg:contents">Last scan: </span>
-            {lastMonitoredDistance}
-          </Text>
+          <div className="!hidden flex-[6rem] !grow-0 overflow-hidden text-center md:!flex lg:flex-[10rem]">
+            <Text type="secondary" data-testid="monitor-date" ellipsis>
+              <span className="hidden lg:contents">Last scan: </span>
+              {lastMonitoredDistance}
+            </Text>
+          </div>
         </Tooltip>
       )}
     </List.Item>

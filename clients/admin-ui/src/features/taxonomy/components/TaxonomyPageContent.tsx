@@ -25,9 +25,9 @@ import PageHeader from "~/features/common/PageHeader";
 import { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import CreateCustomTaxonomyForm from "~/features/taxonomy/components/CreateCustomTaxonomyForm";
-import CustomTaxonomyEditDrawer from "~/features/taxonomy/components/CustomTaxonomyEditDrawer";
-import TaxonomyItemEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
+import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
+import TaxonomyItemEditDrawer from "~/features/taxonomy/components/TaxonomyItemEditDrawer";
 import {
   CoreTaxonomiesEnum,
   TAXONOMY_ROOT_NODE_ID,
@@ -376,7 +376,7 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
         />
       )}
       {taxonomyTypeToEdit && (
-        <CustomTaxonomyEditDrawer
+        <TaxonomyEditDrawer
           title={
             customTaxonomyLabel
               ? `Edit ${customTaxonomyLabel}`

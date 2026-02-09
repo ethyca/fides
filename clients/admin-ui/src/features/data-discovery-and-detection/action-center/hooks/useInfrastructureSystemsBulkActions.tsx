@@ -1,8 +1,7 @@
-import { useChakraToast as useToast } from "fidesui";
+import { useMessage } from "fidesui";
 import { useCallback } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 import {
@@ -22,7 +21,7 @@ export const useInfrastructureSystemsBulkActions = ({
   monitorId,
   onSuccess,
 }: UseInfrastructureSystemsBulkActionsConfig) => {
-  const toast = useToast();
+  const messageApi = useMessage();
 
   const [
     bulkPromoteIdentityProviderMonitorResultsMutation,
@@ -67,10 +66,8 @@ export const useInfrastructureSystemsBulkActions = ({
           .filter((urn): urn is string => Boolean(urn));
 
         if (urns.length === 0) {
-          toast(
-            errorToastParams(
-              "No valid systems selected. Please select systems with URNs.",
-            ),
+          messageApi.error(
+            "No valid systems selected. Please select systems with URNs.",
           );
           return;
         }
@@ -163,7 +160,7 @@ export const useInfrastructureSystemsBulkActions = ({
       }
 
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        messageApi.error(getErrorMessage(result.error));
       } else {
         // Use count from response if available, otherwise use estimated count
         let finalCount: number;
@@ -185,7 +182,7 @@ export const useInfrastructureSystemsBulkActions = ({
           return;
         }
 
-        toast(successToastParams(successMessage));
+        messageApi.success(successMessage);
         onSuccess?.();
       }
     },
@@ -194,7 +191,7 @@ export const useInfrastructureSystemsBulkActions = ({
       bulkPromoteIdentityProviderMonitorResultsMutation,
       bulkMuteIdentityProviderMonitorResultsMutation,
       bulkUnmuteIdentityProviderMonitorResultsMutation,
-      toast,
+      messageApi,
       onSuccess,
     ],
   );

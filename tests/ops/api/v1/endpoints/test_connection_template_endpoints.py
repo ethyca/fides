@@ -74,6 +74,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
         first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -221,6 +223,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -233,6 +237,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -245,6 +251,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
@@ -289,6 +297,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
@@ -325,6 +335,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -337,6 +349,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -349,6 +363,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
@@ -427,6 +443,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             }
         ]
 
@@ -449,6 +467,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -461,6 +481,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -473,6 +495,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -485,6 +509,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -497,6 +523,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
         ]
 
@@ -559,6 +587,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             ConnectionType.manual_webhook.value: {
                 "identifier": ConnectionType.manual_webhook.value,
@@ -574,6 +604,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             HUBSPOT: actual_connection_types[HUBSPOT],
             MAILCHIMP: actual_connection_types[MAILCHIMP],
@@ -589,6 +621,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             ConnectionType.attentive_email.value: {
                 "identifier": ConnectionType.attentive_email.value,
@@ -601,6 +635,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
         }
 
@@ -2069,7 +2105,9 @@ class TestConnectorTemplateEndpoints:
             assert "supported_actions" in item
             assert "category" in item
             assert "custom" in item
+            assert "default_connector_available" in item
             assert isinstance(item["custom"], bool)
+            assert isinstance(item["default_connector_available"], bool)
             assert isinstance(item["supported_actions"], list)
 
         # Find a specific connector template to verify data
@@ -2078,6 +2116,9 @@ class TestConnectorTemplateEndpoints:
         )
         assert mailchimp_template is not None
         assert mailchimp_template["custom"] is False  # Built-in connector
+        assert (
+            mailchimp_template["default_connector_available"] is False
+        )  # No custom override
         assert len(mailchimp_template["supported_actions"]) > 0
 
     def test_config_endpoint(self, api_client, generate_auth_header):
