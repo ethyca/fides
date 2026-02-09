@@ -75,6 +75,7 @@ requests-oauthlib==2.0.0
 rich-click==1.9.0
 scylla-driver==3.26.8
 sendgrid==6.9.7
+setuptools==80.10.2
 slowapi==0.1.9
 smart-open[s3,gcs]==7.3.0.post1
 snowflake-sqlalchemy~=1.7.7
