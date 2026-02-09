@@ -150,7 +150,7 @@ export const useConnectionListDropDown = ({
         setSelectedValue(updatedValue);
       }
     }
-  }, [connectionOptions, selectedValue]);
+  }, [connectionOptions, selectedValue, setSelectedValue]);
 
   return { dropDownOptions, selectedValue, setSelectedValue, systemType };
 };

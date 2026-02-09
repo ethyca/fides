@@ -10,10 +10,12 @@ import {
   ChakraStack as Stack,
   Modal,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { getErrorMessage } from "~/features/common/helpers";
 import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
@@ -78,6 +80,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
 
   const uploadTemplateModal = useDisclosure();
   const [modalApi, modalContext] = Modal.useModal();
+  const messageApi = useMessage();
   const [deleteConnectorTemplate] = useDeleteConnectorTemplateMutation();
 
   const handleRemoveCustomIntegration = () => {
@@ -100,9 +103,13 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
       centered: true,
       onOk: async () => {
         if (selectedConnectionOption?.identifier) {
-          await deleteConnectorTemplate(
-            selectedConnectionOption.identifier,
-          ).unwrap();
+          try {
+            await deleteConnectorTemplate(
+              selectedConnectionOption.identifier,
+            ).unwrap();
+          } catch (error) {
+            messageApi.error(getErrorMessage(error as any));
+          }
         }
       },
     });
