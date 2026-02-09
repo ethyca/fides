@@ -84,9 +84,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.session_name }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ matrix.session_name }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ matrix.session_name }}
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ matrix.session_name }}
 
       - name: Run Static Check
         run: uv run nox -s ${{ matrix.session_name }}
