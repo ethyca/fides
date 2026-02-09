@@ -3,7 +3,7 @@ ARG PYTHON_VERSION="3.13.11"
 #########################
 ## Compile Python Deps ##
 #########################
-FROM python:${PYTHON_VERSION}-slim-bookworm AS compile_image
+FROM python:${PYTHON_VERSION}-bookworm AS compile_image
 
 
 # Install auxiliary software
@@ -64,6 +64,9 @@ RUN apt-get update && \
 COPY --from=compile_image /build/.venv /opt/fides
 COPY --from=compile_image /bin/uv /bin/uv
 ENV PATH=/opt/fides/bin:$PATH
+# Use the pre-built venv so "uv run" in the container does not create/sync .venv (avoids C extension rebuilds)
+ENV UV_PROJECT_ENVIRONMENT=/opt/fides
+# In prod, /opt/fides stays root-owned (fidesuser can read/execute only). Dev stage chowns after editable install.
 
 # General Application Setup ##
 USER fidesuser
@@ -102,7 +105,9 @@ FROM backend AS dev
 
 USER root
 
-RUN uv pip install --python /opt/fides/bin/python -e . --no-deps
+# Editable install so the mounted /fides package is used at runtime; chown so fidesuser can run "uv run" (which may update this install)
+RUN uv pip install --python /opt/fides/bin/python -e . --no-deps && \
+    chown -R fidesuser:fidesgroup /opt/fides
 
 USER fidesuser
 
@@ -175,4 +180,12 @@ RUN cd /fides && uv build --sdist && \
 
 # Remove this directory to prevent issues with catch all
 RUN rm -r /fides/src/fides/ui-build
+USER fidesuser
+
+############################
+## Test image (prod + writable venv for "uv run pytest" with mounted /fides)
+############################
+FROM prod AS test
+USER root
+RUN chown -R fidesuser:fidesgroup /opt/fides
 USER fidesuser

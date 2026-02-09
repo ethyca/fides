@@ -2,8 +2,7 @@ import os
 
 import pytest
 import toml
-from py._path.local import LocalPath
-
+from pathlib import Path as LocalPath
 from fides.config import FidesConfig
 from fides.config.create import (
     build_field_documentation,

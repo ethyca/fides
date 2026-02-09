@@ -4,8 +4,7 @@ from types import SimpleNamespace
 from typing import Generator
 
 import pytest
-from py._path.local import LocalPath
-from toml import dump, load
+from pathlib import Path as LocalPathfrom toml import dump, load
 
 from fides.config import FidesConfig
 from fides.config.cli_settings import CLISettings

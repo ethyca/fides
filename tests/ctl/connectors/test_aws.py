@@ -4,8 +4,7 @@ from typing import Generator
 
 import pytest
 from fideslang.models import System, SystemMetadata
-from py._path.local import LocalPath
-
+from pathlib import Path as LocalPath
 import fides.connectors.aws as aws_connector
 from fides.config import FidesConfig
 from fides.connectors.models import AWSConfig

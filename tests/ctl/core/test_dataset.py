@@ -9,8 +9,7 @@ import pytest
 import sqlalchemy
 from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from py._path.local import LocalPath
-from sqlalchemy.orm import Session
+from pathlib import Path as LocalPathfrom sqlalchemy.orm import Session
 
 from fides.api.db.crud import get_resource
 from fides.api.models.connectionconfig import (

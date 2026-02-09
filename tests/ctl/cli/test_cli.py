@@ -8,8 +8,7 @@ import pytest
 import yaml
 from click.testing import CliRunner
 from git.repo import Repo
-from py._path.local import LocalPath
-
+from pathlib import Path as LocalPath
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.cli import cli
 from fides.common.api.scope_registry import SCOPE_REGISTRY
