@@ -170,9 +170,10 @@ const ConfigureIntegrationForm = ({
   // and we don't want to PATCH with those values.
   const excludeUnchangedSecrets = (secretsValues: ConnectionSecrets) =>
     omitBy(
-      mapValues(secretsValues, (s, key) =>
-        (connection?.secrets?.[key] ?? "") === s ? undefined : s,
-      ),
+      mapValues(secretsValues, (s, key) => {
+        const original = connection?.secrets?.[key] ?? "";
+        return String(original) === s ? undefined : s;
+      }),
       isUndefined,
     );
 
