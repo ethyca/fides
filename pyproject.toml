@@ -131,7 +131,8 @@ dependencies = [
     "python-dateutil~=2.9.0.post0",
     "rfc3986~=2.0.0",
     "ordered-set==4.1.0",
-    "setuptools>=80.10.2",
+    "setuptools~=80.10.2",
+        
 ]
 
 [project.optional-dependencies]
