@@ -6,11 +6,11 @@ import {
   ChakraStack as Stack,
   useChakraToast as useToast,
 } from "fidesui";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
-import { CustomTextInput } from "~/features/common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -39,6 +39,8 @@ export type SSOProviderFormValues = Omit<
   provider?: ProviderEnum;
   client_id?: string;
   client_secret?: string;
+  verify_email?: boolean;
+  scopes?: string[];
 };
 
 export const defaultInitialValues: SSOProviderFormValues = {
@@ -46,6 +48,7 @@ export const defaultInitialValues: SSOProviderFormValues = {
   name: "",
   client_id: "",
   client_secret: "",
+  verify_email: true,
 };
 
 export const transformOrganizationToFormValues = (
@@ -57,7 +60,76 @@ const SSOProviderFormValidationSchema = Yup.object().shape({
   name: Yup.string().required().label("Name"),
   client_id: Yup.string().required().label("Client ID"),
   client_secret: Yup.string().required().label("Client Secret"),
+  scopes: Yup.array().of(Yup.string()).label("Scopes"),
 });
+
+const CustomProviderExtraFields = () => {
+  const {
+    values: { verify_email: verifyEmail },
+  } = useFormikContext<SSOProviderFormValues>();
+
+  return (
+    <>
+      <CustomTextInput
+        id="authorization_url"
+        name="authorization_url"
+        label="Authorization URL"
+        tooltip="Authorization URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+      <CustomTextInput
+        id="token_url"
+        name="token_url"
+        label="Token URL"
+        tooltip="Token URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+      <CustomTextInput
+        id="userinfo_url"
+        name="user_info_url"
+        label="User Info URL"
+        tooltip="User Info URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+      <ControlledSelect
+        id="scopes"
+        name="scopes"
+        label="Scopes"
+        tooltip="Scopes requested during authorization callback, defaults to 'openid email'"
+        placeholder="openid email"
+        mode="tags"
+      />
+      <CustomTextInput
+        id="email_field"
+        name="email_field"
+        label="User Info Email Field"
+        tooltip="Field to extract email from the user info object, defaults to 'email'"
+        variant="stacked"
+        placeholder="email"
+      />
+      <CustomSwitch
+        id="verify_email"
+        name="verify_email"
+        label="Require Verified Email"
+        tooltip="Require user emails to be verified"
+        variant="stacked"
+      />
+      {verifyEmail && (
+        <CustomTextInput
+          id="verify_email_field"
+          name="verify_email_field"
+          label="User Info Verify Email Field"
+          tooltip="Field to extract verified email flag from the user info object, defaults to 'verified_email'"
+          variant="stacked"
+          placeholder="verified_email"
+        />
+      )}
+    </>
+  );
+};
 
 const SSOProviderForm = ({
   openIDProvider,
@@ -150,35 +222,6 @@ const SSOProviderForm = ({
     />
   );
 
-  const renderCustomProviderExtraFields = () => (
-    <>
-      <CustomTextInput
-        id="authorization_url"
-        name="authorization_url"
-        label="Authorization URL"
-        tooltip="Authorization URL for your provider"
-        variant="stacked"
-        isRequired
-      />
-      <CustomTextInput
-        id="token_url"
-        name="token_url"
-        label="Token URL"
-        tooltip="Token URL for your provider"
-        variant="stacked"
-        isRequired
-      />
-      <CustomTextInput
-        id="userinfo_url"
-        name="user_info_url"
-        label="User Info URL"
-        tooltip="User Info URL for your provider"
-        variant="stacked"
-        isRequired
-      />
-    </>
-  );
-
   return (
     <Formik
       initialValues={initialValues}
@@ -233,7 +276,7 @@ const SSOProviderForm = ({
             />
             {values.provider === "azure" && renderAzureProviderExtraFields()}
             {values.provider === "okta" && renderOktaProviderExtraFields()}
-            {values.provider === "custom" && renderCustomProviderExtraFields()}
+            {values.provider === "custom" && <CustomProviderExtraFields />}
             <Box textAlign="right">
               <Button
                 htmlType="button"

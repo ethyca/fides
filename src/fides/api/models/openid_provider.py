@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Column, String
+from sqlalchemy import ARRAY, Boolean, Column, String
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -47,6 +47,10 @@ class OpenIDProvider(Base):
     authorization_url = Column(String, nullable=True)  # Used for Custom provider
     token_url = Column(String, nullable=True)  # Used for Custom provider
     user_info_url = Column(String, nullable=True)  # Used for Custom provider
+    scopes = Column(ARRAY(String), nullable=True)  # Used for Custom provider
+    email_field = Column(String, nullable=True)  # Used for Custom provider
+    verify_email = Column(Boolean, default=True)  # Used for Custom provider
+    verify_email_field = Column(String, nullable=True)  # Used for Custom provider
 
     @declared_attr
     def __tablename__(self) -> str:
