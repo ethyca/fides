@@ -84,8 +84,11 @@ export const useMessagingConfigurationsTable = () => {
 
   // TODO: When the API supports pagination/search/sorting, pass tableState.state here
   // const { data, isLoading: isConfigurationsLoading } = useGetMessagingConfigurationsQuery(tableState.state);
-  const { data, isLoading: isConfigurationsLoading } =
-    useGetMessagingConfigurationsQuery();
+  const {
+    data,
+    isLoading: isConfigurationsLoading,
+    error: configurationsError,
+  } = useGetMessagingConfigurationsQuery();
 
   // Set initial messaging value from active provider
   useEffect(() => {
@@ -354,6 +357,7 @@ export const useMessagingConfigurationsTable = () => {
   return {
     // Table state and data
     columns,
+    error: configurationsError,
 
     // Ant Design table integration
     tableProps: antTable.tableProps,

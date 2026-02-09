@@ -1,4 +1,5 @@
 import json
+from contextlib import asynccontextmanager
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
@@ -18,6 +19,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
+from fides.api.app_setup import create_fides_app
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -41,6 +43,7 @@ from fides.common.api.scope_registry import (
     STORAGE_DELETE,
 )
 from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.config import CONFIG
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
 from tests.fixtures.application_fixtures import integration_secrets
@@ -672,20 +675,39 @@ class TestPatchConnections:
             "description": None,
         }
 
-    @mock.patch("fides.api.main.prepare_and_log_request")
+    @pytest.fixture
+    def analytics_enabled_client(self, monkeypatch):
+        """Create a TestClient with analytics middleware enabled."""
+        # Enable analytics before creating the app
+        monkeypatch.setattr(CONFIG.user, "analytics_opt_out", False)
+
+        @asynccontextmanager
+        async def test_lifespan(app):
+            yield
+
+        test_app = create_fides_app(lifespan=test_lifespan)
+        with TestClient(test_app) as client:
+            yield client
+
+    @mock.patch(
+        "fides.api.asgi_middleware.AnalyticsLoggingMiddleware._log_analytics",
+        new_callable=mock.AsyncMock,
+    )
     def test_patch_connections_incorrect_scope_analytics(
         self,
-        mocked_prepare_and_log_request,
-        api_client: TestClient,
+        mocked_log_analytics,
+        analytics_enabled_client: TestClient,
         generate_auth_header,
         payload,
     ) -> None:
         url = V1_URL_PREFIX + CONNECTIONS
         auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
+        response = analytics_enabled_client.patch(
+            url, headers=auth_header, json=payload
+        )
         assert 403 == response.status_code
-        assert mocked_prepare_and_log_request.called
-        call_args = mocked_prepare_and_log_request._mock_call_args[0]
+        assert mocked_log_analytics.called
+        call_args = mocked_log_analytics.call_args[0]
 
         assert call_args[0] == "PATCH: http://testserver/api/v1/connection"
         assert call_args[1] == "testserver"
@@ -694,11 +716,14 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] == "HTTPException"
 
-    @mock.patch("fides.api.main.prepare_and_log_request")
+    @mock.patch(
+        "fides.api.asgi_middleware.AnalyticsLoggingMiddleware._log_analytics",
+        new_callable=mock.AsyncMock,
+    )
     def test_patch_http_connection_successful_analytics(
         self,
-        mocked_prepare_and_log_request,
-        api_client,
+        mocked_log_analytics,
+        analytics_enabled_client: TestClient,
         db: Session,
         generate_auth_header,
         url,
@@ -712,14 +737,17 @@ class TestPatchConnections:
                 "access": "read",
             }
         ]
-        response = api_client.patch(url, headers=auth_header, json=payload)
+        response = analytics_enabled_client.patch(
+            url, headers=auth_header, json=payload
+        )
         assert 200 == response.status_code
         body = json.loads(response.text)
         assert body["succeeded"][0]["connection_type"] == "https"
         http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
         http_config.delete(db)
 
-        call_args = mocked_prepare_and_log_request._mock_call_args[0]
+        assert mocked_log_analytics.called
+        call_args = mocked_log_analytics.call_args[0]
 
         assert call_args[0] == f"PATCH: http://testserver{url}"
         assert call_args[1] == "testserver"

@@ -91,7 +91,8 @@ export const FormFieldFromSchema = ({
           );
         }
 
-        if (fieldSchema.multiline) {
+        // Use textarea for multiline fields, but prioritize password input for sensitive fields
+        if (fieldSchema.multiline && !fieldSchema.sensitive) {
           return (
             <CustomTextArea
               {...field}

@@ -1,7 +1,0 @@
-# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
-# Fill in the required fields and delete this comment block
-
-type: Changed
-description: Python 3.13 Upgrade
-pr: 7096
-labels: ["high-risk"] # Optional: ["high-risk", "db-migration"]

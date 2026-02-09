@@ -21,6 +21,7 @@ import {
   makeFidesCookie,
   removeCookiesFromBrowser,
   saveFidesCookie,
+  tcfCookieIsProperlySet,
   transformTcfPreferencesToCookieKeys,
   updateCookieFromExperience,
   updateCookieFromNoticePreferences,
@@ -395,6 +396,65 @@ describe("cookies", () => {
         expect(savedCookie.fides_meta.updatedAt).toEqual(UPDATED_DATE);
         expect(isNewFidesCookie(savedCookie)).toBeFalsy();
       });
+    });
+  });
+
+  describe("tcfCookieIsProperlySet", () => {
+    it("returns false for undefined cookie", () => {
+      expect(tcfCookieIsProperlySet(undefined)).toBeFalsy();
+    });
+
+    it("returns false for a new/empty TCF cookie with no TCF-specific fields", () => {
+      const newCookie: FidesCookie = makeFidesCookie();
+      expect(tcfCookieIsProperlySet(newCookie)).toBeFalsy();
+    });
+
+    it("returns false for a cookie with only consent set (e.g., GPC-set cookie)", () => {
+      const gpcCookie: FidesCookie = {
+        ...makeFidesCookie(),
+        consent: {
+          custom_notice_1: false,
+          custom_notice_2: true,
+        },
+      };
+      expect(tcfCookieIsProperlySet(gpcCookie)).toBeFalsy();
+    });
+
+    it("returns false when only fides_string is set", () => {
+      const cookieWithFidesString: FidesCookie = {
+        ...makeFidesCookie(),
+        fides_string:
+          "CQeBJ0AQeBJ0AGXABBENCNFgALAAAEPAAAiQFyQAQFyAXJABAXIAAAAA.IFyQAQFyAAAA,2~~dv.,DBACMMA~CQeBJ0AQeBJ0AGXABBENCNFgALAAAEPAAAiQFyQAQFyAXJABAXIAAAAA.YAAAAAAAAAAA~BAAAAAAAAABY.YA",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithFidesString)).toBeFalsy();
+    });
+
+    it("returns false when only tcf_version_hash is set", () => {
+      const cookieWithVersionHash: FidesCookie = {
+        ...makeFidesCookie(),
+        tcf_version_hash: "v1",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithVersionHash)).toBeFalsy();
+    });
+
+    it("returns true when both fides_string and tcf_version_hash are set", () => {
+      const cookieWithBothFields: FidesCookie = {
+        ...makeFidesCookie(),
+        fides_string:
+          "CQeBJ0AQeBJ0AGXABBENCNFgALAAAEPAAAiQFyQAQFyAXJABAXIAAAAA.IFyQAQFyAAAA,2~~dv.,DBACMMA~CQeBJ0AQeBJ0AGXABBENCNFgALAAAEPAAAiQFyQAQFyAXJABAXIAAAAA.YAAAAAAAAAAA~BAAAAAAAAABY.YA",
+        tcf_version_hash: "v1",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithBothFields)).toBeTruthy();
+    });
+
+    it("returns false when fides_string contains only NC data (no TC or GPP)", () => {
+      const cookieWithOnlyNC: FidesCookie = {
+        ...makeFidesCookie(),
+        fides_string:
+          ",,,eyJhbmFseXRpY3MiOjEsImRhdGFfc2FsZXNfYW5kX3NoYXJpbmciOjEsIm1hcmtldGluZyI6MX0=",
+        tcf_version_hash: "v1",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithOnlyNC)).toBeFalsy();
     });
   });
 

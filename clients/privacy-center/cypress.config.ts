@@ -2,6 +2,9 @@ import { defineConfig } from "cypress";
 import fs from "fs";
 
 export default defineConfig({
+  viewportWidth: 1200,
+  viewportHeight: 800,
+
   e2e: {
     baseUrl: "http://localhost:3001",
     experimentalRunAllSpecs: true,
@@ -28,10 +31,10 @@ export default defineConfig({
     },
   },
 
-  defaultCommandTimeout: 5000,
+  defaultCommandTimeout: 3000,
 
   retries: {
-    runMode: 3,
+    runMode: 2,
     openMode: 0,
   },
 

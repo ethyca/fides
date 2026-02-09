@@ -5,15 +5,13 @@ import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-r
 import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { pluralize } from "~/features/common/utils";
-import {
-  useGetIdentityProviderMonitorsQuery,
-  useGetMonitorsByIntegrationQuery,
-} from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import MonitorStatusCell from "~/features/integrations/configure-monitor/MonitorStatusCell";
 import {
   ConnectionConfigurationResponse,
   ConnectionType,
+  EditableMonitorConfig,
   MonitorConfig,
   PrivacyNoticeRegion,
   WebsiteSchema,
@@ -35,7 +33,7 @@ enum MonitorConfigColumnKeys {
 interface UseMonitorConfigTableConfig {
   integration: ConnectionConfigurationResponse;
   isWebsiteMonitor: boolean;
-  onEditMonitor: (monitor: MonitorConfig) => void;
+  onEditMonitor: (monitor: EditableMonitorConfig) => void;
 }
 
 export const useMonitorConfigTable = ({
@@ -49,34 +47,14 @@ export const useMonitorConfigTable = ({
 
   const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
 
-  // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
-  const regularMonitorsQuery = useGetMonitorsByIntegrationQuery(
-    {
-      page: pageIndex,
-      size: pageSize,
-      connection_config_key: integration.key,
-    },
-    {
-      skip: isOktaIntegration,
-    },
-  );
+  // Use discovery_monitor endpoint for all monitor types, including Okta
+  const monitorsQuery = useGetMonitorsByIntegrationQuery({
+    page: pageIndex,
+    size: pageSize,
+    connection_config_key: integration.key,
+  });
 
-  const oktaMonitorsQuery = useGetIdentityProviderMonitorsQuery(
-    {
-      page: pageIndex,
-      size: pageSize,
-      connection_config_key: integration.key,
-    },
-    {
-      skip: !isOktaIntegration,
-    },
-  );
-
-  const {
-    isLoading,
-    isFetching,
-    data: response,
-  } = isOktaIntegration ? oktaMonitorsQuery : regularMonitorsQuery;
+  const { isLoading, isFetching, data: response } = monitorsQuery;
 
   const antTableConfig = useMemo(
     () => ({
@@ -96,21 +74,21 @@ export const useMonitorConfigTable = ({
   );
 
   const columns: ColumnsType<MonitorConfig> = useMemo(() => {
-    const nameColumn = {
+    const nameColumn: ColumnsType<MonitorConfig>[number] = {
       title: "Name",
       dataIndex: MonitorConfigColumnKeys.NAME,
       key: MonitorConfigColumnKeys.NAME,
-      render: (name: string) => (
+      render: (_, { name }) => (
         <EllipsisCell style={{ maxWidth: 150 }}>{name}</EllipsisCell>
       ),
       fixed: "left" as const,
     };
 
-    const scopeColumn = {
+    const scopeColumn: ColumnsType<MonitorConfig>[number] = {
       title: "Scope",
       dataIndex: MonitorConfigColumnKeys.PROJECTS,
       key: MonitorConfigColumnKeys.PROJECTS,
-      render: (_: unknown, record: MonitorConfig) => {
+      render: (_, record) => {
         const databases = record.databases ?? [];
         if (databases.length === 0) {
           return "All projects";
@@ -119,7 +97,7 @@ export const useMonitorConfigTable = ({
       },
     };
 
-    const sourceUrlColumn = {
+    const sourceUrlColumn: ColumnsType<MonitorConfig>[number] = {
       title: "Source URL",
       dataIndex: MonitorConfigColumnKeys.SOURCE_URL,
       key: MonitorConfigColumnKeys.SOURCE_URL,
@@ -133,26 +111,25 @@ export const useMonitorConfigTable = ({
       },
     };
 
-    const scanFrequencyColumn = {
+    const scanFrequencyColumn: ColumnsType<MonitorConfig>[number] = {
       title: "Scan frequency",
       dataIndex: MonitorConfigColumnKeys.FREQUENCY,
       key: MonitorConfigColumnKeys.FREQUENCY,
-      render: (frequency: string | undefined) => frequency ?? "Not scheduled",
+      render: (_, { execution_frequency }) =>
+        execution_frequency ?? "Not scheduled",
     };
 
-    const lastScanColumn = {
+    const lastScanColumn: ColumnsType<MonitorConfig>[number] = {
       title: "Scan status",
       key: MonitorConfigColumnKeys.MONITOR_STATUS,
-      render: (_: unknown, record: MonitorConfig) => (
-        <MonitorStatusCell monitor={record} />
-      ),
+      render: (_: unknown, record) => <MonitorStatusCell monitor={record} />,
     };
 
-    const regionsColumn = {
+    const regionsColumn: ColumnsType<MonitorConfig>[number] = {
       title: "Regions",
       dataIndex: MonitorConfigColumnKeys.REGIONS,
       key: MonitorConfigColumnKeys.REGIONS,
-      render: (_: unknown, record: MonitorConfig) => {
+      render: (_: unknown, record) => {
         const locations =
           record.datasource_params &&
           "locations" in record.datasource_params &&
@@ -200,26 +177,28 @@ export const useMonitorConfigTable = ({
       },
     };
 
-    const statusColumn = {
+    const statusColumn: ColumnsType<MonitorConfig>[number] = {
       title: "Status",
       dataIndex: MonitorConfigColumnKeys.STATUS,
       key: MonitorConfigColumnKeys.STATUS,
       width: 100,
-      render: (_: unknown, record: MonitorConfig) => (
+      render: (_: unknown, record) => (
         <MonitorConfigEnableCell record={record} />
       ),
     };
 
-    const actionsColumn = {
+    const actionsColumn: ColumnsType<MonitorConfig>[number] = {
       title: "Actions",
       key: MonitorConfigColumnKeys.ACTION,
       width: 100,
-      render: (_: unknown, record: MonitorConfig) => (
+      render: (_: unknown, { stewards, ...data }) => (
         <MonitorConfigActionsCell
-          onEditClick={() => onEditMonitor(record)}
+          onEditClick={() =>
+            onEditMonitor({ ...data, stewards: stewards?.map(({ id }) => id) })
+          }
           isWebsiteMonitor={isWebsiteMonitor}
           isOktaMonitor={isOktaIntegration}
-          monitorId={record.key}
+          monitorId={data.key}
         />
       ),
       fixed: "right" as const,

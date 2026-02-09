@@ -12,6 +12,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import InfoBox from "~/features/common/InfoBox";
@@ -28,6 +29,8 @@ import { useAntTable, useTableState } from "~/features/common/table/hooks";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { buildExpandCollapseMenu } from "~/features/data-discovery-and-detection/action-center/utils/columnBuilders";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
+import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
+import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
 import { useGetAllPropertiesQuery } from "~/features/properties";
@@ -151,10 +154,11 @@ const NotificationTemplatesPage: NextPage = () => {
 
   const { pageIndex, pageSize } = tableState;
 
-  const { data, isLoading, isFetching } = useGetSummaryMessagingTemplatesQuery({
-    page: pageIndex,
-    size: pageSize,
-  });
+  const { data, isLoading, isFetching, error } =
+    useGetSummaryMessagingTemplatesQuery({
+      page: pageIndex,
+      size: pageSize,
+    });
 
   const columns: ColumnsType<MessagingTemplateWithPropertiesSummary> = useMemo(
     () => [
@@ -165,7 +169,11 @@ const NotificationTemplatesPage: NextPage = () => {
         render: (_, { type, id }) => {
           return (
             <LinkCell href={`${NOTIFICATIONS_TEMPLATES_ROUTE}/${id}`}>
-              {type}
+              {
+                CustomizableMessagingTemplatesLabelEnum[
+                  type as CustomizableMessagingTemplatesEnum
+                ]
+              }
             </LinkCell>
           );
         },
@@ -237,6 +245,15 @@ const NotificationTemplatesPage: NextPage = () => {
       },
     },
   });
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching your messaging templates"
+      />
+    );
+  }
 
   return (
     <FixedLayout title="Notifications">

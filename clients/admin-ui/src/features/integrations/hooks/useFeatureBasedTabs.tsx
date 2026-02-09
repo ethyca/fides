@@ -48,7 +48,6 @@ export const useFeatureBasedTabs = ({
   supportsConnectionTest,
 }: UseFeatureBasedTabsProps) => {
   const { onOpen, isOpen, onClose } = useDisclosure();
-
   const tabs = useMemo(() => {
     // Don't show tabs until enabledFeatures is loaded
     if (!enabledFeatures || !enabledFeatures.length) {

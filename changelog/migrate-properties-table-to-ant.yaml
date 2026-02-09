@@ -1,4 +1,0 @@
-type: Developer Experience # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Migrated properties, domain verification, and messaging template tables to Ant Design
-pr: 7196 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

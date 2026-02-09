@@ -11,4 +11,5 @@ export type NotificationApplicationConfig = {
   send_request_review_notification?: boolean | null;
   notification_service_type?: string | null;
   enable_property_specific_messaging?: boolean | null;
+  privacy_assessments_channel?: string | null;
 };

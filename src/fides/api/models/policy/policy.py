@@ -345,7 +345,7 @@ class Rule(Base):
     @classmethod
     def create(
         cls, db: Session, *, data: Dict[str, Any], check_name: bool = True
-    ) -> FidesBase:  # type: ignore[override]
+    ) -> "Rule":
         """Validate this object's data before deferring to the superclass on create"""
         policy_id: Optional[str] = data.get("policy_id")
 
@@ -522,7 +522,7 @@ class RuleTarget(Base):
     @classmethod
     def create(
         cls, db: Session, *, data: Dict[str, Any], check_name: bool = True
-    ) -> FidesBase:  # type: ignore[override]
+    ) -> "RuleTarget":
         """Validate data_category on object creation."""
         data_category = data.get("data_category")
         if not data_category:

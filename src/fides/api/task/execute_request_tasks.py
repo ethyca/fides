@@ -261,10 +261,20 @@ def queue_downstream_tasks(
             privacy_request_proceed
         ):  # For Testing, this could be set to False, so we could just
             # run one of the graphs and not the entire privacy request
-            queue_privacy_request(
-                privacy_request_id=privacy_request.id,
-                from_step=next_step.value,
-            )
+            try:
+                queue_privacy_request(
+                    privacy_request_id=privacy_request.id,
+                    from_step=next_step.value,
+                )
+            except Exception as exc:
+                # queue_privacy_request already handles setting the privacy request to error state
+                # and creating execution logs, so we just log here and continue
+                logger.error(
+                    "Failed to queue privacy request {} after terminate node: {}",
+                    privacy_request.id,
+                    exc,
+                )
+        # Always mark terminator as complete to prevent re-processing
         request_task.update_status(session, ExecutionLogStatus.complete)
 
 

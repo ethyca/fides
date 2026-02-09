@@ -28,6 +28,11 @@ from fides.api.models.attachment import (
     AttachmentReferenceType,
     AttachmentType,
 )
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_task import (
     ManualTask,
@@ -242,6 +247,56 @@ def test_completion_email_sent_for_request(
     assert mock_email_dispatch.call_count == 1
     call_kwargs = mock_email_dispatch.call_args.kwargs
     assert call_kwargs["action_type"] == expected_action_type
+
+
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+def test_consent_completion_skips_email_when_no_email(
+    mock_email_dispatch: Mock,
+    db: Session,
+    consent_policy,
+    run_privacy_request_task,
+    request,
+    dsr_version,
+    privacy_request_complete_email_notification_enabled,
+) -> None:
+    """Test that consent completion succeeds without sending email when identity has no email.
+
+    Consent requests can be submitted with only fides_user_device_id (e.g., browser-based consent).
+    The completion email should be skipped gracefully rather than erroring out the entire request.
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    # Create privacy request with only fides_user_device_id (no email)
+    privacy_request = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": datetime.utcnow(),
+            "status": PrivacyRequestStatus.in_processing,
+            "origin": "https://example.com/",
+            "policy_id": consent_policy.id,
+            "client_id": consent_policy.client_id,
+            "started_processing_at": datetime.utcnow(),
+        },
+    )
+    # Cache identity with only fides_user_device_id - no email
+    privacy_request.cache_identity(
+        {"fides_user_device_id": "051b219f-20e4-45df-82f7-5eb68a00889f"}
+    )
+
+    run_privacy_request_task.delay(privacy_request.id).get(
+        timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+    )
+
+    # Request should complete successfully
+    db.refresh(privacy_request)
+    assert privacy_request.status == PrivacyRequestStatus.complete
+
+    # No email should have been dispatched since there's no email in identity
+    mock_email_dispatch.assert_not_called()
 
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
@@ -1902,9 +1957,9 @@ class TestConsentManualTaskIntegration:
             )
             .first()
         )
-        assert (
-            instance is None
-        ), "ManualTaskInstance should NOT be created when condition is false"
+        assert instance is None, (
+            "ManualTaskInstance should NOT be created when condition is false"
+        )
 
 
 class TestConsentEmailStep:
@@ -2181,6 +2236,71 @@ class TestConsentEmailStep:
             {"email": "customer-1@example.com", "ljt_readerID": "12345"},
             privacy_request_with_consent_policy,
         )
+
+    @pytest.mark.parametrize(
+        "policy_type,misconfigured_connector_type,misconfigured_connector_key,misconfigured_connector_name",
+        [
+            (
+                "consent",
+                ConnectionType.dynamic_erasure_email,
+                "misconfigured_dynamic_erasure_email",
+                "Misconfigured Dynamic Erasure Email",
+            ),
+            (
+                "erasure",
+                ConnectionType.generic_consent_email,
+                "misconfigured_generic_consent_email",
+                "Misconfigured Generic Consent Email",
+            ),
+        ],
+    )
+    def test_needs_batch_email_send_ignores_irrelevant_connectors(
+        self,
+        db,
+        policy_type,
+        misconfigured_connector_type,
+        misconfigured_connector_key,
+        misconfigured_connector_name,
+        privacy_request_with_consent_policy,
+        privacy_request_with_erasure_policy,
+    ):
+        """
+        Regression test: Policies should only check connectors relevant to their action types.
+        - Consent-only policies should not check erasure email connectors
+        - Erasure-only policies should not check consent email connectors
+
+        This prevents errors when irrelevant connectors are misconfigured.
+        """
+        # Select the appropriate privacy request based on policy type
+        privacy_request = (
+            privacy_request_with_consent_policy
+            if policy_type == "consent"
+            else privacy_request_with_erasure_policy
+        )
+
+        # Create a misconfigured connector of the opposite type with empty secrets
+        # This would previously cause a validation error even though it's not relevant
+        ConnectionConfig.create(
+            db=db,
+            data={
+                "key": misconfigured_connector_key,
+                "name": misconfigured_connector_name,
+                "connection_type": misconfigured_connector_type,
+                "access": AccessLevel.write,
+                "secrets": {},  # Empty secrets - missing required fields
+                "disabled": False,
+            },
+        )
+
+        # This should not raise a validation error, as policies only check relevant connectors
+        result = needs_batch_email_send(
+            db,
+            {"email": "customer-1@example.com"},
+            privacy_request,
+        )
+
+        # Should return False since there are no matching email connectors configured
+        assert not result
 
 
 @pytest.mark.async_dsr

@@ -1,3 +1,5 @@
+import { DEFAULT_MODAL_LINK_ID } from "fides-js";
+
 import {
   LOG_LEVEL_LABELS,
   PrivacyCenterSettings,
@@ -68,7 +70,7 @@ const loadEnvironmentVariables = () => {
       process.env.FIDES_PRIVACY_CENTER__CONFIG_CSS_URL ||
       "file:///app/config/config.css",
     SHOW_BRAND_LINK:
-      process.env.FIDES_PRIVACY_CENTER__SHOW_BRAND_LINK === "true" || false,
+      process.env.FIDES_PRIVACY_CENTER__SHOW_BRAND_LINK !== "false", // default: true
     ROOT_PROPERTY_PATH:
       process.env.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH || null,
     USE_API_CONFIG: process.env.FIDES_PRIVACY_CENTER__USE_API_CONFIG === "true", // default: false
@@ -106,7 +108,8 @@ const loadEnvironmentVariables = () => {
       process.env.FIDES_PRIVACY_CENTER__GEOLOCATION_API_URL || "",
     OVERLAY_PARENT_ID:
       process.env.FIDES_PRIVACY_CENTER__OVERLAY_PARENT_ID || null,
-    MODAL_LINK_ID: process.env.FIDES_PRIVACY_CENTER__MODAL_LINK_ID || null,
+    MODAL_LINK_ID:
+      process.env.FIDES_PRIVACY_CENTER__MODAL_LINK_ID || DEFAULT_MODAL_LINK_ID,
     PRIVACY_CENTER_URL:
       process.env.FIDES_PRIVACY_CENTER__PRIVACY_CENTER_URL ||
       "http://localhost:3000",

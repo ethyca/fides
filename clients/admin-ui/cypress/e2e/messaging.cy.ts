@@ -34,7 +34,8 @@ describe("Messaging", () => {
     cy.visit("/notifications/templates");
     cy.wait("@getEmailTemplatesSummary");
 
-    cy.get("tbody tr[data-row-key]").should("have.length", 10);
+    cy.contains("Access request completed").should("exist");
+    cy.contains("access_request_completed").should("not.exist");
   });
 
   it("should display a notice when a property doesn't have any messaging templates", () => {
