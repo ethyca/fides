@@ -150,7 +150,7 @@ const ConfigureIntegrationForm = ({
       secrets: mapValues(secrets?.properties, (s, key) => {
         const value = connection?.secrets?.[key] ?? s.default;
         // Convert booleans to strings to match select options
-        if (s.type === "boolean" && typeof value === "boolean") {
+        if (typeof value === "boolean") {
           return String(value);
         }
         return value ?? "";
@@ -172,7 +172,8 @@ const ConfigureIntegrationForm = ({
     omitBy(
       mapValues(secretsValues, (s, key) => {
         const original = connection?.secrets?.[key] ?? "";
-        return String(original) === s ? undefined : s;
+        // Convert both to strings for comparison to handle booleans and numbers
+        return String(original) === String(s) ? undefined : s;
       }),
       isUndefined,
     );
