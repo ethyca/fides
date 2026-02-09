@@ -19,7 +19,6 @@ import { isEqual } from "lodash";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { CUSTOM_INTEGRATION_INDICATOR } from "~/features/datastore-connections/constants";
 import {
   selectConnectionTypeFilters,
   useGetAllConnectionTypesQuery,
@@ -27,6 +26,7 @@ import {
 import ConnectionTypeLogo, {
   connectionLogoFromSystemType,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
+import { CUSTOM_INTEGRATION_INDICATOR } from "~/features/datastore-connections/constants";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
