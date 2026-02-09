@@ -61,11 +61,11 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Install setuptools
-        run: pip install setuptools==80.10.2
+      - name: Install build dependencies
+        run: pip install "setuptools==80.10.2" wheel "versioneer-518"
 
       - name: Install fides
-        run: pip install .
+        run: pip install --no-build-isolation .
 
       - name: Run `fides --version`
         run: fides --version
