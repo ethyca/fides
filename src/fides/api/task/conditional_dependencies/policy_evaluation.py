@@ -148,9 +148,7 @@ class PolicyEvaluator:
         matches: list[tuple[PolicyEvaluationSpecificity, PolicyEvaluationResult]] = []
 
         for policy_condition in policy_conditions:
-            result = self._evaluate_single_condition(
-                policy_condition, data_transformer
-            )
+            result = self._evaluate_single_condition(policy_condition, data_transformer)
             if result:
                 logger.debug(
                     f"Policy {policy_condition.policy.key} matched with specificity "
@@ -159,7 +157,9 @@ class PolicyEvaluator:
                 matches.append(result)
 
         if not matches:
-            logger.debug(f"No policies matched for action type {action_type}, falling back to default policy")
+            logger.debug(
+                f"No policies matched for action type {action_type}, falling back to default policy"
+            )
             return self._get_default_policy(action_type)
 
         # Sort by: condition count (desc), location tier (desc)
@@ -167,9 +167,7 @@ class PolicyEvaluator:
         best_specificity, best_match = matches[0]
 
         # Check for ambiguous ties - multiple policies with same specificity
-        tied_policies = [
-            m[1].policy.key for m in matches if m[0] == best_specificity
-        ]
+        tied_policies = [m[1].policy.key for m in matches if m[0] == best_specificity]
         if len(tied_policies) > 1:
             raise PolicyEvaluationError(
                 f"Ambiguous policy match: policies {tied_policies} have identical "
@@ -223,7 +221,7 @@ class PolicyEvaluator:
                 policy=policy_condition.policy,
                 evaluation_result=evaluation_result,
                 is_default=False,
-            )
+            ),
         )
 
     def _get_default_policy(self, action_type: ActionType) -> PolicyEvaluationResult:
@@ -245,7 +243,11 @@ class PolicyEvaluator:
         default_key = self.DEFAULT_POLICY_KEYS.get(action_type)
 
         # Query for the specific default policy by key
-        policy = Policy.get_by(self.db, field="key", value=default_key) if default_key else None
+        policy = (
+            Policy.get_by(self.db, field="key", value=default_key)
+            if default_key
+            else None
+        )
 
         if not policy:
             raise PolicyEvaluationError(

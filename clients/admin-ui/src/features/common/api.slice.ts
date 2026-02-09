@@ -81,6 +81,7 @@ export const baseApi = createApi({
     "Configuration Settings",
     "TCF Purpose Override",
     "OpenID Provider",
+    "Chat Provider Config",
     "Taxonomy",
     "Taxonomy History",
     "Digest Configs",
@@ -94,6 +95,7 @@ export const baseApi = createApi({
     "Privacy Assessment",
     "Privacy Assessment Questionnaire",
     "Privacy Assessment Evidence",
+    "User Monitors",
   ],
   endpoints: () => ({}),
 });

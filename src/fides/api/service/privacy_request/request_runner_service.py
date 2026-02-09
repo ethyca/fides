@@ -894,10 +894,12 @@ def run_privacy_request(
                                 )
                                 if consent_message_enabled:
                                     try:
-                                        email_sent = initiate_consent_request_completion_email(
-                                            session,
-                                            identity_data,
-                                            privacy_request.property_id,
+                                        email_sent = (
+                                            initiate_consent_request_completion_email(
+                                                session,
+                                                identity_data,
+                                                privacy_request.property_id,
+                                            )
                                         )
                                         if email_sent:
                                             privacy_request.add_success_execution_log(
@@ -956,9 +958,7 @@ def initiate_consent_request_completion_email(
         # Consent requests can be submitted with only fides_user_device_id or external_id,
         # which don't have an email to send a completion message to.
         # This is not an error - just skip sending the completion email.
-        logger.info(
-            "Skipping consent completion email: no email in identity data"
-        )
+        logger.info("Skipping consent completion email: no email in identity data")
         return False
 
     to_identity: Identity = Identity(email=email)

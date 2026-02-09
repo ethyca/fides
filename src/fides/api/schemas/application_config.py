@@ -49,6 +49,7 @@ class NotificationApplicationConfig(FidesSchema):
     send_request_review_notification: Optional[bool] = None
     notification_service_type: Optional[str] = None
     enable_property_specific_messaging: Optional[bool] = None
+    privacy_assessments_channel: Optional[str] = None
     model_config = ConfigDict(extra="forbid")
 
     @field_validator("notification_service_type", mode="before")

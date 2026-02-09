@@ -2,19 +2,39 @@ import { Button, DisplayValueType, Flex, Select, Tooltip } from "fidesui";
 import { useMemo } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import {
+  INFRASTRUCTURE_STATUS_FILTER_MAP,
+  InfrastructureStatusFilterOptionValue,
+  parseFiltersToFilterValue,
+} from "~/features/data-discovery-and-detection/action-center/fields/utils";
 import { DiffStatus } from "~/types/api";
 
 import { useGetIdentityProviderMonitorFiltersQuery } from "../../discovery-detection.slice";
-import {
-  INFRASTRUCTURE_DIFF_STATUS_LABEL,
-  VENDOR_FILTER_OPTIONS,
-} from "../constants";
-import { useInfrastructureSystemsFilters } from "./useInfrastructureSystemsFilters";
+import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSystemsFilters";
 
 interface InfrastructureSystemsFiltersProps
   extends ReturnType<typeof useInfrastructureSystemsFilters> {
   monitorId: string;
 }
+
+const STATUS_FILTER_OPTIONS = [
+  {
+    label: "New",
+    value: InfrastructureStatusFilterOptionValue.NEW,
+  },
+  {
+    label: "Known systems",
+    value: InfrastructureStatusFilterOptionValue.KNOWN,
+  },
+  {
+    label: "Unknown systems",
+    value: InfrastructureStatusFilterOptionValue.UNKNOWN,
+  },
+  {
+    label: "Ignored",
+    value: InfrastructureStatusFilterOptionValue.IGNORED,
+  },
+];
 
 export const InfrastructureSystemsFilters = ({
   monitorId,
@@ -24,7 +44,6 @@ export const InfrastructureSystemsFilters = ({
   setVendorFilters,
   dataUsesFilters,
   setDataUsesFilters,
-  reset,
 }: InfrastructureSystemsFiltersProps) => {
   const { getDataUseDisplayName } = useTaxonomies();
 
@@ -34,29 +53,10 @@ export const InfrastructureSystemsFilters = ({
     { skip: !monitorId },
   );
 
-  const statusFilterValue = useMemo(() => {
-    if (!statusFilters || statusFilters.length === 0) {
-      return undefined;
-    }
-    return statusFilters[0];
-  }, [statusFilters]);
-
-  const statusOptions = useMemo(() => {
-    if (!availableFilters?.diff_status) {
-      return [];
-    }
-    return availableFilters.diff_status.map((status) => ({
-      label: INFRASTRUCTURE_DIFF_STATUS_LABEL[status as DiffStatus] ?? status,
-      value: status,
-    }));
-  }, [availableFilters?.diff_status]);
-
-  const typeFilterValue = useMemo(() => {
-    if (!vendorFilters || vendorFilters.length === 0) {
-      return undefined;
-    }
-    return vendorFilters[0];
-  }, [vendorFilters]);
+  const statusFilterValue = useMemo(
+    () => parseFiltersToFilterValue(statusFilters, vendorFilters),
+    [statusFilters, vendorFilters],
+  );
 
   const dataUseOptions = useMemo(() => {
     if (!availableFilters?.data_uses) {
@@ -68,30 +68,28 @@ export const InfrastructureSystemsFilters = ({
     }));
   }, [availableFilters?.data_uses, getDataUseDisplayName]);
 
-  const handleStatusChange = (value: string | undefined) => {
-    if (value) {
-      setStatusFilters([value]);
-    } else {
-      setStatusFilters([]);
-    }
-  };
+  const handleStatusChange = (newStatusValue: string | undefined) => {
+    const statusKey = Object.values(InfrastructureStatusFilterOptionValue).find(
+      (value) => value === newStatusValue,
+    );
 
-  const handleTypeChange = (value: string | undefined) => {
-    if (value) {
-      setVendorFilters([value]);
-    } else {
-      setVendorFilters([]);
-    }
+    const { diffStatusFilter, vendorIdFilter } = statusKey
+      ? INFRASTRUCTURE_STATUS_FILTER_MAP[statusKey]
+      : { diffStatusFilter: [], vendorIdFilter: [] };
+
+    setStatusFilters(diffStatusFilter);
+    setVendorFilters(vendorIdFilter);
   };
 
   const handleDataUseChange = (value: string[]) => {
     setDataUsesFilters(value.length > 0 ? value : []);
   };
 
-  const hasActiveFilters =
-    (statusFilters && statusFilters.length > 0) ||
-    (vendorFilters && vendorFilters.length > 0) ||
-    (dataUsesFilters && dataUsesFilters.length > 0);
+  const handleResetFilters = () => {
+    setStatusFilters([DiffStatus.ADDITION]);
+    setVendorFilters([]);
+    setDataUsesFilters([]);
+  };
 
   const renderTagPlaceholder = (omittedValues: DisplayValueType[]) => (
     <Tooltip
@@ -109,41 +107,25 @@ export const InfrastructureSystemsFilters = ({
 
   return (
     <Flex gap="small" align="center">
-      {hasActiveFilters && (
+      {statusFilterValue !== InfrastructureStatusFilterOptionValue.NEW && (
         <Button
           type="text"
-          onClick={reset}
-          data-testid="clear-filters-button"
-          aria-label="Clear all filters"
+          onClick={handleResetFilters}
+          data-testid="reset-filters-button"
+          aria-label="Reset filters to default"
         >
-          Clear filters
+          Reset filters
         </Button>
       )}
       <Select
         placeholder="Status"
-        options={statusOptions}
+        options={STATUS_FILTER_OPTIONS}
         value={statusFilterValue}
         onChange={handleStatusChange}
-        allowClear
         className="w-40"
         data-testid="status-filter-select"
         aria-label="Filter by status"
       />
-
-      <Select
-        placeholder="Type"
-        options={VENDOR_FILTER_OPTIONS.map((option) => ({
-          label: option.label,
-          value: option.key,
-        }))}
-        value={typeFilterValue}
-        onChange={handleTypeChange}
-        allowClear
-        className="w-40"
-        data-testid="type-filter-select"
-        aria-label="Filter by type"
-      />
-
       <Select
         placeholder="Data use"
         options={dataUseOptions}
