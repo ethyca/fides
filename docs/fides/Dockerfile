@@ -28,7 +28,7 @@ RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY . .
-RUN pip install -U pip && pip install . && pip install -r docs/fides/requirements.txt
+RUN pip install -U pip setuptools==80.10.2 wheel && pip install --no-build-isolation . && pip install --no-build-isolation -r docs/fides/requirements.txt
 
 
 FROM python:3.13-slim-bookworm AS docs
