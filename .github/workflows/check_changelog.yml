@@ -76,7 +76,7 @@ jobs:
         if: success()
         run: |
           uv venv
-          uv pip install setuptools wheel
+          uv pip install setuptools==80.10.2 wheel
           uv sync
 
       - name: Cache Nox virtual environment

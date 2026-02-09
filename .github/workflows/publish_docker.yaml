@@ -95,7 +95,7 @@ jobs:
       - name: Install dependencies and nox
         run: |
           uv venv
-          uv pip install setuptools wheel
+          uv pip install setuptools==80.10.2 wheel
           uv sync
 
       # if neither prod, rc, beta or alpha git tag, then push images with the ":dev" tag

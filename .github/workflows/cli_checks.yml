@@ -63,7 +63,7 @@ jobs:
       - name: Install fides
         run: |
           uv venv
-          uv pip install setuptools wheel
+          uv pip install setuptools==80.10.2 wheel
           uv sync
 
       - name: Run `fides --version`

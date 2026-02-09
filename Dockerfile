@@ -39,7 +39,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     mv /root/.local/bin/uv /bin/uv
 COPY pyproject.toml uv.lock README.md ./
 # Ensure setuptools is available so deps that use pkg_resources at build time (e.g. in setup.py) can be built
-RUN uv venv && uv pip install setuptools wheel && uv sync --no-install-project --no-dev --extra all --locked
+RUN uv venv && uv pip install setuptools==80.10.2 wheel && uv sync --no-install-project --no-dev --extra all --locked
 
 ##################
 ## Backend Base ##

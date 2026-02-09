@@ -36,7 +36,7 @@ jobs:
       - name: Install fides and docs dependencies
         run: |
           uv venv
-          uv pip install setuptools wheel
+          uv pip install setuptools==80.10.2 wheel
           uv sync --extra all
           uv pip install -r docs/fides/requirements.txt
 
