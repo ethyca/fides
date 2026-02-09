@@ -1,5 +1,5 @@
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
-import { Box } from "fidesui";
+import { ChakraBox as Box } from "fidesui";
 import React from "react";
 
 import { useDatabaseConnector } from "~/features/datastore-connections/add-connection/database/ConnectorParameters";

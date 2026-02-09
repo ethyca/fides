@@ -1,5 +1,5 @@
 import { fireEvent, render } from "@testing-library/react";
-import { AntList as List } from "fidesui";
+import { List } from "fidesui";
 
 import type { ListDataItem } from "~/features/poc/mockListData";
 import { MOCK_LIST_DATA } from "~/features/poc/mockListData";

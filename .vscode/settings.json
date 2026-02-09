@@ -11,7 +11,6 @@
     "./clients/fidesui",
     "./clients/privacy-center",
     "./clients/privacy-center/cypress",
-    "./clients/cypress-e2e",
     "./clients/sample-app"
   ],
   "typescript.enablePromptUseWorkspaceTsdk": true,

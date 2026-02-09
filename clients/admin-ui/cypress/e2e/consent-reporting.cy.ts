@@ -31,7 +31,7 @@ describe("Consent reporting", () => {
         },
       });
       cy.visit(CONSENT_REPORTING_ROUTE);
-      cy.getByTestId("consent-reporting");
+      cy.getByTestId("consent-reporting-table").should("exist");
     });
     it("can't access without plus", () => {
       stubPlus(false);
@@ -140,7 +140,9 @@ describe("Consent reporting", () => {
         expect(params.get("request_timestamp_lt")).to.be.null;
       });
 
-      cy.getByTestId("fidesTable-body").children().should("have.length", 22);
+      cy.getByTestId("consent-reporting-table")
+        .find("tr")
+        .should("have.length", 24);
     });
     it("loads the consent report table with date filters", () => {
       cy.intercept(
@@ -177,7 +179,9 @@ describe("Consent reporting", () => {
         );
       });
 
-      cy.getByTestId("fidesTable-body").children().should("have.length", 22);
+      cy.getByTestId("consent-reporting-table")
+        .find("tr")
+        .should("have.length", 24);
     });
   });
 
@@ -198,24 +202,22 @@ describe("Consent reporting", () => {
     });
 
     it("displays TCF badge and is clickable", () => {
-      cy.getByTestId("fidesTable-body")
+      cy.getByTestId("consent-reporting-table")
         .find("tr")
-        .each(($row) => {
-          if ($row.find("td").eq(3).text() === "TCF") {
-            cy.wrap($row).find("button").should("exist").and("be.visible");
-            return false;
-          }
+        .eq(3)
+        .findByTestId("tcf-badge")
+        .within(() => {
+          cy.get("button").should("exist");
         });
     });
 
     it("shows TCF details table and excludes system and vendor records", () => {
-      cy.getByTestId("fidesTable-body")
+      cy.getByTestId("consent-reporting-table")
         .find("tr")
-        .each(($row) => {
-          if ($row.find("td").eq(3).text() === "TCF") {
-            cy.wrap($row).find("button").click();
-            return false;
-          }
+        .eq(3)
+        .findByTestId("tcf-badge")
+        .within(() => {
+          cy.get("button").click();
         });
 
       cy.getByTestId("consent-tcf-detail-modal").should("exist");

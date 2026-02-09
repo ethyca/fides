@@ -21,13 +21,6 @@ const ErrorTest = () => {
             router.push(INDEX_ROUTE);
           },
         },
-        {
-          label: "Reload this page",
-          type: "primary",
-          onClick: () => {
-            router.reload();
-          },
-        },
       ]}
     />
   );

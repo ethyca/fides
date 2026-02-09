@@ -4,7 +4,7 @@ import {
   Cookies as FidesJSCookies,
   ExperienceConfig,
   FidesCookie,
-  getConsentContext,
+  getGpcContext,
   getGpcStatusFromNotice,
   getOrMakeFidesCookie,
   NoticeConsent,
@@ -16,7 +16,13 @@ import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "fides-js";
-import { Accordion, Box, Stack, StackDivider, useToast } from "fidesui";
+import {
+  ChakraAccordion as Accordion,
+  ChakraBox as Box,
+  ChakraStack as Stack,
+  ChakraStackDivider as StackDivider,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -58,7 +64,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
 
-  const consentContext = useMemo(() => getConsentContext(), []);
+  const consentContext = useMemo(() => getGpcContext(), []);
   const experience = useAppSelector(selectPrivacyExperience);
   const [cookie, setCookie] = useState<FidesCookie | null>(null);
   const [updatePrivacyPreferencesMutationTrigger] =

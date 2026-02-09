@@ -1,8 +1,8 @@
 import {
-  AntFlex as Flex,
-  AntSelect as Select,
+  Flex,
   ICustomMultiSelectProps,
   ICustomSelectProps,
+  Select,
 } from "fidesui";
 import { ReactNode } from "react";
 

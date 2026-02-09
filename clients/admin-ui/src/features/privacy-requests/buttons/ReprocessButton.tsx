@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  Box,
-  forwardRef,
-  RepeatClockIcon,
-  Text,
+  Button,
+  ChakraBox as Box,
+  chakraForwardRef as forwardRef,
+  ChakraRepeatClockIcon as RepeatClockIcon,
+  ChakraText as Text,
 } from "fidesui";
 import { ForwardedRef, useState } from "react";
 

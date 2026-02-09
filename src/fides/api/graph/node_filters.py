@@ -51,7 +51,6 @@ class PolicyDataCategoryFilter(NodeFilter):
 
 
 class OptionalIdentityFilter(NodeFilter):
-
     def __init__(self, graph: DatasetGraph, identities: Dict[str, Any]):
         """
         Filter that excludes nodes that are reachable by an optional identity.

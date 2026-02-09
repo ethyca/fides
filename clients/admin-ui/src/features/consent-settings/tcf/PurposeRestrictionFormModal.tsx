@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTooltip as Tooltip,
-  Collapse,
-  Text,
-  useToast,
+  Button,
+  ChakraCollapse as Collapse,
+  ChakraText as Text,
+  Flex,
+  Tooltip,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";

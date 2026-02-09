@@ -1,4 +1,4 @@
-import { AntFlex as Flex, FormControl } from "fidesui";
+import { ChakraFormControl as FormControl, Flex } from "fidesui";
 import { useField } from "formik";
 
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";

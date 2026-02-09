@@ -206,7 +206,6 @@ class TestMapTablesToFields:
 
 
 class TestBuildFilterExpression:
-
     def test_build_filter_expression_leaf_condition(
         self, translator, condition_leaf_role, condition_leaf_user_status
     ):
@@ -643,9 +642,9 @@ class TestDeepNestingBehavior:
         ]
 
         for part in expected_parts:
-            assert (
-                part in query_str
-            ), f"Expected '{part}' not found in generated SQL: {query_str}"
+            assert part in query_str, (
+                f"Expected '{part}' not found in generated SQL: {query_str}"
+            )
 
 
 class TestExpandWithRelatedMainTables:

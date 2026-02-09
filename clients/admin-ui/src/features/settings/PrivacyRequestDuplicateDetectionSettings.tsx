@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInputNumber as InputNumber,
-  AntSkeleton as Skeleton,
-  AntSwitch as Switch,
-  AntTypography as Typography,
+  Button,
+  Form,
+  InputNumber,
+  Skeleton,
+  Switch,
+  Typography,
 } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";

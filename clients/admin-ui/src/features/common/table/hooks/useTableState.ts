@@ -1,4 +1,4 @@
-import { AntFilterValue as FilterValue } from "fidesui";
+import { FilterValue } from "fidesui";
 import { parseAsJson, useQueryStates } from "nuqs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 

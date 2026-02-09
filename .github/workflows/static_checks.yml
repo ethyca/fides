@@ -3,7 +3,7 @@ name: Backend Static Code Checks
 on:
   pull_request:
   merge_group:
-    types: [checks_requested]
+    types: [ checks_requested ]
   push:
     branches:
       - "main"
@@ -11,7 +11,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.16"
+  DEFAULT_PYTHON_VERSION: "3.13.11"
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
@@ -51,19 +51,17 @@ jobs:
     needs: Check-Backend-Changes
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
+      # We want to run all static checks even if some fail, so we set fail-fast to false
+      fail-fast: false
       matrix:
         session_name:
           [
-            '"isort(check)"',
-            '"black(check)"',
+            '"ruff(check)"',
             "mypy",
-            "pylint",
-            "xenon",
             "check_install",
             '"pytest(nox)"',
           ]
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,6 +89,8 @@ jobs:
       - name: Run Static Check
         run: nox -s ${{ matrix.session_name }}
 
+
+
   # Summary job for branch protection
   Static-Checks-Summary:
     runs-on: ubuntu-latest
@@ -102,15 +102,14 @@ jobs:
         run: |
           echo "Static-Checks: ${{ needs.Static-Checks.result }}"
 
-          # Static checks can fail without blocking (continue-on-error: true)
           if [ "${{ needs.Static-Checks.result }}" == "cancelled" ]; then
             echo "❌ Static checks were cancelled"
             exit 1
           fi
 
-          # Static checks can fail without blocking (continue-on-error: true)
           if [ "${{ needs.Static-Checks.result }}" == "failure" ]; then
-            echo "⚠️ Some static checks failed but not blocking (continue-on-error: true)"
+            echo "❌ Some static checks failed"
+            exit 1
           fi
 
           echo "✅ Static checks completed"

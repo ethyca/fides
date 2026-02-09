@@ -30,17 +30,17 @@ import {
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import {
-  AntButton as Button,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  Box,
-  Flex,
-  HStack,
-  Spinner,
-  Text,
-  useDisclosure,
-  useToast,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraHStack as HStack,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  Tag,
+  Tooltip,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";

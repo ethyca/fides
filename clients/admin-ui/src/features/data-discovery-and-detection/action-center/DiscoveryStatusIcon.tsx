@@ -1,4 +1,4 @@
-import { AntTooltip as Tooltip, Icons } from "fidesui";
+import { Icons, Tooltip } from "fidesui";
 
 import { useFeatures } from "~/features/common/features/features.slice";
 import { AlertLevel, ConsentAlertInfo } from "~/types/api";

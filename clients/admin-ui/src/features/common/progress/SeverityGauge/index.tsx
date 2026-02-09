@@ -1,4 +1,4 @@
-import { AntProgress as Progress, AntText as Text } from "fidesui";
+import { Progress, Text } from "fidesui";
 
 import { SEVERITY_PERCENT, SEVERITY_PROPS, SEVERITY_STYLE } from "./constants";
 import type {

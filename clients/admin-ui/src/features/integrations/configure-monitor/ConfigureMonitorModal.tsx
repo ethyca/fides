@@ -1,4 +1,7 @@
-import { UseDisclosureReturn, useToast } from "fidesui";
+import {
+  ChakraUseDisclosureReturn as UseDisclosureReturn,
+  useChakraToast as useToast,
+} from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -6,19 +9,16 @@ import { useAlert } from "~/features/common/hooks";
 import FormModal from "~/features/common/modals/FormModal";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
-  useCreateIdentityProviderMonitorMutation,
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
-  usePutIdentityProviderMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
 import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monitor/ConfigureWebsiteMonitorForm";
 import {
-  ConnectionConfigurationResponse,
+  ConnectionConfigurationResponseWithSystemKey,
   ConnectionSystemTypeMap,
-  ConnectionType,
-  MonitorConfig,
+  EditableMonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
 import { isErrorResult, RTKResult } from "~/types/errors";
@@ -44,34 +44,15 @@ const ConfigureMonitorModal = ({
   isWebsiteMonitor,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
-  monitor?: MonitorConfig;
+  monitor?: EditableMonitorConfig;
   isEditing?: boolean;
-  onAdvance: (m: MonitorConfig) => void;
-  integration: ConnectionConfigurationResponse;
+  onAdvance: (m: EditableMonitorConfig) => void;
+  integration: ConnectionConfigurationResponseWithSystemKey;
   integrationOption: ConnectionSystemTypeMap;
   isWebsiteMonitor?: boolean;
 }) => {
-  const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
-
-  const [putMonitorMutationTrigger, { isLoading: isSubmittingRegular }] =
+  const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
-
-  const [
-    createIdentityProviderMonitorTrigger,
-    { isLoading: isSubmittingOktaCreate },
-  ] = useCreateIdentityProviderMonitorMutation();
-
-  const [
-    putIdentityProviderMonitorTrigger,
-    { isLoading: isSubmittingOktaUpdate },
-  ] = usePutIdentityProviderMonitorMutation();
-
-  let isSubmitting: boolean;
-  if (isOktaIntegration) {
-    isSubmitting = isEditing ? isSubmittingOktaUpdate : isSubmittingOktaCreate;
-  } else {
-    isSubmitting = isSubmittingRegular;
-  }
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
@@ -85,7 +66,7 @@ const ConfigureMonitorModal = ({
 
   const { successAlert, errorAlert } = useAlert();
 
-  const handleSubmit = async (values: MonitorConfig) => {
+  const handleSubmit = async (values: EditableMonitorConfig) => {
     let result: RTKResult | undefined;
     const timeout = setTimeout(() => {
       if (!result) {
@@ -98,28 +79,7 @@ const ConfigureMonitorModal = ({
       }
     }, TIMEOUT_DELAY);
 
-    // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
-    if (isOktaIntegration) {
-      // Transform MonitorConfig to IdentityProviderMonitorConfig format
-      const oktaPayload = {
-        name: values.name,
-        key: values.key ?? undefined,
-        provider: "okta" as const,
-        connection_config_key: integration.key,
-        enabled: values.enabled ?? true,
-        execution_start_date: values.execution_start_date ?? undefined,
-        execution_frequency: values.execution_frequency ?? undefined,
-        classify_params: values.classify_params ?? {},
-      };
-      // Use PUT for editing, POST for creating
-      if (isEditing) {
-        result = await putIdentityProviderMonitorTrigger(oktaPayload);
-      } else {
-        result = await createIdentityProviderMonitorTrigger(oktaPayload);
-      }
-    } else {
-      result = await putMonitorMutationTrigger(values);
-    }
+    result = await putMonitorMutationTrigger(values);
 
     if (result) {
       clearTimeout(timeout);
@@ -160,6 +120,7 @@ const ConfigureMonitorModal = ({
         <ConfigureWebsiteMonitorForm
           monitor={monitor}
           url={(integration.secrets as unknown as { url: string })?.url ?? ""}
+          integrationSystem={integration?.system_key}
           onClose={onClose}
           onSubmit={handleSubmit}
         />
@@ -185,6 +146,7 @@ const ConfigureMonitorModal = ({
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           databasesAvailable={databasesAvailable}
+          integrationSystem={integration?.system_key}
           integrationOption={integrationOption}
         />
       )}

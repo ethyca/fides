@@ -1,8 +1,4 @@
-import {
-  AntInput as Input,
-  AntSelect as Select,
-  LocationSelect,
-} from "fidesui";
+import { Input, LocationSelect, Select } from "fidesui";
 import { ReactNode } from "react";
 
 import {

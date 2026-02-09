@@ -8,7 +8,13 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { AntTabs as Tabs, Box, Flex, Text, VStack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  Tabs,
+} from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import {

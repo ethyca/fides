@@ -50,9 +50,8 @@ npm run test
 
 ## Testing
 
-This app (currently!) does not have any automated tests. However, it is used in the following automated E2E suites:
+This app (currently!) does not have any automated tests. However, it is used in the following automated E2E suite:
 
-- `clients/cypress-e2e/cypress/e2e`
 - `clients/privacy-center/cypress/e2e`
 
 These Cypress suites will automatically run in CI to ensure any changes to this app continue to work as expected.

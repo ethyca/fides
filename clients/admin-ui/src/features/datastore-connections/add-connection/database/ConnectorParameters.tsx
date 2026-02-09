@@ -10,7 +10,7 @@ import {
   useUpdateDatastoreConnectionSecretsMutation,
 } from "datastore-connections/datastore-connection.slice";
 import { DatastoreConnectionSecretsRequest } from "datastore-connections/types";
-import { Box } from "fidesui";
+import { ChakraBox as Box } from "fidesui";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 

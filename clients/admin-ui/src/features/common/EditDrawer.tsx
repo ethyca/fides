@@ -1,14 +1,14 @@
 import {
-  AntButton as Button,
-  Box,
-  CloseIcon,
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraCloseIcon as CloseIcon,
+  ChakraDrawer as Drawer,
+  ChakraDrawerBody as DrawerBody,
+  ChakraDrawerContent as DrawerContent,
+  ChakraDrawerFooter as DrawerFooter,
+  ChakraDrawerHeader as DrawerHeader,
+  ChakraDrawerOverlay as DrawerOverlay,
+  ChakraText as Text,
 } from "fidesui";
 import { ReactNode } from "react";
 

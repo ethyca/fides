@@ -1,4 +1,4 @@
-import { AntSelect as Select, AntSelectProps as SelectProps } from "fidesui";
+import { Select, SelectProps } from "fidesui";
 import { HTMLAttributes } from "react";
 
 import { COLOR_VALUE_MAP } from "~/features/system/system-groups/colors";

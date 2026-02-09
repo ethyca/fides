@@ -1,8 +1,8 @@
 import {
-  AntButton as Button,
-  AntTooltip as Tooltip,
+  Button,
   Icons,
-  useDisclosure,
+  Tooltip,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";

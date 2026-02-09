@@ -83,9 +83,9 @@ class QueryConfig(Generic[T], ABC):
                 continue
 
             targeted_field_paths = []
-            collection_categories: Dict[
-                str, List[FieldPath]
-            ] = self.node.collection.field_paths_by_category  # type: ignore
+            collection_categories: Dict[str, List[FieldPath]] = (
+                self.node.collection.field_paths_by_category
+            )  # type: ignore
             for rule_cat in rule_categories:
                 for collection_cat, field_paths in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
@@ -691,7 +691,7 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
             if len(v) == 1:
                 query_str = re.sub(f"= :{k}", f"= {transform_param(v[0])}", query_str)
             elif len(v) > 0:
-                query_str = re.sub(f"IN :{k}", f"IN { tuple(set(v)) }", query_str)
+                query_str = re.sub(f"IN :{k}", f"IN {tuple(set(v))}", query_str)
         return query_str
 
     def dry_run_query(self) -> Optional[str]:

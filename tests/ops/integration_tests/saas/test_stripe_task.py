@@ -8,7 +8,6 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 
 @pytest.mark.integration_saas
 class TestStripeConnector:
-
     def test_stripe_connection_test(self, stripe_runner: ConnectorRunner) -> None:
         stripe_runner.test_connection()
 

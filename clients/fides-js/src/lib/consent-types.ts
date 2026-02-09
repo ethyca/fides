@@ -79,7 +79,7 @@ export interface FidesInitOptions {
 
   // ID of the DOM element that should trigger the consent modal (default: "fides-modal-link")
   // If set to empty string "", fides.js will not attempt to bind the modal link to the click handler
-  modalLinkId: string | null;
+  modalLinkId: string;
 
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;
@@ -148,6 +148,9 @@ export interface FidesInitOptions {
 
   // If defined, maps OT cookie consent to Fides cookie consent
   otFidesMapping?: string | null;
+
+  // If defined, maps Transcend cookie consent to Fides cookie consent
+  transcendFidesMapping?: string | null;
 
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
@@ -265,6 +268,18 @@ export interface FidesGlobal
  *   }
  */
 export interface OtToFidesConsentMapping {
+  [key: string]: string[];
+}
+
+/**
+ * Store the Transcend to Fides consent mappings from transcend_purpose -> array of fides notice keys, e.g.
+ * {
+ *     Analytics: ["analytics_opt_out"],
+ *     SaleOfInfo: ["data_sales"],
+ *     Advertising: ["advertising", "marketing"],
+ *   }
+ */
+export interface TranscendToFidesConsentMapping {
   [key: string]: string[];
 }
 
@@ -457,6 +472,10 @@ export type TCMobileData = {
    * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the opt-in status for special feature ID n+1; false and true respectively. eg. '1' at index 0 is opt-in true for special feature ID 1
    */
   IABTCF_SpecialFeaturesOptIns?: string;
+  /**
+   * Binary String: The '0' or '1' at position n – where n's indexing begins at 0 – indicates the status of disclosure in CMP for Vendor ID n+1; false and true respectively. eg. '1' at index 0 is vendor disclosed true for vendor ID 1
+   */
+  IABTCF_DisclosedVendors?: string;
   IABTCF_PublisherConsent?: string;
   IABTCF_PublisherLegitimateInterests?: string;
   IABTCF_PublisherCustomPurposesConsents?: string;
@@ -661,6 +680,12 @@ export type ExperienceConfigTranslation = {
   accept_button_label?: string;
   acknowledge_button_label?: string;
   banner_title?: string;
+  // GPC (Global Privacy Control) translatable fields
+  gpc_label?: string;
+  gpc_description?: string;
+  gpc_status_applied_label?: string;
+  gpc_status_overridden_label?: string;
+  gpc_title?: string;
   is_default?: boolean;
   privacy_policy_link_label?: string;
   privacy_policy_url?: string;
@@ -873,6 +898,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesClearCookie"
   | "fidesConsentOverride"
   | "otFidesMapping"
+  | "transcendFidesMapping"
   | "fidesDisabledNotices"
   | "fidesDisabledSystems"
   | "fidesConsentNonApplicableFlagMode"

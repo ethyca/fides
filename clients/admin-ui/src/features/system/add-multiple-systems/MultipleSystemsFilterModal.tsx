@@ -1,17 +1,17 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  Box,
-  Checkbox,
-  Divider,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraCheckbox as Checkbox,
+  ChakraDivider as Divider,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraText as Text,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 

@@ -1,4 +1,4 @@
-import { AntEmpty as Empty, useToast } from "fidesui";
+import { Empty, useChakraToast as useToast } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -60,13 +60,14 @@ export const useDiscoveredSystemAggregateTable = ({
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs();
 
-  const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
-    key: monitorId,
-    page: pageIndex,
-    size: pageSize,
-    search: searchQuery,
-    ...activeParams,
-  });
+  const { data, error, isLoading, isFetching } =
+    useGetDiscoveredSystemAggregateQuery({
+      key: monitorId,
+      page: pageIndex,
+      size: pageSize,
+      search: searchQuery,
+      ...activeParams,
+    });
 
   const [addMonitorResultSystemsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultSystemsMutation();
@@ -237,6 +238,7 @@ export const useDiscoveredSystemAggregateTable = ({
     // Table state and data
     columns,
     data,
+    error,
     isLoading,
     isFetching,
     searchQuery,

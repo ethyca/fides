@@ -1,9 +1,9 @@
 import {
-  Box,
-  Checkbox,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  IconButton,
+  ChakraBox as Box,
+  ChakraCheckbox as Checkbox,
+  ChakraChevronDownIcon as ChevronDownIcon,
+  ChakraChevronUpIcon as ChevronUpIcon,
+  ChakraIconButton as IconButton,
 } from "fidesui";
 import React, { ReactNode } from "react";
 

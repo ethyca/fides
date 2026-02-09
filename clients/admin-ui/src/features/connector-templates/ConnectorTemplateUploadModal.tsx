@@ -1,15 +1,15 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  AntButton as Button,
-  Box,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
-  useToast,
+  Button,
+  ChakraBox as Box,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraText as Text,
+  useChakraToast as useToast,
 } from "fidesui";
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";

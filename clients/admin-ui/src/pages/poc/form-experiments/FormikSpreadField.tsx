@@ -1,18 +1,18 @@
 /* eslint-disable no-console */
 import {
-  AntCard as Card,
-  AntCheckbox as Checkbox,
-  AntCol as Col,
-  AntDatePicker as DatePicker,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntInputNumber as InputNumber,
-  AntRadio as Radio,
-  AntRow as Row,
-  AntSelect as Select,
-  AntSwitch as Switch,
-  AntTag as Tag,
-  AntTypography as Typography,
+  Card,
+  Checkbox,
+  Col,
+  DatePicker,
+  Flex,
+  Input,
+  InputNumber,
+  Radio,
+  Row,
+  Select,
+  Switch,
+  Tag,
+  Typography,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { Field, Form, Formik } from "formik";

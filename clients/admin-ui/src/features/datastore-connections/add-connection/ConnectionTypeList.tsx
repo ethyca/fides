@@ -1,7 +1,12 @@
 import ConnectionTypeLogo, {
   connectionLogoFromSystemType,
 } from "datastore-connections/ConnectionTypeLogo";
-import { Box, Flex, SimpleGrid, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraSimpleGrid as SimpleGrid,
+  ChakraText as Text,
+} from "fidesui";
 import NextLink from "next/link";
 import React from "react";
 

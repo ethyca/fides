@@ -1,14 +1,14 @@
 import { Table as TableInstance, Updater } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  HStack,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
+  Button,
+  ChakraChevronLeftIcon as ChevronLeftIcon,
+  ChakraChevronRightIcon as ChevronRightIcon,
+  ChakraHStack as HStack,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
+  ChakraText as Text,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 

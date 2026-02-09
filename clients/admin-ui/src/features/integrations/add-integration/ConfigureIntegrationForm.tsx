@@ -1,4 +1,8 @@
-import { Box, useToast, VStack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraVStack as VStack,
+  useChakraToast as useToast,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";

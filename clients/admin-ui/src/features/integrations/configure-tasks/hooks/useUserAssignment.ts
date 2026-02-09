@@ -1,4 +1,4 @@
-import { useDisclosure, useMessage } from "fidesui";
+import { useChakraDisclosure as useDisclosure, useMessage } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
 import {

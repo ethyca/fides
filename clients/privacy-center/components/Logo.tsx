@@ -1,4 +1,4 @@
-import { Image, Link } from "fidesui";
+import { ChakraImage as Image, ChakraLink as Link } from "fidesui";
 import React from "react";
 
 type LogoProps = {

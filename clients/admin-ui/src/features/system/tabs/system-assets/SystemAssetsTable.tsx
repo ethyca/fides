@@ -4,14 +4,14 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  AntEmpty as Empty,
+  Button,
+  ChakraSpacer as Spacer,
+  ChakraText as Text,
   ConfirmationModal,
+  Empty,
   Icons,
-  Spacer,
-  Text,
-  useDisclosure,
-  useToast,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { useEffect, useState } from "react";
 

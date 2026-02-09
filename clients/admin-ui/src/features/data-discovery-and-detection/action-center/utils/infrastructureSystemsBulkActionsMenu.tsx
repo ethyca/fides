@@ -1,4 +1,4 @@
-import { AntMenuProps as MenuProps } from "fidesui";
+import { MenuProps } from "fidesui";
 
 import { DiffStatus } from "~/types/api";
 
@@ -20,6 +20,12 @@ export const getBulkActionsMenuItems = ({
   if (isIgnoredTab) {
     return [
       {
+        key: InfrastructureSystemBulkActionType.ADD,
+        label: "Add",
+        onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
+        disabled: isBulkActionInProgress,
+      },
+      {
         key: InfrastructureSystemBulkActionType.RESTORE,
         label: "Restore",
         onClick: () => onBulkAction(InfrastructureSystemBulkActionType.RESTORE),
@@ -29,6 +35,12 @@ export const getBulkActionsMenuItems = ({
   }
 
   return [
+    {
+      key: InfrastructureSystemBulkActionType.ADD,
+      label: "Add",
+      onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
+      disabled: isBulkActionInProgress,
+    },
     ...(allowIgnore
       ? [
           {
@@ -40,20 +52,29 @@ export const getBulkActionsMenuItems = ({
           },
         ]
       : []),
-    {
-      key: InfrastructureSystemBulkActionType.ADD,
-      label: "Add",
-      onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
-      disabled: isBulkActionInProgress,
-    },
   ];
 };
 
-export const shouldAllowIgnore = (activeParams: {
-  diff_status?: DiffStatus | DiffStatus[] | null;
-}): boolean => {
-  return (
-    !!activeParams.diff_status &&
-    !activeParams.diff_status.includes(DiffStatus.MUTED)
-  );
+export const shouldAllowIgnore = (
+  activeDiffStatusFilters: DiffStatus[] | DiffStatus | undefined,
+): boolean => {
+  if (!activeDiffStatusFilters) {
+    return false;
+  }
+  if (Array.isArray(activeDiffStatusFilters)) {
+    return !activeDiffStatusFilters.includes(DiffStatus.MUTED);
+  }
+  return activeDiffStatusFilters !== DiffStatus.MUTED;
+};
+
+export const shouldAllowRestore = (
+  activeDiffStatusFilters: DiffStatus[] | DiffStatus | undefined,
+): boolean => {
+  if (!activeDiffStatusFilters) {
+    return false;
+  }
+  if (Array.isArray(activeDiffStatusFilters)) {
+    return activeDiffStatusFilters.includes(DiffStatus.MUTED);
+  }
+  return activeDiffStatusFilters === DiffStatus.MUTED;
 };

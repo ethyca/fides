@@ -1,4 +1,8 @@
-import { Box, BoxProps, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraBoxProps as BoxProps,
+  ChakraText as Text,
+} from "fidesui";
 import { ReactNode } from "react";
 
 const SettingsBox = ({

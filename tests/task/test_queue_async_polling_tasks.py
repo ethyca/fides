@@ -7,7 +7,6 @@ from fides.api.service.privacy_request.request_service import requeue_polling_ta
 
 @pytest.mark.async_dsr
 class TestPollAsyncTasksStatus:
-
     @mock.patch("fides.api.task.execute_request_tasks.queue_request_task")
     def test_polling_task_is_requeued(
         self,

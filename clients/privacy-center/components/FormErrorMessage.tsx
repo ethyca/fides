@@ -1,8 +1,8 @@
 import {
-  Box,
-  FormErrorMessage as ChakraFormErrorMessage,
-  forwardRef,
-  useFormControlContext,
+  ChakraBox as Box,
+  ChakraFormErrorMessage,
+  chakraForwardRef as forwardRef,
+  useChakraFormControlContext as useFormControlContext,
 } from "fidesui";
 
 /**

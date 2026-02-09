@@ -1,9 +1,5 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import {
-  AntFlex as Flex,
-  AntNotification as notification,
-  Text,
-} from "fidesui";
+import { ChakraText as Text, Flex, notification } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import Script from "next/script";

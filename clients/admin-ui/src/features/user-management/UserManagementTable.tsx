@@ -1,8 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTable as Table,
-} from "fidesui";
+import { Button, Flex, Table } from "fidesui";
 import NextLink from "next/link";
 import React, { useEffect } from "react";
 

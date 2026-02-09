@@ -1,4 +1,4 @@
-import { AntButton as Button, Icons } from "fidesui";
+import { Button, Icons } from "fidesui";
 import { useState } from "react";
 
 import {

@@ -1,6 +1,10 @@
 import { getErrorMessage } from "common/helpers";
 import { NOTIFICATIONS_TEMPLATES_ROUTE } from "common/nav/routes";
-import { Box, Spinner, useToast } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraSpinner as Spinner,
+  useChakraToast as useToast,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 

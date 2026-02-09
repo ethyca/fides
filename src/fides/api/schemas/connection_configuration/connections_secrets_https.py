@@ -1,4 +1,4 @@
-from typing import ClassVar, List
+from typing import ClassVar, Dict, List, Optional
 
 from pydantic import Field
 
@@ -13,6 +13,10 @@ class HttpsSchema(ConnectionConfigSecretsSchema):
 
     url: str
     authorization: str = Field(json_schema_extra={"sensitive": True})
+    headers: Optional[Dict[str, str]] = Field(
+        default=None,
+        json_schema_extra={"sensitive": True},
+    )
 
     _required_components: ClassVar[List[str]] = ["url", "authorization"]
 

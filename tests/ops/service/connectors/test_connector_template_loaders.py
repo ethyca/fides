@@ -7,9 +7,6 @@ import pytest
 
 from fides.api.common_exceptions import NoSuchSaaSRequestOverrideException
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
-from fides.api.models.saas_template_dataset import SaasTemplateDataset
-from fides.api.schemas.enums.connection_category import ConnectionCategory
-from fides.api.schemas.enums.integration_feature import IntegrationFeature
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.service.authentication.authentication_strategy import (
@@ -78,57 +75,16 @@ class TestCustomConnectorTemplateLoader:
         return load_yaml_as_string("data/saas/dataset/hubspot_dataset.yml")
 
     @pytest.fixture
-    def replaceable_hubspot_config(self) -> str:
+    def custom_hubspot_config(self) -> str:
         return load_yaml_as_string(
             "tests/fixtures/saas/test_data/replaceable_hubspot_config.yml"
         )
 
     @pytest.fixture
-    def replaceable_planet_express_config(self) -> str:
-        return load_yaml_as_string(
-            "tests/fixtures/saas/test_data/planet_express/replaceable_planet_express_config.yml"
-        )
-
-    @pytest.fixture
-    def replaceable_hubspot_zip(
-        self, replaceable_hubspot_config, hubspot_dataset
-    ) -> BytesIO:
+    def custom_hubspot_zip(self, custom_hubspot_config, hubspot_dataset) -> BytesIO:
         return create_zip_file(
             {
-                "config.yml": replace_version(replaceable_hubspot_config, "0.0.0"),
-                "dataset.yml": hubspot_dataset,
-            }
-        )
-
-    @pytest.fixture
-    def non_replaceable_hubspot_zip(self, hubspot_config, hubspot_dataset) -> BytesIO:
-        return create_zip_file(
-            {
-                "config.yml": replace_version(hubspot_config, "0.0.0"),
-                "dataset.yml": hubspot_dataset,
-            }
-        )
-
-    @pytest.fixture
-    def replaceable_planet_express_zip(
-        self,
-        replaceable_planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ) -> BytesIO:
-        return create_zip_file(
-            {
-                "config.yml": replaceable_planet_express_config,
-                "dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def non_replaceable_hubspot_zip(self, hubspot_config, hubspot_dataset) -> BytesIO:
-        return create_zip_file(
-            {
-                "config.yml": replace_version(hubspot_config, "0.0.0"),
+                "config.yml": replace_version(custom_hubspot_config, "0.0.0"),
                 "dataset.yml": hubspot_dataset,
             }
         )
@@ -192,6 +148,8 @@ class TestCustomConnectorTemplateLoader:
                 authorization_required=False,
                 user_guide=None,
                 supported_actions=[ActionType.access],
+                custom=True,
+                default_connector_available=False,
             )
         }
 
@@ -235,7 +193,7 @@ class TestCustomConnectorTemplateLoader:
     ):
         db = MagicMock()
 
-        CustomConnectorTemplateLoader.save_template(
+        connector_type = CustomConnectorTemplateLoader.save_template(
             db,
             ZipFile(
                 create_zip_file(
@@ -247,21 +205,8 @@ class TestCustomConnectorTemplateLoader:
                 )
             ),
         )
-
-        # verify that a connector template can updated with no issue
-        CustomConnectorTemplateLoader.save_template(
-            db,
-            ZipFile(
-                create_zip_file(
-                    {
-                        "config.yml": planet_express_config,
-                        "dataset.yml": planet_express_dataset,
-                        "icon.svg": planet_express_icon,
-                    }
-                )
-            ),
-        )
-        assert mock_create_or_update.call_count == 2
+        assert connector_type == "planet_express"
+        assert mock_create_or_update.call_count == 1
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
@@ -296,7 +241,7 @@ class TestCustomConnectorTemplateLoader:
                 "planet_express_user_access", SaaSRequestType.UPDATE
             )
         assert (
-            f"Custom SaaS override 'planet_express_user_access' does not exist."
+            "Custom SaaS override 'planet_express_user_access' does not exist."
             in str(exc.value)
         )
 
@@ -306,142 +251,25 @@ class TestCustomConnectorTemplateLoader:
             strategy.name for strategy in authentication_strategies
         ]
 
-    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
-    )
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
-    def test_custom_connector_replacement_replaceable_with_update_available(
+    def test_custom_connector_replaces_file_connector(
         self,
         mock_all: MagicMock,
-        mock_delete: MagicMock,
-        mock_saas_get_by: MagicMock,
         hubspot_config,
         hubspot_dataset,
     ):
         """
-        Verify that an existing connector template flagged as replaceable is
-        deleted when a newer version of the connector template is found in
-        the FileConnectorTemplateLoader. Also verify that the corresponding
-        SaasTemplateDataset record is deleted.
+        Verify that a custom connector template replaces the file connector template
+        when it is loaded, and that it has custom=True and default_connector_available=True.
         """
-        # Create a mock SaasTemplateDataset instance
-        mock_saas_dataset = MagicMock()
-        mock_saas_get_by.return_value = mock_saas_dataset
-
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="hubspot",
                 name="HubSpot",
                 config=replace_version(hubspot_config, "0.0.0"),
                 dataset=hubspot_dataset,
-                replaceable=True,
-            )
-        ]
-
-        template = ConnectorRegistry.get_connector_template("hubspot")
-        assert template
-        saas_config = load_config_from_string(template.config)
-        assert (
-            saas_config["version"] == load_config_from_string(hubspot_config)["version"]
-        )
-        assert CustomConnectorTemplateLoader.get_connector_templates() == {}
-
-        # Verify template deletion
-        mock_delete.assert_called_once()
-
-        # Verify SaasTemplateDataset deletion
-        mock_saas_get_by.assert_called_once_with(
-            db=mock.ANY, field="connection_type", value="hubspot"
-        )
-        mock_saas_dataset.delete.assert_called_once()
-
-    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
-    )
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
-    )
-    def test_custom_connector_replacement_replaceable_with_update_not_available(
-        self,
-        mock_all: MagicMock,
-        mock_delete: MagicMock,
-        mock_saas_get_by: MagicMock,
-        planet_express_config,
-        planet_express_dataset,
-    ):
-        """
-        Verify that an existing connector template flagged as replaceable is
-        not deleted if a newer version of the connector template is not found
-        in the FileConnectorTemplateLoader. Also verify that no SaasTemplateDataset
-        deletion occurs.
-        """
-        planet_express_config = replace_version(planet_express_config, "0.0.0")
-
-        mock_all.return_value = [
-            CustomConnectorTemplate(
-                key="planet_express",
-                name="Planet Express",
-                config=planet_express_config,
-                dataset=planet_express_dataset,
-                replaceable=True,
-            )
-        ]
-
-        template = ConnectorRegistry.get_connector_template("planet_express")
-        assert template
-        saas_config = load_config_from_string(template.config)
-        assert saas_config["version"] == "0.0.0"
-        assert CustomConnectorTemplateLoader.get_connector_templates() == {
-            "planet_express": ConnectorTemplate(
-                config=planet_express_config,
-                dataset=planet_express_dataset,
-                human_readable="Planet Express",
-                authorization_required=False,
-                user_guide=None,
-                supported_actions=[ActionType.access],
-            )
-        }
-
-        # Verify no template deletion
-        mock_delete.assert_not_called()
-
-        # Verify no SaasTemplateDataset deletion attempt
-        mock_saas_get_by.assert_not_called()
-
-    @mock.patch("fides.api.models.saas_template_dataset.SaasTemplateDataset.get_by")
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.delete"
-    )
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
-    )
-    def test_custom_connector_replacement_not_replaceable(
-        self,
-        mock_all: MagicMock,
-        mock_delete: MagicMock,
-        mock_saas_get_by: MagicMock,
-        hubspot_config,
-        hubspot_dataset,
-    ):
-        """
-        Verify that an existing custom connector template flagged as not replaceable is
-        not deleted even if a newer version of the connector template is found
-        in the FileConnectorTemplateLoader. Also verify that no SaasTemplateDataset
-        deletion occurs.
-        """
-        hubspot_config = replace_version(hubspot_config, "0.0.0")
-
-        mock_all.return_value = [
-            CustomConnectorTemplate(
-                key="hubspot",
-                name="HubSpot",
-                config=hubspot_config,
-                dataset=hubspot_dataset,
-                replaceable=False,
             )
         ]
 
@@ -449,80 +277,23 @@ class TestCustomConnectorTemplateLoader:
         assert template
         saas_config = load_config_from_string(template.config)
         assert saas_config["version"] == "0.0.0"
-        assert CustomConnectorTemplateLoader.get_connector_templates() == {
-            "hubspot": ConnectorTemplate(
-                config=hubspot_config,
-                dataset=hubspot_dataset,
-                human_readable="HubSpot",
-                authorization_required=False,
-                user_guide="https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot",
-                supported_actions=[ActionType.access, ActionType.erasure],
-                category=ConnectionCategory.CRM,
-                tags=["API", "DSR Automation"],
-                enabled_features=[IntegrationFeature.DSR_AUTOMATION],
-            )
-        }
-
-        # Verify no template deletion
-        mock_delete.assert_not_called()
-
-        # Verify no SaasTemplateDataset deletion attempt
-        mock_saas_get_by.assert_not_called()
+        assert template.custom is True
+        assert template.default_connector_available is True
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
-    def test_replaceable_template_for_existing_template(
-        self, mock_create_or_update: MagicMock, hubspot_config, replaceable_hubspot_zip
+    def test_version_update_for_custom_connector(
+        self, mock_create_or_update: MagicMock, hubspot_config, custom_hubspot_zip
     ):
         """
-        Verify that a replaceable custom connector template takes on the version of the existing connector template.
+        Verify that a custom connector template takes on the version of the existing file connector template.
         """
         CustomConnectorTemplateLoader.save_template(
-            db=MagicMock(), zip_file=ZipFile(replaceable_hubspot_zip)
+            db=MagicMock(), zip_file=ZipFile(custom_hubspot_zip)
         )
-
-        assert mock_create_or_update.call_args.kwargs["data"]["replaceable"]
 
         config_contents = mock_create_or_update.call_args.kwargs["data"]["config"]
         custom_config = load_config_from_string(config_contents)
         existing_config = load_config_from_string(hubspot_config)
         assert custom_config["version"] == existing_config["version"]
-
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
-    )
-    def test_replaceable_template_for_new_template(
-        self, mock_create_or_update: MagicMock, replaceable_planet_express_zip
-    ):
-        """
-        Verify that a replaceable custom connector template keeps its version if there is no existing connector template.
-        """
-        CustomConnectorTemplateLoader.save_template(
-            db=MagicMock(), zip_file=ZipFile(replaceable_planet_express_zip)
-        )
-
-        assert mock_create_or_update.call_args.kwargs["data"]["replaceable"]
-
-        config_contents = mock_create_or_update.call_args.kwargs["data"]["config"]
-        custom_config = load_config_from_string(config_contents)
-        assert custom_config["version"] == "0.0.1"
-
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
-    )
-    def test_non_replaceable_template(
-        self,
-        mock_create_or_update: MagicMock,
-        non_replaceable_hubspot_zip,
-    ):
-        """
-        Verify that a non replaceable connector template keeps its version even if there is an existing connector template.
-        """
-        CustomConnectorTemplateLoader.save_template(
-            db=MagicMock(), zip_file=ZipFile(non_replaceable_hubspot_zip)
-        )
-        assert not mock_create_or_update.call_args.kwargs["data"]["replaceable"]
-        config_contents = mock_create_or_update.call_args.kwargs["data"]["config"]
-        custom_config = load_config_from_string(config_contents)
-        assert custom_config["version"] == "0.0.0"

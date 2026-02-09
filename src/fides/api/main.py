@@ -8,19 +8,17 @@ import sys
 from datetime import datetime, timezone
 from logging import WARNING
 from time import perf_counter
-from typing import AsyncGenerator, Callable, Optional
+from typing import AsyncGenerator
 from urllib.parse import unquote
 
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
-from pyinstrument import Profiler
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from starlette.background import BackgroundTask
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 from uvicorn import Config, Server
 
@@ -33,12 +31,11 @@ from fides.api.app_setup import (
 )
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.cryptography.identity_salt import get_identity_salt
-from fides.api.middleware import handle_audit_log_resource
 from fides.api.migrations.hash_migration_job import initiate_bcrypt_migration_task
 from fides.api.migrations.post_upgrade_index_creation import (
     initiate_post_upgrade_index_creation,
 )
-from fides.api.schemas.analytics import Event, ExtraData
+from fides.api.schemas.analytics import Event
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.privacy_request.email_batch_service import (
@@ -62,12 +59,10 @@ from fides.api.ui import (
     path_is_in_ui_directory,
 )
 from fides.api.util.endpoint_utils import API_PREFIX
-from fides.api.util.logger import _log_exception
 from fides.api.util.rate_limit import safe_rate_limit_key
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 
-IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
 
 VERSION = fides.__version__
@@ -132,127 +127,6 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = create_fides_app(lifespan=lifespan)  # type: ignore
-
-
-if CONFIG.dev_mode:
-
-    @app.middleware("http")
-    async def profile_request(request: Request, call_next: Callable) -> Response:
-        profiling = request.headers.get("profile-request", False)
-        if profiling:
-            profiler = Profiler(interval=0.001, async_mode="enabled")
-            profiler.start()
-            await call_next(request)
-            profiler.stop()
-            logger.debug("Request Profiled!")
-            return HTMLResponse(profiler.output_text(timeline=True, show_all=True))
-
-        return await call_next(request)
-
-
-@app.middleware("http")
-async def dispatch_log_request(request: Request, call_next: Callable) -> Response:
-    """
-    HTTP Middleware that logs analytics events for each call to Fides endpoints.
-    :param request: Request to Fides api
-    :param call_next: Callable api endpoint
-    :return: Response
-    """
-
-    # Only log analytics events for requests that are for API endpoints (i.e. /api/...)
-    path = request.url.path
-    if (not path.startswith(API_PREFIX)) or (path.endswith("/health")):
-        return await call_next(request)
-
-    fides_source: Optional[str] = request.headers.get("X-Fides-Source")
-    now: datetime = datetime.now(tz=timezone.utc)
-    endpoint = f"{request.method}: {request.url}"
-
-    try:
-        response = await call_next(request)
-        # HTTPExceptions are considered a handled err by default so are not thrown here.
-        # Accepted workaround is to inspect status code of response.
-        # More context- https://github.com/tiangolo/fastapi/issues/1840
-        response.background = BackgroundTask(
-            prepare_and_log_request,
-            endpoint,
-            request.url.hostname,
-            response.status_code,
-            now,
-            fides_source,
-            "HTTPException" if response.status_code >= 400 else None,
-        )
-        return response
-
-    except Exception as e:
-        await prepare_and_log_request(
-            endpoint, request.url.hostname, 500, now, fides_source, e.__class__.__name__
-        )
-        _log_exception(e, CONFIG.dev_mode)
-        raise
-
-
-async def prepare_and_log_request(
-    endpoint: str,
-    hostname: Optional[str],
-    status_code: int,
-    event_created_at: datetime,
-    fides_source: Optional[str],
-    error_class: Optional[str],
-) -> None:
-    """
-    Prepares and sends analytics event provided the user is not opted out of analytics.
-    """
-    # Avoid circular imports
-    from fides.api.analytics import (
-        accessed_through_local_host,
-        in_docker_container,
-        send_analytics_event,
-    )
-
-    # this check prevents AnalyticsEvent from being called with invalid endpoint during unit tests
-    if CONFIG.user.analytics_opt_out:
-        return
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.endpoint_call.value,
-            event_created_at=event_created_at,
-            local_host=accessed_through_local_host(hostname),
-            endpoint=endpoint,
-            status_code=status_code,
-            error=error_class or None,
-            extra_data=(
-                {ExtraData.fides_source.value: fides_source} if fides_source else None
-            ),
-        )
-    )
-
-
-@app.middleware("http")
-async def log_request(request: Request, call_next: Callable) -> Response:
-    """Log basic information about every request handled by the server."""
-    start = datetime.now()
-
-    # If the request fails, we still want to log it
-    try:
-        response = await call_next(request)
-    except Exception as e:  # pylint: disable=bare-except
-        logger.exception(f"Unhandled exception processing request: '{e}'")
-        response = Response(status_code=500)
-
-    handler_time = datetime.now() - start
-
-    # Take the total time in seconds and convert it to milliseconds, rounding to 3 decimal places
-    total_time = round(handler_time.total_seconds() * 1000, 3)
-    logger.bind(
-        method=request.method,
-        status_code=response.status_code,
-        handler_time=f"{total_time}ms",
-        path=request.url.path,
-        fides_client=request.headers.get("Fides-Client", "unknown"),
-    ).info("Request received")
-    return response
 
 
 # Configure the static file paths last since otherwise it will take over all paths
@@ -358,25 +232,6 @@ def start_webserver(port: int = 8080) -> None:
     warn_root_user_enabled()
 
     server.run()
-
-
-@app.middleware("http")
-async def action_to_audit_log(
-    request: Request,
-    call_next: Callable,
-) -> Response:
-    """Log basic information about every non-GET request handled by the server."""
-
-    if (
-        request.method != "GET"
-        and request.scope["path"] not in IGNORED_AUDIT_LOG_RESOURCE_PATHS
-        and CONFIG.security.enable_audit_log_resource_middleware
-    ):
-        try:
-            await handle_audit_log_resource(request)
-        except Exception as exc:
-            logger.debug(exc)
-    return await call_next(request)
 
 
 @app.exception_handler(RequestValidationError)

@@ -1,14 +1,14 @@
 import {
-  AntTag as Tag,
-  Flex,
-  Heading,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Spacer,
+  ChakraFlex as Flex,
+  ChakraHeading as Heading,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraSpacer as Spacer,
+  Tag,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 

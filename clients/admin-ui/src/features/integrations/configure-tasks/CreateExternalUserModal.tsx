@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInput as Input,
-  AntModal as Modal,
-  AntTypography as Typography,
-  useToast,
+  Button,
+  Form,
+  Input,
+  Modal,
+  Typography,
+  useChakraToast as useToast,
 } from "fidesui";
 import Link from "next/link";
 import { useState } from "react";

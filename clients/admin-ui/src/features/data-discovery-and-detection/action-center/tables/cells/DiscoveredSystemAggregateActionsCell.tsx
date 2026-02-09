@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntSpace as Space,
-  AntTooltip as Tooltip,
-  useToast,
-} from "fidesui";
+import { Button, Space, Tooltip, useChakraToast as useToast } from "fidesui";
 import { useRouter } from "next/router";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";

@@ -1,13 +1,13 @@
 import { GpcStatus } from "fides-js";
 import {
-  Box,
-  ExternalLinkIcon,
-  Flex,
-  HStack,
-  Link,
-  Spacer,
-  Stack,
-  Text,
+  ChakraBox as Box,
+  ChakraExternalLinkIcon as ExternalLinkIcon,
+  ChakraFlex as Flex,
+  ChakraHStack as HStack,
+  ChakraLink as Link,
+  ChakraSpacer as Spacer,
+  ChakraStack as Stack,
+  ChakraText as Text,
 } from "fidesui";
 import React from "react";
 

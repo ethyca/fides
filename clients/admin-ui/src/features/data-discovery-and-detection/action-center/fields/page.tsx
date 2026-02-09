@@ -1,32 +1,27 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntSplitter as Splitter,
-  AntText as Text,
-  AntTitle as Title,
-  AntTooltip as Tooltip,
+  Button,
+  Checkbox,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
+  List,
+  Pagination,
+  Splitter,
+  Text,
+  Title,
+  Tooltip,
 } from "fidesui";
 import _ from "lodash";
-import { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import FixedLayout from "~/features/common/FixedLayout";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useSearch } from "~/features/common/hooks";
-import {
-  ACTION_CENTER_ROUTE,
-  DATASET_ROUTE,
-} from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetMonitorConfigQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
@@ -71,9 +66,8 @@ const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
       : [],
   );
 
-const ActionCenterFields: NextPage = () => {
+const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
   const router = useRouter();
-  const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
@@ -122,9 +116,11 @@ const ActionCenterFields: NextPage = () => {
   const bulkActions = useBulkActions(monitorId, async (urns: string[]) => {
     await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
   });
+
   const fieldActions = useFieldActions(monitorId, async (urns: string[]) => {
     await monitorTreeRef.current?.refreshResourcesAndAncestors(urns);
   });
+
   const {
     listQuery: { nodes: listNodes, ...listQueryMeta },
     detailsQuery: { data: resource },
@@ -233,20 +229,17 @@ const ActionCenterFields: NextPage = () => {
     () => listQueryMeta.refetch(),
   );
 
-  return (
-    <FixedLayout
-      title="Action center - Discovered assets by system"
-      mainProps={{ overflow: "hidden" }}
-      fullHeight
-    >
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId },
-        ]}
-        isSticky={false}
+  if (listQueryMeta.error) {
+    return (
+      <ErrorPage
+        error={listQueryMeta.error}
+        defaultMessage="A problem occurred while fetching your monitor results"
       />
+    );
+  }
+
+  return (
+    <>
       <Splitter className="h-[calc(100%-48px)] overflow-hidden">
         <Splitter.Panel
           defaultSize={250}
@@ -272,7 +265,12 @@ const ActionCenterFields: NextPage = () => {
                             node.status ===
                               TreeResourceChangeIndicator.REMOVAL) ||
                           (action === FieldActionType.CLASSIFY &&
-                            node.classifyable)
+                            node.classifyable &&
+                            node.diffStatus !== DiffStatus.MUTED) ||
+                          (action === FieldActionType.MUTE &&
+                            node.diffStatus !== DiffStatus.MUTED) ||
+                          (action === FieldActionType.UN_MUTE &&
+                            node.diffStatus === DiffStatus.MUTED)
                         ) {
                           return false;
                         }
@@ -280,14 +278,18 @@ const ActionCenterFields: NextPage = () => {
                         return true;
                       })
                       .some((d) => d === true),
-                  callback: (keys) => fieldActions[action](keys, false),
+                  callback: (keys) => {
+                    fieldActions[action](keys, false);
+                  },
                 },
               ]),
             )}
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
-        <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
+        <Splitter.Panel
+          style={{ paddingLeft: "var(--ant-padding-md)", overflow: "hidden" }}
+        >
           <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
               <Title level={2} ellipsis>
@@ -413,14 +415,16 @@ const ActionCenterFields: NextPage = () => {
                           image={Empty.PRESENTED_IMAGE_SIMPLE}
                           description={
                             <>
-                              <div>All resources have been approved.</div>
                               <div>
-                                {`You'll now find this data in Managed Datasets
-                                view.`}
+                                All resources have been either approved or
+                                ignored.
                               </div>
                               <div>
-                                {`To see approved or ignored resources, adjust
-                                your filters`}
+                                Approved resources can be found in the manage
+                                datasets view.
+                              </div>
+                              <div>
+                                To see ignored resources, adjust your filters.
                               </div>
                             </>
                           }
@@ -567,7 +571,7 @@ const ActionCenterFields: NextPage = () => {
         open={hotkeysHelperModalOpen}
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
-    </FixedLayout>
+    </>
   );
 };
 export default ActionCenterFields;

@@ -132,7 +132,6 @@ class MessagingService:
         to_identity: Optional[Identity],
         property_id: Optional[str],
     ) -> Optional[str]:
-
         verification_code = None
 
         if message_send_enabled(

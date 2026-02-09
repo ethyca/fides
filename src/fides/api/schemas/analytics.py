@@ -1,14 +1,14 @@
-from enum import Enum
+from enum import Enum, StrEnum
 
 
-class Event(str, Enum):
+class Event(StrEnum):
     """Enum to hold analytics event names"""
 
     server_start = "server_start"
     endpoint_call = "endpoint_call"
 
 
-class ExtraData(str, Enum):
+class ExtraData(StrEnum):
     """Enum to hold keys for extra data"""
 
     fides_source = "fides_source"

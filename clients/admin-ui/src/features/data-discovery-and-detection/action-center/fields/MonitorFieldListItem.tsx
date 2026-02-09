@@ -1,16 +1,16 @@
 import {
-  AntBreadcrumb as Breadcrumb,
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntFlex as Flex,
-  AntList as List,
-  AntListItemProps as ListItemProps,
-  AntListProps as ListProps,
-  AntSelectProps as SelectProps,
-  AntTag as Tag,
-  AntText as Text,
-  AntTooltip as Tooltip,
+  Breadcrumb,
+  Button,
+  Checkbox,
+  Flex,
+  List,
+  ListItemProps,
+  ListProps,
+  SelectProps,
   SparkleIcon,
+  Tag,
+  Text,
+  Tooltip,
 } from "fidesui";
 import _ from "lodash";
 

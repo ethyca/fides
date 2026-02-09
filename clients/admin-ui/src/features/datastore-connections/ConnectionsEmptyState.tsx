@@ -1,4 +1,4 @@
-import { Flex, Text } from "fidesui";
+import { ChakraFlex as Flex, ChakraText as Text } from "fidesui";
 import React from "react";
 
 const ConnectionsEmptyState = ({ hasFilters }: { hasFilters: boolean }) => (

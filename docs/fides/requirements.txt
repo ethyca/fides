@@ -1,6 +1,7 @@
-mkdocs-material==8.2.7
-mkdocs-minify-plugin==0.4.0
-mkdocs-render-swagger-plugin==0.0.3
-mkdocs-click==0.5.0
+mkdocs-material
+mkdocs-minify-plugin
+mkdocs-render-swagger-plugin
+mkdocs-click
 mkdocs-git-revision-date-plugin
-mike==1.1.2
+mike
+legacy-cgi

@@ -1,4 +1,4 @@
-import { AntFlex as Flex, AntTag as Tag } from "fidesui";
+import { Flex, Tag } from "fidesui";
 
 import type { DetailsDrawerProps } from "./types";
 

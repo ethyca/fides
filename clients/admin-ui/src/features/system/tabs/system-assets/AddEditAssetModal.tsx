@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  ModalProps,
-  Text,
-  useToast,
+  Button,
+  ChakraModalProps as ModalProps,
+  ChakraText as Text,
+  Flex,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";

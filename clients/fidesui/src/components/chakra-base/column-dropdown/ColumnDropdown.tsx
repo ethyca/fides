@@ -1,13 +1,13 @@
 import {
   ArrowDownLineIcon,
-  Box,
-  Button,
-  Checkbox,
-  CheckboxGroup,
-  Menu,
-  MenuButton,
-  MenuList,
-  Stack,
+  ChakraBox as Box,
+  ChakraButton as Button,
+  ChakraCheckbox as Checkbox,
+  ChakraCheckboxGroup as CheckboxGroup,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuList as MenuList,
+  ChakraStack as Stack,
 } from "fidesui";
 import React, { useMemo } from "react";
 

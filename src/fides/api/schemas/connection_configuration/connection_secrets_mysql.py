@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import ClassVar, List, Optional
 
 from pydantic import Field
@@ -9,7 +9,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 
 
-class MySQLSSLMode(str, Enum):
+class MySQLSSLMode(StrEnum):
     preferred = "preferred"
     required = "required"
     disabled = "disabled"

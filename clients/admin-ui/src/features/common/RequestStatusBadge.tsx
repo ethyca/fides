@@ -1,8 +1,4 @@
-import {
-  AntTag as Tag,
-  AntTagProps as TagProps,
-  CUSTOM_TAG_COLOR,
-} from "fidesui";
+import { CUSTOM_TAG_COLOR, Tag, TagProps } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 

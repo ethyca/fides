@@ -1,4 +1,4 @@
-import { AntProgressProps as ProgressProps } from "fidesui";
+import { ProgressProps } from "fidesui";
 
 export type DynamicProgressProps = Pick<
   ProgressProps,

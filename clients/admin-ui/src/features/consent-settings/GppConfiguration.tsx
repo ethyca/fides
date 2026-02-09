@@ -1,16 +1,53 @@
-import { Divider, Stack, Text } from "fidesui";
-import { useFormikContext } from "formik";
+import {
+  ChakraDivider as Divider,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  Checkbox,
+  Form,
+} from "fidesui";
+import { useField, useFormikContext } from "formik";
 import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import ControlledRadioGroup from "~/features/common/form/ControlledRadioGroup";
-import { CustomCheckbox, CustomSwitch } from "~/features/common/form/inputs";
+import { CustomSwitch } from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/config-settings/config-settings.slice";
 import { GPPUSApproach, PrivacyExperienceGPPSettings } from "~/types/api";
 
 import FrameworkStatus from "./FrameworkStatus";
 import SettingsBox from "./SettingsBox";
+
+const CheckboxField = ({
+  name,
+  label,
+  tooltip,
+  onChange,
+}: {
+  name: string;
+  label: string;
+  tooltip?: string;
+  onChange?: (checked: boolean) => void;
+}) => {
+  const [field] = useField({ name, type: "checkbox" });
+
+  return (
+    <Form.Item tooltip={tooltip}>
+      <Checkbox
+        name={field.name}
+        checked={field.checked}
+        onChange={(e) => {
+          field.onChange(e);
+          onChange?.(e.target.checked);
+        }}
+        onBlur={field.onBlur}
+        data-testid={`input-${field.name}`}
+      >
+        {label}
+      </Checkbox>
+    </Form.Item>
+  );
+};
 
 const Section = ({
   title,
@@ -71,17 +108,20 @@ const GppConfiguration = () => {
             </Section>
             {showMspa ? (
               <Section title="MSPA">
-                <CustomCheckbox
-                  name="gpp.mspa_covered_transactions"
-                  label="All transactions covered by MSPA"
-                  tooltip="When selected, the Fides CMP will communicate to downstream vendors that all preferences are covered under the MSPA."
-                  onChange={(checked) => {
-                    if (!checked) {
-                      setFieldValue("gpp.mspa_service_provider_mode", false);
-                      setFieldValue("gpp.mspa_opt_out_option_mode", false);
-                    }
-                  }}
-                />
+                {/* Remove this font style when upgrading to an ant form */}
+                <div className="font-medium">
+                  <CheckboxField
+                    name="gpp.mspa_covered_transactions"
+                    label="All transactions covered by MSPA"
+                    tooltip="When selected, the Fides CMP will communicate to downstream vendors that all preferences are covered under the MSPA."
+                    onChange={(checked) => {
+                      if (!checked) {
+                        setFieldValue("gpp.mspa_service_provider_mode", false);
+                        setFieldValue("gpp.mspa_opt_out_option_mode", false);
+                      }
+                    }}
+                  />
+                </div>
                 <CustomSwitch
                   label="Enable MSPA service provider mode"
                   name="gpp.mspa_service_provider_mode"

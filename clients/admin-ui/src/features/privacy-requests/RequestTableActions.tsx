@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  HStack,
+  Button,
+  ChakraHStack as HStack,
+  ChakraPortal as Portal,
+  ChakraStackProps as StackProps,
+  ChakraText as Text,
   Icons,
-  Portal,
-  StackProps,
-  Text,
-  useDisclosure,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";

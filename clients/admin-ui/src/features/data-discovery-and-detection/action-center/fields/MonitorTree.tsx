@@ -1,14 +1,14 @@
 import {
-  AntBadge as Badge,
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  AntText as Text,
-  AntTitle as Title,
-  AntTooltip as Tooltip,
-  AntTree as Tree,
+  Badge,
+  Button,
+  Dropdown,
+  Flex,
   Icons,
   SparkleIcon,
+  Text,
+  Title,
+  Tooltip,
+  Tree,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -49,6 +49,7 @@ import {
   collectAllDescendantUrns,
   findNodeByUrn,
   removeChildrenFromNode,
+  shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
@@ -80,7 +81,7 @@ const mapResponseToTreeData = (
                 className="h-full"
                 offset={[0, 5]}
                 color={statusInfo?.color}
-                dot={!!treeNode.update_status}
+                dot={shouldShowBadgeDot(treeNode)}
               >
                 <IconComponent className="h-full" />
               </Badge>
@@ -88,6 +89,7 @@ const mapResponseToTreeData = (
           )
         : undefined,
       status: treeNode.update_status,
+      diffStatus: treeNode.diff_status,
       isLeaf:
         treeNode.resource_type === StagedResourceTypeValue.FIELD ||
         !treeNode.has_grandchildren,
@@ -509,7 +511,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               });
             }
 
-            // Update the status of each ancestor node
+            // Update the status and diffStatus of each ancestor node
             setTreeData((origin) =>
               ancestorsData.reduce(
                 (tree, ancestorNode) =>
@@ -517,6 +519,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
                     tree,
                     ancestorNode.urn,
                     ancestorNode.update_status,
+                    ancestorNode.diff_status,
                   ),
                 origin,
               ),

@@ -1,17 +1,17 @@
 import { formatDistance } from "date-fns";
 import {
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  Divider,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
+  ChakraDivider as Divider,
+  ChakraDrawer as Drawer,
+  ChakraDrawerBody as DrawerBody,
+  ChakraDrawerCloseButton as DrawerCloseButton,
+  ChakraDrawerContent as DrawerContent,
+  ChakraDrawerHeader as DrawerHeader,
+  ChakraDrawerOverlay as DrawerOverlay,
   Icons,
-  useDisclosure,
+  Tag,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { Fragment } from "react";
 

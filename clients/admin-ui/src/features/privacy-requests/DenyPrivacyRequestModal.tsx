@@ -1,12 +1,12 @@
 import { CustomTextArea } from "common/form/inputs";
 import {
-  AntButton as Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
+  Button,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback } from "react";

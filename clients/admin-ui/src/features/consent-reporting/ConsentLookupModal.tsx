@@ -1,17 +1,17 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  AntEmpty as Empty,
-  AntForm as Form,
-  AntSpace as Space,
-  AntTypography as Typography,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  useToast,
+  Button,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  Empty,
+  Form,
+  Space,
+  Typography,
+  useChakraToast as useToast,
 } from "fidesui";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";

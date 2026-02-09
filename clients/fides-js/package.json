@@ -40,7 +40,7 @@
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint:fix": "eslint --fix .",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "test:ci": "jest",

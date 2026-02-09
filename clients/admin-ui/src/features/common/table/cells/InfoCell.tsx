@@ -1,4 +1,4 @@
-import { AntFlex as Flex } from "fidesui";
+import { Flex } from "fidesui";
 import { ReactNode } from "react";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";

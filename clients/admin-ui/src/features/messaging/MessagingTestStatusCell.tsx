@@ -1,5 +1,5 @@
 import { formatDistance } from "date-fns";
-import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
+import { Tag, Tooltip } from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
 import { MessagingConfigResponse } from "~/types/api";

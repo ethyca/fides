@@ -1,4 +1,10 @@
-import { AntTabsProps as TabsProps, Box, Link, Text, useToast } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraLink as Link,
+  ChakraText as Text,
+  TabsProps,
+  useChakraToast as useToast,
+} from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";

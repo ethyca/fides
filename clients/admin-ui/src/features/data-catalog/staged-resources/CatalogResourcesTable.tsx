@@ -5,7 +5,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex } from "fidesui";
+import { ChakraBox as Box, ChakraFlex as Flex } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";

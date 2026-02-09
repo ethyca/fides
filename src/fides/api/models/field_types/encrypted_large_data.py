@@ -34,9 +34,7 @@ class EncryptedLargeDataDescriptor:
 
     # Descriptor protocol helpers
 
-    def __set_name__(
-        self, owner: Type, name: str
-    ) -> None:  # noqa: D401 (docstring in orig file)
+    def __set_name__(self, owner: Type, name: str) -> None:  # noqa: D401 (docstring in orig file)
         self.name = name
         self.model_class = owner.__name__
 

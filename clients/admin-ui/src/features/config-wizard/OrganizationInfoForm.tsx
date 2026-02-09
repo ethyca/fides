@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
+  Button,
   chakra,
-  FormControl,
-  FormLabel,
-  Heading,
-  Input,
-  Stack,
-  useToast,
+  ChakraFormControl as FormControl,
+  ChakraFormLabel as FormLabel,
+  ChakraHeading as Heading,
+  ChakraInput as Input,
+  ChakraStack as Stack,
+  useChakraToast as useToast,
 } from "fidesui";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";

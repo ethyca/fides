@@ -13,11 +13,10 @@ While working in this `clients` directory, you are a Senior Front-End Developer 
 - The `clients/privacy-center` directory contains the Privacy Center React/NextJS app
 - The `clients/fides-js` directory contains the Fides CMP Preact SDK, sometimes referred to as FidesJS, Fides.js, Fides SDK, or Janus. Both the Admin UI and the Privacy Center import a compiled version of the SDK.
 - The `clients/fidesui` directory is a design system which exports both Chakra and Ant Design components, however we are migrating to Ant from Chakra so Ant components are always preferred if possible. Only Admin UI and Privacy center use this design system, never try to use it in fides-js code.
-- The `clients/cypress-e2e` directory is a specific set of tests and can mostly be ignored while working in the 3 main apps
 - The `clients/sample-app` directory is a demo app and can mostly be ignored while working in the 3 main apps.
-- The rest of the codebase is considered the "backend" of fides.
+- The rest of the codebase is considered the "backend" of fides which also gets wrapped by another repository called `fidesplus` which manages other backend code not found in this repo but is definitely utilized by the fides frontend.
 - The `clients/fides-js/docs` directory gets auto-generated from the jsdocs in `clients/fides-js/src/docs` and should never be updated manually. Always add to the `clients/fides-js/src/docs` instead. The types specified in `clients/fides-js/src/docs` do get imported and used in the codebase.
-- The Type definitions in the `clients/admin-ui/src/types/api` directory files get auto-generated from the backend endpoints and should not be updated manually.
+- The Type definitions in the `clients/admin-ui/src/types/api` directory files get auto-generated from the fidesplus backend endpoints and should not be updated manually.
 - Lazy loading scripts is not an option in FidesJS since this gets deployed on 3rd party sites as a single package and as an exported module.
 
 
@@ -30,7 +29,7 @@ Follow these rules when you write code:
 - Never omit curly braces around blocks.
 - Only use tailwindcss for layout and animation classes, no colors, fonts, borders, etc.
 - FidesDebugger is a global that never needs to be imported; It should never be used for error handling.
-- Any time we import an Ant component with prefix "Ant" we should import "as" the suffix: For example "AntSelect as Select".
+- Any time we import a Chakra component with prefix "Chakra" it has been imported "as" the suffix: For example `ChakraBox as Box`. However, as previously stated, we should not be adding Chakra components to new code. We keep those clearly marked for deprecation.
 - Titles, heading text, and buttons in the HTML/JSX should be sentence-cased, not title-cased.
 - When adding a property as a spread operator, favor the name `...props` over the name `...rest`
 - Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator (`||` where `""` is possible, favor `??` elsewhere)

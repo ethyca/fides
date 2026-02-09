@@ -113,7 +113,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     # This check needs to be here so it has access to the session to throw an error
     if image == "prod":
         try:
-            import git  # pylint: disable=unused-import
+            import git  # noqa: F401
         except ModuleNotFoundError:
             session.error(
                 "Building the prod image requires the GitPython module! Please run 'pip install gitpython' and try again"
@@ -165,12 +165,15 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     # Build the main ethyca/fides image
     target = build_matrix[image]["target"]
     tag = build_matrix[image]["tag"]
+    # Read IMAGE_SUFFIX at runtime (not module load time) to support dynamic tagging
+    image_suffix = os.getenv("IMAGE_SUFFIX", "")
+    final_tag = f"{tag()}{image_suffix}"
     build_command = (
         "docker",
         "build",
         f"--target={target}",
         "--tag",
-        tag(),
+        final_tag,
         ".",
     )
     if "nocache" in session.posargs:

@@ -1,15 +1,15 @@
 import Head from "common/Head";
 import Image from "common/Image";
 import {
-  AntButton as Button,
-  Box,
-  Center,
+  Button,
   chakra,
-  Flex,
-  Heading,
-  Stack,
-  usePrefersReducedMotion,
-  useToast,
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraFlex as Flex,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+  useChakraPrefersReducedMotion as usePrefersReducedMotion,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Formik } from "formik";
 // Framer is bundled as part of chakra. TODO: had trouble with package.json's when

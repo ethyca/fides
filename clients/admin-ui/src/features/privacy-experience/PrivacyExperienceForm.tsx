@@ -1,15 +1,15 @@
 import {
-  AntButton as Button,
-  AntSelectProps as SelectProps,
-  ArrowForwardIcon,
-  Box,
-  Divider,
-  Flex,
+  Button,
+  ChakraArrowForwardIcon as ArrowForwardIcon,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraFlex as Flex,
+  ChakraFormLabel as FormLabel,
+  ChakraHeading as Heading,
+  ChakraText as Text,
   formatIsoLocation,
-  FormLabel,
-  Heading,
   isoStringToEntry,
-  Text,
+  SelectProps,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";

@@ -15,6 +15,7 @@ from fides.api.models.manual_task import (
     ManualTaskType,
 )
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 
 
 @pytest.fixture
@@ -22,7 +23,7 @@ def manual_task(
     db: Session, connection_config: ConnectionConfig
 ) -> Generator[ManualTask, None, None]:
     """Create a test manual task."""
-    task = ManualTask.create(
+    return ManualTask.create(
         db=db,
         data={
             "task_type": ManualTaskType.privacy_request,
@@ -30,11 +31,6 @@ def manual_task(
             "parent_entity_type": ManualTaskParentEntityType.connection_config,
         },
     )
-    yield task
-    try:
-        task.delete(db)
-    except Exception as e:
-        pass
 
 
 @pytest.fixture
@@ -43,7 +39,7 @@ def manual_task_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig
         db,
         data={
             "task_id": manual_task.id,
-            "config_type": "access_privacy_request",
+            "config_type": ActionType.access,
             "version": 1,
             "is_current": True,
         },
@@ -51,10 +47,10 @@ def manual_task_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig
 
 
 @pytest.fixture
-def manual_task_config_field_1(
+def manual_task_config_field(
     db: Session, manual_task_config: ManualTaskConfig
 ) -> Generator[ManualTaskConfigField, None, None]:
-    field = ManualTaskConfigField.create(
+    return ManualTaskConfigField.create(
         db,
         data={
             "task_id": manual_task_config.task_id,
@@ -66,45 +62,6 @@ def manual_task_config_field_1(
             },
         },
     )
-    yield field
-
-    # Clean up submissions first if they exist and field still exists
-    try:
-        if db.query(ManualTaskConfigField).filter_by(id=field.id).first():
-            from fides.api.models.manual_task import ManualTaskSubmission
-
-            for submission in field.submissions:
-                if db.query(ManualTaskSubmission).filter_by(id=submission.id).first():
-                    submission.delete(db)
-            db.commit()
-
-            # Now delete the field if it still exists
-            if db.query(ManualTaskConfigField).filter_by(id=field.id).first():
-                db.delete(field)
-                db.commit()
-    except Exception:
-        # Field may have been cascade deleted, which is fine
-        pass
-
-
-@pytest.fixture
-def manual_task_config_field_2(
-    db: Session, manual_task_config: ManualTaskConfig
-) -> Generator[ManualTaskConfigField, None, None]:
-    field = ManualTaskConfigField.create(
-        db,
-        data={
-            "task_id": manual_task_config.task_id,
-            "config_id": manual_task_config.id,
-            "field_type": "text",
-            "field_key": "field_2",
-            "field_metadata": {
-                "required": False,
-            },
-        },
-    )
-    yield field
-    field.delete(db)
 
 
 @pytest.fixture
@@ -115,7 +72,7 @@ def manual_task_instance(
     privacy_request: PrivacyRequest,
 ) -> Generator[ManualTaskInstance, None, None]:
     """Create a test manual task instance."""
-    instance = ManualTaskInstance.create(
+    return ManualTaskInstance.create(
         db=db,
         data={
             "task_id": manual_task.id,
@@ -124,15 +81,6 @@ def manual_task_instance(
             "entity_type": "privacy_request",
         },
     )
-    yield instance
-    # Only try to delete if instance still exists (may have been cascade deleted)
-    try:
-        if db.query(ManualTaskInstance).filter_by(id=instance.id).first():
-            instance.delete(db)
-            db.commit()
-    except Exception:
-        # Instance may have been cascade deleted, which is fine
-        pass
 
 
 @pytest.fixture
@@ -141,20 +89,18 @@ def manual_task_submission(
     manual_task: ManualTask,
     manual_task_config: ManualTaskConfig,
     manual_task_instance: ManualTaskInstance,
-    manual_task_config_field_1: ManualTaskConfigField,
+    manual_task_config_field: ManualTaskConfigField,
     user: FidesUser,
 ) -> Generator[ManualTaskSubmission, None, None]:
     """Create a test manual task submission."""
-    submission = ManualTaskSubmission.create(
+    return ManualTaskSubmission.create(
         db=db,
         data={
             "task_id": manual_task.id,
             "config_id": manual_task_config.id,
-            "field_id": manual_task_config_field_1.id,
+            "field_id": manual_task_config_field.id,
             "instance_id": manual_task_instance.id,
             "submitted_by": user.id,
             "data": {"value": "test"},
         },
     )
-    yield submission
-    submission.delete(db)

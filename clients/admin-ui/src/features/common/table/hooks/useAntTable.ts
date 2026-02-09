@@ -1,8 +1,8 @@
 import {
-  AntFilterValue as FilterValue,
-  AntSorterResult as SorterResult,
-  AntTablePaginationConfig as TablePaginationConfig,
-  AntTableProps as TableProps,
+  FilterValue,
+  SorterResult,
+  TablePaginationConfig,
+  TableProps,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 

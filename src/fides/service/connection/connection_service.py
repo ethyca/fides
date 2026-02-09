@@ -1,4 +1,4 @@
-from typing import Any, Optional, Set, Tuple
+from typing import Any, Iterable, Optional, Set, Tuple
 
 import yaml
 from fideslang.models import System
@@ -12,6 +12,7 @@ from fides.api.common_exceptions import (
     ConnectionNotFoundException,
     KeyOrNameAlreadyExists,
     SaaSConfigNotFoundException,
+    ValidationError,
 )
 from fides.api.models.connectionconfig import (
     ConnectionConfig,
@@ -19,6 +20,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -52,6 +54,8 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
+    CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
 )
 from fides.api.util.event_audit_util import (
     generate_connection_audit_event_details,
@@ -64,7 +68,14 @@ from fides.api.util.saas_util import (
     replace_dataset_placeholders,
 )
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES
-from fides.service.connection.merge_configs_util import merge_datasets
+from fides.service.connection.merge_configs_util import (
+    get_endpoint_resources,
+    get_saas_config_referenced_fields,
+    merge_datasets,
+    merge_saas_config_with_monitored_resources,
+    normalize_dataset,
+    preserve_monitored_collections_in_dataset_merge,
+)
 from fides.service.event_audit_service import EventAuditService
 
 
@@ -211,7 +222,9 @@ class ConnectionService:
 
         # SaaS secrets with external references must go through extra validation
         if connection_type == ConnectionType.saas:
-            validate_saas_secrets_external_references(self.db, schema, connection_secrets)  # type: ignore
+            validate_saas_secrets_external_references(
+                self.db, schema, connection_secrets
+            )  # type: ignore
 
         # For dynamic erasure emails we must validate the recipient email address
         if connection_type == ConnectionType.dynamic_erasure_email:
@@ -261,7 +274,6 @@ class ConnectionService:
         verify: Optional[bool],
         merge_with_existing: Optional[bool] = False,
     ) -> TestStatusMessage:
-
         connection_config = self.get_connection_config(connection_key)
 
         # Handle merging with existing secrets
@@ -273,7 +285,8 @@ class ConnectionService:
             merged_secrets = unvalidated_secrets  # type: ignore[assignment]
 
         connection_config.secrets = self.validate_secrets(
-            merged_secrets, connection_config  # type: ignore[arg-type]
+            merged_secrets,  # type: ignore[arg-type]
+            connection_config,
         ).model_dump(mode="json")
 
         # Save validated secrets, regardless of whether they've been verified.
@@ -573,7 +586,8 @@ class ConnectionService:
         """
         Replace in the DB the existing SaaS instance configuration data
         (SaaSConfig, DatasetConfig) associated with the given ConnectionConfig
-        with new instance configuration data based on the given ConnectorTemplate
+        with new instance configuration data based on the given ConnectorTemplate.
+        Preserves monitored staged resources by merging them into the new configuration.
         """
 
         template_vals = SaasConnectionTemplateValues(
@@ -584,13 +598,21 @@ class ConnectionService:
             instance_key=saas_config_instance.fides_key,
         )
 
+        # Get endpoint resources before updating
+        monitored_endpoints = get_endpoint_resources(self.db, connection_config)
+
         config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_vals.instance_key
         )
 
-        connection_config.update_saas_config(
-            self.db, SaaSConfig(**config_from_template)
+        # Create new SaaS config and merge with monitored resources
+        new_saas_config = SaaSConfig(**config_from_template)
+        existing_saas_config = connection_config.get_saas_config()
+        merged_saas_config = merge_saas_config_with_monitored_resources(
+            new_saas_config, monitored_endpoints, existing_saas_config
         )
+
+        connection_config.update_saas_config(self.db, merged_saas_config)
 
         # Create audit event for SaaS instance update
         self.create_connection_audit_event(
@@ -599,6 +621,7 @@ class ConnectionService:
             changed_fields={"saas_config"},
         )
 
+        # Update dataset config with merge logic for monitored resources
         self.upsert_dataset_config_from_template(
             connection_config, template, template_vals
         )
@@ -639,6 +662,8 @@ class ConnectionService:
         and associates it with a ConnectionConfig.
         If the `DatasetConfig` already exists in the db,
         then the existing record is updated.
+
+        Automatically preserves any monitored staged resources during the update.
         """
         # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
@@ -669,6 +694,24 @@ class ConnectionService:
             else None
         )
 
+        # Get endpoint resources and preserve monitored collections in the dataset
+        # This runs regardless of whether there's an existing customer dataset
+        monitored_endpoints = get_endpoint_resources(self.db, connection_config)
+        if monitored_endpoints:
+            # Get monitor config IDs for this connection
+            monitor_configs = MonitorConfig.filter(
+                db=self.db,
+                conditions=(MonitorConfig.connection_config_id == connection_config.id),
+            ).all()
+            monitor_config_ids = [mc.key for mc in monitor_configs]
+
+            upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
+                monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
+            )
+            normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
+            if normalized_upcoming is not None:
+                upcoming_dataset = normalized_upcoming
+
         final_dataset = upcoming_dataset
         if customer_dataset_config and customer_dataset_config.ctl_dataset:
             # Get the existing dataset structure
@@ -687,11 +730,24 @@ class ConnectionService:
                 stored_dataset_template.dataset_json, dict
             ):
                 stored_dataset = stored_dataset_template.dataset_json
+
+                # Extract protected fields from SaaS config to prevent deletion
+                # of fields that are referenced in param_values or postprocessors
+                saas_config = connection_config.get_saas_config()
+                protected_fields = (
+                    get_saas_config_referenced_fields(
+                        saas_config, template_values.instance_key
+                    )
+                    if saas_config
+                    else None
+                )
+
                 final_dataset = merge_datasets(
                     customer_dataset,
                     stored_dataset,
                     upcoming_dataset,
                     template_values.instance_key,
+                    protected_fields=protected_fields,
                 )
 
         # we save the upcoming dataset as the new stored dataset
@@ -708,3 +764,75 @@ class ConnectionService:
         }
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config
+
+    def update_existing_connection_configs_for_connector_type(
+        self, connector_type: str, template: ConnectorTemplate
+    ) -> None:
+        """
+        Updates all existing connection configs that use the specified connector type
+        with the provided template.
+        """
+        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
+            db=self.db,
+            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+        ).all()
+
+        for connection_config in connection_configs:
+            saas_config_instance = SaaSConfig.model_validate(
+                connection_config.saas_config
+            )
+            try:
+                self.update_saas_instance(
+                    connection_config,
+                    template,
+                    saas_config_instance,
+                )
+                logger.info(
+                    "Updated SaaS config instance '{}' of type '{}'",
+                    saas_config_instance.fides_key,
+                    connector_type,
+                )
+            except Exception:
+                logger.exception(
+                    "Encountered error attempting to update SaaS config instance {}",
+                    saas_config_instance.fides_key,
+                )
+
+    def delete_custom_connector_template(self, connector_type: str) -> None:
+        """
+        Deletes a custom connector template and updates all connection configs
+        to use the Fides-provided file template.
+
+        Args:
+            connector_type: The connector type identifier
+
+        Raises:
+            ConnectorTemplateNotFound: If the Fides-provided template is not found
+        """
+        # Verify the file template exists
+        if not FileConnectorTemplateLoader.get_connector_templates().get(
+            connector_type
+        ):
+            raise ConnectorTemplateNotFound(
+                f"Fides-provided template with type '{connector_type}' not found."
+            )
+
+        # Delete the custom template from the database and in-memory cache
+        CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
+        CustomConnectorTemplateLoader.get_connector_templates().pop(
+            connector_type, None
+        )
+
+        # Get the file template that is now active
+        file_connector_template = ConnectorRegistry.get_connector_template(
+            connector_type
+        )
+        if not file_connector_template:
+            raise ConnectorTemplateNotFound(
+                f"Fides-provided template with type '{connector_type}' not found in the registry."
+            )
+
+        # Update existing connection configs to use the file template.
+        self.update_existing_connection_configs_for_connector_type(
+            connector_type, file_connector_template
+        )

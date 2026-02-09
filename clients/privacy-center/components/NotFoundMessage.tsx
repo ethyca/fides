@@ -1,6 +1,12 @@
 "use client";
 
-import { Box, Button, Heading, Stack, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraButton as Button,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+  ChakraText as Text,
+} from "fidesui";
 import NextLink from "next/link";
 
 const NotFoundMessage = () => (

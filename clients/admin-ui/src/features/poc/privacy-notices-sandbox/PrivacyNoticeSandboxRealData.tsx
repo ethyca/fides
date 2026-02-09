@@ -1,11 +1,5 @@
 import type { Key } from "antd/es/table/interface";
-import {
-  AntAlert as Alert,
-  AntDivider as Divider,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Alert, Divider, Empty, Flex, Typography } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";

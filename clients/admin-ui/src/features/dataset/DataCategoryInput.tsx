@@ -1,9 +1,9 @@
 import {
-  AntSpace as Space,
-  AntTag as Tag,
-  Box,
-  FormLabel,
-  Grid,
+  ChakraBox as Box,
+  ChakraFormLabel as FormLabel,
+  ChakraGrid as Grid,
+  Space,
+  Tag,
 } from "fidesui";
 
 import { DataCategory } from "~/types/api";

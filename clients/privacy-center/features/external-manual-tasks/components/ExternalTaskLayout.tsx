@@ -6,12 +6,7 @@
  * It includes a header with user information, logout functionality, and the tasks table.
  */
 
-import {
-  AntButton as Button,
-  AntCard as Card,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Card, Flex, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 import BrandLink from "~/components/BrandLink";

@@ -3,7 +3,7 @@ import {
   selectConnectionTypeState,
   setStep,
 } from "connection-type/connection-type.slice";
-import { AntTabs as Tabs, AntTabsProps as TabsProps, VStack } from "fidesui";
+import { ChakraVStack as VStack, Tabs, TabsProps } from "fidesui";
 import React, {
   useCallback,
   useEffect,

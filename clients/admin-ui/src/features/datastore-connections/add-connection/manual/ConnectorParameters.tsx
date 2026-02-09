@@ -5,7 +5,11 @@ import {
   setConnection,
 } from "connection-type/connection-type.slice";
 import { usePatchDatastoreConnectionMutation } from "datastore-connections/datastore-connection.slice";
-import { Box, Text, VStack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 

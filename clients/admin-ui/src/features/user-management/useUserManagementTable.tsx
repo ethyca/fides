@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntFlex as Flex,
-  AntTag as Tag,
+  Button,
+  ColumnsType,
+  Flex,
   Icons,
-  useDisclosure,
+  Tag,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -100,7 +100,7 @@ const useUserManagementTable = () => {
   const { pageIndex, pageSize, searchQuery, updateSearch } = tableState;
 
   // Fetch data
-  const { data, isLoading, isFetching } = useGetAllUsersQuery({
+  const { data, isLoading, isFetching, error } = useGetAllUsersQuery({
     page: pageIndex,
     size: pageSize,
     username: searchQuery || undefined,
@@ -210,6 +210,7 @@ const useUserManagementTable = () => {
   return {
     tableProps,
     columns,
+    error,
     searchQuery,
     updateSearch,
   };

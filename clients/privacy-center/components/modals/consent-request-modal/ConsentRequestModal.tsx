@@ -1,4 +1,4 @@
-import { AntModal as Modal } from "fidesui";
+import { Modal } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 

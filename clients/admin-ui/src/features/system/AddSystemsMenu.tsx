@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntFlex as Flex,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Flex, Icons } from "fidesui";
 import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";

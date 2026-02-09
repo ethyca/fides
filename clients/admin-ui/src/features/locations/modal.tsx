@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntTag as Tag,
-  Box,
-  Checkbox,
-  Flex,
-  ModalFooter,
-  ModalHeader,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraCheckbox as Checkbox,
+  ChakraFlex as Flex,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraText as Text,
+  Tag,
 } from "fidesui";
 import { ReactNode } from "react";
 

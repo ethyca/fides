@@ -1,8 +1,4 @@
-import {
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  Icons,
-} from "fidesui";
+import { Icons, Tooltip, Typography } from "fidesui";
 
 // Simple attachment interface with only the properties we actually use
 interface SimpleAttachment {

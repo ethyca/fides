@@ -1,4 +1,4 @@
-import { AntColumnsType as ColumnsType, AntTable as Table } from "fidesui";
+import { ColumnsType, Table } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useMemo } from "react";
 

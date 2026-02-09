@@ -1,4 +1,4 @@
-import { extendTheme } from "fidesui";
+import { extendChakraTheme as extendTheme } from "fidesui";
 
 import Button from "~/theme/components/button";
 

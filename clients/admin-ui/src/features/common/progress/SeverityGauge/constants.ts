@@ -1,4 +1,4 @@
-import { AntProgressProps as ProgressProps } from "fidesui";
+import { ProgressProps } from "fidesui";
 
 import type { Severity } from "./types";
 

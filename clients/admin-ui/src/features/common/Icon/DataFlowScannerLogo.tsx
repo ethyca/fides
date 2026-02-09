@@ -1,4 +1,4 @@
-import { createIcon } from "fidesui";
+import { createChakraIcon as createIcon } from "fidesui";
 
 const DataFlowScannerLogo = createIcon({
   displayName: "DataFlowScannerLogo",

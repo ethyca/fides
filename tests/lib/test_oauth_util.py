@@ -33,6 +33,7 @@ from fides.api.oauth.utils import (
     has_scope_subset,
     is_token_expired,
     verify_oauth_client,
+    verify_oauth_client_async,
 )
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -531,3 +532,257 @@ class TestRolesToScopesMapping:
         assert not viewer_and_approver_scopes.issubset(approver_scopes)
         # Verify approver role includes privacy request create scope (added in September 2025)
         assert "privacy-request:create" in ROLES_TO_SCOPES_MAPPING[APPROVER]
+
+
+# Tests for verify_oauth_client_async (async version using AsyncSession)
+class TestVerifyOauthClientAsync:
+    """Tests for the async version of verify_oauth_client that uses AsyncSession."""
+
+    async def test_verify_oauth_async_malformed_oauth_client(self, async_session):
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes([USER_READ]),
+                authorization="invalid",
+                db=async_session,
+            )
+
+    async def test_verify_oauth_client_async_no_issued_at(
+        self, async_session, config, user
+    ):
+        payload = {
+            JWE_PAYLOAD_SCOPES: [USER_READ],
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: None,
+            "token_duration_min": 1,
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes([USER_READ]),
+                token,
+                db=async_session,
+            )
+
+    async def test_verify_oauth_client_async_expired(self, async_session, config, user):
+        scope = [USER_READ]
+        payload = {
+            JWE_PAYLOAD_SCOPES: scope,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime(2020, 1, 1).isoformat(),
+            "token_duration_min": 1,
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes(scope),
+                token,
+                db=async_session,
+            )
+
+    async def test_verify_oauth_client_async_no_client_id(self, async_session, config):
+        scope = [USER_READ]
+        payload = {
+            JWE_PAYLOAD_SCOPES: scope,
+            JWE_PAYLOAD_CLIENT_ID: None,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+            "token_duration_min": 60,
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes(scope),
+                token,
+                db=async_session,
+            )
+
+    async def test_verify_oauth_client_async_no_client(
+        self, db, async_session, config, user
+    ):
+        scopes = [USER_READ]
+        payload = {
+            JWE_PAYLOAD_SCOPES: scopes,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+            "token_duration_min": 60,
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        user.client.delete(db)
+        assert user.client is None
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes(scopes),
+                token,
+                db=async_session,
+            )
+
+    async def test_verify_oauth_client_async_wrong_security_scope(
+        self, async_session, config, user
+    ):
+        payload = {
+            JWE_PAYLOAD_SCOPES: [USER_DELETE],
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+            "token_duration_min": 60,
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes([USER_READ]),
+                token,
+                db=async_session,
+            )
+
+    async def test_verify_oauth_client_async_wrong_client_scope(
+        self, async_session, config, user
+    ):
+        scopes = [USER_READ]
+        payload = {
+            JWE_PAYLOAD_SCOPES: scopes,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+            "token_duration_min": 60,
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        user.client.scopes = [USER_DELETE]
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes(scopes),
+                token,
+                db=async_session,
+            )
+
+
+class TestVerifyOauthClientAsyncRoles:
+    """Tests for verify_oauth_client_async with role-based authentication."""
+
+    async def test_token_does_not_have_roles(self, db, async_session, config):
+        """Test that roles aren't required to be on the token - scopes can still be assigned directly"""
+        client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            scopes=[PRIVACY_REQUEST_REVIEW],
+            user_id=None,
+        )
+
+        payload = {
+            JWE_PAYLOAD_SCOPES: [PRIVACY_REQUEST_REVIEW],
+            JWE_PAYLOAD_CLIENT_ID: client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        verified_client = await verify_oauth_client_async(
+            SecurityScopes([PRIVACY_REQUEST_REVIEW]),
+            token,
+            db=async_session,
+        )
+        assert client.id == verified_client.id
+
+    async def test_verify_oauth_client_async_roles(
+        self, async_session, config, owner_user
+    ):
+        """Test token has a valid role and the client also has the matching role
+        Scopes aren't directly assigned but the user inherits the USER_READ scope
+        via the OWNER role.
+        """
+        payload = {
+            JWE_PAYLOAD_ROLES: [OWNER],
+            JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        client = await verify_oauth_client_async(
+            SecurityScopes([PRIVACY_REQUEST_REVIEW]),
+            token,
+            db=async_session,
+        )
+        assert client.id == owner_user.client.id
+
+    async def test_no_roles_on_client(self, async_session, config, user):
+        """Test token has a role with the correct scopes but that role is not on the client"""
+        payload = {
+            JWE_PAYLOAD_ROLES: [OWNER],
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes([PRIVACY_REQUEST_REVIEW]),
+                token,
+                db=async_session,
+            )
+
+    async def test_no_roles_on_client_but_has_scopes_coverage(
+        self, db, async_session, config, user
+    ):
+        """Test roles on token are outdated but token still has scopes coverage"""
+        user.client.scopes = [PRIVACY_REQUEST_REVIEW]
+        user.client.save(db)
+        payload = {
+            JWE_PAYLOAD_ROLES: [OWNER],
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+            JWE_PAYLOAD_SCOPES: [PRIVACY_REQUEST_REVIEW],
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+        client = await verify_oauth_client_async(
+            SecurityScopes([PRIVACY_REQUEST_REVIEW]),
+            token,
+            db=async_session,
+        )
+        assert client.id == user.client.id
+
+    async def test_token_does_not_have_role_with_coverage(
+        self, async_session, config, viewer_user
+    ):
+        """Test token only has a viewer role, which is not enough to view the particular endpoint
+        as it is missing DATASET_CREATE_OR_UPDATE scopes
+        """
+        payload = {
+            JWE_PAYLOAD_ROLES: [VIEWER],
+            JWE_PAYLOAD_CLIENT_ID: viewer_user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+            JWE_PAYLOAD_SCOPES: [USER_READ],
+        }
+        token = generate_jwe(
+            json.dumps(payload),
+            config.security.app_encryption_key,
+        )
+
+        with pytest.raises(AuthorizationError):
+            await verify_oauth_client_async(
+                SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+                token,
+                db=async_session,
+            )

@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { getErrorMessage } from "~/features/common/helpers";

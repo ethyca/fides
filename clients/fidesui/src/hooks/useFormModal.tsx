@@ -1,6 +1,6 @@
 import { ModalFuncProps } from "antd/es/modal";
 import { Form, FormInstance } from "antd/lib";
-import { useAntModal } from "fidesui";
+import { useModal } from "fidesui";
 import React from "react";
 
 /**
@@ -21,7 +21,7 @@ export type UseFormModalOptions = Omit<
  * @returns openFormModal function and form instance
  */
 export const useFormModal = <T = any,>() => {
-  const modalApi = useAntModal();
+  const modalApi = useModal();
   const [form] = Form.useForm();
 
   const openFormModal = React.useCallback(

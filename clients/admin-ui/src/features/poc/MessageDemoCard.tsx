@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntCard as Card,
-  AntSpace as Space,
-  useMessage,
-} from "fidesui";
+import { Button, Card, Space, useMessage } from "fidesui";
 
 const MessageDemoCard = () => {
   const message = useMessage();

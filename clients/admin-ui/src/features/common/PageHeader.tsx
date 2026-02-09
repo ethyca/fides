@@ -1,4 +1,4 @@
-import { AntFlex as Flex, AntTitle as Title } from "fidesui";
+import { Flex, Title } from "fidesui";
 import { ComponentProps, ReactNode } from "react";
 
 import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/NextBreadcrumb";

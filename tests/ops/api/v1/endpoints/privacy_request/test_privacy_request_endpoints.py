@@ -15,6 +15,10 @@ from fastapi_pagination import Params
 from freezegun import freeze_time
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
+from tests.conftest import access_runner_tester, generate_role_header_for_user
+from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
+    get_connection_dataset_url,
+)
 
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
@@ -124,10 +128,6 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from tests.conftest import access_runner_tester, generate_role_header_for_user
-from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
-    get_connection_dataset_url,
-)
 
 NULLABLE_FIELDS = {
     "custom_privacy_request_fields": None,
@@ -750,9 +750,9 @@ class TestCreatePrivacyRequest:
             .all()
         )
 
-        assert (
-            len(db_secrets) == 3
-        ), "Expected 3 secrets to be saved in the database for aes_encrypt"
+        assert len(db_secrets) == 3, (
+            "Expected 3 secrets to be saved in the database for aes_encrypt"
+        )
 
         pr.delete(db=db)
         assert run_erasure_request_mock.called
@@ -992,7 +992,7 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
             url
-            + f"?completed_lt=2021-01-01T00:00:00.000Z&errored_gt=2021-01-02T00:00:00.000Z",
+            + "?completed_lt=2021-01-01T00:00:00.000Z&errored_gt=2021-01-02T00:00:00.000Z",
             headers=auth_header,
         )
         assert 400 == response.status_code
@@ -1183,7 +1183,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?status=complete&include_identities=true", headers=auth_header
+            url + "?status=complete&include_identities=true", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1199,7 +1199,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][0]["policy"]["name"] == privacy_request.policy.name
 
         # Now test the identities are omitted if not explicitly requested
-        response = api_client.get(url + f"?status=complete", headers=auth_header)
+        response = api_client.get(url + "?status=complete", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
@@ -1207,7 +1207,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][0].get("identity") is None
 
         response = api_client.get(
-            url + f"?status=complete&include_identities=false", headers=auth_header
+            url + "?status=complete&include_identities=false", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1367,9 +1367,7 @@ class TestGetPrivacyRequests:
         privacy_request.persist_identity(db=db, identity=Identity(**identity_dict))
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(
-            url + f"?include_identities=true", headers=auth_header
-        )
+        response = api_client.get(url + "?include_identities=true", headers=auth_header)
         assert response.status_code == 200
         resp = response.json()
 
@@ -1414,7 +1412,7 @@ class TestGetPrivacyRequests:
         privacy_request = privacy_request_with_custom_fields
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?include_custom_privacy_request_fields=true", headers=auth_header
+            url + "?include_custom_privacy_request_fields=true", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1437,7 +1435,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][0].get("custom_privacy_request_fields") is None
 
         response = api_client.get(
-            url + f"?include_custom_privacy_request_fields=false", headers=auth_header
+            url + "?include_custom_privacy_request_fields=false", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1481,13 +1479,13 @@ class TestGetPrivacyRequests:
         failed_privacy_request,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?status=complete", headers=auth_header)
+        response = api_client.get(url + "?status=complete", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
         assert resp["items"][0]["id"] == succeeded_privacy_request.id
 
-        response = api_client.get(url + f"?status=error", headers=auth_header)
+        response = api_client.get(url + "?status=error", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 1
@@ -1503,7 +1501,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?include_deleted_requests=true", headers=auth_header
+            url + "?include_deleted_requests=true", headers=auth_header
         )
 
         assert response.status_code == 200
@@ -1537,7 +1535,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?include_deleted_requests=false", headers=auth_header
+            url + "?include_deleted_requests=false", headers=auth_header
         )
 
         assert response.status_code == 200
@@ -1574,7 +1572,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?status=complete&status=error", headers=auth_header
+            url + "?status=complete&status=error", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1810,7 +1808,6 @@ class TestGetPrivacyRequests:
         generate_auth_header,
         privacy_request,
     ):
-
         # Override deterministic identities on a given privacy request for testing
         TEST_EMAIL = "test-happy@example.com"
         TEST_PHONE = "+11232342345"
@@ -1838,9 +1835,7 @@ class TestGetPrivacyRequests:
         assert privacy_request.id in [result["id"] for result in resp["items"]]
 
         # Test that the privacy request identities are automatically put in the cache as a side-effect of fuzzy-search
-        identities = (
-            privacy_request.retrieve_decrypted_identities_from_cache_by_privacy_request()
-        )
+        identities = privacy_request.retrieve_decrypted_identities_from_cache_by_privacy_request()
         assert identities["email"] == TEST_EMAIL
         assert identities["phone_number"] == TEST_PHONE
 
@@ -1866,7 +1861,7 @@ class TestGetPrivacyRequests:
         privacy_request.save(db)
 
         response = api_client.get(
-            url + f"?external_id=test_external_id_1", headers=auth_header
+            url + "?external_id=test_external_id_1", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1884,14 +1879,14 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?created_lt=2019-01-01T00:00:00.000Z", headers=auth_header
+            url + "?created_lt=2019-01-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
         response = api_client.get(
-            url + f"?created_gt=2019-01-01T00:00:00.000Z", headers=auth_header
+            url + "?created_gt=2019-01-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1934,7 +1929,7 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?started_lt=2021-05-01T00:00:00.000Z", headers=auth_header
+            url + "?started_lt=2021-05-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1943,7 +1938,7 @@ class TestGetPrivacyRequests:
         assert resp["items"][1]["id"] == privacy_request.id
 
         response = api_client.get(
-            url + f"?started_gt=2021-05-01T00:00:00.000Z", headers=auth_header
+            url + "?started_gt=2021-05-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1961,14 +1956,14 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?completed_lt=2021-10-01T00:00:00.000Z", headers=auth_header
+            url + "?completed_lt=2021-10-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
         response = api_client.get(
-            url + f"?completed_gt=2021-10-01T00:00:00.000Z", headers=auth_header
+            url + "?completed_gt=2021-10-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -1986,14 +1981,14 @@ class TestGetPrivacyRequests:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            url + f"?errored_lt=2021-01-01T00:00:00.000Z", headers=auth_header
+            url + "?errored_lt=2021-01-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
         assert len(resp["items"]) == 0
 
         response = api_client.get(
-            url + f"?errored_gt=2021-01-01T00:00:00.000Z", headers=auth_header
+            url + "?errored_gt=2021-01-01T00:00:00.000Z", headers=auth_header
         )
         assert 200 == response.status_code
         resp = response.json()
@@ -2018,7 +2013,7 @@ class TestGetPrivacyRequests:
         privacy_request.save(db)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?verbose=True", headers=auth_header)
+        response = api_client.get(url + "?verbose=True", headers=auth_header)
         assert 200 == response.status_code
 
         resp = response.json()
@@ -2190,7 +2185,7 @@ class TestGetPrivacyRequests:
             )
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?verbose=True", headers=auth_header)
+        response = api_client.get(url + "?verbose=True", headers=auth_header)
         assert 200 == response.status_code
         resp = response.json()
         assert (
@@ -2279,7 +2274,7 @@ class TestGetPrivacyRequests:
         set_max_privacy_request_download_rows,
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
-        response = api_client.get(url + f"?download_csv=True", headers=auth_header)
+        response = api_client.get(url + "?download_csv=True", headers=auth_header)
         assert 400 == response.status_code
 
     def test_get_requires_input_privacy_request_resume_info(
@@ -3708,7 +3703,7 @@ class TestGetExecutionLogs:
     ):
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
         response = api_client.get(
-            V1_URL_PREFIX + PRIVACY_REQUESTS + f"/invalid_privacy_request_id/log",
+            V1_URL_PREFIX + PRIVACY_REQUESTS + "/invalid_privacy_request_id/log",
             headers=auth_header,
         )
         assert 404 == response.status_code
@@ -7064,7 +7059,9 @@ class TestGetManualWebhookAccessInputs:
         assert response.json() == {
             "checked": False,
             "fields": {"id_number": None},
-        }, "Response has checked=False, so this data needs to be re-uploaded before we can run the privacy request."
+        }, (
+            "Response has checked=False, so this data needs to be re-uploaded before we can run the privacy request."
+        )
 
     def test_cached_data_missing_saved_webhook_field(
         self,
@@ -7093,7 +7090,9 @@ class TestGetManualWebhookAccessInputs:
                 "email": "customer-1@example.com",
                 "last_name": "McCustomer",
             },
-        }, "Response has checked=False. A new field has been defined on the webhook, so we should re-examine to see if that is more data we need to retrieve."
+        }, (
+            "Response has checked=False. A new field has been defined on the webhook, so we should re-examine to see if that is more data we need to retrieve."
+        )
 
     def test_get_inputs_for_manual_webhook(
         self,
@@ -7260,7 +7259,9 @@ class TestGetManualWebhookErasureInputs:
         assert response.json() == {
             "checked": False,
             "fields": {"id_number": None},
-        }, "Response has checked=False, so this data needs to be re-uploaded before we can run the privacy request."
+        }, (
+            "Response has checked=False, so this data needs to be re-uploaded before we can run the privacy request."
+        )
 
     def test_cached_data_missing_saved_webhook_field(
         self,
@@ -7289,7 +7290,9 @@ class TestGetManualWebhookErasureInputs:
                 "email": False,
                 "last_name": True,
             },
-        }, "Response has checked=False. A new field has been defined on the webhook, so we should re-examine to see if that is more data we need to retrieve."
+        }, (
+            "Response has checked=False. A new field has been defined on the webhook, so we should re-examine to see if that is more data we need to retrieve."
+        )
 
     def test_get_inputs_for_manual_webhook(
         self,
@@ -7989,7 +7992,11 @@ class TestCreatePrivacyRequestAuthenticated:
         assert run_erasure_request_mock.called
 
     def test_create_privacy_request_invalid_encryption_values(
-        self, url, generate_auth_header, api_client: TestClient, policy  # , cache
+        self,
+        url,
+        generate_auth_header,
+        api_client: TestClient,
+        policy,  # , cache
     ):
         data = [
             {
@@ -8124,7 +8131,6 @@ class TestCreatePrivacyRequestAuthenticated:
 
 @pytest.mark.integration
 class TestPrivacyRequestDataTransfer:
-
     @pytest.mark.usefixtures("postgres_integration_db")
     async def test_privacy_request_data_transfer(
         self,
@@ -9563,7 +9569,6 @@ class TestResubmitPrivacyRequest:
         test_client: TestClient,
         request,
     ) -> None:
-
         auth_header = request.getfixturevalue(auth_header)
         response = test_client.post(
             url,

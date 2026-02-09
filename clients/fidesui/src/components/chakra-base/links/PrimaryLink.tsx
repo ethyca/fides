@@ -1,5 +1,5 @@
 import { forwardRef } from "@chakra-ui/react";
-import { Link } from "fidesui";
+import { ChakraLink as Link } from "fidesui";
 import React from "react";
 
 import { LinkProps } from "./types";

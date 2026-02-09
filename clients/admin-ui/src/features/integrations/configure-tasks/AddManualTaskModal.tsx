@@ -1,13 +1,13 @@
 import { useAlert, useAPIHelper } from "common/hooks";
 import {
-  Box,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  VStack,
+  ChakraBox as Box,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraVStack as VStack,
 } from "fidesui";
 import React, { useState } from "react";
 

@@ -1,4 +1,4 @@
-import { AntColumnsType as ColumnsType } from "fidesui";
+import { ColumnsType } from "fidesui";
 import { useMemo, useState } from "react";
 
 import {

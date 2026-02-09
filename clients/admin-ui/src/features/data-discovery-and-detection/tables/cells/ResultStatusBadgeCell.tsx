@@ -1,4 +1,4 @@
-import { AntTag as Tag, AntTagProps as TagProps } from "fidesui";
+import { Tag, TagProps } from "fidesui";
 
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";

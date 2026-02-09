@@ -190,7 +190,10 @@ class TaskResources:
         )
         # extract request id to return a map of address:value
         number_of_leading_strings_to_exclude = 2
-        return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
+        return {
+            extract_key_for_address(k, number_of_leading_strings_to_exclude): v  # type: ignore[misc]
+            for k, v in value_dict.items()
+        }
 
     def get_connector(self, key: FidesKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""

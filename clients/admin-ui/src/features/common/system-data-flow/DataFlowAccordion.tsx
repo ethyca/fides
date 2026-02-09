@@ -1,4 +1,4 @@
-import { Accordion } from "fidesui";
+import { ChakraAccordion as Accordion } from "fidesui";
 import React from "react";
 
 import { System } from "~/types/api";

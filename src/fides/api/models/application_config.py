@@ -77,7 +77,9 @@ class ApplicationConfig(Base):
 
         return cls.create(db=db, data=data)
 
-    def update(self, db: Session, data: Dict[str, Any], merge_updates: bool = True) -> ApplicationConfig:  # type: ignore[override]
+    def update(
+        self, db: Session, data: Dict[str, Any], merge_updates: bool = True
+    ) -> ApplicationConfig:  # type: ignore[override]
         """
         Updates the config record, merging contents of the particular JSON column that
         corresponds to the updated data.

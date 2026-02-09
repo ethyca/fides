@@ -1,27 +1,25 @@
 import {
-  AntButton as Button,
-  AntCheckbox as Checkbox,
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntSkeleton as Skeleton,
-  AntSpin as Spin,
+  Button,
+  Checkbox,
+  Flex,
   Icons,
-  useMessage,
+  List,
+  Pagination,
+  Skeleton,
+  Spin,
 } from "fidesui";
 import React, { useEffect, useMemo } from "react";
 
 import { BulkActionsDropdown } from "~/features/common/BulkActionsDropdown";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useSelection } from "~/features/common/hooks/useSelection";
 import { ResultsSelectedCount } from "~/features/common/ResultsSelectedCount";
-import {
-  useLazyDownloadPrivacyRequestCsvV2Query,
-  useSearchPrivacyRequestsQuery,
-} from "~/features/privacy-requests/privacy-requests.slice";
+import { useSearchPrivacyRequestsQuery } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestResponse } from "~/types/api";
 
 import { useAntPagination } from "../../common/pagination/useAntPagination";
 import { DuplicateRequestsButton } from "./DuplicateRequestsButton";
+import useDownloadPrivacyRequestReport from "./hooks/useDownloadPrivacyRequestReport";
 import { usePrivacyRequestBulkActions } from "./hooks/usePrivacyRequestBulkActions";
 import usePrivacyRequestsFilters from "./hooks/usePrivacyRequestsFilters";
 import { ListItem } from "./list-item/ListItem";
@@ -34,14 +32,17 @@ export const PrivacyRequestsDashboard = () => {
       pagination,
     });
 
-  const messageApi = useMessage();
-
-  const { data, isLoading, isFetching, refetch } =
-    useSearchPrivacyRequestsQuery({
-      ...filterQueryParams,
-      page: pagination.pageIndex,
-      size: pagination.pageSize,
-    });
+  const {
+    data,
+    isLoading,
+    isFetching,
+    refetch,
+    error: dataError,
+  } = useSearchPrivacyRequestsQuery({
+    ...filterQueryParams,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
+  });
 
   const { items: requests, total: totalRows } = useMemo(() => {
     const results = data || { items: [], total: 0, pages: 0 };
@@ -70,28 +71,22 @@ export const PrivacyRequestsDashboard = () => {
     clearSelectedIds();
   }, [requests, clearSelectedIds]);
 
-  const [downloadReport] = useLazyDownloadPrivacyRequestCsvV2Query();
-
-  const handleExport = async () => {
-    let messageStr;
-    try {
-      await downloadReport(filterQueryParams);
-    } catch (error) {
-      if (error instanceof Error) {
-        messageStr = error.message;
-      } else {
-        messageStr = "Unknown error occurred";
-      }
-    }
-    if (messageStr) {
-      messageApi.error(messageStr, 5000);
-    }
-  };
+  const { downloadReport, isDownloadingReport } =
+    useDownloadPrivacyRequestReport();
 
   const { bulkActionMenuItems } = usePrivacyRequestBulkActions({
     requests,
     selectedIds,
   });
+
+  if (dataError) {
+    return (
+      <ErrorPage
+        error={dataError}
+        defaultMessage="A problem occurred while fetching your privacy requests"
+      />
+    );
+  }
 
   return (
     <div>
@@ -143,7 +138,8 @@ export const PrivacyRequestsDashboard = () => {
             aria-label="Export report"
             data-testid="export-btn"
             icon={<Icons.Download />}
-            onClick={handleExport}
+            onClick={() => downloadReport(filterQueryParams)}
+            loading={isDownloadingReport}
           />
         </Flex>
       </Flex>

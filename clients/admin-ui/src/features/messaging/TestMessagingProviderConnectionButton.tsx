@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  Box,
-  Divider,
-  Heading,
-  Stack,
-  useToast,
+  Button,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 

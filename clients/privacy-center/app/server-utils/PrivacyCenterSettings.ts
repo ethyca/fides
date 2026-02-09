@@ -50,7 +50,7 @@ export interface PrivacyCenterSettings {
   IS_OVERLAY_ENABLED: boolean; // whether we should render privacy-experience-driven components
   IS_PREFETCH_ENABLED: boolean | false; // (optional) whether we should pre-fetch geolocation and experience server-side
   OVERLAY_PARENT_ID: string | null; // (optional) ID of the parent DOM element where the overlay should be inserted
-  MODAL_LINK_ID: string | null; // (optional) ID of the DOM element that should trigger the consent modal
+  MODAL_LINK_ID: string; // (optional) ID of the DOM element that should trigger the consent modal
   PRIVACY_CENTER_URL: string; // e.g. http://localhost:3001
   FIDES_EMBED: boolean | false; // (optional) Whether we should "embed" the fides.js overlay UI (ie. "Layer 2") into a web page
   FIDES_DISABLE_SAVE_API: boolean | false; // (optional) Whether we should disable saving consent preferences to the Fides API
@@ -66,7 +66,7 @@ export interface PrivacyCenterSettings {
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
   FIDES_CLEAR_COOKIE: boolean; // (optional) deletes fides_consent cookie on reload
-  SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link
+  SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link; defaults to true
   FIDES_CONSENT_OVERRIDE: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null; // (optional) sets a previously learned consent preference for the user
   FIDES_DISABLED_NOTICES: string | null; // (optional) comma-separated list of notice_keys to disable in the CMP Overlay
   FIDES_DISABLED_SYSTEMS: string | null; // (optional) comma-separated list of systems to exclude notice assets by

@@ -37,9 +37,8 @@ from fides.api.models.privacy_request import (
 from fides.api.models.property import Property
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.messaging.messaging import MessagingMethod
-from fides.api.schemas.privacy_request import BulkPostPrivacyRequests
-from fides.api.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.schemas.privacy_request import (
+    BulkPostPrivacyRequests,
     ConsentPreferences,
     ConsentPreferencesWithVerificationCode,
     ConsentReport,
@@ -49,6 +48,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
     VerificationCode,
 )
+from fides.api.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.deps import get_messaging_service
 from fides.api.util.api_router import APIRouter
@@ -413,20 +413,18 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
         db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
     )
 
-    privacy_request_results: BulkPostPrivacyRequests = (
-        privacy_request_service.create_bulk_privacy_requests(
-            [
-                PrivacyRequestCreate(
-                    identity=identity,
-                    policy_key=policy,
-                    consent_preferences=executable_consent_preferences,
-                    consent_request_id=consent_request.id,
-                    custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
-                    source=consent_request.source,
-                )
-            ],
-            authenticated=True,
-        )
+    privacy_request_results: BulkPostPrivacyRequests = privacy_request_service.create_bulk_privacy_requests(
+        [
+            PrivacyRequestCreate(
+                identity=identity,
+                policy_key=policy,
+                consent_preferences=executable_consent_preferences,
+                consent_request_id=consent_request.id,
+                custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
+                source=consent_request.source,
+            )
+        ],
+        authenticated=True,
     )
 
     if privacy_request_results.failed or not privacy_request_results.succeeded:

@@ -6,6 +6,7 @@ import yaml
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
+from tests.conftest import wait_for_privacy_request_status
 
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -16,12 +17,10 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from tests.conftest import wait_for_privacy_request_status
 
 
 @pytest.mark.async_dsr
 class TestPrivacyRequestWithAsyncCallback:
-
     @pytest.fixture
     def async_callback_connector(self, db: Session) -> Generator:
         with open(

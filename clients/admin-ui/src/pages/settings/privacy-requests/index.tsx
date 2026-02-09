@@ -1,4 +1,4 @@
-import { AntFlex as Flex } from "fidesui";
+import { Flex } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";

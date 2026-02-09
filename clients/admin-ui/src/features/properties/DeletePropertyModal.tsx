@@ -1,8 +1,8 @@
 import {
-  AntTooltip as Tooltip,
-  Text,
-  useDisclosure,
-  useToast,
+  ChakraText as Text,
+  Tooltip,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
   WarningIcon,
 } from "fidesui";
 import router from "next/router";

@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTableProps as TableProps,
+  Button,
+  Flex,
   Icons,
-  useToast,
+  TableProps,
+  useChakraToast as useToast,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";

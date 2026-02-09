@@ -1,9 +1,5 @@
 /* eslint-disable jsx-a11y/control-has-associated-label */
-import {
-  AntCheckbox as Checkbox,
-  AntForm as Form,
-  AntSelect as Select,
-} from "fidesui";
+import { Checkbox, Form, Select } from "fidesui";
 import { isEmpty } from "lodash";
 
 import { enumToOptions } from "~/features/common/helpers";

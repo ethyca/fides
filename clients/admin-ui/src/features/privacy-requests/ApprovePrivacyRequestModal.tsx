@@ -1,16 +1,16 @@
 import {
-  AntButton as Button,
-  Flex,
-  ListItem,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  SimpleGrid,
-  Text,
-  UnorderedList,
+  Button,
+  ChakraFlex as Flex,
+  ChakraListItem as ListItem,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraSimpleGrid as SimpleGrid,
+  ChakraText as Text,
+  ChakraUnorderedList as UnorderedList,
 } from "fidesui";
 import React, { useCallback } from "react";
 

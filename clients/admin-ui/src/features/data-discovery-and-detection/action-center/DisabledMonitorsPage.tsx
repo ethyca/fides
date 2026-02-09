@@ -1,4 +1,4 @@
-import { AntAlert as Alert, AntFlex as Flex } from "fidesui";
+import { Alert, Flex } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 

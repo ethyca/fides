@@ -1,10 +1,4 @@
-import {
-  AntLayout as Layout,
-  AntRow as Row,
-  AntTabs as Tabs,
-  AntTabsProps as TabsProps,
-  AntTypography as Typography,
-} from "fidesui";
+import { Layout, Row, Tabs, TabsProps, Typography } from "fidesui";
 
 import { AntFormPOC } from "./form-experiments/AntForm";
 import { FormikAntFormItemPOC } from "./form-experiments/FormikAntFormItem";

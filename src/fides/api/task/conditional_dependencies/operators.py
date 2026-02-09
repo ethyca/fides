@@ -54,7 +54,9 @@ OPERATOR_METHODS = {
         a in b
         if isinstance(b, list)
         # If column value is a list, check if user value is in it
-        else b in a if isinstance(a, list) else False
+        else b in a
+        if isinstance(a, list)
+        else False
     ),
     Operator.not_in_list: lambda a, b: (
         # If user provides a list, check if column value is NOT in it
@@ -62,14 +64,14 @@ OPERATOR_METHODS = {
         a not in b
         if isinstance(b, list)
         # If column value is a list, check if user value is NOT in it
-        else b not in a if isinstance(a, list) else False
+        else b not in a
+        if isinstance(a, list)
+        else False
     ),
     Operator.list_intersects: lambda a, b: (
         # Check if there are any common elements between the lists
         # Note: Returns False for None values because both values must be lists
-        bool(set(a) & set(b))
-        if isinstance(a, list) and isinstance(b, list)
-        else False
+        bool(set(a) & set(b)) if isinstance(a, list) and isinstance(b, list) else False
     ),
     Operator.list_subset: lambda a, b: (
         # Check if column list is a subset of user's list

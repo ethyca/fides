@@ -1,4 +1,7 @@
-import { AntButton as Button, UseDisclosureReturn } from "fidesui";
+import {
+  Button,
+  ChakraUseDisclosureReturn as UseDisclosureReturn,
+} from "fidesui";
 import { useState } from "react";
 
 import FormModal from "~/features/common/modals/FormModal";

@@ -4,7 +4,7 @@ import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 export enum CatalogResourceStatus {
   ATTENTION_REQUIRED = "Attention required",
   CLASSIFIED = "Classified",
-  APPROVED = "Reviewed",
+  REVIEWED = "Reviewed",
   CLASSIFYING = "Classifying",
   NONE = "None",
 }
@@ -13,7 +13,7 @@ export const getCatalogResourceStatus = (
   resource: StagedResourceAPIResponse | undefined,
 ) => {
   if (!resource) {
-    return CatalogResourceStatus.APPROVED;
+    return CatalogResourceStatus.REVIEWED;
   }
   const resourceSchemaChanged =
     resource.diff_status === DiffStatus.ADDITION ||
@@ -51,5 +51,5 @@ export const getCatalogResourceStatus = (
     return CatalogResourceStatus.CLASSIFIED;
   }
 
-  return CatalogResourceStatus.APPROVED;
+  return CatalogResourceStatus.REVIEWED;
 };

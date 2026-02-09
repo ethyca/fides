@@ -1,11 +1,11 @@
 import {
-  Button,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
+  ChakraButton as Button,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
+  ChakraPortal as Portal,
   MoreIcon,
-  Portal,
 } from "fidesui";
 import NextLink from "next/link";
 import React from "react";

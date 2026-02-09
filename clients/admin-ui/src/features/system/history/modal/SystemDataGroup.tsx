@@ -1,4 +1,8 @@
-import { Box, Heading, Stack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+} from "fidesui";
 import _ from "lodash";
 import React from "react";
 

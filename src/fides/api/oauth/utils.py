@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
-from typing import Any, Callable, Dict, List, Optional, Tuple, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
 
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import SecurityScopes
@@ -12,18 +12,22 @@ from jose import exceptions, jwe
 from jose.constants import ALGORITHMS
 from loguru import logger
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session, selectinload
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
 from fides.api.api.deps import get_db
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.cryptography.cryptographic_util import generate_secure_random_string
 from fides.api.cryptography.schemas.jwt import (
+    JWE_EXPIRES_AT,
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
+from fides.api.db.ctl_session import get_async_db
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -68,6 +72,30 @@ def is_token_expired(
     if issued_at is None:
         return True
     return (datetime.now() - issued_at).total_seconds() / 60.0 > token_duration_minutes
+
+
+def is_token_expired_by_payload(
+    token_data: Dict[str, Any],
+    token_duration_minutes: int,
+) -> bool:
+    """
+    Check if a token has expired using exp (Unix timestamp) when present,
+    otherwise fall back to iat + token_duration_minutes for backward compatibility.
+    """
+    exp = token_data.get(JWE_EXPIRES_AT)
+    if exp is not None:
+        try:
+            return datetime.now().timestamp() > float(exp)
+        except (TypeError, ValueError):
+            pass
+    issued_at = token_data.get(JWE_ISSUED_AT)
+    if not issued_at:
+        return True
+    try:
+        issued_at_dt = datetime.fromisoformat(issued_at)
+    except (TypeError, ValueError):
+        return True
+    return is_token_expired(issued_at_dt, token_duration_minutes)
 
 
 def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
@@ -368,6 +396,32 @@ async def verify_oauth_client(
     return client
 
 
+async def verify_oauth_client_async(
+    security_scopes: SecurityScopes,
+    authorization: str = Security(oauth2_scheme),
+    db: AsyncSession = Depends(get_async_db),
+) -> ClientDetail:
+    """
+    Async version of verify_oauth_client that uses an async database session.
+
+    Verifies that the access token provided in the authorization header contains
+    the necessary scopes or roles specified by the caller. Yields a 403 forbidden error
+    if not.
+
+    NOTE: This function may be overwritten in `main.py` when changing
+    the security environment.
+    """
+    token_data, client = await extract_token_and_load_client_async(authorization, db)
+    if not has_permissions(
+        token_data=token_data, client=client, endpoint_scopes=security_scopes
+    ):
+        raise AuthorizationError(
+            detail=f"Not Authorized for this action. Required scope(s): [{', '.join(security_scopes.scopes)}]"
+        )
+
+    return client
+
+
 def extract_token_and_load_client(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
@@ -387,18 +441,18 @@ def extract_token_and_load_client(
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
-    issued_at = token_data.get(JWE_ISSUED_AT, None)
-    if not issued_at:
+    if is_token_expired_by_payload(
+        token_data,
+        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
+    ):
         logger.debug("Auth token expired.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
-    issued_at_dt = datetime.fromisoformat(issued_at)
-
-    if is_token_expired(
-        issued_at_dt,
-        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
-    ):
+    issued_at = token_data.get(JWE_ISSUED_AT, None)
+    if not issued_at:
+        logger.debug("Auth token missing issued_at.")
         raise AuthorizationError(detail="Not Authorized for this action")
+    issued_at_dt = datetime.fromisoformat(issued_at)
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
     if not client_id:
@@ -413,6 +467,90 @@ def extract_token_and_load_client(
         scopes=CONFIG.security.root_user_scopes,
         roles=CONFIG.security.root_user_roles,
     )
+
+    if not client:
+        logger.debug("Auth token belongs to an invalid client_id.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    # Invalidate tokens issued prior to the user's most recent password reset.
+    # This ensures any existing sessions are expired immediately after a password change.
+    if is_token_invalidated(issued_at_dt, client):
+        logger.debug("Auth token issued before latest password reset.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    # Populate request-scoped context with the authenticated user identifier.
+    # Prefer the linked user_id; fall back to the client id when this is the
+    # special root client (which has no associated FidesUser row).
+    ctx_user_id = client.user_id
+    if not ctx_user_id and client.id == CONFIG.security.oauth_root_client_id:
+        ctx_user_id = CONFIG.security.oauth_root_client_id
+
+    if ctx_user_id:
+        set_user_id(ctx_user_id)
+
+    return token_data, client
+
+
+async def extract_token_and_load_client_async(
+    authorization: str = Security(oauth2_scheme),
+    db: AsyncSession = Depends(get_async_db),
+    *,
+    token_duration_override: Optional[int] = None,
+) -> Tuple[Dict, ClientDetail]:
+    """
+    Async version of extract_token_and_load_client that uses an async database session.
+
+    Extract the token, verify it's valid, and likewise load the client as part of authorization.
+    """
+    if authorization is None:
+        logger.debug("No authorization supplied.")
+        raise AuthenticationError(detail="Authentication Failure")
+
+    try:
+        token_data = json.loads(
+            extract_payload(authorization, CONFIG.security.app_encryption_key)
+        )
+    except exceptions.JWEParseError as exc:
+        logger.debug("Unable to parse auth token.")
+        raise AuthorizationError(detail="Not Authorized for this action") from exc
+
+    if is_token_expired_by_payload(
+        token_data,
+        token_duration_override or CONFIG.security.oauth_access_token_expire_minutes,
+    ):
+        logger.debug("Auth token expired.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    issued_at = token_data.get(JWE_ISSUED_AT, None)
+    if not issued_at:
+        logger.debug("Auth token missing issued_at.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+    issued_at_dt = datetime.fromisoformat(issued_at)
+
+    client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
+    if not client_id:
+        logger.debug("No client_id included in auth token.")
+        raise AuthorizationError(detail="Not Authorized for this action")
+
+    # For root client, return in-memory client without DB query
+    if client_id == CONFIG.security.oauth_root_client_id:
+        client = ClientDetail.get(
+            None,  # type: ignore[arg-type]
+            object_id=client_id,
+            config=CONFIG,
+            scopes=CONFIG.security.root_user_scopes,
+            roles=CONFIG.security.root_user_roles,
+        )
+    else:
+        # Async query for non-root clients
+        # Eager-load the user relationship to avoid lazy-loading issues in async context
+        # This is required for is_token_invalidated() to access client.user.password_reset_at
+        result = await db.execute(
+            select(ClientDetail)  # type: ignore[arg-type, attr-defined]
+            .options(selectinload(ClientDetail.user))
+            .where(ClientDetail.id == client_id)
+        )
+        client = result.scalars().first()
 
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
@@ -504,6 +642,12 @@ def _has_direct_scopes(
 def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) -> bool:
     """Are the required scopes a subset of the scopes belonging to the user?"""
     return set(endpoint_scopes.scopes).issubset(user_scopes)
+
+
+def roles_have_scopes(roles: List[str], required_scopes: Iterable[str]) -> bool:
+    """Helper to determine whether the provided user roles have the required scopes"""
+    associated_scopes: List[str] = get_scopes_from_roles(roles)
+    return set(required_scopes).issubset(associated_scopes)
 
 
 def get_client_effective_scopes(client: "ClientDetail") -> List[str]:
@@ -623,6 +767,7 @@ def create_temporary_user_for_login_flow(config: FidesConfig) -> FidesUser:
         scopes=[],  # type: ignore
         roles=user.permissions.roles,  # type: ignore
         systems=user.system_ids,  # type: ignore
+        monitors=user.stewarded_monitor_ids,  # type: ignore
         user_id="temp_user_id",
         in_memory=True,
     )

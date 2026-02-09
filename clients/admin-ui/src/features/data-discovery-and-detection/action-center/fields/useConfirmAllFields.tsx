@@ -1,4 +1,4 @@
-import { useAntModal, useMessage } from "fidesui";
+import { useMessage, useModal } from "fidesui";
 
 import { pluralize } from "~/features/common/utils";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
@@ -14,7 +14,7 @@ import { useFieldActionsMutation } from "./monitor-fields.slice";
 import { getActionErrorMessage, getActionModalProps } from "./utils";
 
 export const useConfirmAllFields = (monitorId: string) => {
-  const modalApi = useAntModal();
+  const modalApi = useModal();
   const [bulkAction] = useFieldActionsMutation();
   const messageApi = useMessage();
 

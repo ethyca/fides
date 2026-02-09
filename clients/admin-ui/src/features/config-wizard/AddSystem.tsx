@@ -1,4 +1,11 @@
-import { Box, Heading, SimpleGrid, Stack, Text, useDisclosure } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraSimpleGrid as SimpleGrid,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
+} from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
 

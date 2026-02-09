@@ -1,11 +1,4 @@
-import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntSkeleton as Skeleton,
-  AntTable as Table,
-  AntTag as Tag,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, ColumnsType, Skeleton, Table, Tag, Typography } from "fidesui";
 import NextLink from "next/link";
 import React, { useMemo } from "react";
 

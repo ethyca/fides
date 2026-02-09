@@ -1,4 +1,4 @@
-import { AntButton as Button, useDisclosure } from "fidesui";
+import { Button, useChakraDisclosure as useDisclosure } from "fidesui";
 import React from "react";
 
 import { CustomAssetType } from "~/types/api/models/CustomAssetType";

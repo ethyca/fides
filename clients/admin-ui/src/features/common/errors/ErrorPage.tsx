@@ -1,64 +1,106 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  AntButton,
-  AntButtonProps,
-  AntFlex,
-  AntResult,
-  AntTypography,
+  Button,
+  ButtonProps,
+  Collapse,
+  Flex,
+  Result,
+  Typography,
 } from "fidesui";
+import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import ErrorImage from "~/features/common/errors/ErrorImage";
 import { getErrorMessage } from "~/features/common/helpers";
 
-type ActionProps = AntButtonProps & { label: ReactNode };
+type ActionProps = Omit<ButtonProps, "children"> & { label: ReactNode };
 
 const ErrorPage = ({
   error,
+  defaultMessage = "An unexpected error occurred.  Please try again",
   actions,
+  showReload = true,
 }: {
   error: FetchBaseQueryError | SerializedError;
-  actions: ActionProps[];
+  defaultMessage?: string;
+  actions?: ActionProps[];
+  showReload?: boolean;
 }) => {
-  const errorMessage = getErrorMessage(error);
+  const errorMessage = getErrorMessage(error, defaultMessage);
   // handle both FetchBaseQueryError and SerializedError
   const dataString =
-    "data" in error ? JSON.stringify(error.data) : JSON.stringify(error);
-  const status = "status" in error ? error.status : undefined;
+    "data" in error && !!error.data
+      ? JSON.stringify(error.data)
+      : JSON.stringify(error);
+  const status = "status" in error && !!error.status ? error.status : undefined;
+
+  const router = useRouter();
+
+  const showActions = (actions && actions.length > 0) || showReload;
 
   return (
-    <AntFlex vertical align="center" justify="center" className="h-screen">
-      <AntResult
+    <Flex
+      vertical
+      align="center"
+      justify="center"
+      className="h-screen"
+      data-testid="error-page-result"
+    >
+      <Result
         status="error"
         icon={<ErrorImage status={status} />}
         title={`Error ${status}`}
         subTitle={
           <>
-            <AntTypography.Paragraph type="secondary">
+            <Typography.Paragraph type="secondary">
               {errorMessage}
-            </AntTypography.Paragraph>
-            <AntTypography.Text type="secondary">
-              {dataString}
-            </AntTypography.Text>
-            <ClipboardButton copyText={dataString} />
+            </Typography.Paragraph>
+            <Flex justify="start" className="max-w-96">
+              <Collapse
+                ghost
+                size="small"
+                items={[
+                  {
+                    key: "1",
+                    label: "Show details",
+                    classNames: {
+                      header: "w-fit",
+                    },
+                    children: (
+                      <>
+                        <Typography.Text type="secondary">
+                          {dataString}
+                        </Typography.Text>
+                        <ClipboardButton copyText={dataString} />
+                      </>
+                    ),
+                  },
+                ]}
+              />
+            </Flex>
           </>
         }
         extra={
-          actions.length > 0 ? (
-            <AntFlex gap="small" justify="center">
-              {actions.map((action, index) => (
+          showActions && (
+            <Flex gap="small" justify="center">
+              {actions?.map((action, index) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <AntButton key={index} {...action}>
+                <Button key={index} {...action}>
                   {action.label}
-                </AntButton>
+                </Button>
               ))}
-            </AntFlex>
-          ) : undefined
+              {showReload && (
+                <Button onClick={() => router.reload()} type="primary">
+                  Reload
+                </Button>
+              )}
+            </Flex>
+          )
         }
       />
-    </AntFlex>
+    </Flex>
   );
 };
 

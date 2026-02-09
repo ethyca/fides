@@ -1,4 +1,8 @@
-import { Box, HStack, VStack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHStack as HStack,
+  ChakraVStack as VStack,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 

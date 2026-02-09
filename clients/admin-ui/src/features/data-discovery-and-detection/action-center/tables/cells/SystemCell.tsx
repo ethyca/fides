@@ -1,4 +1,4 @@
-import { AntTag as Tag, Icons } from "fidesui";
+import { Icons, Tag } from "fidesui";
 import { truncate } from "lodash";
 import { MouseEventHandler, useCallback, useState } from "react";
 

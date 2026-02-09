@@ -1,13 +1,13 @@
 import {
-  AntButton as Button,
-  AntCard as Card,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntFormInstance as FormInstance,
-  AntInput as Input,
-  AntParagraph as Paragraph,
-  useAntModal,
+  Button,
+  Card,
+  Flex,
+  Form,
+  FormInstance,
+  Input,
+  Paragraph,
   useFormModal,
+  useModal,
 } from "fidesui";
 import React from "react";
 
@@ -41,7 +41,7 @@ const SampleForm = ({ form }: SampleFormProps) => {
 };
 
 export const ModalMethodsCard = () => {
-  const modalApi = useAntModal();
+  const modalApi = useModal();
 
   const renderFormContent = (form: FormInstance) => <SampleForm form={form} />;
 

@@ -1,4 +1,4 @@
-import { AntSpace as Space, AntTooltip as Tooltip, Text } from "fidesui";
+import { ChakraText as Text, Space, Tooltip } from "fidesui";
 
 import { STATUS_INDICATOR_MAP } from "~/features/data-discovery-and-detection/statusIndicators";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";

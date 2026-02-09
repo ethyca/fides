@@ -1,4 +1,8 @@
-import { Box, Text, useToast } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraText as Text,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAlert } from "~/features/common/hooks";

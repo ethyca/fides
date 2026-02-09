@@ -1,4 +1,8 @@
-import { Box, Link, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraLink as Link,
+  ChakraText as Text,
+} from "fidesui";
 import React from "react";
 
 import { useFeatures } from "~/features/common/features";

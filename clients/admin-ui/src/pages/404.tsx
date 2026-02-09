@@ -1,6 +1,12 @@
 import Head from "common/Head";
 import Image from "common/Image";
-import { AntButton as Button, Box, Heading, Stack, Text } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+  ChakraText as Text,
+} from "fidesui";
 import { useRouter } from "next/router";
 
 import { INDEX_ROUTE } from "../constants";

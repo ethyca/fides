@@ -2,7 +2,13 @@ import {
   selectConnectionTypeState,
   useGetConnectionTypeSecretSchemaQuery,
 } from "connection-type/connection-type.slice";
-import { Box, Center, Flex, Spinner, VStack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraFlex as Flex,
+  ChakraSpinner as Spinner,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 

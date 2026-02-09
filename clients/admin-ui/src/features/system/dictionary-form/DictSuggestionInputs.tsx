@@ -1,16 +1,16 @@
 import {
-  AntSwitch as Switch,
-  Box,
-  Flex,
-  FormControl,
-  HStack,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Textarea,
-  VStack,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraFormControl as FormControl,
+  ChakraHStack as HStack,
+  ChakraNumberDecrementStepper as NumberDecrementStepper,
+  ChakraNumberIncrementStepper as NumberIncrementStepper,
+  ChakraNumberInput as NumberInput,
+  ChakraNumberInputField as NumberInputField,
+  ChakraNumberInputStepper as NumberInputStepper,
+  ChakraTextarea as Textarea,
+  ChakraVStack as VStack,
+  Switch,
 } from "fidesui";
 import { Field, FieldProps, useField, useFormikContext } from "formik";
 import React, { useEffect, useRef, useState } from "react";

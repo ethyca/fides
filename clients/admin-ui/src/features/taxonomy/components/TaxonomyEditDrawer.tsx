@@ -1,213 +1,118 @@
-import {
-  AntButton as Button,
-  AntForm as Form,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  ConfirmationModal,
-  DrawerFooter,
-  EyeIcon,
-  Stack,
-  Text,
-  useDisclosure,
-  useToast,
-} from "fidesui";
+import { Button, Flex, Tabs, useMessage } from "fidesui";
 
 import { useCustomFields } from "~/features/common/custom-fields";
-import EditDrawer, { EditDrawerHeader } from "~/features/common/EditDrawer";
-import { getErrorMessage } from "~/features/common/helpers";
-import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
-import { useHasPermission } from "~/features/common/Restrict";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { taxonomyKeyToScopeRegistryEnum } from "~/features/taxonomy/constants";
-import { taxonomyTypeToResourceType } from "~/features/taxonomy/helpers";
-import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
-import { TaxonomyEntity } from "~/features/taxonomy/types";
-import { isErrorResult } from "~/types/errors";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { FIDES_KEY_RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
+import { DetailsDrawer } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer";
+import { DetailsDrawerProps } from "~/features/data-discovery-and-detection/action-center/fields/DetailsDrawer/types";
+import TaxonomyDetails from "~/features/taxonomy/components/TaxonomyDetails";
+import TaxonomyHistory from "~/features/taxonomy/components/TaxonomyHistory";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
+import { useUpdateCustomTaxonomyMutation } from "~/features/taxonomy/taxonomy.slice";
+import { CustomFieldDefinitionWithId } from "~/types/api";
+import { TaxonomyResponse } from "~/types/api/models/TaxonomyResponse";
+import { TaxonomyUpdate } from "~/types/api/models/TaxonomyUpdate";
 
-import TaxonomyCustomFieldsForm from "./TaxonomyCustomFieldsForm";
-import TaxonomyEditForm from "./TaxonomyEditForm";
-
-interface TaxonomyEditDrawerProps {
-  taxonomyItem?: TaxonomyEntity | null;
-  taxonomyType: string;
-  onClose: () => void;
+interface TaxonomyEditDrawerProps extends Omit<DetailsDrawerProps, "itemKey"> {
+  taxonomy: TaxonomyResponse;
+  onDelete: () => void;
 }
 
-const TaxonomyItemEditDrawer = ({
-  taxonomyItem,
-  taxonomyType,
-  onClose: closeDrawer,
+const FORM_ID = "custom-taxonomy-form";
+
+const TaxonomyEditDrawer = ({
+  taxonomy,
+  onClose,
+  onDelete,
+  ...props
 }: TaxonomyEditDrawerProps) => {
-  // Using separate forms for taxonomies & their custom fields
-  // because custom fields are not part of the taxonomy and
-  // uses dedicated endpoints
-  const TAXONOMY_FORM_ID = "edit-taxonomy-form";
-  const [taxonomyForm] = Form.useForm();
+  const [updateCustomTaxonomy, { isLoading: isUpdating }] =
+    useUpdateCustomTaxonomyMutation();
 
-  const CUSTOM_FIELDS_FORM_ID = "custom-fields-form";
-  const [customFieldsForm] = Form.useForm();
+  const messageApi = useMessage();
+  const { sortedCustomFieldDefinitionIds, idToCustomFieldDefinition } =
+    useCustomFields({
+      resourceType:
+        FIDES_KEY_RESOURCE_TYPE_MAP[taxonomy.fides_key] ?? taxonomy.fides_key,
+    });
 
-  const toast = useToast();
+  const isCustom = !Object.values(TaxonomyTypeEnum).includes(
+    taxonomy.fides_key as TaxonomyTypeEnum,
+  );
 
-  const {
-    isOpen: deleteIsOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
+  const customFields = sortedCustomFieldDefinitionIds
+    .map(
+      (id) =>
+        idToCustomFieldDefinition.get(id) as CustomFieldDefinitionWithId & {
+          created_at: string;
+        },
+    )
+    .sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
 
-  const { updateTrigger } = useTaxonomySlices({ taxonomyType });
-
-  const resourceType = taxonomyTypeToResourceType(taxonomyType);
-  const customFields = useCustomFields({
-    resourceFidesKey: taxonomyItem?.fides_key,
-    resourceType,
-  });
-
-  const canUserEditTaxonomy = useHasPermission([
-    taxonomyKeyToScopeRegistryEnum(taxonomyType).UPDATE,
-  ]);
-  const canUserDeleteTaxonomy = useHasPermission([
-    taxonomyKeyToScopeRegistryEnum(taxonomyType).DELETE,
-  ]);
-
-  const handleEdit = async (formValues: TaxonomyEntity) => {
-    const result = await updateTrigger(formValues);
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+  const handleUpdate = async (values: TaxonomyUpdate) => {
+    if (!taxonomy.fides_key) {
+      messageApi.error("Taxonomy not found");
       return;
     }
-
-    if (customFields.isEnabled) {
-      const customFieldValues = customFieldsForm.getFieldsValue();
-      await customFields.upsertCustomFields({
-        fides_key: taxonomyItem?.fides_key!,
-        customFieldValues,
-      });
+    const result = await updateCustomTaxonomy({
+      fides_key: taxonomy.fides_key,
+      ...values,
+    });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+      return;
     }
-
-    toast(successToastParams("Taxonomy successfully updated"));
-    closeDrawer();
-  };
-
-  const handleDelete = async () => {
-    // For record keeping, we will not actually delete the taxonomy
-    // but rather mark it as disabled and not show it in the UI
-    await updateTrigger({
-      ...taxonomyItem!,
-      active: false,
-    });
-    onDeleteClose();
-    closeDrawer();
-  };
-
-  const handleEnable = async () => {
-    await updateTrigger({
-      ...taxonomyItem!,
-      active: true,
-    });
-    onDeleteClose();
-    closeDrawer();
+    messageApi.success("Taxonomy updated successfully");
   };
 
   return (
-    <>
-      <EditDrawer
-        isOpen={!!taxonomyItem}
-        onClose={closeDrawer}
-        header={<EditDrawerHeader title={taxonomyItem?.name || ""} />}
-        footer={
-          <DrawerFooter justifyContent="space-between">
-            {taxonomyItem?.active && canUserDeleteTaxonomy && (
-              <Tooltip title="Delete label">
-                <Button
-                  aria-label="delete"
-                  icon={<TrashCanOutlineIcon fontSize="small" />}
-                  onClick={onDeleteOpen}
-                  data-testid="delete-btn"
-                />
-              </Tooltip>
-            )}
-            {!taxonomyItem?.active && canUserEditTaxonomy && (
-              <Tooltip title="Enable label">
-                <Button
-                  aria-label="enable"
-                  onClick={handleEnable}
-                  data-testid="enable-btn"
-                  icon={<EyeIcon fontSize="small" />}
-                />
-              </Tooltip>
-            )}
-
-            <div className="flex gap-2">
-              {canUserEditTaxonomy && (
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  data-testid="save-btn"
-                  form={TAXONOMY_FORM_ID}
-                >
-                  Save
-                </Button>
-              )}
-            </div>
-          </DrawerFooter>
-        }
-      >
-        <div className="mb-4">
-          <div className="mb-2">
-            <Typography.Title level={3}>Details</Typography.Title>
-          </div>
-          <div className="flex">
-            <span className="w-1/3 shrink-0 text-sm text-gray-500">
-              Fides key:
-            </span>
-            <Tooltip title={taxonomyItem?.fides_key} trigger="click">
-              <span
-                className="flex-1 truncate"
-                data-testid="edit-drawer-fides-key"
-              >
-                {taxonomyItem?.fides_key}
-              </span>
-            </Tooltip>
-          </div>
-        </div>
-        {!!taxonomyItem && (
-          <TaxonomyEditForm
-            initialValues={taxonomyItem}
-            onSubmit={handleEdit}
-            form={taxonomyForm}
-            formId={TAXONOMY_FORM_ID}
-            taxonomyType={taxonomyType}
-            isDisabled={!canUserEditTaxonomy}
-          />
-        )}
-        {customFields.isEnabled && !customFields.isLoading && (
-          <TaxonomyCustomFieldsForm
-            form={customFieldsForm}
-            formId={CUSTOM_FIELDS_FORM_ID}
-            customFields={customFields}
-          />
-        )}
-      </EditDrawer>
-
-      <ConfirmationModal
-        isOpen={deleteIsOpen}
-        onClose={onDeleteClose}
-        onConfirm={handleDelete}
-        title={`Delete ${taxonomyType}`}
-        message={
-          <Stack>
-            <Text>
-              You are about to permanently delete the {taxonomyType}{" "}
-              <Text color="complimentary.500" as="span" fontWeight="bold">
-                {taxonomyItem?.name}
-              </Text>{" "}
-              from your taxonomy. Are you sure you would like to continue?
-            </Text>
-          </Stack>
-        }
+    <DetailsDrawer
+      title={`Edit ${taxonomy?.name}`}
+      {...props}
+      itemKey=""
+      open={!!taxonomy}
+      onClose={onClose}
+      destroyOnHidden
+      footer={
+        isCustom && (
+          <Flex justify="space-between" className="w-full">
+            <Button onClick={onDelete}>Delete</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              form={FORM_ID}
+              loading={isUpdating}
+            >
+              Save
+            </Button>
+          </Flex>
+        )
+      }
+    >
+      <Tabs
+        items={[
+          {
+            label: "Details",
+            key: "details",
+            children: (
+              <TaxonomyDetails
+                taxonomy={taxonomy}
+                onSubmit={handleUpdate}
+                formId={FORM_ID}
+                customFields={customFields}
+                isCustom={isCustom}
+              />
+            ),
+          },
+          {
+            label: "History",
+            key: "history",
+            children: <TaxonomyHistory taxonomyKey={taxonomy.fides_key} />,
+          },
+        ]}
       />
-    </>
+    </DetailsDrawer>
   );
 };
-export default TaxonomyItemEditDrawer;
+
+export default TaxonomyEditDrawer;

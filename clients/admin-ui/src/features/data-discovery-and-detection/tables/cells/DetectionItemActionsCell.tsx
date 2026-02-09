@@ -1,4 +1,4 @@
-import { HStack } from "fidesui";
+import { ChakraHStack as HStack } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
@@ -109,7 +109,7 @@ const DetectionItemActionsCell = ({
     childDiffStatus &&
     (childDiffStatus[DiffStatus.CLASSIFICATION_ADDITION] ||
       childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE] ||
-      childDiffStatus[DiffStatus.APPROVED]);
+      childDiffStatus[DiffStatus.REVIEWED]);
 
   const showStartMonitoringAction =
     (isSchemaType && diffStatus === undefined) ||

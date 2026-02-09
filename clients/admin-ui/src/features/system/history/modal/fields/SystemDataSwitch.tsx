@@ -1,4 +1,9 @@
-import { AntTag as Tag, Flex, FormControl, VStack } from "fidesui";
+import {
+  ChakraFlex as Flex,
+  ChakraFormControl as FormControl,
+  ChakraVStack as VStack,
+  Tag,
+} from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";
 import { useEffect, useState } from "react";

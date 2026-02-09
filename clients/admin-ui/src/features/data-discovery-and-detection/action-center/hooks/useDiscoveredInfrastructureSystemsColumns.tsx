@@ -1,4 +1,4 @@
-import { AntColumnsType as ColumnsType } from "fidesui";
+import { ColumnsType } from "fidesui";
 import { useMemo } from "react";
 
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";

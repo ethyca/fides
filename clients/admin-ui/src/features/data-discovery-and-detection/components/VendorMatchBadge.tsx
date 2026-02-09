@@ -1,11 +1,11 @@
 import {
-  AntAvatar as Avatar,
-  AntFlex as Flex,
-  AntTag as Tag,
-  AntTagProps as TagProps,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Avatar,
+  Flex,
   Icons,
+  Tag,
+  TagProps,
+  Tooltip,
+  Typography,
 } from "fidesui";
 
 const { Text } = Typography;

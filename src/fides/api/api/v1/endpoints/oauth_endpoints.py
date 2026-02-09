@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
@@ -109,8 +110,10 @@ async def acquire_access_token(
 
     logger.info("Creating access token")
 
+    expire_minutes = CONFIG.security.oauth_access_token_expire_minutes
     access_code = client_detail.create_access_code_jwe(
-        CONFIG.security.app_encryption_key
+        CONFIG.security.app_encryption_key,
+        token_expire_minutes=expire_minutes,
     )
 
     if client_id == CONFIG.security.oauth_root_client_id:
@@ -118,7 +121,12 @@ async def acquire_access_token(
             "OAuth Root Client ID was used to generate an API access token. If unexpected, review security settings (FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID)"
         )
 
-    return AccessToken(access_token=access_code)
+    expires_at = datetime.now() + timedelta(minutes=expire_minutes)
+    return AccessToken(
+        access_token=access_code,
+        expires_in=expire_minutes * 60,
+        expires_at=expires_at.isoformat(),
+    )
 
 
 @router.post(
@@ -265,8 +273,11 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
         authentication = (
             connection_config.get_saas_config().client_config.authentication  # type: ignore
         )
-        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = AuthenticationStrategy.get_strategy(  # type: ignore
-            authentication.strategy, authentication.configuration  # type: ignore
+        auth_strategy: OAuth2AuthorizationCodeAuthenticationStrategy = (
+            AuthenticationStrategy.get_strategy(  # type: ignore
+                authentication.strategy,  # type: ignore[union-attr]
+                authentication.configuration,  # type: ignore
+            )
         )
         connection_config.secrets = {**connection_config.secrets, "code": code}  # type: ignore
         auth_strategy.get_access_token(connection_config, db)

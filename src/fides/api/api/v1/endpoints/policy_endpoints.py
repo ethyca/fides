@@ -360,7 +360,8 @@ def delete_rule(
     logger.info("Finding rule with key '{}'", rule_key)
 
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -494,7 +495,8 @@ def create_or_update_rule_targets(
 
     logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -593,7 +595,8 @@ def delete_rule_target(
 
     logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(

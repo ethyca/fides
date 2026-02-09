@@ -1,4 +1,4 @@
-import { Flex, SimpleGrid } from "fidesui";
+import { ChakraFlex as Flex, ChakraSimpleGrid as SimpleGrid } from "fidesui";
 import NextLink from "next/link";
 import * as React from "react";
 import { useMemo } from "react";

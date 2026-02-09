@@ -1,4 +1,4 @@
-import { AntButton as Button, Flex, Text } from "fidesui";
+import { Button, ChakraFlex as Flex, ChakraText as Text } from "fidesui";
 
 type PaginationFooterProps = {
   page: number;

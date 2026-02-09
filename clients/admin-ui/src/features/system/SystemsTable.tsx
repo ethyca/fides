@@ -1,9 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntModal as Modal,
-  AntTable as Table,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, Modal, Table, Typography } from "fidesui";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import SystemActionsMenu from "~/features/system/SystemActionsMenu";

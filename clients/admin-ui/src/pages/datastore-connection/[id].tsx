@@ -1,5 +1,9 @@
 import ConnectionsLayout from "datastore-connections/ConnectionsLayout";
-import { Box, Center, Spinner } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraSpinner as Spinner,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";

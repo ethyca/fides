@@ -8,12 +8,12 @@ import {
   useCustomFields,
 } from "common/custom-fields";
 import {
-  Box,
-  BoxProps,
+  ChakraBox as Box,
+  ChakraBoxProps as BoxProps,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+  ChakraText as Text,
   GreenCheckCircleIcon,
-  Heading,
-  Stack,
-  Text,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useState } from "react";

@@ -1,4 +1,4 @@
-import { AntButton as Button, Box, Flex } from "fidesui";
+import { Button, ChakraBox as Box, ChakraFlex as Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";

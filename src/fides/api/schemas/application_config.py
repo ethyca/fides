@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Dict, List, Optional
 
 from pydantic import ConfigDict, Field, SerializeAsAny, field_validator, model_validator
@@ -11,7 +11,7 @@ from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.config.admin_ui_settings import ErrorNotificationMode
 
 
-class SqlDryRunMode(str, Enum):
+class SqlDryRunMode(StrEnum):
     """SQL dry run mode for controlling execution of SQL statements in privacy requests"""
 
     none = "none"
@@ -49,6 +49,7 @@ class NotificationApplicationConfig(FidesSchema):
     send_request_review_notification: Optional[bool] = None
     notification_service_type: Optional[str] = None
     enable_property_specific_messaging: Optional[bool] = None
+    privacy_assessments_channel: Optional[str] = None
     model_config = ConfigDict(extra="forbid")
 
     @field_validator("notification_service_type", mode="before")

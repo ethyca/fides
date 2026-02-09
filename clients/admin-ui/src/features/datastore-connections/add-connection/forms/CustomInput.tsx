@@ -1,15 +1,15 @@
 import {
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Textarea,
-  VStack,
+  ChakraFormControl as FormControl,
+  ChakraFormErrorMessage as FormErrorMessage,
+  ChakraFormLabel as FormLabel,
+  ChakraInput as Input,
+  ChakraNumberDecrementStepper as NumberDecrementStepper,
+  ChakraNumberIncrementStepper as NumberIncrementStepper,
+  ChakraNumberInput as NumberInput,
+  ChakraNumberInputField as NumberInputField,
+  ChakraNumberInputStepper as NumberInputStepper,
+  ChakraTextarea as Textarea,
+  ChakraVStack as VStack,
 } from "fidesui";
 import { FieldHookConfig, useField } from "formik";
 

@@ -1,16 +1,16 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import {
-  AntButton as Button,
-  AntFlex,
-  Box,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraText as Text,
+  Flex,
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 
@@ -117,12 +117,12 @@ export const ColumnSettingsModal = <T,>({
             You can toggle columns on and off to hide or show them in the table.
             Additionally, you can drag columns up or down to change the order
           </Text>
-          <AntFlex className="max-h-96 overflow-y-auto">
+          <Flex className="max-h-96 overflow-y-auto">
             <DraggableColumnList
               columns={columnEditor.columns}
               columnEditor={columnEditor}
             />
-          </AntFlex>
+          </Flex>
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">

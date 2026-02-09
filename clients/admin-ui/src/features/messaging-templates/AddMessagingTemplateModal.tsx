@@ -1,14 +1,14 @@
 import {
-  AntButton as Button,
-  AntSelect as Select,
-  Box,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraText as Text,
+  Select,
 } from "fidesui";
 import { useState } from "react";
 

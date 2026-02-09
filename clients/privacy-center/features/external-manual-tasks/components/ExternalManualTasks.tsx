@@ -12,14 +12,14 @@
  */
 
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntFlex as Flex,
-  AntTable as Table,
-  AntTag as Tag,
-  AntTypography as Typography,
+  Button,
+  ColumnsType,
   CUSTOM_TAG_COLOR,
+  Flex,
   Icons,
+  Table,
+  Tag,
+  Typography,
 } from "fidesui";
 import { useMemo, useState } from "react";
 

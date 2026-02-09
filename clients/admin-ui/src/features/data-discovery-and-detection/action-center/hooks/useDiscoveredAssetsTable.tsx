@@ -1,11 +1,11 @@
 import {
-  AntColumnsType as ColumnsType,
-  AntDefaultOptionType as DefaultOptionType,
-  AntSpace as Space,
-  AntText as Text,
+  ColumnsType,
+  DefaultOptionType,
   formatIsoLocation,
   isoStringToEntry,
-  useToast,
+  Space,
+  Text,
+  useChakraToast as useToast,
 } from "fidesui";
 import { uniq } from "lodash";
 import { useRouter } from "next/router";
@@ -112,7 +112,7 @@ export const useDiscoveredAssetsTable = ({
     updatePageSize,
   } = tableState;
 
-  const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
+  const { data, error, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     page: pageIndex,
     size: pageSize,
@@ -660,6 +660,7 @@ export const useDiscoveredAssetsTable = ({
     // Table state and data
     columns,
     data,
+    error,
     isLoading,
     isFetching,
     tableState,

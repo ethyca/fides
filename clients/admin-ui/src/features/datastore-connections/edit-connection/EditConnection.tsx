@@ -1,10 +1,10 @@
 import {
-  AntTabs as Tabs,
-  AntTabsProps as TabsProps,
-  Box,
-  Heading,
-  Text,
-  VStack,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  Tabs,
+  TabsProps,
 } from "fidesui";
 import React, { useEffect, useMemo, useState } from "react";
 

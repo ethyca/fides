@@ -1,14 +1,14 @@
 import {
-  AntAvatar as Avatar,
-  AntDescriptions as Descriptions,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntList as List,
-  AntParagraph as Paragraph,
-  AntTabs as Tabs,
-  AntTabsProps as TabsProps,
+  Avatar,
+  Descriptions,
+  Flex,
+  Form,
   Icons,
+  List,
+  Paragraph,
   SparkleIcon,
+  Tabs,
+  TabsProps,
 } from "fidesui";
 import { useMemo } from "react";
 

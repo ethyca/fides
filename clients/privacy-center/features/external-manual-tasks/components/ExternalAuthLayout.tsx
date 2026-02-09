@@ -6,11 +6,7 @@
  * Follows the admin-ui login design pattern with Fides logo and centered form box.
  */
 
-import {
-  AntFlex as Flex,
-  AntSpace as Space,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, Space, Typography } from "fidesui";
 import React from "react";
 
 import { useConfig } from "~/features/common/config.slice";

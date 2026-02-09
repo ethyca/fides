@@ -6,7 +6,7 @@ import {
 import ConnectionTypeLogo, {
   connectionLogoFromSystemType,
 } from "datastore-connections/ConnectionTypeLogo";
-import { AntSpace as Space, AntTypography as Typography } from "fidesui";
+import { Space, Typography } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";

@@ -1,7 +1,7 @@
 import json
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 import jose.exceptions
@@ -729,7 +729,11 @@ def user_login(
         )
 
     logger.info("Creating login access token")
-    access_code = client.create_access_code_jwe(config.security.app_encryption_key)
+    expire_minutes = config.security.oauth_access_token_expire_minutes
+    access_code = client.create_access_code_jwe(
+        config.security.app_encryption_key,
+        token_expire_minutes=expire_minutes,
+    )
 
     # Sleep for a random time period
     time.sleep(random.uniform(0.00, 0.50))
@@ -740,9 +744,14 @@ def user_login(
             status_code=HTTP_403_FORBIDDEN, detail="Incorrect username or password."
         )
 
+    expires_at = datetime.now() + timedelta(minutes=expire_minutes)
     return UserLoginResponse(
         user_data=user,
-        token_data=AccessToken(access_token=access_code),
+        token_data=AccessToken(
+            access_token=access_code,
+            expires_in=expire_minutes * 60,
+            expires_at=expires_at.isoformat(),
+        ),
     )
 
 
@@ -784,6 +793,7 @@ def verify_invite_code(
 def accept_user_invite(
     *,
     db: Session = Depends(get_db),
+    config: FidesConfig = Depends(get_config),
     user_data: UserForcePasswordReset,
     verified_invite: FidesUserInvite = Depends(verify_invite_code),
     user_service: UserService = Depends(get_user_service),
@@ -801,7 +811,13 @@ def accept_user_invite(
 
     user, access_code = user_service.accept_invite(user, user_data.new_password)
 
+    expire_minutes = config.security.oauth_access_token_expire_minutes
+    expires_at = datetime.now() + timedelta(minutes=expire_minutes)
     return UserLoginResponse(
         user_data=user,
-        token_data=AccessToken(access_token=access_code),
+        token_data=AccessToken(
+            access_token=access_code,
+            expires_in=expire_minutes * 60,
+            expires_at=expires_at.isoformat(),
+        ),
     )

@@ -1,8 +1,4 @@
-import {
-  AntAvatar as Avatar,
-  AntAvatarProps as AvatarProps,
-  Icons,
-} from "fidesui";
+import { Avatar, AvatarProps, Icons } from "fidesui";
 import React, { useMemo } from "react";
 
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";

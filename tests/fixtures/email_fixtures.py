@@ -157,7 +157,7 @@ def attentive_email_connection_config(db: Session) -> Generator:
 
 @pytest.fixture(scope="function")
 def test_attentive_erasure_email_connector(
-    attentive_email_connection_config: Dict[str, str]
+    attentive_email_connection_config: Dict[str, str],
 ) -> AttentiveConnector:
     return AttentiveConnector(configuration=attentive_email_connection_config)
 

@@ -1,7 +1,7 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import List, Optional, Pattern, Tuple, Union
+from typing import List, Literal, Optional, Pattern, Tuple, Union
 
 from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
@@ -96,6 +96,10 @@ class SecuritySettings(FidesSettings):
     rate_limit_client_ip_header: Optional[str] = Field(
         default=None,
         description="The header used to determine the client IP address for rate limiting. If not set or set to empty string, rate limiting will be disabled.",
+    )
+    headers_mode: Union[Literal["none"], Literal["recommended"]] = Field(
+        default="none",
+        description="Controls what security headers are included in Fides server responses.",
     )
     request_rate_limit: str = Field(
         default="2000/minute",

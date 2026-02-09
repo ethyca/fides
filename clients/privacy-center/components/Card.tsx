@@ -1,4 +1,8 @@
-import { Flex, Image, Text } from "fidesui";
+import {
+  ChakraFlex as Flex,
+  ChakraImage as Image,
+  ChakraText as Text,
+} from "fidesui";
 import React from "react";
 
 type CardProps = {

@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, List, Optional, Union
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class Operator(str, Enum):
+class Operator(StrEnum):
     # Basic comparison operators
     # Column value equals user input (e.g., user.role eq "admin")
     eq = "eq"
@@ -68,7 +68,7 @@ class Operator(str, Enum):
     contains = "contains"
 
 
-class GroupOperator(str, Enum):
+class GroupOperator(StrEnum):
     and_ = "and"
     or_ = "or"
 
@@ -127,3 +127,33 @@ EvaluationResult = Union[ConditionEvaluationResult, GroupEvaluationResult]
 Condition = Union[ConditionLeaf, ConditionGroup]
 ConditionGroup.model_rebuild()
 GroupEvaluationResult.model_rebuild()
+
+
+class PolicyEvaluationResult(BaseModel):
+    """Result of policy evaluation.
+
+    Returned when evaluating a privacy request against policies with conditions.
+    Contains the matched policy (or default) and optional evaluation details.
+    """
+
+    policy: Any = Field(description="The matched Policy database model")
+    evaluation_result: Optional[EvaluationResult] = Field(
+        None, description="Detailed evaluation report (None for default policy)"
+    )
+    is_default: bool = Field(False, description="Whether the default policy was used")
+
+    model_config = {
+        "from_attributes": True,
+        "frozen": True,
+        "arbitrary_types_allowed": True,
+    }
+
+
+class PolicyEvaluationSpecificity(BaseModel):
+    """Specificity of a policy evaluation.
+
+    Contains the total number of leaf conditions and the highest location hierarchy tier present.
+    """
+
+    condition_count: int = Field(description="Total number of leaf conditions")
+    location_tier: int = Field(description="Highest location hierarchy tier present")

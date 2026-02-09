@@ -1,6 +1,6 @@
 "use client";
 
-import { Flex } from "fidesui";
+import { ChakraFlex as Flex } from "fidesui";
 
 import Logo from "./Logo";
 

@@ -1,8 +1,8 @@
 import {
-  AntColumnsType as ColumnsType,
-  AntSpace as Space,
+  ColumnsType,
   formatIsoLocation,
   isoStringToEntry,
+  Space,
 } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";

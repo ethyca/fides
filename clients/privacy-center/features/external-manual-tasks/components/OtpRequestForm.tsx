@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  AntAlert as Alert,
-  AntButton as Button,
-  AntInput as Input,
-  AntSpace as Space,
-  AntTypography as Typography,
-} from "fidesui";
+import { Alert, Button, Input, Space, Typography } from "fidesui";
 import React, { useEffect, useState } from "react";
 
 import { OtpRequestFormProps } from "../types";

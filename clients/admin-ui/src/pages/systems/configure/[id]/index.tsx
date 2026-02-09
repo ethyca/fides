@@ -1,9 +1,10 @@
-import { AntButton as Button, AntTabs as Tabs, Text } from "fidesui";
+import { Button, ChakraText as Text, Tabs } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
@@ -35,7 +36,11 @@ const ConfigureSystem: NextPage = () => {
       : router.query.id;
   }
 
-  const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId);
+  const {
+    data: system,
+    isLoading,
+    error,
+  } = useGetSystemByFidesKeyQuery(systemId);
 
   const { error: dictionaryError, isLoading: isDictionaryLoading } =
     useGetAllDictionaryEntriesQuery();
@@ -68,13 +73,18 @@ const ConfigureSystem: NextPage = () => {
     );
   }
 
-  if (!system) {
+  if (error) {
     return (
-      <Layout title="Systems">
-        <Text data-testid="system-not-found">
-          Could not find a system with id {systemId}
-        </Text>
-      </Layout>
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching the system ${systemId}`}
+        actions={[
+          {
+            label: "Return to systems",
+            onClick: () => router.push(SYSTEM_ROUTE),
+          },
+        ]}
+      />
     );
   }
 

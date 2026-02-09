@@ -1,13 +1,13 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
-  AntEmpty as Empty,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  Empty,
 } from "fidesui";
 
 import { PreferencesSaved } from "~/types/api";

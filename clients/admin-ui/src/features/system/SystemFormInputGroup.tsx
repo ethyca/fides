@@ -1,4 +1,9 @@
-import { Box, Heading, Spacer, Stack } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraSpacer as Spacer,
+  ChakraStack as Stack,
+} from "fidesui";
 
 const SystemFormInputGroup = ({
   heading,

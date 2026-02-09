@@ -1,4 +1,8 @@
-import { Flex, Spinner, SpinnerProps } from "fidesui";
+import {
+  ChakraFlex as Flex,
+  ChakraSpinner as Spinner,
+  ChakraSpinnerProps as SpinnerProps,
+} from "fidesui";
 
 interface FidesSpinnerProps extends SpinnerProps {
   alignment?: "center" | "start" | "end";

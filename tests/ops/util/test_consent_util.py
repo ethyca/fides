@@ -483,9 +483,7 @@ class TestCacheSystemStatusesForConsentReporting:
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
-            privacy_request_with_consent_policy.id
-        )
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = privacy_request_with_consent_policy.id
         privacy_preference_history.save(db)
 
         cache_initial_status_and_identities_for_consent_reporting(
@@ -530,9 +528,7 @@ class TestCacheSystemStatusesForConsentReporting:
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
-            privacy_request_with_consent_policy.id
-        )
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = privacy_request_with_consent_policy.id
         privacy_preference_history.save(db)
 
         cache_initial_status_and_identities_for_consent_reporting(
@@ -581,9 +577,7 @@ class TestCacheSystemStatusesForConsentReporting:
         )
         privacy_preference_history.save(db)
 
-        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
-            privacy_request_with_consent_policy.id
-        )
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = privacy_request_with_consent_policy.id
         privacy_preference_history.save(db)
 
         cache_initial_status_and_identities_for_consent_reporting(

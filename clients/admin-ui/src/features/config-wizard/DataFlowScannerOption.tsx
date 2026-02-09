@@ -1,4 +1,4 @@
-import { AntTooltip as Tooltip, Box } from "fidesui";
+import { ChakraBox as Box, Tooltip } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 import { useAppSelector } from "~/app/hooks";

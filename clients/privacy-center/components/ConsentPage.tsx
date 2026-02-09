@@ -2,7 +2,7 @@
 
 import {
   FidesCookie,
-  getConsentContext,
+  getGpcContext,
   getOrMakeFidesCookie,
   initializeI18n,
   loadMessagesFromFiles,
@@ -10,7 +10,7 @@ import {
   saveFidesCookie,
   setupI18n,
 } from "fides-js";
-import { Stack, useToast } from "fidesui";
+import { ChakraStack as Stack, useChakraToast as useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -74,7 +74,7 @@ const ConsentPage: NextPage = () => {
   ] = useLazyGetConsentRequestPreferencesQuery();
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
 
-  const consentContext = useMemo(() => getConsentContext(), []);
+  const consentContext = useMemo(() => getGpcContext(), []);
 
   // TODO(#2299): Use error utils from shared package.
   const toastError = useCallback(

@@ -130,7 +130,7 @@ def reset_mailchimp_data(
     request: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.PUT,
         headers={"Content-Type": "application/json"},
-        path=f'/3.0/lists/{member["list_id"]}/members/{member["id"]}',
+        path=f"/3.0/lists/{member['list_id']}/members/{member['id']}",
         body=json.dumps(member),
     )
     connector.create_client().send(request)

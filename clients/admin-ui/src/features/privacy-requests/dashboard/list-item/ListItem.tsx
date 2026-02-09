@@ -1,9 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntList as List,
-  formatIsoLocation,
-  isoStringToEntry,
-} from "fidesui";
+import { Flex, formatIsoLocation, isoStringToEntry, List } from "fidesui";
 import { isArray, toString } from "lodash";
 import React from "react";
 

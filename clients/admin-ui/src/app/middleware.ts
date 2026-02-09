@@ -1,5 +1,5 @@
 import { isRejectedWithValue, Middleware } from "@reduxjs/toolkit";
-import { createStandaloneToast } from "fidesui";
+import { createChakraStandaloneToast as createStandaloneToast } from "fidesui";
 
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { selectApplicationConfig } from "~/features/config-settings/config-settings.slice";

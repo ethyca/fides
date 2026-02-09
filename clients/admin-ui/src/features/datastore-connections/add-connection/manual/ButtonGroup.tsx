@@ -1,7 +1,4 @@
-import {
-  Button as ChakraButton,
-  ButtonGroup as ChakraButtonGroup,
-} from "fidesui";
+import { ChakraButton, ChakraButtonGroup } from "fidesui";
 import React from "react";
 
 type ButtonGroupProps = {

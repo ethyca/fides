@@ -1,4 +1,4 @@
-import { AntTag as Tag, Stack, Text } from "fidesui";
+import { ChakraStack as Stack, ChakraText as Text, Tag } from "fidesui";
 
 import DocsLink from "~/features/common/DocsLink";
 

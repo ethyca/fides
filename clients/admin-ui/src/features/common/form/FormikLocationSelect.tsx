@@ -1,6 +1,6 @@
 import {
-  AntForm as Form,
-  AntFormItemProps as FormItemProps,
+  Form,
+  FormItemProps,
   LocationSelect,
   LocationSelectProps,
 } from "fidesui";
@@ -35,6 +35,7 @@ export const FormikLocationSelect = ({
       label={label}
       extra={extra}
       htmlFor={id ?? name}
+      name={name}
     >
       <LocationSelect
         id={id ?? name}

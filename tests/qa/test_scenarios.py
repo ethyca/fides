@@ -19,7 +19,6 @@ if str(qa_dir) not in sys.path:
     sys.path.insert(0, str(qa_dir))
 
 import pytest
-
 from qa.__main__ import discover_scenarios
 from qa.utils import QATestScenario
 
@@ -45,21 +44,21 @@ def test_scenario_setup_and_teardown(scenario_name, scenario_class):
     scenario = create_scenario_instance(scenario_class)
 
     # Verify basic properties
-    assert hasattr(
-        scenario, "description"
-    ), f"Scenario {scenario_name} should have description property"
-    assert (
-        scenario.description
-    ), f"Scenario {scenario_name} should have non-empty description"
+    assert hasattr(scenario, "description"), (
+        f"Scenario {scenario_name} should have description property"
+    )
+    assert scenario.description, (
+        f"Scenario {scenario_name} should have non-empty description"
+    )
 
     # Test setup
     setup_result = scenario.setup()
-    assert (
-        setup_result is True
-    ), f"Scenario {scenario_name} setup should succeed and return True"
+    assert setup_result is True, (
+        f"Scenario {scenario_name} setup should succeed and return True"
+    )
 
     # Test teardown after setup
     final_teardown_result = scenario.teardown()
-    assert isinstance(
-        final_teardown_result, bool
-    ), f"Scenario {scenario_name} teardown should return boolean"
+    assert isinstance(final_teardown_result, bool), (
+        f"Scenario {scenario_name} teardown should return boolean"
+    )

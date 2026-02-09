@@ -1,10 +1,10 @@
 import {
-  AntForm as Form,
-  AntSelect as Select,
-  Box,
-  Heading,
-  Spinner,
-  Text,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+  Form,
+  Select,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 

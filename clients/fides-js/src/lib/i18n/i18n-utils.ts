@@ -67,6 +67,12 @@ function extractMessagesFromExperienceConfig(
     "banner_description",
     "banner_title",
     "description",
+    // GPC (Global Privacy Control) translatable fields
+    "gpc_label",
+    "gpc_description",
+    "gpc_status_applied_label",
+    "gpc_status_overridden_label",
+    "gpc_title",
     "purpose_header",
     "privacy_policy_link_label",
     "privacy_policy_url",
@@ -684,7 +690,7 @@ export const localizeModalLinkText = (
 ): string => {
   let modalLinkText = DEFAULT_MODAL_LINK_LABEL;
   if (!disableLocalization) {
-    if (i18n.t("exp.modal_link_label") !== "exp.modal_link_label") {
+    if (messageExists(i18n, "exp.modal_link_label")) {
       modalLinkText = i18n.t("exp.modal_link_label");
     }
   } else {

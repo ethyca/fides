@@ -1,4 +1,4 @@
-import { Center, Spinner } from "fidesui";
+import { ChakraCenter as Center, ChakraSpinner as Spinner } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 

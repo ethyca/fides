@@ -1,4 +1,9 @@
-import { CheckCircleIcon, Flex, Text, WarningTwoIcon } from "fidesui";
+import {
+  ChakraCheckCircleIcon as CheckCircleIcon,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  ChakraWarningTwoIcon as WarningTwoIcon,
+} from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
 import { ConnectionSystemTypeMap } from "~/types/api";

@@ -1,11 +1,11 @@
 import {
-  AntTag as Tag,
-  Container,
-  Divider,
-  Heading,
-  HStack,
-  Stack,
-  Text,
+  ChakraContainer as Container,
+  ChakraDivider as Divider,
+  ChakraHeading as Heading,
+  ChakraHStack as HStack,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  Tag,
 } from "fidesui";
 
 import DocsLink from "~/features/common/DocsLink";

@@ -1,4 +1,4 @@
-import { AntButton as Button, AntFlex as Flex } from "fidesui";
+import { Button, Flex } from "fidesui";
 import _ from "lodash";
 
 import type { DetailsDrawerProps } from "./types";

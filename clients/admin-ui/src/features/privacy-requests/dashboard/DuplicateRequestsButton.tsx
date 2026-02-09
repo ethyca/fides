@@ -1,4 +1,4 @@
-import { AntButton as Button } from "fidesui";
+import { Button } from "fidesui";
 import Link from "next/link";
 import { useRouter } from "next/router";
 

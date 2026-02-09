@@ -1,12 +1,16 @@
 import {
   FidesCookie,
-  getConsentContext,
+  getGpcContext,
   getOrMakeFidesCookie,
   GpcStatus,
   resolveLegacyConsentValue,
   saveFidesCookie,
 } from "fides-js";
-import { Divider, Stack, useToast } from "fidesui";
+import {
+  ChakraDivider as Divider,
+  ChakraStack as Stack,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo } from "react";
 
@@ -42,7 +46,7 @@ const ConfigDrivenConsent = ({
   const toast = useToast();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const consentContext = useMemo(() => getConsentContext(), []);
+  const consentContext = useMemo(() => getGpcContext(), []);
   const fidesKeyToConsent = useAppSelector(selectFidesKeyToConsent);
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");

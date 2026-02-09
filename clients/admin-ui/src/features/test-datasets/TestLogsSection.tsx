@@ -1,5 +1,10 @@
 import { format } from "date-fns-tz";
-import { Box, Heading, HStack, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraHStack as HStack,
+  ChakraText as Text,
+} from "fidesui";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
 

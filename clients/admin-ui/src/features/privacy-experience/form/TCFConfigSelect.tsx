@@ -1,4 +1,4 @@
-import { AntTooltip as Tooltip } from "fidesui";
+import { Tooltip } from "fidesui";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";

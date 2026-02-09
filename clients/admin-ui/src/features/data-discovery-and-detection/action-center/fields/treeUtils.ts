@@ -1,30 +1,34 @@
-import { TreeResourceChangeIndicator } from "~/types/api";
+import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 
 import { CustomTreeDataNode } from "./types";
 
 /**
- * Updates a node's status if it exists in the tree
+ * Updates a node's status and optionally diffStatus if it exists in the tree
  * @param list The tree or subtree to update
  * @param key The key of the node to update
- * @param status The new status to set
+ * @param status The new update status to set
+ * @param diffStatus The new diff status to set (optional)
  * @returns The updated tree
  */
 const updateNodeStatus = (
   list: CustomTreeDataNode[],
   key: React.Key,
   status: TreeResourceChangeIndicator | null | undefined,
+  diffStatus?: DiffStatus | null | undefined,
 ): CustomTreeDataNode[] =>
   list.map((node) => {
     if (node.key === key) {
       return {
         ...node,
         status,
+        diffStatus,
       };
     }
     if (node.children) {
       return {
         ...node,
-        children: updateNodeStatus(node.children, key, status),
+        children: updateNodeStatus(node.children, key, status, diffStatus),
       };
     }
 
@@ -106,9 +110,32 @@ const findNodeByUrn = (
   return undefined;
 };
 
+/**
+ * Determines if the badge dot should be shown for a tree node
+ * Badge dots are hidden for muted resources
+ * @param treeNode The tree node to check
+ * @returns True if the badge dot should be shown
+ */
+const shouldShowBadgeDot = (treeNode: DatastoreStagedResourceTreeAPIResponse) =>
+  !!treeNode.update_status && treeNode.diff_status !== DiffStatus.MUTED;
+
+/**
+ * Collects all URNs from nodes including their descendants
+ * Used for tree-level actions that should affect all fields within
+ * @param nodes The nodes to collect URNs from
+ * @returns Array of all URNs including descendants
+ */
+const collectNodeUrns = (nodes: CustomTreeDataNode[]) =>
+  nodes.flatMap((node) => [
+    node.key.toString(),
+    ...collectAllDescendantUrns(node),
+  ]);
+
 export {
   collectAllDescendantUrns,
+  collectNodeUrns,
   findNodeByUrn,
   removeChildrenFromNode,
+  shouldShowBadgeDot,
   updateNodeStatus,
 };

@@ -1,4 +1,4 @@
-import { AntSelect as Select, Icons } from "fidesui";
+import { Icons, Select } from "fidesui";
 
 import { FilterQueryParams } from "~/features/privacy-requests/dashboard/hooks/usePrivacyRequestsFilters";
 import { ColumnSort } from "~/types/api";

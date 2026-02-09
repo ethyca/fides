@@ -14,7 +14,7 @@ import {
   CreateSaasConnectionConfigRequest,
   DatastoreConnectionSecretsRequest,
 } from "datastore-connections/types";
-import { Box } from "fidesui";
+import { ChakraBox as Box } from "fidesui";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 

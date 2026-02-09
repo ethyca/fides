@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntDefaultOptionType as DefaultOptionType,
-  AntFlex as Flex,
-  AntTypography as Typography,
-  ModalProps,
+  Button,
+  ChakraModalProps as ModalProps,
+  DefaultOptionType,
+  Flex,
+  Typography,
 } from "fidesui";
 import { MouseEventHandler, useCallback, useState } from "react";
 

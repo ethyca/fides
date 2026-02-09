@@ -1,4 +1,9 @@
-import { Flex, FormControl, Text, VStack } from "fidesui";
+import {
+  ChakraFlex as Flex,
+  ChakraFormControl as FormControl,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";
 import { useEffect, useRef, useState } from "react";

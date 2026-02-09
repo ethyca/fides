@@ -2,7 +2,7 @@ import datetime
 from typing import Any, List, Literal, Optional, Union
 
 from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
+from fastapi_pagination.ext.sqlalchemy import paginate as async_paginate
 from fideslang.validation import FidesKey
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession

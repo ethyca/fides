@@ -1,4 +1,8 @@
-import { Modal, ModalContent, ModalOverlay } from "fidesui";
+import {
+  ChakraModal as Modal,
+  ChakraModalContent as ModalContent,
+  ChakraModalOverlay as ModalOverlay,
+} from "fidesui";
 import React from "react";
 
 type RequestModalProps = {

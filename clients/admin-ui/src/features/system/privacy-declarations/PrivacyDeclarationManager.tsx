@@ -1,6 +1,11 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Box, Stack, Text, useToast } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";

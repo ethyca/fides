@@ -127,7 +127,9 @@ def get_system_connections(
 )
 def patch_connections(
     fides_key: str,
-    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
+    configs: Annotated[
+        List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)
+    ],  # type: ignore
     db: Session = Depends(deps.get_db),
 ) -> BulkPutConnectionConfiguration:
     """

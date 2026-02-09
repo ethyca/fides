@@ -1,4 +1,4 @@
-import { Box, useToast } from "fidesui";
+import { ChakraBox as Box, useChakraToast as useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 

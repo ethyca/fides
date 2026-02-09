@@ -1,4 +1,8 @@
-import { AntSwitch as Switch, Flex, FormLabel } from "fidesui";
+import {
+  ChakraFlex as Flex,
+  ChakraFormLabel as FormLabel,
+  Switch,
+} from "fidesui";
 
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 

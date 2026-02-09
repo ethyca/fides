@@ -6,20 +6,20 @@ import {
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
-  AntButton as Button,
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
-  isNumeric,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Textarea,
-  VStack,
+  Button,
+  ChakraFlex as Flex,
+  ChakraFormControl as FormControl,
+  ChakraFormErrorMessage as FormErrorMessage,
+  ChakraFormLabel as FormLabel,
+  ChakraInput as Input,
+  ChakraNumberDecrementStepper as NumberDecrementStepper,
+  ChakraNumberIncrementStepper as NumberIncrementStepper,
+  ChakraNumberInput as NumberInput,
+  ChakraNumberInputField as NumberInputField,
+  ChakraNumberInputStepper as NumberInputStepper,
+  ChakraTextarea as Textarea,
+  ChakraVStack as VStack,
+  isChakraNumeric as isNumeric,
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik } from "formik";
 import React, { useEffect, useRef } from "react";

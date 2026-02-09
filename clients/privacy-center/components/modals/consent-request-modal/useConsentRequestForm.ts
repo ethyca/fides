@@ -1,5 +1,5 @@
 import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useEffect, useState } from "react";

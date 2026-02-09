@@ -1,11 +1,4 @@
-import {
-  AntAlert as Alert,
-  AntButton as Button,
-  AntFlex as Flex,
-  AntModal as Modal,
-  AntTable as Table,
-  AntTypography as Typography,
-} from "fidesui";
+import { Alert, Button, Flex, Modal, Table, Typography } from "fidesui";
 
 import { StagedResourceAPIResponse } from "~/types/api";
 

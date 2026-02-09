@@ -1,4 +1,4 @@
-import { AntButton as Button, AntModal as Modal } from "fidesui";
+import { Button, Modal } from "fidesui";
 import React, { useCallback, useState } from "react";
 
 import { useConfig } from "~/features/common/config.slice";

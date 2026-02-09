@@ -1,8 +1,7 @@
 import enum
 
-from sqlalchemy import Column
+from sqlalchemy import Column, String
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,

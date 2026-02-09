@@ -6,16 +6,16 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import { PatchDatasetsConfigRequest } from "datastore-connections/types";
 import {
-  AntButton as Button,
-  AntDivider as Divider,
-  AntSelect as Select,
-  Box,
-  Center,
-  HStack,
-  Spinner,
-  Text,
-  TextProps,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraHStack as HStack,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+  ChakraTextProps as TextProps,
+  ChakraVStack as VStack,
+  Divider,
+  Select,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";

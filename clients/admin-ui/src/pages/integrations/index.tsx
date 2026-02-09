@@ -1,19 +1,20 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntTable as Table,
-  AntTableProps as TableProps,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Button,
+  ColumnsType,
   CUSTOM_TAG_COLOR,
-  useDisclosure,
+  Table,
+  TableProps,
+  Tag,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { useConnectionLogo } from "~/features/common/hooks";
@@ -93,7 +94,7 @@ const IntegrationListView: NextPage = () => {
     );
   }, [newIntegrationManagement]);
 
-  const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
+  const { data, isLoading, error } = useGetAllDatastoreConnectionsQuery({
     connection_type: connectionTypesToQuery,
     size: pageSize,
     page,
@@ -234,6 +235,15 @@ const IntegrationListView: NextPage = () => {
       </div>
     ),
   };
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching your integrations"
+      />
+    );
+  }
 
   return (
     <Layout title="Integrations">

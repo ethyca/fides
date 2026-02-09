@@ -1,4 +1,7 @@
-import { Text, UseToastOptions } from "fidesui";
+import {
+  ChakraText as Text,
+  ChakraUseToastOptions as UseToastOptions,
+} from "fidesui";
 import { ReactNode } from "react";
 
 const SuccessMessage = ({

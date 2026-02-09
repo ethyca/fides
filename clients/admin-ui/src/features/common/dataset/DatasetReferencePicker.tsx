@@ -1,9 +1,4 @@
-import {
-  AntFlex as Flex,
-  AntSelect as Select,
-  AntTreeSelect as TreeSelect,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, Select, TreeSelect, Typography } from "fidesui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {

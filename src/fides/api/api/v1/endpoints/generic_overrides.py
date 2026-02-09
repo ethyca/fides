@@ -6,7 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
+from fastapi_pagination.ext.sqlalchemy import paginate as async_paginate
 from fideslang.models import Dataset as FideslangDataset
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import not_, select

@@ -1,5 +1,10 @@
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
-import { Box, Heading, List, ListItem } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraList as List,
+  ChakraListItem as ListItem,
+} from "fidesui";
 import React from "react";
 
 import { useAppSelector } from "~/app/hooks";

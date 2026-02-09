@@ -1,13 +1,13 @@
 import {
-  AntSwitch as Switch,
-  Box,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
+  ChakraBox as Box,
+  ChakraTable as Table,
+  ChakraTbody as Tbody,
+  ChakraTd as Td,
+  ChakraText as Text,
+  ChakraTh as Th,
+  ChakraThead as Thead,
+  ChakraTr as Tr,
+  Switch,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";

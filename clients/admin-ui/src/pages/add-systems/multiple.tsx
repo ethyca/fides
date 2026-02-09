@@ -1,4 +1,8 @@
-import { AntLink as LinkText, Box, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraText as Text,
+  Link as LinkText,
+} from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 

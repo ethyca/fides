@@ -1,13 +1,13 @@
 import type { Identifier, XYCoord } from "dnd-core";
 import {
-  AntSwitch as Switch,
-  Box,
-  FormControl,
-  FormLabel,
+  ChakraBox as Box,
+  ChakraFormControl as FormControl,
+  ChakraFormLabel as FormLabel,
+  ChakraList as List,
+  ChakraListIcon as ListIcon,
+  ChakraListItem as ListItem,
   GripDotsVerticalIcon,
-  List,
-  ListIcon,
-  ListItem,
+  Switch,
 } from "fidesui";
 import produce from "immer";
 import React, { useCallback, useEffect, useRef, useState } from "react";

@@ -1,16 +1,16 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  AntButton as Button,
-  AntSelect as Select,
-  AntTooltip as Tooltip,
+  Button,
+  ChakraHeading as Heading,
+  ChakraHStack as HStack,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  ChakraVStack as VStack,
   ErrorWarningIcon,
   GreenCheckCircleIcon,
-  Heading,
-  HStack,
-  Stack,
-  Text,
-  useToast,
-  VStack,
+  Select,
+  Tooltip,
+  useChakraToast as useToast,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useEffect, useMemo, useState } from "react";

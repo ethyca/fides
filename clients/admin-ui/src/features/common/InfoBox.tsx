@@ -1,10 +1,10 @@
 import {
-  CloseIcon,
-  Flex,
-  Heading,
-  HStack,
-  Text,
-  WarningTwoIcon,
+  ChakraCloseIcon as CloseIcon,
+  ChakraFlex as Flex,
+  ChakraHeading as Heading,
+  ChakraHStack as HStack,
+  ChakraText as Text,
+  ChakraWarningTwoIcon as WarningTwoIcon,
 } from "fidesui";
 
 const InfoBox = ({

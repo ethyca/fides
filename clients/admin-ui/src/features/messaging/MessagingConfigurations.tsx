@@ -1,12 +1,12 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  AntButton as Button,
-  AntSpace as Space,
-  AntTable as Table,
-  Flex,
+  Button,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  ChakraVStack as VStack,
   Icons,
-  Text,
-  VStack,
+  Space,
+  Table,
 } from "fidesui";
 import { useRouter } from "next/router";
 

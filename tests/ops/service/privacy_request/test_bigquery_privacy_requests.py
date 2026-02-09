@@ -335,18 +335,18 @@ def test_bigquery_missing_tables_handling_erasure_leaf_collection(
     ]
 
     # Verify erasure completed successfully for the leaf collection
-    assert (
-        missing_collection_logs
-    ), f"No erasure logs found for {missing_collection_key}"
+    assert missing_collection_logs, (
+        f"No erasure logs found for {missing_collection_key}"
+    )
 
     complete_logs = [
         log
         for log in missing_collection_logs
         if log.status == ExecutionLogStatus.complete
     ]
-    assert (
-        complete_logs
-    ), f"Expected erasure to complete successfully for leaf collection"
+    assert complete_logs, (
+        "Expected erasure to complete successfully for leaf collection"
+    )
 
 
 @pytest.mark.integration_external
@@ -409,6 +409,6 @@ def test_bigquery_missing_tables_handling_erasure_dependency_collection(
 
     # Verify that erasure never ran for the collection with dependencies
     # Since access failed, erasure phase should not have been attempted
-    assert (
-        not missing_collection_logs
-    ), f"Erasure should not have run for collection with failed dependencies, but found logs: {missing_collection_logs}"
+    assert not missing_collection_logs, (
+        f"Erasure should not have run for collection with failed dependencies, but found logs: {missing_collection_logs}"
+    )

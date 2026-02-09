@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntTable as Table,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
+  Button,
+  ColumnsType,
+  Empty,
+  Flex,
+  Table,
+  Tooltip,
+  Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";

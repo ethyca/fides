@@ -124,23 +124,12 @@
       <pre id="consent-json"></pre>
 
       <h2>Consent Modal Link</h2>
-      <pre><div id="render-link-here"></div></pre>
+      <pre><button id="fides-modal-link"></button></pre>
       <script>
-        setTimeout(() => {
-          /** NOTE: normally you would add the `<button>` with "fides-modal-link" id directly to
-           * your page instead of doing this dynamically as we're doing here. For the purposes
-           * of this demo, we're adding it dynamically after a delay to allow for simulating
-           * a dynamic or slow page.
-           */
-          const app = document.getElementById("render-link-here");
-          if (app) {
-            const button = document.createElement("button");
-            // Display the fides configured modal link label (if any).
-            button.innerText = Fides.getModalLinkLabel();
-            button.id = "fides-modal-link";
-            app.appendChild(button);
-          }
-        }, window.render_delay);
+        window.addEventListener("FidesLocaleUpdated", () => {
+          document.getElementById("fides-modal-link").textContent =
+            Fides.getModalLinkLabel();
+        });
       </script>
 
       <h2>Consent Experience</h2>
@@ -148,6 +137,15 @@
 
       <h2>Geolocation</h2>
       <pre id="consent-geolocation"></pre>
+
+      <h2>Locale</h2>
+      <pre id="consent-locale"></pre>
+      <script>
+        window.addEventListener("FidesLocaleUpdated", (evt) => {
+          document.getElementById("consent-locale").textContent =
+            evt.detail.locale;
+        });
+      </script>
 
       <h2>Consent Options</h2>
       <pre id="consent-options"></pre>
@@ -213,12 +211,6 @@
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,
         });
-
-        // update the modal link label if it's not already set. This is useful for displaying the correct language after fides has initialized and the user's language has been detected.
-        const modalLink = document.getElementById("fides-modal-link");
-        if (!!modalLink) {
-          modalLink.innerText = Fides.getModalLinkLabel();
-        }
       };
 
       // Handle both synchronous & asynchronous initialization

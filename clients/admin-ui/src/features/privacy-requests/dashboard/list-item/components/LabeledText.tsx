@@ -1,4 +1,4 @@
-import { AntFlex as Flex, AntText as Text, CopyTooltip } from "fidesui";
+import { CopyTooltip, Flex, Text } from "fidesui";
 import { lowerCase } from "lodash";
 
 type LabeledProps = React.PropsWithChildren<{

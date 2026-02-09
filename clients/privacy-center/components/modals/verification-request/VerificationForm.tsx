@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntText as Text,
-} from "fidesui";
+import { Button, Flex, Form, Input, Text } from "fidesui";
 import React, { useEffect } from "react";
 
 import { ModalViews, VerificationType } from "../types";

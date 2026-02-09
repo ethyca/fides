@@ -1,4 +1,10 @@
-import { Heading, Link, Spinner, Stack, Text } from "fidesui";
+import {
+  ChakraHeading as Heading,
+  ChakraLink as Link,
+  ChakraSpinner as Spinner,
+  ChakraStack as Stack,
+  ChakraText as Text,
+} from "fidesui";
 import NextLink from "next/link";
 
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";

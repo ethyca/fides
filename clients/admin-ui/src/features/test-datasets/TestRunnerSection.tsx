@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntSelect as Select,
-  Heading,
-  HStack,
-  Text,
-  Textarea,
-  useToast,
-  VStack,
+  Button,
+  ChakraHeading as Heading,
+  ChakraHStack as HStack,
+  ChakraText as Text,
+  ChakraTextarea as Textarea,
+  ChakraVStack as VStack,
+  Select,
+  useChakraToast as useToast,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";

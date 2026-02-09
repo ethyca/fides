@@ -96,7 +96,7 @@ def test_api_key_auth_body():
     authenticated_request = AuthenticationStrategy.get_strategy(
         "api_key", {"body": '{\n  "key": "<api_key>"\n}\n'}
     ).add_authentication(req, ConnectionConfig(secrets=secrets))
-    assert authenticated_request.url == f"https://localhost.com/"
+    assert authenticated_request.url == "https://localhost.com/"
 
     assert json.loads(authenticated_request.body) == {
         "opt_out": True,

@@ -1,4 +1,7 @@
-import { HStack, StackProps } from "fidesui";
+import {
+  ChakraHStack as HStack,
+  ChakraStackProps as StackProps,
+} from "fidesui";
 
 export const TableActionBar = ({ children, ...props }: StackProps) => (
   <HStack

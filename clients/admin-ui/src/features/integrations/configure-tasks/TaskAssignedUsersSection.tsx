@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntSelect as Select,
-  AntTable as Table,
-  AntTypography as Typography,
-  Box,
-  Flex,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraText as Text,
   Icons,
-  Text,
+  Select,
+  Table,
+  Typography,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 

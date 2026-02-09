@@ -31,9 +31,9 @@ def initiate_bcrypt_migration_task() -> None:
     if CONFIG.test_mode:
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    )
 
     logger.info("Initiating scheduler for hash migration")
     scheduler.add_job(

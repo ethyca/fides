@@ -1,10 +1,10 @@
 import {
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
+  ChakraDrawer as Drawer,
+  ChakraDrawerBody as DrawerBody,
+  ChakraDrawerCloseButton as DrawerCloseButton,
+  ChakraDrawerContent as DrawerContent,
+  ChakraDrawerHeader as DrawerHeader,
+  ChakraDrawerOverlay as DrawerOverlay,
 } from "fidesui";
 
 import { InfoHeading, InfoText } from "~/features/common/copy/components";

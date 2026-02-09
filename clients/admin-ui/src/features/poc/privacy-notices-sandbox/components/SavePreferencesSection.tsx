@@ -1,10 +1,5 @@
 import type { Key } from "antd/es/table/interface";
-import {
-  AntButton as Button,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Empty, Flex, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo, useState } from "react";
 

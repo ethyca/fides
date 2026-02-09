@@ -1,17 +1,18 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
+  Button,
+  ChakraStack as Stack,
+  Checkbox,
+  Form,
   LinkIcon,
   LocationSelect,
-  Stack,
-  useClipboard,
-  useToast,
+  useChakraClipboard as useClipboard,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form as FormikForm, Formik, useField } from "formik";
 import { lazy } from "yup";
 import * as Yup from "yup";
 
-import { CustomCheckbox, CustomTextInput } from "~/features/common/form/inputs";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   findActionFromPolicyKey,
   generateValidationSchemaFromAction,
@@ -152,6 +153,24 @@ const CustomFields = ({
   );
 };
 
+const CheckboxField = ({ name, label }: { name: string; label: string }) => {
+  const [field] = useField({ name, type: "checkbox" });
+
+  return (
+    <Form.Item>
+      <Checkbox
+        name={field.name}
+        checked={field.checked}
+        onChange={field.onChange}
+        onBlur={field.onBlur}
+        data-testid={`input-${field.name}`}
+      >
+        {label}
+      </Checkbox>
+    </Form.Item>
+  );
+};
+
 const SubmitPrivacyRequestForm = ({
   onSubmit,
   onCancel,
@@ -220,7 +239,7 @@ const SubmitPrivacyRequestForm = ({
               <CustomFields
                 customFieldInputs={currentAction?.custom_privacy_request_fields}
               />
-              <CustomCheckbox
+              <CheckboxField
                 name="is_verified"
                 label="I confirm that I have verified this user information"
               />

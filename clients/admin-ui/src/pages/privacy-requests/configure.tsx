@@ -1,9 +1,9 @@
 import {
-  AntTypography as Typography,
-  Box,
-  Heading,
-  LinkBox,
-  LinkOverlay,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraLinkBox as LinkBox,
+  ChakraLinkOverlay as LinkOverlay,
+  Typography,
 } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
