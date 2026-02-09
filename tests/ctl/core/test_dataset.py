@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from pathlib import Path as LocalPath
 from typing import Dict, Generator, List
 from urllib.parse import quote_plus
 from uuid import uuid4
@@ -9,7 +10,7 @@ import pytest
 import sqlalchemy
 from fideslang.manifests import write_manifest
 from fideslang.models import Dataset, DatasetCollection, DatasetField
-from pathlib import Path as LocalPathfrom sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
 
 from fides.api.db.crud import get_resource
 from fides.api.models.connectionconfig import (
