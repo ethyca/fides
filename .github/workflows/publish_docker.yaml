@@ -93,7 +93,10 @@ jobs:
           password: ${{ env.DOCKER_TOKEN }}
 
       - name: Install dependencies and nox
-        run: uv sync
+        run: |
+          uv venv
+          uv pip install setuptools wheel
+          uv sync
 
       # if neither prod, rc, beta or alpha git tag, then push images with the ":dev" tag
       # these dev images do not need a versioned/git-tagged image

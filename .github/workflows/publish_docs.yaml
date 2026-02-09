@@ -34,7 +34,11 @@ jobs:
         run: echo ${{ env.TAG }}
 
       - name: Install fides and docs dependencies
-        run: uv sync --extra all && uv pip install -r docs/fides/requirements.txt
+        run: |
+          uv venv
+          uv pip install setuptools wheel
+          uv sync --extra all
+          uv pip install -r docs/fides/requirements.txt
 
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1

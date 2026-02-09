@@ -75,7 +75,10 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Install dependencies and nox
-        run: uv sync
+        run: |
+          uv venv
+          uv pip install setuptools wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4

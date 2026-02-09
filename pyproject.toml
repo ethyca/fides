@@ -139,8 +139,8 @@ dependencies = [
 mssql = ["pymssql==2.3.7"]
 all = ["pymssql==2.3.7"]
 
-# If a dependency fails in CI with ModuleNotFoundError: pkg_resources, add it here
-# and ensure setuptools is installed before uv sync (e.g. in Dockerfile).
+# If a dependency fails in CI with ModuleNotFoundError: pkg_resources or setuptools, add it here.
+# CI and Dockerfile pre-install setuptools/wheel before uv sync so these packages can build.
 [tool.uv]
 no-build-isolation-package = ["pyahocorasick", "pymssql", "scylla-driver", "flatdict"]
 

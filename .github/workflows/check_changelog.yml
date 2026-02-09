@@ -74,7 +74,10 @@ jobs:
 
       - name: Install dependencies and nox
         if: success()
-        run: uv sync
+        run: |
+          uv venv
+          uv pip install setuptools wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         if: success()
