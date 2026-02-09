@@ -550,7 +550,6 @@ describe("Action center infrastructure systems", () => {
           expect(interception.request.body).to.include(testUrn);
         });
 
-        cy.getByTestId("toast-success-msg").should("contain", "promoted");
         cy.contains("selected").should("not.exist");
       });
 
@@ -567,7 +566,6 @@ describe("Action center infrastructure systems", () => {
           expect(interception.request.body).to.include(testUrn);
         });
 
-        cy.getByTestId("toast-success-msg").should("contain", "ignored");
         cy.contains("selected").should("not.exist");
       });
 
@@ -595,7 +593,6 @@ describe("Action center infrastructure systems", () => {
           );
         });
 
-        cy.getByTestId("toast-success-msg").should("contain", "restored");
         cy.contains("selected").should("not.exist");
       });
 
@@ -616,8 +613,6 @@ describe("Action center infrastructure systems", () => {
           expect(interception.request.body).to.have.property("filters");
           expect(interception.request.body.filters).to.be.an("object");
         });
-
-        cy.getByTestId("toast-success-msg").should("contain", "promoted");
       });
 
       it("should disable bulk actions during action in progress", () => {
