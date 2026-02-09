@@ -35,6 +35,9 @@ jobs:
       - name: Install Docs Requirements
         run: pip install -r docs/fides/requirements.txt
 
+      - name: Install setuptools
+        run: pip install setuptools==80.10.2
+
       - name: Install fides
         run: pip install -e ./[all]
 

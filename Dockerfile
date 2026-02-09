@@ -172,7 +172,7 @@ FROM backend AS prod
 COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
 USER root
 # Install without a symlink
-RUN pip install --no-cache-dir setuptools wheel
+RUN pip install --no-cache-dir setuptools==80.10.2 wheel
 RUN pip install --no-cache-dir --upgrade packaging
 RUN python setup.py sdist
 
