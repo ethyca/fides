@@ -1,6 +1,9 @@
 from typing import Any, Optional
 
-from fides.api.models.location_regulation_selections import get_location_by_id
+from fides.api.models.location_regulation_selections import (
+    get_location_by_id,
+    location_groups,
+)
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_experience import region_country
 from fides.api.schemas.policy import ActionType
@@ -138,14 +141,21 @@ def get_location_convenience_fields(location: Optional[str]) -> dict[str, Any]:
 
     location_data = get_location_by_id(location)
 
-    # If exact location not found, try to extract and look up the country code
+    # If not found in locations, check location_groups (e.g., "us", "ca" are groups, not locations)
+    if not location_data:
+        normalized = location.lower().replace("-", "_")
+        location_data = location_groups.get(normalized)
+
+    # If still not found, try to extract and look up the country code
     if not location_data:
         # Normalize location to internal format (lowercase, underscores) before extracting country
         # region_country splits on "_", so "PT-14" -> "pt_14" -> "pt"
         normalized = location.lower().replace("-", "_")
         country_code = region_country(normalized)
         if country_code != normalized:  # Only try if we actually extracted a country
-            location_data = get_location_by_id(country_code)
+            location_data = get_location_by_id(country_code) or location_groups.get(
+                country_code
+            )
             if location_data:
                 # We found the country, so set location_country to this value (uppercase for ISO format)
                 # and use the country's data for groups/regulations
