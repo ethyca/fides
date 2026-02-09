@@ -163,5 +163,6 @@ def initiate_scheduled_batch_email_send() -> None:
         id=BATCH_EMAIL_SEND,
         coalesce=False,
         replace_existing=True,
+        misfire_grace_time=300,
         trigger=cron_trigger,
     )
