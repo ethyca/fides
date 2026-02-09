@@ -12,6 +12,7 @@ import {
   ChakraMenuItem as MenuItem,
   ChakraMenuList as MenuList,
   ChakraText as Text,
+  Icons,
   SearchLineIcon,
   Tooltip,
 } from "fidesui";
@@ -26,7 +27,6 @@ import {
 import ConnectionTypeLogo, {
   connectionLogoFromSystemType,
 } from "~/features/datastore-connections/ConnectionTypeLogo";
-import { CUSTOM_INTEGRATION_INDICATOR } from "~/features/datastore-connections/constants";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -228,9 +228,18 @@ const ConnectionListDropdown = ({
         data-testid="select-dropdown-btn"
         width="272px"
       >
-        <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
-          {selectedText ?? label}
-        </Text>
+        <Flex alignItems="center" gap={1}>
+          <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
+            {selectedText ?? label}
+          </Text>
+          {selectedValue?.custom && (
+            <Tooltip title="Custom integration" placement="top">
+              <Box as="span" display="inline-flex">
+                <Icons.Calibrate size={16} />
+              </Box>
+            </Tooltip>
+          )}
+        </Flex>
       </MenuButton>
       {isOpen ? (
         <MenuList
@@ -311,8 +320,13 @@ const ConnectionListDropdown = ({
                   </Text>
                   {option.value.custom && (
                     <Tooltip title="Custom integration" placement="top">
-                      <Box as="span" ml={2} cursor="pointer">
-                        {CUSTOM_INTEGRATION_INDICATOR}
+                      <Box
+                        as="span"
+                        ml={2}
+                        display="inline-flex"
+                        cursor="pointer"
+                      >
+                        <Icons.Calibrate size={16} />
                       </Box>
                     </Tooltip>
                   )}
