@@ -112,6 +112,17 @@ export interface IDPMonitorFiltersResponse {
   data_uses: string[];
 }
 
+export interface LinkedDatasetInfo {
+  fides_key: string;
+  name?: string | null;
+}
+
+export interface MonitorDeletionImpact {
+  staged_resource_count: number;
+  linked_datasets: LinkedDatasetInfo[];
+  active_task_count: number;
+}
+
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getMonitorsByIntegration: build.query<Page_MonitorStatusResponse_, any>({
@@ -163,12 +174,32 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Configs"],
     }),
-    deleteDiscoveryMonitor: build.mutation<any, MonitorActionQueryParams>({
-      query: ({ monitor_config_id }) => ({
+    deleteDiscoveryMonitor: build.mutation<
+      { count: number },
+      MonitorActionQueryParams & { delete_staged_resources?: boolean }
+    >({
+      query: ({ monitor_config_id, delete_staged_resources = true }) => ({
         method: "DELETE",
         url: `/plus/discovery-monitor/${monitor_config_id}`,
+        params: { delete_staged_resources },
       }),
-      invalidatesTags: ["Discovery Monitor Configs"],
+      invalidatesTags: [
+        "Discovery Monitor Configs",
+        "Discovery Monitor Results",
+        "Monitor Field Results",
+        "Monitor Field Details",
+        "Monitor Tasks",
+        "Identity Provider Monitor Results",
+      ],
+    }),
+    getMonitorDeletionImpact: build.query<
+      MonitorDeletionImpact,
+      { monitor_config_id: string }
+    >({
+      query: ({ monitor_config_id }) => ({
+        method: "GET",
+        url: `/plus/discovery-monitor/${monitor_config_id}/deletion-impact`,
+      }),
     }),
     getMonitorResults: build.query<
       Page_StagedResourceAPIResponse_,
@@ -460,6 +491,7 @@ export const {
   useLazyGetAvailableDatabasesByConnectionQuery,
   useExecuteDiscoveryMonitorMutation,
   useDeleteDiscoveryMonitorMutation,
+  useLazyGetMonitorDeletionImpactQuery,
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
   usePromoteResourcesMutation,
