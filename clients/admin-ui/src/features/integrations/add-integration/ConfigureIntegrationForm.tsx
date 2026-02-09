@@ -147,10 +147,14 @@ const ConfigureIntegrationForm = ({
     name: connection?.name ?? "",
     description: connection?.description ?? "",
     ...(hasSecrets && {
-      secrets: mapValues(
-        secrets?.properties,
-        (s, key) => connection?.secrets?.[key] ?? s.default ?? "",
-      ),
+      secrets: mapValues(secrets?.properties, (s, key) => {
+        const value = connection?.secrets?.[key] ?? s.default;
+        // Convert booleans to strings to match select options
+        if (s.type === "boolean" && typeof value === "boolean") {
+          return String(value);
+        }
+        return value ?? "";
+      }),
     }),
     dataset: initialDatasets,
   };
