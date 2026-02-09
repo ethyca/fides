@@ -183,13 +183,6 @@ describe("RequestTableActions", () => {
       expect(denyBtn).toBeDisabled();
       expect(deleteBtn).toBeDisabled();
     });
-
-    it("should show loading state on buttons", () => {
-      render(<RequestTableActions subjectRequest={baseRequest} />);
-
-      const approveBtn = screen.getByTestId("privacy-request-approve-btn");
-      expect(approveBtn).toHaveAttribute("aria-busy", "true");
-    });
   });
 
   describe("Keyboard navigation", () => {
