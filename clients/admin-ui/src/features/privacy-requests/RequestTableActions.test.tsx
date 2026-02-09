@@ -10,7 +10,7 @@ const mockHandleApproveRequest = jest.fn();
 const mockHandleDenyRequest = jest.fn();
 const mockHandleDeleteRequest = jest.fn();
 const mockHandleFinalizeRequest = jest.fn();
-let mockIsLoading = false;
+const mockIsLoading = jest.fn();
 
 jest.mock("./hooks/useMutations", () => ({
   useMutations: () => ({
@@ -19,7 +19,7 @@ jest.mock("./hooks/useMutations", () => ({
     handleDeleteRequest: mockHandleDeleteRequest,
     handleFinalizeRequest: mockHandleFinalizeRequest,
     get isLoading() {
-      return mockIsLoading;
+      return mockIsLoading();
     },
   }),
 }));
@@ -46,14 +46,7 @@ jest.mock("fidesui", () => {
   const react = require("react");
 
   return {
-    AntButton: ({
-      children,
-      onClick,
-      loading,
-      disabled,
-      icon,
-      ...props
-    }: any) => (
+    Button: ({ children, onClick, loading, disabled, icon, ...props }: any) => (
       <button
         type="button"
         onClick={onClick}
@@ -65,16 +58,19 @@ jest.mock("fidesui", () => {
         {children}
       </button>
     ),
-    HStack: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    ChakraHStack: ({ children, ...props }: any) => (
+      <div {...props}>{children}</div>
+    ),
+    ChakraPortal: ({ children }: any) => <div>{children}</div>,
+    ChakraText: ({ children }: any) => <span>{children}</span>,
+    ChakraStackProps: {},
     Icons: {
       Checkmark: () => <span>✓</span>,
       Close: () => <span>✕</span>,
       Stamp: () => <span>🔖</span>,
       TrashCan: ({ size }: any) => <span data-size={size}>🗑</span>,
     },
-    Portal: ({ children }: any) => <div>{children}</div>,
-    Text: ({ children }: any) => <span>{children}</span>,
-    useDisclosure: () => {
+    useChakraDisclosure: () => {
       const [isOpen, setIsOpen] = react.useState(false);
 
       return {
@@ -152,7 +148,7 @@ describe("RequestTableActions", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockIsLoading = false;
+    mockIsLoading.mockReturnValue(false);
     mockUseGetConfigurationSettingsQuery.mockReturnValue({
       data: {
         notifications: {
@@ -169,7 +165,7 @@ describe("RequestTableActions", () => {
 
   describe("Loading states", () => {
     beforeEach(() => {
-      mockIsLoading = true;
+      mockIsLoading.mockReturnValue(true);
     });
 
     it("should disable buttons when loading", () => {
