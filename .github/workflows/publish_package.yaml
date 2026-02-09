@@ -34,7 +34,7 @@ jobs:
           npm run prod-export-admin-ui
 
       - name: Install setuptools
-        run: pip install setuptools -U
+        run: pip install setuptools==80.10.2
 
       - name: Install Twine and wheel
         run: pip install twine wheel
