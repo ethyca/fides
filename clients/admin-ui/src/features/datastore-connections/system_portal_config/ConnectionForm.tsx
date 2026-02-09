@@ -83,7 +83,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   const handleRemoveCustomIntegration = () => {
     modalApi.confirm({
       title: "Remove",
-      type: "error",
+      icon: null,
       content: (
         <>
           This will remove the custom integration template and update all
