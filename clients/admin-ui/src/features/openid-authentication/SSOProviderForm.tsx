@@ -114,7 +114,7 @@ const CustomProviderExtraFields = () => {
         id="verify_email"
         name="verify_email"
         label="Require Verified Email"
-        tooltip="Require user emails to be verified"
+        tooltip="Require user emails to be verified, defaults to true"
         variant="stacked"
       />
       {verifyEmail && (
