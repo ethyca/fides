@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import ConfigDict, model_validator
+from pydantic import ConfigDict, field_validator
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -145,34 +145,31 @@ class PolicyResponse(Policy):
     drp_action: Optional[DrpAction] = None
     conditions: dict[str, Any] = {}
 
-    @model_validator(mode="before")
+    @field_validator("conditions", mode="before")
     @classmethod
-    def extract_conditions(cls, values: Any) -> Any:
+    def extract_conditions(cls, v: Any) -> dict[str, Any]:
         """Extract the condition tree from the ORM conditions relationship.
 
+        With from_attributes=True, Pydantic passes the raw ORM relationship
+        (a list of PolicyCondition objects) for this field. This validator
+        transforms it into the condition_tree dict.
+
         Each policy has at most one PolicyCondition row (enforced at creation).
-        Returns a dict copy to avoid mutating the ORM object's relationship
-        state, which would corrupt the SQLAlchemy session.
         """
-        if isinstance(values, dict) or not hasattr(values, "conditions"):
-            return values
-        orm_conditions = values.conditions
-        conditions_data: dict[str, Any] = {}
-        if orm_conditions:
-            if len(orm_conditions) > 1:
+        if isinstance(v, dict):
+            return v
+        if not v:
+            return {}
+        if isinstance(v, list):
+            if len(v) > 1:
                 logger.warning(
                     "Policy has %d condition rows; expected at most 1. "
                     "Using the first row only.",
-                    len(orm_conditions),
+                    len(v),
                 )
-            if orm_conditions[0].condition_tree:
-                conditions_data = orm_conditions[0].condition_tree
-        # Use __dict__ to capture all attributes from the source object rather
-        # than selectively copying model_fields, which could silently drop
-        # fields if the source isn't the exact ORM model we expect.
-        data = {k: v for k, v in values.__dict__.items() if not k.startswith("_")}
-        data["conditions"] = conditions_data
-        return data
+            if hasattr(v[0], "condition_tree") and v[0].condition_tree:
+                return v[0].condition_tree
+        return {}
 
 
 class BulkPutRuleTargetResponse(BulkResponse):
