@@ -51,7 +51,7 @@ nh3==0.2.15
 numpy~=2.3.5
 oauthlib==3.3.1
 objgraph==3.6.0
-okta==3.1.0
+okta==2.7.0
 onepassword-sdk==0.3.0
 openpyxl==3.0.9
 packaging==23.0
