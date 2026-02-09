@@ -165,12 +165,15 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     # Build the main ethyca/fides image
     target = build_matrix[image]["target"]
     tag = build_matrix[image]["tag"]
+    # Read IMAGE_SUFFIX at runtime (not module load time) to support dynamic tagging
+    image_suffix = os.getenv("IMAGE_SUFFIX", "")
+    final_tag = f"{tag()}{image_suffix}"
     build_command = (
         "docker",
         "build",
         f"--target={target}",
         "--tag",
-        tag(),
+        final_tag,
         ".",
     )
     if "nocache" in session.posargs:

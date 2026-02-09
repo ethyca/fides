@@ -1,7 +1,7 @@
 services:
   fides:
-    container_name: fides
-    image: ethyca/fides:local
+    container_name: fides${CONTAINER_SUFFIX:-}
+    image: ethyca/fides:local${IMAGE_SUFFIX:-}
     command: python -m uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
@@ -9,7 +9,7 @@ services:
       timeout: 5s
       retries: 10
     ports:
-      - "8080:8080"
+      - "${API_PORT:-8080}:8080"
     depends_on:
       fides-db:
         condition: service_healthy
@@ -44,12 +44,13 @@ services:
         read_only: False
 
   fides-ui:
-    image: ethyca/fides:local-ui
+    image: ethyca/fides:local-ui${IMAGE_SUFFIX:-}
+    container_name: fides-ui${CONTAINER_SUFFIX:-}
     command: npm run dev-admin-ui
     expose:
       - 3000
     ports:
-      - "3000:3000"
+      - "${ADMIN_UI_PORT:-3000}:3000"
     volumes:
       - type: bind
         source: .
@@ -62,12 +63,13 @@ services:
       - NEXT_PUBLIC_FIDESCTL_API_SERVER=http://fides:8080
 
   fides-pc:
-    image: ethyca/fides:local-pc
+    image: ethyca/fides:local-pc${IMAGE_SUFFIX:-}
+    container_name: fides-pc${CONTAINER_SUFFIX:-}
     command: npm run dev-pc
     expose:
       - 3001
     ports:
-      - "3001:3001"
+      - "${PRIVACY_CENTER_PORT:-3001}:3001"
     volumes:
       - type: bind
         source: .
@@ -79,6 +81,7 @@ services:
 
   fides-db:
     image: postgres:16
+    container_name: fides-db${CONTAINER_SUFFIX:-}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 15s
@@ -89,7 +92,7 @@ services:
     expose:
       - 5432
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "fides"
@@ -121,7 +124,7 @@ services:
       FIDES__SECURITY__DRP_JWT_SECRET: secret
 
   worker-other:
-    image: ethyca/fides:local
+    image: ethyca/fides:local${IMAGE_SUFFIX:-}
     command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
     depends_on:
       redis:
@@ -145,7 +148,7 @@ services:
       - /fides/src/fides.egg-info
 
   worker-privacy-preferences:
-    image: ethyca/fides:local
+    image: ethyca/fides:local${IMAGE_SUFFIX:-}
     command: fides worker --queues=fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion
     depends_on:
       redis:
@@ -169,7 +172,7 @@ services:
       - /fides/src/fides.egg-info
 
   worker-dsr:
-    image: ethyca/fides:local
+    image: ethyca/fides:local${IMAGE_SUFFIX:-}
     command: fides worker --queues=fides.dsr
     depends_on:
       redis:
@@ -194,6 +197,7 @@ services:
 
   redis:
     image: "redis:8.0-alpine"
+    container_name: fides-redis${CONTAINER_SUFFIX:-}
     # AUTH option #1: no authentication at all
     # command: redis-server
     # AUTH option #2: require password
@@ -203,7 +207,7 @@ services:
     expose:
       - 6379
     ports:
-      - "0.0.0.0:6379:6379"
+      - "0.0.0.0:${REDIS_PORT:-6379}:6379"
     volumes:
       # Mount a redis.conf file for configuration
       # NOTE: Only used by "AUTH option #3" above!
@@ -226,7 +230,7 @@ services:
   # Cluster services for nginx load balancing
   fides-1:
     container_name: fides-1
-    image: ethyca/fides:local
+    image: ethyca/fides:local${IMAGE_SUFFIX:-}
     command: python -m uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
@@ -266,7 +270,7 @@ services:
 
   fides-2:
     container_name: fides-2
-    image: ethyca/fides:local
+    image: ethyca/fides:local${IMAGE_SUFFIX:-}
     command: python -m uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
