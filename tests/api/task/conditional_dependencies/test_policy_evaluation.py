@@ -314,7 +314,6 @@ class TestPolicySpecificity:
         assert "policy_b" in str(exc_info.value)
 
 
-
 @pytest.mark.usefixtures("seed_data")
 class TestCustomDefaultPolicy:
     """Test custom default policy configuration via ApplicationConfig."""
@@ -324,7 +323,9 @@ class TestCustomDefaultPolicy:
     ):
         """Uses custom default policy when configured in ApplicationConfig."""
         # Create a custom policy to use as default
-        custom_policy = _create_policy_with_rule(db, "custom_access_policy", ActionType.access)
+        custom_policy = _create_policy_with_rule(
+            db, "custom_access_policy", ActionType.access
+        )
 
         # Configure it as the custom default
         ApplicationConfig.update_api_set(
@@ -390,7 +391,11 @@ class TestCustomDefaultPolicy:
         # Configure it as the access default (mismatch)
         ApplicationConfig.update_api_set(
             db,
-            {DEFAULT_POLICY_CONFIG_KEY: {ActionType.access.value: erasure_only_policy.key}},
+            {
+                DEFAULT_POLICY_CONFIG_KEY: {
+                    ActionType.access.value: erasure_only_policy.key
+                }
+            },
             merge_updates=True,
         )
 
@@ -407,7 +412,9 @@ class TestCustomDefaultPolicy:
     ):
         """Each action type can have its own custom default."""
         custom_access = _create_policy_with_rule(db, "custom_access", ActionType.access)
-        custom_erasure = _create_policy_with_rule(db, "custom_erasure", ActionType.erasure)
+        custom_erasure = _create_policy_with_rule(
+            db, "custom_erasure", ActionType.erasure
+        )
 
         ApplicationConfig.update_api_set(
             db,
