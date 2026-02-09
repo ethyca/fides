@@ -116,24 +116,44 @@ class TestPolicySelection:
 
     @pytest.mark.usefixtures("seed_data")
     @pytest.mark.parametrize(
-        "location,expected",
-        [("US", "us_policy"), ("FR", "fr_policy")],
+        "field,value_a,value_b,location_a,location_b",
+        [
+            param(LOCATION_FIELD, "us_ca", "fr", "us_ca", "fr", id="exact_location"),
+            param(LOCATION_COUNTRY_FIELD, "US", "FR", "us_ca", "fr", id="country"),
+            param(LOCATION_GROUPS_FIELD, "eea", "us", "fr", "us_ca", id="groups"),
+            param(
+                LOCATION_REGULATIONS_FIELD,
+                "gdpr",
+                "ccpa",
+                "fr",
+                "us_ca",
+                id="regulations",
+            ),
+        ],
     )
     def test_routes_by_location(
         self,
         db: Session,
-        location: str,
-        expected: str,
         evaluator: PolicyEvaluator,
+        field,
+        value_a,
+        value_b,
+        location_a,
+        location_b,
     ):
-        """Routes to correct policy based on location match"""
-        _create_policy_with_condition(db, "us_policy", _leaf(LOCATION_FIELD, "US"))
-        _create_policy_with_condition(db, "fr_policy", _leaf(LOCATION_FIELD, "FR"))
+        """Routes to correct policy based on location field match"""
+        _create_policy_with_condition(db, "policy_a", _leaf(field, value_a))
+        _create_policy_with_condition(db, "policy_b", _leaf(field, value_b))
 
-        pr = _create_request(location)
-        result = evaluator.evaluate_policy_conditions(pr, ActionType.access)
+        result = evaluator.evaluate_policy_conditions(
+            _create_request(location_a), ActionType.access
+        )
+        assert result.policy.key == "policy_a"
 
-        assert result.policy.key == expected
+        result = evaluator.evaluate_policy_conditions(
+            _create_request(location_b), ActionType.access
+        )
+        assert result.policy.key == "policy_b"
 
     def test_falls_back_when_specific_policy_doesnt_match(
         self, db: Session, evaluator: PolicyEvaluator
@@ -270,10 +290,21 @@ class TestPolicySpecificity:
         assert result.policy.key == "winner_policy"
         assert not result.is_default
 
-    def test_ambiguous_tie_raises_error(self, db: Session, evaluator: PolicyEvaluator):
+    @pytest.mark.parametrize(
+        "field",
+        [
+            param(LOCATION_FIELD, id="location"),
+            param(LOCATION_COUNTRY_FIELD, id="country"),
+            param(LOCATION_GROUPS_FIELD, id="groups"),
+            param(LOCATION_REGULATIONS_FIELD, id="regulations"),
+        ],
+    )
+    def test_ambiguous_tie_raises_error(
+        self, db: Session, evaluator: PolicyEvaluator, field
+    ):
         """Raises error when multiple policies match with identical specificity"""
-        _create_policy_with_condition(db, "policy_a", _leaf(LOCATION_COUNTRY_FIELD))
-        _create_policy_with_condition(db, "policy_b", _leaf(LOCATION_COUNTRY_FIELD))
+        _create_policy_with_condition(db, "policy_a", _leaf(field))
+        _create_policy_with_condition(db, "policy_b", _leaf(field))
 
         with pytest.raises(PolicyEvaluationError) as exc_info:
             evaluator.evaluate_policy_conditions(_create_request(), ActionType.access)

@@ -56,6 +56,8 @@ LOCATION_LIST_FIELDS: set[str] = {
 MUTUALLY_EXCLUSIVE_FIELDS: set[str] = {
     PrivacyRequestFields.location.value,
     PrivacyRequestConvenienceFields.location_country.value,
+    PrivacyRequestConvenienceFields.location_groups.value,
+    PrivacyRequestConvenienceFields.location_regulations.value,
 }
 
 

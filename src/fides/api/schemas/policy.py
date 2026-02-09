@@ -147,14 +147,24 @@ class PolicyResponse(Policy):
     @model_validator(mode="before")
     @classmethod
     def extract_conditions(cls, values: Any) -> Any:
-        """Extract the condition tree from the ORM conditions relationship."""
-        if hasattr(values, "conditions"):
-            orm_conditions = values.conditions
-            if orm_conditions and orm_conditions[0].condition_tree:
-                values.__dict__["conditions"] = orm_conditions[0].condition_tree
-            else:
-                values.__dict__["conditions"] = {}
-        return values
+        """Extract the condition tree from the ORM conditions relationship.
+
+        Returns a dict copy to avoid mutating the ORM object's relationship
+        state, which would corrupt the SQLAlchemy session.
+        """
+        if isinstance(values, dict) or not hasattr(values, "conditions"):
+            return values
+        orm_conditions = values.conditions
+        conditions_data: dict[str, Any] = {}
+        if orm_conditions and orm_conditions[0].condition_tree:
+            conditions_data = orm_conditions[0].condition_tree
+        data = {
+            field_name: getattr(values, field_name)
+            for field_name in cls.model_fields
+            if field_name != "conditions" and hasattr(values, field_name)
+        }
+        data["conditions"] = conditions_data
+        return data
 
 
 class BulkPutRuleTargetResponse(BulkResponse):
