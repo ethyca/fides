@@ -136,7 +136,8 @@ def check_install(session: nox.Session) -> None:
 
     This is also a good sanity check for correct syntax.
     """
-    session.install(".")
+    session.install("setuptools==80.10.2", "wheel", "versioneer-518")
+    session.install("--no-build-isolation", ".")
 
     REQUIRED_ENV_VARS = {
         "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
