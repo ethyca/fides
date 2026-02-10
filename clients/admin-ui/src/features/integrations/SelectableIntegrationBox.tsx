@@ -104,7 +104,7 @@ const SelectableIntegrationBox = ({
               {connectionOption?.custom && (
                 <Tooltip title="Custom integration" placement="top">
                   <Box as="span" display="inline-flex">
-                    <Icons.Calibrate size={16} />
+                    <Icons.SettingsCheck size={16} />
                   </Box>
                 </Tooltip>
               )}

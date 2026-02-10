@@ -157,7 +157,7 @@ const IntegrationListView: NextPage = () => {
           </Typography.Text>
           {isCustomIntegration(record, connectionTypes) && (
             <Tooltip title="Custom integration">
-              <Icons.Calibrate size={16} />
+              <Icons.SettingsCheck size={16} />
             </Tooltip>
           )}
         </div>

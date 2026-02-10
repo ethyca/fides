@@ -235,7 +235,7 @@ const ConnectionListDropdown = ({
           {selectedValue?.custom && (
             <Tooltip title="Custom integration" placement="top">
               <Box as="span" display="inline-flex">
-                <Icons.Calibrate size={16} />
+                <Icons.SettingsCheck size={16} />
               </Box>
             </Tooltip>
           )}
@@ -326,7 +326,7 @@ const ConnectionListDropdown = ({
                         display="inline-flex"
                         cursor="pointer"
                       >
-                        <Icons.Calibrate size={16} />
+                        <Icons.SettingsCheck size={16} />
                       </Box>
                     </Tooltip>
                   )}
