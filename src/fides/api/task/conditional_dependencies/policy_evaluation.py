@@ -128,21 +128,14 @@ class PolicyEvaluator:
             Returns None defensively if the config structure is unexpected
             (e.g. None, wrong type) to avoid blocking policy evaluation.
         """
-        try:
-            api_set = ApplicationConfig.get_api_set(self.db)
-            if not isinstance(api_set, dict):
-                return None
-            default_config = api_set.get(DEFAULT_POLICY_CONFIG_KEY)
-            if not isinstance(default_config, dict):
-                return None
-            value = default_config.get(action_type.value)
-            return value if isinstance(value, str) else None
-        except Exception:  # pylint: disable=broad-except
-            logger.warning(
-                "Failed to read custom default policy config; "
-                "falling back to system default."
-            )
+        api_set = ApplicationConfig.get_api_set(self.db)
+        if not isinstance(api_set, dict):
             return None
+        default_config = api_set.get(DEFAULT_POLICY_CONFIG_KEY)
+        if not isinstance(default_config, dict):
+            return None
+        value = default_config.get(action_type.value)
+        return value if isinstance(value, str) else None
 
     def evaluate_policy_conditions(
         self,

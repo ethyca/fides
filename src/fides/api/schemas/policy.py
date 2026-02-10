@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import Any, Optional
 
 from fideslang.validation import FidesKey
-from loguru import logger
+
 from pydantic import ConfigDict, field_validator
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
@@ -162,10 +162,10 @@ class PolicyResponse(Policy):
             return {}
         if isinstance(v, list):
             if len(v) > 1:
-                logger.warning(
-                    "Policy has %d condition rows; expected at most 1. "
-                    "Using the first row only.",
-                    len(v),
+                raise ValueError(
+                    f"Policy has {len(v)} condition rows; expected at most 1. "
+                    f"This indicates data corruption — the unique constraint on "
+                    f"policy_id should prevent multiple condition rows."
                 )
             if hasattr(v[0], "condition_tree") and v[0].condition_tree:
                 return v[0].condition_tree
