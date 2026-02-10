@@ -1,9 +1,10 @@
-import { Button, Checkbox, Flex, List, Text, useMessage } from "fidesui";
+import { Button, Checkbox, Flex, List, Tag, Text, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { INFRASTRUCTURE_DIFF_STATUS_COLOR } from "~/features/data-discovery-and-detection/action-center/constants";
 import { tagRender } from "~/features/data-discovery-and-detection/action-center/fields/MonitorFieldListItem";
 import { useUpdateInfrastructureSystemDataUsesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { StagedResourceAPIResponse } from "~/types/api";
+import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
@@ -142,6 +143,11 @@ export const InfrastructureSystemListItem = ({
             <Button type="text" size="small" onClick={handleClick}>
               <Text strong>{systemName}</Text>
             </Button>
+            {item.diff_status === DiffStatus.MUTED && (
+              <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[item.diff_status]}>
+                Ignored
+              </Tag>
+            )}
           </Flex>
         }
         description={

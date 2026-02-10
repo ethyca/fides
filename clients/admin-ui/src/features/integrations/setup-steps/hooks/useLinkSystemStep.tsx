@@ -27,7 +27,7 @@ export const useLinkSystemStep = ({
     title: "Link system",
     description: isComplete ? (
       <>
-        <NextLink href={linkUrl} passHref>
+        <NextLink href={linkUrl} passHref legacyBehavior>
           <FidesLink>System linked</FidesLink>
         </NextLink>{" "}
         successfully

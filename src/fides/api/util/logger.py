@@ -26,6 +26,20 @@ if TYPE_CHECKING:
 MASKED = "MASKED"
 
 
+def _safe_stdout_sink(message: str) -> None:
+    """Write to stdout, silently ignoring errors if the stream is already closed.
+
+    Used as a Loguru callable sink so that late log messages emitted during
+    interpreter/test shutdown (e.g. asyncio's "Using selector: ...") don't
+    trigger Loguru's noisy error diagnostic when stdout has been torn down.
+    """
+    try:
+        sys.stdout.write(message)
+        sys.stdout.flush()
+    except ValueError:
+        pass
+
+
 class InterceptHandler(logging.Handler):
     """
     Intercept standard library logging and redirect to Loguru.
@@ -213,9 +227,11 @@ def setup(config: FidesConfig) -> None:
 
     handlers = []
 
-    # Configure main sink from config
+    # Configure main sink from config.
+    # Use _safe_stdout_sink (a callable) instead of sys.stdout directly so
+    # that late writes after the stream is closed are silently dropped.
     destination = config.logging.destination
-    main_sink = sys.stdout if not destination else destination
+    main_sink = _safe_stdout_sink if not destination else destination
     is_json_serialization = config.logging.serialization == "json"
     handlers.extend(
         create_handler_dicts(

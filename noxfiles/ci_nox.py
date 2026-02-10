@@ -74,6 +74,7 @@ def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
         ruff_arguments = session.posargs
 
     format_command = ("ruff", "format", *ruff_arguments)
+    format_check_command = ("ruff", "format", "--check", *ruff_arguments)
     check_command = ("ruff", "check", *ruff_arguments)
     sort_imports_command = ("ruff", "check", "--select", "I", "--fix", *ruff_arguments)
 
@@ -83,6 +84,8 @@ def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
         session.run(*sort_imports_command)
 
     elif mode == RuffMode.CHECK:
+        # Verify formatting (fail if files would be reformatted)
+        session.run(*format_check_command)
         # Lint code
         session.run(*check_command)
 
@@ -133,7 +136,8 @@ def check_install(session: nox.Session) -> None:
 
     This is also a good sanity check for correct syntax.
     """
-    session.install(".")
+    session.install("setuptools==80.10.2", "wheel", "versioneer-518")
+    session.install("--no-build-isolation", ".")
 
     REQUIRED_ENV_VARS = {
         "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
