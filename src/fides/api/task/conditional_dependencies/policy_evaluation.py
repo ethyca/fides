@@ -14,10 +14,10 @@ from fides.api.models.conditional_dependency.conditional_dependency_base import 
 )
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.policy.conditional_dependency import PolicyCondition
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
 from fides.api.task.conditional_dependencies.privacy_request.privacy_request_data import (
+    EvaluablePrivacyRequest,
     PrivacyRequestDataTransformer,
 )
 from fides.api.task.conditional_dependencies.privacy_request.schemas import (
@@ -139,7 +139,7 @@ class PolicyEvaluator:
 
     def evaluate_policy_conditions(
         self,
-        privacy_request: PrivacyRequest,
+        privacy_request: EvaluablePrivacyRequest,
         action_type: ActionType,
     ) -> PolicyEvaluationResult:
         """Evaluates a privacy request against policies with conditions and returns the one

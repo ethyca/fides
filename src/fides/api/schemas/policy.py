@@ -164,6 +164,9 @@ class PolicyResponse(Policy):
             # Multiple rows per policy is prevented by the DB unique constraint
             # `uq_policy_condition_policy_id` on policy_condition.policy_id
             # (see PolicyCondition model and migration 6d5f70dd0ba5).
+            # PolicyCondition.get_condition_tree() also uses .one_or_none(),
+            # and PolicyEvaluator queries one row per policy — so the evaluation
+            # path is consistent with taking the first (only) row here.
             # We log-and-continue rather than raise so that read endpoints
             # never 500 on unexpected DB state.
             if len(v) > 1:

@@ -60,7 +60,7 @@ def get_policy_list(
     policies = (
         Policy.query(db=db)
         .options(
-            selectinload(Policy.rules).joinedload(Rule.storage_destination),
+            selectinload(Policy.rules).joinedload(Rule.storage_destination),  # type: ignore[attr-defined] # backref
             selectinload(Policy.conditions),
         )
         .order_by(Policy.created_at.desc())
