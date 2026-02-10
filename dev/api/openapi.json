@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.3b0.post0.dev5"
+    "version": "2.78.3b0.post0.dev6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18344,6 +18344,89 @@
         ]
       }
     },
+    "/api/v1/admin/backfill": {
+      "get": {
+        "tags": [
+          "Admin",
+          "Admin"
+        ],
+        "summary": "Get Backfill Status",
+        "description": "Get the current status of the backfill operation.\n\nReturns:\n- **is_running**: Whether a backfill is currently in progress\n- **pending_count**: Count of rows still pending backfill for each task\n\nWhen `pending_count` values are 0 and `is_running` is False, all backfills are complete.",
+        "operationId": "get_backfill_status_api_v1_admin_backfill_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackfillStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "backfill:exec"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Admin",
+          "Admin"
+        ],
+        "summary": "Trigger Backfill",
+        "description": "Trigger a database backfill operation.\n\nThis endpoint runs deferred data migrations (backfills) that were skipped during\nnormal database migrations due to table size. The backfill runs in the background\nand progress can be monitored via server logs.\n\nThe operation is:\n- **Idempotent**: Safe to run multiple times\n- **Resumable**: If interrupted, re-run and it will continue where it left off\n- **Non-blocking**: Uses small batches with delays to minimize database impact\n\nOnly one backfill can run at a time. Returns 409 Conflict if a backfill is already running.",
+        "operationId": "trigger_backfill_api_v1_admin_backfill_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackfillRequest",
+                "default": {
+                  "batch_size": 5000,
+                  "batch_delay_seconds": 1.0
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Trigger Backfill Api V1 Admin Backfill Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "backfill:exec"
+            ]
+          }
+        ]
+      }
+    },
     "/health/database": {
       "get": {
         "tags": [
@@ -19522,6 +19605,53 @@
         ],
         "title": "AuditLogAction",
         "description": "Enum for audit log actions, reflecting what a user did."
+      },
+      "BackfillRequest": {
+        "properties": {
+          "batch_size": {
+            "type": "integer",
+            "maximum": 50000.0,
+            "minimum": 100.0,
+            "title": "Batch Size",
+            "description": "Number of rows to update per batch (default: 5000)",
+            "default": 5000
+          },
+          "batch_delay_seconds": {
+            "type": "number",
+            "maximum": 10.0,
+            "minimum": 0.1,
+            "title": "Batch Delay Seconds",
+            "description": "Delay between batches in seconds (default: 1.0)",
+            "default": 1.0
+          }
+        },
+        "type": "object",
+        "title": "BackfillRequest",
+        "description": "Request body for triggering a database backfill operation."
+      },
+      "BackfillStatusResponse": {
+        "properties": {
+          "is_running": {
+            "type": "boolean",
+            "title": "Is Running",
+            "description": "Whether a backfill is currently running"
+          },
+          "pending_count": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Pending Count",
+            "description": "Count of rows pending backfill, keyed by backfill task name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_running",
+          "pending_count"
+        ],
+        "title": "BackfillStatusResponse",
+        "description": "Response body for backfill status endpoint."
       },
       "BasicMessagingTemplateRequest": {
         "properties": {
@@ -33796,6 +33926,7 @@
           "dataset:test",
           "encryption:exec",
           "heap_dump:exec",
+          "backfill:exec",
           "messaging-template:update",
           "evaluation:create",
           "evaluation:read",
