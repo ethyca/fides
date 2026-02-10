@@ -47,7 +47,7 @@ const DeleteMonitorMessage = ({
 
       {activeTaskCount > 0 && (
         <Text strong type="warning">
-          ⚠ This monitor has {activeTaskCount} active task
+          This monitor has {activeTaskCount} active task
           {activeTaskCount !== 1 ? "s" : ""} that will be cancelled.
         </Text>
       )}
@@ -66,8 +66,8 @@ const DeleteMonitorMessage = ({
       {linkedDatasets.length > 0 && (
         <Flex vertical gap={4} className="mt-1">
           <Text strong type="warning">
-            ⚠ The following dataset{linkedDatasets.length !== 1 ? "s" : ""}{" "}
-            will lose linked data source metadata:
+            The following dataset{linkedDatasets.length !== 1 ? "s" : ""} will
+            lose linked data source metadata:
           </Text>
           <ul className="ml-5 list-disc">
             {linkedDatasets.map((dataset) => (
@@ -169,7 +169,7 @@ const MonitorConfigActionsCell = ({
         isCentered
         isLoading={isDeleting}
       />
-      <div className="flex gap-2">
+      <Flex gap={8}>
         <Tooltip title="Edit">
           <Button
             onClick={onEditClick}
@@ -193,7 +193,7 @@ const MonitorConfigActionsCell = ({
           title="Scan"
           loading={executeIsLoading}
         />
-      </div>
+      </Flex>
     </>
   );
 };
