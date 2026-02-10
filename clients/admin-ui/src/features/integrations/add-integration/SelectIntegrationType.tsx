@@ -1,16 +1,23 @@
-import { Input, Select } from "fidesui";
+import Restrict from "common/Restrict";
+import {
+  Button,
+  Input,
+  Select,
+  useChakraDisclosure as useDisclosure,
+} from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
+import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import getIntegrationTypeInfo, {
   INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
 import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
-import { ConnectionType } from "~/types/api";
+import { ConnectionType, ScopeRegistryEnum } from "~/types/api";
 import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
 
 type IntegrationCategoryFilter = ConnectionCategory | "ALL";
@@ -30,6 +37,7 @@ const SelectIntegrationType = ({
   const [selectedCategory, setSelectedCategory] =
     useState<IntegrationCategoryFilter>("ALL");
   const [isFiltering, setIsFiltering] = useState(false);
+  const uploadTemplateModal = useDisclosure();
 
   const {
     flags: { oktaMonitor, newIntegrationManagement },
@@ -180,16 +188,30 @@ const SelectIntegrationType = ({
           className="w-64"
           allowClear
         />
-        <Select
-          value={selectedCategory}
-          onChange={handleCategoryChange}
-          options={categoryOptions}
-          className="w-48"
-          placeholder="Select category"
-          aria-label="Select a category"
-          data-testid="category-filter-select"
-        />
+        <div className="flex items-center gap-4">
+          <Select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            options={categoryOptions}
+            className="w-48"
+            placeholder="Select category"
+            aria-label="Select a category"
+            data-testid="category-filter-select"
+          />
+          <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
+            <Button
+              data-testid="upload-integration-btn"
+              onClick={uploadTemplateModal.onOpen}
+            >
+              Upload integration
+            </Button>
+          </Restrict>
+        </div>
       </div>
+      <ConnectorTemplateUploadModal
+        isOpen={uploadTemplateModal.isOpen}
+        onClose={uploadTemplateModal.onClose}
+      />
 
       {isFiltering ? (
         <FidesSpinner />

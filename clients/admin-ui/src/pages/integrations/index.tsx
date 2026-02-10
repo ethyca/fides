@@ -2,6 +2,7 @@ import {
   Button,
   ColumnsType,
   CUSTOM_TAG_COLOR,
+  Icons,
   Table,
   TableProps,
   Tag,
@@ -30,7 +31,25 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  ConnectionType,
+} from "~/types/api";
+
+const isCustomIntegration = (
+  record: ConnectionConfigurationResponse,
+  connectionTypes: ConnectionSystemTypeMap[],
+): boolean => {
+  const identifier =
+    record.connection_type === ConnectionType.SAAS
+      ? record.saas_config?.type
+      : record.connection_type;
+  const connectionType = connectionTypes.find(
+    (ct) => ct.identifier === identifier,
+  );
+  return connectionType?.custom ?? false;
+};
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -136,6 +155,11 @@ const IntegrationListView: NextPage = () => {
           >
             {name || "(No name)"}
           </Typography.Text>
+          {isCustomIntegration(record, connectionTypes) && (
+            <Tooltip title="Custom integration">
+              <Icons.Calibrate size={16} />
+            </Tooltip>
+          )}
         </div>
       ),
     },

@@ -4,7 +4,9 @@ import {
   ChakraFlex as Flex,
   ChakraText as Text,
   ChakraWrap as Wrap,
+  Icons,
   Tag,
+  Tooltip,
 } from "fidesui";
 import { ReactNode } from "react";
 
@@ -59,14 +61,9 @@ const IntegrationBox = ({
       connectionTypes,
     );
 
-  // Only pass the saas type if it's a valid SaasConnectionTypes value
-  const saasType = integration?.saas_config?.type;
-  const isSaasType = (type: string): type is SaasConnectionTypes =>
-    Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
-
   const connectionOption = useIntegrationOption(
     integration?.connection_type,
-    saasType && isSaasType(saasType) ? saasType : undefined,
+    integration?.saas_config?.type as SaasConnectionTypes,
   );
 
   const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
@@ -88,9 +85,19 @@ const IntegrationBox = ({
       <Flex>
         <ConnectionTypeLogo data={logoData} size={50} />
         <Flex direction="column" flexGrow={1} marginLeft="16px">
-          <Text color="gray.700" fontWeight="semibold">
-            {integration?.name || "(No name)"}
-          </Text>
+          <Flex alignItems="center" gap={2}>
+            <Text color="gray.700" fontWeight="semibold">
+              {integration?.name || "(No name)"}
+            </Text>
+            {connectionOption?.custom && (
+              <Tooltip title="Custom integration" placement="top">
+                <Box as="span" display="inline-flex">
+                  <Icons.Calibrate size={16} />
+                </Box>
+              </Tooltip>
+            )}
+            {otherButtons}
+          </Flex>
           {showTestNotice ? (
             <ConnectionStatusNotice
               testData={testData}
@@ -102,7 +109,7 @@ const IntegrationBox = ({
             </Text>
           )}
         </Flex>
-        <div className="flex gap-4">
+        <div className="ml-auto flex shrink-0 gap-4">
           {showDeleteButton && integration && (
             <DeleteConnectionModal
               showMenu={false}
@@ -126,7 +133,6 @@ const IntegrationBox = ({
               Test connection
             </Button>
           )}
-          {otherButtons}
           {onConfigureClick && (
             <Button onClick={onConfigureClick} data-testid="configure-btn">
               {configureButtonLabel}

@@ -1,13 +1,23 @@
-import { ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
+import {
+  Button,
+  ChakraSpinner as Spinner,
+  Col,
+  Modal,
+  Row,
+  Tabs,
+  useMessage,
+} from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
+import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo, {
@@ -41,6 +51,46 @@ const IntegrationDetailView: NextPage = () => {
     connection?.connection_type,
     connection?.saas_config?.type as SaasConnectionTypes,
   );
+
+  const [modalApi, modalContext] = Modal.useModal();
+  const messageApi = useMessage();
+  const [deleteConnectorTemplate] = useDeleteConnectorTemplateMutation();
+
+  const handleRemoveCustomIntegration = () => {
+    modalApi.confirm({
+      title: "Remove",
+      icon: null,
+      content: (
+        <>
+          This will remove the custom integration template and update all
+          systems and connections that use it. All instances will revert to the
+          Fides-provided default integration template.
+          <br />
+          <br />
+          This change applies globally and cannot be undone. Are you sure you
+          want to proceed?
+        </>
+      ),
+      okText: "Remove",
+      okButtonProps: { danger: true },
+      centered: true,
+      onOk: async () => {
+        if (integrationOption?.identifier) {
+          try {
+            await deleteConnectorTemplate(
+              integrationOption.identifier,
+            ).unwrap();
+          } catch (error) {
+            messageApi.error(getErrorMessage(error as any));
+          }
+        }
+      },
+    });
+  };
+
+  const showRemoveCustomButton =
+    !!integrationOption?.custom &&
+    !!integrationOption?.default_connector_available;
 
   const {
     testData,
@@ -127,7 +177,20 @@ const IntegrationDetailView: NextPage = () => {
             integration={connection}
             integrationTypeInfo={integrationTypeInfo}
             showDeleteButton
+            otherButtons={
+              showRemoveCustomButton ? (
+                <Button
+                  type="link"
+                  danger
+                  data-testid="remove-custom-integration-btn"
+                  onClick={handleRemoveCustomIntegration}
+                >
+                  Remove
+                </Button>
+              ) : undefined
+            }
           />
+          {modalContext}
           {isLoading ? (
             <Spinner />
           ) : (
