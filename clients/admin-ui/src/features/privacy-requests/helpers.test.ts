@@ -3,6 +3,7 @@ import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 import {
   BulkActionType,
   getAvailableActionsForRequest,
+  getButtonVisibility,
   isActionSupportedByRequests,
 } from "./helpers";
 
@@ -101,5 +102,119 @@ describe("helpers", () => {
         true,
       );
     });
+  });
+
+  describe("getButtonVisibility", () => {
+    /**
+     * Action visibility matrix for all privacy request statuses.
+     * This table drives the parameterized tests below.
+     */
+    const actionVisibilityByStatus = [
+      {
+        status: PrivacyRequestStatus.PENDING,
+        approve: true,
+        deny: true,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.DUPLICATE,
+        approve: true,
+        deny: true,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.IDENTITY_UNVERIFIED,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.REQUIRES_INPUT,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.APPROVED,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.DENIED,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.IN_PROCESSING,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.COMPLETE,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.PAUSED,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.ERROR,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.CANCELED,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.AWAITING_EMAIL_SEND,
+        approve: false,
+        deny: false,
+        finalize: false,
+        delete: true,
+      },
+      {
+        status: PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
+        approve: false,
+        deny: false,
+        finalize: true,
+        delete: true,
+      },
+    ];
+
+    describe.each(actionVisibilityByStatus)(
+      "Button visibility for $status",
+      ({ status, approve, deny, finalize, delete: deleteBtn }) => {
+        it("should return correct button visibility", () => {
+          const visibility = getButtonVisibility(status);
+
+          expect(visibility.approve).toBe(approve);
+          expect(visibility.deny).toBe(deny);
+          expect(visibility.finalize).toBe(finalize);
+          expect(visibility.delete).toBe(deleteBtn);
+        });
+      },
+    );
   });
 });
