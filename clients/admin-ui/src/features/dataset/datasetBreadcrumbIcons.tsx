@@ -1,8 +1,7 @@
 import { Icons } from "fidesui";
 
 /**
- * Icons used for breadcrumb navigation in dataset and discovery views.
- * Exported for use in dataset pages.
+ * Icons used for breadcrumb navigation in dataset view.
  */
 export const DATA_BREADCRUMB_ICONS = [
   <Icons.Layers key="layers" />,
