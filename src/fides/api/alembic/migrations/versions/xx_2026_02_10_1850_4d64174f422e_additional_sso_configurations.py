@@ -1,4 +1,4 @@
-"""additional cors configurations
+"""additional sso configurations
 
 Revision ID: 4d64174f422e
 Revises: f85bd4c08401
