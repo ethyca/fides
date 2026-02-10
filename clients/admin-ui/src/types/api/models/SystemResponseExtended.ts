@@ -2,20 +2,21 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { ConnectionConfigurationResponse } from "./ConnectionConfigurationResponse";
 import type { DataFlow } from "./DataFlow";
 import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
-import type { PrivacyDeclaration } from "./PrivacyDeclaration";
+import type { PrivacyDeclarationResponse } from "./PrivacyDeclarationResponse";
 import type { SystemMetadata } from "./SystemMetadata";
 import type { UserResponse } from "./UserResponse";
 
 /**
- * Extended version of BasicSystemResponse that includes system group information.
+ * Extended version of SystemResponse that includes system group information.
  *
- * This response model automatically extracts system group information from the
- * System.system_groups relationship.
+ * This response model extends the full SystemResponse (which includes connection_configs,
+ * privacy_declarations, and data_stewards) and adds system_groups for the detail endpoint.
  */
-export type BasicSystemResponseExtended = {
+export type SystemResponseExtended = {
   /**
    * A unique key used to identify this resource.
    */
@@ -58,14 +59,9 @@ export type BasicSystemResponseExtended = {
    */
   ingress?: Array<DataFlow> | null;
   /**
-   *
-   * The PrivacyDeclaration resource model.
-   *
-   * States a function of a system, and describes how it relates
-   * to the privacy data types.
-   *
+   * Extension of base pydantic model to include DB `id` field in the response
    */
-  privacy_declarations: Array<PrivacyDeclaration>;
+  privacy_declarations: Array<PrivacyDeclarationResponse>;
   /**
    * An optional value to identify the owning department or group of the system within your organization
    */
@@ -182,11 +178,17 @@ export type BasicSystemResponseExtended = {
   legitimate_interest_disclosure_url?: string | null;
   created_at: string;
   /**
+   *
+   * Describes the returned schema for a ConnectionConfiguration.
+   *
+   */
+  connection_configs: ConnectionConfigurationResponse | null;
+  /**
+   * System managers of the current system
+   */
+  data_stewards: Array<UserResponse> | null;
+  /**
    * List of system group fides_keys this system belongs to
    */
   system_groups?: Array<string>;
-  /**
-   * List of data stewards assigned to this system
-   */
-  data_stewards?: Array<UserResponse>;
 };

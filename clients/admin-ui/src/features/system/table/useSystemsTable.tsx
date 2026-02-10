@@ -18,7 +18,7 @@ import { expandCollapseAllMenuItems } from "~/features/common/table/cells/consta
 import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
-import { convertToAntFilters } from "~/features/common/utils";
+import { convertToAntFilters, formatUser } from "~/features/common/utils";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   useDeleteSystemMutation,
@@ -307,16 +307,25 @@ const useSystemsTable = () => {
         title: "Data stewards",
         dataIndex: "data_stewards",
         key: SystemColumnKeys.DATA_STEWARDS,
-        render: (dataStewards: string[] | null) => (
+        render: (_, { data_stewards }) => (
           <ListExpandableCell
-            values={dataStewards ?? []}
+            values={
+              data_stewards?.map((data_steward) => formatUser(data_steward)) ??
+              []
+            }
             valueSuffix="users"
             containerProps={{ className: "min-w-36" }}
           />
         ),
         width: 200,
         filters: convertToAntFilters(
-          allUsers?.items?.map((user) => user.username),
+          allUsers?.items?.map(({ username }) => username),
+          (username) =>
+            formatUser(
+              allUsers?.items?.find((u) => u.username === username) ?? {
+                username,
+              },
+            ),
         ),
         filteredValue: columnFilters?.data_stewards || null,
       },
