@@ -192,6 +192,16 @@ fallback-version = "0.0.0+dev"
 [tool.hatch.build.targets.wheel]
 packages = ["src/fides"]
 
+# Constrain setuptools for build isolation so legacy deps get pkg_resources (e.g. in docs image).
+[tool.uv]
+build-constraint-dependencies = ["setuptools==80.10.2"]
+
+# Packages whose setup uses pkg_resources at build time but don't declare setuptools
+# as a build dependency; required when building via uv (e.g. docs container).
+[tool.uv.extra-build-dependencies]
+flatdict = ["setuptools"]
+scylla-driver = ["setuptools"]
+
 ##########
 ## MyPy ##
 ##########
