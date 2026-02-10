@@ -129,7 +129,12 @@ const HomePage: NextPage = () => {
   ]);
 
   const handlePrivacyRequestOpen = (policyKey: string) => {
-    router.push(`/privacy-request/${encodeURIComponent(policyKey)}`);
+    // Preserve search params when navigating to privacy request page
+    const currentSearchParams = searchParams?.toString();
+    const url = currentSearchParams
+      ? `/privacy-request/${encodeURIComponent(policyKey)}?${currentSearchParams}`
+      : `/privacy-request/${encodeURIComponent(policyKey)}`;
+    router.push(url);
   };
 
   const content: ReactNode[] = [];
