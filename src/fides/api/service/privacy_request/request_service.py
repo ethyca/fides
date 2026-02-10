@@ -218,7 +218,6 @@ def initiate_scheduled_dsr_data_removal() -> None:
         id=DSR_DATA_REMOVAL,
         coalesce=False,
         replace_existing=True,
-        misfire_grace_time=300,
         trigger="cron",
         minute="0",
         hour="2",
