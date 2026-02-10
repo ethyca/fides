@@ -1,15 +1,10 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraHStack as HStack,
-  ChakraStack as Stack,
-  ChakraText as Text,
-} from "fidesui";
+import { Button, Flex, Typography } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import DocsLink from "~/features/common/DocsLink";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
@@ -25,6 +20,7 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
+import ErrorPage from "../common/errors/ErrorPage";
 import { ControlledSelect } from "../common/form/ControlledSelect";
 import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {
@@ -35,7 +31,6 @@ import {
 import { AWS_REGION_OPTIONS } from "./constants";
 import { isSystem } from "./helpers";
 import { useGenerateMutation } from "./scanner.slice";
-import ScannerError from "./ScannerError";
 import ScannerLoading from "./ScannerLoading";
 
 const initialValues = {
@@ -116,96 +111,123 @@ const AuthenticateAwsForm = () => {
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={ValidationSchema}
-      onSubmit={handleSubmit}
-    >
-      {({ isValid, isSubmitting, dirty }) => (
-        <Form data-testid="authenticate-aws-form">
-          <Stack spacing={10}>
-            {isSubmitting ? (
+    <Flex vertical gap="large">
+      <NextBreadcrumb
+        items={[
+          {
+            title: "Add systems",
+            href: "",
+            onClick: (e) => {
+              e.preventDefault();
+              handleCancel();
+            },
+          },
+          { title: "Authenticate AWS scanner" },
+        ]}
+      />
+      <Formik
+        initialValues={initialValues}
+        validationSchema={ValidationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isValid, isSubmitting, dirty }) => (
+          <>
+            {isSubmitting && (
               <ScannerLoading
                 title="System scanning in progress"
                 onClose={handleCancel}
               />
-            ) : null}
+            )}
 
-            {scannerError ? (
-              <ScannerError error={scannerError} scanType="aws" />
-            ) : null}
-            {!isSubmitting && !scannerError ? (
+            {scannerError && (
               <>
-                <Box>
-                  <NextBreadcrumb
-                    className="mb-4"
-                    items={[
-                      {
-                        title: "Add systems",
-                        href: "",
-                        onClick: (e) => {
-                          e.preventDefault();
-                          handleCancel();
-                        },
-                      },
-                      { title: "Authenticate AWS Scanner" },
-                    ]}
-                  />
-                  <Text>
-                    To use the scanner to inventory systems in AWS, you must
-                    first authenticate to your AWS cloud by providing the
-                    following information:
-                  </Text>
-                </Box>
-                <Stack>
-                  <CustomTextInput
-                    name="aws_access_key_id"
-                    label="Access Key ID"
-                    tooltip="The Access Key ID created by the cloud hosting provider."
-                    isRequired
-                  />
-                  <CustomTextInput
-                    type="password"
-                    name="aws_secret_access_key"
-                    label="Secret"
-                    tooltip="The secret associated with the Access Key ID used for authentication."
-                    isRequired
-                  />
-                  <CustomTextInput
-                    type="password"
-                    name="aws_session_token"
-                    label="Session Token"
-                    tooltip="The session token when using temporary credentials."
-                  />
-                  <ControlledSelect
-                    name="region_name"
-                    label="AWS Region"
-                    tooltip="The geographic region of the cloud hosting provider you would like to scan."
-                    options={AWS_REGION_OPTIONS}
-                    isRequired
-                    placeholder="Select a region"
-                  />
-                </Stack>
+                <ErrorPage
+                  error={scannerError}
+                  defaultMessage={
+                    scannerError.status === 403
+                      ? "Fides was unable to scan AWS. It appears that the credentials were valid to login but they did not have adequate permission to complete the scan."
+                      : "Fides was unable to scan your infrastructure. Please ensure your credentials are accurate and inspect the error log below for more details."
+                  }
+                  fullScreen={false}
+                  showReload={false}
+                />
+                {scannerError.status === 403 && (
+                  <Typography.Paragraph
+                    type="secondary"
+                    data-testid="permission-msg"
+                  >
+                    To fix this issue, double check that you have granted the
+                    required permissions to these credentials as part of your
+                    IAM policy. If you need more help in configuring IAM
+                    policies, you can read about them in the{" "}
+                    <DocsLink href="https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction_access-management.html">
+                      AWS documentation
+                    </DocsLink>
+                    .
+                  </Typography.Paragraph>
+                )}
               </>
-            ) : null}
-            {!isSubmitting ? (
-              <HStack>
-                <Button onClick={handleCancel}>Cancel</Button>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  disabled={!dirty || !isValid}
-                  loading={isLoading}
-                  data-testid="submit-btn"
-                >
-                  Save and continue
-                </Button>
-              </HStack>
-            ) : null}
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+            )}
+            <Form data-testid="authenticate-aws-form">
+              <Flex vertical gap="large">
+                {!isSubmitting && !scannerError && (
+                  <Flex vertical gap="small" className="w-full max-w-xl">
+                    <Typography.Paragraph>
+                      To use the scanner to inventory systems in AWS, you must
+                      first authenticate to your AWS cloud by providing the
+                      following information:
+                    </Typography.Paragraph>
+                    <CustomTextInput
+                      name="aws_access_key_id"
+                      label="Access Key ID"
+                      tooltip="The Access Key ID created by the cloud hosting provider."
+                      isRequired
+                    />
+                    <CustomTextInput
+                      type="password"
+                      name="aws_secret_access_key"
+                      label="Secret"
+                      tooltip="The secret associated with the Access Key ID used for authentication."
+                      isRequired
+                    />
+                    <CustomTextInput
+                      type="password"
+                      name="aws_session_token"
+                      label="Session Token"
+                      tooltip="The session token when using temporary credentials."
+                    />
+                    <ControlledSelect
+                      name="region_name"
+                      label="AWS Region"
+                      tooltip="The geographic region of the cloud hosting provider you would like to scan."
+                      options={AWS_REGION_OPTIONS}
+                      isRequired
+                      placeholder="Select a region"
+                    />
+                  </Flex>
+                )}
+                {!isSubmitting && (
+                  <Flex gap="small">
+                    <Button onClick={handleCancel}>Cancel</Button>
+                    {!scannerError && (
+                      <Button
+                        htmlType="submit"
+                        type="primary"
+                        disabled={!dirty || !isValid}
+                        loading={isLoading}
+                        data-testid="submit-btn"
+                      >
+                        Save and continue
+                      </Button>
+                    )}
+                  </Flex>
+                )}
+              </Flex>
+            </Form>
+          </>
+        )}
+      </Formik>
+    </Flex>
   );
 };
 

@@ -1,4 +1,5 @@
 import {
+  stubDatamap,
   stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
@@ -82,6 +83,7 @@ describe("Plus Bulk Vendor Add", () => {
   });
 
   it("can add new systems and redirects to datamap", () => {
+    stubDatamap();
     cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
     cy.wait("@getSystemVendors");
     cy.get('[type="checkbox"').check({ force: true });

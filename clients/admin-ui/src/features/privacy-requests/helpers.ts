@@ -65,3 +65,31 @@ export const isActionSupportedByRequests = (
     getAvailableActionsForRequest(request).includes(action),
   );
 };
+
+/**
+ * Button visibility configuration for privacy request actions
+ */
+export interface ButtonVisibility {
+  approve: boolean;
+  deny: boolean;
+  finalize: boolean;
+  delete: boolean;
+}
+
+/**
+ * Determines which action buttons should be visible for a given privacy request status
+ */
+export const getButtonVisibility = (
+  status: PrivacyRequestStatus,
+): ButtonVisibility => {
+  return {
+    approve:
+      status === PrivacyRequestStatus.PENDING ||
+      status === PrivacyRequestStatus.DUPLICATE,
+    deny:
+      status === PrivacyRequestStatus.PENDING ||
+      status === PrivacyRequestStatus.DUPLICATE,
+    finalize: status === PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
+    delete: true,
+  };
+};
