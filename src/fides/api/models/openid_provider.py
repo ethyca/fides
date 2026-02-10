@@ -49,7 +49,9 @@ class OpenIDProvider(Base):
     user_info_url = Column(String, nullable=True)  # Used for Custom provider
     scopes = Column(ARRAY(String), nullable=True)  # Used for Custom provider
     email_field = Column(String, nullable=True)  # Used for Custom provider
-    verify_email = Column(Boolean, default=True)  # Used for Custom provider
+    verify_email = Column(
+        Boolean, default=True, nullable=False
+    )  # Used for Custom provider
     verify_email_field = Column(String, nullable=True)  # Used for Custom provider
 
     @declared_attr
