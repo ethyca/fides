@@ -35,8 +35,11 @@ jobs:
       - name: Install Docs Requirements
         run: pip install -r docs/fides/requirements.txt
 
+      - name: Install build dependencies
+        run: pip install "setuptools==80.10.2" wheel "versioneer-518"
+
       - name: Install fides
-        run: pip install -e ./[all]
+        run: pip install --no-build-isolation -e "./[all]"
 
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1
