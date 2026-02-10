@@ -39,8 +39,6 @@ export type SSOProviderFormValues = Omit<
   provider?: ProviderEnum;
   client_id?: string;
   client_secret?: string;
-  verify_email?: boolean;
-  scopes?: string[];
 };
 
 export const defaultInitialValues: SSOProviderFormValues = {
