@@ -18,7 +18,7 @@ pytest-xdist==3.8.0
 pytest==8.4.2
 pyyaml==6.0.1
 requests-mock==1.10.0
-setuptools>=64.0.2
+setuptools==80.10.2
 sqlalchemy-stubs==0.4
 types-oauthlib==3.3.0.20250822
 types-paramiko==3.0.0.10
