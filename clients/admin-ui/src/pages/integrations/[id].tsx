@@ -10,9 +10,9 @@ import {
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import { getErrorMessage } from "~/features/common/helpers";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
+import { getErrorMessage } from "~/features/common/helpers";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
@@ -80,8 +80,8 @@ const IntegrationDetailView: NextPage = () => {
             await deleteConnectorTemplate(
               integrationOption.identifier,
             ).unwrap();
-          } catch (error) {
-            messageApi.error(getErrorMessage(error as any));
+          } catch (deleteError) {
+            messageApi.error(getErrorMessage(deleteError as any));
           }
         }
       },

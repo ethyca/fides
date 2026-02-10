@@ -3,9 +3,9 @@ import { Button, Modal, useMessage } from "fidesui";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
+import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
-import IntegrationBox from "~/features/integrations/IntegrationBox";
 
 const IntegrationTypeDetail = ({
   integrationType,
@@ -48,9 +48,7 @@ const IntegrationTypeDetail = ({
       onOk: async () => {
         if (connectionOption?.identifier) {
           try {
-            await deleteConnectorTemplate(
-              connectionOption.identifier,
-            ).unwrap();
+            await deleteConnectorTemplate(connectionOption.identifier).unwrap();
           } catch (error) {
             messageApi.error(getErrorMessage(error as any));
           }
