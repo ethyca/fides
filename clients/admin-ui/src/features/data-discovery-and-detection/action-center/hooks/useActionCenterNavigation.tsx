@@ -28,12 +28,6 @@ export const ACTION_CENTER_CONFIG: Record<
 export type ActionCenterRouteConfig = Record<ActionCenterRoute, string>;
 
 const useActionCenterNavigation = (routeConfig: ActionCenterRouteConfig) => {
-  const items = {
-    [ActionCenterRoute.ATTENTION_REQUIRED]:
-      ACTION_CENTER_CONFIG["attention-required"],
-    [ActionCenterRoute.ACTIVITY]: ACTION_CENTER_CONFIG.activity,
-  } as const;
-
   const { activeItem, setActiveItem } = useMenuNavigation({
     routes: routeConfig,
     defaultKey: ActionCenterRoute.ATTENTION_REQUIRED,
@@ -42,7 +36,7 @@ const useActionCenterNavigation = (routeConfig: ActionCenterRouteConfig) => {
   return {
     activeItem,
     setActiveItem,
-    items,
+    items: ACTION_CENTER_CONFIG,
   };
 };
 
