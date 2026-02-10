@@ -1,0 +1,4 @@
+type: Added
+description: Added database schema for privacy assessment answer history tracking
+pr: 7330
+labels: ["db-migration"]
