@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
+requires = ["setuptools==80.10.2", "wheel", "versioneer-518"]  # PEP 508 specifications.
 
 ##########
 ## MyPy ##
