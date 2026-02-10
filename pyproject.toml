@@ -192,7 +192,7 @@ packages = ["src/fides"]
 build-constraint-dependencies = ["setuptools==80.10.2"]
 # If a dependency fails in CI with ModuleNotFoundError: pkg_resources or setuptools, add it here.
 # CI and Dockerfile pre-install setuptools/wheel before uv sync so these packages can build.
-no-build-isolation-package = ["pyahocorasick", "pymssql", "scylla-driver", "flatdict"]
+no-build-isolation-package = ["pyahocorasick", "pymssql", "scylla-driver"]
 
 # Packages whose setup uses pkg_resources at build time but don't declare setuptools
 # as a build dependency; required when building via uv (e.g. docs container).

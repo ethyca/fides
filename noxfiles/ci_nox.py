@@ -135,7 +135,8 @@ def check_install(session: nox.Session) -> None:
 
     This is also a good sanity check for correct syntax.
     """
-    session.install("setuptools==80.10.2", "wheel", "versioneer-518")
+    # Build deps must be in env when using --no-build-isolation (hatchling is build-backend).
+    session.install("hatchling", "hatch-vcs", "setuptools==80.10.2", "wheel")
     session.install("--no-build-isolation", ".")
 
     REQUIRED_ENV_VARS = {
