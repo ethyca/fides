@@ -241,7 +241,11 @@ export const PrivacyExperienceForm = ({
   };
 
   const getTcfPrivacyNoticeName = (id: string) => {
-    const notice = allPrivacyNoticesWithTcfPlaceholder.find((n) => n.id === id);
+    let notice = allPrivacyNoticesWithTcfPlaceholder.find((n) => n.id === id);
+    if (!notice) {
+      // the notice is probably GPP and needs to be listed along with the error message.
+      notice = allPrivacyNotices.find((n) => n.id === id);
+    }
     return notice?.name ?? id;
   };
 
