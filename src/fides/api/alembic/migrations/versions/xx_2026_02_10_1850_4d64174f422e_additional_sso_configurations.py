@@ -27,9 +27,7 @@ def upgrade() -> None:
     )
     op.add_column(
         "openid_provider",
-        sa.Column(
-            "verify_email", sa.BOOLEAN(), server_default=sa.text("true"), nullable=False
-        ),
+        sa.Column("verify_email", sa.BOOLEAN(), server_default="t", nullable=False),
     )
     op.add_column(
         "openid_provider", sa.Column("verify_email_field", sa.String(), nullable=True)
