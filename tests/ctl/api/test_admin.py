@@ -1,4 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
+from unittest.mock import MagicMock, patch
+
 import pytest
 from starlette.testclient import TestClient
 
@@ -124,3 +126,146 @@ def test_heap_dump_logs_heap_stats(
     assert "PROCESS MEMORY STATS" in log_output
     assert "OBJECT TYPE COUNTS (Top 10)" in log_output
     assert "GARBAGE COLLECTOR STATS" in log_output
+
+
+class TestBackfillEndpoints:
+    """Tests for the /admin/backfill endpoint."""
+
+    def test_starts_background_task(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Test that backfill endpoint returns 202 and correct message."""
+        mock_lock = MagicMock()
+        mock_lock.owned.return_value = True
+
+        with (
+            patch(
+                "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+                return_value=mock_lock,
+            ),
+            patch(
+                "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+            ),
+        ):
+            response = test_client.post(
+                test_config.cli.server_url + API_PREFIX + "/admin/backfill",
+                headers=test_config.user.auth_header,
+            )
+
+        assert response.status_code == 202
+        data = response.json()["data"]
+        assert "Backfill started in background" in data["message"]
+        assert "GET /api/v1/admin/backfill" in data["message"]
+        assert "server logs" in data["message"]
+        assert data["config"]["batch_size"] == 5000
+        assert data["config"]["batch_delay_seconds"] == 1.0
+
+    def test_conflict_when_running(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+    ) -> None:
+        """Test that backfill endpoint returns 409 when backfill already running."""
+        with patch(
+            "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+            return_value=None,
+        ):
+            response = test_client.post(
+                test_config.cli.server_url + API_PREFIX + "/admin/backfill",
+                headers=test_config.user.auth_header,
+            )
+
+        assert response.status_code == 409
+        assert "already running" in response.json()["detail"]
+
+    @pytest.mark.parametrize(
+        "payload,expected_status",
+        [
+            # Valid custom parameters
+            ({"batch_size": 1000, "batch_delay_seconds": 2.0}, 202),
+            # batch_size too small
+            ({"batch_size": 50}, 422),
+            # batch_size too large
+            ({"batch_size": 100000}, 422),
+            # batch_delay_seconds too small
+            ({"batch_delay_seconds": 0.05}, 422),
+            # batch_delay_seconds too large
+            ({"batch_delay_seconds": 15.0}, 422),
+        ],
+    )
+    def test_request_parameters(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+        payload: dict,
+        expected_status: int,
+    ) -> None:
+        """Test that backfill endpoint validates request parameters."""
+        mock_lock = MagicMock()
+        mock_lock.owned.return_value = True
+
+        with (
+            patch(
+                "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+                return_value=mock_lock,
+            ),
+            patch(
+                "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+            ),
+        ):
+            response = test_client.post(
+                test_config.cli.server_url + API_PREFIX + "/admin/backfill",
+                headers=test_config.user.auth_header,
+                json=payload,
+            )
+
+        assert response.status_code == expected_status
+        if expected_status == 202:
+            data = response.json()["data"]
+            assert data["config"]["batch_size"] == payload.get("batch_size", 5000)
+            assert data["config"]["batch_delay_seconds"] == payload.get(
+                "batch_delay_seconds", 1.0
+            )
+
+    @pytest.mark.parametrize(
+        "is_running,pending_count",
+        [
+            (True, 50000),  # Backfill running with pending items
+            (False, 0),  # Backfill complete
+            (False, 100000),  # Pending items but not running
+        ],
+        ids=[
+            "running_with_pending",
+            "complete",
+            "pending_but_not_running",
+        ],
+    )
+    def test_get_status(
+        self,
+        test_config: FidesConfig,
+        test_client: TestClient,
+        is_running: bool,
+        pending_count: int,
+    ) -> None:
+        """Test that GET backfill returns correct status."""
+        with (
+            patch(
+                "fides.api.api.v1.endpoints.admin.is_backfill_running",
+                return_value=is_running,
+            ),
+            patch(
+                "fides.api.api.v1.endpoints.admin.get_pending_is_leaf_count",
+                return_value=pending_count,
+            ),
+        ):
+            response = test_client.get(
+                test_config.cli.server_url + API_PREFIX + "/admin/backfill",
+                headers=test_config.user.auth_header,
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["is_running"] is is_running
+        assert data["pending_count"]["stagedresource-is_leaf"] == pending_count
