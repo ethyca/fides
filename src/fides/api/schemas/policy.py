@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import Any, Optional
 
 from fideslang.validation import FidesKey
-
+from loguru import logger
 from pydantic import ConfigDict, field_validator
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
@@ -161,11 +161,18 @@ class PolicyResponse(Policy):
         if not v:
             return {}
         if isinstance(v, list):
+            # Multiple rows per policy is prevented by the DB unique constraint
+            # `uq_policy_condition_policy_id` on policy_condition.policy_id
+            # (see PolicyCondition model and migration 6d5f70dd0ba5).
+            # We log-and-continue rather than raise so that read endpoints
+            # never 500 on unexpected DB state.
             if len(v) > 1:
-                raise ValueError(
-                    f"Policy has {len(v)} condition rows; expected at most 1. "
-                    f"This indicates data corruption — the unique constraint on "
-                    f"policy_id should prevent multiple condition rows."
+                logger.warning(
+                    "Policy has %d condition rows; expected at most 1. "
+                    "This indicates data corruption — the unique constraint on "
+                    "policy_id should prevent multiple condition rows. "
+                    "Using the first row.",
+                    len(v),
                 )
             if hasattr(v[0], "condition_tree") and v[0].condition_tree:
                 return v[0].condition_tree
