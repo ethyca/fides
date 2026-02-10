@@ -1,8 +1,8 @@
-"""additional sso provider configuration
+"""additional cors configurations
 
-Revision ID: 4c32b41a7e11
+Revision ID: 4d64174f422e
 Revises: f85bd4c08401
-Create Date: 2026-02-10 16:28:08.759425
+Create Date: 2026-02-10 18:50:33.983004
 
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "4c32b41a7e11"
+revision = "4d64174f422e"
 down_revision = "f85bd4c08401"
 branch_labels = None
 depends_on = None
