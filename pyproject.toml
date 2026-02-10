@@ -139,11 +139,6 @@ dependencies = [
 mssql = ["pymssql==2.3.7"]
 all = ["pymssql==2.3.7"]
 
-# If a dependency fails in CI with ModuleNotFoundError: pkg_resources or setuptools, add it here.
-# CI and Dockerfile pre-install setuptools/wheel before uv sync so these packages can build.
-[tool.uv]
-no-build-isolation-package = ["pyahocorasick", "pymssql", "scylla-driver", "flatdict"]
-
 [dependency-groups]
 dev = [
     "ruff>=0.14.11",
@@ -195,6 +190,9 @@ packages = ["src/fides"]
 # Constrain setuptools for build isolation so legacy deps get pkg_resources (e.g. in docs image).
 [tool.uv]
 build-constraint-dependencies = ["setuptools==80.10.2"]
+# If a dependency fails in CI with ModuleNotFoundError: pkg_resources or setuptools, add it here.
+# CI and Dockerfile pre-install setuptools/wheel before uv sync so these packages can build.
+no-build-isolation-package = ["pyahocorasick", "pymssql", "scylla-driver", "flatdict"]
 
 # Packages whose setup uses pkg_resources at build time but don't declare setuptools
 # as a build dependency; required when building via uv (e.g. docs container).
