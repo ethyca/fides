@@ -1,10 +1,13 @@
 import {
   Button,
+  Flex,
   Icons,
+  Spin,
+  Text,
   Tooltip,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -24,11 +27,11 @@ const DeleteMonitorMessage = ({
   deletionImpact,
   isLoadingImpact,
 }: {
-  deletionImpact?: MonitorDeletionImpact | null;
+  deletionImpact?: MonitorDeletionImpact;
   isLoadingImpact: boolean;
 }) => {
   if (isLoadingImpact) {
-    return <span className="text-gray-600">Loading deletion impact...</span>;
+    return <Spin />;
   }
 
   const resourceCount = deletionImpact?.staged_resource_count ?? 0;
@@ -36,49 +39,46 @@ const DeleteMonitorMessage = ({
   const activeTaskCount = deletionImpact?.active_task_count ?? 0;
 
   return (
-    <div className="flex flex-col gap-3">
-      <span className="text-gray-600">
+    <Flex vertical gap={12}>
+      <Text>
         Are you sure you want to delete this discovery monitor?{" "}
-        <strong>This action cannot be undone.</strong>
-      </span>
+        <Text strong>This action cannot be undone.</Text>
+      </Text>
 
       {activeTaskCount > 0 && (
-        <span className="font-semibold text-orange-700">
-          ⚠ This monitor has{" "}
-          <strong>
-            {activeTaskCount} active task{activeTaskCount !== 1 ? "s" : ""}
-          </strong>{" "}
-          that will be cancelled.
-        </span>
+        <Text strong type="warning">
+          ⚠ This monitor has {activeTaskCount} active task
+          {activeTaskCount !== 1 ? "s" : ""} that will be cancelled.
+        </Text>
       )}
 
       {resourceCount > 0 && (
-        <span className="text-gray-600">
+        <Text>
           This will also permanently delete{" "}
-          <strong>
+          <Text strong>
             {resourceCount} pending resource{resourceCount !== 1 ? "s" : ""} in
             the action center
-          </strong>{" "}
+          </Text>{" "}
           discovered by this monitor.
-        </span>
+        </Text>
       )}
 
       {linkedDatasets.length > 0 && (
-        <div className="mt-1">
-          <span className="font-semibold text-orange-700">
+        <Flex vertical gap={4} className="mt-1">
+          <Text strong type="warning">
             ⚠ The following dataset{linkedDatasets.length !== 1 ? "s" : ""}{" "}
             will lose linked data source metadata:
-          </span>
-          <ul className="ml-5 mt-1 list-disc">
+          </Text>
+          <ul className="ml-5 list-disc">
             {linkedDatasets.map((dataset) => (
-              <li key={dataset.fides_key} className="text-gray-700">
-                {dataset.name ?? dataset.fides_key}
+              <li key={dataset.fides_key}>
+                <Text>{dataset.name ?? dataset.fides_key}</Text>
               </li>
             ))}
           </ul>
-        </div>
+        </Flex>
       )}
-    </div>
+    </Flex>
   );
 };
 
@@ -94,13 +94,13 @@ const MonitorConfigActionsCell = ({
   onEditClick: () => void;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [deletionImpact, setDeletionImpact] =
-    useState<MonitorDeletionImpact | null>(null);
-  const [isLoadingImpact, setIsLoadingImpact] = useState(false);
 
   const [deleteMonitor, { isLoading: isDeleting }] =
     useDeleteDiscoveryMonitorMutation();
-  const [fetchDeletionImpact] = useLazyGetMonitorDeletionImpactQuery();
+  const [
+    fetchDeletionImpact,
+    { data: deletionImpact, isLoading: isLoadingImpact },
+  ] = useLazyGetMonitorDeletionImpactQuery();
 
   const { toastResult: toastDeleteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred deleting this monitor",
@@ -125,31 +125,13 @@ const MonitorConfigActionsCell = ({
       : "Monitor execution successfully started",
   });
 
-  const handleOpenDeleteModal = useCallback(async () => {
+  const handleOpenDeleteModal = useCallback(() => {
     if (!monitorId) {
       return;
     }
-    setIsLoadingImpact(true);
-    setDeletionImpact(null);
+    fetchDeletionImpact({ monitor_config_id: monitorId });
     onOpen();
-
-    try {
-      const result = await fetchDeletionImpact({
-        monitor_config_id: monitorId,
-      }).unwrap();
-      setDeletionImpact(result);
-    } catch {
-      // If fetching impact fails, still allow deletion with basic message
-      setDeletionImpact(null);
-    } finally {
-      setIsLoadingImpact(false);
-    }
   }, [monitorId, onOpen, fetchDeletionImpact]);
-
-  const handleCloseDeleteModal = useCallback(() => {
-    onClose();
-    setDeletionImpact(null);
-  }, [onClose]);
 
   if (!monitorId) {
     return null;
@@ -160,7 +142,7 @@ const MonitorConfigActionsCell = ({
       monitor_config_id: monitorId,
     });
     toastDeleteResult(result);
-    handleCloseDeleteModal();
+    onClose();
   };
 
   const handleExecute = async () => {
@@ -174,7 +156,7 @@ const MonitorConfigActionsCell = ({
     <>
       <ConfirmationModal
         isOpen={isOpen}
-        onClose={handleCloseDeleteModal}
+        onClose={onClose}
         onConfirm={handleDelete}
         title="Delete monitor"
         message={
