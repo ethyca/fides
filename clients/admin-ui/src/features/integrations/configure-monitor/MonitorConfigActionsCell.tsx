@@ -56,7 +56,8 @@ const DeleteMonitorMessage = ({
         <span className="text-gray-600">
           This will also permanently delete{" "}
           <strong>
-            {resourceCount} staged resource{resourceCount !== 1 ? "s" : ""}
+            {resourceCount} pending resource{resourceCount !== 1 ? "s" : ""} in
+            the action center
           </strong>{" "}
           discovered by this monitor.
         </span>
@@ -65,8 +66,8 @@ const DeleteMonitorMessage = ({
       {linkedDatasets.length > 0 && (
         <div className="mt-1">
           <span className="font-semibold text-orange-700">
-            ⚠ The following dataset{linkedDatasets.length !== 1 ? "s" : ""} will
-            lose linked data source metadata:
+            ⚠ The following dataset{linkedDatasets.length !== 1 ? "s" : ""}{" "}
+            will lose linked data source metadata:
           </span>
           <ul className="ml-5 mt-1 list-disc">
             {linkedDatasets.map((dataset) => (
