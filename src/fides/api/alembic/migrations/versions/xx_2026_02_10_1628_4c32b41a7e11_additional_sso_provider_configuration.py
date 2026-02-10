@@ -1,17 +1,17 @@
-"""more sso provider configuration
+"""additional sso provider configuration
 
-Revision ID: 76d610405bf2
-Revises: 6d5f70dd0ba5
-Create Date: 2026-02-03 20:50:25.687933
+Revision ID: 4c32b41a7e11
+Revises: b2c3d4e5f6g7
+Create Date: 2026-02-10 16:28:08.759425
 
 """
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "76d610405bf2"
+revision = "4c32b41a7e11"
 down_revision = "b2c3d4e5f6g7"
 branch_labels = None
 depends_on = None
