@@ -41,8 +41,7 @@ const ErrorPage = ({
   const resolvedDefault = defaultMessage ?? DEFAULT_MESSAGE;
   const errorMessage = isFetchBaseQueryError(error)
     ? getErrorMessage(error, resolvedDefault)
-    : (defaultMessage ??
-      ("message" in error ? error.message : resolvedDefault));
+    : ("message" in error && error.message) || resolvedDefault;
   const dataString =
     "data" in error && !!error.data
       ? JSON.stringify(error.data)
