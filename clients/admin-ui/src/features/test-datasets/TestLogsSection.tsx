@@ -21,13 +21,13 @@ const formatTimestamp = (isoTimestamp: string) => {
 const getLevelColor = (level: string) => {
   switch (level) {
     case "ERROR":
-      return "var(--ant-color-error)";
+      return "var(--fidesui-error)";
     case "WARNING":
-      return "var(--ant-color-warning)";
+      return "var(--fidesui-warning)";
     case "INFO":
-      return "var(--ant-color-info)";
+      return "var(--fidesui-info)";
     default:
-      return "var(--ant-color-text-secondary)";
+      return "var(--fidesui-neutral-700)";
   }
 };
 
@@ -41,16 +41,8 @@ interface LogLineProps {
 }
 
 const LogLine = memo(({ log }: LogLineProps) => (
-  <pre
-    style={{
-      margin: 0,
-      fontSize: "12px",
-      fontFamily: "monospace",
-      whiteSpace: "pre-wrap",
-      wordBreak: "break-word",
-    }}
-  >
-    <span style={{ color: "var(--ant-color-success)" }}>
+  <pre className="whitespace-pre-wrap break-words font-mono text-xs">
+    <span style={{ color: "var(--fidesui-success)" }}>
       {formatTimestamp(log.timestamp)}
     </span>
     <span> | </span>
@@ -58,14 +50,14 @@ const LogLine = memo(({ log }: LogLineProps) => (
       {log.level.padEnd(8)}
     </span>
     <span> | </span>
-    <span style={{ color: "var(--ant-color-link)" }}>{log.module_info}</span>
+    <span style={{ color: "var(--fidesui-link)" }}>{log.module_info}</span>
     <span> - </span>
     <span
       style={{
         color:
           log.level === "ERROR" || log.level === "WARNING"
             ? getLevelColor(log.level)
-            : "var(--ant-color-text)",
+            : "var(--fidesui-minos)",
       }}
     >
       {log.message}
