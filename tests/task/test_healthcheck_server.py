@@ -27,8 +27,3 @@ class TestCeleryHealthCheckWorker:
             logger.info("Shutdown gracefully finished")
         except Exception:
             pytest.fail("Failed to stop health check server")
-
-
-
-
-

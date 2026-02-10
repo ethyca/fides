@@ -767,10 +767,12 @@ def celery_enable_logging():
     """Turns on celery output logs."""
     return True
 
+
 @pytest.fixture(scope="session")
 def celery_session_app(celery_session_app):
     celery_healthcheck.register(celery_session_app)
     return celery_session_app
+
 
 # This is here because the test suite occasionally fails to teardown the
 # Celery worker if it takes too long to terminate the worker thread. This
@@ -806,6 +808,7 @@ def celery_session_worker(
                 logger.warning("Failed to dispose of the celery worker.")
     except RuntimeError as re:
         logger.warning("Failed to stop the celery worker: " + str(re))
+
 
 @pytest.fixture(autouse=True, scope="session")
 def celery_use_virtual_worker(celery_session_worker):

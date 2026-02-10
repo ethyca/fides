@@ -88,7 +88,8 @@ class HealthCheckServer(bootsteps.StartStopStep):
         # Ignore mypy hints here as the constructed object immediately handles the request
         # (if you look in the source code for SimpleHTTPRequestHandler, specifically the finalize request method)
         self.http_server = HTTPServer(
-            ("0.0.0.0", self.healthcheck_port), self.http_handler  # type: ignore [arg-type]
+            ("0.0.0.0", self.healthcheck_port),
+            self.http_handler,  # type: ignore [arg-type]
         )
 
         self.thread = threading.Thread(
