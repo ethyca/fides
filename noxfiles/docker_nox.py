@@ -123,7 +123,7 @@ def build(session: nox.Session, image: str, machine_type: str = "") -> None:
     # This allows the dev deployment to run without requirements
     build_matrix = {
         "prod": {"tag": get_current_image, "target": "prod"},
-        "test": {"tag": lambda: IMAGE_LOCAL, "target": "prod"},
+        "test": {"tag": lambda: IMAGE_LOCAL, "target": "test"},
         "dev": {"tag": lambda: IMAGE_LOCAL, "target": "dev"},
         "admin_ui": {"tag": lambda: IMAGE_LOCAL_UI, "target": "frontend"},
         "privacy_center": {"tag": lambda: IMAGE_LOCAL_PC, "target": "frontend"},

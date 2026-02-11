@@ -8,6 +8,7 @@ cc-test-reporter
 ## generic files to ignore
 *~
 *.lock
+!uv.lock
 *.DS_Store
 *.swp
 *.out
