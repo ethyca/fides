@@ -124,13 +124,13 @@ describe("AssetReportingPage", () => {
     render(<AssetReportingPage />);
 
     const layout = screen.getByTestId("fixed-layout");
-    expect(layout).toHaveAttribute("data-title", "Asset reporting");
+    expect(layout).toHaveAttribute("data-title", "Asset report");
   });
 
   it("renders the page header with correct heading", () => {
     render(<AssetReportingPage />);
 
-    expect(screen.getByText("Asset reporting")).toBeInTheDocument();
+    expect(screen.getByText("Asset report")).toBeInTheDocument();
   });
 
   it("renders the export CSV button", () => {
