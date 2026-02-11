@@ -39,7 +39,9 @@ jobs:
           version: "latest"
 
       - name: Install Twine and wheel
-        run: uv pip install twine wheel
+        run: |
+          uv venv
+          uv pip install twine wheel
 
       # The git reset is required here because the build modifies
       # metadata and the wheel becomes a dirty version
