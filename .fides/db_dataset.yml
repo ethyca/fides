@@ -2069,6 +2069,101 @@ dataset:
       data_categories: [system.operations]
     - name: is_hash_migrated
       data_categories: [system.operations]
+  - name: rbac_permission
+    description: 'Permission definitions for RBAC system'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: code
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: resource_type
+      data_categories: [system.operations]
+    - name: is_active
+      data_categories: [system.operations]
+  - name: rbac_role
+    description: 'Role definitions for RBAC system with hierarchy support'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: is_system_role
+      data_categories: [system.operations]
+    - name: is_active
+      data_categories: [system.operations]
+    - name: parent_role_id
+      data_categories: [system.operations]
+    - name: priority
+      data_categories: [system.operations]
+  - name: rbac_role_constraint
+    description: 'Separation of duties and cardinality constraints for RBAC roles'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: constraint_type
+      data_categories: [system.operations]
+    - name: role_id_1
+      data_categories: [system.operations]
+    - name: role_id_2
+      data_categories: [system.operations]
+    - name: max_users
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: is_active
+      data_categories: [system.operations]
+  - name: rbac_role_permission
+    description: 'Junction table mapping roles to permissions'
+    fields:
+    - name: role_id
+      data_categories: [system.operations]
+    - name: permission_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+  - name: rbac_user_role
+    description: 'User role assignments with resource scoping and temporal validity'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: user_id
+      data_categories: [system.operations]
+    - name: role_id
+      data_categories: [system.operations]
+    - name: resource_type
+      data_categories: [system.operations]
+    - name: resource_id
+      data_categories: [system.operations]
+    - name: valid_from
+      data_categories: [system.operations]
+    - name: valid_until
+      data_categories: [system.operations]
+    - name: assigned_by
+      data_categories: [system.operations]
   - name: rule
     data_categories: []
     fields:
