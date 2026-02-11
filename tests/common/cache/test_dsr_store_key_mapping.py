@@ -109,30 +109,3 @@ class TestKeyMapper:
     def test_index_prefix(self) -> None:
         prefix = KeyMapper.index_prefix("pr-123")
         assert prefix == "__idx:dsr:pr-123"
-
-
-def _run_key_mapping_assertions() -> None:
-    """Run the same assertions as the tests (no pytest). Use: uv run python tests/common/cache/test_dsr_store_key_mapping.py"""
-    t = TestKeyMapper()
-    t.test_identity()
-    t.test_custom_field()
-    t.test_drp()
-    t.test_encryption()
-    t.test_masking_secret()
-    t.test_async_execution()
-    t.test_retry_count()
-    t.test_webhook_manual_access()
-    t.test_webhook_manual_erasure()
-    t.test_data_use_map()
-    t.test_email_info()
-    t.test_paused_location()
-    t.test_failed_location()
-    t.test_access_request()
-    t.test_erasure_request()
-    t.test_placeholder_results()
-    t.test_index_prefix()
-    print("All key mapping assertions passed.")
-
-
-if __name__ == "__main__":
-    _run_key_mapping_assertions()
