@@ -473,11 +473,15 @@ class SQLTranslatorDemo(QATestScenario):
         """Create Manual Task configuration."""
         try:
             # Check if config already exists for this task
-            existing_config = self.db.query(ManualTaskConfig).filter_by(
-                task_id=self.manual_task.id,
-                config_type=ActionType.access,
-                is_current=True
-            ).first()
+            existing_config = (
+                self.db.query(ManualTaskConfig)
+                .filter_by(
+                    task_id=self.manual_task.id,
+                    config_type=ActionType.access,
+                    is_current=True,
+                )
+                .first()
+            )
 
             if existing_config:
                 self.info(
