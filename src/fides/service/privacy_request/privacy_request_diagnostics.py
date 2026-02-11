@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
-
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
@@ -21,19 +20,6 @@ from fides.api.models.attachment import (
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.messaging import MessagingConfig
-from fides.api.models.privacy_request.execution_log import ExecutionLog
-from fides.api.models.privacy_request.provided_identity import ProvidedIdentity
-from fides.api.models.privacy_request.privacy_request import (
-    PrivacyRequest,
-    CustomPrivacyRequestField,
-    PrivacyRequestError,
-)
-from fides.api.models.privacy_request.request_task import RequestTask
-from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
-from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
-from fides.api.models.storage import StorageConfig
-
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
 )
@@ -47,6 +33,22 @@ from fides.api.models.manual_task.manual_task import (
     ManualTaskReferenceType,
     ManualTaskSubmission,
 )
+from fides.api.models.messaging import MessagingConfig
+from fides.api.models.privacy_request.execution_log import ExecutionLog
+from fides.api.models.privacy_request.privacy_request import (
+    CustomPrivacyRequestField,
+    PrivacyRequest,
+    PrivacyRequestError,
+)
+from fides.api.models.privacy_request.provided_identity import ProvidedIdentity
+from fides.api.models.privacy_request.request_task import (
+    RequestTask,
+    RequestTaskSubRequest,
+)
+from fides.api.models.sql_models import (
+    Dataset as CtlDataset,  # type: ignore[attr-defined]
+)
+from fides.api.models.storage import StorageConfig
 
 
 class PrivacyRequestSnapshot(BaseModel):
@@ -191,7 +193,9 @@ def get_execution_logs(
             connection_key=log.connection_key,
             dataset_name=log.dataset_name,
             collection_name=log.collection_name,
-            fields_affected_count=len(log.fields_affected) if log.fields_affected else None,
+            fields_affected_count=len(log.fields_affected)
+            if log.fields_affected
+            else None,
         )
         for log in logs
     ]
@@ -213,9 +217,7 @@ class AuditLogSnapshot(BaseModel):
     action: str
 
 
-def get_audit_logs(
-    privacy_request_id: str, db: Session
-) -> List[AuditLogSnapshot]:
+def get_audit_logs(privacy_request_id: str, db: Session) -> List[AuditLogSnapshot]:
     """Fetch audit logs for a privacy request and project into non-PII snapshots."""
 
     logs = (
@@ -335,7 +337,8 @@ def get_attachments(privacy_request_id: str, db: Session) -> List[AttachmentSnap
         .join(AttachmentReference)
         .filter(
             AttachmentReference.reference_id == privacy_request_id,
-            AttachmentReference.reference_type == AttachmentReferenceType.privacy_request,
+            AttachmentReference.reference_type
+            == AttachmentReferenceType.privacy_request,
         )
         .order_by(Attachment.created_at.asc())
         .all()
@@ -383,7 +386,8 @@ def get_attachment_references(
     """
 
     attachment_ids: List[str] = [
-        a.id for a in get_attachments(privacy_request_id, db)  # type: ignore[attr-defined]
+        a.id
+        for a in get_attachments(privacy_request_id, db)  # type: ignore[attr-defined]
     ]
     if not attachment_ids:
         return []
@@ -401,7 +405,9 @@ def get_attachment_references(
             created_at=ref.created_at,
             attachment_id=ref.attachment_id,
             reference_id=ref.reference_id,
-            reference_type=getattr(ref.reference_type, "value", str(ref.reference_type)),
+            reference_type=getattr(
+                ref.reference_type, "value", str(ref.reference_type)
+            ),
         )
         for ref in refs
     ]
@@ -442,7 +448,9 @@ def get_comments(privacy_request_id: str, db: Session) -> List[CommentSnapshot]:
             id=comment.id,
             created_at=comment.created_at,
             updated_at=comment.updated_at,
-            comment_type=getattr(comment.comment_type, "value", str(comment.comment_type)),
+            comment_type=getattr(
+                comment.comment_type, "value", str(comment.comment_type)
+            ),
         )
         for comment in comments
     ]
@@ -492,7 +500,9 @@ def get_comment_references(
             created_at=ref.created_at,
             comment_id=ref.comment_id,
             reference_id=ref.reference_id,
-            reference_type=getattr(ref.reference_type, "value", str(ref.reference_type)),
+            reference_type=getattr(
+                ref.reference_type, "value", str(ref.reference_type)
+            ),
         )
         for ref in refs
     ]
@@ -671,7 +681,8 @@ def get_storage_configs(
         .join(AttachmentReference)
         .filter(
             AttachmentReference.reference_id == privacy_request_id,
-            AttachmentReference.reference_type == AttachmentReferenceType.privacy_request,
+            AttachmentReference.reference_type
+            == AttachmentReferenceType.privacy_request,
         )
         .distinct()
         .all()
@@ -774,9 +785,7 @@ class CtlDatasetSnapshot(BaseModel):
     name: Optional[str] = None
 
 
-def get_ctl_datasets(
-    privacy_request_id: str, db: Session
-) -> List[CtlDatasetSnapshot]:
+def get_ctl_datasets(privacy_request_id: str, db: Session) -> List[CtlDatasetSnapshot]:
     """Fetch CTL datasets referenced by relevant DatasetConfigs."""
 
     dataset_configs = get_dataset_configs(privacy_request_id, db)
@@ -851,9 +860,7 @@ class ManualTaskSnapshot(BaseModel):
     parent_entity_type: str
 
 
-def get_manual_tasks(
-    privacy_request_id: str, db: Session
-) -> List[ManualTaskSnapshot]:
+def get_manual_tasks(privacy_request_id: str, db: Session) -> List[ManualTaskSnapshot]:
     """Fetch manual tasks related to this privacy request (via ManualTaskInstance)."""
 
     task_ids_rows = (
@@ -1051,7 +1058,9 @@ def get_manual_task_config_fields(
             config_id=f.config_id,
             field_key=f.field_key,
             field_type=getattr(f.field_type, "value", str(f.field_type)),
-            execution_timing=getattr(f.execution_timing, "value", str(f.execution_timing))
+            execution_timing=getattr(
+                f.execution_timing, "value", str(f.execution_timing)
+            )
             if f.execution_timing is not None
             else None,
         )
@@ -1261,9 +1270,7 @@ def get_privacy_request_diagnostics(
         execution_logs=get_execution_logs(privacy_request_id, db),
         audit_logs=get_audit_logs(privacy_request_id, db),
         request_tasks=get_request_tasks(privacy_request_id, db),
-        request_task_sub_requests=get_request_task_sub_requests(
-            privacy_request_id, db
-        ),
+        request_task_sub_requests=get_request_task_sub_requests(privacy_request_id, db),
         dataset_configs=get_dataset_configs(privacy_request_id, db),
         ctl_datasets=get_ctl_datasets(privacy_request_id, db),
         storage_configs=get_storage_configs(privacy_request_id, db),
