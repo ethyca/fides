@@ -121,6 +121,7 @@ export interface MonitorDeletionImpact {
   staged_resource_count: number;
   linked_datasets: LinkedDatasetInfo[];
   active_task_count: number;
+  associated_system_count: number;
 }
 
 const discoveryDetectionApi = baseApi.injectEndpoints({

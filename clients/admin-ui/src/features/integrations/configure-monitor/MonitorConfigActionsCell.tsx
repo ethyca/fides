@@ -37,6 +37,7 @@ const DeleteMonitorMessage = ({
   const resourceCount = deletionImpact?.staged_resource_count ?? 0;
   const linkedDatasets = deletionImpact?.linked_datasets ?? [];
   const activeTaskCount = deletionImpact?.active_task_count ?? 0;
+  const systemCount = deletionImpact?.associated_system_count ?? 0;
 
   return (
     <Flex vertical gap={12}>
@@ -60,6 +61,15 @@ const DeleteMonitorMessage = ({
             the action center
           </Text>{" "}
           discovered by this monitor.
+        </Text>
+      )}
+
+      {systemCount > 0 && (
+        <Text>
+          <Text strong>
+            {systemCount} system{systemCount !== 1 ? "s" : ""}
+          </Text>{" "}
+          associated with this monitor&apos;s resources will be affected.
         </Text>
       )}
 
