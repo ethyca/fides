@@ -22,6 +22,15 @@ def get_pending_distance_count(db: Session) -> int:
         raise
 
 
+# SQL expression to calculate distance between ancestor and descendant URNs.
+# Extracted as a constant so tests can verify this exact calculation logic in isolation
+# without running the full backfill (UPDATE/batching/locking). This ensures tests break
+# if the calculation changes, maintaining single source of truth.
+DISTANCE_CALCULATION_EXPR = """
+    array_length(string_to_array(descendant_urn, '.'), 1) - array_length(string_to_array(ancestor_urn, '.'), 1)
+"""
+
+
 @batched_backfill(
     name="stagedresourceancestor-distance",
     pending_count_fn=get_pending_distance_count,
@@ -44,12 +53,9 @@ def backfill_stagedresourceancestor_distance(db: Session, batch_size: int) -> in
     reflects the nesting depth.
     """
     # SQL query to calculate distance directly from URN segment counts
-    distance_query = """
+    distance_query = f"""
         UPDATE stagedresourceancestor
-        SET distance = (
-            array_length(string_to_array(descendant_urn, '.'), 1) -
-            array_length(string_to_array(ancestor_urn, '.'), 1)
-        )
+        SET distance = ({DISTANCE_CALCULATION_EXPR})
         WHERE id IN (
             SELECT id
             FROM stagedresourceancestor
