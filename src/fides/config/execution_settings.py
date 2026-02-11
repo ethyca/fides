@@ -89,4 +89,8 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Whether the memory watchdog is enabled to monitor and gracefully terminate tasks that approach memory limits.",
     )
+    use_legacy_traversal: bool = Field(
+        default=False,
+        description="When enabled, falls back to the legacy traversal algorithm. Intended as a temporary safety net in case of regressions with the optimized traversal.",
+    )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

@@ -46,7 +46,7 @@ def create_linear_chain(n: int) -> Tuple[DatasetGraph, Dict[str, Any]]:
         for field in datasets[i].collections[0].fields:
             if field.name == "parent_id":
                 field.references.append(
-                    (FieldAddress(f"ds_{i-1}", f"coll_{i-1}", "id"), "from")
+                    (FieldAddress(f"ds_{i - 1}", f"coll_{i - 1}", "id"), "from")
                 )
                 break
 
@@ -95,14 +95,43 @@ def create_star_graph(n: int) -> Tuple[DatasetGraph, Dict[str, Any]]:
 def create_diamond_graph() -> Tuple[DatasetGraph, Dict[str, Any]]:
     """Create a diamond: A -> B, C -> D with B and C both pointing to D"""
     a_fields = [ScalarField(name="id", identity="email"), ScalarField(name="data")]
-    b_fields = [ScalarField(name="id"), ScalarField(name="a_id"), ScalarField(name="data")]
-    c_fields = [ScalarField(name="id"), ScalarField(name="a_id"), ScalarField(name="data")]
-    d_fields = [ScalarField(name="id"), ScalarField(name="b_id"), ScalarField(name="c_id"), ScalarField(name="data")]
+    b_fields = [
+        ScalarField(name="id"),
+        ScalarField(name="a_id"),
+        ScalarField(name="data"),
+    ]
+    c_fields = [
+        ScalarField(name="id"),
+        ScalarField(name="a_id"),
+        ScalarField(name="data"),
+    ]
+    d_fields = [
+        ScalarField(name="id"),
+        ScalarField(name="b_id"),
+        ScalarField(name="c_id"),
+        ScalarField(name="data"),
+    ]
 
-    ds_a = GraphDataset(name="ds_a", collections=[Collection(name="coll_a", fields=a_fields)], connection_key="conn_a")
-    ds_b = GraphDataset(name="ds_b", collections=[Collection(name="coll_b", fields=b_fields)], connection_key="conn_b")
-    ds_c = GraphDataset(name="ds_c", collections=[Collection(name="coll_c", fields=c_fields)], connection_key="conn_c")
-    ds_d = GraphDataset(name="ds_d", collections=[Collection(name="coll_d", fields=d_fields)], connection_key="conn_d")
+    ds_a = GraphDataset(
+        name="ds_a",
+        collections=[Collection(name="coll_a", fields=a_fields)],
+        connection_key="conn_a",
+    )
+    ds_b = GraphDataset(
+        name="ds_b",
+        collections=[Collection(name="coll_b", fields=b_fields)],
+        connection_key="conn_b",
+    )
+    ds_c = GraphDataset(
+        name="ds_c",
+        collections=[Collection(name="coll_c", fields=c_fields)],
+        connection_key="conn_c",
+    )
+    ds_d = GraphDataset(
+        name="ds_d",
+        collections=[Collection(name="coll_d", fields=d_fields)],
+        connection_key="conn_d",
+    )
 
     # B and C reference A
     for field in ds_b.collections[0].fields:
@@ -126,15 +155,33 @@ def create_diamond_graph() -> Tuple[DatasetGraph, Dict[str, Any]]:
 def create_graph_with_after() -> Tuple[DatasetGraph, Dict[str, Any]]:
     """Create a graph with 'after' dependencies"""
     a_fields = [ScalarField(name="id", identity="email"), ScalarField(name="data")]
-    b_fields = [ScalarField(name="id"), ScalarField(name="a_id"), ScalarField(name="data")]
+    b_fields = [
+        ScalarField(name="id"),
+        ScalarField(name="a_id"),
+        ScalarField(name="data"),
+    ]
     c_fields = [ScalarField(name="id", identity="phone"), ScalarField(name="data")]
 
-    ds_a = GraphDataset(name="ds_a", collections=[Collection(name="coll_a", fields=a_fields)], connection_key="conn_a")
-    ds_b = GraphDataset(name="ds_b", collections=[Collection(name="coll_b", fields=b_fields)], connection_key="conn_b")
+    ds_a = GraphDataset(
+        name="ds_a",
+        collections=[Collection(name="coll_a", fields=a_fields)],
+        connection_key="conn_a",
+    )
+    ds_b = GraphDataset(
+        name="ds_b",
+        collections=[Collection(name="coll_b", fields=b_fields)],
+        connection_key="conn_b",
+    )
     # C has 'after' dependency on B
     ds_c = GraphDataset(
         name="ds_c",
-        collections=[Collection(name="coll_c", fields=c_fields, after={CollectionAddress("ds_b", "coll_b")})],
+        collections=[
+            Collection(
+                name="coll_c",
+                fields=c_fields,
+                after={CollectionAddress("ds_b", "coll_b")},
+            )
+        ],
         connection_key="conn_c",
     )
 
@@ -201,7 +248,9 @@ def create_random_graph(
             current = parent
         return ancestors
 
-    node_ancestors: Dict[int, Set[int]] = {i: get_ancestors(i) for i in range(num_nodes)}
+    node_ancestors: Dict[int, Set[int]] = {
+        i: get_ancestors(i) for i in range(num_nodes)
+    }
 
     # Add extra random edges based on edge_probability
     for i in range(num_nodes):
@@ -239,12 +288,17 @@ def create_random_graph(
                     # cause the node to be discovered before grandparent is visited
                     # Check if there's any edge from a non-ancestor to this node
                     has_shortcut_edge = any(
-                        from_node not in node_ancestors[i] and from_node != spanning_tree_parent.get(i)
+                        from_node not in node_ancestors[i]
+                        and from_node != spanning_tree_parent.get(i)
                         for from_node, to_node in extra_edges
                         if to_node == i
                     )
                     if not has_shortcut_edge:
-                        after_deps[i].add(CollectionAddress(f"ds_{grandparent}", f"coll_{grandparent}"))
+                        after_deps[i].add(
+                            CollectionAddress(
+                                f"ds_{grandparent}", f"coll_{grandparent}"
+                            )
+                        )
 
     # Create datasets
     datasets: List[GraphDataset] = []
@@ -327,9 +381,7 @@ def create_disconnected_graph(num_nodes: int) -> Tuple[DatasetGraph, Dict[str, A
     for i in range(1, mid + 1):
         for field in datasets[i].collections[0].fields:
             if field.name == "ref_id":
-                field.references.append(
-                    (FieldAddress("ds_0", "coll_0", "id"), "from")
-                )
+                field.references.append((FieldAddress("ds_0", "coll_0", "id"), "from"))
                 break
 
     # Nodes mid+1..num_nodes-1 are connected to each other but not to the main graph
@@ -338,7 +390,7 @@ def create_disconnected_graph(num_nodes: int) -> Tuple[DatasetGraph, Dict[str, A
             for field in datasets[i].collections[0].fields:
                 if field.name == "ref_id":
                     field.references.append(
-                        (FieldAddress(f"ds_{mid+1}", f"coll_{mid+1}", "id"), "from")
+                        (FieldAddress(f"ds_{mid + 1}", f"coll_{mid + 1}", "id"), "from")
                     )
                     break
 
@@ -357,9 +409,13 @@ def capture_traversal(traversal: BaseTraversal, use_optimized: bool) -> Dict[str
             data[tn.address] = tn
 
     if use_optimized:
-        end_nodes = traversal.traverse(traversal_nodes, capture_fn)  # New O(N+E) algorithm
+        end_nodes = traversal.traverse(
+            traversal_nodes, capture_fn
+        )  # New O(N+E) algorithm
     else:
-        end_nodes = traversal._traverse_legacy(traversal_nodes, capture_fn)  # Old O(N²) algorithm
+        end_nodes = traversal._traverse_legacy(
+            traversal_nodes, capture_fn
+        )  # Old O(N²) algorithm
 
     # Build parent/child map
     parent_child_map: Dict[str, List[str]] = {}
@@ -379,7 +435,7 @@ def capture_traversal(traversal: BaseTraversal, use_optimized: bool) -> Dict[str
 
 
 def capture_traversal_details(
-    traversal_nodes: Dict[CollectionAddress, TraversalNode]
+    traversal_nodes: Dict[CollectionAddress, TraversalNode],
 ) -> Dict[str, Dict[str, Any]]:
     """Serialize full traversal details for each node.
 
@@ -405,25 +461,35 @@ def capture_traversal_details(
     return result
 
 
-def results_equivalent(original: Dict[str, Any], optimized: Dict[str, Any]) -> Tuple[bool, str]:
+def results_equivalent(
+    original: Dict[str, Any], optimized: Dict[str, Any]
+) -> Tuple[bool, str]:
     """Compare two traversal results."""
     diffs = []
 
     if original["visited_set"] != optimized["visited_set"]:
-        diffs.append(f"Visited nodes differ: {original['visited_set'].symmetric_difference(optimized['visited_set'])}")
+        diffs.append(
+            f"Visited nodes differ: {original['visited_set'].symmetric_difference(optimized['visited_set'])}"
+        )
 
     if original["end_nodes"] != optimized["end_nodes"]:
-        diffs.append(f"End nodes differ: original={original['end_nodes']}, optimized={optimized['end_nodes']}")
+        diffs.append(
+            f"End nodes differ: original={original['end_nodes']}, optimized={optimized['end_nodes']}"
+        )
 
     if original["parent_child_map"] != optimized["parent_child_map"]:
-        for node in set(original["parent_child_map"].keys()) | set(optimized["parent_child_map"].keys()):
+        for node in set(original["parent_child_map"].keys()) | set(
+            optimized["parent_child_map"].keys()
+        ):
             o = original["parent_child_map"].get(node, [])
             p = optimized["parent_child_map"].get(node, [])
             if o != p:
                 diffs.append(f"Children of {node} differ: original={o}, optimized={p}")
 
     if original["node_count"] != optimized["node_count"]:
-        diffs.append(f"Node count differs: original={original['node_count']}, optimized={optimized['node_count']}")
+        diffs.append(
+            f"Node count differs: original={original['node_count']}, optimized={optimized['node_count']}"
+        )
 
     # Compare traversal details (serialized form)
     orig_details = original.get("traversal_details", {})
@@ -575,7 +641,9 @@ class TestRandomGraphEquivalence:
         optimized = capture_traversal(traversal_opt, use_optimized=True)
 
         match, diff = results_equivalent(original, optimized)
-        assert match, f"Results differ for seed={rng_seed + 100}, nodes={num_nodes}:\n{diff}"
+        assert match, (
+            f"Results differ for seed={rng_seed + 100}, nodes={num_nodes}:\n{diff}"
+        )
 
     @pytest.mark.parametrize("rng_seed", range(3))
     def test_random_with_after_deps(self, rng_seed: int):
@@ -598,7 +666,9 @@ class TestRandomGraphEquivalence:
         optimized = capture_traversal(traversal_opt, use_optimized=True)
 
         match, diff = results_equivalent(original, optimized)
-        assert match, f"Results differ for seed={rng_seed + 200}, nodes={num_nodes}:\n{diff}"
+        assert match, (
+            f"Results differ for seed={rng_seed + 200}, nodes={num_nodes}:\n{diff}"
+        )
 
     @pytest.mark.parametrize("rng_seed", range(2))
     def test_random_dense_graphs(self, rng_seed: int):
@@ -619,7 +689,9 @@ class TestRandomGraphEquivalence:
         optimized = capture_traversal(traversal_opt, use_optimized=True)
 
         match, diff = results_equivalent(original, optimized)
-        assert match, f"Results differ for seed={rng_seed + 300}, nodes={num_nodes}:\n{diff}"
+        assert match, (
+            f"Results differ for seed={rng_seed + 300}, nodes={num_nodes}:\n{diff}"
+        )
 
     @pytest.mark.parametrize("rng_seed", range(2))
     def test_random_sparse_graphs(self, rng_seed: int):
@@ -640,7 +712,9 @@ class TestRandomGraphEquivalence:
         optimized = capture_traversal(traversal_opt, use_optimized=True)
 
         match, diff = results_equivalent(original, optimized)
-        assert match, f"Results differ for seed={rng_seed + 400}, nodes={num_nodes}:\n{diff}"
+        assert match, (
+            f"Results differ for seed={rng_seed + 400}, nodes={num_nodes}:\n{diff}"
+        )
 
     def test_single_node_graph(self):
         """Test graph with only one node (edge case)."""
@@ -694,8 +768,12 @@ class TestTraversalErrorEquivalence:
             opt_error = e
 
         # Both should raise the same type of error
-        assert orig_error is not None, "Legacy algorithm should raise UnreachableNodesError"
-        assert opt_error is not None, "Optimized algorithm should raise UnreachableNodesError"
+        assert orig_error is not None, (
+            "Legacy algorithm should raise UnreachableNodesError"
+        )
+        assert opt_error is not None, (
+            "Optimized algorithm should raise UnreachableNodesError"
+        )
 
         # The unreachable nodes should be the same (as sets, order may differ)
         assert set(orig_error.errors) == set(opt_error.errors), (
@@ -724,8 +802,12 @@ class TestTraversalErrorEquivalence:
             opt_error = e
 
         # Both should raise errors
-        assert orig_error is not None, f"Legacy should raise error for {num_nodes} nodes"
-        assert opt_error is not None, f"Optimized should raise error for {num_nodes} nodes"
+        assert orig_error is not None, (
+            f"Legacy should raise error for {num_nodes} nodes"
+        )
+        assert opt_error is not None, (
+            f"Optimized should raise error for {num_nodes} nodes"
+        )
 
         # Error types should match
         assert type(orig_error) == type(opt_error), (
@@ -743,7 +825,9 @@ class TestTraversalErrorEquivalence:
 
     def test_connected_graph_no_error(self):
         """Verify that connected random graphs don't raise errors in either algorithm."""
-        graph, seed = create_random_graph(num_nodes=20, edge_probability=0.3, rng_seed=12345)
+        graph, seed = create_random_graph(
+            num_nodes=20, edge_probability=0.3, rng_seed=12345
+        )
 
         traversal_orig = BaseTraversal(graph, seed, skip_verification=True)
         traversal_opt = BaseTraversal(graph, seed, skip_verification=True)

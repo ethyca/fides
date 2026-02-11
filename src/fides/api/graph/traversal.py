@@ -44,6 +44,7 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
+from fides.config import CONFIG
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
@@ -142,7 +143,9 @@ class BaseTraversal:
             dataset_deps: Set[str] = set()
             for dataset_name in traversal_node.node.dataset.after:
                 # O(1) lookup instead of O(N) scan
-                dataset_deps.update(self._collections_by_dataset.get(dataset_name, set()))
+                dataset_deps.update(
+                    self._collections_by_dataset.get(dataset_name, set())
+                )
             self.dataset_after_str[addr.value] = dataset_deps
 
         # Add root node to the pre-computed dependencies (it has no dependencies)
@@ -248,6 +251,10 @@ class BaseTraversal:
         Returns a list of termination traversal_node addresses so that we can
         take action on completed traversal.
         """
+        if CONFIG.execution.use_legacy_traversal:
+            logger.info("Using legacy traversal algorithm (use_legacy_traversal=True)")
+            return self._traverse_legacy(environment, node_run_fn)
+
         total_nodes = len(self.traversal_node_dict)
         logger.debug("Starting traversal of {} nodes", total_nodes)
 
@@ -321,7 +328,8 @@ class BaseTraversal:
                 # No ready nodes - check if any pending nodes are now ready
                 # This handles the edge case where a node was discovered but blocked
                 newly_ready = [
-                    addr for addr, node in pending.items()
+                    addr
+                    for addr, node in pending.items()
                     if blocked_by.get(addr, 0) == 0
                 ]
                 if newly_ready:
@@ -399,7 +407,10 @@ class BaseTraversal:
             for child_addr in child_addresses:
                 # Skip if already in discovered set AND not finished
                 # (allow re-adding finished nodes for cycle handling)
-                if child_addr.value in discovered and child_addr.value not in finished_str:
+                if (
+                    child_addr.value in discovered
+                    and child_addr.value not in finished_str
+                ):
                     continue
                 if child_addr not in self.traversal_node_dict:
                     continue

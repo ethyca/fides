@@ -202,6 +202,12 @@ def compute_all_descendants(
     By processing in reverse topological order (leaves first), we can compute
     each node's descendants as the union of its children's descendants plus
     its direct children.
+
+    Returns a Dict mapping each node (CollectionAddress) in the graph to the
+    set of all nodes that are reachable from it (i.e. its transitive successors).
+    This is used to populate the ``all_descendant_tasks`` field on each
+    RequestTask so that any node can quickly determine every downstream task
+    that must complete before the overall request is finished.
     """
     all_descendants: Dict[CollectionAddress, Set[CollectionAddress]] = {
         node: set() for node in graph.nodes
@@ -263,7 +269,6 @@ def base_task_data(
         "downstream_tasks": sorted(
             [downstream.value for downstream in graph.successors(node)]
         ),
-        # Use pre-computed descendants instead of calling networkx.descendants per node
         "all_descendant_tasks": sorted(
             [descend.value for descend in all_descendants.get(node, set())]
         ),
