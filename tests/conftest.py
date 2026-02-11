@@ -758,8 +758,28 @@ def integration_config():
 
 
 @pytest.fixture(scope="session")
-def celery_config():
-    return {"task_always_eager": False}
+def celery_config(request):
+    """
+    Configure celery for testing.
+
+    Uses a unique healthcheck port per xdist worker to prevent port conflicts
+    when running tests in parallel.
+    """
+    # Calculate unique port based on xdist worker_id
+    # This works at session scope by accessing request.config
+    if hasattr(request.config, "workerinput"):
+        # In a worker process (e.g., 'gw0', 'gw1', 'gw2')
+        worker_id = request.config.workerinput["workerid"]
+        worker_num = int(worker_id.replace("gw", ""))
+        healthcheck_port = 9000 + worker_num + 1
+    else:
+        # In the master process (or not using xdist)
+        healthcheck_port = 9000
+
+    return {
+        "task_always_eager": False,
+        "healthcheck_port": healthcheck_port,
+    }
 
 
 @pytest.fixture(scope="session")
