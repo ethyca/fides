@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed boolean fields not showing pre-selected values in integration forms
+pr: 7349
+labels: []

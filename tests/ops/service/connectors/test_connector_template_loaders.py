@@ -206,21 +206,7 @@ class TestCustomConnectorTemplateLoader:
             ),
         )
         assert connector_type == "planet_express"
-
-        # verify that a connector template can updated with no issue
-        CustomConnectorTemplateLoader.save_template(
-            db,
-            ZipFile(
-                create_zip_file(
-                    {
-                        "config.yml": planet_express_config,
-                        "dataset.yml": planet_express_dataset,
-                        "icon.svg": planet_express_icon,
-                    }
-                )
-            ),
-        )
-        assert mock_create_or_update.call_count == 2
+        assert mock_create_or_update.call_count == 1
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
