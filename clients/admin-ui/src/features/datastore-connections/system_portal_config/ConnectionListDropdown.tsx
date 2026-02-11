@@ -16,7 +16,6 @@ import {
   SearchLineIcon,
   Tooltip,
 } from "fidesui";
-import { isEqual } from "lodash";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -146,11 +145,12 @@ export const useConnectionListDropDown = ({
       const updatedValue = connectionOptions.find(
         (ct) => ct.identifier === selectedValue.identifier,
       );
-      if (updatedValue && !isEqual(updatedValue, selectedValue)) {
+      // Only update if we found a match and it's a different object reference
+      if (updatedValue && updatedValue !== selectedValue) {
         setSelectedValue(updatedValue);
       }
     }
-  }, [connectionOptions, selectedValue, setSelectedValue]);
+  }, [connectionOptions, selectedValue]);
 
   return { dropDownOptions, selectedValue, setSelectedValue, systemType };
 };
