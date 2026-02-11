@@ -8,8 +8,10 @@ from loguru import logger
 
 class TestCeleryHealthCheckServer:
     def test_responds_to_ping_properly(self, celery_session_app, celery_session_worker):
+        # Get the port from the celery app config (unique per xdist worker)
+        port = celery_session_app.conf.get("healthcheck_port", 9000)
         try:
-            response = requests.get("http://127.0.0.1:9000/", timeout=5)
+            response = requests.get(f"http://127.0.0.1:{port}/", timeout=5)
             assert response.status_code == 200
             assert response.json()["status"] == "ok"
         except requests.exceptions.ConnectionError:
@@ -20,14 +22,16 @@ class TestCeleryHealthCheckServer:
     ):
         """
         Verify multiple concurrent healthcheck requests don't cause contention or deadlocks.
-
+        
         This test validates that the log_message() override prevents stderr contention
         and that SO_REUSEADDR allows proper concurrent handling.
         """
+        # Get the port from the celery app config (unique per xdist worker)
+        port = celery_session_app.conf.get("healthcheck_port", 9000)
 
         def make_request():
             try:
-                response = requests.get("http://127.0.0.1:9000/", timeout=10)
+                response = requests.get(f"http://127.0.0.1:{port}/", timeout=10)
                 return response.status_code == 200
             except Exception as e:
                 logger.error(f"Request failed: {e}")
@@ -48,14 +52,17 @@ class TestCeleryHealthCheckServer:
     ):
         """
         Verify HTTP logging doesn't cause stderr contention with pytest output capturing.
-
+        
         This test validates that the log_message() override prevents the default
         SimpleHTTPRequestHandler behavior of writing to stderr, which can cause
         deadlocks in test environments.
         """
+        # Get the port from the celery app config (unique per xdist worker)
+        port = celery_session_app.conf.get("healthcheck_port", 9000)
+        
         # Make multiple requests while pytest is capturing output
         for i in range(5):
-            response = requests.get("http://127.0.0.1:9000/", timeout=5)
+            response = requests.get(f"http://127.0.0.1:{port}/", timeout=5)
             assert response.status_code == 200
 
         # Verify we can still capture output without blocking
@@ -66,10 +73,11 @@ class TestCeleryHealthCheckServer:
 
 class TestCeleryHealthCheckWorker:
     @pytest.fixture(autouse=True)
-    def setup_teardown(self):
+    def setup_teardown(self, celery_session_app):
+        port = celery_session_app.conf.get("healthcheck_port", 9000)
         yield
         with pytest.raises(Exception):
-            requests.get("http://127.0.0.1:9000/", timeout=1)
+            requests.get(f"http://127.0.0.1:{port}/", timeout=1)
 
     def test_shutdown_gracefully(self, celery_session_app, celery_session_worker):
         try:
