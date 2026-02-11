@@ -3,14 +3,26 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   Button,
   ChakraBox as Box,
+  ChakraDeleteIcon as DeleteIcon,
+  ChakraFlex as Flex,
   ChakraStack as Stack,
   useChakraToast as useToast,
 } from "fidesui";
-import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
+import {
+  FieldArray,
+  Form,
+  Formik,
+  FormikHelpers,
+  useFormikContext,
+} from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
-import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
+import {
+  CustomSwitch,
+  CustomTextInput,
+  Label,
+} from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -68,7 +80,7 @@ const SSOProviderFormValidationSchema = Yup.object().shape({
 
 const CustomProviderExtraFields = () => {
   const {
-    values: { verify_email: verifyEmail },
+    values: { verify_email: verifyEmail, scopes = [] },
   } = useFormikContext<SSOProviderFormValues>();
 
   return (
@@ -97,14 +109,6 @@ const CustomProviderExtraFields = () => {
         variant="stacked"
         isRequired
       />
-      <ControlledSelect
-        id="scopes"
-        name="scopes"
-        label="Scopes"
-        tooltip="Scopes requested during authorization callback, defaults to 'openid email'"
-        placeholder="openid email"
-        mode="tags"
-      />
       <CustomTextInput
         id="email_field"
         name="email_field"
@@ -130,6 +134,43 @@ const CustomProviderExtraFields = () => {
           placeholder="verified_email"
         />
       )}
+      <FieldArray
+        name="scopes"
+        render={(arrayHelpers) => (
+          <Flex flexDir="column">
+            <Label size="small">Scopes</Label>
+            {scopes?.map((_: string, index: number) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <Flex flexDir="row" key={index} my="3">
+                <CustomTextInput
+                  name={`scopes[${index}]`}
+                  variant="stacked"
+                  placeholder="openid"
+                />
+                <Button
+                  aria-label="delete-scope"
+                  icon={<DeleteIcon />}
+                  className="z-[2] ml-4"
+                  onClick={() => {
+                    arrayHelpers.remove(index);
+                  }}
+                />
+              </Flex>
+            ))}
+            <Flex justifyContent="center">
+              <Button
+                aria-label="add-scope"
+                className="w-full"
+                onClick={() => {
+                  arrayHelpers.push("");
+                }}
+              >
+                Add scope
+              </Button>
+            </Flex>
+          </Flex>
+        )}
+      />
     </>
   );
 };
