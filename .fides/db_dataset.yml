@@ -91,6 +91,156 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+  - name: answer_version
+    description: 'Immutable history of assessment answer versions'
+    fields:
+    - name: answer_id
+      data_categories:
+      - system.operations
+    - name: answer_source
+      data_categories:
+      - system.operations
+    - name: answer_status
+      data_categories:
+      - system.operations
+    - name: answer_text
+      data_categories:
+      - system.operations
+    - name: change_type
+      data_categories:
+      - system.operations
+    - name: confidence
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: created_by
+      data_categories:
+      - system.operations
+    - name: diff_from_previous
+      data_categories:
+      - system.operations
+    - name: evidence
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: source_references
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: version_number
+      data_categories:
+      - system.operations
+  - name: assessment_answer
+    description: 'Current answer for each question in an assessment'
+    fields:
+    - name: assessment_id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: current_version_id
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: question_id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+  - name: assessment_question
+    description: 'Questions belonging to an assessment template'
+    fields:
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: expected_coverage
+      data_categories:
+      - system.operations
+    - name: fides_sources
+      data_categories:
+      - system.operations
+    - name: group_order
+      data_categories:
+      - system.operations
+    - name: guidance
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: question_key
+      data_categories:
+      - system.operations
+    - name: question_order
+      data_categories:
+      - system.operations
+    - name: question_text
+      data_categories:
+      - system.operations
+    - name: required
+      data_categories:
+      - system.operations
+    - name: requirement_key
+      data_categories:
+      - system.operations
+    - name: requirement_title
+      data_categories:
+      - system.operations
+    - name: template_id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+  - name: assessment_template
+    description: 'Versioned assessment template definitions'
+    fields:
+    - name: assessment_type
+      data_categories:
+      - system.operations
+    - name: authority
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: description
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: is_active
+      data_categories:
+      - system.operations
+    - name: key
+      data_categories:
+      - system.operations
+    - name: legal_reference
+      data_categories:
+      - system.operations
+    - name: name
+      data_categories:
+      - system.operations
+    - name: region
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: version
+      data_categories:
+      - system.operations
   - name: auditlog
     fields:
     - name: created_at
@@ -143,6 +293,16 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+  - name: backfill_history
+    description: 'Table used to track completed database backfill operations'
+    data_categories: [system.operations]
+    fields:
+    - name: backfill_name
+      description: 'Unique name of the backfill operation'
+      data_categories: [system.operations]
+    - name: completed_at
+      description: 'Timestamp when the backfill completed successfully'
+      data_categories: [system.operations]
   - name: chat_config
     description: 'Configuration for chat providers (Slack, Microsoft Teams, etc.)'
     data_categories: []
@@ -1353,6 +1513,57 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: privacy_assessment
+    description: 'A privacy assessment instance linked to a system/declaration'
+    fields:
+    - name: completeness
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: created_by
+      data_categories:
+      - system.operations
+    - name: data_categories
+      data_categories:
+      - system.operations
+    - name: data_use
+      data_categories:
+      - system.operations
+    - name: data_use_name
+      data_categories:
+      - system.operations
+    - name: declaration_id
+      data_categories:
+      - system.operations
+    - name: declaration_name
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: name
+      data_categories:
+      - system.operations
+    - name: risk_level
+      data_categories:
+      - system.operations
+    - name: status
+      data_categories:
+      - system.operations
+    - name: system_fides_key
+      data_categories:
+      - system.operations
+    - name: system_name
+      data_categories:
+      - system.operations
+    - name: template_id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: policy
     data_categories: []
     fields:
@@ -2753,6 +2964,8 @@ dataset:
     - name: diff_status
       data_categories: [system]
     - name: id
+      data_categories: [system]
+    - name: is_leaf
       data_categories: [system]
     - name: meta
       data_categories: [system]

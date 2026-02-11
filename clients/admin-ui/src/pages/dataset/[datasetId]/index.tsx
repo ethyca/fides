@@ -34,8 +34,8 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
+import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
 import { DatasetCollection } from "~/types/api";
 

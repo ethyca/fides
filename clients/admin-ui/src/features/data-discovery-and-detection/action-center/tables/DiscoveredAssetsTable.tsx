@@ -73,6 +73,7 @@ export const DiscoveredAssetsTable = ({
 
     // Selection
     selectedUrns,
+    selectedRows,
     hasSelectedRows,
     resetSelections,
 
@@ -113,6 +114,10 @@ export const DiscoveredAssetsTable = ({
     await handleBulkAddDataUse(newDataUses);
     setIsAddDataUseModalOpen(false);
   };
+
+  const hasUncategorizedSelectedAssets = selectedRows.some(
+    (asset: StagedResourceAPIResponse) => !asset.system,
+  );
 
   if (!monitorId || !systemId) {
     return null;
@@ -165,8 +170,19 @@ export const DiscoveredAssetsTable = ({
                     : [
                         {
                           key: "add",
-                          label: "Add",
+                          label: (
+                            <Tooltip
+                              title={
+                                hasUncategorizedSelectedAssets
+                                  ? "The selected assets must be assigned to a system before you can add them to the inventory."
+                                  : undefined
+                              }
+                            >
+                              Add
+                            </Tooltip>
+                          ),
                           onClick: handleBulkAdd,
+                          disabled: hasUncategorizedSelectedAssets,
                         },
                         {
                           key: "add-data-use",

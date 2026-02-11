@@ -1,10 +1,10 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from pathlib import Path as LocalPath
 from typing import Generator, List
 
 import pytest
 from fideslang.models import System, SystemMetadata
-from py._path.local import LocalPath
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.db.system import upsert_system

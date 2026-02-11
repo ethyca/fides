@@ -1,0 +1,3 @@
+type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Fixed useless "Save" button showing in core taxonomy edit drawer
+pr: 7318 # PR number

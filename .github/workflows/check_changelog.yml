@@ -60,30 +60,35 @@ jobs:
         if: success()
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        if: success()
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set up Python
         if: success()
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
-      - name: Install nox
+      - name: Install dependencies and nox
         if: success()
-        run: pip install nox>=2022
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         if: success()
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-changelog-3.13-${{ hashFiles('noxfiles/changelog_nox.py') }}
+          key: ${{ runner.os }}-uv-nox-changelog-3.13-${{ hashFiles('noxfiles/changelog_nox.py') }}
           restore-keys: |
-            ${{ runner.os }}-nox-changelog-3.13-
-
-      - name: Install Dev Requirements
-        if: success()
-        run: pip install -r dev-requirements.txt
+            ${{ runner.os }}-uv-nox-changelog-3.13-
 
       - name: Validate changelog entries
         if: success()
         run: |
-          nox -s "changelog(validate)" -- --files "${{ steps.check-changelog-files.outputs.changelog_files }}"
+          uv run nox -s "changelog(validate)" -- --files "${{ steps.check-changelog-files.outputs.changelog_files }}"

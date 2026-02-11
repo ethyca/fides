@@ -191,7 +191,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         for param_value in read_request.param_values or []:
             if param_value.unpack:
                 value = param_value.name
-                input_data[value] = pydash.flatten(input_data.get(value))
+                input_data[value] = pydash.flatten(input_data.get(value) or [])
 
         param_value_maps = []
         # we want to preserve the grouped_input relationships so we take each
