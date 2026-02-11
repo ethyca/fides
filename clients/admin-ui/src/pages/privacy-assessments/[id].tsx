@@ -902,17 +902,21 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                         q.question_id,
                         q.answer_text,
                       );
-                      const sourceLabel =
-                        q.answer_source === "system"
+                      // Only show source label if there's actual answer content
+                      const hasContent = currentAnswer.trim().length > 0;
+                      const sourceLabel = hasContent
+                        ? q.answer_source === "system"
                           ? "System derived"
                           : q.answer_source === "ai_analysis"
                             ? "AI derived"
-                            : "Team input";
-                      const sourceColor =
-                        q.answer_source === "system" ||
-                        q.answer_source === "ai_analysis"
+                            : "Team input"
+                        : "Needs input";
+                      const sourceColor = hasContent
+                        ? q.answer_source === "system" ||
+                          q.answer_source === "ai_analysis"
                           ? CUSTOM_TAG_COLOR.SUCCESS
-                          : CUSTOM_TAG_COLOR.DEFAULT;
+                          : CUSTOM_TAG_COLOR.DEFAULT
+                        : CUSTOM_TAG_COLOR.DEFAULT;
 
                       return (
                         <div
