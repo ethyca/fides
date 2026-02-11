@@ -93,6 +93,7 @@ export const baseApi = createApi({
     "Identity Provider Monitor Results",
     "Identity Provider Monitor Filters",
     "Privacy Assessment",
+    "Privacy Assessment Template",
     "Privacy Assessment Questionnaire",
     "Privacy Assessment Evidence",
     "User Monitors",

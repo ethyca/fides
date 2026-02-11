@@ -23,6 +23,7 @@ import PageHeader from "~/features/common/PageHeader";
 import {
   PrivacyAssessmentResponse,
   useCreatePrivacyAssessmentMutation,
+  useGetPrivacyAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
@@ -419,6 +420,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
     isError,
   } = useGetPrivacyAssessmentsQuery();
 
+  // Fetch available assessment templates
+  const { data: templatesData } = useGetPrivacyAssessmentTemplatesQuery();
+
   const [createPrivacyAssessment, { isLoading: isGenerating }] =
     useCreatePrivacyAssessmentMutation();
 
@@ -438,12 +442,34 @@ const PrivacyAssessmentsPage: NextPage = () => {
     try {
       message.info("Analyzing privacy declarations...");
 
-      const result = await createPrivacyAssessment({
-        assessment_type: "cpra",
-        use_llm: true,
-      }).unwrap();
+      // Get assessment types from templates (use assessment_type or key as fallback)
+      const templates = templatesData?.items ?? [];
+      const assessmentTypes = templates.map(
+        (t) => t.assessment_type || t.key
+      );
 
-      if (result.total_created === 0) {
+      if (assessmentTypes.length === 0) {
+        message.warning("No assessment templates available.");
+        return;
+      }
+
+      let totalCreated = 0;
+
+      // Generate assessments for each template type (backend handles all systems)
+      for (const assessmentType of assessmentTypes) {
+        try {
+          const result = await createPrivacyAssessment({
+            assessment_type: assessmentType,
+            use_llm: true,
+          }).unwrap();
+          totalCreated += result.total_created;
+        } catch (err) {
+          // Continue with other types even if one fails
+          console.warn(`Failed to generate ${assessmentType} assessments:`, err);
+        }
+      }
+
+      if (totalCreated === 0) {
         message.warning(
           "No privacy declarations found. Add data uses to your systems to generate assessments."
         );
@@ -451,7 +477,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
       }
 
       message.success(
-        `Generated assessments for ${result.total_created} privacy declaration(s)`
+        `Generated assessments for ${totalCreated} privacy declaration(s)`
       );
     } catch (error: unknown) {
       console.error("Assessment generation failed:", error);
@@ -471,14 +497,24 @@ const PrivacyAssessmentsPage: NextPage = () => {
   const assessments = assessmentsData?.items ?? [];
   const hasAssessments = assessments.length > 0;
 
-  // Group assessments by template (for now, all CPRA)
-  const groupedAssessments = {
-    cpra: {
-      templateId: "CPRA-RA-2024",
-      title: "CPRA Risk Assessment",
-      assessments,
-    },
-  };
+  // Group assessments by template (data-driven from API response)
+  const groupedAssessments = assessments.reduce<
+    Record<
+      string,
+      { templateId: string; title: string; assessments: typeof assessments }
+    >
+  >((groups, assessment) => {
+    const key = assessment.template_id || "unknown";
+    if (!groups[key]) {
+      groups[key] = {
+        templateId: assessment.template_id || "Unknown",
+        title: assessment.template_name || "Unknown Assessment",
+        assessments: [],
+      };
+    }
+    groups[key].assessments.push(assessment);
+    return groups;
+  }, {});
 
   if (isLoading) {
     return (

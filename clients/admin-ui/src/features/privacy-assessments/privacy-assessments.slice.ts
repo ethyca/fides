@@ -10,6 +10,7 @@ import { baseApi } from "~/features/common/api.slice";
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentTemplateResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
   CreatePrivacyAssessmentRequest,
@@ -18,6 +19,7 @@ import {
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
   GetPrivacyAssessmentsParams,
+  Page_AssessmentTemplateResponse_,
   Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentDetailResponse,
   PrivacyAssessmentResponse,
@@ -31,8 +33,9 @@ import {
 
 // Tag types for cache invalidation (must match baseApi tagTypes)
 const PRIVACY_ASSESSMENT_TAG = "Privacy Assessment" as const;
-const QUESTIONNAIRE_TAG = "Questionnaire" as const;
-const EVIDENCE_TAG = "Evidence" as const;
+const PRIVACY_ASSESSMENT_TEMPLATE_TAG = "Privacy Assessment Template" as const;
+const QUESTIONNAIRE_TAG = "Privacy Assessment Questionnaire" as const;
+const EVIDENCE_TAG = "Privacy Assessment Evidence" as const;
 
 const privacyAssessmentsApi = baseApi.injectEndpoints({
   overrideExisting: true,
@@ -50,6 +53,21 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         params: params ?? undefined,
       }),
       providesTags: [PRIVACY_ASSESSMENT_TAG],
+    }),
+
+    /**
+     * List all assessment templates
+     * GET /plus/privacy-assessments/templates
+     */
+    getPrivacyAssessmentTemplates: build.query<
+      Page_AssessmentTemplateResponse_,
+      { active_only?: boolean } | void
+    >({
+      query: (params) => ({
+        url: "plus/privacy-assessments/templates",
+        params: params ?? { active_only: true },
+      }),
+      providesTags: [PRIVACY_ASSESSMENT_TEMPLATE_TAG],
     }),
 
     /**
@@ -220,6 +238,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 // Export hooks for use in components
 export const {
   useGetPrivacyAssessmentsQuery,
+  useGetPrivacyAssessmentTemplatesQuery,
   useGetPrivacyAssessmentQuery,
   useCreatePrivacyAssessmentMutation,
   useUpdatePrivacyAssessmentMutation,
