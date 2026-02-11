@@ -1,4 +1,3 @@
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
   Button,
   ChakraModal as Modal,
@@ -10,25 +9,24 @@ import {
   Empty,
   Form,
   Space,
+  Table,
   Typography,
   useChakraToast as useToast,
 } from "fidesui";
 import { isEmpty } from "lodash";
 import { useEffect, useState } from "react";
 
-import {
-  PreferencesSavedExtended,
-  PreferenceWithNoticeInformation,
-} from "~/types/api";
+import { PreferencesSavedExtended } from "~/types/api";
 
 import { getErrorMessage } from "../common/helpers";
 import SearchInput from "../common/SearchInput";
-import { FidesTableV2 } from "../common/table/v2";
 import { useLazyGetCurrentPrivacyPreferencesQuery } from "./consent-reporting.slice";
-import useConsentLookupTableColumns from "./hooks/useConsentLookupTableColumns";
-import useTcfConsentColumns, {
-  TcfDetailRow,
-} from "./hooks/useTcfConsentColumns";
+import useConsentLookupTable from "./hooks/useConsentLookupTable";
+import {
+  filterTcfConsentPreferences,
+  mapTcfPreferencesToRowColumns,
+} from "./hooks/useTcfConsentTable";
+import TcfConsentTable from "./TcfConsentTable";
 
 interface ConsentLookupModalProps {
   isOpen: boolean;
@@ -73,33 +71,16 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
     setIsSearching(false);
   };
 
-  const columns = useConsentLookupTableColumns();
   const preferences = searchResults?.preferences || [];
   const hasPreferences = !isEmpty(preferences);
-  const tableInstance = useReactTable<PreferenceWithNoticeInformation>({
-    getCoreRowModel: getCoreRowModel(),
-    data: preferences,
-    columns,
-    getRowId: (row) => `${row.privacy_notice_history_id}`,
-    manualPagination: true,
-  });
 
-  const {
-    tcfColumns,
-    mapTcfPreferencesToRowColumns,
-    filterTcfConsentPreferences,
-  } = useTcfConsentColumns();
+  // Check if TCF data exists for conditional rendering
   const tcfData = mapTcfPreferencesToRowColumns(searchResults);
   const filteredTcfData = filterTcfConsentPreferences(tcfData);
-
   const hasTcfData = !isEmpty(filteredTcfData);
-  const tcfTableInstance = useReactTable<TcfDetailRow>({
-    getCoreRowModel: getCoreRowModel(),
-    data: filteredTcfData,
-    columns: tcfColumns,
-    getRowId: (row) => `${row.key}-${row.id}`,
-    manualPagination: true,
-  });
+
+  // Privacy notice preferences table
+  const { tableProps, columns } = useConsentLookupTable(preferences);
 
   return (
     <Modal
@@ -149,24 +130,31 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
           </Form>
           <div className="mb-4">
             {(!hasTcfData || hasPreferences) && (
-              <FidesTableV2<PreferenceWithNoticeInformation>
-                tableInstance={tableInstance}
-                emptyTableNotice={
-                  <Empty
-                    description={
-                      searchResults === undefined
-                        ? "Search for an email, phone number, or device ID."
-                        : "No results found."
-                    }
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    imageStyle={{ marginBottom: 15 }}
-                  />
-                }
+              <Table
+                {...tableProps}
+                data-testid="privacy-notice-preferences-table"
+                columns={columns}
+                loading={isSearching}
+                locale={{
+                  emptyText: (
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description={
+                        searchResults === undefined
+                          ? "Search for an email, phone number, or device ID."
+                          : "No results found."
+                      }
+                    />
+                  ),
+                }}
               />
             )}
             {hasTcfData && (
               <div className="mt-4">
-                <FidesTableV2<TcfDetailRow> tableInstance={tcfTableInstance} />
+                <TcfConsentTable
+                  tcfPreferences={searchResults}
+                  loading={isSearching}
+                />
               </div>
             )}
           </div>

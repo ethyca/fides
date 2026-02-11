@@ -1,0 +1,4 @@
+type: Changed
+description: Optimized graph traversal algorithms for improved performance with large dataset graphs
+pr: 7244
+labels: []
