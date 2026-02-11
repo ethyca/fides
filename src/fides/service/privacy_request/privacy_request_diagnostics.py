@@ -31,7 +31,7 @@ from fides.api.models.privacy_request.privacy_request import (
 )
 from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
-from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.models.storage import StorageConfig
 
 from fides.api.models.manual_task.conditional_dependency import (
