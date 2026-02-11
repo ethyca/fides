@@ -114,7 +114,6 @@ from fides.api.util.cache import (
     get_custom_privacy_request_field_cache_key,
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
-    get_identity_cache_key,
 )
 from fides.common.cache import get_dsr_cache_store
 from fides.api.util.collection_util import Row, extract_key_for_address
@@ -515,19 +514,23 @@ class PrivacyRequest(
         self, identity: Union[Identity, Dict[str, LabeledIdentity]]
     ) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
-        cache: FidesopsRedis = get_cache()
-
         if isinstance(identity, dict):
             identity = Identity(**identity)
 
         identity_dict: Dict[str, Any] = identity.labeled_dict()
 
-        for key, value in identity_dict.items():
-            if value is not None:
-                cache.set_with_autoexpire(
-                    get_identity_cache_key(self.id, key),
-                    FidesopsRedis.encode_obj(value),
-                )
+        with get_dsr_cache_store() as store:
+            # Encode values for Redis storage
+            encoded_dict = {
+                key: FidesopsRedis.encode_obj(value)
+                for key, value in identity_dict.items()
+                if value is not None
+            }
+            store.cache_identity_data(
+                self.id,
+                encoded_dict,
+                expire_seconds=CONFIG.redis.default_ttl_seconds,
+            )
 
     def cache_custom_privacy_request_fields(
         self,
@@ -754,43 +757,36 @@ class PrivacyRequest(
                 },
             )
 
-    def identity_prefix_cache_and_keys(self) -> Tuple[str, FidesopsRedis, List[str]]:
-        """Returns the prefix and cache keys for the identity data for this request"""
-        prefix = f"id-{self.id}-identity-*"
-        cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
-        return prefix, cache, keys
-
     def verify_cache_for_identity_data(self) -> bool:
         """Verifies if the identity data is cached for this request"""
-        _, _, keys = self.identity_prefix_cache_and_keys()
-        return len(keys) > 0
+        with get_dsr_cache_store() as store:
+            return store.has_cached_identity_data(self.id)
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""
-        result: Dict[str, Any] = {}
-        prefix, cache, keys = self.identity_prefix_cache_and_keys()
+        with get_dsr_cache_store() as store:
+            result = store.get_cached_identity_data(self.id)
 
-        if not keys:
-            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
-            identity = self.get_persisted_identity()
-            self.cache_identity(identity)
-            keys = cache.keys(prefix)
+            if not result:
+                logger.debug(f"Cache miss for request {self.id}, falling back to DB")
+                identity = self.get_persisted_identity()
+                self.cache_identity(identity)
+                result = store.get_cached_identity_data(self.id)
 
-        for key in keys:
-            value = cache.get(key)
-            if value:
+            # Parse JSON values for backward compatibility
+            parsed_result: Dict[str, Any] = {}
+            for key, value in result.items():
                 try:
                     # try parsing the value as JSON
-                    parsed_value = json.loads(value)
+                    parsed_result[key] = json.loads(value)
                 except json.JSONDecodeError:
                     # if parsing as JSON fails, assume it's a string.
                     # this is purely for backward compatibility: to ensure
                     # that identity data stored pre-2.34.0 in the "old" format
                     # can still be correctly retrieved from the cache.
-                    parsed_value = value
-                result[key.split("-")[-1]] = parsed_value
-        return result
+                    parsed_result[key] = value
+
+        return parsed_result
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""

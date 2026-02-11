@@ -12,46 +12,7 @@ import pytest
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
 
-
-class MockRedis:
-    """Minimal mock Redis for testing clear behavior."""
-
-    def __init__(self):
-        self._data = {}
-        self._sets = {}
-
-    def set(self, key, value, ex=None):
-        self._data[key] = value
-        return True
-
-    def get(self, key):
-        return self._data.get(key)
-
-    def delete(self, *keys):
-        return sum(1 for k in keys if self._data.pop(k, None) or self._sets.pop(k, None))
-
-    def keys(self, pattern):
-        import fnmatch
-        return [k for k in self._data if fnmatch.fnmatch(k, pattern)]
-
-    def scan_iter(self, match="*", count=None):
-        return iter(self.keys(match))
-
-    def sadd(self, key, *members):
-        s = self._sets.setdefault(key, set())
-        before = len(s)
-        s.update(members)
-        return len(s) - before
-
-    def srem(self, key, *members):
-        if key not in self._sets:
-            return 0
-        before = len(self._sets[key])
-        self._sets[key].difference_update(members)
-        return before - len(self._sets[key])
-
-    def smembers(self, key):
-        return self._sets.get(key, set()).copy()
+from tests.common.cache.mock_redis import MockRedis
 
 
 @pytest.mark.unit
