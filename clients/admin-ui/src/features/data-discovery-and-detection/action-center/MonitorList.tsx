@@ -26,7 +26,7 @@ import { SearchFormQueryState } from "./MonitorList.const";
 const MonitorList = () => {
   const toast = useToast();
   const {
-    flags: { webMonitor: webMonitorEnabled, oktaMonitor: oktaMonitorEnabled },
+    flags: { webMonitor: webMonitorEnabled },
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
@@ -34,7 +34,7 @@ const MonitorList = () => {
   const availableMonitorTypes = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
     MONITOR_TYPES.DATASTORE,
-    ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
+    MONITOR_TYPES.INFRASTRUCTURE,
   ] as const;
 
   const currentUser = useAppSelector(selectUser);

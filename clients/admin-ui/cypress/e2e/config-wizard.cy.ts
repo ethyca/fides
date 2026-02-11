@@ -100,7 +100,6 @@ describe("Config Wizard", () => {
     beforeEach(() => {
       stubSystemCrud();
       stubTaxonomyEntities();
-      cy.overrideFeatureFlag("oktaMonitor", false);
 
       cy.visit(ADD_SYSTEMS_ROUTE);
       // Select Okta to move to form step.
