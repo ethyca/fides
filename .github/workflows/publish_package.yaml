@@ -38,11 +38,6 @@ jobs:
         with:
           version: "latest"
 
-      - name: Install Twine and wheel
-        run: |
-          uv venv
-          uv pip install twine wheel
-
       # The git reset is required here because the build modifies
       # metadata and the wheel becomes a dirty version
       - name: Build the sdist
@@ -97,7 +92,7 @@ jobs:
       # Upload to TestPyPI if it is not a release (prod), rc, beta, or alpha tag
       - name: Upload to test pypi
         if: steps.check-prod-tag.outputs.match == 'false' && steps.check-rc-tag.outputs.match == 'false' && steps.check-beta-tag.outputs.match == 'false' && steps.check-alpha-tag.outputs.match == 'false'
-        run: uv run twine upload --verbose --repository testpypi dist/*
+        run: uvx twine upload --verbose --repository testpypi dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
@@ -105,7 +100,7 @@ jobs:
       # If the tag matches a release, rc, beta, or alpha tag, allow publishing to PyPI:
       - name: Upload to pypi
         if: steps.check-prod-tag.outputs.match == 'true' || steps.check-rc-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true' || steps.check-alpha-tag.outputs.match == 'true'
-        run: uv run twine upload --verbose dist/*
+        run: uvx twine upload --verbose dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
