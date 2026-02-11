@@ -2004,7 +2004,7 @@ You're not viewing the latest version.
 <p>Depending on your computer, this will take anywhere from ~30 seconds to ~2 minutes. The webserver will log all of its activity to that window which is useful for debugging and checking potential server-side errors.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>When running <code>nox -s dev</code>, if you get an <code>importlib.metadata.PackageNotFoundError: fides</code>, it means that <code>fides</code> was not properly installed. Run <code>nox -s dev -- shell</code>, and then run <code>pip install -e .</code></p>
+<p>When running <code>nox -s dev</code>, if you get an <code>importlib.metadata.PackageNotFoundError: fides</code>, it means that <code>fides</code> was not properly installed. Run <code>nox -s dev -- shell</code>, and then run <code>uv pip install -e .</code> (or <code>pip install -e .</code> if not using uv).</p>
 <p>You can verify Fides is installed with <code>pip list | grep fides</code></p>
 </div>
 <h3 id="opening-a-shell">Opening a Shell</h3>
