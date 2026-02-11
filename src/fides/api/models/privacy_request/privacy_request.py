@@ -109,7 +109,6 @@ from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
-    get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
     get_custom_privacy_request_field_cache_key,
@@ -117,6 +116,7 @@ from fides.api.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
 )
+from fides.common.cache import get_dsr_cache_store
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
@@ -483,10 +483,8 @@ class PrivacyRequest(
         Clears all cached values associated with this privacy request from Redis.
         """
         logger.info(f"Clearing cached values for privacy request {self.id}")
-        cache: FidesopsRedis = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(privacy_request_id=self.id)
-        for key in all_keys:
-            cache.delete(key)
+        with get_dsr_cache_store() as store:
+            store.clear(self.id)
 
     def delete(self, db: Session) -> None:
         """
