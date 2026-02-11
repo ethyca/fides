@@ -41,7 +41,7 @@ def upgrade():
             ["monitor_config_id", "is_leaf", "diff_status", "urn"],
             postgresql_where=text("is_leaf IS NOT NULL"),
         )
-        logger.info("Index created successfully")
+        logger.info("ix_stagedresource_monitor_leaf_status_urn index created successfully")
     else:
         logger.warning(
             "The stagedresource table has more than 1 million rows, "
