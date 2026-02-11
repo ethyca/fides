@@ -22,7 +22,7 @@ class TestCeleryHealthCheckServer:
     ):
         """
         Verify multiple concurrent healthcheck requests don't cause contention or deadlocks.
-        
+
         This test validates that the log_message() override prevents stderr contention
         and that SO_REUSEADDR allows proper concurrent handling.
         """
@@ -52,14 +52,14 @@ class TestCeleryHealthCheckServer:
     ):
         """
         Verify HTTP logging doesn't cause stderr contention with pytest output capturing.
-        
+
         This test validates that the log_message() override prevents the default
         SimpleHTTPRequestHandler behavior of writing to stderr, which can cause
         deadlocks in test environments.
         """
         # Get the port from the celery app config (unique per xdist worker)
         port = celery_session_app.conf.get("healthcheck_port", 9000)
-        
+
         # Make multiple requests while pytest is capturing output
         for i in range(5):
             response = requests.get(f"http://127.0.0.1:{port}/", timeout=5)
