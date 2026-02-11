@@ -132,17 +132,35 @@ export const getBrandIconUrl = (domain: string, size = 24) => {
   return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };
 
-export const getDomain = (urlOrDomain: string): string => {
+export const getDomain = (urlOrDomain: string): string | undefined => {
+  let hostname: string;
   try {
     // Try to parse as URL first
     const url = new URL(
       urlOrDomain.startsWith("http") ? urlOrDomain : `https://${urlOrDomain}`,
     );
-    return url.hostname;
+    hostname = url.hostname;
   } catch {
     // If URL parsing fails, assume it's already a domain
-    return urlOrDomain.replace(/^(https?:\/\/)?(www\.)?/, "");
+    hostname = urlOrDomain.replace(/^(https?:\/\/)?(www\.)?/, "");
   }
+
+  if (!hostname || hostname.trim().length === 0) {
+    throw new Error(
+      `Invalid domain: empty string after parsing "${urlOrDomain}"`,
+    );
+  }
+
+  const domainPattern =
+    /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
+  if (!domainPattern.test(hostname)) {
+    throw new Error(
+      `Invalid domain: "${hostname}" does not resolve to a valid domain`,
+    );
+  }
+
+  return hostname;
 };
 
 export const stripHashFromUrl = (url: string) => {
