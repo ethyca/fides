@@ -54,7 +54,7 @@ describe("configureNavGroups", () => {
     });
 
     // The data map _should_ include the actual "/plus/datamap".
-    expect(navGroups[1]).toMatchObject({
+    expect(navGroups[2]).toMatchObject({
       title: "Data inventory",
       children: [
         { title: "Data lineage", path: routes.DATAMAP_ROUTE },
@@ -144,7 +144,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        navGroups[4].children
+        navGroups[5].children
           .map((c) => c.title)
           .find((title) => title === "Domain verification"),
       ).toEqual("Domain verification");
@@ -160,7 +160,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        navGroups[4].children
+        navGroups[5]?.children
           .map((c) => c.title)
           .find((title) => title === "Domain verification"),
       ).toEqual(undefined);
