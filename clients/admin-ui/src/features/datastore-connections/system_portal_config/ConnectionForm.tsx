@@ -103,27 +103,27 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           ) : null}
 
           <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
-            {connectionConfig &&
-              selectedConnectionOption?.custom &&
-              selectedConnectionOption?.default_connector_available && (
-                <Button
-                  type="link"
-                  danger
-                  data-testid="delete-custom-integration-btn"
-                  onClick={handleRemoveCustomIntegration}
-                  className="ml-2"
-                >
-                  Remove
-                </Button>
-              )}
-            <Button
-              htmlType="submit"
-              data-testid="upload-btn"
-              onClick={uploadTemplateModal.onOpen}
-              className="ml-2"
-            >
-              Upload integration
-            </Button>
+            <Flex gap={2}>
+              {connectionConfig &&
+                selectedConnectionOption?.custom &&
+                selectedConnectionOption?.default_connector_available && (
+                  <Button
+                    type="link"
+                    danger
+                    data-testid="delete-custom-integration-btn"
+                    onClick={handleRemoveCustomIntegration}
+                  >
+                    Remove
+                  </Button>
+                )}
+              <Button
+                htmlType="submit"
+                data-testid="upload-btn"
+                onClick={uploadTemplateModal.onOpen}
+              >
+                Upload integration
+              </Button>
+            </Flex>
           </Restrict>
         </Stack>
 

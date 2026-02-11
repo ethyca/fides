@@ -109,7 +109,7 @@ const IntegrationBox = ({
             </Text>
           )}
         </Flex>
-        <div className="ml-auto flex shrink-0 gap-4">
+        <Flex marginLeft="auto" gap={4} flexShrink={0}>
           {showDeleteButton && integration && (
             <DeleteConnectionModal
               showMenu={false}
@@ -138,7 +138,7 @@ const IntegrationBox = ({
               {configureButtonLabel}
             </Button>
           )}
-        </div>
+        </Flex>
       </Flex>
       <Wrap marginTop="16px">
         {typeInfo.tags.map((item: string) => (
