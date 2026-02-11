@@ -1,4 +1,4 @@
 type: Developer Experience
 description: Refactored nav config tests to use name-based lookups instead of brittle index-based assertions
-pr: 
+pr: 7363
 labels: []
