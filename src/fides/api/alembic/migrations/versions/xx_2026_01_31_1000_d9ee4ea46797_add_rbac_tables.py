@@ -43,7 +43,7 @@ def upgrade():
             "key",
             sa.String(length=255),
             nullable=False,
-            comment="Machine-readable key for the role",
+            comment="Machine-readable key for the role, e.g., 'owner', 'custom_auditor'",
         ),
         sa.Column(
             "description",
@@ -69,14 +69,14 @@ def upgrade():
             "parent_role_id",
             sa.String(length=255),
             nullable=True,
-            comment="Parent role ID for hierarchy",
+            comment="Parent role ID for hierarchy. Child roles inherit parent permissions.",
         ),
         sa.Column(
             "priority",
             sa.Integer(),
             server_default="0",
             nullable=False,
-            comment="Priority for conflict resolution",
+            comment="Priority for conflict resolution. Higher values = more privileges.",
         ),
         sa.ForeignKeyConstraint(
             ["parent_role_id"],
@@ -85,10 +85,9 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name", name="uq_rbac_role_name"),
-        sa.UniqueConstraint("key", name="uq_rbac_role_key"),
     )
     op.create_index(op.f("ix_rbac_role_id"), "rbac_role", ["id"], unique=False)
-    op.create_index(op.f("ix_rbac_role_key"), "rbac_role", ["key"], unique=False)
+    op.create_index(op.f("ix_rbac_role_key"), "rbac_role", ["key"], unique=True)
     op.create_index(
         op.f("ix_rbac_role_parent_role_id"), "rbac_role", ["parent_role_id"], unique=False
     )
@@ -113,33 +112,32 @@ def upgrade():
             "code",
             sa.String(length=255),
             nullable=False,
-            comment="Unique permission code",
+            comment="Unique permission code, e.g., 'system:read', 'privacy-request:create'",
         ),
         sa.Column(
             "description",
             sa.Text(),
             nullable=True,
-            comment="Human-readable description",
+            comment="Human-readable description of what this permission allows",
         ),
         sa.Column(
             "resource_type",
             sa.String(length=100),
             nullable=True,
-            comment="Resource type this permission applies to",
+            comment="Resource type this permission applies to, e.g., 'system', 'privacy_request'. NULL for global permissions.",
         ),
         sa.Column(
             "is_active",
             sa.Boolean(),
             server_default="true",
             nullable=False,
-            comment="Whether this permission is active",
+            comment="Whether this permission is currently active and can be assigned",
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("code", name="uq_rbac_permission_code"),
     )
     op.create_index(op.f("ix_rbac_permission_id"), "rbac_permission", ["id"], unique=False)
     op.create_index(
-        op.f("ix_rbac_permission_code"), "rbac_permission", ["code"], unique=False
+        op.f("ix_rbac_permission_code"), "rbac_permission", ["code"], unique=True
     )
     op.create_index(
         op.f("ix_rbac_permission_resource_type"),
@@ -151,13 +149,24 @@ def upgrade():
     # Create rbac_role_permission junction table (composite PK)
     op.create_table(
         "rbac_role_permission",
-        sa.Column("role_id", sa.String(length=255), nullable=False),
-        sa.Column("permission_id", sa.String(length=255), nullable=False),
+        sa.Column(
+            "role_id",
+            sa.String(length=255),
+            nullable=False,
+            comment="FK to rbac_role",
+        ),
+        sa.Column(
+            "permission_id",
+            sa.String(length=255),
+            nullable=False,
+            comment="FK to rbac_permission",
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
             nullable=True,
+            comment="When this permission was assigned to the role",
         ),
         sa.ForeignKeyConstraint(
             ["role_id"],
@@ -170,18 +179,6 @@ def upgrade():
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("role_id", "permission_id"),
-    )
-    op.create_index(
-        op.f("ix_rbac_role_permission_role_id"),
-        "rbac_role_permission",
-        ["role_id"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_rbac_role_permission_permission_id"),
-        "rbac_role_permission",
-        ["permission_id"],
-        unique=False,
     )
 
     # Create rbac_user_role table
@@ -200,32 +197,42 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("user_id", sa.String(length=255), nullable=False),
-        sa.Column("role_id", sa.String(length=255), nullable=False),
+        sa.Column(
+            "user_id",
+            sa.String(length=255),
+            nullable=False,
+            comment="FK to fidesuser",
+        ),
+        sa.Column(
+            "role_id",
+            sa.String(length=255),
+            nullable=False,
+            comment="FK to rbac_role",
+        ),
         sa.Column(
             "resource_type",
             sa.String(length=100),
             nullable=True,
-            comment="Resource type for scoped permissions",
+            comment="Resource type for scoped permissions, e.g., 'system'. NULL for global.",
         ),
         sa.Column(
             "resource_id",
             sa.String(length=255),
             nullable=True,
-            comment="Specific resource ID for scoped permissions",
+            comment="Specific resource ID for scoped permissions. NULL for global.",
         ),
         sa.Column(
             "valid_from",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
             nullable=True,
-            comment="When this assignment becomes active",
+            comment="When this assignment becomes active. NULL means immediately.",
         ),
         sa.Column(
             "valid_until",
             sa.DateTime(timezone=True),
             nullable=True,
-            comment="When this assignment expires",
+            comment="When this assignment expires. NULL means never expires.",
         ),
         sa.Column(
             "assigned_by",
@@ -266,18 +273,6 @@ def upgrade():
     op.create_index(
         op.f("ix_rbac_user_role_role_id"), "rbac_user_role", ["role_id"], unique=False
     )
-    op.create_index(
-        op.f("ix_rbac_user_role_resource"),
-        "rbac_user_role",
-        ["resource_type", "resource_id"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_rbac_user_role_validity"),
-        "rbac_user_role",
-        ["valid_from", "valid_until"],
-        unique=False,
-    )
 
     # Create rbac_role_constraint table
     op.create_table(
@@ -311,19 +306,19 @@ def upgrade():
             "role_id_1",
             sa.String(length=255),
             nullable=False,
-            comment="First role in the constraint",
+            comment="First role in the constraint (required for all types)",
         ),
         sa.Column(
             "role_id_2",
             sa.String(length=255),
             nullable=True,
-            comment="Second role (for SoD constraints)",
+            comment="Second role in the constraint (required for SoD, NULL for cardinality)",
         ),
         sa.Column(
             "max_users",
             sa.Integer(),
             nullable=True,
-            comment="Maximum users for cardinality constraint",
+            comment="Maximum number of users for cardinality constraint",
         ),
         sa.Column(
             "description",
@@ -336,7 +331,7 @@ def upgrade():
             sa.Boolean(),
             server_default="true",
             nullable=False,
-            comment="Whether this constraint is enforced",
+            comment="Whether this constraint is currently enforced",
         ),
         sa.ForeignKeyConstraint(
             ["role_id_1"],
@@ -354,12 +349,6 @@ def upgrade():
         op.f("ix_rbac_role_constraint_id"),
         "rbac_role_constraint",
         ["id"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_rbac_role_constraint_type"),
-        "rbac_role_constraint",
-        ["constraint_type"],
         unique=False,
     )
     op.create_index(
@@ -384,25 +373,14 @@ def downgrade():
     op.drop_index(
         op.f("ix_rbac_role_constraint_role_id_1"), table_name="rbac_role_constraint"
     )
-    op.drop_index(
-        op.f("ix_rbac_role_constraint_type"), table_name="rbac_role_constraint"
-    )
     op.drop_index(op.f("ix_rbac_role_constraint_id"), table_name="rbac_role_constraint")
     op.drop_table("rbac_role_constraint")
 
-    op.drop_index(op.f("ix_rbac_user_role_validity"), table_name="rbac_user_role")
-    op.drop_index(op.f("ix_rbac_user_role_resource"), table_name="rbac_user_role")
     op.drop_index(op.f("ix_rbac_user_role_role_id"), table_name="rbac_user_role")
     op.drop_index(op.f("ix_rbac_user_role_user_id"), table_name="rbac_user_role")
     op.drop_index(op.f("ix_rbac_user_role_id"), table_name="rbac_user_role")
     op.drop_table("rbac_user_role")
 
-    op.drop_index(
-        op.f("ix_rbac_role_permission_permission_id"), table_name="rbac_role_permission"
-    )
-    op.drop_index(
-        op.f("ix_rbac_role_permission_role_id"), table_name="rbac_role_permission"
-    )
     op.drop_table("rbac_role_permission")
 
     op.drop_index(
