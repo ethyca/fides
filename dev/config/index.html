@@ -2221,7 +2221,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">522</span>
 <span class="normal">523</span>
 <span class="normal">524</span>
-<span class="normal">525</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2262,7 +2267,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;1ea897759e651ce787046deb01399a9e&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;124c6527e43ba47e7ad29f0abb15f42a&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2495,6 +2500,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Whether the memory watchdog is enabled to monitor and gracefully</span>
 <span class="c1"># terminate tasks that approach memory limits.</span>
 <span class="n">memory_watchdog_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># When enabled, falls back to the legacy traversal algorithm. Intended</span>
+<span class="c1"># as a temporary safety net in case of regressions with the optimized</span>
+<span class="c1"># traversal.</span>
+<span class="n">use_legacy_traversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#-------------#</span>
 <span class="c1">#-- LOGGING --#</span>

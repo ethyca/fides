@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "1ea897759e651ce787046deb01399a9e" # string
+analytics_id = "124c6527e43ba47e7ad29f0abb15f42a" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -272,6 +272,11 @@ email_send_timezone = "US/Eastern" # string
 # Whether the memory watchdog is enabled to monitor and gracefully
 # terminate tasks that approach memory limits.
 memory_watchdog_enabled = false # boolean
+
+# When enabled, falls back to the legacy traversal algorithm. Intended
+# as a temporary safety net in case of regressions with the optimized
+# traversal.
+use_legacy_traversal = false # boolean
 
 #-------------#
 #-- LOGGING --#
