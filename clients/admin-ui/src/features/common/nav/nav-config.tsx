@@ -150,7 +150,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
       },
       {
-        title: "Consent reporting",
+        title: "Consent report",
         path: routes.CONSENT_REPORTING_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
