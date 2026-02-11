@@ -59,7 +59,7 @@ export const assetReportingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAllAssets: build.query<Page_Asset_, AssetReportingQueryParams>({
       query: (params) => ({
-        url: `plus/asset-reporting${buildUrlQuery(params)}`,
+        url: `plus/assets-report${buildUrlQuery(params)}`,
         params: { page: params.page, size: params.size },
       }),
       providesTags: ["Asset Reporting"],
@@ -67,7 +67,7 @@ export const assetReportingApi = baseApi.injectEndpoints({
 
     downloadAssetReport: build.query<string, AssetReportingFilters>({
       query: (filters) => ({
-        url: `plus/asset-reporting/export${buildUrlQuery(filters)}`,
+        url: `plus/assets-report/exported-assets${buildUrlQuery(filters)}`,
         responseHandler: "text",
       }),
     }),
@@ -77,7 +77,7 @@ export const assetReportingApi = baseApi.injectEndpoints({
       AssetReportingFilters
     >({
       query: (filters) => ({
-        url: `plus/asset-reporting/filters${buildUrlQuery(filters)}`,
+        url: `plus/assets-report/filters${buildUrlQuery(filters)}`,
       }),
       providesTags: ["Asset Reporting"],
     }),

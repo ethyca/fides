@@ -21,9 +21,9 @@ const AssetReportingPage = () => {
   };
 
   return (
-    <FixedLayout title="Asset reporting">
+    <FixedLayout title="Asset report">
       <PageHeader
-        heading="Asset reporting"
+        heading="Asset report"
         rightContent={
           <Button
             icon={<Icons.Download />}

@@ -93,13 +93,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Reporting",
+        title: "Data map report",
         path: routes.REPORTING_DATAMAP_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
       {
-        title: "Asset reporting",
+        title: "Asset report",
         path: routes.REPORTING_ASSETS_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
