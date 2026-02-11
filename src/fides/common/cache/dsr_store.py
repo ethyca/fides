@@ -14,7 +14,7 @@ whole DSR and a different storage shape; can introduce a hash-backed backend
 later if we want to avoid index consistency concerns.
 """
 
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from redis import Redis
 
@@ -164,6 +164,56 @@ class DSRCacheStore:
         """Get identity attribute; reads from legacy id-{id}-identity-{attr} if needed."""
         part = f"identity:{attr}"
         return self.get_with_legacy(dsr_id, part, KeyMapper.identity(dsr_id, attr)[1])
+
+    def cache_identity_data(
+        self, dsr_id: str, identity_dict: Dict[str, Any], expire_seconds: Optional[int] = None
+    ) -> None:
+        """
+        Cache all identity attributes for a DSR.
+        
+        Writes each non-None attribute to dsr:{id}:identity:{attr} format.
+        """
+        for key, value in identity_dict.items():
+            if value is not None:
+                self.write_identity(dsr_id, key, value, expire_seconds)
+
+    def get_cached_identity_data(self, dsr_id: str) -> Dict[str, Any]:
+        """
+        Retrieve all cached identity data for a DSR.
+        
+        Returns dict with identity attributes. Automatically migrates legacy keys on read.
+        Returns empty dict if no identity data cached.
+        """
+        result: Dict[str, Any] = {}
+        all_keys = self.get_all_keys(dsr_id)
+        
+        # Filter for identity keys (both new and legacy formats)
+        identity_keys = [k for k in all_keys if ":identity:" in k or "-identity-" in k]
+        
+        for key in identity_keys:
+            # Extract attribute name from key
+            # New format: dsr:{id}:identity:{attr}
+            # Legacy format: id-{id}-identity-{attr}
+            if ":identity:" in key:
+                attr = key.split(":")[-1]
+            else:
+                # Legacy format
+                attr = key.split("-")[-1]
+            
+            value = self.get_identity(dsr_id, attr)
+            if value:
+                result[attr] = value
+        
+        return result
+
+    def has_cached_identity_data(self, dsr_id: str) -> bool:
+        """
+        Check if any identity data is cached for this DSR.
+        
+        Returns True if any identity keys exist (legacy or new format).
+        """
+        all_keys = self.get_all_keys(dsr_id)
+        return any(":identity:" in k or "-identity-" in k for k in all_keys)
 
     # --- Convenience: encryption ---
 
