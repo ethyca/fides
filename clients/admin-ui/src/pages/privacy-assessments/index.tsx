@@ -242,7 +242,7 @@ const AssessmentCard = ({
           >
             System: {assessment.system_name}
           </Text>
-          {assessment.data_categories.length > 0 && (
+          {assessment.data_categories?.length > 0 && (
             <Text
               type="secondary"
               style={{
@@ -266,7 +266,7 @@ const AssessmentCard = ({
                     >
                       {category}
                     </Tag>
-                    {idx < assessment.data_categories.length - 1 && " "}
+                    {idx < assessment.data_categories?.length - 1 && " "}
                   </span>
                 )
               )}{" "}
