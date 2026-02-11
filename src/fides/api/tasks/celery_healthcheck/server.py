@@ -1,4 +1,5 @@
 import json
+import socket
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from typing import Any, Optional
@@ -21,6 +22,16 @@ class HealthcheckHandler(SimpleHTTPRequestHandler):
         self.parent = parent
         self.healthcheck_ping_timeout = healthcheck_ping_timeout
         super().__init__(*args)
+
+    def log_message(self, format: str, *args: Any) -> None:
+        """
+        Override to suppress default HTTP server logging to stderr.
+        The default implementation writes to stderr which can cause
+        contention and deadlocks in test environments, especially with
+        pytest's output capturing and parallel test execution.
+        We use loguru for structured logging instead at the debug level.
+        """
+        logger.debug(f"Healthcheck: {self.address_string()} - {format % args}")
 
     def do_GET(self) -> None:
         """Handle GET requests"""
@@ -92,10 +103,18 @@ class HealthCheckServer(bootsteps.StartStopStep):
             self.http_handler,  # type: ignore [arg-type]
         )
 
+        # Enable socket reuse to prevent port conflicts during rapid test cycling
+        # This is especially important for session-scoped test workers
+        self.http_server.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        # Set a socket timeout to prevent indefinite blocking on requests
+        self.http_server.timeout = 5.0
+
         self.thread = threading.Thread(
             target=self.http_server.serve_forever, daemon=True
         )
         self.thread.start()
+        logger.info(f"Health check server started on port {self.healthcheck_port}")
 
     def stop(self, parent: WorkController) -> None:
         if self.http_server is None:
@@ -106,12 +125,24 @@ class HealthCheckServer(bootsteps.StartStopStep):
             logger.info(
                 f"Stopping health check server with a timeout of {self.shutdown_timeout} seconds"
             )
-            self.http_server.shutdown()
+            try:
+                # Call shutdown - this should be safe from any thread
+                # It will cause serve_forever() to return after handling any current request
+                self.http_server.shutdown()
+            except Exception as e:
+                logger.warning(f"Error during HTTP server shutdown: {e}")
 
-        # Really this should not happen if the HTTP server is None, but just in case, we should check.
+        # Wait for the thread to finish with a timeout
         if self.thread is None:
             logger.warning("No thread in HTTP healthcheck server to shutdown...")
         else:
             self.thread.join(self.shutdown_timeout)
-
-        logger.info(f"Health check server stopped on port {self.healthcheck_port}")
+            if self.thread.is_alive():
+                logger.warning(
+                    f"Healthcheck thread still alive after {self.shutdown_timeout}s timeout. "
+                    "It will continue running as a daemon thread."
+                )
+            else:
+                logger.info(
+                    f"Health check server stopped cleanly on port {self.healthcheck_port}"
+                )
