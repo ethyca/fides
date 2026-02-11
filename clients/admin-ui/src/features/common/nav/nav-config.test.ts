@@ -2,10 +2,25 @@ import { describe, expect, it } from "@jest/globals";
 
 import { ScopeRegistryEnum } from "~/types/api";
 
-import { configureNavGroups, findActiveNav, NAV_CONFIG } from "./nav-config";
+import {
+  configureNavGroups,
+  findActiveNav,
+  NAV_CONFIG,
+  NavGroup,
+} from "./nav-config";
 import * as routes from "./routes";
 
 const ALL_SCOPES = Object.values(ScopeRegistryEnum);
+
+/**
+ * Find a nav group by title, asserting that it exists.
+ * Gives clear failure messages instead of cryptic optional-chaining errors.
+ */
+const findGroup = (navGroups: NavGroup[], title: string): NavGroup => {
+  const group = navGroups.find((g) => g.title === title);
+  expect(group).toBeDefined();
+  return group!;
+};
 
 describe("configureNavGroups", () => {
   it("includes all navigation groups for users with all scopes", () => {
@@ -14,25 +29,18 @@ describe("configureNavGroups", () => {
       userScopes: ALL_SCOPES,
     });
 
-    const overviewGroup = navGroups.find((g) => g.title === "Overview");
-    expect(overviewGroup?.children).toMatchObject([
+    expect(findGroup(navGroups, "Overview").children).toMatchObject([
       { title: "Home", path: "/" },
     ]);
 
     // NOTE: the data map should _not_ include the Plus routes (/plus/datamap, /classify-systems, etc.)
-    const dataInventoryGroup = navGroups.find(
-      (g) => g.title === "Data inventory",
-    );
-    expect(dataInventoryGroup?.children).toMatchObject([
+    expect(findGroup(navGroups, "Data inventory").children).toMatchObject([
       { title: "System inventory", path: routes.SYSTEM_ROUTE },
       { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
       { title: "Manage datasets", path: routes.DATASET_ROUTE },
     ]);
 
-    const privacyRequestsGroup = navGroups.find(
-      (g) => g.title === "Privacy requests",
-    );
-    expect(privacyRequestsGroup?.children).toMatchObject([
+    expect(findGroup(navGroups, "Privacy requests").children).toMatchObject([
       { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
       { title: "Connection manager", path: routes.DATASTORE_CONNECTION_ROUTE },
     ]);
@@ -45,16 +53,12 @@ describe("configureNavGroups", () => {
       userScopes: ALL_SCOPES,
     });
 
-    const overviewGroup = navGroups.find((g) => g.title === "Overview");
-    expect(overviewGroup?.children).toMatchObject([
+    expect(findGroup(navGroups, "Overview").children).toMatchObject([
       { title: "Home", path: "/" },
     ]);
 
     // The data map _should_ include the actual "/plus/datamap".
-    const dataInventoryGroup = navGroups.find(
-      (g) => g.title === "Data inventory",
-    );
-    expect(dataInventoryGroup?.children).toMatchObject([
+    expect(findGroup(navGroups, "Data inventory").children).toMatchObject([
       { title: "Data lineage", path: routes.DATAMAP_ROUTE },
       { title: "System inventory", path: routes.SYSTEM_ROUTE },
       { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
@@ -70,15 +74,11 @@ describe("configureNavGroups", () => {
         userScopes: [ScopeRegistryEnum.SYSTEM_READ],
       });
 
-      const overviewGroup = navGroups.find((g) => g.title === "Overview");
-      expect(overviewGroup?.children).toMatchObject([
+      expect(findGroup(navGroups, "Overview").children).toMatchObject([
         { title: "Home", path: "/" },
       ]);
 
-      const dataInventoryGroup = navGroups.find(
-        (g) => g.title === "Data inventory",
-      );
-      expect(dataInventoryGroup?.children).toMatchObject([
+      expect(findGroup(navGroups, "Data inventory").children).toMatchObject([
         { title: "System inventory", path: routes.SYSTEM_ROUTE },
       ]);
     });
@@ -90,11 +90,11 @@ describe("configureNavGroups", () => {
         userScopes: [ScopeRegistryEnum.DATABASE_RESET],
       });
 
-      const overviewGroup = navGroups.find((g) => g.title === "Overview");
-      expect(overviewGroup?.children).toMatchObject([
+      expect(findGroup(navGroups, "Overview").children).toMatchObject([
         { title: "Home", path: "/" },
       ]);
 
+      // Data inventory should not exist when user has irrelevant scopes
       const dataInventoryGroup = navGroups.find(
         (g) => g.title === "Data inventory",
       );
@@ -106,10 +106,7 @@ describe("configureNavGroups", () => {
         config: NAV_CONFIG,
         userScopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
       });
-      const privacyRequestsGroup = navGroups.find(
-        (g) => g.title === "Privacy requests",
-      );
-      expect(privacyRequestsGroup?.children).toMatchObject([
+      expect(findGroup(navGroups, "Privacy requests").children).toMatchObject([
         { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
       ]);
     });
@@ -120,16 +117,12 @@ describe("configureNavGroups", () => {
         userScopes: ALL_SCOPES,
       });
 
-      const overviewGroup = navGroups.find((g) => g.title === "Overview");
-      expect(overviewGroup?.children).toMatchObject([
+      expect(findGroup(navGroups, "Overview").children).toMatchObject([
         { title: "Home", path: "/" },
       ]);
 
       // The data map should _not_ include the actual "/plus/datamap".
-      const dataInventoryGroup = navGroups.find(
-        (g) => g.title === "Data inventory",
-      );
-      expect(dataInventoryGroup?.children).toMatchObject([
+      expect(findGroup(navGroups, "Data inventory").children).toMatchObject([
         { title: "System inventory", path: routes.SYSTEM_ROUTE },
         { title: "Add systems", path: routes.ADD_SYSTEMS_ROUTE },
         { title: "Manage datasets", path: routes.DATASET_ROUTE },
@@ -147,10 +140,9 @@ describe("configureNavGroups", () => {
         hasFidesCloud: true,
       });
 
-      const settingsGroup = navGroups.find((g) => g.title === "Settings");
       expect(
-        settingsGroup?.children
-          .map((c) => c.title)
+        findGroup(navGroups, "Settings")
+          .children.map((c) => c.title)
           .find((title) => title === "Domain verification"),
       ).toBeDefined();
     });
@@ -164,10 +156,9 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const settingsGroup = navGroups.find((g) => g.title === "Settings");
       expect(
-        settingsGroup?.children
-          .map((c) => c.title)
+        findGroup(navGroups, "Settings")
+          .children.map((c) => c.title)
           .find((title) => title === "Domain verification"),
       ).toBeUndefined();
     });
@@ -186,10 +177,9 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const settingsGroup = navGroups.find((g) => g.title === "Settings");
       expect(
-        settingsGroup?.children
-          .map((c) => ({ title: c.title, path: c.path }))
+        findGroup(navGroups, "Settings")
+          .children.map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual({
         title: "Domains",
@@ -211,10 +201,9 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const settingsGroup = navGroups.find((g) => g.title === "Settings");
       expect(
-        settingsGroup?.children
-          .map((c) => ({ title: c.title, path: c.path }))
+        findGroup(navGroups, "Settings")
+          .children.map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toBeUndefined();
     });
@@ -231,10 +220,9 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const settingsGroup = navGroups.find((g) => g.title === "Settings");
       expect(
-        settingsGroup?.children
-          .map((c) => ({ title: c.title, path: c.path }))
+        findGroup(navGroups, "Settings")
+          .children.map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toBeUndefined();
     });
@@ -249,10 +237,9 @@ describe("configureNavGroups", () => {
         hasPlus: true,
       });
 
-      const detectionDiscoveryGroup = navGroups.find(
-        (g) => g.title === "Detection & Discovery",
-      );
-      expect(detectionDiscoveryGroup?.children).toMatchObject([
+      expect(
+        findGroup(navGroups, "Detection & Discovery").children,
+      ).toMatchObject([
         { title: "Action center", path: routes.ACTION_CENTER_ROUTE },
       ]);
     });
@@ -267,10 +254,9 @@ describe("configureNavGroups", () => {
         hasPlus: true,
       });
 
-      const detectionDiscoveryGroup = navGroups.find(
-        (g) => g.title === "Detection & Discovery",
-      );
-      expect(detectionDiscoveryGroup?.children).toMatchObject([
+      expect(
+        findGroup(navGroups, "Detection & Discovery").children,
+      ).toMatchObject([
         { title: "Action center", path: routes.ACTION_CENTER_ROUTE },
         { title: "Data catalog", path: routes.DATA_CATALOG_ROUTE },
       ]);
