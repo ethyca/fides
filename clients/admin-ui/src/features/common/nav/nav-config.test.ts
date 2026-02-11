@@ -204,8 +204,10 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
+      const settingsGroup = navGroups.find((g) => g.title === "Settings");
+      expect(settingsGroup).toBeDefined();
       expect(
-        navGroups[3]?.children
+        settingsGroup!.children
           .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual(undefined);
@@ -223,8 +225,10 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
+      const settingsGroup = navGroups.find((g) => g.title === "Settings");
+      expect(settingsGroup).toBeDefined();
       expect(
-        navGroups[4]?.children
+        settingsGroup!.children
           .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual(undefined);
@@ -239,7 +243,8 @@ describe("configureNavGroups", () => {
         flags: undefined,
       });
 
-      expect(navGroups[3]).toMatchObject({
+      const settingsGroup = navGroups.find((g) => g.title === "Settings");
+      expect(settingsGroup).toMatchObject({
         title: "Settings",
         children: [
           { title: "Notifications", path: routes.NOTIFICATIONS_ROUTE },
@@ -270,7 +275,8 @@ describe("configureNavGroups", () => {
         },
       });
 
-      expect(navGroups[3]).toMatchObject({
+      const settingsGroup = navGroups.find((g) => g.title === "Settings");
+      expect(settingsGroup).toMatchObject({
         title: "Settings",
         children: [
           { title: "Notifications", path: routes.NOTIFICATIONS_ROUTE },
