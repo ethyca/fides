@@ -148,6 +148,62 @@ class DSRCacheStore:
             dsr_id, part, KeyMapper.custom_field(dsr_id, field_key)[1]
         )
 
+    def cache_custom_fields(
+        self, dsr_id: str, custom_fields: Dict[str, Any], expire_seconds: Optional[int] = None
+    ) -> None:
+        """
+        Cache all custom privacy request fields for a DSR.
+        
+        Writes each non-None field to dsr:{id}:custom_field:{field_key} format.
+        """
+        for key, value in custom_fields.items():
+            if value is not None:
+                self.write_custom_field(dsr_id, key, value, expire_seconds)
+
+    def get_cached_custom_fields(self, dsr_id: str) -> Dict[str, Any]:
+        """
+        Retrieve all cached custom fields for a DSR.
+        
+        Returns dict with custom field values. Automatically migrates legacy keys on read.
+        Returns empty dict if no custom fields cached.
+        """
+        result: Dict[str, Any] = {}
+        all_keys = self.get_all_keys(dsr_id)
+        
+        # Filter for custom field keys (both new and legacy formats)
+        # New: dsr:{id}:custom_field:{key}
+        # Legacy: id-{id}-custom-privacy-request-field-{key}
+        custom_keys = [
+            k for k in all_keys 
+            if ":custom_field:" in k or "-custom-privacy-request-field-" in k
+        ]
+        
+        for key in custom_keys:
+            # Extract field name from key
+            if ":custom_field:" in key:
+                field_key = key.split(":")[-1]
+            else:
+                # Legacy format
+                field_key = key.split("-")[-1]
+            
+            value = self.get_custom_field(dsr_id, field_key)
+            if value:
+                result[field_key] = value
+        
+        return result
+
+    def has_cached_custom_fields(self, dsr_id: str) -> bool:
+        """
+        Check if any custom fields are cached for this DSR.
+        
+        Returns True if any custom field keys exist (legacy or new format).
+        """
+        all_keys = self.get_all_keys(dsr_id)
+        return any(
+            ":custom_field:" in k or "-custom-privacy-request-field-" in k
+            for k in all_keys
+        )
+
     # --- Convenience: identity ---
 
     def write_identity(
