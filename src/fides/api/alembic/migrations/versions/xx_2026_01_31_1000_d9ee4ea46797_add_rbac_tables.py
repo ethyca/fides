@@ -1,7 +1,7 @@
 """Add RBAC tables for dynamic role-based access control
 
 Revision ID: d9ee4ea46797
-Revises: a1b2c3d4e5f7
+Revises: f85bd4c08401
 Create Date: 2026-01-31 10:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d9ee4ea46797"
-down_revision = "a1b2c3d4e5f7"
+down_revision = "f85bd4c08401"
 branch_labels = None
 depends_on = None
 

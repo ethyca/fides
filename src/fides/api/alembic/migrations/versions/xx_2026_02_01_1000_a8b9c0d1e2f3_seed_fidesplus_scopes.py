@@ -114,6 +114,12 @@ FIDESPLUS_SCOPE_DOCS = {
     "identity_definition:delete": "Delete identity definitions",
     "taxonomy_history:read": "Read taxonomy history (audit log entries)",
     "datahub:sync": "Sync data with DataHub",
+    "chat_provider:read": "Read chat provider settings",
+    "chat_provider:update": "Update chat provider settings",
+    "privacy_assessment:read": "Read privacy assessments",
+    "privacy_assessment:create": "Create privacy assessments",
+    "privacy_assessment:update": "Update privacy assessments",
+    "privacy_assessment:delete": "Delete privacy assessments",
 }
 
 # Role to fidesplus scopes mapping
@@ -154,6 +160,8 @@ ROLE_SCOPES = {
         "tcf_publisher_restrictions:create", "tcf_publisher_restrictions:read", "tcf_publisher_restrictions:update", "tcf_publisher_restrictions:delete",
         "manual_field:read-all",
         "identity_definition:create", "identity_definition:read", "identity_definition:delete",
+        "chat_provider:read", "chat_provider:update",
+        "privacy_assessment:read", "privacy_assessment:create", "privacy_assessment:update", "privacy_assessment:delete",
     ],
     "contributor": [
         "allow_list:create", "allow_list:delete", "allow_list:read", "allow_list:update",
@@ -188,6 +196,7 @@ ROLE_SCOPES = {
         "tcf_publisher_restrictions:create", "tcf_publisher_restrictions:read", "tcf_publisher_restrictions:update", "tcf_publisher_restrictions:delete",
         "manual_field:read-all",
         "identity_definition:create", "identity_definition:read", "identity_definition:delete",
+        "chat_provider:read", "chat_provider:update",
     ],
     "viewer_and_approver": [
         "allow_list:read",

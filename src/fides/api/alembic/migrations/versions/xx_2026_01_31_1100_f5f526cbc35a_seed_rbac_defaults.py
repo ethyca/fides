@@ -149,6 +149,7 @@ SCOPE_DOCS = {
     "webhook:delete": "Remove web hooks",
     "webhook:read": "View web hooks",
     "worker-stats:read": "View worker statistics",
+    "backfill:exec": "Execute database backfill operations",
     # RBAC Management scopes - for managing the RBAC system itself
     "rbac_role:create": "Create custom roles",
     "rbac_role:read": "Read role definitions",
