@@ -12,6 +12,7 @@ from fides.api.common_exceptions import (
     UnreachableNodesError,
     ValidationError,
 )
+from fides.api.models.property import Property
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.node_filters import NodeFilter
@@ -71,6 +72,8 @@ class DatasetConfigService:
                     "ctl_dataset_id": ctl_dataset.id,
                 }
                 if dataset.property_ids is not None:
+                    if dataset.property_ids:
+                        self._validate_property_ids(dataset.property_ids)
                     data_dict["property_ids"] = dataset.property_ids
             else:
                 dataset_to_validate = dataset
@@ -114,6 +117,20 @@ class DatasetConfigService:
                 data=dataset.model_dump(),
             )
             return None, error
+
+    def _validate_property_ids(self, property_ids: List[str]) -> None:
+        """Validate that all property IDs reference existing properties."""
+        valid_ids = {
+            row[0]
+            for row in self.db.query(Property.id)
+            .filter(Property.id.in_(property_ids))
+            .all()
+        }
+        invalid = set(property_ids) - valid_ids
+        if invalid:
+            raise ValidationError(
+                f"Unknown property IDs: {sorted(invalid)}"
+            )
 
     def bulk_create_or_update_dataset_configs(
         self,
