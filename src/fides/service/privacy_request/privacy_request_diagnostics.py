@@ -12,7 +12,6 @@ from pydantic import BaseModel, ConfigDict
 
 from sqlalchemy.orm import Session
 
-
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.attachment import (
     Attachment,
@@ -150,8 +149,6 @@ def get_provided_identities(
 class ExecutionLogSnapshot(BaseModel):
     """
     Diagnostics projection of a single `executionlog` row.
-
-    Non-PII only: excludes `message` and other free-text fields.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -162,6 +159,7 @@ class ExecutionLogSnapshot(BaseModel):
 
     status: str
     action_type: str
+    message: Optional[str] = None
 
     connection_key: Optional[str] = None
     dataset_name: Optional[str] = None
@@ -189,6 +187,7 @@ def get_execution_logs(
             updated_at=log.updated_at,
             status=getattr(log.status, "value", str(log.status)),
             action_type=getattr(log.action_type, "value", str(log.action_type)),
+            message=log.message,
             connection_key=log.connection_key,
             dataset_name=log.dataset_name,
             collection_name=log.collection_name,
