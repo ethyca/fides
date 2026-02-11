@@ -1,0 +1,4 @@
+type: Fixed
+description: Allow 5 minute grace period on scheduled jobs to mitigate job misfires
+pr: 7346
+labels: []

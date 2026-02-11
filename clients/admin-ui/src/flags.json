@@ -63,13 +63,6 @@
     "test": true,
     "production": false
   },
-  "heliosV2": {
-    "label": "Helios v2",
-    "description": "Support LLM classifier for Helios datastore monitor and updated Action Center view that replaces Activity, Detection, and Discovery pages",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "alphaPrivacyNoticesSandbox": {
     "label": "Alpha privacy notices sandbox",
     "description": "Enable privacy notices sandbox page for testing consent v3",
