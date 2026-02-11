@@ -19,7 +19,7 @@ jobs:
       has_privacy_center_changes: ${{ steps.filter.outputs.privacy_center }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for Privacy Center file changes
         uses: dorny/paths-filter@v3
@@ -45,7 +45,7 @@ jobs:
         working-directory: clients
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v5
