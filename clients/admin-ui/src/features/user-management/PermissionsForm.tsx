@@ -2,9 +2,9 @@ import { useHasPermission } from "common/Restrict";
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraSpinner as Spinner,
   ChakraStack as Stack,
   ChakraText as Text,
+  Spin,
   Tooltip,
   useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
@@ -307,7 +307,7 @@ const PermissionsForm = () => {
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spin />;
   }
 
   if (!canAssignOwner && targetUserIsOwner) {

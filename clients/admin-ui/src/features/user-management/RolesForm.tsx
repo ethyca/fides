@@ -10,9 +10,9 @@ import { useHasPermission } from "common/Restrict";
 import {
   Button,
   Card,
-  ChakraSpinner as Spinner,
   Checkbox,
   Flex,
+  Spin,
   Typography,
   useChakraDisclosure as useDisclosure,
   useMessage,
@@ -43,7 +43,14 @@ import {
 
 const { Text, Title } = Typography;
 
-// Role keys that cannot have systems assigned to them
+/**
+ * Role keys that cannot have systems assigned to them.
+ * These roles are designed for task-specific access (approving requests,
+ * responding to manual tasks) rather than system-level management.
+ *
+ * If new roles are added to the RBAC system that should not support
+ * system assignment, add their keys here. See RBAC_SYSTEM.md for details.
+ */
 const ROLES_WITHOUT_SYSTEM_ASSIGNMENT = [
   "approver",
   "respondent",
@@ -260,7 +267,7 @@ const RolesForm = () => {
   if (isLoading) {
     return (
       <Flex justify="center" align="center" style={{ padding: 40 }}>
-        <Spinner />
+        <Spin />
       </Flex>
     );
   }
