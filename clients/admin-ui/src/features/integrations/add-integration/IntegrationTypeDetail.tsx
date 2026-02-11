@@ -1,8 +1,7 @@
-import { Button, Modal, useMessage } from "fidesui";
+import { Button } from "fidesui";
 
-import { getErrorMessage } from "~/features/common/helpers";
-import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
+import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
@@ -19,43 +18,12 @@ const IntegrationTypeDetail = ({
     integrationType?.placeholder.saas_config?.type as SaasConnectionTypes,
   );
 
-  const [modalApi, modalContext] = Modal.useModal();
-  const messageApi = useMessage();
-  const [deleteConnectorTemplate] = useDeleteConnectorTemplateMutation();
+  const { handleRemove: handleRemoveCustomIntegration, modalContext } =
+    useRemoveCustomIntegration(connectionOption);
 
   const showRemoveButton =
     !!connectionOption?.custom &&
     !!connectionOption?.default_connector_available;
-
-  const handleRemoveCustomIntegration = () => {
-    modalApi.confirm({
-      title: "Remove",
-      icon: null,
-      content: (
-        <>
-          This will remove the custom integration template and update all
-          systems and connections that use it. All instances will revert to the
-          Fides-provided default integration template.
-          <br />
-          <br />
-          This change applies globally and cannot be undone. Are you sure you
-          want to proceed?
-        </>
-      ),
-      okText: "Remove",
-      okButtonProps: { danger: true },
-      centered: true,
-      onOk: async () => {
-        if (connectionOption?.identifier) {
-          try {
-            await deleteConnectorTemplate(connectionOption.identifier).unwrap();
-          } catch (error) {
-            messageApi.error(getErrorMessage(error as any));
-          }
-        }
-      },
-    });
-  };
 
   return (
     <>

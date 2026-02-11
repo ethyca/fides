@@ -1,23 +1,13 @@
-import {
-  Button,
-  ChakraSpinner as Spinner,
-  Col,
-  Modal,
-  Row,
-  Tabs,
-  useMessage,
-} from "fidesui";
+import { Button, ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
-import { getErrorMessage } from "~/features/common/helpers";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
-import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo, {
@@ -25,6 +15,7 @@ import getIntegrationTypeInfo, {
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import { useFeatureBasedTabs } from "~/features/integrations/hooks/useFeatureBasedTabs";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
+import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
@@ -52,41 +43,8 @@ const IntegrationDetailView: NextPage = () => {
     connection?.saas_config?.type as SaasConnectionTypes,
   );
 
-  const [modalApi, modalContext] = Modal.useModal();
-  const messageApi = useMessage();
-  const [deleteConnectorTemplate] = useDeleteConnectorTemplateMutation();
-
-  const handleRemoveCustomIntegration = () => {
-    modalApi.confirm({
-      title: "Remove",
-      icon: null,
-      content: (
-        <>
-          This will remove the custom integration template and update all
-          systems and connections that use it. All instances will revert to the
-          Fides-provided default integration template.
-          <br />
-          <br />
-          This change applies globally and cannot be undone. Are you sure you
-          want to proceed?
-        </>
-      ),
-      okText: "Remove",
-      okButtonProps: { danger: true },
-      centered: true,
-      onOk: async () => {
-        if (integrationOption?.identifier) {
-          try {
-            await deleteConnectorTemplate(
-              integrationOption.identifier,
-            ).unwrap();
-          } catch (deleteError) {
-            messageApi.error(getErrorMessage(deleteError as any));
-          }
-        }
-      },
-    });
-  };
+  const { handleRemove: handleRemoveCustomIntegration, modalContext } =
+    useRemoveCustomIntegration(integrationOption);
 
   const showRemoveCustomButton =
     !!integrationOption?.custom &&
