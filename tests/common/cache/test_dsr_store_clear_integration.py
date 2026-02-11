@@ -150,16 +150,3 @@ class TestPrivacyRequestClearCachedValues:
         # Index should be deleted
         assert len(mock_redis.smembers(f"__idx:dsr:{pr_id}")) == 0
 
-
-def _run_standalone_tests():
-    """Run tests standalone."""
-    tests = TestPrivacyRequestClearCachedValues()
-    tests.test_clear_removes_legacy_keys()
-    tests.test_clear_removes_new_keys()
-    tests.test_clear_removes_mixed_keys()
-    tests.test_clear_removes_index()
-    print("All clear_cached_values integration tests passed.")
-
-
-if __name__ == "__main__":
-    _run_standalone_tests()
