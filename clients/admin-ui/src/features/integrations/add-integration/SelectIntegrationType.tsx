@@ -124,7 +124,6 @@ const SelectIntegrationType = ({
       );
     }
 
-
     // Sort integrations alphabetically by display name
     return filtered.sort((a, b) => {
       const nameA = a.placeholder.name || "";
