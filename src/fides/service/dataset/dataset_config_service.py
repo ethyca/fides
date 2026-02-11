@@ -70,6 +70,8 @@ class DatasetConfigService:
                     "fides_key": dataset.fides_key,
                     "ctl_dataset_id": ctl_dataset.id,
                 }
+                if dataset.property_ids is not None:
+                    data_dict["property_ids"] = dataset.property_ids
             else:
                 dataset_to_validate = dataset
                 data_dict = {
