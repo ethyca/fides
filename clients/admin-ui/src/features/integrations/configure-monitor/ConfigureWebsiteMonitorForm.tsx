@@ -257,6 +257,7 @@ const ConfigureWebsiteMonitorForm = ({
               form.getFieldValue("execution_frequency") ===
               MonitorFrequency.NOT_SCHEDULED
             }
+            className="w-full"
             showTime
           />
         </Form.Item>
