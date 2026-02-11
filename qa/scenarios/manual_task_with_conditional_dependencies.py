@@ -673,7 +673,9 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             dependency_data = create_dependency_data(self.manual_task.id)
             dep = ManualTaskConditionalDependency.create(db=db, data=dependency_data)
             self.conditional_dependencies.append(dep)
-            self.info(f"Created conditional dependency with full condition tree: {dep.id}")
+            self.info(
+                f"Created conditional dependency with full condition tree: {dep.id}"
+            )
 
             self.success("Created ManualTaskConditionalDependency with condition tree")
             return True
