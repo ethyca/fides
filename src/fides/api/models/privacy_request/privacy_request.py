@@ -111,9 +111,7 @@ from fides.api.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,
     get_cache,
-    get_custom_privacy_request_field_cache_key,
     get_drp_request_body_cache_key,
-    get_encryption_cache_key,
 )
 from fides.common.cache import get_dsr_cache_store
 from fides.api.util.collection_util import Row, extract_key_for_address
@@ -546,13 +544,18 @@ class PrivacyRequest(
             return
 
         if CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution:
-            cache: FidesopsRedis = get_cache()
-            for key, item in custom_privacy_request_fields.items():
-                if item is not None:
-                    cache.set_with_autoexpire(
-                        get_custom_privacy_request_field_cache_key(self.id, key),
-                        json.dumps(item.value, cls=CustomJSONEncoder),
-                    )
+            with get_dsr_cache_store() as store:
+                # Encode values for Redis storage
+                encoded_fields = {
+                    key: json.dumps(item.value, cls=CustomJSONEncoder)
+                    for key, item in custom_privacy_request_fields.items()
+                    if item is not None
+                }
+                store.cache_custom_fields(
+                    self.id,
+                    encoded_fields,
+                    expire_seconds=CONFIG.redis.default_ttl_seconds,
+                )
         else:
             logger.info(
                 "Custom fields from privacy request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution' is set to false and prevents their usage.",
@@ -732,11 +735,13 @@ class PrivacyRequest(
         if not encryption_key:
             return
 
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            get_encryption_cache_key(self.id, "key"),
-            encryption_key,
-        )
+        with get_dsr_cache_store() as store:
+            store.write_encryption(
+                self.id,
+                "key",
+                encryption_key,
+                expire_seconds=CONFIG.redis.default_ttl_seconds,
+            )
 
     def persist_masking_secrets(
         self, masking_secrets: List[MaskingSecretCache]
@@ -790,30 +795,28 @@ class PrivacyRequest(
 
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""
-        result: Dict[str, Any] = {}
-        prefix = f"id-{self.id}-custom-privacy-request-field-*"
+        with get_dsr_cache_store() as store:
+            result = store.get_cached_custom_fields(self.id)
 
-        cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
+            if not result:
+                logger.debug(f"Cache miss for request {self.id}, falling back to DB")
+                custom_privacy_request_fields = (
+                    self.get_persisted_custom_privacy_request_fields()
+                )
+                self.cache_custom_privacy_request_fields(
+                    {
+                        key: CustomPrivacyRequestFieldSchema(**value)
+                        for key, value in custom_privacy_request_fields.items()
+                    }
+                )
+                result = store.get_cached_custom_fields(self.id)
 
-        if not keys:
-            logger.debug(f"Cache miss for request {self.id}, falling back to DB")
-            custom_privacy_request_fields = (
-                self.get_persisted_custom_privacy_request_fields()
-            )
-            self.cache_custom_privacy_request_fields(
-                {
-                    key: CustomPrivacyRequestFieldSchema(**value)
-                    for key, value in custom_privacy_request_fields.items()
-                }
-            )
-            keys = cache.keys(prefix)
+            # Parse JSON values
+            parsed_result: Dict[str, Any] = {}
+            for key, value in result.items():
+                parsed_result[key] = json.loads(value)
 
-        for key in keys:
-            value = cache.get(key)
-            if value:
-                result[key.split("-")[-1]] = json.loads(value)
-        return result
+        return parsed_result
 
     def get_results(self) -> Dict[str, Any]:
         """Retrieves all cached identity data associated with this Privacy Request
