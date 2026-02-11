@@ -2226,7 +2226,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">527</span>
 <span class="normal">528</span>
 <span class="normal">529</span>
-<span class="normal">530</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2260,6 +2266,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># queue.  If False, tasks are sent to the queue.</span>
 <span class="n">task_always_eager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
+<span class="c1"># The port to use for the health check endpoint</span>
+<span class="n">healthcheck_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">9000</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># The timeout in seconds for the health check ping</span>
+<span class="n">healthcheck_ping_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0</span><span class="w"> </span><span class="c1"># number</span>
+
 <span class="c1">#---------#</span>
 <span class="c1">#-- CLI --#</span>
 <span class="c1">#--------------------------------------------------------------------#</span>
@@ -2267,7 +2279,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;7f8ca2090fee4a7c2f6a540c33ca1d95&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fb5e1011013fe2f4101447e1c37c02a8&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
