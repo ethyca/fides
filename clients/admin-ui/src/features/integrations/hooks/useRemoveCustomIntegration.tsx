@@ -3,6 +3,7 @@ import { Modal, useMessage } from "fidesui";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useDeleteConnectorTemplateMutation } from "~/features/connector-templates/connector-template.slice";
 import { ConnectionSystemTypeMap } from "~/types/api";
+import { RTKErrorResult } from "~/types/errors/api";
 
 /**
  * Hook for handling removal of custom integration templates.
@@ -47,7 +48,7 @@ export const useRemoveCustomIntegration = (
           try {
             await deleteConnectorTemplate(connectionOption.identifier).unwrap();
           } catch (error) {
-            messageApi.error(getErrorMessage(error as any));
+            messageApi.error(getErrorMessage(error as RTKErrorResult["error"]));
           }
         }
       },
