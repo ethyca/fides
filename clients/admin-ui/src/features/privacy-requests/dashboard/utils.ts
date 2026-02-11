@@ -2,7 +2,6 @@ import { isEmpty, isNil, pickBy } from "lodash";
 import { createParser } from "nuqs";
 
 import {
-  ActionType,
   IdentityValue,
   PrivacyRequestOption,
   PrivacyRequestResponse,
@@ -167,14 +166,4 @@ export const filterNullCustomFields = (
   >;
 
   return Object.keys(filtered).length > 0 ? filtered : null;
-};
-
-/**
- * Extracts unique action types from an array of rules.
- * Uses a Set to efficiently remove duplicates.
- */
-export const getUniqueActionTypes = (
-  rules: Array<{ action_type: ActionType }>,
-): ActionType[] => {
-  return Array.from(new Set(rules.map((rule) => rule.action_type)));
 };

@@ -1,8 +1,4 @@
-import {
-  ActionType,
-  PrivacyRequestOption,
-  PrivacyRequestResponse,
-} from "~/types/api";
+import { PrivacyRequestOption, PrivacyRequestResponse } from "~/types/api";
 
 import {
   extractUniqueCustomFields,
@@ -10,7 +6,6 @@ import {
   getCustomFields,
   getOtherIdentities,
   getPrimaryIdentity,
-  getUniqueActionTypes,
 } from "./utils";
 
 // Mock nuqs before importing utils since it's ESM-only and incompatible with Jest
@@ -469,18 +464,5 @@ describe("extractUniqueCustomFields", () => {
         field_type: "text",
       },
     });
-  });
-});
-describe("getUniqueActionTypes", () => {
-  it("should return unique action types when duplicates exist", () => {
-    const rules = [
-      { action_type: ActionType.ACCESS },
-      { action_type: ActionType.ACCESS },
-      { action_type: ActionType.ERASURE },
-    ];
-    expect(getUniqueActionTypes(rules)).toEqual([
-      ActionType.ACCESS,
-      ActionType.ERASURE,
-    ]);
   });
 });

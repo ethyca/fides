@@ -1,4 +1,5 @@
 import { CopyTooltip, Flex, Tag, Typography } from "fidesui";
+import { uniqBy } from "lodash";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -7,7 +8,7 @@ import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { PrivacyRequestResponse } from "~/types/api";
 
-import { getUniqueActionTypes, IdentityValueWithKey } from "../../utils";
+import { IdentityValueWithKey } from "../../utils";
 
 interface HeaderProps {
   privacyRequest: PrivacyRequestResponse;
@@ -17,9 +18,7 @@ interface HeaderProps {
 export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
   const router = useRouter();
 
-  const uniqueActionTypes = privacyRequest.policy.rules
-    ? getUniqueActionTypes(privacyRequest.policy.rules)
-    : [];
+  const uniqueRules = uniqBy(privacyRequest.policy.rules ?? [], "action_type");
 
   return (
     <Flex gap={12} wrap align="center">
@@ -41,11 +40,11 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
         </Typography.Title>
       </div>
       <RequestStatusBadge status={privacyRequest.status} />
-      {uniqueActionTypes.length > 0 && (
+      {uniqueRules.length > 0 && (
         <Flex gap={4}>
-          {uniqueActionTypes.map((actionType) => (
-            <Tag key={actionType}>
-              {SubjectRequestActionTypeMap.get(actionType)}
+          {uniqueRules.map((rule) => (
+            <Tag key={rule.action_type}>
+              {SubjectRequestActionTypeMap.get(rule.action_type)}
             </Tag>
           ))}
         </Flex>
