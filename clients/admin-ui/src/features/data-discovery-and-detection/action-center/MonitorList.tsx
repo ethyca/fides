@@ -14,7 +14,6 @@ import { useFeatures } from "~/features/common/features";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
@@ -27,18 +26,14 @@ import { SearchFormQueryState } from "./MonitorList.const";
 const MonitorList = () => {
   const toast = useToast();
   const {
-    flags: {
-      webMonitor: webMonitorEnabled,
-      heliosV2: heliosV2Enabled,
-      oktaMonitor: oktaMonitorEnabled,
-    },
+    flags: { webMonitor: webMonitorEnabled, oktaMonitor: oktaMonitorEnabled },
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
 
   const availableMonitorTypes = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
+    MONITOR_TYPES.DATASTORE,
     ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
   ] as const;
 
@@ -101,10 +96,6 @@ const MonitorList = () => {
     data?.items?.flatMap((monitor) =>
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
-
-  if (!webMonitorEnabled && !heliosV2Enabled && !oktaMonitorEnabled) {
-    return <DisabledMonitorsPage />;
-  }
 
   return (
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>

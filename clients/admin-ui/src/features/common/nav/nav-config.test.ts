@@ -160,7 +160,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        navGroups[5].children
+        navGroups[5]?.children
           .map((c) => c.title)
           .find((title) => title === "Domain verification"),
       ).toEqual(undefined);
@@ -205,7 +205,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        navGroups[1].children
+        navGroups[3]?.children
           .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual(undefined);
@@ -224,7 +224,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        navGroups[1]?.children
+        navGroups[4]?.children
           .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual(undefined);
