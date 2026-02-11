@@ -7,7 +7,7 @@ import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { PrivacyRequestResponse } from "~/types/api";
 
-import { IdentityValueWithKey } from "../../utils";
+import { getUniqueActionTypes, IdentityValueWithKey } from "../../utils";
 
 interface HeaderProps {
   privacyRequest: PrivacyRequestResponse;
@@ -16,6 +16,10 @@ interface HeaderProps {
 
 export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
   const router = useRouter();
+
+  const uniqueActionTypes = privacyRequest.policy.rules
+    ? getUniqueActionTypes(privacyRequest.policy.rules)
+    : [];
 
   return (
     <Flex gap={12} wrap align="center">
@@ -37,11 +41,11 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
         </Typography.Title>
       </div>
       <RequestStatusBadge status={privacyRequest.status} />
-      {privacyRequest.policy.rules && (
+      {uniqueActionTypes.length > 0 && (
         <Flex gap={4}>
-          {privacyRequest.policy.rules.map((rule) => (
-            <Tag key={rule.action_type}>
-              {SubjectRequestActionTypeMap.get(rule.action_type)}
+          {uniqueActionTypes.map((actionType) => (
+            <Tag key={actionType}>
+              {SubjectRequestActionTypeMap.get(actionType)}
             </Tag>
           ))}
         </Flex>
