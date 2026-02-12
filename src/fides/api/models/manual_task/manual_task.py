@@ -501,7 +501,7 @@ class ManualTaskConfig(Base):
         default=ManualTaskExecutionTiming.pre_execution,
     )
     property_ids = Column(
-        ARRAY(String), nullable=False, server_default="{}", default=dict
+        ARRAY(String), nullable=False, server_default="{}", default=list
     )
 
     __table_args__ = (
