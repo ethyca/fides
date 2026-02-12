@@ -10,11 +10,13 @@ from fides.api.graph.config import CollectionAddress, FieldAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.saas.saas_config import (
+    ClientConfig,
     ConnectorParam,
     Endpoint,
     ParamValue,
     SaaSConfig,
     SaaSRequest,
+    SaaSRequestMap,
 )
 
 
@@ -443,3 +445,161 @@ class TestConnectorParam:
             "The grouped_input values for every read request must be the same"
             in str(exc.value)
         )
+
+
+@pytest.mark.unit_saas
+class TestSaaSConfigHostDomainRestrictions:
+    """Tests for Rule B model_validator: client_config.host placeholders
+    must reference connector params with allowed_domains defined."""
+
+    @staticmethod
+    def _make_config(
+        connector_params,
+        host="<domain>",
+        endpoints=None,
+        test_request_client_config=None,
+    ):
+        """Helper to build a minimal SaaSConfig dict."""
+        config = {
+            "fides_key": "test_connector",
+            "name": "Test Connector",
+            "type": "custom",
+            "description": "Test connector for Rule B validation",
+            "version": "0.0.1",
+            "connector_params": connector_params,
+            "client_config": {"protocol": "https", "host": host},
+            "endpoints": endpoints or [],
+            "test_request": {"request_override": "test_override"},
+        }
+        if test_request_client_config:
+            config["test_request"] = {
+                "method": "GET",
+                "path": "/test",
+                "client_config": test_request_client_config,
+            }
+        return config
+
+    def test_host_references_domain_restricted_param_passes(self):
+        """Host referencing a param with allowed_domains should pass."""
+        config = self._make_config(
+            connector_params=[
+                {
+                    "name": "domain",
+                    "default_value": "api.stripe.com",
+                    "allowed_domains": [r"api\.stripe\.com"],
+                },
+            ],
+            host="<domain>",
+        )
+        saas_config = SaaSConfig(**config)
+        assert saas_config.client_config.host == "<domain>"
+
+    def test_host_references_unrestricted_param_fails(self):
+        """Host referencing a param without allowed_domains should fail
+        when another param has allowed_domains."""
+        config = self._make_config(
+            connector_params=[
+                {
+                    "name": "domain",
+                    "default_value": "api.stripe.com",
+                    "allowed_domains": [r"api\.stripe\.com"],
+                },
+                {"name": "api_key", "sensitive": True},
+            ],
+            host="<api_key>",
+        )
+        with pytest.raises(ValidationError) as exc:
+            SaaSConfig(**config)
+        assert "does not have allowed_domains defined" in str(exc.value)
+
+    def test_no_domain_restrictions_skips_validation(self):
+        """When no connector param has allowed_domains, any host is allowed."""
+        config = self._make_config(
+            connector_params=[
+                {"name": "api_key", "sensitive": True},
+                {"name": "hostname"},
+            ],
+            host="<hostname>",
+        )
+        # Should not raise
+        saas_config = SaaSConfig(**config)
+        assert saas_config.client_config.host == "<hostname>"
+
+    def test_host_with_empty_allowed_domains_passes(self):
+        """Empty allowed_domains (self-hosted) is non-None, so it passes Rule B."""
+        config = self._make_config(
+            connector_params=[
+                {"name": "domain", "allowed_domains": []},
+            ],
+            host="<domain>",
+        )
+        saas_config = SaaSConfig(**config)
+        assert saas_config.client_config.host == "<domain>"
+
+    def test_nested_endpoint_host_references_unrestricted_param_fails(self):
+        """Rule B should also catch unrestricted references in endpoint-level client_config."""
+        config = self._make_config(
+            connector_params=[
+                {
+                    "name": "domain",
+                    "allowed_domains": [r"api\.stripe\.com"],
+                },
+                {"name": "other_host"},
+            ],
+            host="<domain>",
+            endpoints=[
+                {
+                    "name": "users",
+                    "requests": {
+                        "read": {
+                            "method": "GET",
+                            "path": "/users",
+                            "client_config": {
+                                "protocol": "https",
+                                "host": "<other_host>",
+                            },
+                        },
+                    },
+                },
+            ],
+        )
+        with pytest.raises(ValidationError) as exc:
+            SaaSConfig(**config)
+        assert "does not have allowed_domains defined" in str(exc.value)
+        assert "'other_host'" in str(exc.value)
+
+    def test_host_placeholder_not_in_connector_params_is_skipped(self):
+        """Placeholders that don't correspond to a connector_param are skipped."""
+        config = self._make_config(
+            connector_params=[
+                {
+                    "name": "domain",
+                    "allowed_domains": [r"api\.stripe\.com"],
+                },
+            ],
+            # References a param not in connector_params (e.g. a directly-set secret)
+            host="<some_other_secret>",
+        )
+        # Should not raise — unknown placeholders are not checked
+        SaaSConfig(**config)
+
+    def test_test_request_host_references_unrestricted_param_fails(self):
+        """Rule B should also catch unrestricted references in test_request client_config."""
+        config = self._make_config(
+            connector_params=[
+                {
+                    "name": "domain",
+                    "allowed_domains": [r"api\.stripe\.com"],
+                },
+                {"name": "test_host"},
+            ],
+            host="<domain>",
+            test_request_client_config={
+                "protocol": "https",
+                "host": "<test_host>",
+            },
+        )
+        with pytest.raises(ValidationError) as exc:
+            SaaSConfig(**config)
+        assert "does not have allowed_domains defined" in str(exc.value)
+        assert "'test_host'" in str(exc.value)
