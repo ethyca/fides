@@ -2,11 +2,11 @@ import {
   Button,
   ChakraFlex as Flex,
   ChakraText as Text,
+  PageSpinner,
   Tooltip,
   useChakraToast as useToast,
 } from "fidesui";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
@@ -83,7 +83,7 @@ const ConfigureMonitorDatabasesForm = ({
   const saveIsDisabled = !allSelected && selected.length === 0;
 
   if (initialIsLoading) {
-    return <FidesSpinner my={12} />;
+    return <PageSpinner className="my-12" />;
   }
 
   return (
