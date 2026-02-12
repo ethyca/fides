@@ -26,23 +26,35 @@ export const usePolicyToFlow = (
     const allEdges: FlowEdge[] = [];
 
     // Layout constants - each node type has its own width estimate + spacing
-    const VERTICAL_SPACING = 280; // Space between rule lanes
-    const HORIZONTAL_START = 50;
+    const VERTICAL_SPACING = 300; // Space between rule lanes
+    const HORIZONTAL_START = 80;
 
-    // Node widths (approximate)
-    const START_NODE_WIDTH = 150;
-    const MATCH_NODE_WIDTH = 220;
+    // Node dimensions (approximate rendered sizes)
+    const START_NODE_WIDTH = 160;
+    const START_NODE_HEIGHT = 40;
+    const MATCH_NODE_WIDTH = 240;
+    const MATCH_NODE_HEIGHT = 120;
     const GATE_NODE_WIDTH = 60;
-    const CONSTRAINT_NODE_WIDTH = 180;
-    const ACTION_NODE_WIDTH = 100;
+    const GATE_NODE_HEIGHT = 40;
+    const CONSTRAINT_NODE_WIDTH = 220;
+    const CONSTRAINT_NODE_HEIGHT = 100;
+    const ACTION_NODE_WIDTH = 180;
+    const ACTION_NODE_HEIGHT = 70;
+
+    // Reference height to center-align all nodes against
+    const REFERENCE_HEIGHT = MATCH_NODE_HEIGHT;
 
     // Spacing between nodes
-    const NODE_SPACING = 60;
+    const NODE_SPACING = 80;
 
     policy.rules.forEach((rule, ruleIndex) => {
       const ruleId = rule.id || `rule-${ruleIndex}`;
-      const baseY = ruleIndex * VERTICAL_SPACING + 150; // Center baseline for this rule
+      const baseY = ruleIndex * VERTICAL_SPACING + 100; // Top of the reference box
       let currentX = HORIZONTAL_START;
+
+      // Helper to vertically center a node of a given height within the row
+      const centerY = (nodeHeight: number) =>
+        baseY + (REFERENCE_HEIGHT - nodeHeight) / 2;
 
       // ============================================================
       // 1. Create START node
@@ -51,7 +63,7 @@ export const usePolicyToFlow = (
       allNodes.push({
         id: startNodeId,
         type: "start",
-        position: { x: currentX, y: baseY },
+        position: { x: currentX, y: centerY(START_NODE_HEIGHT) },
         data: {
           nodeType: "start",
           ruleId,
@@ -78,7 +90,7 @@ export const usePolicyToFlow = (
           allNodes.push({
             id: matchNodeId,
             type: "match",
-            position: { x: currentX, y: baseY },
+            position: { x: currentX, y: centerY(MATCH_NODE_HEIGHT) },
             data: {
               nodeType: "match",
               ruleId,
@@ -105,7 +117,7 @@ export const usePolicyToFlow = (
             allNodes.push({
               id: gateNodeId,
               type: "gate",
-              position: { x: currentX, y: baseY },
+              position: { x: currentX, y: centerY(GATE_NODE_HEIGHT) },
               data: {
                 nodeType: "gate",
                 ruleId,
@@ -139,7 +151,7 @@ export const usePolicyToFlow = (
           allNodes.push({
             id: constraintNodeId,
             type: "constraint",
-            position: { x: currentX, y: baseY },
+            position: { x: currentX, y: centerY(CONSTRAINT_NODE_HEIGHT) },
             data: {
               nodeType: "constraint",
               ruleId,
@@ -169,7 +181,7 @@ export const usePolicyToFlow = (
       allNodes.push({
         id: actionNodeId,
         type: "action",
-        position: { x: currentX, y: baseY },
+        position: { x: currentX, y: centerY(ACTION_NODE_HEIGHT) },
         data: {
           nodeType: "action",
           ruleId,

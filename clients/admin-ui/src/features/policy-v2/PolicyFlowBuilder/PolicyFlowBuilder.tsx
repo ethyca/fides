@@ -25,10 +25,11 @@ import {
   PolicyV2RuleConstraint,
   PolicyV2RuleMatch,
 } from "../types";
+import { AIChatPopover } from "./AIChatPopover";
 import { FlowCanvas } from "./FlowCanvas";
 import { useFlowToPolicy, usePolicyToFlow } from "./hooks";
 import { PropertyPanel } from "./PropertyPanel";
-import { SidePanel, SidePanelMode } from "./SidePanel";
+import { SidePanel } from "./SidePanel";
 import {
   ActionNodeData,
   ConstraintNodeData,
@@ -64,8 +65,7 @@ export const PolicyFlowBuilder = ({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState<boolean>(false);
 
-  // Side panel mode and AI policy state
-  const [sidePanelMode, setSidePanelMode] = useState<SidePanelMode>("nodes");
+  // AI policy state
   const [aiPolicy, setAiPolicy] = useState<PolicyV2Create | null>(null);
   const [isUpdatingFlow, setIsUpdatingFlow] = useState(false);
 
@@ -119,21 +119,19 @@ export const PolicyFlowBuilder = ({
     };
   }, [aiPolicy, aiFlowResult.nodes.length]);
 
-  // Determine which nodes/edges to display based on mode
+  // Determine which nodes/edges to display based on AI state
   const displayNodes = useMemo(() => {
-    if (sidePanelMode === "chat" && aiPolicy) {
-      // During progressive reveal, only show revealed nodes
+    if (aiPolicy) {
       if (isRevealing) {
         return aiFlowResult.nodes.slice(0, revealedNodeCount);
       }
       return aiFlowResult.nodes;
     }
     return nodes;
-  }, [sidePanelMode, aiPolicy, aiFlowResult.nodes, nodes, isRevealing, revealedNodeCount]);
+  }, [aiPolicy, aiFlowResult.nodes, nodes, isRevealing, revealedNodeCount]);
 
   const displayEdges = useMemo(() => {
-    if (sidePanelMode === "chat" && aiPolicy) {
-      // During progressive reveal, only show edges for revealed nodes
+    if (aiPolicy) {
       if (isRevealing) {
         const revealedNodeIds = new Set(
           aiFlowResult.nodes.slice(0, revealedNodeCount).map((n) => n.id)
@@ -145,7 +143,7 @@ export const PolicyFlowBuilder = ({
       return aiFlowResult.edges;
     }
     return edges;
-  }, [sidePanelMode, aiPolicy, aiFlowResult.nodes, aiFlowResult.edges, edges, isRevealing, revealedNodeCount]);
+  }, [aiPolicy, aiFlowResult.nodes, aiFlowResult.edges, edges, isRevealing, revealedNodeCount]);
 
   // Calculate reveal progress percentage
   const revealProgress = useMemo(() => {
@@ -181,7 +179,7 @@ export const PolicyFlowBuilder = ({
     };
   }, [isDirty]);
 
-  // Find the selected node from the displayed nodes array (handles both regular and AI-generated nodes)
+  // Find the selected node from the displayed nodes array
   const selectedNode = selectedNodeId
     ? displayNodes.find((node) => node.id === selectedNodeId) || null
     : null;
@@ -397,17 +395,11 @@ export const PolicyFlowBuilder = ({
           toast(errorToastParams(getErrorMessage(result.error)));
         } else {
           toast(successToastParams(`Policy "${policyToSave.name}" created successfully`));
-          // Navigate to the new policy if callback provided
-          // Don't clear AI policy state - let navigation handle the transition
-          // This keeps the flow visible until the new page loads
           if (onPolicyCreated) {
             onPolicyCreated(policyToSave.fides_key);
           }
-          // Only clear state if we're NOT navigating away
-          // (i.e., when used in a context without navigation callback)
           if (!onPolicyCreated) {
             setAiPolicy(null);
-            setSidePanelMode("nodes");
           }
         }
       } catch (err) {
@@ -415,18 +407,6 @@ export const PolicyFlowBuilder = ({
       }
     },
     [createPolicy, toast, onPolicyCreated]
-  );
-
-  // Handle side panel mode change
-  const handleModeChange = useCallback(
-    (mode: SidePanelMode) => {
-      // If switching from chat mode with an AI policy to nodes mode, confirm
-      if (sidePanelMode === "chat" && mode === "nodes" && aiPolicy) {
-        // Just switch - the AI policy preview remains in the chat pane
-      }
-      setSidePanelMode(mode);
-    },
-    [sidePanelMode, aiPolicy]
   );
 
   // Show loading state
@@ -454,91 +434,29 @@ export const PolicyFlowBuilder = ({
     );
   }
 
-  // Show empty state if no policy or no rules (but with AI chat available)
-  if (!policy || !policy.rules || policy.rules.length === 0) {
-    // If we have an AI-generated policy, show it
-    const showAiFlow = sidePanelMode === "chat" && aiPolicy;
-
-    return (
-      <Box className={styles.container}>
-        <Flex className={styles.header}>
-          <Flex flex="1" align="center" gap={4}>
-            <Text className={styles.policyName}>
-              {showAiFlow ? aiPolicy.name : "New Policy"}
-            </Text>
-            {showAiFlow && (
-              <Text className={styles.ruleCount}>
-                {aiPolicy.rules?.length || 0}{" "}
-                {(aiPolicy.rules?.length || 0) === 1 ? "rule" : "rules"} (AI Generated)
-              </Text>
-            )}
-          </Flex>
-        </Flex>
-        <Flex className={styles.contentWrapper}>
-          <SidePanel
-            mode={sidePanelMode}
-            onModeChange={handleModeChange}
-            onAddRule={handleAddRule}
-            onAIPolicyGenerated={handleAIPolicyGenerated}
-            onAIPolicySave={handleAIPolicySave}
-            aiPolicy={aiPolicy}
-            isUpdatingFlow={isUpdatingFlow}
-            isRevealing={isRevealing}
-            revealProgress={revealProgress}
-            hasExistingPolicy={false}
-          />
-          <Box flex="1" className={styles.canvasWrapper}>
-            {showAiFlow ? (
-              <FlowCanvas
-                initialNodes={displayNodes}
-                initialEdges={displayEdges}
-                onNodeSelect={setSelectedNodeId}
-                onDrop={handleDrop}
-                readOnly
-              />
-            ) : (
-              <Flex className={styles.emptyContainer}>
-                <Box textAlign="center">
-                  <Text fontSize="lg" fontWeight="semibold" color="gray.700" mb={2}>
-                    No rules to display
-                  </Text>
-                  <Text fontSize="sm" color="gray.500" mb={4}>
-                    Add rules to this policy to visualize the flow
-                  </Text>
-                  <Text fontSize="sm" color="gray.500">
-                    Or use the AI Chat tab to create a policy with AI assistance
-                  </Text>
-                </Box>
-              </Flex>
-            )}
-          </Box>
-          <PropertyPanel
-            selectedNode={selectedNode}
-            onNodeUpdate={handleNodeUpdate}
-            onClose={handleClosePanel}
-          />
-        </Flex>
-      </Box>
-    );
-  }
-
-  // Determine if showing AI-generated preview
-  const isShowingAiPreview = sidePanelMode === "chat" && aiPolicy;
-  const displayPolicyName = isShowingAiPreview ? aiPolicy.name : policy.name;
-  const displayRuleCount = isShowingAiPreview
+  // Determine display info
+  const showAiFlow = !!aiPolicy;
+  const displayPolicyName = showAiFlow
+    ? aiPolicy.name
+    : policy?.name || "New Policy";
+  const displayRuleCount = showAiFlow
     ? aiPolicy.rules?.length || 0
-    : policy.rules.length;
+    : policy?.rules?.length || 0;
+  const hasRules = !!(policy?.rules && policy.rules.length > 0) || showAiFlow;
+  const isReadOnly = showAiFlow;
 
   return (
     <Box className={styles.container}>
       <Flex className={styles.header}>
         <Flex flex="1" align="center" gap={4}>
           <Text className={styles.policyName}>{displayPolicyName}</Text>
-          <Text className={styles.ruleCount}>
-            {displayRuleCount} {displayRuleCount === 1 ? "rule" : "rules"}
-            {isShowingAiPreview && " (AI Preview)"}
-          </Text>
-          {isDirty && !isShowingAiPreview && (
+          {displayRuleCount > 0 && (
+            <Text className={styles.ruleCount}>
+              {displayRuleCount} {displayRuleCount === 1 ? "rule" : "rules"}
+              {showAiFlow && " (AI Preview)"}
+            </Text>
+          )}
+          {isDirty && !showAiFlow && (
             <Text color="orange.600" fontSize="sm" fontWeight="medium">
               (unsaved changes)
             </Text>
@@ -567,25 +485,40 @@ export const PolicyFlowBuilder = ({
         )}
       </Flex>
       <Flex className={styles.contentWrapper}>
-        <SidePanel
-          mode={sidePanelMode}
-          onModeChange={handleModeChange}
-          onAddRule={handleAddRule}
-          onAIPolicyGenerated={handleAIPolicyGenerated}
-          onAIPolicySave={handleAIPolicySave}
-          aiPolicy={aiPolicy}
-          isUpdatingFlow={isUpdatingFlow}
-          isRevealing={isRevealing}
-          revealProgress={revealProgress}
-          hasExistingPolicy={!!policy}
-        />
+        <SidePanel onAddRule={handleAddRule} />
         <Box flex="1" className={styles.canvasWrapper}>
-          <FlowCanvas
-            initialNodes={displayNodes}
-            initialEdges={displayEdges}
-            onNodeSelect={setSelectedNodeId}
-            onDrop={handleDrop}
-            readOnly={sidePanelMode === "chat"}
+          {hasRules ? (
+            <FlowCanvas
+              initialNodes={displayNodes}
+              initialEdges={displayEdges}
+              onNodeSelect={setSelectedNodeId}
+              onDrop={handleDrop}
+              readOnly={isReadOnly}
+            />
+          ) : (
+            <Flex className={styles.emptyContainer}>
+              <Box textAlign="center">
+                <Text fontSize="lg" fontWeight="semibold" color="gray.700" mb={2}>
+                  No rules to display
+                </Text>
+                <Text fontSize="sm" color="gray.500" mb={4}>
+                  Add rules to this policy to visualize the flow
+                </Text>
+                <Text fontSize="sm" color="gray.500">
+                  Or use the AI Chat to create a policy with AI assistance
+                </Text>
+              </Box>
+            </Flex>
+          )}
+          {/* Floating AI Chat Popover */}
+          <AIChatPopover
+            onPolicyGenerated={handleAIPolicyGenerated}
+            onPolicySave={handleAIPolicySave}
+            aiPolicy={aiPolicy}
+            hasExistingPolicy={!!policy}
+            isUpdatingFlow={isUpdatingFlow}
+            isRevealing={isRevealing}
+            revealProgress={revealProgress}
           />
         </Box>
         <PropertyPanel
