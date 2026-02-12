@@ -20,7 +20,7 @@ depends_on = None
 def upgrade():
     # Create the resurface behavior enum type
     op.execute(
-        "CREATE TYPE resurfacebehavior AS ENUM ('REJECT', 'DISMISS')"
+        "CREATE TYPE resurfacebehavior AS ENUM ('reject', 'dismiss')"
     )
 
     # Add resurface_behavior array column to all three experience config tables
@@ -28,7 +28,7 @@ def upgrade():
         "experienceconfigtemplate",
         sa.Column(
             "resurface_behavior",
-            ARRAY(sa.Enum("REJECT", "DISMISS", name="resurfacebehavior")),
+            ARRAY(sa.Enum("reject", "dismiss", name="resurfacebehavior")),
             nullable=True,
         ),
     )
@@ -36,7 +36,7 @@ def upgrade():
         "privacyexperienceconfig",
         sa.Column(
             "resurface_behavior",
-            ARRAY(sa.Enum("REJECT", "DISMISS", name="resurfacebehavior")),
+            ARRAY(sa.Enum("reject", "dismiss", name="resurfacebehavior")),
             nullable=True,
         ),
     )
@@ -44,7 +44,7 @@ def upgrade():
         "privacyexperienceconfighistory",
         sa.Column(
             "resurface_behavior",
-            ARRAY(sa.Enum("REJECT", "DISMISS", name="resurfacebehavior")),
+            ARRAY(sa.Enum("reject", "dismiss", name="resurfacebehavior")),
             nullable=True,
         ),
     )
