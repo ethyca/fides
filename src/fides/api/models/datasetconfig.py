@@ -45,7 +45,7 @@ class DatasetConfig(Base):
         String, ForeignKey(CtlDataset.id), index=True, nullable=False
     )
     property_ids = Column(
-        ARRAY(String), nullable=False, server_default="{}", default=dict
+        ARRAY(String), nullable=False, server_default="{}", default=list
     )
 
     __table_args__ = (
