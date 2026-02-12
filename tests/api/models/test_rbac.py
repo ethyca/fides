@@ -7,13 +7,13 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.rbac import (
+    RBACConstraint,
     RBACPermission,
     RBACRole,
-    RBACRoleConstraint,
     RBACRolePermission,
     RBACUserRole,
 )
-from fides.api.models.rbac.rbac_role_constraint import ConstraintType
+from fides.api.models.rbac.rbac_constraint import ConstraintType
 
 
 class TestRBACPermission:
@@ -270,12 +270,11 @@ class TestRBACUserRole:
         assert expired_role.is_valid() is False
 
 
-class TestRBACRoleConstraint:
-    """Tests for the RBACRoleConstraint model."""
+class TestRBACConstraint:
+    """Tests for the RBACConstraint model (NIST RBAC standard)."""
 
-    def test_create_sod_constraint(self, db: Session):
-        """Test creating a separation of duties constraint."""
-        # Create two roles
+    def test_create_pairwise_static_sod(self, db: Session):
+        """Test SSD(role_set, 2) — mutual exclusion between two roles."""
         role1 = RBACRole.create(
             db=db,
             data={
@@ -298,27 +297,170 @@ class TestRBACRoleConstraint:
         )
         db.commit()
 
-        # Create SOD constraint
-        constraint = RBACRoleConstraint.create(
+        # Create SSD({role1, role2}, 2) — user cannot hold both
+        constraint = RBACConstraint.create(
             db=db,
             data={
                 "name": "Test SOD Constraint",
                 "constraint_type": ConstraintType.STATIC_SOD,
-                "role_id_1": role1.id,
-                "role_id_2": role2.id,
+                "threshold": 2,
+                "is_active": True,
+            },
+            check_name=False,
+        )
+        constraint.roles.append(role1)
+        constraint.roles.append(role2)
+        db.commit()
+
+        assert constraint.name == "Test SOD Constraint"
+        assert constraint.constraint_type == ConstraintType.STATIC_SOD
+        assert constraint.threshold == 2
+        assert constraint.is_sod_constraint() is True
+        assert constraint.is_cardinality_constraint() is False
+        assert len(constraint.roles) == 2
+        assert constraint.involves_role(role1.id) is True
+        assert constraint.involves_role(role2.id) is True
+        assert constraint.involves_role("nonexistent_id") is False
+
+    def test_multi_role_static_sod(self, db: Session):
+        """Test SSD({A, B, C}, 2) — user can hold at most 1 of 3 roles."""
+        roles = []
+        for i in range(3):
+            role = RBACRole.create(
+                db=db,
+                data={
+                    "name": f"Multi SOD Role {i}",
+                    "key": f"multi_sod_role_{i}",
+                    "is_system_role": False,
+                    "is_active": True,
+                },
+                check_name=False,
+            )
+            roles.append(role)
+        db.commit()
+
+        # Create SSD({A, B, C}, 2) — user can hold at most 1
+        constraint = RBACConstraint.create(
+            db=db,
+            data={
+                "name": "Three-way SOD",
+                "constraint_type": ConstraintType.STATIC_SOD,
+                "threshold": 2,
+                "is_active": True,
+            },
+            check_name=False,
+        )
+        for role in roles:
+            constraint.roles.append(role)
+        db.commit()
+
+        assert len(constraint.roles) == 3
+        assert constraint.threshold == 2
+
+        # Holding 1 role is fine
+        assert constraint.would_violate_sod([roles[0].id]) is False
+
+        # Holding 2 roles violates the constraint
+        assert constraint.would_violate_sod([roles[0].id, roles[1].id]) is True
+
+        # Holding all 3 also violates
+        assert constraint.would_violate_sod([r.id for r in roles]) is True
+
+        # Holding unrelated roles is fine
+        assert constraint.would_violate_sod(["unrelated_role_id"]) is False
+
+    def test_get_conflicting_role_ids(self, db: Session):
+        """Test retrieving conflicting roles from a SoD constraint."""
+        role1 = RBACRole.create(
+            db=db,
+            data={
+                "name": "Conflict Role A",
+                "key": "conflict_role_a",
+                "is_system_role": False,
+                "is_active": True,
+            },
+            check_name=False,
+        )
+        role2 = RBACRole.create(
+            db=db,
+            data={
+                "name": "Conflict Role B",
+                "key": "conflict_role_b",
+                "is_system_role": False,
                 "is_active": True,
             },
             check_name=False,
         )
         db.commit()
 
-        assert constraint.name == "Test SOD Constraint"
-        assert constraint.constraint_type == ConstraintType.STATIC_SOD
-        assert constraint.role_id_1 == role1.id
-        assert constraint.role_id_2 == role2.id
+        constraint = RBACConstraint.create(
+            db=db,
+            data={
+                "name": "Conflict Constraint",
+                "constraint_type": ConstraintType.STATIC_SOD,
+                "threshold": 2,
+                "is_active": True,
+            },
+            check_name=False,
+        )
+        constraint.roles.append(role1)
+        constraint.roles.append(role2)
+        db.commit()
+
+        # role1's conflicting roles should be [role2]
+        conflicting = constraint.get_conflicting_role_ids(role1.id)
+        assert conflicting == [role2.id]
+
+        # role2's conflicting roles should be [role1]
+        conflicting = constraint.get_conflicting_role_ids(role2.id)
+        assert conflicting == [role1.id]
+
+        # Unrelated role returns empty list
+        assert constraint.get_conflicting_role_ids("unrelated") == []
+
+    def test_create_dynamic_sod(self, db: Session):
+        """Test DSD(role_set, 2) — session-level mutual exclusion."""
+        role1 = RBACRole.create(
+            db=db,
+            data={
+                "name": "DSD Role 1",
+                "key": "dsd_role_1",
+                "is_system_role": False,
+                "is_active": True,
+            },
+            check_name=False,
+        )
+        role2 = RBACRole.create(
+            db=db,
+            data={
+                "name": "DSD Role 2",
+                "key": "dsd_role_2",
+                "is_system_role": False,
+                "is_active": True,
+            },
+            check_name=False,
+        )
+        db.commit()
+
+        constraint = RBACConstraint.create(
+            db=db,
+            data={
+                "name": "Dynamic SOD Constraint",
+                "constraint_type": ConstraintType.DYNAMIC_SOD,
+                "threshold": 2,
+                "is_active": True,
+            },
+            check_name=False,
+        )
+        constraint.roles.append(role1)
+        constraint.roles.append(role2)
+        db.commit()
+
+        assert constraint.constraint_type == ConstraintType.DYNAMIC_SOD
+        assert constraint.is_sod_constraint() is True
 
     def test_create_cardinality_constraint(self, db: Session):
-        """Test creating a cardinality constraint."""
+        """Test cardinality constraint — max users per role."""
         role = RBACRole.create(
             db=db,
             data={
@@ -331,19 +473,31 @@ class TestRBACRoleConstraint:
         )
         db.commit()
 
-        # Create cardinality constraint
-        constraint = RBACRoleConstraint.create(
+        # Cardinality({owner}, 3) — at most 3 users
+        constraint = RBACConstraint.create(
             db=db,
             data={
-                "name": "Max 5 Users",
+                "name": "Max 3 Users",
                 "constraint_type": ConstraintType.CARDINALITY,
-                "role_id_1": role.id,
-                "max_users": 5,
+                "threshold": 3,
                 "is_active": True,
             },
             check_name=False,
         )
+        constraint.roles.append(role)
         db.commit()
 
         assert constraint.constraint_type == ConstraintType.CARDINALITY
-        assert constraint.max_users == 5
+        assert constraint.threshold == 3
+        assert constraint.is_cardinality_constraint() is True
+        assert constraint.is_sod_constraint() is False
+        assert len(constraint.roles) == 1
+
+        # 2 users assigned — not violated
+        assert constraint.would_violate_cardinality(2) is False
+
+        # 3 users assigned — violated (at threshold)
+        assert constraint.would_violate_cardinality(3) is True
+
+        # 4 users assigned — violated
+        assert constraint.would_violate_cardinality(4) is True
