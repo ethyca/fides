@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d9ee4ea46797"
-down_revision = "f85bd4c08401"
+down_revision = "d304f57aea6d"
 branch_labels = None
 depends_on = None
 
@@ -89,7 +89,10 @@ def upgrade():
     op.create_index(op.f("ix_rbac_role_id"), "rbac_role", ["id"], unique=False)
     op.create_index(op.f("ix_rbac_role_key"), "rbac_role", ["key"], unique=True)
     op.create_index(
-        op.f("ix_rbac_role_parent_role_id"), "rbac_role", ["parent_role_id"], unique=False
+        op.f("ix_rbac_role_parent_role_id"),
+        "rbac_role",
+        ["parent_role_id"],
+        unique=False,
     )
 
     # Create rbac_permission table
@@ -135,7 +138,9 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_rbac_permission_id"), "rbac_permission", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_rbac_permission_id"), "rbac_permission", ["id"], unique=False
+    )
     op.create_index(
         op.f("ix_rbac_permission_code"), "rbac_permission", ["code"], unique=True
     )
