@@ -1,4 +1,0 @@
-type: Changed
-description: Changed request received date to show MM/dd/yy format instead of relative time
-pr: 7298
-labels: []
