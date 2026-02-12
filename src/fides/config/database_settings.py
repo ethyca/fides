@@ -235,10 +235,14 @@ class DatabaseSettings(FidesSettings):
 
             # Fall back to primary password if readonly_password not provided
             if values.get("readonly_password") is None:
-                values["readonly_password"] = values.get("password")
+                values["readonly_password"] = DatabaseSettings.escape_password(
+                    values.get("password")
+                )
             # If readonly_password was provided directly, escape it
             elif isinstance(values.get("readonly_password"), str):
-                values["readonly_password"] = quote_plus(values["readonly_password"])
+                values["readonly_password"] = DatabaseSettings.escape_password(
+                    values["readonly_password"]
+                )
 
             # Fall back to primary port if readonly_port not provided
             if values.get("readonly_port") is None:
