@@ -74,8 +74,12 @@ const SSOProviderFormValidationSchema = Yup.object().shape({
   verify_email: Yup.boolean().optional().label("Verify Email"),
   verify_email_field: Yup.string()
     .optional()
+    .nullable()
     .label("Userinfo object verify email field"),
-  email_field: Yup.string().optional().label("Userinfo object email field"),
+  email_field: Yup.string()
+    .optional()
+    .nullable()
+    .label("Userinfo object email field"),
 });
 
 const CustomProviderExtraFields = () => {
