@@ -79,6 +79,14 @@ WORKER_STATS = "worker-stats"
 HEAP_DUMP = "heap_dump"
 BACKFILL = "backfill"
 
+# RBAC Management
+RBAC = "rbac"
+RBAC_ROLE = "rbac_role"
+RBAC_PERMISSION = "rbac_permission"
+RBAC_USER_ROLE = "rbac_user_role"
+RBAC_CONSTRAINT = "rbac_constraint"
+EVALUATE = "evaluate"
+
 ASSIGN_OWNERS = "assign_owners"
 
 CLIENT_CREATE = f"{CLIENT}:{CREATE}"
@@ -253,6 +261,22 @@ WEBHOOK_READ = f"{WEBHOOK}:{READ}"
 
 WORKER_STATS_READ = f"{WORKER_STATS}:{READ}"
 
+# RBAC Management scopes
+RBAC_ROLE_CREATE = f"{RBAC_ROLE}:{CREATE}"
+RBAC_ROLE_READ = f"{RBAC_ROLE}:{READ}"
+RBAC_ROLE_UPDATE = f"{RBAC_ROLE}:{UPDATE}"
+RBAC_ROLE_DELETE = f"{RBAC_ROLE}:{DELETE}"
+RBAC_PERMISSION_READ = f"{RBAC_PERMISSION}:{READ}"
+RBAC_USER_ROLE_CREATE = f"{RBAC_USER_ROLE}:{CREATE}"
+RBAC_USER_ROLE_READ = f"{RBAC_USER_ROLE}:{READ}"
+RBAC_USER_ROLE_UPDATE = f"{RBAC_USER_ROLE}:{UPDATE}"
+RBAC_USER_ROLE_DELETE = f"{RBAC_USER_ROLE}:{DELETE}"
+RBAC_CONSTRAINT_CREATE = f"{RBAC_CONSTRAINT}:{CREATE}"
+RBAC_CONSTRAINT_READ = f"{RBAC_CONSTRAINT}:{READ}"
+RBAC_CONSTRAINT_UPDATE = f"{RBAC_CONSTRAINT}:{UPDATE}"
+RBAC_CONSTRAINT_DELETE = f"{RBAC_CONSTRAINT}:{DELETE}"
+RBAC_EVALUATE = f"{RBAC}:{EVALUATE}"
+
 SCOPE_DOCS = {
     CONFIG_READ: "View the configuration",
     CONFIG_UPDATE: "Update the configuration",
@@ -378,6 +402,21 @@ SCOPE_DOCS = {
     WEBHOOK_DELETE: "Remove web hooks",
     WEBHOOK_READ: "View web hooks",
     WORKER_STATS_READ: "View worker statistics",
+    # RBAC Management scopes
+    RBAC_ROLE_CREATE: "Create custom roles",
+    RBAC_ROLE_READ: "Read role definitions",
+    RBAC_ROLE_UPDATE: "Update role definitions",
+    RBAC_ROLE_DELETE: "Delete custom roles",
+    RBAC_PERMISSION_READ: "Read permission definitions",
+    RBAC_USER_ROLE_CREATE: "Assign roles to users",
+    RBAC_USER_ROLE_READ: "Read user role assignments",
+    RBAC_USER_ROLE_UPDATE: "Update user role assignments",
+    RBAC_USER_ROLE_DELETE: "Remove roles from users",
+    RBAC_CONSTRAINT_CREATE: "Create role constraints",
+    RBAC_CONSTRAINT_READ: "Read role constraints",
+    RBAC_CONSTRAINT_UPDATE: "Update role constraints",
+    RBAC_CONSTRAINT_DELETE: "Delete role constraints",
+    RBAC_EVALUATE: "Evaluate user permissions",
 }
 
 SCOPE_REGISTRY = list(SCOPE_DOCS.keys())
