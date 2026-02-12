@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.3b2.dev22+gadd25424d"
+    "version": "2.78.3b2.dev23+g7d9a0cc9b"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -28920,6 +28920,12 @@
               }
             ],
             "title": "Rules"
+          },
+          "conditions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Conditions",
+            "default": {}
           }
         },
         "type": "object",
