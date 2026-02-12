@@ -213,14 +213,6 @@ class DatabaseSettings(FidesSettings):
         exclude=True,
     )
 
-    @field_validator("password", mode="before")
-    @classmethod
-    def escape_password(cls, value: Optional[str]) -> Optional[str]:
-        """Escape password"""
-        if value and isinstance(value, str):
-            return quote_plus(value)
-        return value
-
     @model_validator(mode="before")
     @classmethod
     def resolve_readonly_fields(cls, values: Dict) -> Dict:
@@ -235,14 +227,11 @@ class DatabaseSettings(FidesSettings):
 
             # Fall back to primary password if readonly_password not provided
             if values.get("readonly_password") is None:
-                values["readonly_password"] = DatabaseSettings.escape_password(
-                    values.get("password")
-                )
+                values["readonly_password"] = values.get("password")
+
             # If readonly_password was provided directly, escape it
             elif isinstance(values.get("readonly_password"), str):
-                values["readonly_password"] = DatabaseSettings.escape_password(
-                    values["readonly_password"]
-                )
+                values["readonly_password"] = values["readonly_password"]
 
             # Fall back to primary port if readonly_port not provided
             if values.get("readonly_port") is None:
@@ -257,6 +246,14 @@ class DatabaseSettings(FidesSettings):
                 values["readonly_params"] = values.get("params", {})
 
         return values
+
+    @field_validator("password", "readonly_password", mode="before")
+    @classmethod
+    def escape_password(cls, value: Optional[str]) -> Optional[str]:
+        """Escape password"""
+        if value and isinstance(value, str):
+            return quote_plus(value)
+        return value
 
     @field_validator("sync_database_uri", mode="before")
     @classmethod
