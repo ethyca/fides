@@ -7,21 +7,17 @@
 
 import {
   AIAnalysisEvidenceItem,
-  AnswerSource,
-  AnswerStatus,
   AssessmentMetadata,
   AssessmentQuestion,
   AssessmentStatus,
   EvidenceItem,
   ManualEntryEvidenceItem,
-  Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentDetailResponse,
   PrivacyAssessmentResponse,
   QuestionGroup,
   QuestionnaireQuestion,
   QuestionnaireStatus,
   QuestionnaireStatusResponse,
-  RiskLevel,
   SlackCommunicationEvidenceItem,
   SlackMessage,
   SystemEvidenceItem,
@@ -33,290 +29,6 @@ import {
 
 let assessmentIdCounter = 1;
 let evidenceIdCounter = 1;
-
-export const mockPrivacyAssessment = (
-  partial?: Partial<PrivacyAssessmentResponse>
-): PrivacyAssessmentResponse => {
-  const id = partial?.id ?? `assessment-${assessmentIdCounter++}`;
-  return {
-    id,
-    name: "Collect data for marketing",
-    template_id: "CPRA-RA-2024",
-    template_name: "CPRA Risk Assessment",
-    status: "in_progress",
-    status_updated_at: new Date().toISOString(),
-    risk_level: "medium",
-    completeness: 45,
-    system_fides_key: "demo_marketing_system",
-    system_name: "Demo Marketing System",
-    declaration_id: "collect_data_for_marketing",
-    declaration_name: "Collect data for marketing",
-    data_use: "marketing.advertising",
-    data_use_name: "Advertising",
-    data_categories: ["user.device.cookie_id"],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    ...partial,
-  };
-};
-
-export const mockSystemEvidence = (
-  partial?: Partial<SystemEvidenceItem>
-): SystemEvidenceItem => {
-  const id = partial?.id ?? `ev-sys-${evidenceIdCounter++}`;
-  return {
-    id,
-    type: "system",
-    created_at: new Date().toISOString(),
-    citation_number: 1,
-    source: {
-      source_type: "privacy_declaration",
-      source_key: "demo_marketing_system.marketing_advertising",
-      source_name: "Demo Marketing System - Advertising Declaration",
-    },
-    field: {
-      field_name: "data_use",
-      field_label: "Data Use",
-    },
-    value: "marketing.advertising",
-    value_display: "Marketing / Advertising",
-    ...partial,
-  };
-};
-
-export const mockAIAnalysisEvidence = (
-  partial?: Partial<AIAnalysisEvidenceItem>
-): AIAnalysisEvidenceItem => {
-  const id = partial?.id ?? `ev-ai-${evidenceIdCounter++}`;
-  return {
-    id,
-    type: "ai_analysis",
-    created_at: new Date().toISOString(),
-    citation_number: null,
-    model: {
-      model_id: "gpt-4",
-      model_version: "gpt-4-0125-preview",
-    },
-    analysis: {
-      input_summary: "Analyzed privacy declaration and data category mappings",
-      reasoning:
-        "Based on the data_use of marketing.advertising and presence of cookie_id, this processing involves cross-context behavioral advertising.",
-      confidence: 85,
-      confidence_label: "high",
-    },
-    sources_used: ["ev-sys-001", "ev-sys-002"],
-    ...partial,
-  };
-};
-
-export const mockManualEntryEvidence = (
-  partial?: Partial<ManualEntryEvidenceItem>
-): ManualEntryEvidenceItem => {
-  const id = partial?.id ?? `ev-manual-${evidenceIdCounter++}`;
-  return {
-    id,
-    type: "manual_entry",
-    created_at: new Date().toISOString(),
-    citation_number: 5,
-    author: {
-      user_id: "user_abc123",
-      user_name: "Jack Gale",
-      user_email: "jack@example.com",
-      role: "Privacy Officer",
-    },
-    entry: {
-      previous_value: null,
-      new_value:
-        "Processing involves ML analysis of customer purchase history and browsing behavior for personalized recommendations.",
-      edit_reason: "Added details from internal documentation",
-    },
-    ...partial,
-  };
-};
-
-export const mockSlackMessage = (
-  partial?: Partial<SlackMessage>
-): SlackMessage => ({
-  message_id: `msg-${Date.now()}`,
-  timestamp: new Date().toISOString(),
-  sender: {
-    user_id: "U001",
-    user_name: "jack.gale",
-    display_name: "Jack Gale",
-    avatar_url: null,
-  },
-  content: {
-    text: "Sample message",
-    is_bot_message: false,
-    attachments: [],
-  },
-  reactions: [],
-  reply_to_message_id: null,
-  ...partial,
-});
-
-export const mockSlackCommunicationEvidence = (
-  partial?: Partial<SlackCommunicationEvidenceItem>
-): SlackCommunicationEvidenceItem => {
-  const id = partial?.id ?? `ev-slack-${evidenceIdCounter++}`;
-  return {
-    id,
-    type: "slack_communication",
-    created_at: new Date().toISOString(),
-    citation_number: 9,
-    channel: {
-      channel_id: "C123ABC",
-      channel_name: "#privacy-team",
-    },
-    thread: {
-      thread_id: "1705234200.123456",
-      thread_url:
-        "https://workspace.slack.com/archives/C123ABC/p1705234200123456",
-      started_at: new Date().toISOString(),
-      message_count: 3,
-      participant_count: 2,
-    },
-    messages: [
-      mockSlackMessage({
-        message_id: "msg-001",
-        timestamp: "2025-01-14T10:30:00Z",
-        sender: {
-          user_id: "U001",
-          user_name: "jack.gale",
-          display_name: "Jack Gale",
-          avatar_url: null,
-        },
-        content: {
-          text: "Does anyone know if we use any automated decision-making for the marketing personalization?",
-          is_bot_message: false,
-          attachments: [],
-        },
-      }),
-      mockSlackMessage({
-        message_id: "msg-002",
-        timestamp: "2025-01-14T11:15:00Z",
-        sender: {
-          user_id: "U002",
-          user_name: "emily.rodriguez",
-          display_name: "Emily Rodriguez",
-          avatar_url: null,
-        },
-        content: {
-          text: "I checked with the engineering team - we use ML models for recommendations but no automated decisions that have legal effects on users.",
-          is_bot_message: false,
-          attachments: [],
-        },
-        reactions: [
-          { emoji: "white_check_mark", count: 2, users: ["U001", "U003"] },
-        ],
-        reply_to_message_id: "msg-001",
-      }),
-      mockSlackMessage({
-        message_id: "msg-003",
-        timestamp: "2025-01-14T11:45:00Z",
-        sender: {
-          user_id: "U001",
-          user_name: "jack.gale",
-          display_name: "Jack Gale",
-          avatar_url: null,
-        },
-        content: {
-          text: "Thanks Emily! So we can confirm no ADMT is used for this processing activity.",
-          is_bot_message: false,
-          attachments: [],
-        },
-        reply_to_message_id: "msg-002",
-      }),
-    ],
-    summary:
-      "Confirmed that no automated decision-making technology (ADMT) is used for marketing personalization - only ML recommendations without legal effects.",
-    ...partial,
-  };
-};
-
-export const mockAssessmentQuestion = (
-  partial?: Partial<AssessmentQuestion>
-): AssessmentQuestion => ({
-  id: "1.1",
-  question_id: "cpra_1_1",
-  question_text: "What is the name and description of this processing activity?",
-  guidance: "Describe the processing activity in detail.",
-  required: true,
-  fides_sources: ["system", "privacy_declaration"],
-  expected_coverage: "full",
-  answer_text:
-    "Collect data for marketing - Collect data about our users for marketing. [1]",
-  answer_status: "complete",
-  answer_source: "system",
-  confidence: 95,
-  evidence: [],
-  missing_data: [],
-  sme_prompt: null,
-  ...partial,
-});
-
-export const mockQuestionGroup = (
-  partial?: Partial<QuestionGroup>
-): QuestionGroup => ({
-  id: "1",
-  title: "Processing Scope and Purpose(s)",
-  requirement_key: "processing_scope",
-  questions: [],
-  answered_count: 2,
-  total_count: 5,
-  risk_level: "low",
-  last_updated_at: new Date().toISOString(),
-  last_updated_by: "Jack Gale",
-  ...partial,
-});
-
-export const mockQuestionnaireStatus = (
-  partial?: Partial<QuestionnaireStatus>
-): QuestionnaireStatus => ({
-  sent_at: new Date().toISOString(),
-  channel: "#privacy-team",
-  total_questions: 8,
-  answered_questions: 3,
-  last_reminder_at: null,
-  reminder_count: 0,
-  ...partial,
-});
-
-export const mockQuestionnaireStatusResponse = (
-  partial?: Partial<QuestionnaireStatusResponse>
-): QuestionnaireStatusResponse => ({
-  assessment_id: "assessment-1",
-  sent_at: new Date().toISOString(),
-  channel: "#privacy-team",
-  total_questions: 8,
-  answered_questions: 3,
-  pending_questions: 5,
-  progress_percentage: 37.5,
-  questions: [],
-  last_reminder_at: null,
-  reminder_count: 0,
-  ...partial,
-});
-
-export const mockAssessmentMetadata = (
-  partial?: Partial<AssessmentMetadata>
-): AssessmentMetadata => ({
-  generation_timestamp: new Date().toISOString(),
-  model_used: "gpt-4",
-  use_llm: true,
-  ...partial,
-});
-
-export const mockPrivacyAssessmentDetail = (
-  partial?: Partial<PrivacyAssessmentDetailResponse>
-): PrivacyAssessmentDetailResponse => ({
-  ...mockPrivacyAssessment(),
-  assessment_type: "cpra",
-  question_groups: MOCK_CPRA_QUESTION_GROUPS,
-  questionnaire: null,
-  metadata: mockAssessmentMetadata(),
-  ...partial,
-});
 
 // =============================================================================
 // Pre-built Mock Data - CPRA Question Groups
@@ -570,7 +282,8 @@ export const MOCK_CPRA_QUESTION_GROUPS: QuestionGroup[] = [
         question_id: "cpra_3_1",
         question_text:
           "What categories of personal information are collected and processed?",
-        guidance: "List all categories of personal information that are processed.",
+        guidance:
+          "List all categories of personal information that are processed.",
         required: true,
         fides_sources: ["data_category", "privacy_declaration"],
         expected_coverage: "full",
@@ -643,6 +356,296 @@ export const MOCK_CPRA_QUESTION_GROUPS: QuestionGroup[] = [
     ],
   },
 ];
+
+export const mockPrivacyAssessment = (
+  partial?: Partial<PrivacyAssessmentResponse>,
+): PrivacyAssessmentResponse => {
+  const id = partial?.id ?? `assessment-${assessmentIdCounter}`;
+  assessmentIdCounter += 1;
+  return {
+    id,
+    name: "Collect data for marketing",
+    template_id: "CPRA-RA-2024",
+    template_name: "CPRA Risk Assessment",
+    status: "in_progress",
+    status_updated_at: new Date().toISOString(),
+    risk_level: "medium",
+    completeness: 45,
+    system_fides_key: "demo_marketing_system",
+    system_name: "Demo Marketing System",
+    declaration_id: "collect_data_for_marketing",
+    declaration_name: "Collect data for marketing",
+    data_use: "marketing.advertising",
+    data_use_name: "Advertising",
+    data_categories: ["user.device.cookie_id"],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    ...partial,
+  };
+};
+
+export const mockSystemEvidence = (
+  partial?: Partial<SystemEvidenceItem>,
+): SystemEvidenceItem => {
+  const id = partial?.id ?? `ev-sys-${evidenceIdCounter}`;
+  evidenceIdCounter += 1;
+  return {
+    id,
+    type: "system",
+    created_at: new Date().toISOString(),
+    citation_number: 1,
+    source: {
+      source_type: "privacy_declaration",
+      source_key: "demo_marketing_system.marketing_advertising",
+      source_name: "Demo Marketing System - Advertising Declaration",
+    },
+    field: {
+      field_name: "data_use",
+      field_label: "Data Use",
+    },
+    value: "marketing.advertising",
+    value_display: "Marketing / Advertising",
+    ...partial,
+  };
+};
+
+export const mockAIAnalysisEvidence = (
+  partial?: Partial<AIAnalysisEvidenceItem>,
+): AIAnalysisEvidenceItem => {
+  const id = partial?.id ?? `ev-ai-${evidenceIdCounter}`;
+  evidenceIdCounter += 1;
+  return {
+    id,
+    type: "ai_analysis",
+    created_at: new Date().toISOString(),
+    citation_number: null,
+    model: {
+      model_id: "gpt-4",
+      model_version: "gpt-4-0125-preview",
+    },
+    analysis: {
+      input_summary: "Analyzed privacy declaration and data category mappings",
+      reasoning:
+        "Based on the data_use of marketing.advertising and presence of cookie_id, this processing involves cross-context behavioral advertising.",
+      confidence: 85,
+      confidence_label: "high",
+    },
+    sources_used: ["ev-sys-001", "ev-sys-002"],
+    ...partial,
+  };
+};
+
+export const mockManualEntryEvidence = (
+  partial?: Partial<ManualEntryEvidenceItem>,
+): ManualEntryEvidenceItem => {
+  const id = partial?.id ?? `ev-manual-${evidenceIdCounter}`;
+  evidenceIdCounter += 1;
+  return {
+    id,
+    type: "manual_entry",
+    created_at: new Date().toISOString(),
+    citation_number: 5,
+    author: {
+      user_id: "user_abc123",
+      user_name: "Jack Gale",
+      user_email: "jack@example.com",
+      role: "Privacy Officer",
+    },
+    entry: {
+      previous_value: null,
+      new_value:
+        "Processing involves ML analysis of customer purchase history and browsing behavior for personalized recommendations.",
+      edit_reason: "Added details from internal documentation",
+    },
+    ...partial,
+  };
+};
+
+export const mockSlackMessage = (
+  partial?: Partial<SlackMessage>,
+): SlackMessage => ({
+  message_id: `msg-${Date.now()}`,
+  timestamp: new Date().toISOString(),
+  sender: {
+    user_id: "U001",
+    user_name: "jack.gale",
+    display_name: "Jack Gale",
+    avatar_url: null,
+  },
+  content: {
+    text: "Sample message",
+    is_bot_message: false,
+    attachments: [],
+  },
+  reactions: [],
+  reply_to_message_id: null,
+  ...partial,
+});
+
+export const mockSlackCommunicationEvidence = (
+  partial?: Partial<SlackCommunicationEvidenceItem>,
+): SlackCommunicationEvidenceItem => {
+  const id = partial?.id ?? `ev-slack-${evidenceIdCounter}`;
+  evidenceIdCounter += 1;
+  return {
+    id,
+    type: "slack_communication",
+    created_at: new Date().toISOString(),
+    citation_number: 9,
+    channel: {
+      channel_id: "C123ABC",
+      channel_name: "#privacy-team",
+    },
+    thread: {
+      thread_id: "1705234200.123456",
+      thread_url:
+        "https://workspace.slack.com/archives/C123ABC/p1705234200123456",
+      started_at: new Date().toISOString(),
+      message_count: 3,
+      participant_count: 2,
+    },
+    messages: [
+      mockSlackMessage({
+        message_id: "msg-001",
+        timestamp: "2025-01-14T10:30:00Z",
+        sender: {
+          user_id: "U001",
+          user_name: "jack.gale",
+          display_name: "Jack Gale",
+          avatar_url: null,
+        },
+        content: {
+          text: "Does anyone know if we use any automated decision-making for the marketing personalization?",
+          is_bot_message: false,
+          attachments: [],
+        },
+      }),
+      mockSlackMessage({
+        message_id: "msg-002",
+        timestamp: "2025-01-14T11:15:00Z",
+        sender: {
+          user_id: "U002",
+          user_name: "emily.rodriguez",
+          display_name: "Emily Rodriguez",
+          avatar_url: null,
+        },
+        content: {
+          text: "I checked with the engineering team - we use ML models for recommendations but no automated decisions that have legal effects on users.",
+          is_bot_message: false,
+          attachments: [],
+        },
+        reactions: [
+          { emoji: "white_check_mark", count: 2, users: ["U001", "U003"] },
+        ],
+        reply_to_message_id: "msg-001",
+      }),
+      mockSlackMessage({
+        message_id: "msg-003",
+        timestamp: "2025-01-14T11:45:00Z",
+        sender: {
+          user_id: "U001",
+          user_name: "jack.gale",
+          display_name: "Jack Gale",
+          avatar_url: null,
+        },
+        content: {
+          text: "Thanks Emily! So we can confirm no ADMT is used for this processing activity.",
+          is_bot_message: false,
+          attachments: [],
+        },
+        reply_to_message_id: "msg-002",
+      }),
+    ],
+    summary:
+      "Confirmed that no automated decision-making technology (ADMT) is used for marketing personalization - only ML recommendations without legal effects.",
+    ...partial,
+  };
+};
+
+export const mockAssessmentQuestion = (
+  partial?: Partial<AssessmentQuestion>,
+): AssessmentQuestion => ({
+  id: "1.1",
+  question_id: "cpra_1_1",
+  question_text:
+    "What is the name and description of this processing activity?",
+  guidance: "Describe the processing activity in detail.",
+  required: true,
+  fides_sources: ["system", "privacy_declaration"],
+  expected_coverage: "full",
+  answer_text:
+    "Collect data for marketing - Collect data about our users for marketing. [1]",
+  answer_status: "complete",
+  answer_source: "system",
+  confidence: 95,
+  evidence: [],
+  missing_data: [],
+  sme_prompt: null,
+  ...partial,
+});
+
+export const mockQuestionGroup = (
+  partial?: Partial<QuestionGroup>,
+): QuestionGroup => ({
+  id: "1",
+  title: "Processing Scope and Purpose(s)",
+  requirement_key: "processing_scope",
+  questions: [],
+  answered_count: 2,
+  total_count: 5,
+  risk_level: "low",
+  last_updated_at: new Date().toISOString(),
+  last_updated_by: "Jack Gale",
+  ...partial,
+});
+
+export const mockQuestionnaireStatus = (
+  partial?: Partial<QuestionnaireStatus>,
+): QuestionnaireStatus => ({
+  sent_at: new Date().toISOString(),
+  channel: "#privacy-team",
+  total_questions: 8,
+  answered_questions: 3,
+  last_reminder_at: null,
+  reminder_count: 0,
+  ...partial,
+});
+
+export const mockQuestionnaireStatusResponse = (
+  partial?: Partial<QuestionnaireStatusResponse>,
+): QuestionnaireStatusResponse => ({
+  assessment_id: "assessment-1",
+  sent_at: new Date().toISOString(),
+  channel: "#privacy-team",
+  total_questions: 8,
+  answered_questions: 3,
+  pending_questions: 5,
+  progress_percentage: 37.5,
+  questions: [],
+  last_reminder_at: null,
+  reminder_count: 0,
+  ...partial,
+});
+
+export const mockAssessmentMetadata = (
+  partial?: Partial<AssessmentMetadata>,
+): AssessmentMetadata => ({
+  generation_timestamp: new Date().toISOString(),
+  model_used: "gpt-4",
+  use_llm: true,
+  ...partial,
+});
+
+export const mockPrivacyAssessmentDetail = (
+  partial?: Partial<PrivacyAssessmentDetailResponse>,
+): PrivacyAssessmentDetailResponse => ({
+  ...mockPrivacyAssessment(),
+  assessment_type: "cpra",
+  question_groups: MOCK_CPRA_QUESTION_GROUPS,
+  questionnaire: null,
+  metadata: mockAssessmentMetadata(),
+  ...partial,
+});
 
 // =============================================================================
 // Pre-built Mock Data - Evidence Items
@@ -895,7 +898,7 @@ export const calculateCompleteness = (groups: QuestionGroup[]): number => {
     return 0;
   }
   const answeredCount = allQuestions.filter(
-    (q) => q.answer_text.trim().length > 0
+    (q) => q.answer_text.trim().length > 0,
   ).length;
   return Math.round((answeredCount / allQuestions.length) * 100);
 };
@@ -915,7 +918,7 @@ export const determineStatus = (completeness: number): AssessmentStatus => {
  */
 export const getEvidenceForGroup = (
   groupId: string,
-  evidence: EvidenceItem[]
+  evidence: EvidenceItem[],
 ): EvidenceItem[] => {
   // In a real implementation, evidence would be linked to specific questions
   // For mock purposes, we distribute evidence across groups
