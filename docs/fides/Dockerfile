@@ -7,6 +7,7 @@ RUN apt-get update && \
     gcc \
     git \
     python3-wheel \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -24,11 +25,18 @@ RUN apt-get update && \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
 
+# Create venv and install with uv (reads [tool.uv.extra-build-dependencies] from pyproject.toml)
+RUN uv venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 COPY . .
-RUN pip install -U pip setuptools==80.10.2 wheel && pip install --no-build-isolation . && pip install --no-build-isolation -r docs/fides/requirements.txt
+# Pin setuptools so legacy deps (flatdict, scylla-driver) get pkg_resources in build isolation
+RUN uv pip install --python /opt/venv/bin/python setuptools==80.10.2 wheel
+RUN uv pip install --python /opt/venv/bin/python . && \
+    uv pip install --python /opt/venv/bin/python -r docs/fides/requirements.txt
 
 
 FROM python:3.13-slim-bookworm AS docs
@@ -42,6 +50,9 @@ RUN apt-get update && \
     git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Copy uv from build stage so runtime commands can use it (e.g. uv pip install -e /fides when repo is mounted)
+COPY --from=build /root/.local/bin/uv /usr/local/bin/uv
 
 WORKDIR /docs
 

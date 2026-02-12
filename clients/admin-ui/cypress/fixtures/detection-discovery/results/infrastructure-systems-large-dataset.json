@@ -1,0 +1,74 @@
+{
+  "items": [
+    {
+      "urn": "urn:okta:app:app-1",
+      "name": "App 1",
+      "description": "First app",
+      "resource_type": "okta_app",
+      "diff_status": "addition",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "monitor_config_id": "my_infrastructure_monitor_1",
+      "system": "Okta Identity Provider",
+      "metadata": {
+        "app_type": "SAML_2_0",
+        "status": "ACTIVE"
+      },
+      "vendor_id": "fds.app1",
+      "system_id": "okta_system_1",
+      "system_key": null,
+      "preferred_data_uses": [],
+      "data_uses": [],
+      "user_assigned_data_categories": null,
+      "user_assigned_data_uses": null,
+      "user_assigned_system_key": null
+    },
+    {
+      "urn": "urn:okta:app:app-2",
+      "name": "App 2",
+      "description": "Second app",
+      "resource_type": "okta_app",
+      "diff_status": "addition",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "monitor_config_id": "my_infrastructure_monitor_1",
+      "system": "Okta Identity Provider",
+      "metadata": {
+        "app_type": "SAML_2_0",
+        "status": "ACTIVE"
+      },
+      "vendor_id": "fds.app2",
+      "system_id": "okta_system_2",
+      "system_key": null,
+      "preferred_data_uses": [],
+      "data_uses": [],
+      "user_assigned_data_categories": null,
+      "user_assigned_data_uses": null,
+      "user_assigned_system_key": null
+    },
+    {
+      "urn": "urn:okta:app:app-3",
+      "name": "App 3",
+      "description": "Third app",
+      "resource_type": "okta_app",
+      "diff_status": "addition",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "monitor_config_id": "my_infrastructure_monitor_1",
+      "system": "Okta Identity Provider",
+      "metadata": {
+        "app_type": "SAML_2_0",
+        "status": "ACTIVE"
+      },
+      "vendor_id": "fds.app3",
+      "system_id": "okta_system_3",
+      "system_key": null,
+      "preferred_data_uses": [],
+      "data_uses": [],
+      "user_assigned_data_categories": null,
+      "user_assigned_data_uses": null,
+      "user_assigned_system_key": null
+    }
+  ],
+  "total": 100,
+  "page": 1,
+  "size": 50,
+  "pages": 2
+}

@@ -114,7 +114,6 @@ export {
   VStack as ChakraVStack,
   Wrap as ChakraWrap,
   createStandaloneToast as createChakraStandaloneToast,
-  extendTheme as extendChakraTheme,
   getCSSVar as getChakraCSSVar,
 } from "@chakra-ui/react";
 

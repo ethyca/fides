@@ -163,6 +163,11 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_descendant ON stagedresourceancestor (descendant_urn)",
             "type": "index",
         },
+        {
+            "name": "ix_staged_resource_ancestor_desc_anc_dist",
+            "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_desc_anc_dist ON stagedresourceancestor (descendant_urn, ancestor_urn, distance)",
+            "type": "index",
+        },
     ],
     "stagedresource": [
         {

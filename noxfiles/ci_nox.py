@@ -115,7 +115,6 @@ def xenon(session: nox.Session) -> None:
         "--max-modules=B",
         "--max-average=A",
         "--ignore=data,docs",
-        "--exclude=src/fides/_version.py",
     )
     session.run(*command, success_codes=[0, 1])
     session.warn(
@@ -136,7 +135,8 @@ def check_install(session: nox.Session) -> None:
 
     This is also a good sanity check for correct syntax.
     """
-    session.install("setuptools==80.10.2", "wheel", "versioneer-518")
+    # Build deps must be in env when using --no-build-isolation (hatchling is build-backend).
+    session.install("hatchling", "hatch-vcs", "setuptools==80.10.2", "wheel")
     session.install("--no-build-isolation", ".")
 
     REQUIRED_ENV_VARS = {
@@ -455,13 +455,8 @@ def pytest(session: nox.Session, test_group: str) -> None:
 )
 def python_build(session: nox.Session, dist: str) -> None:
     "Build the Python distribution."
-    session.run(
-        *RUN_NO_DEPS,
-        "python",
-        "setup.py",
-        dist,
-        external=True,
-    )
+    build_arg = "--sdist" if dist == "sdist" else "--wheel"
+    session.run(*RUN_NO_DEPS, "uv", "build", build_arg, external=True)
 
 
 @nox_session()
@@ -469,6 +464,11 @@ def check_worker_startup(session: Session) -> None:
     """
     Check that the main 'worker-dsr' service can start up successfully using docker compose --wait.
     Relies on the healthcheck defined in docker-compose.yml.
+
+    Uses image ethyca/fides:local. To match CI (prod image), build it first:
+      uv run nox -s "build(test)"
+    then run:
+      uv run nox -s check_worker_startup
     """
     worker_service = "worker-dsr"
     session.log(f"Attempting to start and wait for service: {worker_service}")
