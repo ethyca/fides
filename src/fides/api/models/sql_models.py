@@ -51,9 +51,10 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.rbac import (
+    RBACConstraint,
+    RBACConstraintRole,
     RBACPermission,
     RBACRole,
-    RBACRoleConstraint,
     RBACRolePermission,
     RBACUserRole,
 )
@@ -881,7 +882,8 @@ sql_model_map: Dict = {
     "rbac_permission": RBACPermission,
     "rbac_role_permission": RBACRolePermission,
     "rbac_user_role": RBACUserRole,
-    "rbac_role_constraint": RBACRoleConstraint,
+    "rbac_constraint": RBACConstraint,
+    "rbac_constraint_role": RBACConstraintRole,
 }
 
 

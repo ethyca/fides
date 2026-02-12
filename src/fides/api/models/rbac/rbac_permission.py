@@ -1,4 +1,11 @@
-"""RBAC Permission model for storing permission definitions."""
+"""RBAC Permission model for storing permission definitions.
+
+Implements the Permissions component of the NIST RBAC standard (ANSI/INCITS 359-2004).
+Permissions are the atomic units of access control, mapped to roles via the
+rbac_role_permission junction table (Permission-Role Assignment, PA).
+
+See: https://csrc.nist.gov/projects/role-based-access-control
+"""
 
 from __future__ import annotations
 

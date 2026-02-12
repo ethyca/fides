@@ -1,4 +1,10 @@
-"""RBAC Role-Permission junction table."""
+"""RBAC Role-Permission junction table.
+
+Implements Permission-Role Assignment (PA) from the NIST RBAC standard
+(ANSI/INCITS 359-2004). Each row maps a permission directly to a role.
+
+See: https://csrc.nist.gov/projects/role-based-access-control
+"""
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr

@@ -2109,8 +2109,8 @@ dataset:
       data_categories: [system.operations]
     - name: priority
       data_categories: [system.operations]
-  - name: rbac_role_constraint
-    description: 'Separation of duties and cardinality constraints for RBAC roles'
+  - name: rbac_constraint
+    description: 'NIST RBAC constraint definitions (SoD and cardinality) with role sets and thresholds'
     fields:
     - name: id
       data_categories: [system.operations]
@@ -2122,15 +2122,20 @@ dataset:
       data_categories: [system.operations]
     - name: constraint_type
       data_categories: [system.operations]
-    - name: role_id_1
-      data_categories: [system.operations]
-    - name: role_id_2
-      data_categories: [system.operations]
-    - name: max_users
+    - name: threshold
       data_categories: [system.operations]
     - name: description
       data_categories: [system.operations]
     - name: is_active
+      data_categories: [system.operations]
+  - name: rbac_constraint_role
+    description: 'Junction table linking roles to NIST RBAC constraints (role_set members)'
+    fields:
+    - name: constraint_id
+      data_categories: [system.operations]
+    - name: role_id
+      data_categories: [system.operations]
+    - name: created_at
       data_categories: [system.operations]
   - name: rbac_role_permission
     description: 'Junction table mapping roles to permissions'

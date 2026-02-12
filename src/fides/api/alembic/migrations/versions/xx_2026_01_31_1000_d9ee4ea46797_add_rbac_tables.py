@@ -274,9 +274,12 @@ def upgrade():
         op.f("ix_rbac_user_role_role_id"), "rbac_user_role", ["role_id"], unique=False
     )
 
-    # Create rbac_role_constraint table
+    # Create rbac_constraint table
+    # Implements NIST RBAC (ANSI/INCITS 359-2004) constraint model:
+    # SSD(role_set, n) and DSD(role_set, n) where role_set is linked via
+    # rbac_constraint_role junction table and n is the threshold column.
     op.create_table(
-        "rbac_role_constraint",
+        "rbac_constraint",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "created_at",
@@ -300,25 +303,17 @@ def upgrade():
             "constraint_type",
             sa.String(length=50),
             nullable=False,
-            comment="Type of constraint: static_sod, dynamic_sod, or cardinality",
+            comment="Type of constraint: static_sod, dynamic_sod, or cardinality (per NIST RBAC)",
         ),
         sa.Column(
-            "role_id_1",
-            sa.String(length=255),
-            nullable=False,
-            comment="First role in the constraint (required for all types)",
-        ),
-        sa.Column(
-            "role_id_2",
-            sa.String(length=255),
-            nullable=True,
-            comment="Second role in the constraint (required for SoD, NULL for cardinality)",
-        ),
-        sa.Column(
-            "max_users",
+            "threshold",
             sa.Integer(),
-            nullable=True,
-            comment="Maximum number of users for cardinality constraint",
+            nullable=False,
+            comment=(
+                "NIST 'n' value. For SoD: max roles from set a user can hold/activate "
+                "(e.g. 2 = mutual exclusion for a 2-role set). "
+                "For cardinality: max users that can hold any role in the set."
+            ),
         ),
         sa.Column(
             "description",
@@ -333,48 +328,57 @@ def upgrade():
             nullable=False,
             comment="Whether this constraint is currently enforced",
         ),
-        sa.ForeignKeyConstraint(
-            ["role_id_1"],
-            ["rbac_role.id"],
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
-            ["role_id_2"],
-            ["rbac_role.id"],
-            ondelete="CASCADE",
-        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_rbac_role_constraint_id"),
-        "rbac_role_constraint",
+        op.f("ix_rbac_constraint_id"),
+        "rbac_constraint",
         ["id"],
         unique=False,
     )
-    op.create_index(
-        op.f("ix_rbac_role_constraint_role_id_1"),
-        "rbac_role_constraint",
-        ["role_id_1"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_rbac_role_constraint_role_id_2"),
-        "rbac_role_constraint",
-        ["role_id_2"],
-        unique=False,
+
+    # Create rbac_constraint_role junction table (composite PK)
+    # Links roles to constraints, forming the role_set in NIST SSD/DSD definitions.
+    op.create_table(
+        "rbac_constraint_role",
+        sa.Column(
+            "constraint_id",
+            sa.String(length=255),
+            nullable=False,
+            comment="FK to rbac_constraint",
+        ),
+        sa.Column(
+            "role_id",
+            sa.String(length=255),
+            nullable=False,
+            comment="FK to rbac_role",
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+            comment="When this role was added to the constraint set",
+        ),
+        sa.ForeignKeyConstraint(
+            ["constraint_id"],
+            ["rbac_constraint.id"],
+            ondelete="CASCADE",
+        ),
+        sa.ForeignKeyConstraint(
+            ["role_id"],
+            ["rbac_role.id"],
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint("constraint_id", "role_id"),
     )
 
 
 def downgrade():
     # Drop tables in reverse order of creation
-    op.drop_index(
-        op.f("ix_rbac_role_constraint_role_id_2"), table_name="rbac_role_constraint"
-    )
-    op.drop_index(
-        op.f("ix_rbac_role_constraint_role_id_1"), table_name="rbac_role_constraint"
-    )
-    op.drop_index(op.f("ix_rbac_role_constraint_id"), table_name="rbac_role_constraint")
-    op.drop_table("rbac_role_constraint")
+    op.drop_table("rbac_constraint_role")
+    op.drop_index(op.f("ix_rbac_constraint_id"), table_name="rbac_constraint")
+    op.drop_table("rbac_constraint")
 
     op.drop_index(op.f("ix_rbac_user_role_role_id"), table_name="rbac_user_role")
     op.drop_index(op.f("ix_rbac_user_role_user_id"), table_name="rbac_user_role")
