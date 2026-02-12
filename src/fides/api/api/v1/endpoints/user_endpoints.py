@@ -38,10 +38,12 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER, EXTERNAL_RESPONDENT, VIEWER
 from fides.api.oauth.utils import (
+    PermissionCheckerCallback,
     create_temporary_user_for_login_flow,
     extract_payload,
     extract_token_and_load_client,
     get_current_user,
+    get_permission_checker,
     has_permissions,
     oauth2_scheme,
     verify_oauth_client,
@@ -115,6 +117,7 @@ def _validate_current_user(user_id: str, user_from_token: FidesUser) -> None:
 def verify_user_read_scopes(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> ClientDetail:
     """
     Custom dependency that verifies the user has either user:read or user:read-own scope.
@@ -128,6 +131,7 @@ def verify_user_read_scopes(
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ]),
         db=db,
+        permission_checker=permission_checker,
     ):
         return client
 
@@ -136,6 +140,7 @@ def verify_user_read_scopes(
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ_OWN]),
         db=db,
+        permission_checker=permission_checker,
     ):
         return client
 
@@ -158,6 +163,7 @@ async def update_user(
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
     data: UserUpdate,
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> FidesUser:
     """
     Update a user given a `user_id`. If the user is not updating their own data,
@@ -175,6 +181,7 @@ async def update_user(
             security_scopes=Security(verify_oauth_client, scopes=[USER_UPDATE]),
             authorization=authorization,
             db=db,
+            permission_checker=permission_checker,
         )
 
     user.update(db=db, data=data.model_dump(mode="json"))
@@ -385,6 +392,7 @@ async def get_managed_systems(
     authorization: str = Security(oauth2_scheme),
     current_user: FidesUser = Depends(get_current_user),
     user_id: str,
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> List[SystemSchema]:
     """
     Endpoint to retrieve all the systems for which a user is "system manager".
@@ -403,6 +411,7 @@ async def get_managed_systems(
         security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
         authorization=authorization,
         db=db,
+        permission_checker=permission_checker,
     )
     logger.info("Getting systems for which user {} is system manager", user_id)
     return user.systems
@@ -419,6 +428,7 @@ async def get_managed_system_details(
     user_id: str,
     system_key: FidesKey,
     current_user: FidesUser = Depends(get_current_user),
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> SystemSchema:
     """
     Endpoint to retrieve a single system managed by the given user.
@@ -432,6 +442,7 @@ async def get_managed_system_details(
             security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
             authorization=authorization,
             db=db,
+            permission_checker=permission_checker,
         )
         user = validate_user_id(db, user_id)
 
@@ -572,6 +583,7 @@ def get_user(
     user_id: str,
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> FidesUser:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
     user: Optional[FidesUser] = FidesUser.get_by_key_or_id(db, data={"id": user_id})
@@ -586,6 +598,7 @@ def get_user(
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ]),
         db=db,
+        permission_checker=permission_checker,
     ):
         logger.debug("Returning user with id: '{}'.", user_id)
         return user
@@ -615,6 +628,7 @@ def get_users(
     exclude_approvers: bool = False,
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> AbstractPage[FidesUser]:
     """Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data."""
     query = FidesUser.query(db)
@@ -627,6 +641,7 @@ def get_users(
         client=client,
         endpoint_scopes=SecurityScopes([USER_READ]),
         db=db,
+        permission_checker=permission_checker,
     ):
         # User has USER_READ scope, can see all users
         if username:

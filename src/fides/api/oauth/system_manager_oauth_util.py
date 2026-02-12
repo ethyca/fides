@@ -15,8 +15,11 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.system_manager import SYSTEM_MANAGER_SCOPES
 from fides.api.oauth.utils import (
+    PermissionCheckerCallback,
     copy_func,
+    default_has_permissions,
     extract_token_and_load_client,
+    get_permission_checker,
     has_permissions,
     has_scope_subset,
     oauth2_scheme,
@@ -78,6 +81,7 @@ async def verify_oauth_client_for_system_from_request_body(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
     system_auth_data: SystemAuthContainer = Depends(_get_system_from_request_body),
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> Union[str, System]:
     """
     Verifies that the access token provided in the authorization header contains the necessary scopes to be
@@ -94,6 +98,7 @@ async def verify_oauth_client_for_system_from_request_body(
         authorization=authorization,
         security_scopes=security_scopes,
         db=db,
+        permission_checker=permission_checker,
     )
     return system
 
@@ -103,6 +108,7 @@ async def verify_oauth_client_for_system_from_fides_key(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
     system_auth_data: SystemAuthContainer = Depends(_get_system_from_fides_key),
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> str:
     """
     Verifies that the access token provided in the authorization header contains the necessary scopes to be
@@ -118,6 +124,7 @@ async def verify_oauth_client_for_system_from_fides_key(
         authorization=authorization,
         security_scopes=security_scopes,
         db=db,
+        permission_checker=permission_checker,
     )
     assert isinstance(system, str)
     return system
@@ -128,6 +135,7 @@ def has_system_permissions(
     authorization: str,
     security_scopes: SecurityScopes,
     db: Session,
+    permission_checker: PermissionCheckerCallback = default_has_permissions,
 ) -> Union[str, System]:
     """
     Helper method that verifies that the token has the proper permissions to access the system(s).
@@ -139,8 +147,12 @@ def has_system_permissions(
         authorization, db
     )  # Can raise permission errors if issues with client or token
 
-    has_model_level_permissions: bool = has_permissions(  # Token has the correct scope(s) or role(s) associated with the correct scopes
-        token_data, client, security_scopes, db=db
+    has_model_level_permissions: bool = has_permissions(
+        token_data,
+        client,
+        security_scopes,
+        db=db,
+        permission_checker=permission_checker,
     )
     has_system_manager_permissions: bool = _has_scope_as_system_manager(  # Token indicates system manager permissions of the current system(s)
         token_data, client, security_scopes, system_auth_data.system
