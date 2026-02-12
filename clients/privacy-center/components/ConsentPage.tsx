@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useQuery } from "~/app/queryClient";
 import { useLocalStorage } from "~/common/hooks";
 import useI18n from "~/common/hooks/useI18n";
 import { ErrorToastOptions } from "~/common/toast-options";
@@ -72,6 +73,17 @@ const ConsentPage: NextPage = () => {
     getConsentRequestPreferencesQueryTrigger,
     getConsentRequestPreferencesQueryResult,
   ] = useLazyGetConsentRequestPreferencesQuery();
+  const { data: consentRequestPreferences } = useQuery(
+    "/api/v1/consent-request/{consent_request_id}/preferences",
+    {
+      params: {
+        path: {
+          consent_request_id: consentRequestId,
+        },
+      },
+    },
+  );
+  console.log(consentRequestPreferences);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
 
   const consentContext = useMemo(() => getGpcContext(), []);
