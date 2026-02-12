@@ -31,6 +31,17 @@ const theme = extendTheme({
       },
     },
     Button,
+    Checkbox: {
+      baseStyle: {
+        control: {
+          _checked: {
+            bg: "gray.900",
+            borderColor: "gray.900",
+            color: "white",
+          },
+        },
+      },
+    },
     Divider: {
       baseStyle: {
         opacity: 1,
