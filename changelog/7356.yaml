@@ -1,3 +1,8 @@
 type: Added
-description: Add GDPR DPIA assessment questions migration with Article 35 requirement groups
+description: >
+  Add comprehensive privacy assessment templates based on authoritative legal sources:
+  GDPR DPIA (enhanced with EDPB WP248 requirements), UK GDPR DPIA (ICO guidance + Children's Code),
+  California CPRA Risk Assessment (enhanced with CPPA Section 7150), Colorado CPA DPA (4 CCR 904-3),
+  Virginia VCDPA DPA, US Multi-State DPA, and Best Practice PIA (ISO 29134/CNIL methodology)
 pr: 7356
+labels: ["db-migration"]

@@ -1,7 +1,7 @@
 """add GDPR DPIA questions
 
 Revision ID: c3d4e5f6g7h8
-Revises: b2c3d4e5f6g7
+Revises: 4d64174f422e
 Create Date: 2026-02-10 12:00:00.000000
 
 """
@@ -14,7 +14,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c3d4e5f6g7h8"
-down_revision = "f85bd4c08401"
+down_revision = "4d64174f422e"
 branch_labels = None
 depends_on = None
 
