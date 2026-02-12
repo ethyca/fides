@@ -16,6 +16,7 @@ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.system_manager import SYSTEM_MANAGER_SCOPES
 from fides.api.oauth.utils import (
     PermissionCheckerCallback,
+    _resolve_depends,
     copy_func,
     default_has_permissions,
     extract_token_and_load_client,
@@ -92,6 +93,8 @@ async def verify_oauth_client_for_system_from_request_body(
 
     Yields a 403 forbidden error if not.
     """
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
 
     system = has_system_permissions(
         system_auth_data=system_auth_data,
@@ -119,6 +122,8 @@ async def verify_oauth_client_for_system_from_fides_key(
 
     Yields a 403 forbidden error if not.
     """
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     system = has_system_permissions(
         system_auth_data=system_auth_data,
         authorization=authorization,

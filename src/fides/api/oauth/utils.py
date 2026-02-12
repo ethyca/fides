@@ -55,6 +55,26 @@ oauth2_scheme = OAuth2ClientCredentialsBearer(
 )
 
 
+def _resolve_depends(value: Any, default_factory: Callable) -> Any:
+    """
+    Resolve a FastAPI Depends object when called directly (not via FastAPI DI).
+
+    When functions with ``Depends(...)`` defaults are called directly (e.g., in tests
+    or from other code), FastAPI doesn't resolve the dependency. This helper detects
+    unresolved ``Depends`` objects and calls their factory to get the actual value.
+
+    Args:
+        value: The parameter value (may be a Depends object or already resolved)
+        default_factory: The factory function to call if value is a Depends object
+
+    Returns:
+        The resolved value (either the original value or the result of the factory)
+    """
+    if isinstance(value, Depends):
+        return default_factory()
+    return value
+
+
 # Type for permission checker functions.
 # Signature: (token_data, client, endpoint_scopes, db) -> bool
 PermissionCheckerCallback = Callable[
@@ -483,6 +503,8 @@ async def verify_oauth_client(
     NOTE: This function may be overwritten in `main.py` when changing
     the security environment.
     """
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     token_data, client = extract_token_and_load_client(authorization, db)
     if not permission_checker(token_data, client, security_scopes, db):
         raise AuthorizationError(
@@ -515,6 +537,10 @@ async def verify_oauth_client_async(
     NOTE: This function may be overwritten in `main.py` when changing
     the security environment.
     """
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(
+        permission_checker, get_async_permission_checker
+    )
     token_data, client = await extract_token_and_load_client_async(authorization, db)
     if not await permission_checker(token_data, client, security_scopes, db):
         raise AuthorizationError(

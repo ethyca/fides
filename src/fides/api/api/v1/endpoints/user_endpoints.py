@@ -39,6 +39,7 @@ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER, EXTERNAL_RESPONDENT, VIEWER
 from fides.api.oauth.utils import (
     PermissionCheckerCallback,
+    _resolve_depends,
     create_temporary_user_for_login_flow,
     extract_payload,
     extract_token_and_load_client,
@@ -123,6 +124,8 @@ def verify_user_read_scopes(
     Custom dependency that verifies the user has either user:read or user:read-own scope.
     Returns the client if authorized.
     """
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     token_data, client = extract_token_and_load_client(authorization, db)
 
     # Try USER_READ first
@@ -586,6 +589,8 @@ def get_user(
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> FidesUser:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     user: Optional[FidesUser] = FidesUser.get_by_key_or_id(db, data={"id": user_id})
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
@@ -631,6 +636,8 @@ def get_users(
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> AbstractPage[FidesUser]:
     """Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data."""
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     query = FidesUser.query(db)
 
     # Check if user has USER_READ_OWN scope and filter accordingly
