@@ -120,6 +120,17 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 logger.exception("Unable to load {} connector", template.key)
 
     @classmethod
+    def _reload_custom_templates(cls) -> None:
+        """Reload custom connector templates from the database.
+
+        This ensures that templates uploaded or deleted by other processes
+        are reflected immediately, without requiring a process restart.
+        """
+        instance = cls()
+        instance._templates.clear()  # type: ignore[attr-defined]
+        instance._load_connector_templates()
+
+    @classmethod
     def _register_template(
         cls,
         template: CustomConnectorTemplate,
@@ -291,6 +302,7 @@ class ConnectorRegistry:
         The resulting map is an aggregation of templates from the file loader and the custom loader,
         with custom loader templates taking precedence in case of conflicts.
         """
+        CustomConnectorTemplateLoader._reload_custom_templates()
         return {
             **FileConnectorTemplateLoader.get_connector_templates(),  # type: ignore
             **CustomConnectorTemplateLoader.get_connector_templates(),  # type: ignore
