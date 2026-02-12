@@ -1,0 +1,4 @@
+type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Updated the monitor fields screen to use dropdown filters
+pr: 7411 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]

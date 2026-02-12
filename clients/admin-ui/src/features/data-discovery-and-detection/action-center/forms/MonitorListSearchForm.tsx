@@ -9,7 +9,7 @@ import useSearchForm from "~/features/data-discovery-and-detection/action-center
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetAllUsersQuery } from "~/features/user-management";
 
-import { SearchFormQueryState } from "../MonitorList.const";
+import { MonitorSearchForm } from "../MonitorList.const";
 
 const MONITOR_FILTER_LABEL: Record<MONITOR_TYPES, string> = {
   [MONITOR_TYPES.DATASTORE]: "Data store monitors",
@@ -22,9 +22,7 @@ const MonitorListSearchForm = ({
   availableMonitorTypes,
   ...formProps
 }: Omit<
-  ReturnType<
-    typeof useSearchForm<any, ReturnType<typeof SearchFormQueryState>>
-  >,
+  ReturnType<typeof useSearchForm<any, MonitorSearchForm>>,
   "requestData"
 > & {
   availableMonitorTypes: readonly MONITOR_TYPES[];
