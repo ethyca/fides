@@ -12,7 +12,6 @@ from fides.api.common_exceptions import (
     UnreachableNodesError,
     ValidationError,
 )
-from fides.api.models.property import Property
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.node_filters import NodeFilter
@@ -21,6 +20,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.property import Property
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
@@ -128,9 +128,7 @@ class DatasetConfigService:
         }
         invalid = set(property_ids) - valid_ids
         if invalid:
-            raise ValidationError(
-                f"Unknown property IDs: {sorted(invalid)}"
-            )
+            raise ValidationError(f"Unknown property IDs: {sorted(invalid)}")
 
     def bulk_create_or_update_dataset_configs(
         self,
