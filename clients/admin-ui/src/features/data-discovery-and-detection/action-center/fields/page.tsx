@@ -18,15 +18,23 @@ import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import { useSearch } from "~/features/common/hooks";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { useGetMonitorConfigQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  useGetDatastoreFiltersQuery,
+  useGetMonitorConfigQuery,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
+import {
+  MonitorFieldSearchForm,
+  MonitorFieldSearchFormQuerySchema,
+  MonitorFieldSearchFormQueryState,
+} from "../forms/MonitorFieldSearchForm.util";
+import MonitorFieldsSearchForm from "../forms/MonitorFieldsSearchForm";
+import useSearchForm from "../hooks/useSearchForm";
 import {
   ACTION_ALLOWED_STATUSES,
   ACTIONS_DISABLED_MESSAGE,
@@ -40,7 +48,6 @@ import {
 } from "./FieldActions.const";
 import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import { useLazyGetAllowedActionsQuery } from "./monitor-fields.slice";
-import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
   EXCLUDED_FILTER_STATUSES,
@@ -55,7 +62,6 @@ import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
 import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
-import { useMonitorFieldsFilters } from "./useFilters";
 import useNormalizedResources from "./useNormalizedResources";
 
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
@@ -74,31 +80,41 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
     });
-  const search = useSearch();
-  const {
-    resourceStatus,
-    confidenceBucket,
-    dataCategory,
-    ...restMonitorFieldsFilters
-  } = useMonitorFieldsFilters();
+
+  const { requestData, form, ...formProps } = useSearchForm<
+    any,
+    MonitorFieldSearchForm
+  >({
+    queryState: MonitorFieldSearchFormQueryState,
+    initialValues: {},
+    translate: (input) => input,
+    schema: MonitorFieldSearchFormQuerySchema,
+  });
+
   const { data: monitorConfigData } = useGetMonitorConfigQuery({
     monitor_config_id: monitorId,
   });
   const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
+
   const baseMonitorFilters = {
     path: {
       monitor_config_id: monitorId,
     },
     query: {
       staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
-      search: search.searchProps.value,
-      diff_status: resourceStatus
-        ? resourceStatus.flatMap(intoDiffStatus)
-        : undefined,
-      confidence_bucket: confidenceBucket || undefined,
-      data_category: dataCategory || undefined,
+      search: form.getFieldValue("search"),
+      diff_status:
+        form.getFieldValue("resource_status")?.flatMap(intoDiffStatus) ||
+        undefined,
+      confidence_bucket: form.getFieldValue("confidence_bucket") || undefined,
+      data_category: form.getFieldValue("data_category") || undefined,
     },
   };
+
+  const { data: availableFilters } = useGetDatastoreFiltersQuery({
+    monitor_config_id: monitorId,
+    staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
+  });
 
   const [detailsUrn, setDetailsUrn] = useState<string>();
   const [activeListItem, setActiveListItem] = useState<
@@ -211,13 +227,7 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
     resetPagination();
     resetListSelect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    resourceStatus,
-    confidenceBucket,
-    selectedNodeKeys,
-    search.searchQuery,
-    dataCategory,
-  ]);
+  }, [selectedNodeKeys]);
 
   // Set up keyboard shortcuts for field actions
   useFieldActionHotkeys(
@@ -307,31 +317,22 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
               </Flex>
             </Flex>
             <Flex justify="space-between" wrap="wrap" gap="small">
+              <MonitorFieldsSearchForm
+                form={form}
+                {...formProps}
+                onFinish={(...args) => {
+                  formProps.onFinish(...args);
+                  resetPagination();
+                  resetListSelect();
+                }}
+                availableFilters={{
+                  confidenceBucket:
+                    availableFilters?.confidence_bucket ?? undefined,
+                  data_category: availableFilters?.data_category ?? undefined,
+                }}
+                shortcutCallback={() => setHotkeysHelperModalOpen(true)}
+              />
               <Flex gap="small">
-                <DebouncedSearchInput
-                  value={search.searchQuery}
-                  onChange={search.updateSearch}
-                  placeholder="Search"
-                />
-                <Tooltip title="Display keyboard shortcuts">
-                  <Button
-                    aria-label="Display keyboard shortcuts"
-                    icon={<Icons.Keyboard />}
-                    onClick={() => setHotkeysHelperModalOpen(true)}
-                  />
-                </Tooltip>
-              </Flex>
-              <Flex gap="small">
-                <MonitorFieldFilters
-                  resourceStatus={resourceStatus}
-                  confidenceBucket={confidenceBucket}
-                  dataCategory={dataCategory}
-                  {...restMonitorFieldsFilters}
-                  monitorId={monitorId}
-                  stagedResourceUrn={selectedNodeKeys.map((key) =>
-                    key.toString(),
-                  )}
-                />
                 <Dropdown
                   onOpenChange={onActionDropdownOpenChange}
                   menu={{
@@ -405,8 +406,8 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
               loading={listQueryMeta.isFetching}
               enableKeyboardShortcuts
               locale={
-                !search.searchProps.value &&
-                _(resourceStatus)
+                !form.getFieldValue("search") &&
+                _(form.getFieldValue("resource_status"))
                   .intersection(EXCLUDED_FILTER_STATUSES)
                   .isEmpty()
                   ? {
@@ -441,7 +442,7 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
                               type="primary"
                               aria-label="Refresh page"
                               onClick={() => {
-                                restMonitorFieldsFilters.resetToInitialState();
+                                form.resetFields();
                                 router.reload();
                               }}
                             >
