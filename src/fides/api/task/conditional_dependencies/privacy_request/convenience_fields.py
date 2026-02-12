@@ -23,7 +23,7 @@ def build_convenience_field_list() -> list[ConditionalDependencyFieldInfo]:
         ConditionalDependencyFieldInfo(
             field_path=PrivacyRequestConvenienceFields.rule_action_types.value,
             field_type=ConditionalDependencyFieldType.array,
-            description="List of action types from policy rules (e.g., ['access', 'erasure']). Use with list_contains operator.",
+            description="List of action types from policy rules (e.g., ['access', 'erasure']). Use list_contains with a scalar value or list_intersects with a list value.",
             is_convenience_field=True,
         ),
         ConditionalDependencyFieldInfo(
@@ -59,7 +59,7 @@ def build_convenience_field_list() -> list[ConditionalDependencyFieldInfo]:
         ConditionalDependencyFieldInfo(
             field_path=PrivacyRequestConvenienceFields.rule_names.value,
             field_type=ConditionalDependencyFieldType.array,
-            description="List of rule names from the policy. Use with list_contains operator.",
+            description="List of rule names from the policy. Use list_contains with a scalar value or list_intersects with a list value.",
             is_convenience_field=True,
         ),
         ConditionalDependencyFieldInfo(
@@ -78,13 +78,13 @@ def build_convenience_field_list() -> list[ConditionalDependencyFieldInfo]:
         ConditionalDependencyFieldInfo(
             field_path=PrivacyRequestConvenienceFields.location_groups.value,
             field_type=ConditionalDependencyFieldType.array,
-            description="List of location groups this location belongs to (e.g., ['us'] for US states, ['eea'] for EU countries). Use with list_contains operator.",
+            description="List of location groups this location belongs to (e.g., ['us'] for US states, ['eea'] for EU countries). Use list_contains with a scalar value or list_intersects with a list value.",
             is_convenience_field=True,
         ),
         ConditionalDependencyFieldInfo(
             field_path=PrivacyRequestConvenienceFields.location_regulations.value,
             field_type=ConditionalDependencyFieldType.array,
-            description="List of regulations applicable to this location (e.g., ['ccpa'] for California, ['gdpr'] for EU). Use with list_contains operator.",
+            description="List of regulations applicable to this location (e.g., ['ccpa'] for California, ['gdpr'] for EU). Use list_contains with a scalar value or list_intersects with a list value.",
             is_convenience_field=True,
         ),
     ]
