@@ -21,7 +21,7 @@ Use the template found in `.github/pull_request_template.md` to create a pull re
 In addition to returning that markdown response, create a changelog fragment file for the PR.
 
 - Create a YAML file in the `changelog/` directory (use `.yaml` or `.yml` extension)
-- Name the file using a descriptive slug (e.g., `add-feature-name.yaml`) or the PR number (e.g., `1234.yaml` or `pr-1234.yaml`) or
+- Name the file using a descriptive slug (e.g., `add-feature-name.yaml`) or the PR number (e.g., `1234.yaml` or `pr-1234.yaml`)
 - Use `changelog/TEMPLATE.yaml` as a reference for the format
 - Provide a concise, one-liner description no longer than about 85 characters or about 15 words max
 - Choose the appropriate `type` from: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
