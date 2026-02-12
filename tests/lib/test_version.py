@@ -23,7 +23,7 @@ from fides.common.utils import clean_version
         ("2.78.0+123.g1234567", "2.78.0+123.g1234567"),
     ],
 )
-def testclean_versions_unchanged(input_version: str, expected: str) -> None:
+def test_clean_versions_unchanged(input_version: str, expected: str) -> None:
     """Verify that clean version strings are not modified."""
     result = clean_version(input_version)
     assert result == expected
