@@ -8,10 +8,9 @@ from fideslang.models import Dataset
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_api_session
+from fides.api.api.deps import get_autoclose_db_session
 from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
-from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.saas.connector_template import (
@@ -22,6 +21,7 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
+from fides.api.util.db_timestamp_cache import db_timestamp_cached
 from fides.api.util.saas_util import (
     encode_file_contents,
     extract_display_info_from_config,
@@ -108,16 +108,61 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
 class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
     """
     Loads custom connector templates defined in the custom_connector_template database table.
+
+    Uses the ``@db_timestamp_cached`` decorator so that
+    ``get_connector_templates()`` automatically detects DB changes
+    (via ``MAX(updated_at)`` and ``COUNT(*)``) and only reloads when
+    the underlying table has actually been modified.
     """
 
+    def __new__(
+        cls: Type["CustomConnectorTemplateLoader"],
+    ) -> "CustomConnectorTemplateLoader":  # type: ignore[override]
+        """Override to skip the eager _load_connector_templates call.
+
+        The base ``ConnectorTemplateLoader.__new__`` calls
+        ``_load_connector_templates`` on first instantiation, but for
+        custom templates the ``@db_timestamp_cached`` decorator on
+        ``get_connector_templates`` is responsible for deciding *when* to
+        load.  We still create the singleton instance and initialise an
+        empty ``_templates`` dict.
+        """
+        if cls._instance is None:
+            cls._instance = object.__new__(cls)
+            cls._instance._templates = {}  # type: ignore[attr-defined]
+        return cls._instance  # type: ignore[return-value]
+
     def _load_connector_templates(self) -> None:
-        logger.info("Loading connectors templates from the database.")
-        db = get_api_session()
-        for template in CustomConnectorTemplate.all(db=db):
-            try:
-                CustomConnectorTemplateLoader._register_template(template)
-            except Exception:
-                logger.exception("Unable to load {} connector", template.key)
+        """Load all custom connector templates from the database into ``_templates``."""
+        logger.info("Loading connector templates from the database.")
+        with get_autoclose_db_session() as db:
+            for template in CustomConnectorTemplate.all(db=db):
+                try:
+                    self._register_template(template)
+                except Exception:
+                    logger.exception("Unable to load {} connector", template.key)
+
+    # ------------------------------------------------------------------
+    # Override get_connector_templates with DB-timestamp caching
+    # ------------------------------------------------------------------
+
+    @classmethod
+    @db_timestamp_cached(
+        model=CustomConnectorTemplate,
+        cache_key="custom_connector_templates",
+    )
+    def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
+        """Returns a map of custom connector templates.
+
+        The ``@db_timestamp_cached`` decorator transparently checks whether
+        the ``custom_connector_template`` table has changed since the last
+        call.  If nothing changed the cached dict is returned; otherwise
+        ``_load_connector_templates`` is invoked to rebuild it.
+        """
+        instance = cls()
+        instance._templates = {}  # type: ignore[attr-defined]
+        instance._load_connector_templates()
+        return dict(instance._templates)  # type: ignore[attr-defined]
 
     @classmethod
     def _register_template(
@@ -125,8 +170,12 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         template: CustomConnectorTemplate,
     ) -> None:
         """
-        Registers a custom connector template by converting it to a ConnectorTemplate
-        and adding it to the loader's template dictionary.
+        Validates a custom connector template by converting it to a
+        ``ConnectorTemplate``.  When called from ``_load_connector_templates``
+        the result is stored in the instance's ``_templates`` dict; when
+        called from ``save_template`` it serves as a pre-persist validation
+        step only (the cache is cleared afterwards so the next read picks
+        up the saved record).
         """
 
         config = SaaSConfig(**load_config_from_string(template.config))
@@ -157,21 +206,28 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             **display_info,
         )
 
-        # register the template in the loader's template dictionary
-        CustomConnectorTemplateLoader.get_connector_templates()[template.key] = (
-            connector_template
-        )
+        # Store the template in the loader's template dictionary.
+        # During _load_connector_templates this populates the instance dict;
+        # during save_template validation this is a no-op side-effect that
+        # gets discarded when the cache is cleared.
+        instance = cls()
+        instance._templates[template.key] = connector_template  # type: ignore[attr-defined]
 
     @classmethod
     def delete_template(cls, db: Session, key: str) -> None:
         """
-        Deletes a custom connector template from the database.
-        The SaasTemplateDataset is intentionally preserved so it can serve as
-        the merge baseline when falling back to the file template.
+        Deletes a custom connector template from the database and
+        invalidates the in-memory cache.
+
+        The ``SaasTemplateDataset`` is intentionally preserved so it can
+        serve as the merge baseline when falling back to the file template.
         """
         CustomConnectorTemplate.filter(
             db, conditions=(CustomConnectorTemplate.key == key)
         ).delete()
+        # Invalidate the cache so the next get_connector_templates() call
+        # rebuilds from the DB without the deleted entry.
+        cls.get_connector_templates.cache_clear()  # type: ignore[attr-defined]
 
     # pylint: disable=too-many-branches
     @classmethod
@@ -280,6 +336,10 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             dataset_json=template_dataset_json,
         )
 
+        # Invalidate the cache so the next get_connector_templates() call
+        # picks up the newly saved template from the DB.
+        cls.get_connector_templates.cache_clear()  # type: ignore[attr-defined]
+
         return connector_type
 
 
@@ -290,6 +350,10 @@ class ConnectorRegistry:
         Returns a combined map of connector templates from all registered loaders.
         The resulting map is an aggregation of templates from the file loader and the custom loader,
         with custom loader templates taking precedence in case of conflicts.
+
+        The custom loader's ``get_connector_templates()`` is backed by the
+        ``@db_timestamp_cached`` decorator, so it only queries the full
+        table when the underlying data has actually changed.
         """
         return {
             **FileConnectorTemplateLoader.get_connector_templates(),  # type: ignore
