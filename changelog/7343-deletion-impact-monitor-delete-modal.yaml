@@ -1,4 +1,0 @@
-type: Changed
-description: Added deletion impact details to discovery monitor delete confirmation modal
-pr: 7343
-labels: []
