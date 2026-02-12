@@ -1,4 +1,0 @@
-type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Input password flow to require clicking an edit button
-pr: 7357 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]
