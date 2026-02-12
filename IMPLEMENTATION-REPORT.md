@@ -97,13 +97,16 @@ Migrations run automatically when the FastAPI app starts. The `api_client` fixtu
 
 Created `scripts/run_lib_tests.sh` that:
 - Sets all required env vars for local Postgres and Redis
-- Invokes `uv run --python 3.13 pytest tests/lib/` with any additional args
+- Invokes `uv run --python 3.13 pytest` with any path/args passed through
 
 Usage:
 ```bash
-./scripts/run_lib_tests.sh              # full lib suite
+./scripts/run_lib_tests.sh tests/lib/              # lib suite (recommended, full pass)
+./scripts/run_lib_tests.sh noxfiles/               # noxfiles (full pass)
+./scripts/run_lib_tests.sh tests/api/              # api suite (1 known fail)
+./scripts/run_lib_tests.sh tests/ctl/ -m unit --ignore=tests/ctl/core/test_dataset.py
 ./scripts/run_lib_tests.sh tests/lib/test_version.py  # single file
-./scripts/run_lib_tests.sh -x           # stop on first failure
+./scripts/run_lib_tests.sh -x                      # stop on first failure
 ```
 
 ## What Didn't Work
@@ -113,14 +116,35 @@ Usage:
 3. **Skipping Redis:** Would require significant code changes; installing Redis was straightforward.
 4. **SQLite:** Fides uses PostgreSQL-specific features (e.g. `citext` extension). Not explored.
 
+## Suite-by-Suite Results
+
+Run each suite with: `./scripts/run_lib_tests.sh <path> [pytest-args]`
+
+| Suite | Command | Result | Notes |
+|-------|---------|--------|-------|
+| **lib** | `tests/lib/` | ✅ **293 passed** | Full pass, ~27s |
+| **noxfiles** | `noxfiles/` | ✅ **315 passed** | Full pass, ~29s |
+| **api** | `tests/api/` | 1390 passed, 1 failed | 1 fail: `test_read_only_cache_uses_fallback_settings` – expects fixture password `test-writer-password`, but `FIDES__REDIS__PASSWORD=""` overrides it |
+| **ctl** | `tests/ctl/ -m unit --ignore=tests/ctl/core/test_dataset.py` | 405 passed, 8 failed | Collection error without `--ignore`: `test_dataset.py` imports `pymssql` (not installed). With ignore: config tests expect `fides-db` hostname; cli tests expect running server |
+| **ctl** (no args) | `tests/ctl/` | ❌ 1 collection error | `tests/ctl/core/test_dataset.py` fails to import `pymssql` |
+| **ops unit** | `tests/ops/ -m unit` | 282 passed, 3 failed, 26 errors | IntegrityError/FK violations (taxonomy seeding), ObjectDeletedError, some network-dependent tests |
+| **service** | `tests/service/` | 563 passed, 6 failed, 17 errors | Shares fixtures with lib; taxonomy FK violations; `postgres_example` hostname in fixtures |
+| **task** | `tests/task/` | 285 passed, 1 failed, 35 errors | Similar taxonomy/DB fixture issues |
+| **util** | `tests/util/` | 303 passed, 2 failed, 13 errors | KeyOrNameAlreadyExists, ObjectDeletedError |
+| **qa** | `tests/qa/` | 278 passed, 3 failed, 9 xfailed, 12 errors | 9 tests marked xfail (need external services); lib fixture pollution |
+| **integration** | `tests/integration/` | 279 passed, 17 errors | Taxonomy FK violations during workflow setup |
+
+### Common Failure Patterns
+
+1. **Env var leakage:** `FIDES__REDIS__PASSWORD=""` overrides fixture config; some tests expect specific values (e.g. `test-writer-password`).
+2. **Taxonomy seeding:** Tests that load fideslang taxonomy hit `ctl_data_categories_parent_key_fkey` when parent keys don’t exist (ordering/deduplication).
+3. **Docker hostnames:** Fixtures reference `postgres_example`, `fides-db`, etc., which don’t resolve outside Docker.
+4. **Missing deps:** `pymssql` is optional; `test_dataset.py` fails at import without it.
+5. **Shared DB state:** Running broader paths collects and runs lib + other tests together; fixture/transaction interaction causes ObjectDeletedError, StaleDataError.
+
 ## Final Result
 
-**All 293 lib tests pass** in ~27 seconds:
-
-```
-./scripts/run_lib_tests.sh tests/lib/
-====================== 293 passed, 13 warnings in 27.20s =======================
-```
+**lib and noxfiles pass fully.** Other suites partially pass; failures are mostly due to env overrides, taxonomy seeding, and fixture hostnames.
 
 ## Prerequisites (for fresh environment)
 
