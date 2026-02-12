@@ -31,6 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Celery workers now have an HTTP healthcheck endpoint that can be used to check if the workers are running for environments that do not support running a command to check if the workers are running. [#7091](https://github.com/ethyca/fides/pull/7091)
 - Added distance column to StagedResourceAncestor table [#7326](https://github.com/ethyca/fides/pull/7326) https://github.com/ethyca/fides/labels/db-migration
 - Added database schema for privacy assessment answer history tracking [#7330](https://github.com/ethyca/fides/pull/7330) https://github.com/ethyca/fides/labels/db-migration
+- Additional SSO configuration options [#7351](https://github.com/ethyca/fides/pull/7351) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Migrated consent reporting tables to Ant Design [#7295](https://github.com/ethyca/fides/pull/7295)
