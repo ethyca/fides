@@ -327,6 +327,11 @@ class ConnectorParam(BaseModel):
     multiselect: Optional[bool] = False
     description: Optional[str] = None
     sensitive: Optional[bool] = False
+    allowed_domains: Optional[List[str]] = (
+        None  # List of allowed domain regex patterns for domain params.
+    )
+    # None = not a domain param (no validation). [] = domain param permitting any value (self-hosted).
+    # [r"api\.stripe\.com", r".*\.salesforce\.com"] = only domains matching listed patterns are allowed.
 
     @model_validator(mode="before")
     @classmethod

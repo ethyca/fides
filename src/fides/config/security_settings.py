@@ -138,6 +138,12 @@ class SecuritySettings(FidesSettings):
         default=432000,
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",
     )
+    disable_domain_validation: bool = Field(
+        default=False,
+        description="When true, disables domain validation for SaaS connector params globally. "
+        "Domain validation restricts connector endpoints to allowed domains defined in the connector template. "
+        "Set via FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION.",
+    )
     enable_audit_log_resource_middleware: Optional[bool] = Field(
         default=False,
         description="Either enables the collection of audit log resource data or bypasses the middleware",
