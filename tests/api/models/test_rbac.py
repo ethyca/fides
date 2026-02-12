@@ -373,7 +373,15 @@ class TestRBACScopeRegistrySync:
         from fides.common.api.scope_registry import SCOPE_REGISTRY
 
         # Find the seed migration file
-        migrations_dir = Path(__file__).parent.parent.parent.parent / "src" / "fides" / "api" / "alembic" / "migrations" / "versions"
+        migrations_dir = (
+            Path(__file__).parent.parent.parent.parent
+            / "src"
+            / "fides"
+            / "api"
+            / "alembic"
+            / "migrations"
+            / "versions"
+        )
         seed_migration = None
         for f in migrations_dir.glob("*seed_rbac_defaults*.py"):
             seed_migration = f
