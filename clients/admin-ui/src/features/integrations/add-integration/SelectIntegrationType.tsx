@@ -32,7 +32,7 @@ const SelectIntegrationType = ({
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { newIntegrationManagement },
+    flags: { newIntegrationManagement, webMonitor },
   } = useFlags();
 
   // Fetch connection types for SAAS integration generation
@@ -86,7 +86,9 @@ const SelectIntegrationType = ({
   const availableCategories = useMemo(() => {
     const allCategories: IntegrationCategoryFilter[] = [
       "ALL",
-      ...Object.values(ConnectionCategory),
+      ...Object.values(ConnectionCategory).filter(
+        (category) => !!webMonitor || category !== ConnectionCategory.WEBSITE,
+      ),
     ];
 
     // If new integration management is disabled, filter out categories that have no integrations
@@ -105,7 +107,7 @@ const SelectIntegrationType = ({
     }
 
     return allCategories;
-  }, [newIntegrationManagement, allIntegrationTypes]);
+  }, [newIntegrationManagement, webMonitor, allIntegrationTypes]);
 
   // Filter integrations based on search and category
   const filteredTypes = useMemo(() => {
@@ -114,6 +116,13 @@ const SelectIntegrationType = ({
     // Filter by category
     if (selectedCategory !== "ALL") {
       filtered = filtered.filter((i) => i.category === selectedCategory);
+    }
+
+    // Filter out websites when disabled
+    if (!webMonitor) {
+      filtered = filtered.filter(
+        (i) => i.category !== ConnectionCategory.WEBSITE,
+      );
     }
 
     // Filter by search term (name only)
@@ -130,7 +139,7 @@ const SelectIntegrationType = ({
       const nameB = b.placeholder.name || "";
       return nameA.localeCompare(nameB);
     });
-  }, [searchTerm, selectedCategory, allIntegrationTypes]);
+  }, [searchTerm, selectedCategory, webMonitor, allIntegrationTypes]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);
