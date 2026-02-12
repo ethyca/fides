@@ -4,9 +4,10 @@ import json
 from datetime import datetime
 from functools import update_wrapper
 from types import FunctionType
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, Awaitable, Callable, Dict, Iterable, List, Optional, Tuple, cast
 
 from fastapi import Depends, HTTPException, Request, Security
+from fastapi.params import Depends as DependsClass
 from fastapi.security import SecurityScopes
 from jose import exceptions, jwe
 from jose.constants import ALGORITHMS
@@ -55,39 +56,119 @@ oauth2_scheme = OAuth2ClientCredentialsBearer(
 )
 
 
-# Type for custom permission checker callback
-# Signature: (db, token_data, client, endpoint_scopes) -> bool
-PermissionCheckerCallback = Callable[
-    [Optional[Session], Dict[str, Any], "ClientDetail", "SecurityScopes"], bool
-]
-
-# Global callback for custom permission checking (e.g., RBAC)
-# When set, this callback will be used instead of the default permission logic
-_custom_permission_checker: Optional[PermissionCheckerCallback] = None
-
-
-def register_permission_checker(checker: PermissionCheckerCallback) -> None:
+def _resolve_depends(value: Any, default_factory: Callable) -> Any:
     """
-    Register a custom permission checker callback.
+    Resolve a FastAPI Depends object when called directly (not via FastAPI DI).
 
-    This allows extensions (like fidesplus RBAC) to override the default
-    permission checking logic. The callback will be invoked whenever
-    permission checks are performed.
+    When functions with ``Depends(...)`` defaults are called directly (e.g., in tests
+    or from other code), FastAPI doesn't resolve the dependency. This helper detects
+    unresolved ``Depends`` objects and calls their factory to get the actual value.
 
     Args:
-        checker: A callable with signature (db, token_data, client, endpoint_scopes) -> bool
-                 The db parameter may be None if not available in the calling context.
+        value: The parameter value (may be a Depends object or already resolved)
+        default_factory: The factory function to call if value is a Depends object
+
+    Returns:
+        The resolved value (either the original value or the result of the factory)
     """
-    global _custom_permission_checker
-    _custom_permission_checker = checker
-    logger.info("Custom permission checker registered")
+    if isinstance(value, DependsClass):
+        return default_factory()
+    return value
 
 
-def clear_permission_checker() -> None:
-    """Clear the custom permission checker, reverting to default behavior."""
-    global _custom_permission_checker
-    _custom_permission_checker = None
-    logger.info("Custom permission checker cleared")
+# Type for permission checker functions.
+# Signature: (token_data, client, endpoint_scopes, db) -> bool
+PermissionCheckerCallback = Callable[
+    [Dict[str, Any], "ClientDetail", "SecurityScopes", Optional[Session]], bool
+]
+
+
+def default_has_permissions(
+    token_data: Dict[str, Any],
+    client: "ClientDetail",
+    endpoint_scopes: "SecurityScopes",
+    db: Optional[Session] = None,
+) -> bool:
+    """
+    Default permission checking logic: direct scopes + role-derived scopes.
+
+    This is the built-in permission checker used by Fides OSS. It checks whether
+    the user has the required scopes either directly or via their assigned roles.
+    The db parameter is accepted but unused by the default implementation — it
+    exists so that custom checkers (e.g., RBAC) can query the database.
+    """
+    has_direct_scope: bool = _has_direct_scopes(
+        token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
+    )
+    has_role: bool = _has_scope_via_role(
+        token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
+    )
+
+    has_required_permissions = has_direct_scope or has_role
+    if not has_required_permissions:
+        scopes_required = ",".join(endpoint_scopes.scopes)
+        logger.debug(
+            "Authorization failed. Missing required scopes: {}. Neither direct scopes nor role-derived scopes were sufficient.",
+            scopes_required,
+        )
+
+    return has_required_permissions
+
+
+def get_permission_checker() -> PermissionCheckerCallback:
+    """
+    FastAPI dependency that provides the permission checker function.
+
+    Override via ``app.dependency_overrides[get_permission_checker]`` to use
+    RBAC or other custom permission logic. This follows the same pattern used
+    for ``verify_oauth_client_prod`` and dev-mode auth bypass.
+
+    The returned callable must match the ``PermissionCheckerCallback`` signature::
+
+        (token_data, client, endpoint_scopes, db) -> bool
+    """
+    return default_has_permissions
+
+
+# Async permission checker type.
+# Signature: async (token_data, client, endpoint_scopes, db) -> bool
+AsyncPermissionCheckerCallback = Callable[
+    [Dict[str, Any], "ClientDetail", "SecurityScopes", Optional[AsyncSession]],
+    Awaitable[bool],
+]
+
+
+async def default_has_permissions_async(
+    token_data: Dict[str, Any],
+    client: "ClientDetail",
+    endpoint_scopes: "SecurityScopes",
+    db: Optional[AsyncSession] = None,
+) -> bool:
+    """
+    Default async permission checking logic.
+
+    Delegates to the sync ``default_has_permissions`` because the default
+    implementation does not use the database session. Custom async checkers
+    (e.g., RBAC) can use the ``AsyncSession`` for database queries.
+    """
+    return default_has_permissions(token_data, client, endpoint_scopes)
+
+
+def get_async_permission_checker() -> AsyncPermissionCheckerCallback:
+    """
+    FastAPI dependency that provides the async permission checker function.
+
+    This is the async counterpart of ``get_permission_checker()``, used by
+    ``verify_oauth_client_async`` and other async auth dependencies.
+
+    Override via ``app.dependency_overrides[get_async_permission_checker]``
+    to use RBAC or other custom permission logic in async endpoints.
+
+    The returned callable must be an async function matching::
+
+        async (token_data, client, endpoint_scopes, db) -> bool
+    """
+    return default_has_permissions_async
 
 
 def extract_payload(jwe_string: str, encryption_key: str) -> str:
@@ -295,12 +376,14 @@ async def get_current_user(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> FidesUser:
     """A wrapper around verify_oauth_client that returns that client's user if one exists."""
     client = await verify_oauth_client(
         security_scopes=security_scopes,
         authorization=authorization,
         db=db,
+        permission_checker=permission_checker,
     )
 
     if client.id == CONFIG.security.oauth_root_client_id:
@@ -411,6 +494,7 @@ async def verify_oauth_client(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
+    permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> ClientDetail:
     """
     Verifies that the access token provided in the authorization header contains
@@ -420,10 +504,10 @@ async def verify_oauth_client(
     NOTE: This function may be overwritten in `main.py` when changing
     the security environment.
     """
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     token_data, client = extract_token_and_load_client(authorization, db)
-    if not has_permissions(
-        token_data=token_data, client=client, endpoint_scopes=security_scopes, db=db
-    ):
+    if not permission_checker(token_data, client, security_scopes, db):
         raise AuthorizationError(
             detail=f"Not Authorized for this action. Required scope(s): [{', '.join(security_scopes.scopes)}]"
         )
@@ -435,6 +519,9 @@ async def verify_oauth_client_async(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: AsyncSession = Depends(get_async_db),
+    permission_checker: AsyncPermissionCheckerCallback = Depends(
+        get_async_permission_checker
+    ),
 ) -> ClientDetail:
     """
     Async version of verify_oauth_client that uses an async database session.
@@ -443,13 +530,20 @@ async def verify_oauth_client_async(
     the necessary scopes or roles specified by the caller. Yields a 403 forbidden error
     if not.
 
+    Uses ``get_async_permission_checker`` to obtain the permission checker,
+    which is the async counterpart of ``get_permission_checker``. The
+    ``AsyncSession`` is passed to the checker so custom implementations
+    (e.g., RBAC) can perform async database queries.
+
     NOTE: This function may be overwritten in `main.py` when changing
     the security environment.
     """
+    # Resolve Depends if called directly (not via FastAPI DI)
+    permission_checker = _resolve_depends(
+        permission_checker, get_async_permission_checker
+    )
     token_data, client = await extract_token_and_load_client_async(authorization, db)
-    if not has_permissions(
-        token_data=token_data, client=client, endpoint_scopes=security_scopes
-    ):
+    if not await permission_checker(token_data, client, security_scopes, db):
         raise AuthorizationError(
             detail=f"Not Authorized for this action. Required scope(s): [{', '.join(security_scopes.scopes)}]"
         )
@@ -615,40 +709,23 @@ def has_permissions(
     client: ClientDetail,
     endpoint_scopes: SecurityScopes,
     db: Optional[Session] = None,
+    permission_checker: PermissionCheckerCallback = default_has_permissions,
 ) -> bool:
     """Does the user have the necessary scopes, either via a scope they were assigned directly,
     or a scope associated with their role(s)?
 
-    If a custom permission checker is registered (e.g., for RBAC), it will be used instead
-    of the default permission logic.
+    This is a convenience wrapper around the permission checker. Prefer injecting
+    ``get_permission_checker`` via ``Depends`` in FastAPI endpoint functions.
 
     Args:
         token_data: Decoded token data containing scopes and roles
         client: The OAuth client
         endpoint_scopes: Required scopes for the endpoint
-        db: Optional database session, passed to custom permission checker if available
+        db: Optional database session, passed to the permission checker
+        permission_checker: The permission checking strategy to use.
+            Defaults to ``default_has_permissions``.
     """
-    # If a custom permission checker is registered, use it
-    if _custom_permission_checker is not None:
-        return _custom_permission_checker(db, token_data, client, endpoint_scopes)
-
-    # Default permission checking logic
-    has_direct_scope: bool = _has_direct_scopes(
-        token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
-    )
-    has_role: bool = _has_scope_via_role(
-        token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
-    )
-
-    has_required_permissions = has_direct_scope or has_role
-    if not has_required_permissions:
-        scopes_required = ",".join(endpoint_scopes.scopes)
-        logger.debug(
-            "Authorization failed. Missing required scopes: {}. Neither direct scopes nor role-derived scopes were sufficient.",
-            scopes_required,
-        )
-
-    return has_required_permissions
+    return permission_checker(token_data, client, endpoint_scopes, db)
 
 
 def _has_scope_via_role(
@@ -739,6 +816,7 @@ def verify_client_can_assign_scopes(
     requesting_client: "ClientDetail",
     scopes: List[str],
     db: "Session",
+    permission_checker: PermissionCheckerCallback = default_has_permissions,
 ) -> None:
     """
     Verify that a requesting client has permission to assign the given scopes.
@@ -751,6 +829,8 @@ def verify_client_can_assign_scopes(
         requesting_client: The client making the request
         scopes: List of scopes to be assigned
         db: Database session
+        permission_checker: The permission checking strategy to use.
+            Defaults to ``default_has_permissions``.
 
     Raises:
         HTTPException: If the client lacks permission to assign the scopes
@@ -772,6 +852,7 @@ def verify_client_can_assign_scopes(
         client=requesting_client,
         endpoint_scopes=SecurityScopes(scopes),
         db=db,
+        permission_checker=permission_checker,
     )
 
     # If they don't have all scopes via direct assignment or roles, check individual scopes
