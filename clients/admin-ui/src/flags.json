@@ -69,5 +69,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaRbac": {
+    "label": "Alpha RBAC",
+    "description": "Dynamic role-based access control system for roles, permissions, and user assignments",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
