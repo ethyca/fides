@@ -1,4 +1,0 @@
-type: Added
-description: Additional SSO configuration options
-pr: 7351
-labels: ["db-migration"]
