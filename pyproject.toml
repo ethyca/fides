@@ -186,6 +186,14 @@ fallback-version = "0.0.0+dev"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fides"]
+# Ensure that the "ui-build" folder is included in wheel and sdist; it is
+# populated by our clients/admin-ui build process to allow the Admin UI app to
+# be distributed as part of the ethyca-fides Python package.
+artifacts = ["src/fides/ui-build"]
+
+[tool.hatch.build.targets.sdist]
+# Ensure that the "ui-build" folder is included in wheel and sdist (see above)
+artifacts = ["src/fides/ui-build"]
 
 # Constrain setuptools for build isolation so legacy deps get pkg_resources (e.g. in docs image).
 [tool.uv]
