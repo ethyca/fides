@@ -7,6 +7,7 @@ from types import FunctionType
 from typing import Any, Awaitable, Callable, Dict, Iterable, List, Optional, Tuple, cast
 
 from fastapi import Depends, HTTPException, Request, Security
+from fastapi.params import Depends as DependsClass
 from fastapi.security import SecurityScopes
 from jose import exceptions, jwe
 from jose.constants import ALGORITHMS
@@ -70,7 +71,7 @@ def _resolve_depends(value: Any, default_factory: Callable) -> Any:
     Returns:
         The resolved value (either the original value or the result of the factory)
     """
-    if isinstance(value, Depends):
+    if isinstance(value, DependsClass):
         return default_factory()
     return value
 
