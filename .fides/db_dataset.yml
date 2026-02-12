@@ -3078,6 +3078,18 @@ dataset:
     - name: user_info_url
       description: 'Fides Generated Description for Column: user_info_url'
       data_categories: [system.operations]
+    - name: scopes
+      description: 'Scopes with which to request the authorization token.'
+      data_categories: [system.operations]
+    - name: email_field
+      description: 'Field to pull the email from the userinfo object.'
+      data_categories: [system.operations]
+    - name: verify_email_field
+      description: 'Field to pull the verify email flag from the userinfo object.'
+      data_categories: [system.operations]
+    - name: verify_email
+      description: 'Enable or disable whether email address must be verified'
+      data_categories: [system.operations]
   - name: identity_salt
     fields:
       - name: created_at
@@ -3199,6 +3211,8 @@ dataset:
       - name: created_at
         data_categories: [system.operations]
       - name: updated_at
+        data_categories: [system.operations]
+      - name: distance
         data_categories: [system.operations]
   - name: monitortask
     fields:

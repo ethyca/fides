@@ -1,0 +1,4 @@
+type: Changed
+description: Added DB-timestamp caching for custom connector templates to fix cross-pod staleness
+pr: 7380
+labels: []
