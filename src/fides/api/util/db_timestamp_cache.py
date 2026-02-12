@@ -14,6 +14,7 @@ from loguru import logger
 from sqlalchemy import func as sa_func
 from sqlalchemy import select
 
+from fides.api.api.deps import get_readonly_autoclose_db_session
 from fides.api.db.base_class import Base
 
 R = TypeVar("R")
@@ -29,7 +30,6 @@ def _get_table_state(
 
     Uses a readonly auto-closing session to minimize DB load.
     """
-    from fides.api.api.deps import get_readonly_autoclose_db_session
 
     with get_readonly_autoclose_db_session() as db:
         result = db.execute(
