@@ -51,9 +51,7 @@ describe("Nav Bar", () => {
       .click()
       .parents(".ant-menu-submenu")
       .within(() => {
-        cy.getByTestId("Activity-nav-link").should("exist");
-        cy.getByTestId("Data detection-nav-link").should("exist");
-        cy.getByTestId("Data discovery-nav-link").should("exist");
+        cy.getByTestId("Action center-nav-link").should("exist");
       });
   });
 

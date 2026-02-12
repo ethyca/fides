@@ -1,10 +1,10 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from pathlib import Path as LocalPath
 from types import SimpleNamespace
 from typing import Generator
 
 import pytest
-from py._path.local import LocalPath
 from toml import dump, load
 
 from fides.config import FidesConfig

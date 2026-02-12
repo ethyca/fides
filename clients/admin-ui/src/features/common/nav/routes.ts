@@ -7,6 +7,7 @@ export const ADD_SYSTEMS_MANUAL_ROUTE = "/add-systems/manual";
 export const ADD_SYSTEMS_MULTIPLE_ROUTE = "/add-systems/multiple";
 export const DATAMAP_ROUTE = "/datamap";
 export const REPORTING_DATAMAP_ROUTE = "/reporting/datamap";
+export const REPORTING_ASSETS_ROUTE = "/reporting/assets";
 export const SYSTEM_ROUTE = "/systems";
 export const EDIT_SYSTEM_ROUTE = "/systems/configure/[id]";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
@@ -34,15 +35,6 @@ export const ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE =
 export const ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE =
   "/data-discovery/action-center/infrastructure/[monitorId]/activity";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
-
-export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";
-export const DATA_DETECTION_ROUTE = "/data-discovery/detection";
-export const DATA_DETECTION_ROUTE_DETAIL =
-  "/data-discovery/detection/[resourceUrn]";
-
-export const DATA_DISCOVERY_ROUTE = "/data-discovery/discovery";
-export const DATA_DISCOVERY_ROUTE_DETAIL =
-  "/data-discovery/discovery/[resourceUrn]";
 
 // End-to-end datasets
 export const DATA_CATALOG_ROUTE = "/data-catalog";

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from collections import defaultdict
+from collections import defaultdict, deque
 from itertools import chain
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, cast
 
@@ -44,6 +44,7 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
+from fides.config import CONFIG
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
@@ -90,25 +91,44 @@ class BaseTraversal:
         *,
         policy: Optional[Policy] = None,
         node_filters: Optional[List[NodeFilter]] = None,
+        skip_verification: bool = False,
     ):
         self.graph = graph
         self.seed_data = data
         self.policy = policy
+        self._skip_verification = skip_verification
 
         # Node filters are used to allow unreachable nodes to be ignored
         # if they don't apply to the given scenario
         self.node_filters = node_filters or []
 
+        num_nodes = len(graph.nodes)
+        num_edges = len(graph.edges)
+        logger.debug(
+            "Initializing BaseTraversal with {} nodes and {} edges",
+            num_nodes,
+            num_edges,
+        )
+
+        logger.debug("Step 1/5: Building traversal node dict...")
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
         self.edges: Set[Edge] = graph.edges.copy()
         self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
 
+        logger.debug("Step 2/5: Pre-indexing edges by node address...")
         # Pre-index edges by node address for O(1) lookup
         self.edges_by_node: Dict[CollectionAddress, List[Edge]] = defaultdict(list)
         for edge in self.edges:
             self.edges_by_node[edge.f1.collection_address()].append(edge)
             self.edges_by_node[edge.f2.collection_address()].append(edge)
 
+        logger.debug("Step 3/5: Building dataset->collections index...")
+        # Pre-build dataset -> collections index for O(1) lookup (Fix for O(N²))
+        self._collections_by_dataset: Dict[str, Set[str]] = defaultdict(set)
+        for addr in self.traversal_node_dict.keys():
+            self._collections_by_dataset[addr.dataset].add(addr.value)
+
+        logger.debug("Step 4/5: Pre-computing node dependencies...")
         # Pre-compute string versions of node dependencies
         # This avoids expensive hash operations during traversal
         self.node_after_str: Dict[str, Set[str]] = {}
@@ -119,17 +139,19 @@ class BaseTraversal:
             self.node_after_str[addr.value] = {
                 dep.value for dep in traversal_node.node.collection.after
             }
-            # Dataset-level after dependencies (need to find all collections in those datasets)
-            dataset_deps = set()
+            # Dataset-level after dependencies - use pre-built index for O(1) lookup
+            dataset_deps: Set[str] = set()
             for dataset_name in traversal_node.node.dataset.after:
-                for other_addr in self.traversal_node_dict.keys():
-                    if other_addr.dataset == dataset_name:
-                        dataset_deps.add(other_addr.value)
+                # O(1) lookup instead of O(N) scan
+                dataset_deps.update(
+                    self._collections_by_dataset.get(dataset_name, set())
+                )
             self.dataset_after_str[addr.value] = dataset_deps
 
         # Add root node to the pre-computed dependencies (it has no dependencies)
         self.node_after_str[ROOT_COLLECTION_ADDRESS.value] = set()
         self.dataset_after_str[ROOT_COLLECTION_ADDRESS.value] = set()
+        logger.debug("Step 5/5: Adding seed and manual task edges...")
 
         for (
             start_field_address,
@@ -166,14 +188,17 @@ class BaseTraversal:
                 self.edges_by_node[ROOT_COLLECTION_ADDRESS].append(edge)
                 self.edges_by_node[addr].append(edge)
 
-        self._verify_traversal()
+        logger.debug("BaseTraversal initialization complete")
+
+        if not self._skip_verification:
+            self._verify_traversal()
 
     def _verify_traversal(self) -> None:
         """Verify that a valid traversal exists. This method simply assembles a traversal
         and raises an error on any traversal failure conditions."""
         self.traverse(
             {self.root_node.address: [self.seed_data]},
-            lambda n, m: logger.info("Traverse {}", n.address),
+            lambda n, m: logger.debug("Traverse {}", n.address),
         )
 
     def traversal_map(
@@ -209,35 +234,267 @@ class BaseTraversal:
         environment: Dict[CollectionAddress, Any],
         node_run_fn: Callable[[TraversalNode, Dict[CollectionAddress, Any]], None],
     ) -> List[CollectionAddress]:
-        """Traverse and call run() on each traversal_node in turn. T represents an environment that
-        can provide or collect values as each traversal_node is run.
+        """Traverse and call run() on each traversal_node in turn.
 
-        Returns a list of termination traversal_node addresses so that we can take action on completed
-        traversal.
+        Uses In-Degree Tracking (Kahn's Algorithm variant) for O(N+E) complexity.
+        Instead of O(N) scanning for eligible nodes, we track dependency counts
+        and maintain a ready queue.
 
-        We define the root traversal_node as a traversal_node whose children are any nodes that have identity (seed)
-        data.
-        We start with
-        - a queue holding only the root traversal_node.
-        - a (copied) set of all of the edges in the graph.
+        The algorithm:
+        1. Compute initial "blocked by" counts for each node based on:
+           - 'after' dependencies (collection-level and dataset-level)
+           - Edge-based dependencies (nodes reachable from ROOT)
+        2. Nodes with blocked_by == 0 go into the ready queue
+        3. When a node completes, decrement blocked_by for its dependents
+        4. Nodes that reach blocked_by == 0 are added to ready queue
 
-        - Pop the first eligible traversal_node from the queue.
-        - call the passed in callable node_run_function on this traversal_node. Mark this traversal_node as "finished"
-        - Delete all edges from any finished nodes to this traversal_node.
-        - put all of this nodes children in the queue.
+        Returns a list of termination traversal_node addresses so that we can
+        take action on completed traversal.
+        """
+        if CONFIG.execution.use_legacy_traversal:
+            logger.info("Using legacy traversal algorithm (use_legacy_traversal=True)")
+            return self._traverse_legacy(environment, node_run_fn)
 
-        Some nodes have conditions, like "don't run me until after traversal_node X". When we pop a value from
-        the queue, we are taking this into account. If the queue contains nodes, but none of them are
-        eligible (e.g. Node A can't run until after B, and traversal_node B that can't run until after A)
-        raise a TraversalError.
+        total_nodes = len(self.traversal_node_dict)
+        logger.debug("Starting traversal of {} nodes", total_nodes)
 
-        We also raise a TraversalError if the queue is empty but some nodes have not been visited. In
-        that case they are unreachable.
+        # Track which nodes are finished
+        finished_nodes: Dict[CollectionAddress, TraversalNode] = {}
+        finished_str: Set[str] = set()
 
+        # Track deleted edges (same as original algorithm)
+        deleted_edges_tracker: Dict[Edge, bool] = {}
+
+        logger.debug("Traverse step 1/3: Computing blocked_by counts...")
+        # Compute "blocked by" count for each node based on 'after' dependencies
+        # blocked_by[addr] = number of unfinished nodes that must run before addr
+        blocked_by: Dict[str, int] = {}
+
+        # Pre-compute the set of all node keys once (O(N) instead of O(N²))
+        all_node_keys: Set[str] = set(self.node_after_str.keys())
+
+        for addr_str in all_node_keys:
+            if addr_str == ROOT_COLLECTION_ADDRESS.value:
+                blocked_by[addr_str] = 0
+                continue
+
+            # Count unfinished 'after' dependencies
+            after_deps = self.node_after_str.get(addr_str, set())
+            dataset_deps = self.dataset_after_str.get(addr_str, set())
+            all_deps = after_deps | dataset_deps
+
+            # Only count dependencies that are actually in our graph
+            valid_deps = all_deps & all_node_keys
+            blocked_by[addr_str] = len(valid_deps)
+
+        logger.debug("Traverse step 2/3: Building reverse dependency map...")
+        # Build reverse dependency map: when node X finishes, which nodes become unblocked?
+        # unblocks[X] = set of nodes that are waiting for X
+        unblocks: Dict[str, Set[str]] = defaultdict(set)
+
+        for addr_str in all_node_keys:
+            if addr_str == ROOT_COLLECTION_ADDRESS.value:
+                continue
+
+            after_deps = self.node_after_str.get(addr_str, set())
+            dataset_deps = self.dataset_after_str.get(addr_str, set())
+            all_deps = after_deps | dataset_deps
+
+            for dep in all_deps:
+                if dep in all_node_keys:  # Valid dependency (O(1) set lookup)
+                    unblocks[dep].add(addr_str)
+
+        logger.debug("Traverse step 3/3: Processing nodes...")
+        # Ready queue: nodes with no blocking 'after' dependencies
+        # We still need to check edge-based reachability dynamically
+        ready_queue: deque[TraversalNode] = deque()
+
+        # Start with ROOT (always ready)
+        ready_queue.append(self.root_node)
+
+        # Track nodes that have been discovered via edges (reachable from ROOT)
+        discovered: Set[str] = {ROOT_COLLECTION_ADDRESS.value}
+
+        # Pending queue: nodes discovered but blocked by 'after' dependencies
+        pending: Dict[str, TraversalNode] = {}
+
+        while ready_queue or pending:
+            # Try to get a node from the ready queue
+            current_node: Optional[TraversalNode] = None
+
+            if ready_queue:
+                current_node = ready_queue.popleft()
+            else:
+                # No ready nodes - check if any pending nodes are now ready
+                # This handles the edge case where a node was discovered but blocked
+                newly_ready = [
+                    addr
+                    for addr, node in pending.items()
+                    if blocked_by.get(addr, 0) == 0
+                ]
+                if newly_ready:
+                    addr = newly_ready[0]
+                    current_node = pending.pop(addr)
+                else:
+                    # Deadlock: pending nodes but none are ready
+                    logger.error(
+                        "Node could not be reached given specified ordering [{}]",
+                        ", ".join(pending.keys()),
+                    )
+                    raise TraversalError(
+                        f"Node could not be reached given the specified ordering: [{', '.join(pending.keys())}]"
+                    )
+
+            if current_node is None:
+                break
+
+            # Process the node
+            node_run_fn(current_node, environment)
+            finished_nodes[current_node.address] = current_node
+            finished_str.add(current_node.address.value)
+
+            # Update blocked_by counts for nodes waiting on this one
+            for waiting_addr in unblocks.get(current_node.address.value, set()):
+                if waiting_addr in blocked_by:
+                    blocked_by[waiting_addr] -= 1
+                    # If this node is pending and now has 0 blockers, move to ready
+                    if waiting_addr in pending and blocked_by[waiting_addr] == 0:
+                        ready_queue.append(pending.pop(waiting_addr))
+
+            # Handle edge-based parent/child relationships - O(edges) not O(finished_nodes)
+            # Only check edges incident to current node, not all finished nodes
+            for edge in self.edges_by_node.get(current_node.address, []):
+                if deleted_edges_tracker.get(edge, False):
+                    continue
+
+                # Find the other endpoint of this edge
+                other_addr = (
+                    edge.f2.collection_address()
+                    if edge.f1.collection_address() == current_node.address
+                    else edge.f1.collection_address()
+                )
+
+                # Only process if the other endpoint is already finished
+                if other_addr in finished_nodes:
+                    # IMPORTANT: Use edge.spans() to match original algorithm's deletion logic
+                    # spans() is order-sensitive for regular Edge (not BidirectionalEdge)
+                    # This allows cycles to work correctly by not deleting "backward" edges
+                    if edge.spans(other_addr, current_node.address):
+                        deleted_edges_tracker[edge] = True
+
+                        # Determine parent/child relationship based on edge direction
+                        if edge.ends_with_collection(current_node.address):
+                            # Edge points TO current node: other is parent, current is child
+                            finished_nodes[other_addr].add_child(current_node, edge)
+
+            # Discover children via remaining edges
+            edges_to_children = pydash.collections.filter_(
+                [
+                    e.split_by_address(current_node.address)
+                    for e in self.edges_by_node.get(current_node.address, [])
+                    if not deleted_edges_tracker.get(e, False)
+                ]
+            )
+
+            if not edges_to_children:
+                current_node.is_terminal_node = True
+
+            # Add newly discovered children to ready or pending queue
+            child_addresses = {
+                a[1].collection_address() for a in edges_to_children if a
+            }
+
+            for child_addr in child_addresses:
+                # Skip if already in discovered set AND not finished
+                # (allow re-adding finished nodes for cycle handling)
+                if (
+                    child_addr.value in discovered
+                    and child_addr.value not in finished_str
+                ):
+                    continue
+                if child_addr not in self.traversal_node_dict:
+                    continue
+
+                # For finished nodes being re-discovered (cycles), add directly to ready queue
+                if child_addr.value in finished_str:
+                    # Re-process this node to handle the cycle
+                    ready_queue.append(self.traversal_node_dict[child_addr])
+                    continue
+
+                discovered.add(child_addr.value)
+                child_node = self.traversal_node_dict[child_addr]
+
+                # Check if this node is ready (no unfinished 'after' deps)
+                if blocked_by.get(child_addr.value, 0) == 0:
+                    ready_queue.append(child_node)
+                else:
+                    pending[child_addr.value] = child_node
+
+        # Check for unvisited nodes (same as original)
+        remaining_node_keys = {
+            key
+            for key in self.traversal_node_dict.keys()
+            if key not in finished_nodes
+            and not self.should_exclude_node(self.traversal_node_dict[key])
+        }
+
+        if remaining_node_keys:
+            logger.error(
+                "Some nodes were not reachable: {}",
+                ", ".join([str(x) for x in remaining_node_keys]),
+            )
+            raise UnreachableNodesError(
+                f"Some nodes were not reachable: {', '.join([str(x) for x in remaining_node_keys])}",
+                [key.value for key in remaining_node_keys],
+            )
+
+        # Check for unvisited edges
+        remaining_edges = set()
+        for node_key in remaining_node_keys:
+            for edge in self.edges_by_node.get(node_key, []):
+                if not deleted_edges_tracker.get(edge, False):
+                    if (
+                        edge.f1.collection_address() in remaining_node_keys
+                        and edge.f2.collection_address() in remaining_node_keys
+                    ):
+                        remaining_edges.add(edge)
+
+        if remaining_edges:
+            logger.error(
+                "Some edges were not reachable: {}",
+                ", ".join([str(x) for x in remaining_edges]),
+            )
+            raise UnreachableEdgesError(
+                f"Some edges were not reachable: {', '.join([str(x) for x in remaining_edges])}",
+                [f"{edge}" for edge in remaining_edges],
+            )
+
+        end_nodes = [
+            tn.address for tn in finished_nodes.values() if tn.is_terminal_node
+        ]
+        logger.debug(
+            "Traversal complete: {} nodes processed, {} end nodes",
+            len(finished_nodes),
+            len(end_nodes),
+        )
+        return end_nodes
+
+    def _traverse_legacy(  # pylint: disable=R0914
+        self,
+        environment: Dict[CollectionAddress, Any],
+        node_run_fn: Callable[[TraversalNode, Dict[CollectionAddress, Any]], None],
+    ) -> List[CollectionAddress]:
+        """Legacy O(N²) traverse implementation using MatchingQueue.
+
+        Kept for reference. The new traverse() method uses In-Degree Tracking
+        (Kahn's Algorithm variant) for O(N+E) complexity.
+
+        This implementation scans the queue for eligible nodes on each iteration,
+        which is O(N) per node = O(N²) total.
         """
         if environment:
-            logger.info(
-                "Starting traversal",
+            logger.debug(
+                "Starting traversal (legacy)",
             )
 
         # Use string sets instead of CollectionAddress sets

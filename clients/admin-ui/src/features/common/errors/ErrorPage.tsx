@@ -13,23 +13,35 @@ import { ReactNode } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import ErrorImage from "~/features/common/errors/ErrorImage";
-import { getErrorMessage } from "~/features/common/helpers";
+import {
+  getErrorMessage,
+  isFetchBaseQueryError,
+  ParsedError,
+} from "~/features/common/helpers";
 
 type ActionProps = Omit<ButtonProps, "children"> & { label: ReactNode };
 
+type ErrorPageError = FetchBaseQueryError | SerializedError | ParsedError;
+
+const DEFAULT_MESSAGE = "An unexpected error occurred.  Please try again";
+
 const ErrorPage = ({
   error,
-  defaultMessage = "An unexpected error occurred.  Please try again",
+  defaultMessage,
   actions,
   showReload = true,
+  fullScreen = true,
 }: {
-  error: FetchBaseQueryError | SerializedError;
+  error: ErrorPageError;
   defaultMessage?: string;
   actions?: ActionProps[];
   showReload?: boolean;
+  fullScreen?: boolean;
 }) => {
-  const errorMessage = getErrorMessage(error, defaultMessage);
-  // handle both FetchBaseQueryError and SerializedError
+  const resolvedDefault = defaultMessage ?? DEFAULT_MESSAGE;
+  const errorMessage = isFetchBaseQueryError(error)
+    ? getErrorMessage(error, resolvedDefault)
+    : ("message" in error && error.message) || resolvedDefault;
   const dataString =
     "data" in error && !!error.data
       ? JSON.stringify(error.data)
@@ -45,7 +57,7 @@ const ErrorPage = ({
       vertical
       align="center"
       justify="center"
-      className="h-screen"
+      className={fullScreen ? "h-screen" : ""}
       data-testid="error-page-result"
     >
       <Result

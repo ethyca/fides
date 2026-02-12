@@ -1,6 +1,5 @@
 import { Icons, MenuProps } from "fidesui";
 
-import { useFeatures } from "~/features/common/features";
 import useMenuNavigation from "~/features/common/hooks/useMenuNavigation";
 
 export enum ActionCenterRoute {
@@ -29,18 +28,6 @@ export const ACTION_CENTER_CONFIG: Record<
 export type ActionCenterRouteConfig = Record<ActionCenterRoute, string>;
 
 const useActionCenterNavigation = (routeConfig: ActionCenterRouteConfig) => {
-  const {
-    flags: { heliosV2 },
-  } = useFeatures();
-
-  const items = {
-    [ActionCenterRoute.ATTENTION_REQUIRED]:
-      ACTION_CENTER_CONFIG["attention-required"],
-    ...(heliosV2
-      ? { [ActionCenterRoute.ACTIVITY]: ACTION_CENTER_CONFIG.activity }
-      : {}),
-  } as const;
-
   const { activeItem, setActiveItem } = useMenuNavigation({
     routes: routeConfig,
     defaultKey: ActionCenterRoute.ATTENTION_REQUIRED,
@@ -49,7 +36,7 @@ const useActionCenterNavigation = (routeConfig: ActionCenterRouteConfig) => {
   return {
     activeItem,
     setActiveItem,
-    items,
+    items: ACTION_CENTER_CONFIG,
   };
 };
 
