@@ -73,7 +73,6 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING"
   | "FIDES_COOKIE_SUFFIX"
   | "FIDES_COOKIE_COMPRESSION"
-  | "FIDES_EXTERNAL_ID"
 >;
 
 export type Styles = string;
@@ -349,7 +348,6 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
       settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
     FIDES_COOKIE_SUFFIX: settings.FIDES_COOKIE_SUFFIX,
     FIDES_COOKIE_COMPRESSION: settings.FIDES_COOKIE_COMPRESSION,
-    FIDES_EXTERNAL_ID: settings.FIDES_EXTERNAL_ID,
   };
 
   return clientSettings;
