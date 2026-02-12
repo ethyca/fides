@@ -140,6 +140,11 @@ services:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      # The default HTTP health check port is 9000, override it here to ensure that
+      # the override works as expected.
+      FIDES__CELERY__HEALTHCHECK_PORT: "9001"
+    expose:
+        - 9001
     volumes:
       - type: bind
         source: ./
@@ -148,52 +153,16 @@ services:
       - /fides/src/fides.egg-info
 
   worker-privacy-preferences:
-    image: ethyca/fides:local${IMAGE_SUFFIX:-}
+    extends:
+      service: worker-other
     command: fides worker --queues=fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion
-    depends_on:
-      redis:
-        condition: service_started
-    restart: always
-    healthcheck:
-      test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
-      start_period: 60s
-      interval: 20s
-      timeout: 20s
-      retries: 10
-    environment:
-      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
-      FIDES__LOGGING__COLORIZE: "True"
-      FIDES__USER__ANALYTICS_OPT_OUT: "True"
-    volumes:
-      - type: bind
-        source: ./
-        target: /fides
-        read_only: False
-      - /fides/src/fides.egg-info
 
   worker-dsr:
-    image: ethyca/fides:local${IMAGE_SUFFIX:-}
-    command: fides worker --queues=fides.dsr
-    depends_on:
-      redis:
-        condition: service_started
-    restart: always
+    extends:
+      service: worker-other
     healthcheck:
-      test: ["CMD", "/opt/fides/bin/python", "-m", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
-      start_period: 60s
-      interval: 20s
-      timeout: 20s
-      retries: 10
-    environment:
-      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
-      FIDES__LOGGING__COLORIZE: "True"
-      FIDES__USER__ANALYTICS_OPT_OUT: "True"
-    volumes:
-      - type: bind
-        source: ./
-        target: /fides
-        read_only: False
-      - /fides/src/fides.egg-info
+      test: [ "CMD", "curl", "-f", "http://localhost:9001/"]
+    command: fides worker --queues=fides.dsr
 
   redis:
     image: "redis:8.0-alpine"

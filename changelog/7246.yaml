@@ -1,0 +1,4 @@
+type: Added
+description: Added asset reporting table with CSV export for cross-system asset aggregation.
+pr: 7246
+labels: []
