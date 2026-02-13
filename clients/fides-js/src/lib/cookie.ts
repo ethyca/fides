@@ -133,11 +133,18 @@ export const makeDefaultIdentity = ({
   fidesUserDeviceId?: string;
   fidesExternalId?: string | null;
 } = {}): FidesJSIdentity => {
+  const useProvidedDeviceId =
+    fidesUserDeviceId != null && fidesUserDeviceId.trim() !== "";
+  const deviceId =
+    (useProvidedDeviceId ? fidesUserDeviceId : undefined) ??
+    userDeviceId ??
+    generateFidesUserDeviceId();
+  const useProvidedExternalId =
+    fidesExternalId != null && fidesExternalId.trim() !== "";
   return {
-    [FIDES_IDENTITY_KEY_USER_DEVICE_ID]:
-      fidesUserDeviceId || userDeviceId || generateFidesUserDeviceId(),
-    ...(fidesExternalId
-      ? { [FIDES_IDENTITY_KEY_EXTERNAL_ID]: fidesExternalId }
+    [FIDES_IDENTITY_KEY_USER_DEVICE_ID]: deviceId,
+    ...(useProvidedExternalId
+      ? { [FIDES_IDENTITY_KEY_EXTERNAL_ID]: fidesExternalId.trim() }
       : {}),
   };
 };
@@ -392,9 +399,14 @@ export const getOrMakeFidesCookie = async (
       parsedCookie.identity = makeDefaultIdentity({ fidesExternalId });
     }
 
-    // Update external_id if provided
-    if (fidesExternalId !== undefined && fidesExternalId !== null) {
-      parsedCookie.identity[FIDES_IDENTITY_KEY_EXTERNAL_ID] = fidesExternalId;
+    // Update external_id if provided (empty/whitespace-only treated as not set, consistent with setIdentity)
+    const effectiveExternalId =
+      fidesExternalId != null && fidesExternalId.trim() !== ""
+        ? fidesExternalId.trim()
+        : undefined;
+    if (effectiveExternalId !== undefined) {
+      parsedCookie.identity[FIDES_IDENTITY_KEY_EXTERNAL_ID] =
+        effectiveExternalId;
     }
 
     // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj

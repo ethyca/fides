@@ -538,6 +538,22 @@ describe("Consent overlay", () => {
             });
           });
 
+          it("throws when external_id is empty string", () => {
+            stubConfig({ options: { isOverlayEnabled: true } });
+            cy.waitUntilFidesInitialized();
+            cy.window().then(async (win) => {
+              const fides = (win as unknown as WindowWithSetIdentity).Fides;
+              try {
+                await fides.setIdentity({ external_id: "" });
+                throw new Error("Expected setIdentity to reject");
+              } catch (err) {
+                expect((err as Error).message).to.include(
+                  "external_id cannot be an empty string. Omit the key to leave identity unchanged.",
+                );
+              }
+            });
+          });
+
           it("after GPC initial save, setIdentity does not trigger PATCH; next modal save includes external_id", () => {
             cy.on("window:before:load", (win) => {
               // eslint-disable-next-line no-param-reassign

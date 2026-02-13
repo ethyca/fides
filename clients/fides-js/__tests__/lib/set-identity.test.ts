@@ -103,6 +103,33 @@ describe("setIdentity", () => {
     expect(saveFidesCookie).not.toHaveBeenCalled();
   });
 
+  it("throws when external_id is empty string", async () => {
+    const mockFides = createMockFides();
+    await expect(
+      setIdentity.call(mockFides, { external_id: "" }),
+    ).rejects.toThrow(
+      "external_id cannot be an empty string. Omit the key to leave identity unchanged.",
+    );
+    expect(saveFidesCookie).not.toHaveBeenCalled();
+  });
+
+  it("throws when external_id is whitespace-only", async () => {
+    const mockFides = createMockFides();
+    await expect(
+      setIdentity.call(mockFides, { external_id: "   \t\n  " }),
+    ).rejects.toThrow(
+      "external_id cannot be an empty string. Omit the key to leave identity unchanged.",
+    );
+    expect(saveFidesCookie).not.toHaveBeenCalled();
+  });
+
+  it("trims external_id before saving", async () => {
+    const mockFides = createMockFides();
+    await setIdentity.call(mockFides, { external_id: "  user-456  " });
+    expect(mockFides.cookie!.identity.external_id).toBe("user-456");
+    expect(saveFidesCookie).toHaveBeenCalledTimes(1);
+  });
+
   it("does nothing and does not call saveFidesCookie when identity is empty", async () => {
     const mockFides = createMockFides();
     await setIdentity.call(mockFides, {});

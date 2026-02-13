@@ -54,9 +54,15 @@ export async function setIdentity(
   }
   validateSetIdentityKeys(identity);
 
-  const externalId = identity[FIDES_IDENTITY_KEY_EXTERNAL_ID];
-  if (externalId === undefined) {
+  const rawExternalId = identity[FIDES_IDENTITY_KEY_EXTERNAL_ID];
+  if (rawExternalId === undefined) {
     return;
+  }
+  const externalId = rawExternalId.trim();
+  if (externalId === "") {
+    throw new Error(
+      "external_id cannot be an empty string. Omit the key to leave identity unchanged.",
+    );
   }
 
   const hadOverride =

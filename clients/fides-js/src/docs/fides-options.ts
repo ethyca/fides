@@ -96,6 +96,9 @@ export interface FidesOptions {
    * This can be used to link a user's consent preferences to a saved profile on
    * your site, such as a CRM ID, etc.
    *
+   * Empty or whitespace-only values are treated as not set (same as omitting or
+   * undefined), consistent with {@link Fides.setIdentity}.
+   *
    * Note that the `fides_user_device_id` is still always generated and included
    * in the saved user consent preferences, to ensure that per-device
    * preferences are properly stored for reporting.

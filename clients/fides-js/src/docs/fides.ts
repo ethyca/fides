@@ -155,10 +155,11 @@ export interface Fides {
    * Only `external_id` is supported today. Reserved keys (e.g. `fides_user_device_id`)
    * and verified keys (e.g. `email`, `phone_number`) cannot be set and will throw; support for
    * custom and verified identity keys is planned on the roadmap.
+   * Empty or whitespace-only `external_id` throws; omit the key to leave identity unchanged.
    *
-   * @param identity - Object with optional `external_id` string
+   * @param identity - Object with optional `external_id` string (trimmed before use; empty/whitespace-only throws)
    * @returns Promise that resolves when the cookie has been updated
-   * @throws If Fides is not initialized, or if an unsupported/reserved/verified key is provided
+   * @throws If Fides is not initialized, if external_id is empty or whitespace-only, or if an unsupported/reserved/verified key is provided
    *
    * @example
    * Set a custom external ID after the user logs in:
