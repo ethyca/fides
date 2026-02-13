@@ -371,7 +371,7 @@ export const getOrMakeFidesCookie = async (
     }
 
     // Update external_id if provided
-    if (fidesExternalId !== undefined && fidesExternalId !== null) {
+    if (!!fidesExternalId) {
       parsedCookie.identity.external_id = fidesExternalId;
     }
 
