@@ -817,11 +817,10 @@ class ConnectionService:
                 f"Fides-provided template with type '{connector_type}' not found."
             )
 
-        # Delete the custom template from the database and in-memory cache
+        # Delete the custom template from the database and invalidate cache.
+        # The delete_template method clears the db_timestamp_cached cache so the
+        # next get_connector_templates() call rebuilds from the DB automatically.
         CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
-        CustomConnectorTemplateLoader.get_connector_templates().pop(
-            connector_type, None
-        )
 
         # Get the file template that is now active
         file_connector_template = ConnectorRegistry.get_connector_template(

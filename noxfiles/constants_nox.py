@@ -79,6 +79,15 @@ EXEC = (
     CI_ARGS_EXEC,
     CONTAINER_NAME,
 )
+# Container already has HOME, UV_HOME, UV_PROJECT_ENVIRONMENT from Dockerfile and docker-compose.
+EXEC_UV = (
+    "docker",
+    "exec",
+    *ANALYTICS_OPT_OUT,
+    *ANALYTICS_ID_OVERRIDE,
+    CI_ARGS_EXEC,
+    CONTAINER_NAME,
+)
 EXEC_IT = (
     "docker",
     "exec",

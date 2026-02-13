@@ -73,9 +73,9 @@ const ConsentReportingPage = () => {
   };
 
   return (
-    <FixedLayout title="Consent reporting">
+    <FixedLayout title="Consent report">
       <PageHeader
-        heading="Consent reporting"
+        heading="Consent report"
         rightContent={
           <Button
             type="primary"
