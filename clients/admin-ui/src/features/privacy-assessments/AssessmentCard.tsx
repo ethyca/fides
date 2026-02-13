@@ -67,9 +67,9 @@ export const AssessmentCard = ({
           <Text type="secondary" className="mb-2 block text-xs">
             System: {assessment.system_name ?? ""}
           </Text>
-          {(assessment.data_categories ?? []).length > 0 && (
-            <Text type="secondary" className="mb-2 block text-xs leading-6">
-              Processing{" "}
+          <Text type="secondary" className="mb-2 block text-xs leading-6">
+            Processing{" "}
+            {(assessment.data_categories ?? []).length > 0 ? (
               <TagList
                 tags={(assessment.data_categories ?? []).map((key) => ({
                   value: key,
@@ -77,16 +77,16 @@ export const AssessmentCard = ({
                 }))}
                 maxTags={1}
                 expandable
-              />{" "}
-              for{" "}
-              <TagList
-                tags={
-                  assessment.data_use_name ? [assessment.data_use_name] : []
-                }
-                maxTags={1}
               />
-            </Text>
-          )}
+            ) : (
+              <Tag>0 data categories</Tag>
+            )}{" "}
+            for{" "}
+            <TagList
+              tags={assessment.data_use_name ? [assessment.data_use_name] : []}
+              maxTags={1}
+            />
+          </Text>
           {riskLevel && (
             <div>
               <Tag
