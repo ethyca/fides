@@ -581,16 +581,18 @@ class ConnectionService:
                 connection_config.secrets,  # type: ignore[arg-type]
             )
 
-        # Automatically create a ManualTask if this is a manual_task connection
-        # and it doesn't already have one
-        if (
-            connection_config.connection_type == ConnectionType.manual_task
-            and not connection_config.manual_task
-        ):
+        # Automatically create a ManualTask if this is a manual_task or
+        # jira_ticket connection and it doesn't already have one
+        _auto_task_type_mapping = {
+            ConnectionType.manual_task: ManualTaskType.privacy_request,
+            ConnectionType.jira_ticket: ManualTaskType.jira_ticket,
+        }
+        auto_task_type = _auto_task_type_mapping.get(connection_config.connection_type)
+        if auto_task_type and not connection_config.manual_task:
             ManualTask.create(
                 db=self.db,
                 data={
-                    "task_type": ManualTaskType.privacy_request,
+                    "task_type": auto_task_type,
                     "parent_entity_id": connection_config.id,
                     "parent_entity_type": ManualTaskParentEntityType.connection_config,
                 },

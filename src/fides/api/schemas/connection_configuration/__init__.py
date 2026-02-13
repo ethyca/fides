@@ -241,6 +241,7 @@ connection_secrets_schemas = Union[
     FidesDocsSchema,
     GoogleCloudSQLMySQLDocsSchema,
     GoogleCloudSQLPostgresDocsSchema,
+    JiraTicketDocsSchema,
     ManualWebhookDocsSchema,
     MariaDBDocsSchema,
     MongoDBDocsSchema,
