@@ -93,15 +93,10 @@ export const NOTIFICATIONS_DIGESTS_ROUTE = "/notifications/digests";
 export const NOTIFICATIONS_ADD_DIGEST_ROUTE = "/notifications/digests/new";
 export const NOTIFICATIONS_EDIT_DIGEST_ROUTE = "/notifications/digests/[id]";
 
-// Email providers (messaging providers, now part of notifications)
+// Messaging providers (now part of notifications)
 export const MESSAGING_PROVIDERS_ROUTE = "/notifications/providers";
 export const MESSAGING_PROVIDERS_EDIT_ROUTE = "/notifications/providers/[key]";
 export const MESSAGING_PROVIDERS_NEW_ROUTE = "/notifications/providers/new";
-
-// Chat providers (Slack, Teams, etc.)
-export const CHAT_PROVIDERS_ROUTE = "/notifications/chat-providers";
-export const CHAT_PROVIDERS_CONFIGURE_ROUTE =
-  "/notifications/chat-providers/configure";
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
@@ -114,3 +109,9 @@ export const FIDES_JS_DOCS = "/fides-js-docs";
 
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
+
+// Privacy Assessments routes
+export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
+export const PRIVACY_ASSESSMENTS_ONBOARDING_ROUTE =
+  "/privacy-assessments/onboarding";
+export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";
