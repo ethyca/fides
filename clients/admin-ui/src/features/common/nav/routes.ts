@@ -104,6 +104,8 @@ export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
 
 // Privacy Assessments routes
 export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
+export const PRIVACY_ASSESSMENTS_EVALUATE_ROUTE =
+  "/privacy-assessments/evaluate";
 export const PRIVACY_ASSESSMENTS_ONBOARDING_ROUTE =
   "/privacy-assessments/onboarding";
 export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";

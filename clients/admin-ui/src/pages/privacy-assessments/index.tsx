@@ -7,17 +7,18 @@ import {
   Spin,
   Text,
   Typography,
-  useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
+import {
+  PRIVACY_ASSESSMENTS_EVALUATE_ROUTE,
+  PRIVACY_ASSESSMENTS_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
-  useCreatePrivacyAssessmentMutation,
   useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
@@ -30,7 +31,6 @@ const { Title } = Typography;
 const PrivacyAssessmentsPage: NextPage = () => {
   const { flags } = useFeatures();
   const router = useRouter();
-  const message = useMessage();
 
   // Fetch assessments from API
   const {
@@ -41,9 +41,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
 
   // Fetch templates from API
   const { data: templatesData } = useGetAssessmentTemplatesQuery();
-
-  const [createPrivacyAssessment, { isLoading: isGenerating }] =
-    useCreatePrivacyAssessmentMutation();
 
   if (!flags?.alphaDataProtectionAssessments) {
     return (
@@ -56,27 +53,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
       </Layout>
     );
   }
-
-  const handleGenerateAssessments = async () => {
-    try {
-      message.info("Analyzing privacy declarations...");
-
-      const result = await createPrivacyAssessment({
-        assessment_type: "cpra",
-        use_llm: true,
-      }).unwrap();
-
-      message.success(
-        `Generated assessments for ${result.total_created} privacy declaration(s)`,
-      );
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Assessment generation failed:", error);
-      message.error(
-        `Assessment generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
-    }
-  };
 
   const assessments = assessmentsData?.items ?? [];
   const templates = templatesData?.items ?? [];
@@ -130,20 +106,12 @@ const PrivacyAssessmentsPage: NextPage = () => {
         heading="Privacy assessments"
         rightContent={
           hasAssessments ? (
-            <Space>
-              <Button
-                onClick={() => router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/new`)}
-              >
-                New assessment
-              </Button>
-              <Button
-                type="primary"
-                onClick={handleGenerateAssessments}
-                loading={isGenerating}
-              >
-                {isGenerating ? "Re-evaluating..." : "Re-evaluate assessments"}
-              </Button>
-            </Space>
+            <Button
+              type="primary"
+              onClick={() => router.push(PRIVACY_ASSESSMENTS_EVALUATE_ROUTE)}
+            >
+              Re-evaluate assessments
+            </Button>
           ) : undefined
         }
         isSticky

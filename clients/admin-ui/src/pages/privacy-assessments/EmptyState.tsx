@@ -1,7 +1,7 @@
 import { Button, Icons, Text, Typography } from "fidesui";
 import { useRouter } from "next/router";
 
-import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
+import { PRIVACY_ASSESSMENTS_EVALUATE_ROUTE } from "~/features/common/nav/routes";
 
 const { Title } = Typography;
 
@@ -14,18 +14,18 @@ export const EmptyState = () => {
         <Icons.Document size={32} className="text-gray-400" />
       </div>
       <Title level={4} className="!mb-2">
-        No privacy assessments yet
+        No assessments run yet
       </Title>
       <Text type="secondary" className="mb-6 block max-w-md text-sm">
-        Create privacy assessments to evaluate your systems against regulatory
-        frameworks and identify compliance gaps.
+        Run assessments to evaluate your systems against regulatory frameworks
+        and identify compliance gaps.
       </Text>
       <Button
         type="primary"
         icon={<Icons.Add />}
-        onClick={() => router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/new`)}
+        onClick={() => router.push(PRIVACY_ASSESSMENTS_EVALUATE_ROUTE)}
       >
-        New privacy assessment
+        Run assessment
       </Button>
     </div>
   );

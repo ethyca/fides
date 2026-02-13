@@ -49,7 +49,7 @@ const renderTemplateOption = (option: any) => {
   );
 };
 
-const NewAssessmentPage: NextPage = () => {
+const EvaluateAssessmentPage: NextPage = () => {
   const { flags } = useFeatures();
   const router = useRouter();
   const message = useMessage();
@@ -88,14 +88,14 @@ const NewAssessmentPage: NextPage = () => {
       }).unwrap();
 
       message.success(
-        `Successfully created ${result.total_created} assessment(s)`,
+        `Successfully evaluated ${result.total_created} system(s)`,
       );
 
       // Navigate to assessments list
       router.push(PRIVACY_ASSESSMENTS_ROUTE);
     } catch (error) {
       message.error(
-        `Failed to create assessment: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to evaluate assessment: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   };
@@ -106,7 +106,7 @@ const NewAssessmentPage: NextPage = () => {
 
   if (!flags?.alphaDataProtectionAssessments) {
     return (
-      <Layout title="New Privacy Assessment">
+      <Layout title="Evaluate system">
         <Alert
           type="error"
           message="Feature not available"
@@ -117,12 +117,12 @@ const NewAssessmentPage: NextPage = () => {
   }
 
   return (
-    <Layout title="New Privacy Assessment">
+    <Layout title="Evaluate system">
       <PageHeader
-        heading="Create privacy assessment"
+        heading="Evaluate system"
         breadcrumbItems={[
           { title: "Privacy assessments", href: PRIVACY_ASSESSMENTS_ROUTE },
-          { title: "New assessment" },
+          { title: "Evaluate" },
         ]}
         isSticky
       />
@@ -131,10 +131,11 @@ const NewAssessmentPage: NextPage = () => {
         <div className="max-w-3xl">
           <Space direction="vertical" size="large" className="w-full">
             <div>
-              <Title level={4}>Assessment details</Title>
+              <Title level={4}>Evaluation details</Title>
               <Paragraph type="secondary">
-                Select the assessment template and system to analyze. You can
-                optionally enable AI-assisted answer generation.
+                Select an assessment template and optionally scope to a specific
+                system. Assessments will be created or re-evaluated for the
+                selected scope.
               </Paragraph>
             </div>
 
@@ -198,12 +199,9 @@ const NewAssessmentPage: NextPage = () => {
               <Item
                 name="system_fides_key"
                 label="System"
-                tooltip="Optionally scope this assessment to a specific system. Leave blank to generate assessments for all systems."
+                tooltip="Optionally scope this assessment to a specific system. Leave blank to evaluate all systems."
               >
-                <SystemSelect
-                  placeholder="Select a system (optional)"
-                  allowClear
-                />
+                <SystemSelect placeholder="All systems" allowClear />
               </Item>
 
               <Item
@@ -219,7 +217,7 @@ const NewAssessmentPage: NextPage = () => {
                 <Flex gap="middle" justify="flex-end">
                   <Button onClick={handleCancel}>Cancel</Button>
                   <Button type="primary" htmlType="submit" loading={isCreating}>
-                    Create assessment
+                    Run evaluation
                   </Button>
                 </Flex>
               </Item>
@@ -231,4 +229,4 @@ const NewAssessmentPage: NextPage = () => {
   );
 };
 
-export default NewAssessmentPage;
+export default EvaluateAssessmentPage;
