@@ -6,12 +6,11 @@ import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_EVALUATE_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  AssessmentGroup,
+  EmptyState,
   useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
-
-import { AssessmentGroup } from "./AssessmentGroup";
-import { EmptyState } from "./EmptyState";
 
 const PrivacyAssessmentsPage: NextPage = () => {
   const router = useRouter();
