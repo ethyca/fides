@@ -37,18 +37,18 @@ export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
  */
 export const FIDES_IDENTITY_KEY_USER_DEVICE_ID = "fides_user_device_id";
 export const FIDES_IDENTITY_KEY_EXTERNAL_ID = "external_id";
-/** Key used in SetIdentityOptions and init overrides; maps to external_id in cookie. */
+/** Key used in init overrides (e.g. query params) for fidesExternalId; maps to external_id in cookie. */
 export const FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID = "fides_external_id";
 
 /** Identity keys that cannot be set via setIdentity (reserved for internal use). */
-export const RESERVED_IDENTITY_KEYS = [
+export const FIDES_RESERVED_IDENTITY_KEYS = [
   FIDES_IDENTITY_KEY_USER_DEVICE_ID,
 ] as const;
 /** Identity keys that are verified elsewhere and cannot be set via setIdentity. */
-export const VERIFIED_IDENTITY_KEYS = ["email", "phone_number"] as const;
-/** Identity option keys that setIdentity() is allowed to set. */
-export const SUPPORTED_SET_IDENTITY_KEYS = [
-  FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID,
+export const FIDES_VERIFIED_IDENTITY_KEYS = ["email", "phone_number"] as const;
+/** Identity keys that setIdentity() is allowed to set (same key as cookie identity object). */
+export const FIDES_SUPPORTED_SET_IDENTITY_KEYS = [
+  FIDES_IDENTITY_KEY_EXTERNAL_ID,
 ] as const;
 
 const getConsentCookieName = (

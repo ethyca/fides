@@ -475,7 +475,7 @@ describe("Consent overlay", () => {
             stubConfig({ options: { isOverlayEnabled: true } });
             cy.waitUntilFidesInitialized();
             cy.window().then((win) =>
-              win.Fides.setIdentity({ fides_external_id: externalId }),
+              win.Fides.setIdentity({ external_id: externalId }),
             );
             cy.contains("button", "Manage preferences").click();
             cy.getByTestId("consent-modal").should("be.visible");
@@ -532,7 +532,7 @@ describe("Consent overlay", () => {
                 throw new Error("Expected setIdentity to reject");
               } catch (err) {
                 expect((err as Error).message).to.include(
-                  "Only fides_external_id is supported. Unsupported key: custom_key",
+                  "Only external_id is supported. Unsupported key: custom_key",
                 );
               }
             });
@@ -591,7 +591,7 @@ describe("Consent overlay", () => {
               expect(body.browser_identity?.external_id).to.be.undefined;
             });
             cy.window().then((win) =>
-              win.Fides.setIdentity({ fides_external_id: "after-gpc-id" }),
+              win.Fides.setIdentity({ external_id: "after-gpc-id" }),
             );
             /*
              * NOTE: This confirms the *current* behavior that we don't automatically

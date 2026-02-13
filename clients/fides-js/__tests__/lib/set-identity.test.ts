@@ -20,7 +20,7 @@ describe("setIdentity", () => {
 
   it("updates cookie.identity.external_id and calls saveFidesCookie", async () => {
     const mockFides = createMockFides();
-    await setIdentity.call(mockFides, { fides_external_id: "user-123" });
+    await setIdentity.call(mockFides, { external_id: "user-123" });
     expect(mockFides.cookie!.identity.external_id).toBe("user-123");
     expect(saveFidesCookie).toHaveBeenCalledTimes(1);
     expect(saveFidesCookie).toHaveBeenCalledWith(
@@ -36,7 +36,7 @@ describe("setIdentity", () => {
         fidesExternalId: "initial-id",
       },
     });
-    await setIdentity.call(mockFides, { fides_external_id: "new-id" });
+    await setIdentity.call(mockFides, { external_id: "new-id" });
     expect(window.fidesDebugger).toHaveBeenCalledWith(
       "setIdentity: overriding existing fidesExternalId from init options with value from setIdentity.",
     );
@@ -50,7 +50,7 @@ describe("setIdentity", () => {
   it("throws when Fides is not initialized (no cookie)", async () => {
     const mockFides = createMockFides({ cookie: undefined });
     await expect(
-      setIdentity.call(mockFides, { fides_external_id: "user-123" }),
+      setIdentity.call(mockFides, { external_id: "user-123" }),
     ).rejects.toThrow("Fides must be initialized before calling setIdentity.");
     expect(saveFidesCookie).not.toHaveBeenCalled();
   });
@@ -98,7 +98,7 @@ describe("setIdentity", () => {
         custom_key: "value",
       } as SetIdentityOptions),
     ).rejects.toThrow(
-      "Only fides_external_id is supported. Unsupported key: custom_key.",
+      "Only external_id is supported. Unsupported key: custom_key.",
     );
     expect(saveFidesCookie).not.toHaveBeenCalled();
   });

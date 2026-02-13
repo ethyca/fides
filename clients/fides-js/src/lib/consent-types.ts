@@ -264,11 +264,11 @@ export interface FidesGlobal
 }
 
 /**
- * Options for Fides.setIdentity(). Only fides_external_id is supported today.
+ * Options for Fides.setIdentity(). Only external_id is supported today.
  */
 export interface SetIdentityOptions {
   /** Custom user ID to set on the consent cookie; included in API calls. */
-  fides_external_id?: string;
+  external_id?: string;
 }
 
 /**
