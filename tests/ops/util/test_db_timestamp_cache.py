@@ -6,6 +6,7 @@ Covers:
 - Invalidation via updated_at change
 - Invalidation via count change (detects deletions)
 - Manual cache_clear() forcing reload
+- Session reuse via the ``db`` kwarg
 """
 
 from datetime import datetime, timezone
@@ -218,3 +219,60 @@ class TestCacheClear:
         # Clear on empty cache — should be a no-op
         decorated.cache_clear()
         decorated.cache_clear()
+
+
+class TestSessionReuse:
+    """The ``db`` kwarg allows reusing an existing session for the
+    staleness check."""
+
+    def test_db_kwarg_forwarded_to_get_table_state(
+        self, mock_model, mock_get_table_state
+    ):
+        """When ``db`` is passed, _get_table_state receives it."""
+        now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        mock_get_table_state.return_value = (now, 1)
+
+        fake_session = MagicMock()
+
+        decorated = db_timestamp_cached(model=mock_model, cache_key=CACHE_KEY)(
+            lambda: "result"
+        )
+
+        result = decorated(db=fake_session)
+        assert result == "result"
+
+        # _get_table_state should have been called with db=fake_session
+        mock_get_table_state.assert_called_once_with(mock_model, db=fake_session)
+
+    def test_db_kwarg_not_forwarded_to_inner_function(
+        self, mock_model, mock_get_table_state
+    ):
+        """The ``db`` kwarg is consumed by the decorator and must NOT be
+        passed to the wrapped function."""
+        now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        mock_get_table_state.return_value = (now, 1)
+
+        inner = MagicMock(return_value="ok")
+
+        decorated = db_timestamp_cached(model=mock_model, cache_key=CACHE_KEY)(inner)
+
+        decorated(db=MagicMock())
+
+        # The inner function should be called with no kwargs (db stripped)
+        inner.assert_called_once_with()
+
+    def test_no_db_kwarg_falls_back_to_standalone_session(
+        self, mock_model, mock_get_table_state
+    ):
+        """When no ``db`` is passed, _get_table_state is called with
+        db=None so it creates its own session."""
+        now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        mock_get_table_state.return_value = (now, 1)
+
+        decorated = db_timestamp_cached(model=mock_model, cache_key=CACHE_KEY)(
+            lambda: "value"
+        )
+
+        decorated()
+
+        mock_get_table_state.assert_called_once_with(mock_model, db=None)
