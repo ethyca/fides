@@ -440,7 +440,8 @@ describe("shouldResurfaceBanner", () => {
       expected: false,
     },
     {
-      label: "returns true when user rejected and resurface_behavior includes reject",
+      label:
+        "returns true when user rejected and resurface_behavior includes reject",
       experience: {
         ...mockExperience,
         experience_config: {
@@ -457,7 +458,8 @@ describe("shouldResurfaceBanner", () => {
       expected: true,
     },
     {
-      label: "returns true when user dismissed and resurface_behavior includes dismiss",
+      label:
+        "returns true when user dismissed and resurface_behavior includes dismiss",
       experience: {
         ...mockExperience,
         experience_config: {
@@ -474,7 +476,8 @@ describe("shouldResurfaceBanner", () => {
       expected: true,
     },
     {
-      label: "returns true when user rejected and resurface_behavior includes both reject and dismiss",
+      label:
+        "returns true when user rejected and resurface_behavior includes both reject and dismiss",
       experience: {
         ...mockExperience,
         experience_config: {
@@ -491,7 +494,8 @@ describe("shouldResurfaceBanner", () => {
       expected: true,
     },
     {
-      label: "returns false when user accepted and resurface_behavior only includes reject",
+      label:
+        "returns false when user accepted and resurface_behavior only includes reject",
       experience: {
         ...mockExperience,
         experience_config: {
@@ -525,7 +529,8 @@ describe("shouldResurfaceBanner", () => {
       expected: false,
     },
     {
-      label: "returns false when user rejected and resurface_behavior is undefined",
+      label:
+        "returns false when user rejected and resurface_behavior is undefined",
       experience: {
         ...mockExperience,
         experience_config: {
@@ -542,7 +547,8 @@ describe("shouldResurfaceBanner", () => {
       expected: false,
     },
     {
-      label: "returns false when user dismissed and resurface_behavior only includes reject",
+      label:
+        "returns false when user dismissed and resurface_behavior only includes reject",
       experience: {
         ...mockExperience,
         experience_config: {
@@ -559,7 +565,8 @@ describe("shouldResurfaceBanner", () => {
       expected: false,
     },
     {
-      label: "returns true when user dismissed and resurface_behavior includes both",
+      label:
+        "returns true when user dismissed and resurface_behavior includes both",
       experience: {
         ...mockExperience,
         experience_config: {
