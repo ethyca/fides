@@ -45,9 +45,16 @@ export const AssessmentCard = ({
   assessment,
   onClick,
 }: AssessmentCardProps) => {
-  const riskLabel = RISK_LEVEL_LABELS[assessment.risk_level];
-  const statusLabel = ASSESSMENT_STATUS_LABELS[assessment.status];
-  const isComplete = assessment.completeness === 100;
+  const riskLevel = assessment.risk_level ?? "low";
+  const status = assessment.status ?? "in_progress";
+  const completeness = assessment.completeness ?? 0;
+  const dataCategories = assessment.data_categories ?? [];
+  const systemName = assessment.system_name ?? "";
+  const dataUseName = assessment.data_use_name ?? "";
+
+  const riskLabel = RISK_LEVEL_LABELS[riskLevel];
+  const statusLabel = ASSESSMENT_STATUS_LABELS[status];
+  const isComplete = completeness === 100;
 
   return (
     <Card
@@ -74,30 +81,28 @@ export const AssessmentCard = ({
             {assessment.name}
           </Title>
           <Text type="secondary" className="mb-2 block text-xs">
-            System: {assessment.system_name}
+            System: {systemName}
           </Text>
-          {assessment.data_categories.length > 0 && (
+          {dataCategories.length > 0 && (
             <Text type="secondary" className="mb-2 block text-xs leading-6">
               Processing{" "}
-              {assessment.data_categories.map(
-                (category: string, idx: number) => (
-                  <span key={category}>
-                    <Tag
-                      color={CUSTOM_TAG_COLOR.DEFAULT}
-                      className="!m-0 align-middle text-[11px]"
-                    >
-                      {category}
-                    </Tag>
-                    {idx < assessment.data_categories.length - 1 && " "}
-                  </span>
-                ),
-              )}{" "}
+              {dataCategories.map((category: string, idx: number) => (
+                <span key={category}>
+                  <Tag
+                    color={CUSTOM_TAG_COLOR.DEFAULT}
+                    className="!m-0 align-middle text-[11px]"
+                  >
+                    {category}
+                  </Tag>
+                  {idx < dataCategories.length - 1 && " "}
+                </span>
+              ))}{" "}
               for{" "}
               <Tag
                 color={CUSTOM_TAG_COLOR.DEFAULT}
                 className="!m-0 align-middle text-[11px]"
               >
-                {assessment.data_use_name}
+                {dataUseName}
               </Tag>
             </Text>
           )}
@@ -151,14 +156,14 @@ export const AssessmentCard = ({
                   Completeness
                 </Text>
                 <Text strong className="text-xs">
-                  {assessment.completeness}%
+                  {completeness}%
                 </Text>
               </Flex>
               <div className="h-1.5 overflow-hidden rounded bg-gray-100">
                 <div
                   className="h-full"
                   style={{
-                    width: `${assessment.completeness}%`,
+                    width: `${completeness}%`,
                     backgroundColor: palette.FIDESUI_MINOS,
                   }}
                 />
@@ -166,7 +171,7 @@ export const AssessmentCard = ({
               <Flex justify="space-between" align="center" className="mt-2">
                 <Text
                   className="text-[11px]"
-                  style={{ color: getStatusColor(assessment.status) }}
+                  style={{ color: getStatusColor(status) }}
                 >
                   {statusLabel}
                 </Text>

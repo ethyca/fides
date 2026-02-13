@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import type { Page_TemplateResponse_ } from "~/types/api";
 
 import {
   AssessmentEvidenceResponse,
@@ -33,6 +34,16 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         params: params ?? undefined,
       }),
       providesTags: ["Privacy Assessment"],
+    }),
+
+    getAssessmentTemplates: build.query<
+      Page_TemplateResponse_,
+      { page?: number; size?: number } | void
+    >({
+      query: (params) => ({
+        url: "plus/privacy-assessments/templates",
+        params: params ?? undefined,
+      }),
     }),
 
     getPrivacyAssessment: build.query<PrivacyAssessmentDetailResponse, string>({
@@ -166,6 +177,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 
 export const {
   useGetPrivacyAssessmentsQuery,
+  useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentQuery,
   useCreatePrivacyAssessmentMutation,
   useUpdatePrivacyAssessmentMutation,

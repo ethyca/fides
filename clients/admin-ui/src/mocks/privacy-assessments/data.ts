@@ -21,6 +21,7 @@ import {
   SlackCommunicationEvidenceItem,
   SlackMessage,
   SystemEvidenceItem,
+  TemplateResponse,
 } from "~/features/privacy-assessments/types";
 
 // =============================================================================
@@ -368,7 +369,6 @@ export const mockPrivacyAssessment = (
     template_id: "CPRA-RA-2024",
     template_name: "CPRA Risk Assessment",
     status: "in_progress",
-    status_updated_at: new Date().toISOString(),
     risk_level: "medium",
     completeness: 45,
     system_fides_key: "demo_marketing_system",
@@ -378,6 +378,7 @@ export const mockPrivacyAssessment = (
     data_use: "marketing.advertising",
     data_use_name: "Advertising",
     data_categories: ["user.device.cookie_id"],
+    created_by: "jack@example.com",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...partial,
@@ -821,6 +822,54 @@ export const MOCK_ASSESSMENTS: PrivacyAssessmentResponse[] = [
     data_use_name: "Service Improvement",
     data_categories: ["user.contact", "user.device.cookie_id"],
   }),
+];
+
+// =============================================================================
+// Pre-built Mock Data - Assessment Templates
+// =============================================================================
+
+export const MOCK_TEMPLATES: TemplateResponse[] = [
+  {
+    id: "cpra-ra-2024-v1",
+    key: "cpra_risk_assessment",
+    version: "1.0",
+    name: "CPRA Risk Assessment",
+    assessment_type: "cpra",
+    region: "California",
+    authority: "California Privacy Protection Agency (CPPA)",
+    legal_reference:
+      "California Privacy Rights Act (CPRA) Section 1798.185(a)(15)",
+    description:
+      "Risk assessment for processing activities that present significant risk to consumer privacy or security under CPRA",
+    is_active: true,
+  },
+  {
+    id: "gdpr-dpia-2024-v1",
+    key: "gdpr_dpia",
+    version: "1.0",
+    name: "GDPR Data Protection Impact Assessment",
+    assessment_type: "gdpr_dpia",
+    region: "European Union",
+    authority: "European Data Protection Board (EDPB)",
+    legal_reference: "GDPR Article 35",
+    description:
+      "Data Protection Impact Assessment required for high-risk processing under GDPR",
+    is_active: true,
+  },
+  {
+    id: "pipeda-pia-2024-v1",
+    key: "pipeda_pia",
+    version: "1.0",
+    name: "PIPEDA Privacy Impact Assessment",
+    assessment_type: "pipeda_pia",
+    region: "Canada",
+    authority: "Office of the Privacy Commissioner of Canada (OPC)",
+    legal_reference:
+      "Personal Information Protection and Electronic Documents Act (PIPEDA)",
+    description:
+      "Privacy Impact Assessment for processing personal information under Canadian PIPEDA",
+    is_active: false,
+  },
 ];
 
 // =============================================================================

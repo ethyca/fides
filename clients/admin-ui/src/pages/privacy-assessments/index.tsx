@@ -18,6 +18,7 @@ import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   useCreatePrivacyAssessmentMutation,
+  useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
@@ -37,6 +38,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
     isLoading,
     isError,
   } = useGetPrivacyAssessmentsQuery();
+
+  // Fetch templates from API
+  const { data: templatesData } = useGetAssessmentTemplatesQuery();
 
   const [createPrivacyAssessment, { isLoading: isGenerating }] =
     useCreatePrivacyAssessmentMutation();
@@ -75,16 +79,21 @@ const PrivacyAssessmentsPage: NextPage = () => {
   };
 
   const assessments = assessmentsData?.items ?? [];
+  const templates = templatesData?.items ?? [];
   const hasAssessments = assessments.length > 0;
 
-  // Group assessments by template (for now, all CPRA)
-  const groupedAssessments = {
-    cpra: {
-      templateId: "CPRA-RA-2024",
-      title: "CPRA Risk Assessment",
-      assessments,
-    },
-  };
+  // Group assessments by template_id dynamically
+  const groupedAssessments = templates
+    .map((template) => ({
+      templateId: template.id,
+      key: template.key,
+      title: template.name,
+      description: template.description,
+      assessments: assessments.filter(
+        (a) => a.template_id === template.id || a.template_id === template.key,
+      ),
+    }))
+    .filter((group) => group.assessments.length > 0);
 
   if (isLoading) {
     return (
@@ -121,28 +130,32 @@ const PrivacyAssessmentsPage: NextPage = () => {
         heading="Privacy assessments"
         rightContent={
           hasAssessments ? (
-            <Button
-              type="primary"
-              onClick={handleGenerateAssessments}
-              loading={isGenerating}
-            >
-              {isGenerating ? "Re-evaluating..." : "Re-evaluate assessments"}
-            </Button>
+            <Space>
+              <Button
+                onClick={() => router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/new`)}
+              >
+                New assessment
+              </Button>
+              <Button
+                type="primary"
+                onClick={handleGenerateAssessments}
+                loading={isGenerating}
+              >
+                {isGenerating ? "Re-evaluating..." : "Re-evaluate assessments"}
+              </Button>
+            </Space>
           ) : undefined
         }
         isSticky
       />
 
       {!hasAssessments ? (
-        <EmptyState
-          onGenerate={handleGenerateAssessments}
-          isGenerating={isGenerating}
-        />
+        <EmptyState />
       ) : (
         <div className="px-10 py-6">
           <Space direction="vertical" size="large" className="w-full">
-            {Object.entries(groupedAssessments).map(([key, template]) => (
-              <div key={key}>
+            {groupedAssessments.map((template) => (
+              <div key={template.key}>
                 <Flex
                   justify="space-between"
                   align="flex-end"

@@ -25,6 +25,7 @@ import {
   UpdateAnswerResponse,
   UpdatePrivacyAssessmentRequest,
 } from "~/features/privacy-assessments/types";
+import type { Page_TemplateResponse_ } from "~/types/api";
 
 import {
   calculateCompleteness,
@@ -34,6 +35,7 @@ import {
   MOCK_CPRA_QUESTION_GROUPS,
   MOCK_EVIDENCE_ITEMS,
   MOCK_QUESTIONNAIRE_QUESTIONS,
+  MOCK_TEMPLATES,
   mockAssessmentMetadata,
   mockPrivacyAssessment,
 } from "./data";
@@ -52,6 +54,33 @@ export const privacyAssessmentHandlers = () => {
   const mockQuestionnaires: Record<string, QuestionnaireStatusResponse> = {};
 
   return [
+    // =========================================================================
+    // GET /plus/privacy-assessments/templates - List templates
+    // =========================================================================
+    rest.get(
+      `${apiBase}/plus/privacy-assessments/templates`,
+      (req, res, ctx) => {
+        const page = parseInt(req.url.searchParams.get("page") || "1", 10);
+        const size = parseInt(req.url.searchParams.get("size") || "25", 10);
+
+        // Apply pagination
+        const startIndex = (page - 1) * size;
+        const endIndex = startIndex + size;
+        const paginatedItems = MOCK_TEMPLATES.slice(startIndex, endIndex);
+        const totalPages = Math.ceil(MOCK_TEMPLATES.length / size);
+
+        const response: Page_TemplateResponse_ = {
+          items: paginatedItems,
+          total: MOCK_TEMPLATES.length,
+          page,
+          size,
+          pages: totalPages,
+        };
+
+        return res(ctx.status(200), ctx.json(response));
+      },
+    ),
+
     // =========================================================================
     // GET /plus/privacy-assessments - List all assessments
     // =========================================================================
@@ -185,9 +214,6 @@ export const privacyAssessmentHandlers = () => {
           ...mockAssessments[assessmentIndex],
           ...body,
           updated_at: new Date().toISOString(),
-          status_updated_at: body.status
-            ? new Date().toISOString()
-            : mockAssessments[assessmentIndex].status_updated_at,
         };
 
         return res(ctx.status(200), ctx.json(mockAssessments[assessmentIndex]));
