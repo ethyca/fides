@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed MSW mock race condition where mocks were not ready on initial page load
+pr: 7394
+labels: []
