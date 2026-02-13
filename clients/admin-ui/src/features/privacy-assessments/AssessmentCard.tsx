@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { TagList } from "~/features/common/TagList";
 import {
   ASSESSMENT_STATUS_LABELS,
@@ -30,6 +31,8 @@ export const AssessmentCard = ({
   assessment,
   onClick,
 }: AssessmentCardProps) => {
+  const { getDataCategoryDisplayName } = useTaxonomies();
+
   // Do not assume defaults for missing values; show "N/A" when absent
   const riskLevel = assessment.risk_level ?? null;
   const status = assessment.status ?? null;
@@ -68,8 +71,11 @@ export const AssessmentCard = ({
             <Text type="secondary" className="mb-2 block text-xs leading-6">
               Processing{" "}
               <TagList
-                tags={assessment.data_categories ?? []}
-                maxTags={2}
+                tags={(assessment.data_categories ?? []).map((key) => ({
+                  value: key,
+                  label: getDataCategoryDisplayName(key),
+                }))}
+                maxTags={1}
                 expandable
               />{" "}
               for{" "}
@@ -81,11 +87,15 @@ export const AssessmentCard = ({
               />
             </Text>
           )}
-          <div>
-            <Tag color={RISK_TAG_COLORS[riskLabel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
-              {riskLabel === "N/A" ? "N/A" : `${riskLabel} risk`}
-            </Tag>
-          </div>
+          {riskLevel && (
+            <div>
+              <Tag
+                color={RISK_TAG_COLORS[riskLabel] ?? CUSTOM_TAG_COLOR.DEFAULT}
+              >
+                {`${riskLabel} risk`}
+              </Tag>
+            </div>
+          )}
         </div>
 
         <div className="mt-4 border-t border-gray-100 pt-4">
