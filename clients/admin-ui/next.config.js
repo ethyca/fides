@@ -5,17 +5,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 
 // DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
-// rc-util and rc-* packages need transpilation for ESM compatibility with Node 23
-const withTM = require("next-transpile-modules")([
-  "fidesui",
-  "rc-util",
-  "rc-pagination",
-  "rc-picker",
-  "rc-table",
-  "@ant-design/icons",
-  "@rc-component/trigger",
-  "@rc-component/portal",
-]);
+const withTM = require("next-transpile-modules")(["fidesui"]);
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
