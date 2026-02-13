@@ -31,6 +31,26 @@ import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 export const CONSENT_COOKIE_NAME = "fides_consent";
 export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
 
+/**
+ * Identity key names used in the Fides cookie identity object and in setIdentity().
+ * Source of truth for all identity-related string constants.
+ */
+export const FIDES_IDENTITY_KEY_USER_DEVICE_ID = "fides_user_device_id";
+export const FIDES_IDENTITY_KEY_EXTERNAL_ID = "external_id";
+/** Key used in SetIdentityOptions and init overrides; maps to external_id in cookie. */
+export const FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID = "fides_external_id";
+
+/** Identity keys that cannot be set via setIdentity (reserved for internal use). */
+export const RESERVED_IDENTITY_KEYS = [
+  FIDES_IDENTITY_KEY_USER_DEVICE_ID,
+] as const;
+/** Identity keys that are verified elsewhere and cannot be set via setIdentity. */
+export const VERIFIED_IDENTITY_KEYS = ["email", "phone_number"] as const;
+/** Identity option keys that setIdentity() is allowed to set. */
+export const SUPPORTED_SET_IDENTITY_KEYS = [
+  FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID,
+] as const;
+
 const getConsentCookieName = (
   suffix: FidesInitOptions["fidesCookieSuffix"],
 ) => {
@@ -114,9 +134,11 @@ export const makeDefaultIdentity = ({
   fidesExternalId?: string | null;
 } = {}): FidesJSIdentity => {
   return {
-    fides_user_device_id:
+    [FIDES_IDENTITY_KEY_USER_DEVICE_ID]:
       fidesUserDeviceId || userDeviceId || generateFidesUserDeviceId(),
-    ...(fidesExternalId ? { external_id: fidesExternalId } : {}),
+    ...(fidesExternalId
+      ? { [FIDES_IDENTITY_KEY_EXTERNAL_ID]: fidesExternalId }
+      : {}),
   };
 };
 
@@ -372,7 +394,7 @@ export const getOrMakeFidesCookie = async (
 
     // Update external_id if provided
     if (fidesExternalId !== undefined && fidesExternalId !== null) {
-      parsedCookie.identity.external_id = fidesExternalId;
+      parsedCookie.identity[FIDES_IDENTITY_KEY_EXTERNAL_ID] = fidesExternalId;
     }
 
     // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj

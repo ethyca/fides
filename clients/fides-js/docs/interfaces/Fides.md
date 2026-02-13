@@ -175,6 +175,43 @@ Apply the link text to a custom element using the `FidesLocaleUpdated` event (al
 
 ***
 
+### setIdentity()
+
+> **setIdentity**: (`identity`) => `Promise`\<`void`\>
+
+Set identity fields on the Fides consent cookie (e.g. a custom user ID).
+Call after [Fides.init](Fides.md#init); the values are persisted in the cookie and
+included in subsequent save/API requests (e.g. in `browser_identity.external_id`).
+Only `fides_external_id` is supported today. Reserved keys (e.g. `fides_user_device_id`)
+and verified keys (e.g. `email`, `phone_number`) cannot be set and will throw; support for
+custom and verified identity keys is planned on the roadmap.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `identity` | \{ `fides_external_id`: `string`; \} | Object with optional `fides_external_id` string |
+| `identity.fides_external_id`? | `string` | - |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+Promise that resolves when the cookie has been updated
+
+#### Throws
+
+If Fides is not initialized, or if an unsupported/reserved/verified key is provided
+
+#### Example
+
+Set a custom external ID after the user logs in:
+```ts
+await Fides.setIdentity({ fides_external_id: "user-123" });
+```
+
+***
+
 ### showModal()
 
 > **showModal**: () => `void`

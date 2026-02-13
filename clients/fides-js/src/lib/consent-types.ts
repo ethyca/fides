@@ -254,12 +254,21 @@ export interface FidesGlobal
   reinitialize: () => Promise<void>;
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
+  setIdentity: (identity: SetIdentityOptions) => Promise<void>;
   showModal: () => void;
   updateConsent: (options: {
     consent?: NoticeConsent;
     fidesString?: string;
     validation?: UpdateConsentValidation;
   }) => Promise<void>;
+}
+
+/**
+ * Options for Fides.setIdentity(). Only fides_external_id is supported today.
+ */
+export interface SetIdentityOptions {
+  /** Custom user ID to set on the consent cookie; included in API calls. */
+  fides_external_id?: string;
 }
 
 /**

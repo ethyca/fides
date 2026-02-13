@@ -2,6 +2,7 @@ import {
   FidesExperienceLanguageValidatorMap,
   FidesOverrideValidatorMap,
 } from "./consent-types";
+import { FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID } from "./cookie";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 import { parseCommaSeparatedString } from "./shared-consent-utils";
 
@@ -163,7 +164,7 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
     {
       overrideName: "fidesExternalId",
       overrideType: "string",
-      overrideKey: "fides_external_id",
+      overrideKey: FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID,
       validationRegex: /.+/,
     },
   ];
