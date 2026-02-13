@@ -43,11 +43,9 @@ jobs:
             backend:
               - '**/*.py'
               - '**/*.pxl'
-              - '**/*requirements.txt'
               - 'Dockerfile'
               - 'Makefile'
               - 'pyproject.toml'
-              - 'setup.cfg'
               - 'noxfile.py'
               - 'data/**'
               - '.github/workflows/backend_checks.yml'
@@ -64,25 +62,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Run Static Check
-        run: nox -s collect_tests
+        run: uv run nox -s collect_tests
 
   Build:
     needs: [Check-Backend-Changes, Collect-Tests]
@@ -102,7 +107,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           build-args: PYTHON_VERSION=${{ env.DEFAULT_PYTHON_VERSION }}
-          target: prod
+          target: test
           outputs: type=docker,dest=/tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
           push: false
           tags: ${{ env.IMAGE }}
@@ -137,11 +142,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
       - name: Install Rust/Cargo
         run: curl -y https://sh.rustup.rs -sSf | sh
@@ -149,16 +158,19 @@ jobs:
       - name: Install Drill
         run: cargo install drill
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -167,7 +179,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run Performance Tests
-        run: nox -s performance_tests
+        run: uv run nox -s performance_tests
 
   #################
   ## Misc Checks ##
@@ -197,22 +209,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -221,10 +240,10 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run Fides webserver startup check
-        run: nox -s check_container_startup
+        run: uv run nox -s check_container_startup
 
       - name: Run Celery worker startup check
-        run: nox -s check_worker_startup
+        run: uv run nox -s check_worker_startup
 
   Migration-Checks:
     needs: [Check-Backend-Changes, Check-Container-Startup]
@@ -251,22 +270,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -275,7 +301,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run migration test
-        run: nox -s "${{ matrix.test_selection }}"
+        run: uv run nox -s "${{ matrix.test_selection }}"
 
   Misc-Tests:
     needs: [Check-Backend-Changes, Check-Container-Startup]
@@ -304,22 +330,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-qq
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-qq
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -328,7 +361,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run test suite
-        run: nox -s "${{ matrix.test_selection }}"
+        run: uv run nox -s "${{ matrix.test_selection }}"
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
@@ -377,22 +410,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -401,7 +441,7 @@ jobs:
           password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run test suite
-        run: nox -s "pytest(${{ matrix.test_selection }})"
+        run: uv run nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
@@ -440,22 +480,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -484,7 +531,7 @@ jobs:
           SNOWFLAKE_FIDESCTL_PASSWORD: op://github-actions/ctl/SNOWFLAKE_FIDESCTL_PASSWORD
 
       - name: Run external test suite
-        run: nox -s "pytest(ctl-external)"
+        run: uv run nox -s "pytest(ctl-external)"
         env:
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
 
@@ -508,22 +555,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -594,10 +648,10 @@ jobs:
           MONGODB_ATLAS_SSL_ENABLED: op://github-actions/mongodb-atlas/MONGODB_ATLAS_SSL_ENABLED
 
       - name: Integration Tests (Misc)
-        run: nox -s "pytest(misc-integration-external)"
+        run: uv run nox -s "pytest(misc-integration-external)"
 
       - name: Integration Tests (External)
-        run: nox -s "pytest(ops-external-datastores)"
+        run: uv run nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
     needs: [Check-Backend-Changes, Check-Container-Startup]
@@ -622,22 +676,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      - name: Install dependencies and nox
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Cache Nox virtual environment
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -649,7 +710,7 @@ jobs:
         env:
           SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.SAAS_OP_SERVICE_ACCOUNT_TOKEN }}
           SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
-        run: nox -s "pytest(ops-saas)"
+        run: uv run nox -s "pytest(ops-saas)"
 
   # Summary job for branch protection - passes if all jobs pass or are skipped
   Backend-Checks-Summary:

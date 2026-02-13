@@ -1182,8 +1182,8 @@ class TestErrorHandling(TestConditionEvaluator):
         """Test a complex scenario with multiple fallback mechanisms"""
 
         # Modify the fixture to also fail on dict access
-        fallback_fides_data.get = (
-            lambda key, default=None: self._raise_attribute_error_dict()
+        fallback_fides_data.get = lambda key, default=None: (
+            self._raise_attribute_error_dict()
         )
 
         # This should return None for evaluation purposes as the value is not present
@@ -1197,8 +1197,8 @@ class TestErrorHandling(TestConditionEvaluator):
         """Test that exceptions from _get_nested_value properly propagate to evaluate_rule"""
 
         # Modify the fixture to raise RuntimeError
-        fallback_fides_data.get_field_value = (
-            lambda field_path: self._raise_runtime_error()
+        fallback_fides_data.get_field_value = lambda field_path: (
+            self._raise_runtime_error()
         )
 
         # This should raise the RuntimeError directly since _get_nested_value doesn't catch it

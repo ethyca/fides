@@ -8,6 +8,7 @@ cc-test-reporter
 ## generic files to ignore
 *~
 *.lock
+!uv.lock
 *.DS_Store
 *.swp
 *.out
@@ -260,3 +261,4 @@ multilang_migration_backup_*
 
 # Cursor
 .cursor/implementation-plans
+test_report.xml

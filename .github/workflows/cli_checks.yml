@@ -33,10 +33,7 @@ jobs:
           filters: |
             cli:
               - '**/*.py'
-              - '**/*requirements.txt'
               - 'pyproject.toml'
-              - 'setup.cfg'
-              - 'setup.py'
               - '.github/workflows/cli_checks.yml'
 
       - name: Log changed files
@@ -53,22 +50,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Install build dependencies
-        run: pip install "setuptools==80.10.2" wheel "versioneer-518"
-
       - name: Install fides
-        run: pip install --no-build-isolation .
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync
 
       - name: Run `fides --version`
-        run: fides --version
+        run: uv run fides --version
 
   CLI-Checks-Summary:
     runs-on: ubuntu-latest

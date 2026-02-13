@@ -4,7 +4,9 @@ import {
   ChakraFlex as Flex,
   ChakraText as Text,
   ChakraWrap as Wrap,
+  Icons,
   Tag,
+  Tooltip,
   Typography,
 } from "fidesui";
 
@@ -14,6 +16,8 @@ import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeL
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
@@ -42,6 +46,11 @@ const SelectableIntegrationBox = ({
       integration?.connection_type,
       integration?.saas_config?.type,
     );
+
+  const connectionOption = useIntegrationOption(
+    integration?.connection_type,
+    integration?.saas_config?.type as SaasConnectionTypes,
+  );
 
   // Handle click outside to unfocus when selected
   const boxRef = useClickOutside<HTMLDivElement>(() => {
@@ -79,18 +88,27 @@ const SelectableIntegrationBox = ({
             marginRight="12px"
             width={0}
           >
-            <Typography.Text
-              strong
-              style={{
-                color: "var(--chakra-colors-gray-700)",
-                fontSize: "14px",
-              }}
-              ellipsis={{
-                tooltip: integration?.name || "(No name)",
-              }}
-            >
-              {integration?.name || "(No name)"}
-            </Typography.Text>
+            <Flex alignItems="center" gap={1}>
+              <Typography.Text
+                strong
+                style={{
+                  color: "var(--chakra-colors-gray-700)",
+                  fontSize: "14px",
+                }}
+                ellipsis={{
+                  tooltip: integration?.name || "(No name)",
+                }}
+              >
+                {integration?.name || "(No name)"}
+              </Typography.Text>
+              {connectionOption?.custom && (
+                <Tooltip title="Custom integration" placement="top">
+                  <Box as="span" display="inline-flex">
+                    <Icons.SettingsCheck size={16} />
+                  </Box>
+                </Tooltip>
+              )}
+            </Flex>
             <Text color="gray.600" fontSize="xs" mt={1}>
               {getCategoryLabel(typeInfo.category)}
             </Text>
