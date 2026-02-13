@@ -81,7 +81,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
               type="primary"
               onClick={() => router.push(PRIVACY_ASSESSMENTS_EVALUATE_ROUTE)}
             >
-              Re-evaluate assessments
+              Evaluate assessments
             </Button>
           ) : undefined
         }

@@ -1,5 +1,4 @@
 import {
-  Alert,
   Button,
   Card,
   Descriptions,
@@ -17,7 +16,6 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
-import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -50,7 +48,6 @@ const renderTemplateOption = (option: any) => {
 };
 
 const EvaluateAssessmentPage: NextPage = () => {
-  const { flags } = useFeatures();
   const router = useRouter();
   const message = useMessage();
   const [form] = Form.useForm<FormValues>();
@@ -104,22 +101,10 @@ const EvaluateAssessmentPage: NextPage = () => {
     router.push(PRIVACY_ASSESSMENTS_ROUTE);
   };
 
-  if (!flags?.alphaDataProtectionAssessments) {
-    return (
-      <Layout title="Evaluate system">
-        <Alert
-          type="error"
-          message="Feature not available"
-          description="This feature is currently behind a feature flag and is not enabled."
-        />
-      </Layout>
-    );
-  }
-
   return (
-    <Layout title="Evaluate system">
+    <Layout title="Evaluate assessments">
       <PageHeader
-        heading="Evaluate system"
+        heading="Evaluate assessments"
         breadcrumbItems={[
           { title: "Privacy assessments", href: PRIVACY_ASSESSMENTS_ROUTE },
           { title: "Evaluate" },
