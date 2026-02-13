@@ -13,6 +13,7 @@ from fides.api.util.collection_util import unflatten_dict
 from fides.api.util.saas_util import (
     assign_placeholders,
     check_dataset_missing_reference_values,
+    find_unresolved_placeholders,
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
@@ -510,6 +511,70 @@ class TestAssignPlaceholders:
     def test_none_separator(self):
         with pytest.raises(IndexError):
             unflatten_dict({"": "1"}, separator=None)
+
+
+@pytest.mark.unit_saas
+class TestFindUnresolvedPlaceholders:
+    def test_none_value(self):
+        assert find_unresolved_placeholders(None, {}) == []
+
+    def test_non_string_value(self):
+        assert find_unresolved_placeholders(100, {}) == []
+
+    def test_empty_string(self):
+        assert find_unresolved_placeholders("", {}) == []
+
+    def test_no_placeholders(self):
+        assert find_unresolved_placeholders("domain", {}) == []
+
+    def test_all_placeholders_resolved(self):
+        assert (
+            find_unresolved_placeholders(
+                "/v1/<org>/<project>", {"org": "abc", "project": "123"}
+            )
+            == []
+        )
+
+    def test_single_unresolved_placeholder(self):
+        assert find_unresolved_placeholders("<access_key>", {}) == ["access_key"]
+
+    def test_multiple_unresolved_placeholders(self):
+        result = find_unresolved_placeholders("/user/<user_id>/order/<order_id>", {})
+        assert "user_id" in result
+        assert "order_id" in result
+        assert len(result) == 2
+
+    def test_partial_unresolved(self):
+        result = find_unresolved_placeholders(
+            "/user/<user_id>/order/<order_id>", {"user_id": 1}
+        )
+        assert result == ["order_id"]
+
+    def test_optional_placeholders_excluded(self):
+        assert find_unresolved_placeholders(
+            '{"name": "<name?>", "age": <age>}', {}
+        ) == ["age"]
+
+    def test_all_optional_placeholders(self):
+        assert (
+            find_unresolved_placeholders(
+                '{"name": "<name?>", "address": "<address?>"}', {}
+            )
+            == []
+        )
+
+    def test_dot_delimited_unresolved(self):
+        assert find_unresolved_placeholders(
+            '{"user": {"name": "<user.name>"}}', {"user": {"age": 28}}
+        ) == ["user.name"]
+
+    def test_dot_delimited_resolved(self):
+        assert (
+            find_unresolved_placeholders(
+                '{"user": {"name": "<user.name>"}}', {"user": {"name": "Alice"}}
+            )
+            == []
+        )
 
 
 @pytest.mark.unit_saas

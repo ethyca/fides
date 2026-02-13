@@ -116,12 +116,12 @@ class SaaSSchemaFactory:
         for connector_param in self.saas_config.connector_params:
             param_type = list if connector_param.multiselect else str
             if connector_param.options is not None:
-                DynamicOption = Enum(
+                DynamicOption = Enum(  # type: ignore[misc]
                     "DynamicOption",
                     {value: value for value in connector_param.options},
                     type=str,
                 )
-                param_type = Union[DynamicOption, List[DynamicOption]]
+                param_type = Union[DynamicOption, List[DynamicOption]]  # type: ignore[assignment]
             field_definitions[connector_param.name] = (
                 (
                     Optional[

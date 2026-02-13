@@ -141,9 +141,9 @@ class TestGetLocalFilename:
             if should_fail:
                 with pytest.raises(ValueError) as excinfo:
                     get_local_filename(path)
-                assert "path outside upload directory" in str(
-                    excinfo.value
-                ), f"Failed to catch {description}"
+                assert "path outside upload directory" in str(excinfo.value), (
+                    f"Failed to catch {description}"
+                )
             else:
                 # Should succeed and create the appropriate directory structure
                 result = get_local_filename(path)

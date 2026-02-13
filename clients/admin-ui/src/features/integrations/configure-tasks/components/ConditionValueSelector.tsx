@@ -177,7 +177,7 @@ export const ConditionValueSelector = ({
     const policyOptions =
       policiesData?.items.map((policy) => ({
         label: policy.name,
-        value: policy.key || policy.name,
+        value: policy.key,
       })) ?? [];
 
     return (

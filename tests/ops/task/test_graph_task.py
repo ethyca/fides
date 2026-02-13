@@ -646,7 +646,7 @@ class TestUpdateErasureMappingFromCache:
         """
         t = [
             GraphDataset(
-                name=f"dr_1",
+                name="dr_1",
                 collections=[
                     Collection(name=f"ds_{i}", fields=generate_field_list(1))
                     for i in range(1, 4)

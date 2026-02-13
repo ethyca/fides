@@ -6,7 +6,7 @@ import {
   Button,
   ChakraBox as Box,
   ChakraCode as Code,
-  ChakraFlex as Flex,
+  ChakraFlex,
   ChakraFormControl as FormControl,
   ChakraFormErrorMessage as FormErrorMessage,
   ChakraFormErrorMessageProps as FormErrorMessageProps,
@@ -25,6 +25,7 @@ import {
   ChakraVStack as VStack,
   DefaultOptionType,
   EyeIcon,
+  Flex,
   Switch,
   SwitchProps,
 } from "fidesui";
@@ -88,10 +89,18 @@ export const TextInput = forwardRef(
       isPassword,
       inputRightElement,
       size,
+      isEditing,
+      isEditPassword,
+      handleClickEdit,
+      handleClickUndo,
       ...props
     }: InputProps & {
       isPassword: boolean;
+      isEditPassword?: boolean;
+      isEditing?: boolean;
       inputRightElement?: React.ReactNode;
+      handleClickUndo?: () => void;
+      handleClickEdit?: () => void;
     },
     ref,
   ) => {
@@ -103,35 +112,45 @@ export const TextInput = forwardRef(
       setType(type === "password" ? "text" : "password");
 
     return (
-      <InputGroup size={size ?? "sm"}>
-        <Input
-          {...props}
-          ref={ref as LegacyRef<HTMLInputElement> | undefined}
-          type={type}
-          pr={isPassword ? "10" : "3"}
-          background="white"
-          focusBorderColor="primary.600"
-        />
-        {inputRightElement ? (
-          <InputRightElement pr={2}>{inputRightElement}</InputRightElement>
-        ) : null}
-        {isPassword ? (
-          <InputRightElement pr="2">
-            <Button
-              size="small"
-              type="text"
-              aria-label="Reveal/Hide Secret"
-              icon={
-                <EyeIcon
-                  boxSize="full"
-                  color={type === "password" ? "gray.400" : "gray.700"}
-                />
-              }
-              onClick={handleClickReveal}
-            />
-          </InputRightElement>
-        ) : null}
-      </InputGroup>
+      <Flex className="w-full" gap="small" justify="center" align="center">
+        <InputGroup size={size ?? "sm"}>
+          <Input
+            {...props}
+            ref={ref as LegacyRef<HTMLInputElement> | undefined}
+            type={type}
+            pr={isPassword ? "10" : "3"}
+            background="white"
+            focusBorderColor="primary.600"
+          />
+          {inputRightElement ? (
+            <InputRightElement pr={2}>{inputRightElement}</InputRightElement>
+          ) : null}
+          {isPassword && (!isEditPassword || !!isEditing) && (
+            <InputRightElement pr="2">
+              <Button
+                size="small"
+                type="text"
+                aria-label="Reveal/Hide Secret"
+                icon={
+                  <EyeIcon
+                    boxSize="full"
+                    color={type === "password" ? "gray.400" : "gray.700"}
+                  />
+                }
+                onClick={handleClickReveal}
+              />
+            </InputRightElement>
+          )}
+        </InputGroup>
+        {isEditPassword && (
+          <Button
+            onClick={isEditing ? handleClickUndo : handleClickEdit}
+            aria-label={`${isEditing ? "Restore" : "Edit"} Secret`}
+          >
+            {isEditing ? "Undo" : "Edit"}
+          </Button>
+        )}
+      </Flex>
     );
   },
 );
@@ -179,12 +198,34 @@ export const CustomTextInput = ({
   autoFocus,
   ...props
 }: CustomInputProps & StringField) => {
-  const [initialField, meta] = useField(props);
+  const [initialField, meta, helpers] = useField(props);
   const { type: initialType, placeholder } = props;
   const isInvalid = !!(meta.touched && meta.error);
   const field = { ...initialField, value: initialField.value ?? "" };
-
   const isPassword = initialType === "password";
+  const isEditPassword = isPassword && !!meta.initialValue;
+
+  const [isDisabled, setIsDisabled] = useState(
+    disabled || (isPassword && !!isEditPassword),
+  );
+
+  const handleClickEdit = () => {
+    helpers.setValue(undefined);
+    setIsDisabled(false);
+  };
+
+  const handleClickUndo = () => {
+    helpers.setValue(meta.initialValue);
+    setIsDisabled(true);
+  };
+
+  useEffect(() => {
+    if (isEditPassword) {
+      return;
+    }
+
+    setIsDisabled(!!disabled);
+  }, [disabled, isEditPassword, setIsDisabled]);
 
   const innerInput = (
     <TextInput
@@ -192,11 +233,15 @@ export const CustomTextInput = ({
       id={props.id || props.name}
       autoComplete={autoComplete}
       autoFocus={autoFocus}
-      isDisabled={disabled}
+      isDisabled={isDisabled}
       data-testid={`input-${field.name}`}
       placeholder={placeholder}
       isPassword={isPassword}
+      isEditPassword={isEditPassword}
+      isEditing={!isDisabled}
       inputRightElement={inputRightElement}
+      handleClickEdit={handleClickEdit}
+      handleClickUndo={handleClickUndo}
       size={size}
     />
   );
@@ -208,20 +253,20 @@ export const CustomTextInput = ({
           {label ? (
             <Label htmlFor={props.id || props.name}>{label}</Label>
           ) : null}
-          <Flex alignItems="center">
-            <Flex flexDir="column" flexGrow={1} mr="2">
+          <ChakraFlex alignItems="center">
+            <ChakraFlex flexDir="column" flexGrow={1} mr="2">
               {innerInput}
               <ErrorMessage
                 isInvalid={isInvalid}
                 message={meta.error}
                 fieldName={field.name}
               />
-            </Flex>
+            </ChakraFlex>
             <InfoTooltip
               label={tooltip}
               className={isInvalid ? "mt-2 self-start" : undefined}
             />
-          </Flex>
+          </ChakraFlex>
         </Grid>
       </FormControl>
     );
@@ -230,7 +275,7 @@ export const CustomTextInput = ({
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
         {label ? (
-          <Flex alignItems="center">
+          <ChakraFlex alignItems="center">
             <Label
               htmlFor={props.id || props.name}
               fontSize={size ?? "xs"}
@@ -240,7 +285,7 @@ export const CustomTextInput = ({
               {label}
             </Label>
             <InfoTooltip label={tooltip} />
-          </Flex>
+          </ChakraFlex>
         ) : null}
         {innerInput}
         <ErrorMessage
@@ -311,17 +356,17 @@ export const CustomTextArea = ({
   if (!label) {
     return (
       <FormControl isInvalid={isInvalid} isRequired={isRequired}>
-        <Flex>
-          <Flex flexDir="column" flexGrow={1}>
+        <ChakraFlex>
+          <ChakraFlex flexDir="column" flexGrow={1}>
             {innerTextArea}
             <ErrorMessage
               isInvalid={isInvalid}
               message={meta.error}
               fieldName={field.name}
             />
-          </Flex>
+          </ChakraFlex>
           <InfoTooltip label={tooltip} />
-        </Flex>
+        </ChakraFlex>
       </FormControl>
     );
   }
@@ -331,17 +376,17 @@ export const CustomTextArea = ({
       <FormControl isInvalid={isInvalid} isRequired={isRequired}>
         <Grid templateColumns="1fr 3fr">
           {label ? <FormLabel>{label}</FormLabel> : null}
-          <Flex>
-            <Flex flexDir="column" flexGrow={1} mr={2}>
+          <ChakraFlex>
+            <ChakraFlex flexDir="column" flexGrow={1} mr={2}>
               {innerTextArea}
               <ErrorMessage
                 isInvalid={isInvalid}
                 message={meta.error}
                 fieldName={field.name}
               />
-            </Flex>
+            </ChakraFlex>
             <InfoTooltip label={tooltip} />
-          </Flex>
+          </ChakraFlex>
         </Grid>
       </FormControl>
     );
@@ -349,12 +394,12 @@ export const CustomTextArea = ({
   return (
     <FormControl isInvalid={isInvalid} isRequired={isRequired}>
       <VStack alignItems="start">
-        <Flex alignItems="center">
+        <ChakraFlex alignItems="center">
           <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
           <InfoTooltip label={tooltip} />
-        </Flex>
+        </ChakraFlex>
         {innerTextArea}
         <ErrorMessage
           isInvalid={isInvalid}
@@ -433,13 +478,13 @@ export const CustomSwitch = ({
   if (variant === "switchFirst") {
     return (
       <FormControl isInvalid={isInvalid}>
-        <Flex alignItems="center">
+        <ChakraFlex alignItems="center">
           {innerSwitch}
           <Label htmlFor={props.id || props.name} my={0} fontSize="sm" mr={2}>
             {label}
           </Label>
           <InfoTooltip label={tooltip} />
-        </Flex>
+        </ChakraFlex>
       </FormControl>
     );
   }
@@ -514,12 +559,12 @@ export const CustomClipboardCopy = ({
           {label ? (
             <Label htmlFor={props.id || props.name}>{label}</Label>
           ) : null}
-          <Flex alignItems="center">
-            <Flex flexDir="column" flexGrow={1} mr="2">
+          <ChakraFlex alignItems="center">
+            <ChakraFlex flexDir="column" flexGrow={1} mr="2">
               {innerInput}
-            </Flex>
+            </ChakraFlex>
             <InfoTooltip label={tooltip} />
-          </Flex>
+          </ChakraFlex>
         </Grid>
       </FormControl>
     );
@@ -528,12 +573,12 @@ export const CustomClipboardCopy = ({
     <FormControl>
       <VStack alignItems="start">
         {label ? (
-          <Flex alignItems="center">
+          <ChakraFlex alignItems="center">
             <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
               {label}
             </Label>
             <InfoTooltip label={tooltip} />
-          </Flex>
+          </ChakraFlex>
         ) : null}
         {innerInput}
       </VStack>
@@ -568,12 +613,12 @@ export const CustomDatePicker = ({
     <FormControl isRequired={isRequired} isInvalid={isInvalid}>
       <VStack align="start">
         {!!label && (
-          <Flex align="center">
+          <ChakraFlex align="center">
             <Label htmlFor={props.id || name} fontSize="xs" my={0} mr={1}>
               {label}
             </Label>
             {!!tooltip && <InfoTooltip label={tooltip} />}
-          </Flex>
+          </ChakraFlex>
         )}
         <Input
           type="date"
@@ -624,12 +669,12 @@ export const CustomDateTimeInput = ({
     <FormControl isRequired={isRequired} isInvalid={isInvalid}>
       <VStack align="start">
         {!!label && (
-          <Flex align="center">
+          <ChakraFlex align="center">
             <Label htmlFor={fieldId} fontSize="xs" my={0} mr={1}>
               {label}
             </Label>
             {!!tooltip && <InfoTooltip label={tooltip} />}
-          </Flex>
+          </ChakraFlex>
         )}
         <Input
           type="datetime-local"

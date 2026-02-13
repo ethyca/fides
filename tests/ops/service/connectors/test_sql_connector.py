@@ -168,7 +168,6 @@ class TestSQLConnectorDryRun:
             ),
             patch.object(mock_connector, "client") as mock_client,
         ):
-
             results = mock_connector.retrieve_data(
                 node=mock_execution_node,
                 policy=MagicMock(),
@@ -224,7 +223,6 @@ class TestSQLConnectorDryRun:
             ),
             patch.object(mock_connector, "set_schema"),
         ):
-
             mock_client.return_value.connect.return_value.__enter__.return_value = (
                 mock_connection
             )
@@ -268,7 +266,6 @@ class TestSQLConnectorDryRun:
             ),
             patch.object(mock_connector, "client") as mock_client,
         ):
-
             results = mock_connector.execute_standalone_retrieval_query(
                 node=mock_execution_node,
                 fields=["field1", "field2"],
@@ -313,7 +310,6 @@ class TestSQLConnectorDryRun:
             ),
             patch.object(mock_connector, "client") as mock_client,
         ):
-
             affected_rows = mock_connector.mask_data(
                 node=mock_execution_node,
                 policy=MagicMock(),
@@ -366,7 +362,6 @@ class TestSQLConnectorDryRun:
             patch.object(mock_connector, "client") as mock_client,
             patch.object(mock_connector, "set_schema"),
         ):
-
             mock_client.return_value.connect.return_value.__enter__.return_value = (
                 mock_connection
             )

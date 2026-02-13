@@ -9,13 +9,20 @@ Provides reusable components for CLI output including:
 - Status messages and summaries
 - Error and success formatting
 """
-from rich.console import Console
-from rich.panel import Panel
-from rich.progress import Progress, TextColumn, BarColumn, MofNCompleteColumn, TimeElapsedColumn
 
 import time
-from typing import Dict, List, Any, Optional, Callable
 from contextlib import contextmanager
+from typing import Any, Callable, Dict, List, Optional
+
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    TextColumn,
+    TimeElapsedColumn,
+)
 
 
 class RichFormatter:
@@ -82,11 +89,15 @@ class RichFormatter:
         else:
             print(f"{indent_str}• {message}")
 
-    def already_cleaned(self, resource_type: str, resource_id: str, indent: int = 2) -> None:
+    def already_cleaned(
+        self, resource_type: str, resource_id: str, indent: int = 2
+    ) -> None:
         """Print a message for resources that are already cleaned/don't exist."""
         indent_str = " " * indent
         if self.rich_available and self.console:
-            self.console.print(f"{indent_str}[dim]•[/dim] {resource_type} {resource_id} (already cleaned)")
+            self.console.print(
+                f"{indent_str}[dim]•[/dim] {resource_type} {resource_id} (already cleaned)"
+            )
         else:
             print(f"{indent_str}• {resource_type} {resource_id} (already cleaned)")
 
@@ -107,7 +118,11 @@ class RichFormatter:
 
         # Add custom field columns
         for field_name in fields.keys():
-            columns.append(self.TextColumn(f"• [green]{field_name.title()}: {{task.fields[{field_name}]}}[/green]"))
+            columns.append(
+                self.TextColumn(
+                    f"• [green]{field_name.title()}: {{task.fields[{field_name}]}}[/green]"
+                )
+            )
 
         columns.append(self.TimeElapsedColumn())
 
@@ -122,7 +137,9 @@ class RichFormatter:
             self.console.print(f"[bold green]{title}:[/bold green]")
             total = sum(data.values())
             for resource_type, count in data.items():
-                self.console.print(f"  [cyan]{resource_type.capitalize()}:[/cyan] {count}")
+                self.console.print(
+                    f"  [cyan]{resource_type.capitalize()}:[/cyan] {count}"
+                )
             self.console.print(f"  [bold]Total:[/bold] {total}")
             self.console.print()
         else:
@@ -194,7 +211,7 @@ def create_resources_with_progress(
     items: List[Any],
     create_func: Callable,
     get_key_func: Optional[Callable] = None,
-    sleep_time: float = 0.05
+    sleep_time: float = 0.05,
 ) -> Dict[str, List[str]]:
     """
     Generic function to create resources with a progress bar.
@@ -220,9 +237,8 @@ def create_resources_with_progress(
         f"Creating {len(items)} {resource_type}...",
         total=len(items),
         created=0,
-        failed=0
+        failed=0,
     ) as progress:
-
         for item in items:
             try:
                 create_func(item)
@@ -238,8 +254,10 @@ def create_resources_with_progress(
 
             progress.advance()
 
-    formatter.success(f"{resource_type.capitalize()} creation completed: {len(created)}/{len(items)} successful")
-    return {'created': created, 'failed': failed}
+    formatter.success(
+        f"{resource_type.capitalize()} creation completed: {len(created)}/{len(items)} successful"
+    )
+    return {"created": created, "failed": failed}
 
 
 def delete_resources_with_progress(
@@ -247,7 +265,7 @@ def delete_resources_with_progress(
     resource_type: str,
     keys: List[str],
     delete_func: Callable,
-    sleep_time: float = 0.05
+    sleep_time: float = 0.05,
 ) -> int:
     """
     Generic function to delete resources with a progress bar.
@@ -268,11 +286,8 @@ def delete_resources_with_progress(
         return deleted_count
 
     with formatter.progress_bar(
-        f"Deleting {len(keys)} {resource_type}...",
-        total=len(keys),
-        deleted=0
+        f"Deleting {len(keys)} {resource_type}...", total=len(keys), deleted=0
     ) as progress:
-
         for key in keys:
             if delete_func(key):
                 deleted_count += 1

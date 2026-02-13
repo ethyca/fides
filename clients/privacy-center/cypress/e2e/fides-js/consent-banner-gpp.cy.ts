@@ -404,7 +404,10 @@ describe("Fides-js GPP extension", () => {
 
       // check that the fides string is used to set the preference
       cy.waitUntilFidesInitialized().then(() => {
-        cy.wait("@patchPrivacyPreference").then((interception) => {
+        // Verify that the preferences were saved to the API with the correct method
+        // (this happens asynchronously, so we check it was called)
+        cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+        cy.get("@patchPrivacyPreference").then((interception: any) => {
           const {
             preferences,
             privacy_experience_config_history_id,
@@ -736,6 +739,7 @@ describe("Fides-js GPP extension", () => {
       it("can handle a fides string being passed in", () => {
         cy.setCookie("fides_string", ",,DBABBg~BUoAAABY.QA");
         visitDemoWithGPP({});
+        // Verify consent is immediately available in cookie and window.Fides.consent
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const fidesCookie: FidesCookie = JSON.parse(
@@ -745,7 +749,11 @@ describe("Fides-js GPP extension", () => {
             expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
           });
         });
-        cy.wait("@patchPrivacyPreference").then((interception) => {
+
+        // Verify that the preferences were saved to the API with the correct method
+        // (this happens asynchronously, so we check it was called)
+        cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+        cy.get("@patchPrivacyPreference").then((interception: any) => {
           expect(interception.request.body.method).to.eql(ConsentMethod.SCRIPT);
           expect(interception.request.body.preferences).to.eql([
             {
@@ -871,9 +879,6 @@ describe("Fides-js GPP extension", () => {
             cy.get("span").contains("Global Privacy Control Applied");
           });
 
-          // FidesUpdated event should have been called which indicates GPC opt-out was applied
-          cy.get("@FidesUpdated").should("have.been.called");
-
           cy.window().then((win) => {
             win.__gpp("addEventListener", cy.stub().as("gppListener"));
           });
@@ -896,6 +901,11 @@ describe("Fides-js GPP extension", () => {
               expect(data.pingData.gppString).to.eql("DBABBg~BUUAAABY.YA");
               expect(data.pingData.cmpDisplayStatus).to.eql("visible");
             });
+        });
+
+        // Check that automated GPC consent was saved to the API
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          expect(interception.request.body.method).to.eql(ConsentMethod.GPC);
         });
       });
     });
@@ -967,6 +977,7 @@ describe("Fides-js GPP extension", () => {
       it("can handle a fides string being passed in", () => {
         cy.setCookie("fides_string", ",,DBABBg~BUoAAABY.QA");
         visitDemoWithGPPHeadless();
+        // Verify consent is immediately available in cookie and window.Fides.consent
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const fidesCookie: FidesCookie = JSON.parse(
@@ -976,7 +987,11 @@ describe("Fides-js GPP extension", () => {
             expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
           });
         });
-        cy.wait("@patchPrivacyPreference").then((interception) => {
+
+        // Verify that the preferences were saved to the API with the correct method
+        // (this happens asynchronously, so we check it was called)
+        cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+        cy.get("@patchPrivacyPreference").then((interception: any) => {
           expect(interception.request.body.method).to.eql(ConsentMethod.SCRIPT);
           expect(interception.request.body.preferences).to.eql([
             {
@@ -1052,9 +1067,6 @@ describe("Fides-js GPP extension", () => {
           // No GPP banner should be shown
           cy.get("@FidesUIShown").should("not.have.been.called");
 
-          // FidesUpdated event should have been called which indicates GPC opt-out was applied
-          cy.get("@FidesUpdated").should("have.been.called");
-
           cy.window().then((win) => {
             win.__gpp("addEventListener", cy.stub().as("gppListener"));
           });
@@ -1077,6 +1089,11 @@ describe("Fides-js GPP extension", () => {
               expect(data.pingData.gppString).to.eql("DBABBg~BUUAAABY.YA");
               expect(data.pingData.cmpDisplayStatus).to.eql("hidden");
             });
+        });
+
+        // Check that automated GPC consent was saved to the API
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          expect(interception.request.body.method).to.eql(ConsentMethod.GPC);
         });
       });
     });

@@ -1,5 +1,6 @@
 """Contains the nox sessions used during CI checks."""
 
+from enum import StrEnum
 from functools import partial
 from pathlib import Path
 from typing import Callable, Dict
@@ -34,54 +35,62 @@ from setup_tests_nox import (
 from utils_nox import db, install_requirements
 
 
+class RuffMode(StrEnum):
+    FORMAT = "format"
+    CHECK = "check"
+    SORT_IMPORTS_ONLY = "sort-imports"
+
+
 ###################
 ## Static Checks ##
 ###################
 @nox.session()
 def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
-    session.notify("black(fix)")
-    session.notify("isort(fix)")
+    session.notify("ruff(format)")
+    session.notify("ruff(check)")
     session.notify("mypy")
-    session.notify("pylint")
 
 
 @nox.session()
 @nox.parametrize(
     "mode",
     [
-        nox.param("check", id="check"),
-        nox.param("fix", id="fix"),
+        nox.param(RuffMode.FORMAT, id="format"),
+        nox.param(RuffMode.CHECK, id="check"),
+        nox.param(RuffMode.SORT_IMPORTS_ONLY, id="sort-imports"),
     ],
 )
-def black(session: nox.Session, mode: str) -> None:
-    """Run the 'black' style linter."""
+def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
+    """
+    Run the 'ruff' linter and formatter. Supported modes:
+    - `check` (check only)
+    - `format` (sort imports and apply formatting)
+    - `sort-imports` (only sort imports).
+    """
     install_requirements(session)
-    command = ("black", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    ruff_arguments = ["src", "tests", "noxfiles", "scripts", "noxfile.py"]
     if session.posargs:
-        command = ("black", *session.posargs)
-    if mode == "check":
-        command = (*command, "--check")
-    session.run(*command)
+        ruff_arguments = session.posargs
 
+    format_command = ("ruff", "format", *ruff_arguments)
+    format_check_command = ("ruff", "format", "--check", *ruff_arguments)
+    check_command = ("ruff", "check", *ruff_arguments)
+    sort_imports_command = ("ruff", "check", "--select", "I", "--fix", *ruff_arguments)
 
-@nox.session()
-@nox.parametrize(
-    "mode",
-    [
-        nox.param("check", id="check"),
-        nox.param("fix", id="fix"),
-    ],
-)
-def isort(session: nox.Session, mode: str) -> None:
-    """Run the 'isort' import linter."""
-    install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "scripts", "noxfile.py")
-    if session.posargs:
-        command = ("isort", *session.posargs)
-    if mode == "check":
-        command = (*command, "--check")
-    session.run(*command)
+    if mode == RuffMode.FORMAT:
+        # Format code and sort imports
+        session.run(*format_command)
+        session.run(*sort_imports_command)
+
+    elif mode == RuffMode.CHECK:
+        # Verify formatting (fail if files would be reformatted)
+        session.run(*format_check_command)
+        # Lint code
+        session.run(*check_command)
+
+    elif mode == RuffMode.SORT_IMPORTS_ONLY:
+        session.run(*sort_imports_command)
 
 
 @nox.session()
@@ -90,21 +99,6 @@ def mypy(session: nox.Session) -> None:
     install_requirements(session)
     command = "mypy"
     session.run(command)
-
-
-@nox.session()
-def pylint(session: nox.Session) -> None:
-    """Run the 'pylint' code linter."""
-    install_requirements(session)
-    command = (
-        "pylint",
-        "src",
-        "noxfiles",
-        "noxfile.py",
-        "--jobs",
-        "0",
-    )
-    session.run(*command)
 
 
 @nox.session()
@@ -121,7 +115,6 @@ def xenon(session: nox.Session) -> None:
         "--max-modules=B",
         "--max-average=A",
         "--ignore=data,docs",
-        "--exclude=src/fides/_version.py",
     )
     session.run(*command, success_codes=[0, 1])
     session.warn(
@@ -142,7 +135,9 @@ def check_install(session: nox.Session) -> None:
 
     This is also a good sanity check for correct syntax.
     """
-    session.install(".")
+    # Build deps must be in env when using --no-build-isolation (hatchling is build-backend).
+    session.install("hatchling", "hatch-vcs", "setuptools==80.10.2", "wheel")
+    session.install("--no-build-isolation", ".")
 
     REQUIRED_ENV_VARS = {
         "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
@@ -460,13 +455,8 @@ def pytest(session: nox.Session, test_group: str) -> None:
 )
 def python_build(session: nox.Session, dist: str) -> None:
     "Build the Python distribution."
-    session.run(
-        *RUN_NO_DEPS,
-        "python",
-        "setup.py",
-        dist,
-        external=True,
-    )
+    build_arg = "--sdist" if dist == "sdist" else "--wheel"
+    session.run(*RUN_NO_DEPS, "uv", "build", build_arg, external=True)
 
 
 @nox_session()
@@ -474,6 +464,11 @@ def check_worker_startup(session: Session) -> None:
     """
     Check that the main 'worker-dsr' service can start up successfully using docker compose --wait.
     Relies on the healthcheck defined in docker-compose.yml.
+
+    Uses image ethyca/fides:local. To match CI (prod image), build it first:
+      uv run nox -s "build(test)"
+    then run:
+      uv run nox -s check_worker_startup
     """
     worker_service = "worker-dsr"
     session.log(f"Attempting to start and wait for service: {worker_service}")

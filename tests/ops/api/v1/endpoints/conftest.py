@@ -74,7 +74,6 @@ def policy_drp_action(
     storage_config: StorageConfig,
     default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
-
     access_request_policy = Policy.create(
         db=db,
         data={

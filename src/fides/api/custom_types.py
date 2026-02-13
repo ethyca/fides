@@ -1,5 +1,6 @@
 # pylint: disable=no-name-in-module
 """Logic related to sanitizing and validating user application input."""
+
 from html import escape
 from re import compile as regex
 from typing import Annotated

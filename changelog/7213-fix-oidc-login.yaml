@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed a bug where the state parameter from the OIDC login request wasn't passed to Fides.
-pr: 7213 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

@@ -28,7 +28,7 @@ export const useDigestConfigList = () => {
   const canDelete = useHasPermission([ScopeRegistryEnum.DIGEST_CONFIG_DELETE]);
 
   // API calls
-  const { data, isLoading, refetch } = useListDigestConfigsQuery({
+  const { data, isLoading, refetch, error } = useListDigestConfigsQuery({
     digest_config_type: digestType,
     page,
     size: pageSize,
@@ -94,6 +94,7 @@ export const useDigestConfigList = () => {
     data: filteredData,
     total: data?.total ?? 0,
     isLoading,
+    error,
 
     // List state
     page,

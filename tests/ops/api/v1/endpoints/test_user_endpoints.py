@@ -231,9 +231,9 @@ class TestCreateUser:
         assert HTTP_201_CREATED == response.status_code
         assert response_body == {"id": user.id}
         assert user.permissions is not None
-        assert user.permissions.roles == [
-            VIEWER
-        ], "User given viewer role by default on create"
+        assert user.permissions.roles == [VIEWER], (
+            "User given viewer role by default on create"
+        )
 
     def test_underscore_in_password(
         self,
@@ -1466,9 +1466,9 @@ class TestUpdateUserPassword:
 
         db.expunge(user)
         user = user.refresh_from_db(db=db)
-        assert (
-            user.hashed_password == old_hashed_password
-        ), "Password changed on the user"
+        assert user.hashed_password == old_hashed_password, (
+            "Password changed on the user"
+        )
 
     def test_force_update_different_user_password(
         self,
@@ -1791,6 +1791,83 @@ class TestUserLogin:
         assert "user_data" in list(response.json().keys())
         assert response.json()["user_data"]["id"] == system_manager.id
 
+    def test_login_with_monitors(
+        self, db, url, monitor_steward, api_client, monitor_config
+    ):
+        """Test that login creates a client with monitors populated from stewarded_monitor_ids."""
+        # Delete existing client for test purposes
+        monitor_steward.client.delete(db)
+        body = {
+            "username": monitor_steward.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        assert monitor_steward.client is None  # client does not exist
+        assert monitor_steward.permissions is not None
+        assert monitor_steward.stewarded_monitor_ids == [monitor_config.id]
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(monitor_steward)
+        assert monitor_steward.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == monitor_steward.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
+        assert token_data["monitors"] == [monitor_config.id]
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == monitor_steward.id
+
+    def test_login_after_monitor_steward_removed(
+        self, db, url, monitor_steward, api_client, monitor_config
+    ):
+        """Test that client is updated on login when a user is removed as monitor steward.
+        This mirrors test_login_after_system_deleted but for monitors.
+        """
+        assert monitor_steward.client
+        assert monitor_steward.client.monitors == [monitor_config.id]
+        assert monitor_steward.stewarded_monitor_ids == [monitor_config.id]
+
+        monitor_steward.permissions.roles = [VIEWER]
+        monitor_steward.save(db=db)
+
+        # Remove user as steward of the monitor
+        monitor_config.stewards.remove(monitor_steward)
+        db.commit()
+        db.refresh(monitor_steward)
+
+        # User no longer stewards any monitors
+        assert monitor_steward.stewarded_monitor_ids == []
+
+        body = {
+            "username": monitor_steward.username,
+            "password": str_to_b64_str("TESTdcnG@wzJeu0&%3Qe2fGo7"),
+        }
+
+        response = api_client.post(url, headers={}, json=body)
+        assert response.status_code == HTTP_200_OK
+
+        db.refresh(monitor_steward)
+        assert monitor_steward.client is not None
+        assert "token_data" in list(response.json().keys())
+        token = response.json()["token_data"]["access_token"]
+        token_data = json.loads(
+            extract_payload(token, CONFIG.security.app_encryption_key)
+        )
+        assert token_data["client-id"] == monitor_steward.client.id
+        assert token_data["scopes"] == []  # Uses scopes on existing client
+        assert token_data["roles"] == [VIEWER]  # Uses roles on existing client
+        assert token_data["monitors"] == []  # Updated to reflect removed stewardship
+
+        assert "user_data" in list(response.json().keys())
+        assert response.json()["user_data"]["id"] == monitor_steward.id
+
     def test_login_with_no_permissions(self, db, url, viewer_user, api_client):
         viewer_user.permissions.roles = []
         viewer_user.save(db)  # Make sure user doesn't have roles or scopes
@@ -2043,12 +2120,12 @@ class TestUpdateSystemsManagedByUser:
     ) -> None:
         auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_UPDATE])
         resp = api_client.put(
-            V1_URL_PREFIX + f"/user/bad_user/system-manager",
+            V1_URL_PREFIX + "/user/bad_user/system-manager",
             headers=auth_header,
             json=["bad_fides_key"],
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No user found with id bad_user."
+        assert resp.json()["detail"] == "No user found with id bad_user."
 
     def test_update_system_manager_system_not_found(
         self, api_client: TestClient, generate_auth_header, url, viewer_user
@@ -2308,10 +2385,10 @@ class TestGetSystemsUserManages(SystemManagerUserEndpointTestBase):
     ) -> None:
         auth_header = generate_auth_header(scopes=[SYSTEM_MANAGER_READ])
         resp = api_client.get(
-            V1_URL_PREFIX + f"/user/bad_user/system-manager", headers=auth_header
+            V1_URL_PREFIX + "/user/bad_user/system-manager", headers=auth_header
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No user found with id bad_user."
+        assert resp.json()["detail"] == "No user found with id bad_user."
 
     def test_get_systems_managed_by_user_none_exist(
         self, api_client: TestClient, generate_auth_header, url
@@ -2409,7 +2486,7 @@ class TestGetSpecificSystemUserManages(SystemManagerUserEndpointTestBase):
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No user found with id bad_user."
+        assert resp.json()["detail"] == "No user found with id bad_user."
 
     def test_get_system_managed_by_user_system_does_not_exist(
         self, api_client: TestClient, generate_auth_header, url, viewer_user
@@ -2420,7 +2497,7 @@ class TestGetSpecificSystemUserManages(SystemManagerUserEndpointTestBase):
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No system found with fides_key bad_system."
+        assert resp.json()["detail"] == "No system found with fides_key bad_system."
 
     def test_get_system_not_managed_by_user(
         self, api_client: TestClient, generate_auth_header, url, viewer_user, system
@@ -2473,7 +2550,7 @@ class TestRemoveUserAsSystemManager:
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No user found with id bad_user."
+        assert resp.json()["detail"] == "No user found with id bad_user."
 
     def test_delete_user_as_system_manager_from_nonexistent_system(
         self, api_client: TestClient, generate_auth_header, url, viewer_user
@@ -2484,7 +2561,7 @@ class TestRemoveUserAsSystemManager:
             headers=auth_header,
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
-        assert resp.json()["detail"] == f"No system found with fides_key bad_system."
+        assert resp.json()["detail"] == "No system found with fides_key bad_system."
 
     def test_remove_user_from_system_not_managed_by_user(
         self, api_client: TestClient, generate_auth_header, url, viewer_user, system

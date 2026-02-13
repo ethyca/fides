@@ -10,6 +10,7 @@ import {
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { NOTIFICATIONS_TEMPLATES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -31,8 +32,11 @@ const EditNotificationTemplatePage: NextPage = () => {
   const router = useRouter();
   const templateId = router.query.id;
 
-  const { data: messagingTemplate, isLoading } =
-    useGetMessagingTemplateByIdQuery(templateId as string);
+  const {
+    data: messagingTemplate,
+    isLoading,
+    error,
+  } = useGetMessagingTemplateByIdQuery(templateId as string);
 
   const [putMessagingTemplate] = usePutMessagingTemplateByIdMutation();
   const [deleteMessagingTemplate] = useDeleteMessagingTemplateByIdMutation();
@@ -88,6 +92,21 @@ const EditNotificationTemplatePage: NextPage = () => {
 
   if (isLoading) {
     return <Spinner />;
+  }
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching the messaging template ${templateId}`}
+        actions={[
+          {
+            label: "Return to messaging templates",
+            onClick: () => router.push(NOTIFICATIONS_TEMPLATES_ROUTE),
+          },
+        ]}
+      />
+    );
   }
 
   return (

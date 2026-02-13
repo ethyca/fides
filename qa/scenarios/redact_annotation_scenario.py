@@ -10,12 +10,13 @@ This scenario creates:
 
 import copy
 import sys
-import yaml
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+
+import yaml
 
 sys.path.append(str(Path(__file__).parent.parent))
-from utils import QATestScenario, Argument
+from utils import Argument, QATestScenario
 from utils.fides_api import FidesAPI
 
 
@@ -44,20 +45,28 @@ class RedactAnnotationScenario(QATestScenario):
         # Get the path to the fides repository root
         fides_root = Path(__file__).parent.parent.parent
 
-        postgres_dataset_path = fides_root / "data" / "dataset" / "postgres_example_test_dataset.yml"
-        mongo_dataset_path = fides_root / "data" / "dataset" / "mongo_example_test_dataset.yml"
+        postgres_dataset_path = (
+            fides_root / "data" / "dataset" / "postgres_example_test_dataset.yml"
+        )
+        mongo_dataset_path = (
+            fides_root / "data" / "dataset" / "mongo_example_test_dataset.yml"
+        )
 
         datasets = {}
 
         # Load Postgres dataset
-        with open(postgres_dataset_path, 'r') as f:
+        with open(postgres_dataset_path, "r") as f:
             postgres_data = yaml.safe_load(f)
-            datasets['postgres'] = postgres_data['dataset'][0]  # Get the first dataset from the list
+            datasets["postgres"] = postgres_data["dataset"][
+                0
+            ]  # Get the first dataset from the list
 
         # Load MongoDB dataset
-        with open(mongo_dataset_path, 'r') as f:
+        with open(mongo_dataset_path, "r") as f:
             mongo_data = yaml.safe_load(f)
-            datasets['mongo'] = mongo_data['dataset'][0]  # Get the first dataset from the list
+            datasets["mongo"] = mongo_data["dataset"][
+                0
+            ]  # Get the first dataset from the list
 
         return datasets
 
@@ -94,12 +103,15 @@ class RedactAnnotationScenario(QATestScenario):
         self.cleanup_phase()
 
         success = True
-        deleted_counts = {'connections': 0, 'systems': 0, 'datasets': 0}
+        deleted_counts = {"connections": 0, "systems": 0, "datasets": 0}
 
         try:
             # Step 1: Delete connections first (cascades delete DatasetConfigs)
             self.step(1, "Deleting connections")
-            for connection_key in [self.postgres_connection_key, self.mongo_connection_key]:
+            for connection_key in [
+                self.postgres_connection_key,
+                self.mongo_connection_key,
+            ]:
                 if self.api.delete_connection(connection_key):
                     deleted_counts["connections"] += 1
                     self.success(f"Deleted connection: {connection_key}")
@@ -127,7 +139,7 @@ class RedactAnnotationScenario(QATestScenario):
                 # Restore the original mongo_test dataset
                 try:
                     original_datasets = self._load_original_datasets()
-                    original_mongo = original_datasets['mongo']
+                    original_mongo = original_datasets["mongo"]
                     self.api.create_dataset(original_mongo)
                     self.success("Restored original mongo_test dataset")
                 except Exception as e:
@@ -147,7 +159,9 @@ class RedactAnnotationScenario(QATestScenario):
         original_datasets = self._load_original_datasets()
 
         # Create Postgres dataset with redact annotations
-        postgres_dataset = self._add_redact_annotations_to_postgres(original_datasets['postgres'])
+        postgres_dataset = self._add_redact_annotations_to_postgres(
+            original_datasets["postgres"]
+        )
         self.api.create_dataset(postgres_dataset)
         self.success(f"Created Postgres dataset: {self.postgres_dataset_key}")
 
@@ -156,30 +170,42 @@ class RedactAnnotationScenario(QATestScenario):
         existing_mongo = self.api.get_dataset("mongo_test")
         if existing_mongo:
             self.api.delete_dataset("mongo_test")
-            self.info("Deleted existing mongo_test dataset to replace with redacted version")
+            self.info(
+                "Deleted existing mongo_test dataset to replace with redacted version"
+            )
 
         # Create MongoDB dataset with redact annotations
-        mongo_dataset = self._add_redact_annotations_to_mongo(original_datasets['mongo'])
+        mongo_dataset = self._add_redact_annotations_to_mongo(
+            original_datasets["mongo"]
+        )
         self.api.create_dataset(mongo_dataset)
         self.success(f"Created MongoDB dataset: {self.mongo_dataset_key}")
 
-    def _add_redact_annotations_to_postgres(self, original_dataset: Dict[str, Any]) -> Dict[str, Any]:
+    def _add_redact_annotations_to_postgres(
+        self, original_dataset: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Add redact annotations to a copy of the original Postgres dataset."""
         dataset = copy.deepcopy(original_dataset)
 
         # Update dataset metadata
         dataset["fides_key"] = self.postgres_dataset_key
         dataset["name"] = "Postgres Redact Test Dataset"
-        dataset["description"] = "Modified Postgres dataset with redact: name annotations for testing DSR report redaction"
+        dataset["description"] = (
+            "Modified Postgres dataset with redact: name annotations for testing DSR report redaction"
+        )
         dataset["fides_meta"] = {"redact": "name"}  # Redact the dataset name itself
 
         # Deterministically select collections and fields to redact
-        collections_to_redact = ["address", "employee", "payment_card"]  # Always these 3
+        collections_to_redact = [
+            "address",
+            "employee",
+            "payment_card",
+        ]  # Always these 3
         fields_to_redact = {
             "address": ["state"],
             "customer": ["email"],
             "employee": ["name"],
-            "payment_card": ["ccn"]
+            "payment_card": ["ccn"],
         }
 
         # Apply redact annotations
@@ -202,30 +228,39 @@ class RedactAnnotationScenario(QATestScenario):
                         field["fides_meta"]["redact"] = "name"
 
         # Update all dataset references using deep copy method
-        dataset = self._deep_copy_and_update_references(dataset, original_dataset["fides_key"], self.postgres_dataset_key)
+        dataset = self._deep_copy_and_update_references(
+            dataset, original_dataset["fides_key"], self.postgres_dataset_key
+        )
 
         return dataset
 
-    def _add_redact_annotations_to_mongo(self, original_dataset: Dict[str, Any]) -> Dict[str, Any]:
+    def _add_redact_annotations_to_mongo(
+        self, original_dataset: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Add redact annotations to a copy of the original MongoDB dataset."""
         dataset = copy.deepcopy(original_dataset)
 
         # Update dataset metadata
         dataset["fides_key"] = self.mongo_dataset_key
         dataset["name"] = "MongoDB Redact Test Dataset"
-        dataset["description"] = "Modified MongoDB dataset with redact: name annotations for testing DSR report redaction"
+        dataset["description"] = (
+            "Modified MongoDB dataset with redact: name annotations for testing DSR report redaction"
+        )
 
         # Deterministically select collections and fields to redact
-        collections_to_redact = ["customer_details", "customer_feedback"]  # Always these 2
+        collections_to_redact = [
+            "customer_details",
+            "customer_feedback",
+        ]  # Always these 2
         fields_to_redact = {
             "customer_details": ["gender"],
             "customer_feedback": [],  # Will handle nested fields separately
-            "conversations": []  # Will handle nested fields separately
+            "conversations": [],  # Will handle nested fields separately
         }
         nested_fields_to_redact = {
             "customer_details.workplace_info": ["employer"],
             "customer_feedback.customer_information": ["phone"],
-            "conversations.thread": ["chat_name"]
+            "conversations.thread": ["chat_name"],
         }
 
         # Apply redact annotations
@@ -248,17 +283,28 @@ class RedactAnnotationScenario(QATestScenario):
                         field["fides_meta"]["redact"] = "name"
 
             # Redact nested field names
-            self._apply_nested_redact_annotations(collection, collection_name, nested_fields_to_redact)
+            self._apply_nested_redact_annotations(
+                collection, collection_name, nested_fields_to_redact
+            )
 
         # Update all dataset references using deep copy method
-        dataset = self._deep_copy_and_update_references(dataset, original_dataset["fides_key"], self.mongo_dataset_key)
+        dataset = self._deep_copy_and_update_references(
+            dataset, original_dataset["fides_key"], self.mongo_dataset_key
+        )
 
         # Also update any cross-references to the Postgres dataset
-        dataset = self._deep_copy_and_update_references(dataset, "postgres_example_test_dataset", self.postgres_dataset_key)
+        dataset = self._deep_copy_and_update_references(
+            dataset, "postgres_example_test_dataset", self.postgres_dataset_key
+        )
 
         return dataset
 
-    def _apply_nested_redact_annotations(self, collection: Dict[str, Any], collection_name: str, nested_fields_to_redact: Dict[str, List[str]]):
+    def _apply_nested_redact_annotations(
+        self,
+        collection: Dict[str, Any],
+        collection_name: str,
+        nested_fields_to_redact: Dict[str, List[str]],
+    ):
         """Apply redact annotations to nested fields."""
         for field in collection.get("fields", []):
             field_name = field.get("name", "")
@@ -273,30 +319,39 @@ class RedactAnnotationScenario(QATestScenario):
                             nested_field["fides_meta"] = {}
                         nested_field["fides_meta"]["redact"] = "name"
 
-    def _deep_copy_and_update_references(self, obj: Any, old_dataset: str, new_dataset: str) -> Any:
+    def _deep_copy_and_update_references(
+        self, obj: Any, old_dataset: str, new_dataset: str
+    ) -> Any:
         """Recursively copy an object and update any dataset references."""
         import copy
 
         if isinstance(obj, dict):
             result = {}
             for key, value in obj.items():
-                if key == 'dataset' and value == old_dataset:
+                if key == "dataset" and value == old_dataset:
                     result[key] = new_dataset
                 elif key == "erase_after" and isinstance(value, list):
                     # Update erase_after references like ["postgres_example_test_dataset.customer"]
                     updated_erase_after = []
                     for item in value:
                         if isinstance(item, str) and item.startswith(f"{old_dataset}."):
-                            updated_item = item.replace(f"{old_dataset}.", f"{new_dataset}.")
+                            updated_item = item.replace(
+                                f"{old_dataset}.", f"{new_dataset}."
+                            )
                             updated_erase_after.append(updated_item)
                         else:
                             updated_erase_after.append(item)
                     result[key] = updated_erase_after
                 else:
-                    result[key] = self._deep_copy_and_update_references(value, old_dataset, new_dataset)
+                    result[key] = self._deep_copy_and_update_references(
+                        value, old_dataset, new_dataset
+                    )
             return result
         elif isinstance(obj, list):
-            return [self._deep_copy_and_update_references(item, old_dataset, new_dataset) for item in obj]
+            return [
+                self._deep_copy_and_update_references(item, old_dataset, new_dataset)
+                for item in obj
+            ]
         else:
             return copy.deepcopy(obj)
 
@@ -310,7 +365,7 @@ class RedactAnnotationScenario(QATestScenario):
             "description": "Test PostgreSQL system for redact annotation testing",
             "system_type": "Database",
             "privacy_declarations": [],
-            "system_dependencies": []
+            "system_dependencies": [],
         }
         self.api.create_system(postgres_system)
         self.success(f"Created Postgres system: {self.postgres_system_key}")
@@ -323,7 +378,7 @@ class RedactAnnotationScenario(QATestScenario):
             "description": "Test MongoDB system for redact annotation testing",
             "system_type": "Database",
             "privacy_declarations": [],
-            "system_dependencies": []
+            "system_dependencies": [],
         }
         self.api.create_system(mongo_system)
         self.success(f"Created MongoDB system: {self.mongo_system_key}")
@@ -337,7 +392,13 @@ class RedactAnnotationScenario(QATestScenario):
             "connection_type": "postgres",
             "access": "write",
             "description": "Test PostgreSQL connection for redact annotation testing",
-            "secrets": {"host": "host.docker.internal", "port": 6432, "dbname": "postgres_example", "username": "postgres", "password": "postgres"}
+            "secrets": {
+                "host": "host.docker.internal",
+                "port": 6432,
+                "dbname": "postgres_example",
+                "username": "postgres",
+                "password": "postgres",
+            },
         }
         self.api.create_system_connection(self.postgres_system_key, postgres_connection)
         self.success(f"Created Postgres connection: {self.postgres_connection_key}")
@@ -349,7 +410,13 @@ class RedactAnnotationScenario(QATestScenario):
             "connection_type": "mongodb",
             "access": "write",
             "description": "Test MongoDB connection for redact annotation testing",
-            "secrets": {"host": "mongodb_example", "port": 27017, "defaultauthdb": "mongo_test", "username": "mongo_user", "password": "mongo_pass"}
+            "secrets": {
+                "host": "mongodb_example",
+                "port": 27017,
+                "defaultauthdb": "mongo_test",
+                "username": "mongo_user",
+                "password": "mongo_pass",
+            },
         }
         self.api.create_system_connection(self.mongo_system_key, mongo_connection)
         self.success(f"Created MongoDB connection: {self.mongo_connection_key}")
@@ -363,7 +430,9 @@ class RedactAnnotationScenario(QATestScenario):
         if postgres_result.get("succeeded"):
             self.success(f"Linked Postgres dataset to connection")
         else:
-            self.error(f"Failed to link Postgres dataset: {postgres_result.get('failed', [])}")
+            self.error(
+                f"Failed to link Postgres dataset: {postgres_result.get('failed', [])}"
+            )
 
         # Link MongoDB dataset to MongoDB connection
         mongo_result = self.api.link_datasets_to_connection(
@@ -372,24 +441,28 @@ class RedactAnnotationScenario(QATestScenario):
         if mongo_result.get("succeeded"):
             self.success(f"Linked MongoDB dataset to connection")
         else:
-            self.error(f"Failed to link MongoDB dataset: {mongo_result.get('failed', [])}")
+            self.error(
+                f"Failed to link MongoDB dataset: {mongo_result.get('failed', [])}"
+            )
 
     def get_redacted_entities_summary(self) -> Dict[str, List[str]]:
         """Return a summary of which entities have redact annotations for verification."""
         return {
-            "postgres_dataset": ["postgres_redact_test_dataset"],  # Dataset-level redaction
+            "postgres_dataset": [
+                "postgres_redact_test_dataset"
+            ],  # Dataset-level redaction
             "postgres_collections": ["address", "employee", "payment_card"],
             "postgres_fields": [
                 "address.state",
                 "customer.email",
                 "employee.name",
-                "payment_card.ccn"
+                "payment_card.ccn",
             ],
             "mongo_collections": ["customer_details", "customer_feedback"],
             "mongo_fields": [
                 "customer_details.gender",
                 "customer_details.workplace_info.employer",
                 "customer_feedback.customer_information.phone",
-                "conversations.thread.chat_name"
-            ]
+                "conversations.thread.chat_name",
+            ],
         }

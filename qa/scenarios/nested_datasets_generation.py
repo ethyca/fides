@@ -18,51 +18,42 @@ if str(project_root) not in sys.path:
 if str(qa_dir) not in sys.path:
     sys.path.insert(0, str(qa_dir))
 
-from utils import QATestScenario, Argument
-from utils.rich_helpers import create_resources_with_progress, delete_resources_with_progress
+from utils import Argument, QATestScenario
+from utils.rich_helpers import (
+    create_resources_with_progress,
+    delete_resources_with_progress,
+)
 
 
 class NestedDatasetsGeneration(QATestScenario):
     """QA scenario for testing nested dataset generation."""
 
     arguments = {
-        'datasets': Argument(
-            type=int,
-            default=100,
-            description="Number of datasets to create"
+        "datasets": Argument(
+            type=int, default=100, description="Number of datasets to create"
         ),
-        'collections': Argument(
-            type=int,
-            default=100,
-            description="Number of collections per dataset"
+        "collections": Argument(
+            type=int, default=100, description="Number of collections per dataset"
         ),
-        'fields': Argument(
-            type=int,
-            default=10,
-            description="Number of fields per collection"
+        "fields": Argument(
+            type=int, default=10, description="Number of fields per collection"
         ),
-        'max_nesting_level': Argument(
-            type=int,
-            default=3,
-            description="Maximum nesting level for fields"
-        )
+        "max_nesting_level": Argument(
+            type=int, default=3, description="Maximum nesting level for fields"
+        ),
     }
 
     def __init__(self, base_url: str = "http://localhost:8080", **kwargs):
         super().__init__(base_url, **kwargs)
-        self.dataset_count = kwargs.get('datasets', 100)
-        self.collection_count = kwargs.get('collections', 100)
-        self.field_count = kwargs.get('fields', 10)
-        self.max_nesting_level = kwargs.get('max_nesting_level', 3)
+        self.dataset_count = kwargs.get("datasets", 100)
+        self.collection_count = kwargs.get("collections", 100)
+        self.field_count = kwargs.get("fields", 10)
+        self.max_nesting_level = kwargs.get("max_nesting_level", 3)
         self.system_name = "nested_qa_test_system"
         self.connection_key = "nested_qa_test_connection"
 
         # Statistics tracking
-        self.redact_stats = {
-            'datasets': 0,
-            'collections': 0,
-            'fields': 0
-        }
+        self.redact_stats = {"datasets": 0, "collections": 0, "fields": 0}
 
     @property
     def description(self) -> str:
@@ -72,8 +63,12 @@ class NestedDatasetsGeneration(QATestScenario):
         """Setup datasets with nested field structures."""
         self.setup_phase()
 
-        print(f"Setting up {self.dataset_count} datasets with nested field structures...")
-        print(f"Each dataset will have {self.collection_count} collections with {self.field_count} fields each")
+        print(
+            f"Setting up {self.dataset_count} datasets with nested field structures..."
+        )
+        print(
+            f"Each dataset will have {self.collection_count} collections with {self.field_count} fields each"
+        )
 
         try:
             # Create datasets with nested fields
@@ -92,7 +87,9 @@ class NestedDatasetsGeneration(QATestScenario):
             self.step(4, "Linking datasets to connection")
             self._link_datasets_to_connection()
 
-            self.success(f"Setup completed successfully! Created {self.dataset_count} datasets with DatasetConfig.")
+            self.success(
+                f"Setup completed successfully! Created {self.dataset_count} datasets with DatasetConfig."
+            )
             self.info(f"Redact annotations added:")
             self.info(f"  - Datasets: {self.redact_stats['datasets']}")
             self.info(f"  - Collections: {self.redact_stats['collections']}")
@@ -115,7 +112,7 @@ class NestedDatasetsGeneration(QATestScenario):
 
         print(f"Cleaning up nested datasets integration test resources...")
         success = True
-        deleted_counts = {'connections': 0, 'systems': 0, 'datasets': 0}
+        deleted_counts = {"connections": 0, "systems": 0, "datasets": 0}
 
         try:
             # Step 1: Delete connections FIRST (cascades delete DatasetConfigs)
@@ -124,7 +121,9 @@ class NestedDatasetsGeneration(QATestScenario):
                 deleted_counts["connections"] += 1
                 self.success(f"Deleted connection: {self.connection_key}")
             else:
-                self.info(f"Connection {self.connection_key} already cleaned or not found")
+                self.info(
+                    f"Connection {self.connection_key} already cleaned or not found"
+                )
 
             # Step 2: Delete systems
             self.step(2, "Deleting systems")
@@ -146,7 +145,9 @@ class NestedDatasetsGeneration(QATestScenario):
             deleted_counts["datasets"] = deleted_count
 
             # Show results
-            self.success(f"Cleanup completed! Deleted {deleted_counts['connections']} connections, {deleted_counts['systems']} systems, {deleted_counts['datasets']} datasets.")
+            self.success(
+                f"Cleanup completed! Deleted {deleted_counts['connections']} connections, {deleted_counts['systems']} systems, {deleted_counts['datasets']} datasets."
+            )
 
             return success
 
@@ -180,13 +181,13 @@ class NestedDatasetsGeneration(QATestScenario):
                 "name": f"collection_{collection_idx}",
                 "description": f"Collection {collection_idx} with nested fields",
                 "data_categories": [],
-                "fields": self._generate_nested_fields(collection_idx)
+                "fields": self._generate_nested_fields(collection_idx),
             }
 
             # Add random redact annotation to collection (20% chance)
             if random.random() < 0.2:
                 collection["fides_meta"] = {"redact": "name"}
-                self.redact_stats['collections'] += 1
+                self.redact_stats["collections"] += 1
 
             collections.append(collection)
 
@@ -197,13 +198,13 @@ class NestedDatasetsGeneration(QATestScenario):
             "description": f"Test dataset {index} with nested field structures for QA testing.",
             "meta": None,
             "data_categories": [],
-            "collections": collections
+            "collections": collections,
         }
 
         # Add random redact annotation to dataset (15% chance)
         if random.random() < 0.15:
             dataset["fides_meta"] = {"redact": "name"}
-            self.redact_stats['datasets'] += 1
+            self.redact_stats["datasets"] += 1
 
         return dataset
 
@@ -217,19 +218,23 @@ class NestedDatasetsGeneration(QATestScenario):
             while nesting_level < self.max_nesting_level and random.random() < 0.3:
                 nesting_level += 1
 
-            field = self._create_field(f"field_{field_idx}", field_idx, collection_idx, nesting_level)
+            field = self._create_field(
+                f"field_{field_idx}", field_idx, collection_idx, nesting_level
+            )
             fields.append(field)
 
         return fields
 
-    def _create_field(self, field_name: str, field_idx: int, collection_idx: int, nesting_level: int) -> Dict[str, Any]:
+    def _create_field(
+        self, field_name: str, field_idx: int, collection_idx: int, nesting_level: int
+    ) -> Dict[str, Any]:
         """Create a field with the specified nesting level."""
 
         # Base field structure
         field = {
             "name": field_name,
             "description": f"Field {field_idx} in collection {collection_idx}",
-            "data_categories": self._get_random_data_categories()
+            "data_categories": self._get_random_data_categories(),
         }
 
         # Add metadata for some fields
@@ -237,22 +242,23 @@ class NestedDatasetsGeneration(QATestScenario):
 
         if field_idx == 1:  # Make first field a primary key
             fides_meta["primary_key"] = True
-        elif field_idx == 2 and collection_idx % 5 == 0:  # Add identity field occasionally
-            fides_meta.update({
-                "identity": "email",
-                "data_type": "string"
-            })
+        elif (
+            field_idx == 2 and collection_idx % 5 == 0
+        ):  # Add identity field occasionally
+            fides_meta.update({"identity": "email", "data_type": "string"})
         elif field_idx == 3 and collection_idx % 7 == 0:  # Add references occasionally
-            fides_meta["references"] = [{
-                "dataset": f"nested_qa_dataset_{(collection_idx % 10) + 1}",
-                "field": f"collection_{(collection_idx % 5) + 1}.field_1",
-                "direction": "to"
-            }]
+            fides_meta["references"] = [
+                {
+                    "dataset": f"nested_qa_dataset_{(collection_idx % 10) + 1}",
+                    "field": f"collection_{(collection_idx % 5) + 1}.field_1",
+                    "direction": "to",
+                }
+            ]
 
         # Add random redact annotation to field (25% chance)
         if random.random() < 0.25:
             fides_meta["redact"] = "name"
-            self.redact_stats['fields'] += 1
+            self.redact_stats["fields"] += 1
 
         # Only add fides_meta if it has content
         if fides_meta:
@@ -268,7 +274,7 @@ class NestedDatasetsGeneration(QATestScenario):
                     f"{field_name}_nested_{nested_idx}",
                     nested_idx,
                     collection_idx,
-                    nesting_level - 1
+                    nesting_level - 1,
                 )
                 nested_fields.append(nested_field)
 
@@ -374,7 +380,7 @@ class NestedDatasetsGeneration(QATestScenario):
             "description": f"Test system with {self.dataset_count} nested datasets for QA testing.",
             "system_type": "Service",
             "privacy_declarations": [],
-            "system_dependencies": []
+            "system_dependencies": [],
         }
 
     def _generate_connection(self) -> Dict[str, Any]:

@@ -12,7 +12,7 @@ import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
-import { MonitorConfig } from "~/types/api";
+import { EditableMonitorConfig } from "~/types/api";
 
 const TOOLTIP_COPY =
   "Selecting a project will monitor all current and future datasets within that project.";
@@ -27,11 +27,11 @@ const ConfigureMonitorDatabasesForm = ({
   onSubmit,
   onClose,
 }: {
-  monitor: MonitorConfig;
+  monitor: EditableMonitorConfig;
   isEditing?: boolean;
   isSubmitting?: boolean;
   integrationKey: string;
-  onSubmit: (monitor: MonitorConfig) => void;
+  onSubmit: (monitor: EditableMonitorConfig) => void;
   onClose: () => void;
 }) => {
   const toast = useToast();

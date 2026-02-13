@@ -294,7 +294,8 @@ def _patch_webhook(
 
     if data.get("connection_config_key"):
         connection_config = get_connection_config_or_error(
-            db, data.get("connection_config_key")  # type: ignore
+            db,
+            data.get("connection_config_key"),  # type: ignore
         )
         data["connection_config_id"] = connection_config.id
 

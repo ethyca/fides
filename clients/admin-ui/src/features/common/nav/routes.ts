@@ -7,6 +7,7 @@ export const ADD_SYSTEMS_MANUAL_ROUTE = "/add-systems/manual";
 export const ADD_SYSTEMS_MULTIPLE_ROUTE = "/add-systems/multiple";
 export const DATAMAP_ROUTE = "/datamap";
 export const REPORTING_DATAMAP_ROUTE = "/reporting/datamap";
+export const REPORTING_ASSETS_ROUTE = "/reporting/assets";
 export const SYSTEM_ROUTE = "/systems";
 export const EDIT_SYSTEM_ROUTE = "/systems/configure/[id]";
 export const CLASSIFY_SYSTEMS_ROUTE = "/classify-systems";
@@ -29,16 +30,11 @@ export const ACTION_CENTER_DATASTORE_MONITOR_ROUTE =
   "/data-discovery/action-center/datastore/[monitorId]";
 export const ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE =
   "/data-discovery/action-center/datastore/[monitorId]/activity";
+export const ACTION_CENTER_INFRASTRUCTURE_MONITOR_ROUTE =
+  "/data-discovery/action-center/infrastructure/[monitorId]";
+export const ACTION_CENTER_INFRASTRUCTURE_MONITOR_ACTIVITY_ROUTE =
+  "/data-discovery/action-center/infrastructure/[monitorId]/activity";
 export const UNCATEGORIZED_SEGMENT = "[undefined]";
-
-export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";
-export const DATA_DETECTION_ROUTE = "/data-discovery/detection";
-export const DATA_DETECTION_ROUTE_DETAIL =
-  "/data-discovery/detection/[resourceUrn]";
-
-export const DATA_DISCOVERY_ROUTE = "/data-discovery/discovery";
-export const DATA_DISCOVERY_ROUTE_DETAIL =
-  "/data-discovery/discovery/[resourceUrn]";
 
 // End-to-end datasets
 export const DATA_CATALOG_ROUTE = "/data-catalog";
@@ -89,10 +85,15 @@ export const NOTIFICATIONS_DIGESTS_ROUTE = "/notifications/digests";
 export const NOTIFICATIONS_ADD_DIGEST_ROUTE = "/notifications/digests/new";
 export const NOTIFICATIONS_EDIT_DIGEST_ROUTE = "/notifications/digests/[id]";
 
-// Messaging providers (now part of notifications)
+// Email providers (messaging providers, now part of notifications)
 export const MESSAGING_PROVIDERS_ROUTE = "/notifications/providers";
 export const MESSAGING_PROVIDERS_EDIT_ROUTE = "/notifications/providers/[key]";
 export const MESSAGING_PROVIDERS_NEW_ROUTE = "/notifications/providers/new";
+
+// Chat providers (Slack, Teams, etc.)
+export const CHAT_PROVIDERS_ROUTE = "/notifications/chat-providers";
+export const CHAT_PROVIDERS_CONFIGURE_ROUTE =
+  "/notifications/chat-providers/configure";
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";

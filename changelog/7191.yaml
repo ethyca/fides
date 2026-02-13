@@ -1,5 +1,0 @@
-type: Added
-description: Added infrastructure monitor type to action center gated behind oktaMonitor feature flag
-pr: 7191
-labels: []
-

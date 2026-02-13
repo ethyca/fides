@@ -2,20 +2,31 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import MagicMock
 
+import networkx
 import pytest
 from fideslang import Dataset
 
 from fides.api.common_exceptions import TraversalError
-from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
+from fides.api.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+    CollectionAddress,
+)
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfig,
+    ManualTaskConfigField,
+)
 from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
+    compute_all_descendants,
     get_existing_ready_tasks,
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
@@ -27,6 +38,7 @@ from fides.api.task.create_request_tasks import (
 )
 from fides.api.task.execute_request_tasks import run_access_node
 from fides.api.task.graph_task import build_consent_dataset_graph
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.config import CONFIG
 from tests.conftest import wait_for_tasks_to_complete
 from tests.ops.task.traversal_data import combined_mongo_postgresql_graph
@@ -161,6 +173,161 @@ payment_card_serialized_traversal_details = {
     "dataset_connection_key": "my_postgres_db_1",
     "skipped_nodes": None,
 }
+
+
+class TestComputeAllDescendants:
+    """Unit tests for compute_all_descendants, which computes the transitive
+    successors for every node in a directed acyclic graph in O(N+E)."""
+
+    def test_single_node(self):
+        """A graph with a single node has no descendants."""
+        graph = networkx.DiGraph()
+        node_a = CollectionAddress("ds", "a")
+        graph.add_node(node_a)
+
+        result = compute_all_descendants(graph)
+
+        assert result == {node_a: set()}
+
+    def test_linear_chain(self):
+        """In a simple A -> B -> C chain, A reaches B and C, B reaches C,
+        and C reaches nothing."""
+        graph = networkx.DiGraph()
+        node_a = CollectionAddress("ds", "a")
+        node_b = CollectionAddress("ds", "b")
+        node_c = CollectionAddress("ds", "c")
+        graph.add_edge(node_a, node_b)
+        graph.add_edge(node_b, node_c)
+
+        result = compute_all_descendants(graph)
+
+        assert result == {
+            node_a: {node_b, node_c},
+            node_b: {node_c},
+            node_c: set(),
+        }
+
+    def test_diamond_graph(self):
+        """Diamond shape: A -> B, A -> C, B -> D, C -> D.
+        A can reach B, C, D; B and C can each reach D; D reaches nothing."""
+        graph = networkx.DiGraph()
+        node_a = CollectionAddress("ds", "a")
+        node_b = CollectionAddress("ds", "b")
+        node_c = CollectionAddress("ds", "c")
+        node_d = CollectionAddress("ds", "d")
+        graph.add_edge(node_a, node_b)
+        graph.add_edge(node_a, node_c)
+        graph.add_edge(node_b, node_d)
+        graph.add_edge(node_c, node_d)
+
+        result = compute_all_descendants(graph)
+
+        assert result == {
+            node_a: {node_b, node_c, node_d},
+            node_b: {node_d},
+            node_c: {node_d},
+            node_d: set(),
+        }
+
+    def test_multiple_roots_and_leaves(self):
+        """Graph with two independent roots and a shared leaf:
+        A -> C, B -> C.  A and B each reach C; C reaches nothing."""
+        graph = networkx.DiGraph()
+        node_a = CollectionAddress("ds", "a")
+        node_b = CollectionAddress("ds", "b")
+        node_c = CollectionAddress("ds", "c")
+        graph.add_edge(node_a, node_c)
+        graph.add_edge(node_b, node_c)
+
+        result = compute_all_descendants(graph)
+
+        assert result == {
+            node_a: {node_c},
+            node_b: {node_c},
+            node_c: set(),
+        }
+
+    def test_wide_fan_out(self):
+        """Root fans out to many leaves: root -> L1, root -> L2, root -> L3.
+        Root reaches all leaves; each leaf reaches nothing."""
+        graph = networkx.DiGraph()
+        root = CollectionAddress("ds", "root")
+        leaves = [CollectionAddress("ds", f"leaf_{i}") for i in range(3)]
+        for leaf in leaves:
+            graph.add_edge(root, leaf)
+
+        result = compute_all_descendants(graph)
+
+        assert result[root] == set(leaves)
+        for leaf in leaves:
+            assert result[leaf] == set()
+
+    def test_matches_networkx_descendants(self):
+        """Verify the result matches networkx.descendants() for each node
+        on a more complex graph to confirm algorithmic correctness."""
+        graph = networkx.DiGraph()
+        node_a = CollectionAddress("ds1", "a")
+        node_b = CollectionAddress("ds1", "b")
+        node_c = CollectionAddress("ds2", "c")
+        node_d = CollectionAddress("ds2", "d")
+        node_e = CollectionAddress("ds3", "e")
+        graph.add_edge(node_a, node_b)
+        graph.add_edge(node_a, node_c)
+        graph.add_edge(node_b, node_d)
+        graph.add_edge(node_c, node_d)
+        graph.add_edge(node_d, node_e)
+
+        result = compute_all_descendants(graph)
+
+        for node in graph.nodes:
+            assert result[node] == networkx.descendants(graph, node)
+
+    def test_empty_graph(self):
+        """An empty graph returns an empty dict."""
+        graph = networkx.DiGraph()
+
+        result = compute_all_descendants(graph)
+
+        assert result == {}
+
+    def test_disconnected_components(self):
+        """Disconnected sub-graphs: A -> B and C -> D (no edges between them).
+        Descendants stay within their own component."""
+        graph = networkx.DiGraph()
+        node_a = CollectionAddress("ds1", "a")
+        node_b = CollectionAddress("ds1", "b")
+        node_c = CollectionAddress("ds2", "c")
+        node_d = CollectionAddress("ds2", "d")
+        graph.add_edge(node_a, node_b)
+        graph.add_edge(node_c, node_d)
+
+        result = compute_all_descendants(graph)
+
+        assert result == {
+            node_a: {node_b},
+            node_b: set(),
+            node_c: {node_d},
+            node_d: set(),
+        }
+
+    def test_with_root_and_terminator_addresses(self):
+        """Simulates a typical request-task graph shape with __ROOT__ and
+        __TERMINATE__ artificial nodes to verify they are handled correctly."""
+        graph = networkx.DiGraph()
+        node_a = CollectionAddress("ds", "customers")
+        node_b = CollectionAddress("ds", "orders")
+        graph.add_edge(ROOT_COLLECTION_ADDRESS, node_a)
+        graph.add_edge(node_a, node_b)
+        graph.add_edge(node_b, TERMINATOR_ADDRESS)
+
+        result = compute_all_descendants(graph)
+
+        assert result == {
+            ROOT_COLLECTION_ADDRESS: {node_a, node_b, TERMINATOR_ADDRESS},
+            node_a: {node_b, TERMINATOR_ADDRESS},
+            node_b: {TERMINATOR_ADDRESS},
+            TERMINATOR_ADDRESS: set(),
+        }
 
 
 class TestPersistAccessRequestTasks:
@@ -1257,6 +1424,154 @@ class TestPersistConsentRequestTasks:
 
         # No new consent tasks created
         assert privacy_request.consent_tasks.count() == 3
+
+
+class TestConsentGraphWithManualTasks:
+    """Tests for consent graph including manual tasks with consent configs"""
+
+    def test_build_consent_dataset_graph_includes_manual_tasks_when_session_provided(
+        self,
+        db,
+        saas_example_dataset_config,
+        connection_config,
+    ):
+        """Test that build_consent_dataset_graph includes manual tasks when session is provided"""
+
+        # Create a manual task with a consent config for the connection
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        # Must have at least one field for the manual task to be included in the graph
+        consent_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": consent_config.id,
+                "field_key": "consent_confirmation",
+                "field_type": "text",
+                "field_metadata": {
+                    "label": "Consent Confirmation",
+                    "required": True,
+                    "data_categories": ["user.consent"],
+                },
+            },
+        )
+
+        try:
+            # Build consent graph WITH session - should include manual tasks
+            graph = build_consent_dataset_graph([saas_example_dataset_config], db)
+
+            # Verify manual task is included in the graph
+            manual_task_address = ManualTaskAddress.create(connection_config.key)
+            assert manual_task_address in graph.nodes
+
+            # Verify the regular SaaS consent node is also included
+            saas_address = next(
+                addr
+                for addr in graph.nodes
+                if not ManualTaskAddress.is_manual_task_address(addr)
+            )
+            assert saas_address is not None
+
+        finally:
+            consent_field.delete(db)
+            consent_config.delete(db)
+            manual_task.delete(db)
+
+    def test_build_consent_dataset_graph_excludes_manual_tasks_without_session(
+        self,
+        db,
+        saas_example_dataset_config,
+        connection_config,
+    ):
+        """Test that build_consent_dataset_graph excludes manual tasks when session is not provided"""
+        from fides.api.models.manual_task import ManualTask, ManualTaskConfig
+
+        # Create a manual task with a consent config
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+
+        consent_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.consent,
+                "is_current": True,
+            },
+        )
+
+        try:
+            # Build consent graph WITHOUT session - should not include manual tasks
+            graph = build_consent_dataset_graph([saas_example_dataset_config])
+
+            # Verify manual task is NOT included in the graph
+            manual_task_address = ManualTaskAddress.create(connection_config.key)
+            assert manual_task_address not in graph.nodes
+
+        finally:
+            consent_config.delete(db)
+            manual_task.delete(db)
+
+    def test_build_consent_dataset_graph_excludes_manual_tasks_without_consent_config(
+        self,
+        db,
+        saas_example_dataset_config,
+        connection_config,
+    ):
+        """Test that build_consent_dataset_graph excludes manual tasks without consent configs"""
+        from fides.api.models.manual_task import ManualTask, ManualTaskConfig
+
+        # Create a manual task with only an access config (no consent config)
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": "connection_config",
+            },
+        )
+
+        access_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ActionType.access,
+                "is_current": True,
+            },
+        )
+
+        try:
+            # Build consent graph with session
+            graph = build_consent_dataset_graph([saas_example_dataset_config], db)
+
+            # Verify manual task is NOT included (no consent config)
+            manual_task_address = ManualTaskAddress.create(connection_config.key)
+            assert manual_task_address not in graph.nodes
+
+        finally:
+            access_config.delete(db)
+            manual_task.delete(db)
 
 
 class TestGetExistingReadyTasks:

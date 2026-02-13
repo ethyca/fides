@@ -8,7 +8,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from starlette.exceptions import HTTPException
 from starlette.status import (
     HTTP_200_OK,
@@ -57,7 +57,14 @@ def get_policy_list(
     Return a paginated list of all Policy records in this system
     """
     logger.debug("Finding all policies with pagination params '{}'", params)
-    policies = Policy.query(db=db).order_by(Policy.created_at.desc())
+    policies = (
+        Policy.query(db=db)
+        .options(
+            selectinload(Policy.rules).joinedload(Rule.storage_destination),  # type: ignore[attr-defined] # backref
+            selectinload(Policy.conditions),
+        )
+        .order_by(Policy.created_at.desc())
+    )
     return paginate(policies, params=params)
 
 
@@ -360,7 +367,8 @@ def delete_rule(
     logger.info("Finding rule with key '{}'", rule_key)
 
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -494,7 +502,8 @@ def create_or_update_rule_targets(
 
     logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -593,7 +602,8 @@ def delete_rule_target(
 
     logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(

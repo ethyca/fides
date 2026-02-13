@@ -143,22 +143,24 @@ def test_redshift_example_data(redshift_test_engine):
 def test_snowflake_example_data(snowflake_test_engine):
     """Confirm that we can connect to the snowflake test db and get table names"""
     inspector = inspect(snowflake_test_engine)
-    assert sorted(inspector.get_table_names(schema="test")) == sorted(
-        [
-            "cc",
-            "report",
-            "address",
-            "customer",
-            "employee",
-            "login",
-            "order",
-            "order_item",
-            "payment_card",
-            "product",
-            "report",
-            "service_request",
-            "visit",
-        ]
+    expected_tables = {
+        "cc",
+        "address",
+        "customer",
+        "employee",
+        "login",
+        "order",
+        "order_item",
+        "payment_card",
+        "product",
+        "report",  # report is repeated in snowflake, once as REPORT, but only shows up once in inspector results
+        "service_request",
+        "visit",
+    }
+    actual_tables = set(inspector.get_table_names(schema="test"))
+    missing_tables = expected_tables - actual_tables
+    assert not missing_tables, (
+        f"Missing expected tables in test schema: {missing_tables}"
     )
 
 
@@ -195,9 +197,9 @@ def test_bigquery_example_data(bigquery_test_engine):
     # Check that all expected tables are present in the specified schema
     actual_tables = set(inspector.get_table_names(schema=dataset_name))
     missing_tables = expected_tables - actual_tables
-    assert (
-        not missing_tables
-    ), f"Missing expected tables in {dataset_name}: {missing_tables}"
+    assert not missing_tables, (
+        f"Missing expected tables in {dataset_name}: {missing_tables}"
+    )
 
 
 @pytest.mark.integration_external

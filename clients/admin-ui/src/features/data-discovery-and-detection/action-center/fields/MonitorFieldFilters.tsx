@@ -23,7 +23,7 @@ const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
   ConfidenceBucket.MEDIUM,
   ConfidenceBucket.LOW,
   ConfidenceBucket.MANUAL,
-];
+] as const;
 
 /**
  * Build a nested tree structure from flat data category strings.
@@ -276,35 +276,17 @@ export const MonitorFieldFilters = ({
   ];
 
   // Get current checked keys from LOCAL state
-  const checkedKeys = useMemo(
-    () =>
-      uniq([
-        ...(localResourceStatus ?? []),
-        ...(localDataCategory ?? []),
-        ...(localConfidenceBucket ?? []),
-      ]),
-    [localResourceStatus, localDataCategory, localConfidenceBucket],
-  );
+  const checkedKeys = uniq([
+    ...(localResourceStatus ?? []),
+    ...(localDataCategory ?? []),
+    ...(localConfidenceBucket ?? []),
+  ]);
 
   // Calculate active filters count from APPLIED state (not local)
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (resourceStatus) {
-      // Deduplicate to get accurate count
-      count += new Set(resourceStatus).size;
-    }
-    if (dataCategory) {
-      // Deduplicate to get accurate count
-      count += new Set(dataCategory).size;
-    }
-
-    if (confidenceBucket) {
-      // Deduplicate to get accurate count
-      count += new Set(confidenceBucket).size;
-    }
-
-    return count;
-  }, [resourceStatus, dataCategory, confidenceBucket]);
+  const activeFiltersCount =
+    new Set(resourceStatus || []).size +
+    new Set(dataCategory || []).size +
+    new Set(confidenceBucket || []).size;
 
   const handleCheck = (
     checked: React.Key[] | { checked: React.Key[]; halfChecked: React.Key[] },
@@ -401,13 +383,7 @@ export const MonitorFieldFilters = ({
     if (open) {
       // When popover opens, refetch data categories to ensure they're up-to-date
       refetchDatastoreFilters();
-      return;
     }
-
-    // When popover closes without applying, reset local state to match applied state
-    setLocalResourceStatus(resourceStatus);
-    setLocalConfidenceBucket(confidenceBucket);
-    setLocalDataCategory(dataCategory);
   };
 
   return (

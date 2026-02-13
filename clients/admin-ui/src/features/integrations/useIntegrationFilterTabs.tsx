@@ -15,11 +15,14 @@ export enum IntegrationFilterTabs {
 }
 
 const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
-  const { flags } = useFlags();
-  const tabs = Object.values(IntegrationFilterTabs).filter(
-    (tab) =>
-      tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || flags.oktaMonitor,
-  );
+  const {
+    flags: { webMonitor },
+  } = useFlags();
+  const tabs = !webMonitor
+    ? Object.values(IntegrationFilterTabs).filter(
+        (tab) => tab !== IntegrationFilterTabs.WEBSITE,
+      )
+    : Object.values(IntegrationFilterTabs);
 
   const [tabIndex, setTabIndex] = useState(0);
   const currentTab = tabs[tabIndex];

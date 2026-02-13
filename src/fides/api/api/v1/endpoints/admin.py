@@ -1,25 +1,36 @@
-from enum import Enum
+from enum import StrEnum
 from typing import Dict, Optional
 
-from fastapi import HTTPException, Security, status
+from fastapi import BackgroundTasks, Depends, HTTPException, Security, status
 from loguru import logger
+from sqlalchemy.orm import Session
 
+from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.database import configure_db, migrate_db, reset_db
+from fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf import (
+    get_pending_is_leaf_count,
+)
+from fides.api.migrations.backfill_scripts.backfill_stagedresrouceancestor_distance import (
+    get_pending_distance_count,
+)
+from fides.api.migrations.backfill_scripts.utils import acquire_backfill_lock
+from fides.api.migrations.post_upgrade_backfill import (
+    is_backfill_running,
+    run_backfill_manually,
+)
 from fides.api.oauth.utils import verify_oauth_client_prod
+from fides.api.schemas.admin import BackfillRequest, BackfillStatusResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.memory_watchdog import (
     _capture_heap_dump,
     get_memory_watchdog_enabled,
 )
 from fides.common.api import scope_registry
-from fides.common.api.scope_registry import HEAP_DUMP_EXEC
+from fides.common.api.scope_registry import BACKFILL_EXEC, HEAP_DUMP_EXEC
 from fides.config import CONFIG
 
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
-
-
-from enum import StrEnum
 
 
 class DBActions(StrEnum):
@@ -49,7 +60,11 @@ def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
 
     if action == DBActions.downgrade:
         try:
-            migrate_db(database_url=CONFIG.database.sync_database_uri, revision=revision, downgrade=True)  # type: ignore[arg-type]
+            migrate_db(
+                database_url=CONFIG.database.sync_database_uri,
+                revision=revision,  # type: ignore[arg-type]
+                downgrade=True,
+            )
             action_text = "downgrade"
         except Exception as e:
             logger.exception("Database downgrade failed")
@@ -124,3 +139,85 @@ def trigger_heap_dump() -> Dict:
             "message": "Heap dump captured successfully. Check server logs for detailed report."
         }
     }
+
+
+@ADMIN_ROUTER.post(
+    "/admin/backfill",
+    tags=["Admin"],
+    dependencies=[Security(verify_oauth_client_prod, scopes=[BACKFILL_EXEC])],
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def trigger_backfill(
+    background_tasks: BackgroundTasks,
+    request: BackfillRequest = BackfillRequest(),
+) -> Dict:
+    """
+    Trigger a database backfill operation.
+
+    This endpoint runs deferred data migrations (backfills) that were skipped during
+    normal database migrations due to table size. The backfill runs in the background
+    and progress can be monitored via server logs.
+
+    The operation is:
+    - **Idempotent**: Safe to run multiple times
+    - **Resumable**: If interrupted, re-run and it will continue where it left off
+    - **Non-blocking**: Uses small batches with delays to minimize database impact
+
+    Only one backfill can run at a time. Returns 409 Conflict if a backfill is already running.
+    """
+    lock = acquire_backfill_lock()
+    if not lock:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A backfill is already running. Check server logs for progress.",
+        )
+
+    logger.info(
+        f"Manual backfill triggered via API "
+        f"(batch_size={request.batch_size}, delay={request.batch_delay_seconds}s)"
+    )
+
+    background_tasks.add_task(
+        run_backfill_manually,
+        lock,
+        request.batch_size,
+        request.batch_delay_seconds,
+    )
+
+    return {
+        "data": {
+            "message": "Backfill started in background. Monitor progress via GET /api/v1/admin/backfill or server logs.",
+            "config": {
+                "batch_size": request.batch_size,
+                "batch_delay_seconds": request.batch_delay_seconds,
+            },
+        }
+    }
+
+
+@ADMIN_ROUTER.get(
+    "/admin/backfill",
+    tags=["Admin"],
+    dependencies=[Security(verify_oauth_client_prod, scopes=[BACKFILL_EXEC])],
+    response_model=BackfillStatusResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_backfill_status(
+    db: Session = Depends(get_db),
+) -> BackfillStatusResponse:
+    """
+    Get the current status of the backfill operation.
+
+    Returns:
+    - **is_running**: Whether a backfill is currently in progress
+    - **pending_count**: Count of rows still pending backfill for each task
+
+    When `pending_count` values are 0 and `is_running` is False, all backfills are complete.
+    """
+    return BackfillStatusResponse(
+        is_running=is_backfill_running(),
+        pending_count={
+            "stagedresource-is_leaf": get_pending_is_leaf_count(db),
+            "stagedresourceancestor-distance": get_pending_distance_count(db),
+        },
+    )

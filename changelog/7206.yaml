@@ -1,4 +1,0 @@
-type: Added
-description: Added async version of verify_oauth_client
-pr: 7206
-labels: []

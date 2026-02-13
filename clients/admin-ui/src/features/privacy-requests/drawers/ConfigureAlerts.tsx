@@ -1,43 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Button,
-  ChakraBellIcon as BellIcon,
-  ChakraBox as Box,
-  ChakraDrawer as Drawer,
-  ChakraDrawerBody as DrawerBody,
-  ChakraDrawerCloseButton as DrawerCloseButton,
-  ChakraDrawerContent as DrawerContent,
-  ChakraDrawerFooter as DrawerFooter,
-  ChakraDrawerHeader as DrawerHeader,
-  ChakraDrawerOverlay as DrawerOverlay,
-  ChakraFormControl as FormControl,
-  ChakraFormLabel as FormLabel,
-  ChakraHStack as HStack,
-  ChakraNumberDecrementStepper as NumberDecrementStepper,
-  ChakraNumberIncrementStepper as NumberIncrementStepper,
-  ChakraNumberInput as NumberInput,
-  ChakraNumberInputField as NumberInputField,
-  ChakraNumberInputStepper as NumberInputStepper,
-  ChakraText as Text,
-  ChakraVStack as VStack,
-  Switch,
-  useChakraDisclosure as useDisclosure,
-} from "fidesui";
-import {
-  Field,
-  FieldArray,
-  FieldInputProps,
-  FieldMetaProps,
+  Divider,
+  Drawer,
+  Flex,
   Form,
-  Formik,
-  FormikHelpers,
-  FormikProps,
-} from "formik";
+  Icons,
+  InputNumber,
+  Space,
+  Switch,
+  Typography,
+} from "fidesui";
 import { useEffect, useRef, useState } from "react";
-import * as Yup from "yup";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 import EmailChipList from "../EmailChipList";
 import {
@@ -47,25 +24,40 @@ import {
 
 const DEFAULT_MIN_ERROR_COUNT = 1;
 
-const validationSchema = Yup.object().shape({
-  emails: Yup.array(Yup.string()).when(["notify"], {
-    is: true,
-    then: () =>
-      Yup.array(Yup.string())
-        .min(1, "Must enter at least one valid email")
-        .label("Email"),
-  }),
-  notify: Yup.boolean(),
-  minErrorCount: Yup.number().required(),
-});
+type NotificationFormState = {
+  setEmails: (emails: string[]) => void;
+  setNotify: (value: boolean) => void;
+  setMinErrorCount: (value: number) => void;
+};
+
+function applyDataToState(
+  data:
+    | { email_addresses?: string[]; notify_after_failures?: number }
+    | null
+    | undefined,
+  setters: NotificationFormState,
+) {
+  if (data) {
+    setters.setEmails(
+      Array.isArray(data.email_addresses) ? data.email_addresses : [],
+    );
+    setters.setNotify(data.notify_after_failures !== 0);
+    setters.setMinErrorCount(
+      data.notify_after_failures ?? DEFAULT_MIN_ERROR_COUNT,
+    );
+  } else {
+    setters.setEmails([]);
+    setters.setNotify(true);
+    setters.setMinErrorCount(DEFAULT_MIN_ERROR_COUNT);
+  }
+}
 
 const ConfigureAlerts = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [formValues, setFormValues] = useState({
-    emails: [] as string[],
-    notify: false,
-    minErrorCount: DEFAULT_MIN_ERROR_COUNT,
-  });
+  const [isOpen, setIsOpen] = useState(false);
+  const [emails, setEmails] = useState<string[]>([]);
+  const [notify, setNotify] = useState(true);
+  const [minErrorCount, setMinErrorCount] = useState(DEFAULT_MIN_ERROR_COUNT);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const firstField = useRef(null);
   const { errorAlert, successAlert } = useAlert();
   const [skip, setSkip] = useState(true);
@@ -73,211 +65,148 @@ const ConfigureAlerts = () => {
   const { data } = useGetNotificationQuery(undefined, { skip });
   const [saveNotification] = useSaveNotificationMutation();
 
-  const handleSubmit = async (
-    values: typeof formValues,
-    helpers: FormikHelpers<typeof formValues>,
-  ) => {
-    helpers.setSubmitting(true);
+  const setters: NotificationFormState = {
+    setEmails,
+    setNotify,
+    setMinErrorCount,
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
     const payload = await saveNotification({
-      email_addresses: values.emails,
-      notify_after_failures: values.notify ? values.minErrorCount : 0,
+      email_addresses: notify ? emails : [],
+      notify_after_failures: notify ? minErrorCount : 0,
     });
     if (isErrorResult(payload)) {
       errorAlert(
         getErrorMessage(payload.error),
-        `Configure alerts and notifications has failed to save due to the following:`,
+        "Failed to save notification settings",
       );
     } else {
-      successAlert(`Configure alerts and notifications saved successfully.`);
+      successAlert("Notification settings saved successfully");
     }
-    helpers.setSubmitting(false);
-    onClose();
+    setIsSubmitting(false);
+    setIsOpen(false);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    // Restore form to last saved/API values so Cancel doesn't leave form cleared on reopen
+    applyDataToState(data, setters);
   };
 
   useEffect(() => {
     if (isOpen) {
       setSkip(false);
     }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (data) {
-      setFormValues({
-        emails: data.email_addresses,
-        notify: data.notify_after_failures !== 0,
-        minErrorCount: data.notify_after_failures,
-      });
+      setEmails(
+        Array.isArray(data.email_addresses) ? data.email_addresses : [],
+      );
+      setNotify(data.notify_after_failures !== 0);
+      setMinErrorCount(data.notify_after_failures ?? DEFAULT_MIN_ERROR_COUNT);
     }
-  }, [data, isOpen]);
+    // If no data exists, state remains at initial defaults (empty emails array)
+  }, [data, setEmails, setNotify, setMinErrorCount]);
 
   return (
     <>
       <Button
-        onClick={onOpen}
+        onClick={() => setIsOpen(true)}
         title="Configure alerts"
         aria-label="Configure alerts"
-        icon={<BellIcon />}
+        icon={<Icons.Notification />}
       />
-      <Formik
-        enableReinitialize
-        initialValues={formValues}
-        onSubmit={handleSubmit}
-        validationSchema={validationSchema}
+      <Drawer
+        open={isOpen}
+        onClose={handleClose}
+        placement="right"
+        width={480}
+        title="Request notifications"
+        footer={
+          <Flex gap="small" justify="flex-end">
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button
+              type="primary"
+              onClick={handleSubmit}
+              loading={isSubmitting}
+            >
+              Save
+            </Button>
+          </Flex>
+        }
       >
-        {(props: FormikProps<typeof formValues>) => (
-          <Drawer
-            isOpen={isOpen}
-            placement="right"
-            initialFocusRef={firstField}
-            onClose={() => {
-              props.resetForm();
-              onClose();
-            }}
-            size="lg"
-          >
-            <DrawerOverlay />
-            <DrawerContent color="gray.900">
-              <DrawerCloseButton />
-              <DrawerHeader color="gray.900">
-                <Text fontSize="2xl" fontWeight="normal" mb={4}>
-                  Configure alerts and notifications
-                </Text>
-                <Box mt="26px">
-                  <Text fontSize="md" fontWeight="normal">
-                    Setup your alerts to send you a notification when there are
-                    any processing failures. You can also setup a threshold for
-                    connector failures for Fides to notify you after X amount of
-                    failures have occurred.
-                  </Text>
-                </Box>
-              </DrawerHeader>
-              <DrawerBody mt="20px">
-                <Form id="configure-alerts-form" noValidate>
-                  <Text fontSize="md">Contact details</Text>
-                  <VStack align="stretch" gap="29px" mt="14px">
-                    <HStack>
-                      <FieldArray
-                        name="emails"
-                        render={(fieldArrayProps) => (
-                          <EmailChipList
-                            {...fieldArrayProps}
-                            isRequired={props.values.notify}
-                            ref={firstField}
-                          />
-                        )}
-                      />
-                    </HStack>
-                    <HStack>
-                      <Field id="notify" name="notify">
-                        {({ field }: { field: FieldInputProps<string> }) => (
-                          <FormControl
-                            alignItems="center"
-                            display="flex"
-                            mt="45px"
-                          >
-                            <FormLabel fontSize="md" mb="0">
-                              Notify me immediately if there are any DSR
-                              processing errors
-                            </FormLabel>
-                            <Switch
-                              checked={props.values.notify}
-                              onChange={(v, e) => {
-                                field.onChange(e);
-                                props.setFieldValue(field.name, v);
-                                props.setFieldValue(
-                                  "minErrorCount",
-                                  DEFAULT_MIN_ERROR_COUNT,
-                                );
-                                if (!v) {
-                                  setTimeout(() => {
-                                    props.setFieldTouched("emails", false);
-                                  }, 0);
-                                }
-                              }}
-                            />
-                          </FormControl>
-                        )}
-                      </Field>
-                    </HStack>
-                  </VStack>
-                  <Text color="#757575" fontSize="sm" mt="11px">
-                    If selected, then Fides will notify you by your chosen
-                    method of communication every time the system encounters a
-                    data subject request processing error. You can turn this off
-                    anytime and setup a more suitable notification method below
-                    if you wish.
-                  </Text>
-                  {props.values.notify && (
-                    <HStack mt="34px">
-                      <Field id="minErrorCount" name="minErrorCount">
-                        {({
-                          field,
-                          meta,
-                        }: {
-                          field: FieldInputProps<string>;
-                          meta: FieldMetaProps<string>;
-                        }) => (
-                          <FormControl
-                            alignItems="center"
-                            display="flex"
-                            isInvalid={!!(meta.error && meta.touched)}
-                            isRequired
-                          >
-                            <Text>Notify me after</Text>
-                            <NumberInput
-                              allowMouseWheel
-                              color="gray.700"
-                              defaultValue={
-                                props.values.minErrorCount ||
-                                DEFAULT_MIN_ERROR_COUNT
-                              }
-                              min={DEFAULT_MIN_ERROR_COUNT}
-                              ml="8px"
-                              mr="8px"
-                              onChange={(_valueAsString, valueAsNumber) => {
-                                props.setFieldValue(
-                                  "minErrorCount",
-                                  valueAsNumber,
-                                );
-                              }}
-                              size="sm"
-                              w="80px"
-                            >
-                              <NumberInputField {...field} />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                              </NumberInputStepper>
-                            </NumberInput>
-                            <Text>DSR processing errors </Text>
-                          </FormControl>
-                        )}
-                      </Field>
-                    </HStack>
-                  )}
-                </Form>
-              </DrawerBody>
-              <DrawerFooter justifyContent="flex-start">
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => {
-                      props.resetForm();
-                      onClose();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    form="configure-alerts-form"
-                    disabled={props.isSubmitting}
-                    loading={props.isSubmitting}
-                    htmlType="submit"
-                  >
-                    Save
-                  </Button>
-                </div>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
-        )}
-      </Formik>
+        <Form layout="vertical" onFinish={handleSubmit}>
+          <Typography.Text type="secondary">
+            Get notified when processing failures occur. Set a threshold to
+            receive alerts after a specific number of errors.
+          </Typography.Text>
+          <Space direction="vertical" size="middle" className="w-full">
+            <Form.Item className="mb-0">
+              <Flex justify="space-between" align="center">
+                <label htmlFor="enable-email-notifications">
+                  Enable email notifications
+                </label>
+                <Switch
+                  id="enable-email-notifications"
+                  size="small"
+                  checked={notify}
+                  onChange={(checked) => {
+                    setNotify(checked);
+                    if (!checked) {
+                      setMinErrorCount(DEFAULT_MIN_ERROR_COUNT);
+                    }
+                  }}
+                />
+              </Flex>
+            </Form.Item>
+
+            <Divider className="mb-3 mt-2" />
+
+            <Form.Item
+              label={
+                <Flex align="center" gap={4}>
+                  <span>Email addresses</span>
+                  <InfoTooltip label="Type or paste email addresses separated by commas and press Enter or Tab to add them" />
+                </Flex>
+              }
+            >
+              <EmailChipList
+                emails={emails}
+                onEmailsChange={setEmails}
+                ref={firstField}
+                disabled={!notify}
+              />
+            </Form.Item>
+
+            {notify && (
+              <>
+                <Divider className="mb-3 mt-2" />
+                <Form.Item
+                  label="Notification frequency"
+                  help="You'll receive an email when the number of unsent errors reaches this threshold. Set to 1 for immediate alerts, or increase to batch notifications."
+                >
+                  <Flex align="center" gap="small">
+                    <span>Send notification after</span>
+                    <InputNumber
+                      min={DEFAULT_MIN_ERROR_COUNT}
+                      value={minErrorCount}
+                      onChange={(value) =>
+                        setMinErrorCount(value ?? DEFAULT_MIN_ERROR_COUNT)
+                      }
+                      className="w-20"
+                    />
+                    <span>error(s)</span>
+                  </Flex>
+                </Form.Item>
+              </>
+            )}
+          </Space>
+        </Form>
+      </Drawer>
     </>
   );
 };

@@ -522,9 +522,7 @@ class TestDuplicateRequestFunctionality:
         multiple_identity_duplicate = duplicate_detection_service.is_duplicate_request(
             duplicate_request_with_multiple_identities
         )
-        assert (
-            not multiple_identity_duplicate
-        )  # This request is not a duplicate since it has both an email and phone number identity and is the first
+        assert not multiple_identity_duplicate  # This request is not a duplicate since it has both an email and phone number identity and is the first
         assert (
             privacy_request_with_email_identity.duplicate_request_group_id
             != duplicate_request_with_multiple_identities.duplicate_request_group_id
@@ -632,7 +630,6 @@ class TestDuplicateRequestFunctionality:
 
 
 class TestDuplicateRequestRunnerService:
-
     @pytest.mark.parametrize(
         "request_verified_at, duplicate_verified_at, expected_status",
         [
@@ -768,7 +765,6 @@ class TestDuplicateRequestRunnerService:
 
 
 class TestDuplicatePrivacyRequestService:
-
     @pytest.fixture
     def mock_messaging_service(self) -> MessagingService:
         return mock.create_autospec(MessagingService)

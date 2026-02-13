@@ -15,6 +15,7 @@ from fides.api.models.manual_task import (
     ManualTaskType,
 )
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 
 
 @pytest.fixture
@@ -38,7 +39,7 @@ def manual_task_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig
         db,
         data={
             "task_id": manual_task.id,
-            "config_type": "access_privacy_request",
+            "config_type": ActionType.access,
             "version": 1,
             "is_current": True,
         },

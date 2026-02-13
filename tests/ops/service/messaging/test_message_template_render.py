@@ -5,7 +5,6 @@ from fides.api.service.messaging.message_dispatch_service import _render
 
 @pytest.mark.unit
 class TestMessageTemplateRender:
-
     def test_template_render(self):
         """
         Test that a template is rendered correctly with the given variables.

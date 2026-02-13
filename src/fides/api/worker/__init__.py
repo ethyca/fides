@@ -31,9 +31,9 @@ def start_worker(
     the messaging queue, and the privacy preferences queue.
     """
 
-    assert (
-        not queues or not exclude_queues
-    ), "Cannot provide both queues and exclude_queues"
+    assert not queues or not exclude_queues, (
+        "Cannot provide both queues and exclude_queues"
+    )
 
     default_queue_name = celery_app.conf.get("task_default_queue", "celery")
 

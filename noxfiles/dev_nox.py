@@ -1,5 +1,9 @@
 """Contains the nox sessions for running development environments."""
 
+import hashlib
+import os
+import socket
+import subprocess
 import time
 from pathlib import Path
 from typing import Literal
@@ -18,24 +22,162 @@ from docker_nox import build
 from run_infrastructure import ALL_DATASTORES, run_infrastructure
 from utils_nox import install_requirements, teardown
 
+# Default ports used by the dev environment
+DEFAULT_PORTS = {
+    "api": 8080,
+    "db": 5432,
+    "redis": 6379,
+    "admin_ui": 3000,
+    "privacy_center": 3001,
+}
+
+
+def is_port_in_use(port: int) -> bool:
+    """Check if a port is already in use."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("localhost", port)) == 0
+
+
+def is_container_running(name: str) -> bool:
+    """Check if a Docker container is running."""
+    result = subprocess.run(
+        ["docker", "ps", "-q", "-f", f"name=^{name}$"],
+        capture_output=True,
+        text=True,
+    )
+    return bool(result.stdout.strip())
+
+
+def get_current_git_branch() -> str:
+    """Get the current git branch name."""
+    result = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip() if result.returncode == 0 else "unknown"
+
+
+def get_alternate_ports(branch: str) -> dict:
+    """Calculate alternate ports based on branch name."""
+    hash_val = int(hashlib.md5(branch.encode()).hexdigest()[:8], 16)
+    base = 9000 + (hash_val % 50) * 100
+    return {
+        "api": base + 80,
+        "db": base + 32,
+        "redis": base + 79,
+        "admin_ui": base,
+        "privacy_center": base + 1,
+    }
+
+
+def get_container_suffix(branch: str) -> str:
+    """Get container name suffix based on branch."""
+    # Sanitize branch name for container naming
+    sanitized = branch.replace("/", "-").replace("_", "-")
+    return f"-{sanitized[:20]}"
+
+
+def check_for_conflicts(session: Session) -> tuple[dict, str, str]:
+    """
+    Check if there's already a fides server running.
+    Returns (ports_dict, container_suffix, image_suffix) to use.
+    """
+    # Check if the default API port is in use
+    if not is_port_in_use(DEFAULT_PORTS["api"]):
+        # No conflict, use defaults
+        return DEFAULT_PORTS.copy(), "", ""
+
+    # Port is in use - check if it's a fides or fidesplus container
+    if is_container_running("fides") or is_container_running("fidesplus-slim"):
+        # Another fides instance is running, use alternate ports
+        branch = get_current_git_branch()
+        alt_ports = get_alternate_ports(branch)
+        suffix = get_container_suffix(branch)
+        # Sanitize branch for image tag (lowercase, alphanumeric and hyphens only)
+        image_suffix = "-" + branch.replace("/", "-").replace("_", "-").lower()[:20]
+
+        session.log("")
+        session.log("=" * 60)
+        session.log(f"Existing fides server detected on port {DEFAULT_PORTS['api']}")
+        session.log(
+            f"Starting additional instance on alternate ports (branch: {branch})"
+        )
+        session.log(f"Will build with image suffix: {image_suffix}")
+        session.log("=" * 60)
+        session.log("")
+
+        return alt_ports, suffix, image_suffix
+
+    # Some other application is using the port
+    session.error(
+        f"Port {DEFAULT_PORTS['api']} is already in use by another application.\n"
+        "Please free up the port or specify a different port configuration."
+    )
+    return DEFAULT_PORTS.copy(), "", ""  # Won't reach here due to error
+
 
 @nox_session()
 def shell(session: Session) -> None:
     """
     Open a shell in an already-running Fides webserver container.
 
+    This session runs uv sync inside the container to ensure dependencies
+    are up-to-date, then opens an interactive bash shell with the virtual
+    environment activated.
+
     If the container is not running, the command will fail.
     """
-    shell_command = (*EXEC_IT, "/bin/bash")
-    try:
-        session.run(*shell_command, external=True)
-    except CommandFailed:
+    # First, check if container is running
+    if not is_container_running("fides"):
         session.error(
             "Could not connect to the webserver container. Please confirm it is running and try again."
         )
 
+    session.log("Running uv sync inside the container...")
+    try:
+        # Run uv sync in the container
+        session.run(*EXEC_IT, "uv", "sync", external=True)
+    except CommandFailed as e:
+        session.warn(f"uv sync failed: {e}. Continuing to open shell...")
 
-# pylint: disable=too-many-branches
+    # Determine the venv path to use
+    # The container uses UV_PROJECT_ENVIRONMENT=/opt/fides
+    # But we'll check if .venv exists and use that, or fall back to /opt/fides
+    check_venv_cmd = [
+        *EXEC_IT,
+        "bash",
+        "-c",
+        "[ -d /fides/.venv ] && echo '.venv' || echo '/opt/fides'",
+    ]
+
+    result = subprocess.run(check_venv_cmd, capture_output=True, text=True)
+    venv_path = result.stdout.strip() if result.returncode == 0 else "/opt/fides"
+
+    session.log("")
+    session.log("=" * 60)
+    session.log("Opening interactive shell in Fides container")
+    session.log(f"Virtual environment: {venv_path}")
+    session.log("Type 'exit' or press Ctrl+D to exit the shell")
+    session.log("=" * 60)
+    session.log("")
+
+    # Open shell with venv activated using source and exec to avoid nested shells
+    try:
+        session.run(
+            *EXEC_IT,
+            "bash",
+            "-c",
+            f"source {venv_path}/bin/activate && exec bash",
+            external=True,
+        )
+    except CommandFailed:
+        # Fallback to regular shell without activation if activation fails
+        session.warn("Could not activate venv, opening regular shell...")
+        session.run(*EXEC_IT, "/bin/bash", external=True)
+
+
+# ruff: noqa: PLR0912
 @nox_session()
 def dev(session: Session) -> None:
     """
@@ -65,8 +207,36 @@ def dev(session: Session) -> None:
         N/A
     """
 
+    # Check for port conflicts with existing fides instances BEFORE building
+    ports, container_suffix, image_suffix = check_for_conflicts(session)
+
+    # Set IMAGE_SUFFIX env var for the build process
+    if image_suffix:
+        os.environ["IMAGE_SUFFIX"] = image_suffix
+
+    # Build with the appropriate image tag
     build(session, "dev")
     session.notify("teardown")
+
+    # Create environment variables for docker compose
+    compose_env = {
+        "API_PORT": str(ports["api"]),
+        "DB_PORT": str(ports["db"]),
+        "REDIS_PORT": str(ports["redis"]),
+        "ADMIN_UI_PORT": str(ports["admin_ui"]),
+        "PRIVACY_CENTER_PORT": str(ports["privacy_center"]),
+        "CONTAINER_SUFFIX": container_suffix,
+        "IMAGE_SUFFIX": image_suffix,
+    }
+
+    # Log the ports being used
+    session.log("")
+    session.log(f"  API:            http://localhost:{ports['api']}")
+    if "ui" in session.posargs:
+        session.log(f"  Admin UI:       http://localhost:{ports['admin_ui']}")
+    if "pc" in session.posargs:
+        session.log(f"  Privacy Center: http://localhost:{ports['privacy_center']}")
+    session.log("")
 
     available_workers = ["worker-privacy-preferences", "worker-dsr", "worker-other"]
     workers = [
@@ -75,12 +245,22 @@ def dev(session: Session) -> None:
         if worker in session.posargs or "workers-all" in session.posargs
     ]
     for worker in workers:
-        session.run("docker", "compose", "up", "--wait", worker, external=True)
+        session.run(
+            "docker", "compose", "up", "--wait", worker, external=True, env=compose_env
+        )
 
     if "flower" in session.posargs:
         # Only start Flower if at least one worker is enabled
         if workers:
-            session.run("docker", "compose", "up", "-d", "flower", external=True)
+            session.run(
+                "docker",
+                "compose",
+                "up",
+                "-d",
+                "flower",
+                external=True,
+                env=compose_env,
+            )
         else:
             session.error(
                 "Flower requires at least one worker service. Please add at least one 'worker' to your arguments."
@@ -99,15 +279,20 @@ def dev(session: Session) -> None:
             "up",
             "-d",
             external=True,
+            env=compose_env,
         )
 
     if "ui" in session.posargs:
         build(session, "admin_ui")
-        session.run("docker", "compose", "up", "-d", "fides-ui", external=True)
+        session.run(
+            "docker", "compose", "up", "-d", "fides-ui", external=True, env=compose_env
+        )
 
     if "pc" in session.posargs:
         build(session, "privacy_center")
-        session.run("docker", "compose", "up", "-d", "fides-pc", external=True)
+        session.run(
+            "docker", "compose", "up", "-d", "fides-pc", external=True, env=compose_env
+        )
 
     open_shell = "shell" in session.posargs
     remote_debug = "remote_debug" in session.posargs
@@ -123,18 +308,64 @@ def dev(session: Session) -> None:
             "fides-2",
             "fides-proxy",
             external=True,
+            env=compose_env,
         )
     elif not datastores:
         if open_shell:
             session.run(*START_APP, external=True)
             session.log("~~Remember to login with `fides user login`!~~")
-            session.run(*EXEC_IT, "/bin/bash", external=True)
+
+            # Run uv sync inside the container
+            session.log("Running uv sync inside the container...")
+            try:
+                session.run(*EXEC_IT, "uv", "sync", external=True)
+            except CommandFailed as e:
+                session.warn(f"uv sync failed: {e}. Continuing to open shell...")
+
+            # Determine the venv path to use
+            check_venv_cmd = [
+                *EXEC_IT,
+                "bash",
+                "-c",
+                "[ -d /fides/.venv ] && echo '.venv' || echo '/opt/fides'",
+            ]
+
+            result = subprocess.run(check_venv_cmd, capture_output=True, text=True)
+            venv_path = (
+                result.stdout.strip() if result.returncode == 0 else "/opt/fides"
+            )
+
+            session.log("")
+            session.log("=" * 60)
+            session.log("Opening interactive shell in Fides container")
+            session.log(f"Virtual environment: {venv_path}")
+            session.log("=" * 60)
+            session.log("")
+
+            # Open shell with venv activated using source and exec to avoid nested shells
+            try:
+                session.run(
+                    *EXEC_IT,
+                    "bash",
+                    "-c",
+                    f"source {venv_path}/bin/activate && exec bash",
+                    external=True,
+                )
+            except CommandFailed:
+                # Fallback to regular shell without activation if activation fails
+                session.warn("Could not activate venv, opening regular shell...")
+                session.run(*EXEC_IT, "/bin/bash", external=True)
         else:
             if remote_debug:
                 session.run(*START_APP_REMOTE_DEBUG, external=True)
             else:
                 session.run(
-                    "docker", "compose", "up", COMPOSE_SERVICE_NAME, external=True
+                    "docker",
+                    "compose",
+                    "up",
+                    COMPOSE_SERVICE_NAME,
+                    external=True,
+                    env=compose_env,
                 )
     else:
         # Run the webserver with additional datastores
@@ -194,7 +425,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     install_requirements(session)
     session.install("-e", ".", "--no-deps")
     session.run("fides", "--version")
-    timestamps.append({"time": time.monotonic(), "label": "pip install"})
+    timestamps.append({"time": time.monotonic(), "label": "uv install"})
 
     # Configure the args for 'fides deploy up' for testing
     env_file_path = Path(__file__, "../../.env").resolve()
@@ -225,7 +456,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
         if index == 0:
             continue
         session.log(
-            f"{index:5} | {value['label']:20} | {value['time'] - timestamps[index-1]['time']:.2f}s"
+            f"{index:5} | {value['label']:20} | {value['time'] - timestamps[index - 1]['time']:.2f}s"
         )
     session.log(
         f"      | {'Total':20} | {timestamps[-1]['time'] - timestamps[0]['time']:.2f}s"

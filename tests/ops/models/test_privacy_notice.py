@@ -939,17 +939,17 @@ class TestPrivacyNoticeModel:
                 f"Expected exactly 1 cookie, but found {len(cookies)}: {cookie_names}. "
                 f"Privacy notice data uses: {privacy_notice.data_uses}"
             )
-            assert (
-                "proper_hierarchy_cookie" in cookie_names
-            ), f"Expected 'proper_hierarchy_cookie', but found: {cookie_names}"
+            assert "proper_hierarchy_cookie" in cookie_names, (
+                f"Expected 'proper_hierarchy_cookie', but found: {cookie_names}"
+            )
 
             # Verify we didn't get false positives
-            assert (
-                "funding_cookie" not in cookie_names
-            ), "Should not match 'funding' data use"
-            assert (
-                "custom_marketing_cookie" not in cookie_names
-            ), "Should not match custom data use containing 'marketing'"
+            assert "funding_cookie" not in cookie_names, (
+                "Should not match 'funding' data use"
+            )
+            assert "custom_marketing_cookie" not in cookie_names, (
+                "Should not match custom data use containing 'marketing'"
+            )
 
         finally:
             # Clean up
@@ -1005,14 +1005,14 @@ class TestPrivacyNoticeModel:
                 f"Expected exactly 1 cookie, but found {len(cookies)}: {cookie_names}. "
                 f"Privacy notice data uses: {privacy_notice.data_uses}"
             )
-            assert (
-                "fun_cookie" in cookie_names
-            ), f"Expected 'fun_cookie', but found: {cookie_names}"
+            assert "fun_cookie" in cookie_names, (
+                f"Expected 'fun_cookie', but found: {cookie_names}"
+            )
 
             # Critical: should not match 'funding' even though it contains 'fun' substring
-            assert (
-                "funding_cookie" not in cookie_names
-            ), "Should not match 'funding' asset when looking for 'fun' data use"
+            assert "funding_cookie" not in cookie_names, (
+                "Should not match 'funding' asset when looking for 'fun' data use"
+            )
 
         finally:
             # Clean up
@@ -1038,7 +1038,11 @@ class TestPrivacyNoticeModel:
     def test_group_cookies_by_data_use(self):
         """Ensure cookies are grouped under each of their data uses accurately."""
         # Create unsaved assets sufficient for grouping logic
-        a1 = Asset(name="a1", asset_type="Cookie", data_uses=["analytics", "marketing.advertising"])  # type: ignore[arg-type]
+        a1 = Asset(
+            name="a1",
+            asset_type="Cookie",
+            data_uses=["analytics", "marketing.advertising"],
+        )  # type: ignore[arg-type]
         a2 = Asset(name="a2", asset_type="Cookie", data_uses=["analytics.reporting"])  # type: ignore[arg-type]
         a3 = Asset(name="a3", asset_type="Cookie", data_uses=["marketing"])  # type: ignore[arg-type]
 
@@ -1059,9 +1063,19 @@ class TestPrivacyNoticeModel:
     def test_select_cookies_for_notice_data_uses_dedup_and_hierarchy(self):
         """Selecting supports exact + hierarchical matches and dedupes the same Asset instance."""
         # Same asset appears under both an exact and a hierarchical child data_use
-        shared = Asset(name="shared", asset_type="Cookie", data_uses=["analytics", "analytics.reporting"])  # type: ignore[arg-type]
-        child_only = Asset(name="child", asset_type="Cookie", data_uses=["analytics.reporting.dashboard"])  # type: ignore[arg-type]
-        other = Asset(name="other", asset_type="Cookie", data_uses=["functional.storage"])  # type: ignore[arg-type]
+        shared = Asset(
+            name="shared",
+            asset_type="Cookie",
+            data_uses=["analytics", "analytics.reporting"],
+        )  # type: ignore[arg-type]
+        child_only = Asset(
+            name="child",
+            asset_type="Cookie",
+            data_uses=["analytics.reporting.dashboard"],
+        )  # type: ignore[arg-type]
+        other = Asset(
+            name="other", asset_type="Cookie", data_uses=["functional.storage"]
+        )  # type: ignore[arg-type]
 
         cookies_by_data_use = {
             "analytics": [shared],

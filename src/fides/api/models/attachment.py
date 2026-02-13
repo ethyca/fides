@@ -5,9 +5,17 @@ from typing import IO, TYPE_CHECKING, Any, Tuple
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
-from sqlalchemy import Column, DateTime
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    UniqueConstraint,
+    func,
+    orm,
+)
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -126,8 +134,9 @@ class Attachment(Base):
         cascade="all, delete-orphan",
         uselist=True,
         foreign_keys=[AttachmentReference.attachment_id],
-        primaryjoin=lambda: Attachment.id
-        == orm.foreign(AttachmentReference.attachment_id),
+        primaryjoin=lambda: (
+            Attachment.id == orm.foreign(AttachmentReference.attachment_id)
+        ),
     )
 
     config = relationship(

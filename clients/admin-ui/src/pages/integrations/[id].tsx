@@ -1,7 +1,8 @@
-import { ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
+import { Button, ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -14,6 +15,7 @@ import getIntegrationTypeInfo, {
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import { useFeatureBasedTabs } from "~/features/integrations/hooks/useFeatureBasedTabs";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
+import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
@@ -24,12 +26,13 @@ const IntegrationDetailView: NextPage = () => {
   const router = useRouter();
   const id = router.query.id as string;
 
-  const { data: connection, isLoading } = useGetDatastoreConnectionByKeyQuery(
-    id,
-    {
-      skip: !id,
-    },
-  );
+  const {
+    data: connection,
+    isLoading,
+    error,
+  } = useGetDatastoreConnectionByKeyQuery(id, {
+    skip: !id,
+  });
 
   // Fetch connection types for SAAS integration generation
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
@@ -39,6 +42,13 @@ const IntegrationDetailView: NextPage = () => {
     connection?.connection_type,
     connection?.saas_config?.type as SaasConnectionTypes,
   );
+
+  const { handleRemove: handleRemoveCustomIntegration, modalContext } =
+    useRemoveCustomIntegration(integrationOption);
+
+  const showRemoveCustomButton =
+    !!integrationOption?.custom &&
+    !!integrationOption?.default_connector_available;
 
   const {
     testData,
@@ -90,6 +100,21 @@ const IntegrationDetailView: NextPage = () => {
     tabKeys: tabs.map((tab) => tab.key),
   });
 
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching the integration ${id}`}
+        actions={[
+          {
+            label: "Return to integrations",
+            onClick: () => router.push(INTEGRATION_MANAGEMENT_ROUTE),
+          },
+        ]}
+      />
+    );
+  }
+
   return (
     <FixedLayout title="Integrations">
       <PageHeader
@@ -110,7 +135,20 @@ const IntegrationDetailView: NextPage = () => {
             integration={connection}
             integrationTypeInfo={integrationTypeInfo}
             showDeleteButton
+            otherButtons={
+              showRemoveCustomButton ? (
+                <Button
+                  type="link"
+                  danger
+                  data-testid="remove-custom-integration-btn"
+                  onClick={handleRemoveCustomIntegration}
+                >
+                  Remove
+                </Button>
+              ) : undefined
+            }
           />
+          {modalContext}
           {isLoading ? (
             <Spinner />
           ) : (

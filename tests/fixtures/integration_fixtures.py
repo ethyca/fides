@@ -153,7 +153,9 @@ def integration_postgres_config_with_dataset(
 def sql_insert(engine: Engine, table_name: str, record: Dict[str, Any]) -> None:
     fields = record.keys()
     value_keys = [f":{k}" for k in fields]
-    insert_str = f"INSERT INTO {table_name} ({','.join(fields)}) VALUES ({ ','.join(value_keys)})"
+    insert_str = (
+        f"INSERT INTO {table_name} ({','.join(fields)}) VALUES ({','.join(value_keys)})"
+    )
     text_clause = text(insert_str)
     with engine.connect() as connection:
         connection.execute(text_clause, record)

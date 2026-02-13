@@ -4,8 +4,9 @@ Abstract base class for QA test scenarios.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Type
 from dataclasses import dataclass
+from typing import Any, Dict, Optional, Type
+
 from utils.fides_api import FidesAPI
 from utils.rich_helpers import RichFormatter
 
@@ -13,6 +14,7 @@ from utils.rich_helpers import RichFormatter
 @dataclass
 class Argument:
     """Represents a scenario argument specification."""
+
     type: Type = str
     default: Any = None
     description: str = ""

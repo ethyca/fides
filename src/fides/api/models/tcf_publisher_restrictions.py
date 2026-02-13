@@ -2,9 +2,17 @@ from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
-from sqlalchemy import Column
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    insert,
+    select,
+    update,
+)
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Index, Integer, String, insert, select, update
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr

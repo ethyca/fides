@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   ChakraArrowForwardIcon as ArrowForwardIcon,
   ChakraBox as Box,
@@ -49,6 +50,7 @@ import {
   ExperienceTranslation,
   Layer1ButtonOption,
   LimitedPrivacyNoticeResponseSchema,
+  PrivacyNoticeFramework,
   Property,
   RejectAllMechanism,
   ResurfaceBehavior,
@@ -140,6 +142,20 @@ const bannerButtonOptions: SelectProps["options"] = [
 const GPC_ADAPTIVE_TOOLTIP = `Enabling ${bannerButtonOptions.find((b) => b.value === Layer1ButtonOption.GPC_CONDITIONAL)?.label} will show the acknowledge button when GPC is on, and the opt in/opt out buttons when GPC is off.`;
 
 const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
+const GPP_PLACEHOLDER_ID = "gpp_notices_not_supported_placeholder";
+
+const isGppNotice = (notice: LimitedPrivacyNoticeResponseSchema): boolean => {
+  return (
+    notice.framework === PrivacyNoticeFramework.GPP_US_NATIONAL ||
+    notice.framework === PrivacyNoticeFramework.GPP_US_STATE
+  );
+};
+
+const filterGppNotices = (
+  allNotices: LimitedPrivacyNoticeResponseSchema[],
+): LimitedPrivacyNoticeResponseSchema[] => {
+  return allNotices.filter((notice) => !isGppNotice(notice));
+};
 
 export const PrivacyExperienceConfigColumnLayout = ({
   buttonPanel,
@@ -209,7 +225,10 @@ export const PrivacyExperienceForm = ({
 
   const allPrivacyNoticesWithTcfPlaceholder: LimitedPrivacyNoticeResponseSchema[] =
     useMemo(() => {
-      const noticesWithTcfPlaceholder = [...allPrivacyNotices];
+      // Filter out GPP notices for TCF experiences
+      const noticesWithTcfPlaceholder = filterGppNotices(allPrivacyNotices);
+      const hasFilteredGppNotices =
+        noticesWithTcfPlaceholder.length < allPrivacyNotices.length;
       if (!noticesWithTcfPlaceholder.some((n) => n.id === TCF_PLACEHOLDER_ID)) {
         noticesWithTcfPlaceholder.push({
           name: "TCF Purposes",
@@ -220,22 +239,51 @@ export const PrivacyExperienceForm = ({
           disabled: false,
         });
       }
+      if (hasFilteredGppNotices) {
+        noticesWithTcfPlaceholder.push({
+          name: "GPP notices not supported in TCF",
+          id: GPP_PLACEHOLDER_ID,
+          notice_key: GPP_PLACEHOLDER_ID,
+          data_uses: [],
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          disabled: true,
+        });
+      }
       return noticesWithTcfPlaceholder;
     }, [allPrivacyNotices]);
 
   const getPrivacyNoticeName = (id: string) => {
-    const notice = allPrivacyNoticesWithTcfPlaceholder.find((n) => n.id === id);
+    const notice = allPrivacyNotices.find((n) => n.id === id);
     return notice?.name ?? id;
   };
+
+  const getTcfPrivacyNoticeName = (id: string) => {
+    let notice = allPrivacyNoticesWithTcfPlaceholder.find((n) => n.id === id);
+    if (!notice) {
+      // the notice is probably GPP and needs to be listed along with the error message.
+      notice = allPrivacyNotices.find((n) => n.id === id);
+    }
+    return notice?.name ?? id;
+  };
+
+  const hasGppNoticesInValues = useMemo(() => {
+    if (values.component === ComponentType.TCF_OVERLAY) {
+      return (
+        values.privacy_notice_ids?.some((id) => {
+          const notice = allPrivacyNotices.find((n) => n.id === id);
+          return notice ? isGppNotice(notice) : false;
+        }) ?? false
+      );
+    }
+    return false;
+  }, [values.privacy_notice_ids, values.component, allPrivacyNotices]);
 
   const filterNoticesForOnlyParentNotices = (
     allNotices: LimitedPrivacyNoticeResponseSchema[],
   ): LimitedPrivacyNoticeResponseSchema[] => {
     const childrenNoticeIds: FlatArray<(string[] | undefined)[], 1>[] =
       allNotices.map((n) => n.children?.map((child) => child.id)).flat();
-    return (
-      allPrivacyNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? []
-    );
+    return allNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? [];
   };
 
   useGetLocationsRegulationsQuery();
@@ -467,26 +515,50 @@ export const PrivacyExperienceForm = ({
         Privacy notices
       </Heading>
       {values.component === ComponentType.TCF_OVERLAY ? (
-        <ScrollableList<string>
-          addButtonLabel="Add privacy notice"
-          allItems={allPrivacyNoticesWithTcfPlaceholder.map((n) => n.id)}
-          values={privacyNoticeIdsWithTcfId(values)}
-          setValues={(newValues) =>
-            setFieldValue("privacy_notice_ids", newValues)
-          }
-          canDeleteItem={(item: string): boolean => {
-            return Boolean(item !== TCF_PLACEHOLDER_ID);
-          }}
-          getTooltip={(item: string): string | undefined => {
-            if (item === TCF_PLACEHOLDER_ID) {
-              return "TCF Purposes are required by the framework and cannot be deleted.";
+        <>
+          {hasGppNoticesInValues && (
+            <Alert
+              message="GPP notices are not currently supported in TCF experiences. Please remove any GPP notices from the list below to avoid unexpected behavior."
+              type="error"
+              closable={false}
+              data-testid="gpp-notices-not-supported-alert"
+            />
+          )}
+          <ScrollableList<string>
+            addButtonLabel="Add privacy notice"
+            allItems={allPrivacyNoticesWithTcfPlaceholder.map((n) => n.id)}
+            values={privacyNoticeIdsWithTcfId(values)}
+            setValues={(newValues) =>
+              setFieldValue("privacy_notice_ids", newValues)
             }
-            return undefined;
-          }}
-          getItemLabel={getPrivacyNoticeName}
-          draggable={false}
-          baseTestId="privacy-notice"
-        />
+            canDeleteItem={(item: string): boolean => {
+              return Boolean(item !== TCF_PLACEHOLDER_ID);
+            }}
+            getTooltip={(item: string): string | undefined => {
+              if (item === TCF_PLACEHOLDER_ID) {
+                return "TCF Purposes are required by the framework and cannot be deleted.";
+              }
+              return undefined;
+            }}
+            getItemLabel={getTcfPrivacyNoticeName}
+            draggable={false}
+            baseTestId="privacy-notice"
+            isItemDisabled={(id: string) => {
+              const notice = allPrivacyNoticesWithTcfPlaceholder.find(
+                (n) => n.id === id,
+              );
+              return notice?.disabled ?? false;
+            }}
+            popupMatchSelectWidth={false}
+            selectStyles={{
+              popup: {
+                root: {
+                  maxWidth: "500px",
+                },
+              },
+            }}
+          />
+        </>
       ) : (
         <ScrollableList<string>
           addButtonLabel="Add privacy notice"
@@ -500,6 +572,10 @@ export const PrivacyExperienceForm = ({
           getItemLabel={getPrivacyNoticeName}
           draggable={false}
           baseTestId="privacy-notice"
+          isItemDisabled={(id: string) => {
+            const notice = allPrivacyNotices.find((n) => n.id === id);
+            return notice?.disabled ?? false;
+          }}
         />
       )}
       {values.component === ComponentType.BANNER_AND_MODAL &&
@@ -534,6 +610,7 @@ export const PrivacyExperienceForm = ({
         }}
         draggable
         baseTestId="location"
+        popupMatchSelectWidth={false}
       />
       {translationsEnabled ? (
         <>
@@ -595,6 +672,7 @@ export const PrivacyExperienceForm = ({
         draggable
         maxHeight={100}
         baseTestId="property"
+        popupMatchSelectWidth={false}
       />
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">

@@ -40,7 +40,6 @@ def taxonomy_service(db):
 
 
 class TestTaxonomyServiceGetters:
-
     @pytest.mark.parametrize("taxonomy_type", LEGACY_TAXONOMY_KEYS)
     def test_get_element_returns_element_when_exists(
         self, db, taxonomy_service, taxonomy_type

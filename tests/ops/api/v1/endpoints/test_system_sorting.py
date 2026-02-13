@@ -90,9 +90,9 @@ class TestSystemEndpointSorting:
 
         # Should be in ascending order
         sorted_found = sorted(found_systems)
-        assert (
-            found_systems == sorted_found
-        ), f"Expected sorted order, got {found_systems}"
+        assert found_systems == sorted_found, (
+            f"Expected sorted order, got {found_systems}"
+        )
         assert len(found_systems) == 4, "Should find all 4 test systems"
 
     def test_get_systems_sort_by_name_descending(
@@ -134,9 +134,9 @@ class TestSystemEndpointSorting:
 
         # Should be in descending order
         reverse_sorted_found = sorted(found_systems, reverse=True)
-        assert (
-            found_systems == reverse_sorted_found
-        ), f"Expected reverse sorted order, got {found_systems}"
+        assert found_systems == reverse_sorted_found, (
+            f"Expected reverse sorted order, got {found_systems}"
+        )
         assert len(found_systems) == 4, "Should find all 4 test systems"
 
     def test_get_systems_sort_with_search(
@@ -213,9 +213,9 @@ class TestSystemEndpointSorting:
 
         # Should default to ascending name sort even without explicit sorting parameters
         sorted_found = sorted(found_systems)
-        assert (
-            found_systems == sorted_found
-        ), f"Expected default sorted order by name, got {found_systems}"
+        assert found_systems == sorted_found, (
+            f"Expected default sorted order by name, got {found_systems}"
+        )
         assert len(found_systems) == 4, "Should find all 4 test systems"
 
     def test_get_systems_with_pagination_and_sorting(
@@ -276,6 +276,6 @@ class TestSystemEndpointSorting:
             # (first page should have names that come before second page)
             for i in range(len(first_page_names)):
                 for j in range(len(second_page_names)):
-                    assert (
-                        first_page_names[i] <= second_page_names[j]
-                    ), f"Pagination broke sort order: {first_page_names[i]} should come before {second_page_names[j]}"
+                    assert first_page_names[i] <= second_page_names[j], (
+                        f"Pagination broke sort order: {first_page_names[i]} should come before {second_page_names[j]}"
+                    )

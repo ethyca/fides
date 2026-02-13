@@ -61,7 +61,7 @@ export const getFieldType = (fieldAddress: string): FieldType => {
   }
 
   // Check policy ID field
-  if (fieldAddress === "privacy_request.policy.id") {
+  if (fieldAddress === "privacy_request.policy.key") {
     return "policy";
   }
 
@@ -219,7 +219,7 @@ export const ALLOWED_PRIVACY_REQUEST_FIELDS = [
   "privacy_request.location_country",
   "privacy_request.location_groups",
   "privacy_request.location_regulations",
-  "privacy_request.policy.id",
+  "privacy_request.policy.key",
   "privacy_request.policy.has_access_rule",
   "privacy_request.policy.has_erasure_rule",
   "privacy_request.policy.has_consent_rule",
@@ -228,6 +228,18 @@ export const ALLOWED_PRIVACY_REQUEST_FIELDS = [
   "privacy_request.policy.rule_count",
   "privacy_request.policy.rule_names",
 ];
+
+// Fields that are NOT available for consent requests
+// Consent DSRs don't have execution timeframes (no due_date) and don't have data flowing
+// between nodes (so dataset fields are also unavailable, handled separately)
+export const CONSENT_UNAVAILABLE_FIELDS = ["privacy_request.due_date"];
+
+// Allowlist of fields available for consent-only manual task conditions
+// This is a subset of ALLOWED_PRIVACY_REQUEST_FIELDS excluding fields not captured for consent
+export const CONSENT_ALLOWED_PRIVACY_REQUEST_FIELDS =
+  ALLOWED_PRIVACY_REQUEST_FIELDS.filter(
+    (field) => !CONSENT_UNAVAILABLE_FIELDS.includes(field),
+  );
 
 export const formatFieldLabel = (fieldPath: string): string => {
   // "privacy_request.identity.email" -> "Email"

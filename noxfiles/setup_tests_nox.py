@@ -1,18 +1,20 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from nox import Session
+
 from constants_nox import (
     CI_ARGS_EXEC,
     COMPOSE_FILE,
     CONTAINER_NAME,
     EXEC,
+    EXEC_UV,
     IMAGE_NAME,
     INTEGRATION_COMPOSE_FILE,
     LOGIN,
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
-from nox import Session
 from run_infrastructure import (
     API_TEST_DIR,
     OPS_API_TEST_DIRS,
@@ -97,7 +99,11 @@ def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
-        *EXEC,
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
         "pytest",
         *pytest_config.args,
         "tests/lib/",
@@ -156,6 +162,10 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
             "DYNAMODB_ACCESS_KEY",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
+            "uv",
+            "run",
+            "--python",
+            "/opt/fides/bin/python",
             "pytest",
             *pytest_config.coverage_config.args,
             *pytest_config.report_config.args,
@@ -175,7 +185,11 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
         session.run(*START_APP, external=True)
         session.run(*LOGIN, external=True)
         run_command = (
-            *EXEC,
+            *EXEC_UV,
+            "uv",
+            "run",
+            "--python",
+            "/opt/fides/bin/python",
             "pytest",
             *local_pytest_config.args,
             "tests/ctl/",
@@ -198,7 +212,11 @@ def pytest_ops(
         session.run(*START_APP, external=True)
         if subset_dir == "api":
             run_command = (
-                *EXEC,
+                *EXEC_UV,
+                "uv",
+                "run",
+                "--python",
+                "/opt/fides/bin/python",
                 "pytest",
                 *pytest_config.args,
                 *OPS_API_TEST_DIRS,
@@ -208,7 +226,11 @@ def pytest_ops(
         elif subset_dir == "non-api":
             ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]
             run_command = (
-                *EXEC,
+                *EXEC_UV,
+                "uv",
+                "run",
+                "--python",
+                "/opt/fides/bin/python",
                 "pytest",
                 *pytest_config.args,
                 OPS_TEST_DIR,
@@ -218,7 +240,11 @@ def pytest_ops(
             )
         else:
             run_command = (
-                *EXEC,
+                *EXEC_UV,
+                "uv",
+                "run",
+                "--python",
+                "/opt/fides/bin/python",
                 "pytest",
                 *pytest_config.args,
                 OPS_TEST_DIR,
@@ -347,6 +373,10 @@ def pytest_ops(
             "MONGODB_ATLAS_SSL_ENABLED",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
+            "uv",
+            "run",
+            "--python",
+            "/opt/fides/bin/python",
             "pytest",
             # Don't use xdist for these
             *pytest_config.coverage_config.args,
@@ -379,6 +409,10 @@ def pytest_ops(
             "FIDES__DEV_MODE=false",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
+            "uv",
+            "run",
+            "--python",
+            "/opt/fides/bin/python",
             "pytest",
             "--reruns",
             "3",
@@ -398,7 +432,11 @@ def pytest_api(session: Session, pytest_config: PytestConfig) -> None:
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
-        *EXEC,
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
         "pytest",
         *pytest_config.args,
         API_TEST_DIR,
@@ -413,7 +451,11 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
-        *EXEC,
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
         "pytest",
         *pytest_config.args,
         "tests/service/",
@@ -471,6 +513,10 @@ def pytest_misc_integration(
             "MONGODB_ATLAS_DEFAULT_AUTH_DB",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
+            "uv",
+            "run",
+            "--python",
+            "/opt/fides/bin/python",
             "pytest",
             *pytest_config.args,
             "tests/qa/",

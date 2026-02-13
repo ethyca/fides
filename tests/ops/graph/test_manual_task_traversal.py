@@ -67,9 +67,9 @@ def test_manual_node_present(manual_graph):
     traversal = build_traversal(manual_graph)
 
     manual_addr = ManualTaskAddress.create("manual_connection")
-    assert (
-        manual_addr in traversal.traversal_node_dict
-    ), "manual_data node missing from traversal"
+    assert manual_addr in traversal.traversal_node_dict, (
+        "manual_data node missing from traversal"
+    )
 
 
 def test_root_edge_to_manual_node(manual_graph):

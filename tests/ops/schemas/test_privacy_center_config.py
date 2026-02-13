@@ -16,7 +16,6 @@ from fides.api.util.saas_util import load_as_string
 
 
 class TestPrivacyCenterConfig:
-
     @pytest.fixture
     def privacy_center_config(self) -> PrivacyCenterConfig:
         return PrivacyCenterConfig(
@@ -248,23 +247,23 @@ class TestPrivacyCenterConfig:
 
         # Non-location fields should NOT have ip_geolocation_hint or other location-specific properties
         text_field = fields["first_name"]
-        assert (
-            "ip_geolocation_hint" not in text_field
-        ), f"Text field should not have ip_geolocation_hint: {text_field}"
+        assert "ip_geolocation_hint" not in text_field, (
+            f"Text field should not have ip_geolocation_hint: {text_field}"
+        )
         assert text_field["field_type"] == "text"
         assert "options" in text_field  # Text fields can have options (though null)
 
         select_field = fields["preferred_format"]
-        assert (
-            "ip_geolocation_hint" not in select_field
-        ), f"Select field should not have ip_geolocation_hint: {select_field}"
+        assert "ip_geolocation_hint" not in select_field, (
+            f"Select field should not have ip_geolocation_hint: {select_field}"
+        )
         assert select_field["field_type"] == "select"
         assert select_field["options"] == ["JSON", "CSV"]
 
         multiselect_field = fields["topics"]
-        assert (
-            "ip_geolocation_hint" not in multiselect_field
-        ), f"Multiselect field should not have ip_geolocation_hint: {multiselect_field}"
+        assert "ip_geolocation_hint" not in multiselect_field, (
+            f"Multiselect field should not have ip_geolocation_hint: {multiselect_field}"
+        )
         assert multiselect_field["field_type"] == "multiselect"
         assert multiselect_field["options"] == ["Privacy", "Security", "Data"]
 
@@ -277,9 +276,9 @@ class TestPrivacyCenterConfig:
                 assert "field_type" in field_data
 
                 # Non-location fields should never have location-specific properties
-                assert (
-                    "ip_geolocation_hint" not in field_data
-                ), f"Non-location field '{field_name}' should not have ip_geolocation_hint"
+                assert "ip_geolocation_hint" not in field_data, (
+                    f"Non-location field '{field_name}' should not have ip_geolocation_hint"
+                )
 
     def test_discriminator_function_with_model_instances(self):
         """Test that the discriminator function works with model instances (not just dicts)"""

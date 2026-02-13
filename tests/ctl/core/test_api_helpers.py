@@ -80,7 +80,6 @@ def delete_resource_type(test_config: FidesConfig, resource_type: str) -> None:
 @pytest.mark.integration
 @pytest.mark.usefixtures("monkeypatch_requests")
 class TestGetServerResource:
-
     @pytest.mark.parametrize(
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )

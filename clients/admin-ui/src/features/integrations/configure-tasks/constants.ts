@@ -35,4 +35,5 @@ export const FIELD_TYPE_LABELS: Record<ManualTaskFieldType, string> = {
 export const REQUEST_TYPE_LABELS: Record<ManualFieldRequestType, string> = {
   [ManualFieldRequestType.ACCESS]: "Access",
   [ManualFieldRequestType.ERASURE]: "Erasure",
+  [ManualFieldRequestType.CONSENT]: "Consent",
 };

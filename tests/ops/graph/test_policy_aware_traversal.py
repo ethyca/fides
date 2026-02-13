@@ -10,7 +10,6 @@ from fides.api.models.datasetconfig import DatasetConfig
 
 
 class TestPolicyAwareTraversal:
-
     def _create_graph_and_seed(
         self, dataset_config: DatasetConfig
     ) -> Tuple[DatasetGraph, Dict[str, str]]:

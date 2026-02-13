@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 
 import pytest
@@ -27,7 +27,6 @@ from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskFieldType,
     ManualTaskInstance,
@@ -203,7 +202,7 @@ def manual_task_erasure_config(db: Session, manual_task):
         db=db,
         data={
             "task_id": manual_task.id,
-            "config_type": ManualTaskConfigurationType.erasure_privacy_request,
+            "config_type": ActionType.erasure,
             "version": 1,
             "is_current": True,
         },
@@ -217,7 +216,7 @@ def manual_task_access_config(db: Session, manual_task):
         db=db,
         data={
             "task_id": manual_task.id,
-            "config_type": ManualTaskConfigurationType.access_privacy_request,
+            "config_type": ActionType.access,
             "version": 1,
             "is_current": True,
         },
@@ -278,7 +277,7 @@ def mixed_privacy_request(db: Session, mixed_policy):
     return PrivacyRequest.create(
         db=db,
         data={
-            "requested_at": datetime.utcnow(),
+            "requested_at": datetime.now(timezone.utc),
             "policy_id": mixed_policy.id,
             "status": PrivacyRequestStatus.pending,
         },
@@ -291,7 +290,7 @@ def access_privacy_request(db: Session, access_policy):
     return PrivacyRequest.create(
         db=db,
         data={
-            "requested_at": datetime.utcnow(),
+            "requested_at": datetime.now(timezone.utc),
             "policy_id": access_policy.id,
             "status": PrivacyRequestStatus.pending,
         },
@@ -304,7 +303,7 @@ def erasure_privacy_request(db: Session, erasure_policy):
     return PrivacyRequest.create(
         db=db,
         data={
-            "requested_at": datetime.utcnow(),
+            "requested_at": datetime.now(timezone.utc),
             "policy_id": erasure_policy.id,
             "status": PrivacyRequestStatus.pending,
         },

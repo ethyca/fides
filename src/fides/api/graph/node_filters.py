@@ -51,7 +51,6 @@ class PolicyDataCategoryFilter(NodeFilter):
 
 
 class OptionalIdentityFilter(NodeFilter):
-
     def __init__(self, graph: DatasetGraph, identities: Dict[str, Any]):
         """
         Filter that excludes nodes that are reachable by an optional identity.
@@ -110,10 +109,19 @@ class OptionalIdentityFilter(NodeFilter):
 
         try:
             # Create a traversal object with just this identity
+            # Skip verification in the constructor and explicitly call traverse()
+            # This avoids the overhead of _verify_traversal() when we're going
+            # to traverse anyway to detect unreachable nodes.
             with suppress_logging():
                 # Suppress the logs since we don't want to flood the logs
                 # with traversal info for each identity we want to evaluate
-                BaseTraversal(self.graph, {identity_key: "dummy_value"})
+                traversal = BaseTraversal(
+                    self.graph,
+                    {identity_key: "dummy_value"},
+                    skip_verification=True,
+                )
+                # Now explicitly traverse to detect unreachable nodes
+                traversal.traverse({}, lambda n, m: None)
 
             # If successful, all nodes are reachable
             self.reachable_by_identity[identity_key] = all_addresses

@@ -107,7 +107,7 @@ class TestAddAuthentication:
             )
         assert (
             str(exc.value)
-            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_authorization_code_connector"
+            == "Missing required secret(s) 'client_id, client_secret' for oauth2_authorization_code_connector"
         )
 
     # access token expired, call refresh request
@@ -263,7 +263,7 @@ class TestAuthorizationUrl:
             )
         assert (
             str(exc.value)
-            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_authorization_code_connector"
+            == "Missing required secret(s) 'client_id, client_secret' for oauth2_authorization_code_connector"
         )
 
     @mock.patch(
@@ -475,5 +475,5 @@ class TestAccessTokenRequest:
             )
         assert (
             str(exc.value)
-            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_authorization_code_connector"
+            == "Missing required secret(s) 'client_id, client_secret' for oauth2_authorization_code_connector"
         )

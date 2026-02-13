@@ -7,6 +7,7 @@ export enum BulkActionType {
   APPROVE = "approve",
   DENY = "deny",
   DELETE = "delete",
+  FINALIZE = "finalize",
 }
 
 /**
@@ -35,7 +36,10 @@ const AVAILABLE_ACTIONS_BY_STATUS: Record<
   [PrivacyRequestStatus.COMPLETE]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.PAUSED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.AWAITING_EMAIL_SEND]: [BulkActionType.DELETE],
-  [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION]: [BulkActionType.DELETE],
+  [PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION]: [
+    BulkActionType.FINALIZE,
+    BulkActionType.DELETE,
+  ],
   [PrivacyRequestStatus.CANCELED]: [BulkActionType.DELETE],
   [PrivacyRequestStatus.ERROR]: [BulkActionType.DELETE],
 } as const;
@@ -60,4 +64,32 @@ export const isActionSupportedByRequests = (
   return requests.some((request) =>
     getAvailableActionsForRequest(request).includes(action),
   );
+};
+
+/**
+ * Button visibility configuration for privacy request actions
+ */
+export interface ButtonVisibility {
+  approve: boolean;
+  deny: boolean;
+  finalize: boolean;
+  delete: boolean;
+}
+
+/**
+ * Determines which action buttons should be visible for a given privacy request status
+ */
+export const getButtonVisibility = (
+  status: PrivacyRequestStatus,
+): ButtonVisibility => {
+  return {
+    approve:
+      status === PrivacyRequestStatus.PENDING ||
+      status === PrivacyRequestStatus.DUPLICATE,
+    deny:
+      status === PrivacyRequestStatus.PENDING ||
+      status === PrivacyRequestStatus.DUPLICATE,
+    finalize: status === PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
+    delete: true,
+  };
 };

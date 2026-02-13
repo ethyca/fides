@@ -575,9 +575,9 @@ class Collection(BaseModel):
         def build_field(serialized_field: dict) -> Field:
             """Convert a serialized field on RequestTask.collection.fields into a Scalar Field
             or Object Field"""
-            converted_references: List[Tuple[FieldAddress, Optional[EdgeDirection]]] = (
-                []
-            )
+            converted_references: List[
+                Tuple[FieldAddress, Optional[EdgeDirection]]
+            ] = []
             for reference in serialized_field.pop("references", []):
                 field_address: str = reference[0]
                 edge_direction: Optional[str] = reference[1]

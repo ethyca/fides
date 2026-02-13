@@ -13,7 +13,7 @@ from typing import List
 import nox
 
 sys.path.append("noxfiles")
-# pylint: disable=unused-wildcard-import, wildcard-import, wrong-import-position
+# ruff: noqa: E402, F403, F401
 from changelog_nox import *
 from ci_nox import *
 from dev_nox import *
@@ -22,14 +22,13 @@ from docs_nox import *
 from git_nox import *
 from utils_nox import *
 
-# pylint: enable=unused-wildcard-import, wildcard-import, wrong-import-position
-
 REQUIRED_DOCKER_VERSION = "20.10.17"
 REQUIRED_PYTHON_VERSIONS = ["3.13"]
 
 nox.options.sessions = ["open_docs"]
 
-# This is important for caching pip installs
+# Use uv for faster venv and installs; fall back to virtualenv if uv is not available
+nox.options.default_venv_backend = "uv|virtualenv"
 nox.options.reuse_existing_virtualenvs = True
 
 

@@ -2,13 +2,13 @@
 import os
 from base64 import b64decode
 from json import dump, loads
+from pathlib import Path as LocalPath
 from typing import Generator
 
 import pytest
 import yaml
 from click.testing import CliRunner
 from git.repo import Repo
-from py._path.local import LocalPath
 
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.cli import cli
@@ -619,9 +619,7 @@ class TestScan:
     def test_scan_dataset_db_input_connection_string(
         self, worker_id: str, test_config_path: str, test_cli_runner: CliRunner
     ) -> None:
-        database_name = (
-            "fides_test" + f"_{worker_id}" if worker_id is not "master" else ""
-        )
+        database_name = "fides_test" + f"_{worker_id}" if worker_id != "master" else ""
         print(database_name)
         result = test_cli_runner.invoke(
             cli,

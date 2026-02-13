@@ -220,7 +220,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
         )
 
     assert (
-        f"The values for the `erase_after` fields caused a cycle in the following collections"
+        "The values for the `erase_after` fields caused a cycle in the following collections"
         in str(exc.value)
     )
 
@@ -365,7 +365,9 @@ async def test_saas_erasure_order_request_task_resume_from_error(
             ("refunds", "complete"),
             ("labels", "in_processing"),
             ("labels", "complete"),
-        ], "Cached collections were not re-executed after resuming the privacy request from errored state"
+        ], (
+            "Cached collections were not re-executed after resuming the privacy request from errored state"
+        )
     else:
         ordered_logs = [
             (el.collection_name, el.status.value)

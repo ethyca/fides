@@ -151,8 +151,12 @@ class SmartOpenStreamingStorage:
             content_bytes = content.read()
             content.seek(0)  # Reset for potential reuse
 
-            yield filename, datetime.now(), DEFAULT_FILE_MODE, _ZIP_32_TYPE(), iter(
-                [content_bytes]
+            yield (
+                filename,
+                datetime.now(),
+                DEFAULT_FILE_MODE,
+                _ZIP_32_TYPE(),
+                iter([content_bytes]),
             )
 
     def _validate_attachment(

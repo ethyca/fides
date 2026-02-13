@@ -497,9 +497,9 @@ class TestEventAuditTypeEnum:
 
         for prefix, expected_types in expected_patterns.items():
             for event_type in expected_types:
-                assert event_type.value.startswith(
-                    prefix
-                ), f"{event_type.value} should start with {prefix}"
+                assert event_type.value.startswith(prefix), (
+                    f"{event_type.value} should start with {prefix}"
+                )
 
     def test_event_audit_types_are_strings(self):
         """Test that all EventAuditType values are strings."""

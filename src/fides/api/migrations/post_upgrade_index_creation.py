@@ -163,6 +163,11 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_descendant ON stagedresourceancestor (descendant_urn)",
             "type": "index",
         },
+        {
+            "name": "ix_staged_resource_ancestor_desc_anc_dist",
+            "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_desc_anc_dist ON stagedresourceancestor (descendant_urn, ancestor_urn, distance)",
+            "type": "index",
+        },
     ],
     "stagedresource": [
         {
@@ -183,6 +188,11 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
         {
             "name": "idx_stagedresource_classifications_gin",
             "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_classifications_gin ON stagedresource USING GIN (classifications)",
+            "type": "index",
+        },
+        {
+            "name": "ix_stagedresource_monitor_leaf_status_urn",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_leaf_status_urn ON stagedresource (monitor_config_id, is_leaf, diff_status, urn) WHERE is_leaf IS NOT NULL",
             "type": "index",
         },
     ],
@@ -302,9 +312,9 @@ def initiate_post_upgrade_index_creation() -> None:
         logger.debug("Skipping post upgrade index creation in test mode")
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    )
 
     logger.info("Initiating scheduler for hash migration")
     scheduler.add_job(

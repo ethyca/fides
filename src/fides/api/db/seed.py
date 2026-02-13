@@ -544,7 +544,7 @@ def load_default_organization(db: Session) -> None:
             pass
 
     log.debug(f"INSERTED {inserted} organization resource(s)")
-    log.debug(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
+    log.debug(f"SKIPPED {len(organizations) - inserted} organization resource(s)")
 
 
 def load_default_taxonomy(db: Session) -> None:

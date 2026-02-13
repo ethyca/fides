@@ -7,7 +7,6 @@ from fides.common.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 
 
 class TestUserRegistrationModel:
-
     def test_registration_as_log(self, db):
         EXAMPLE_ANALYTICS_ID = "example-analytics-id"
         OPT_IN = True
