@@ -9,13 +9,14 @@ import {
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
-import { PrivacyAssessmentResponse } from "~/features/privacy-assessments";
 import {
   ASSESSMENT_STATUS_LABELS,
   RISK_LEVEL_LABELS,
   RISK_TAG_COLORS,
   STATUS_COLORS,
 } from "~/features/privacy-assessments/constants";
+
+import { PrivacyAssessmentResponse } from "./types";
 
 const { Title } = Typography;
 
@@ -28,15 +29,13 @@ export const AssessmentCard = ({
   assessment,
   onClick,
 }: AssessmentCardProps) => {
-  const riskLevel = assessment.risk_level ?? "low";
-  const status = assessment.status ?? "in_progress";
+  // Do not assume defaults for missing values; show "N/A" when absent
+  const riskLevel = assessment.risk_level ?? null;
+  const status = assessment.status ?? null;
   const completeness = assessment.completeness ?? 0;
-  const dataCategories = assessment.data_categories ?? [];
-  const systemName = assessment.system_name ?? "";
-  const dataUseName = assessment.data_use_name ?? "";
 
-  const riskLabel = RISK_LEVEL_LABELS[riskLevel];
-  const statusLabel = ASSESSMENT_STATUS_LABELS[status];
+  const riskLabel = riskLevel ? RISK_LEVEL_LABELS[riskLevel] : "N/A";
+  const statusLabel = status ? ASSESSMENT_STATUS_LABELS[status] : "N/A";
   const isComplete = completeness === 100;
 
   return (
@@ -64,34 +63,36 @@ export const AssessmentCard = ({
             {assessment.name}
           </Title>
           <Text type="secondary" className="mb-2 block text-xs">
-            System: {systemName}
+            System: {assessment.system_name ?? ""}
           </Text>
-          {dataCategories.length > 0 && (
+          {(assessment.data_categories ?? []).length > 0 && (
             <Text type="secondary" className="mb-2 block text-xs leading-6">
               Processing{" "}
-              {dataCategories.map((category: string, idx: number) => (
-                <span key={category}>
-                  <Tag
-                    color={CUSTOM_TAG_COLOR.DEFAULT}
-                    className="!m-0 align-middle text-[11px]"
-                  >
-                    {category}
-                  </Tag>
-                  {idx < dataCategories.length - 1 && " "}
-                </span>
-              ))}{" "}
+              {(assessment.data_categories ?? []).map(
+                (category: string, idx: number) => (
+                  <span key={category}>
+                    <Tag
+                      color={CUSTOM_TAG_COLOR.DEFAULT}
+                      className="!m-0 align-middle text-[11px]"
+                    >
+                      {category}
+                    </Tag>
+                    {idx < (assessment.data_categories ?? []).length - 1 && " "}
+                  </span>
+                ),
+              )}{" "}
               for{" "}
               <Tag
                 color={CUSTOM_TAG_COLOR.DEFAULT}
                 className="!m-0 align-middle text-[11px]"
               >
-                {dataUseName}
+                {assessment.data_use_name ?? ""}
               </Tag>
             </Text>
           )}
           <div>
             <Tag color={RISK_TAG_COLORS[riskLabel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
-              {riskLabel} risk
+              {riskLabel === "N/A" ? "N/A" : `${riskLabel} risk`}
             </Tag>
           </div>
         </div>
