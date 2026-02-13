@@ -134,7 +134,7 @@ def extract_privacy_request_only_conditional_data(
     conditional_privacy_request_data: dict[str, Any] = {}
     if privacy_request_field_addresses:
         conditional_privacy_request_data = PrivacyRequestDataTransformer(
-            privacy_request
+            privacy_request  # type: ignore[arg-type] # sqlmypy types Column as Column[T] not T
         ).to_evaluation_data(privacy_request_field_addresses)
 
     return {**conditional_privacy_request_data}
