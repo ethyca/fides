@@ -442,30 +442,28 @@ const PrivacyAssessmentsPage: NextPage = () => {
     try {
       message.info("Analyzing privacy declarations...");
 
-      // Get assessment types from templates (use assessment_type or key as fallback)
+      // Get template keys (unique identifiers) for assessment generation
       const templates = templatesData?.items ?? [];
-      const assessmentTypes = templates.map(
-        (t) => t.assessment_type || t.key
-      );
+      const templateKeys = templates.map((t) => t.key);
 
-      if (assessmentTypes.length === 0) {
+      if (templateKeys.length === 0) {
         message.warning("No assessment templates available.");
         return;
       }
 
       let totalCreated = 0;
 
-      // Generate assessments for each template type (backend handles all systems)
-      for (const assessmentType of assessmentTypes) {
+      // Generate assessments for each template (backend handles all systems)
+      for (const templateKey of templateKeys) {
         try {
           const result = await createPrivacyAssessment({
-            assessment_type: assessmentType,
+            assessment_type: templateKey, // Use template key (unique) instead of assessment_type
             use_llm: true,
           }).unwrap();
           totalCreated += result.total_created;
         } catch (err) {
-          // Continue with other types even if one fails
-          console.warn(`Failed to generate ${assessmentType} assessments:`, err);
+          // Continue with other templates even if one fails
+          console.warn(`Failed to generate ${templateKey} assessments:`, err);
         }
       }
 
