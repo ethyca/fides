@@ -41,8 +41,7 @@ export const AssessmentCard = ({
 
   return (
     <Card
-      hoverable
-      className="flex min-w-[280px] cursor-pointer flex-col"
+      className="flex min-w-[280px] flex-col"
       style={{
         width: "calc((100% - 48px) / 4)",
         ...(isComplete && {
@@ -56,7 +55,6 @@ export const AssessmentCard = ({
           flex: 1,
         },
       }}
-      onClick={onClick}
     >
       <Flex vertical gap="small" className="flex-1" justify="space-between">
         <div>
@@ -72,13 +70,7 @@ export const AssessmentCard = ({
               <TagList
                 tags={assessment.data_categories ?? []}
                 maxTags={2}
-                tagProps={{
-                  color: CUSTOM_TAG_COLOR.DEFAULT,
-                  className: "!m-0 align-middle text-[11px]",
-                }}
-                overflowTagProps={{
-                  className: "!m-0 align-middle text-[11px]",
-                }}
+                expandable
               />{" "}
               for{" "}
               <TagList
@@ -86,10 +78,6 @@ export const AssessmentCard = ({
                   assessment.data_use_name ? [assessment.data_use_name] : []
                 }
                 maxTags={1}
-                tagProps={{
-                  color: CUSTOM_TAG_COLOR.DEFAULT,
-                  className: "!m-0 align-middle text-[11px]",
-                }}
               />
             </Text>
           )}
@@ -164,7 +152,7 @@ export const AssessmentCard = ({
                 >
                   {statusLabel}
                 </Text>
-                <Button type="link" className="!p-0">
+                <Button type="link" className="!p-0" onClick={onClick}>
                   Resume
                 </Button>
               </Flex>

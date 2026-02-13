@@ -1,5 +1,5 @@
 import { Tag, TagProps } from "fidesui";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 export interface TagListProps {
   /**
@@ -31,6 +31,12 @@ export interface TagListProps {
    * Class name for the container span.
    */
   className?: string;
+  /**
+   * Enable expand/collapse functionality for overflow tags.
+   * When true, clicking the "+N" tag will expand to show all tags.
+   * @default false
+   */
+  expandable?: boolean;
 }
 
 /**
@@ -41,6 +47,9 @@ export interface TagListProps {
  * ```tsx
  * <TagList tags={["tag1", "tag2", "tag3"]} maxTags={2} />
  * // Renders: <tag1> <tag2> <+1>
+ *
+ * <TagList tags={["tag1", "tag2", "tag3"]} maxTags={2} expandable />
+ * // Renders: <tag1> <tag2> <+1> (clicking +1 expands to show all tags)
  * ```
  */
 export const TagList = ({
@@ -50,17 +59,20 @@ export const TagList = ({
   overflowTagProps,
   renderTag,
   className,
+  expandable = false,
 }: TagListProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (!tags || tags.length === 0) {
     return null;
   }
 
-  const visibleTags = tags.slice(0, maxTags);
+  const displayTags = isExpanded ? tags : tags.slice(0, maxTags);
   const remainingCount = tags.length - maxTags;
 
   return (
     <span className={className}>
-      {visibleTags.map((tag, index) => {
+      {displayTags.map((tag, index) => {
         const tagValue = typeof tag === "string" ? tag : tag.value;
         const tagLabel =
           typeof tag === "string" ? tag : (tag.label ?? tag.value);
@@ -72,14 +84,25 @@ export const TagList = ({
         return (
           <span key={tagValue}>
             <Tag {...tagProps}>{tagLabel}</Tag>
-            {index < visibleTags.length - 1 && " "}
+            {index < displayTags.length - 1 && " "}
           </span>
         );
       })}
-      {remainingCount > 0 && (
+      {remainingCount > 0 && !isExpanded && (
         <>
           {" "}
-          <Tag color="corinth" {...overflowTagProps}>
+          <Tag
+            {...overflowTagProps}
+            className={`${overflowTagProps?.className ?? ""} ${expandable ? "cursor-pointer" : ""}`}
+            onClick={
+              expandable
+                ? (e) => {
+                    e.stopPropagation();
+                    setIsExpanded(true);
+                  }
+                : undefined
+            }
+          >
             +{remainingCount}
           </Tag>
         </>
