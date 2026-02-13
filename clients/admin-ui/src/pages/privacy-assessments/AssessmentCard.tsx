@@ -13,6 +13,8 @@ import { PrivacyAssessmentResponse } from "~/features/privacy-assessments";
 import {
   ASSESSMENT_STATUS_LABELS,
   RISK_LEVEL_LABELS,
+  RISK_TAG_COLORS,
+  STATUS_COLORS,
 } from "~/features/privacy-assessments/constants";
 
 const { Title } = Typography;
@@ -21,25 +23,6 @@ interface AssessmentCardProps {
   assessment: PrivacyAssessmentResponse;
   onClick: () => void;
 }
-
-const getRiskTagColor = (riskLevel: string): CUSTOM_TAG_COLOR => {
-  const colors: Record<string, CUSTOM_TAG_COLOR> = {
-    High: CUSTOM_TAG_COLOR.ERROR,
-    Med: CUSTOM_TAG_COLOR.WARNING,
-    Low: CUSTOM_TAG_COLOR.DEFAULT,
-  };
-  return colors[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT;
-};
-
-const getStatusColor = (status: string): string | undefined => {
-  if (status === "completed") {
-    return palette.FIDESUI_SUCCESS;
-  }
-  if (status === "outdated") {
-    return palette.FIDESUI_ERROR;
-  }
-  return undefined;
-};
 
 export const AssessmentCard = ({
   assessment,
@@ -107,7 +90,9 @@ export const AssessmentCard = ({
             </Text>
           )}
           <div>
-            <Tag color={getRiskTagColor(riskLabel)}>{riskLabel} risk</Tag>
+            <Tag color={RISK_TAG_COLORS[riskLabel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
+              {riskLabel} risk
+            </Tag>
           </div>
         </div>
 
@@ -171,7 +156,7 @@ export const AssessmentCard = ({
               <Flex justify="space-between" align="center" className="mt-2">
                 <Text
                   className="text-[11px]"
-                  style={{ color: getStatusColor(status) }}
+                  style={{ color: STATUS_COLORS[status] }}
                 >
                   {statusLabel}
                 </Text>
