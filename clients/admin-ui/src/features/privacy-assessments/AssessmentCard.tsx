@@ -11,13 +11,13 @@ import palette from "fidesui/src/palette/palette.module.scss";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { TagList } from "~/features/common/TagList";
+
 import {
   ASSESSMENT_STATUS_LABELS,
   RISK_LEVEL_LABELS,
   RISK_TAG_COLORS,
   STATUS_COLORS,
-} from "~/features/privacy-assessments/constants";
-
+} from "./constants";
 import { PrivacyAssessmentResponse } from "./types";
 
 const { Title } = Typography;

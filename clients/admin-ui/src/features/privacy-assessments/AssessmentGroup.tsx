@@ -2,9 +2,9 @@ import { Flex, Icons, Text, Typography } from "fidesui";
 import { useRouter } from "next/router";
 
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
-import { PrivacyAssessmentResponse } from "~/features/privacy-assessments";
 
 import { AssessmentCard } from "./AssessmentCard";
+import { PrivacyAssessmentResponse } from "./types";
 
 const { Title } = Typography;
 
