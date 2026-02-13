@@ -1,12 +1,14 @@
 from typing import Any, Dict, Optional
 
-from fastapi import HTTPException, Query
+from fastapi import Depends, HTTPException, Query
 from fastapi.params import Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.utils import disable_installed_extensions_check
+from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND
 
+from fides.api.api.deps import get_db
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration.connection_type_system_map import (
@@ -40,6 +42,7 @@ router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 )
 def get_all_connection_types(
     *,
+    db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     size: int = Query(
         100, ge=1, le=100, description="Page size"
@@ -73,7 +76,7 @@ def get_all_connection_types(
     params = Params(page=page, size=size)
 
     return paginate(
-        get_connection_types(search, system_type, action_types),
+        get_connection_types(search, system_type, action_types, db=db),
         params,
     )
 
@@ -83,7 +86,7 @@ def get_all_connection_types(
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_TYPE_READ])],
 )
 def get_connection_type_secret_schema_route(
-    *, connection_type: str
+    *, db: Session = Depends(get_db), connection_type: str
 ) -> Optional[Dict[str, Any]]:
     """Returns the secret fields that should be supplied to authenticate with a particular connection type
 
@@ -91,7 +94,7 @@ def get_connection_type_secret_schema_route(
     to authenticate.
     """
     try:
-        return get_connection_type_secret_schema(connection_type=connection_type)
+        return get_connection_type_secret_schema(connection_type=connection_type, db=db)
     except NoSuchConnectionTypeSecretSchemaError:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

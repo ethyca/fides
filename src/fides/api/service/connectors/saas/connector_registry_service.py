@@ -345,7 +345,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
 
 class ConnectorRegistry:
     @classmethod
-    def _get_combined_templates(cls) -> Dict[str, ConnectorTemplate]:
+    def _get_combined_templates(
+        cls, db: Optional[Session] = None
+    ) -> Dict[str, ConnectorTemplate]:
         """
         Returns a combined map of connector templates from all registered loaders.
         The resulting map is an aggregation of templates from the file loader and the custom loader,
@@ -354,32 +356,40 @@ class ConnectorRegistry:
         The custom loader's ``get_connector_templates()`` is backed by the
         ``@db_timestamp_cached`` decorator, so it only queries the full
         table when the underlying data has actually changed.
+
+        If *db* is provided it is forwarded to the custom loader so the
+        staleness check can reuse an existing session instead of opening a
+        new one.
         """
         return {
             **FileConnectorTemplateLoader.get_connector_templates(),  # type: ignore
-            **CustomConnectorTemplateLoader.get_connector_templates(),  # type: ignore
+            **CustomConnectorTemplateLoader.get_connector_templates(db=db),  # type: ignore
         }
 
     @classmethod
-    def connector_types(cls) -> List[str]:
+    def connector_types(cls, db: Optional[Session] = None) -> List[str]:
         """List of registered SaaS connector types"""
-        return list(cls._get_combined_templates().keys())
+        return list(cls._get_combined_templates(db=db).keys())
 
     @classmethod
-    def get_connector_template(cls, connector_type: str) -> Optional[ConnectorTemplate]:
+    def get_connector_template(
+        cls, connector_type: str, db: Optional[Session] = None
+    ) -> Optional[ConnectorTemplate]:
         """
         Returns an object containing the various SaaS connector artifacts
         """
-        return cls._get_combined_templates().get(connector_type)
+        return cls._get_combined_templates(db=db).get(connector_type)
 
     @classmethod
-    def get_all_connector_templates_summary(cls) -> List[ConnectorTemplateListResponse]:
+    def get_all_connector_templates_summary(
+        cls, db: Optional[Session] = None
+    ) -> List[ConnectorTemplateListResponse]:
         """
         Returns summary information for all connector templates.
         Includes connector_type, name, supported_actions, category, whether it's custom,
         and whether a default connector is available.
         """
-        combined_templates = cls._get_combined_templates()
+        combined_templates = cls._get_combined_templates(db=db)
 
         summaries: List[ConnectorTemplateListResponse] = []
         for connector_type, template in combined_templates.items():

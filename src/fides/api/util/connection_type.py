@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, Set
 
+from sqlalchemy.orm import Session
+
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.schemas.connection_configuration import (
@@ -143,14 +145,16 @@ def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:
                 transform_any_of(definition["properties"])
 
 
-def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
+def get_connection_type_secret_schema(
+    *, connection_type: str, db: Optional[Session] = None
+) -> dict[str, Any]:
     """Returns the secret fields that should be supplied to authenticate with a particular connection type.
 
     Note that this does not return actual secrets, instead we return the *types* of
     secret fields needed to authenticate.
     """
     connection_system_types: list[ConnectionSystemTypeMap] = get_connection_types(
-        include_test_connections=True
+        include_test_connections=True, db=db
     )
     if not any(item.identifier == connection_type for item in connection_system_types):
         raise NoSuchConnectionTypeSecretSchemaError(
@@ -162,7 +166,9 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
         transform_v2_to_v1_in_place(schema)
         return schema
 
-    connector_template = ConnectorRegistry.get_connector_template(connection_type)
+    connector_template = ConnectorRegistry.get_connector_template(
+        connection_type, db=db
+    )
     if not connector_template:
         raise NoSuchConnectionTypeSecretSchemaError(
             f"No SaaS connector type found with name '{connection_type}'."
@@ -207,6 +213,7 @@ def _is_match(elem: str, search: Optional[str] = None) -> bool:
 def get_saas_connection_types(
     action_types: Set[ActionType] = SUPPORTED_ACTION_TYPES,
     search: Optional[str] = None,
+    db: Optional[Session] = None,
 ) -> list[ConnectionSystemTypeMap]:
     def saas_request_type_filter(connection_type: str) -> bool:
         """
@@ -217,7 +224,7 @@ def get_saas_connection_types(
             # if none of our filters are enabled, pass quickly to avoid unnecessary overhead
             return True
 
-        template = ConnectorRegistry.get_connector_template(connection_type)
+        template = ConnectorRegistry.get_connector_template(connection_type, db=db)
         if template is None:  # shouldn't happen, but we can be safe
             return False
 
@@ -230,13 +237,13 @@ def get_saas_connection_types(
     saas_types: list[str] = sorted(
         [
             saas_type
-            for saas_type in ConnectorRegistry.connector_types()
+            for saas_type in ConnectorRegistry.connector_types(db=db)
             if _is_match(saas_type, search) and saas_request_type_filter(saas_type)
         ]
     )
 
     for item in saas_types:
-        connector_template = ConnectorRegistry.get_connector_template(item)
+        connector_template = ConnectorRegistry.get_connector_template(item, db=db)
         if connector_template is not None:
             saas_connection_types.append(
                 ConnectionSystemTypeMap(
@@ -264,6 +271,7 @@ def get_connection_types(
     system_type: SystemType | None = None,
     action_types: Set[ActionType] = SUPPORTED_ACTION_TYPES,
     include_test_connections: bool = False,
+    db: Optional[Session] = None,
 ) -> list[ConnectionSystemTypeMap]:
     """
     Returns a list of ConnectionSystemTypeMap objects that match the given search and system type.
@@ -309,7 +317,7 @@ def get_connection_types(
         )
     if system_type == SystemType.saas or system_type is None:
         saas_connection_types = get_saas_connection_types(
-            action_types=action_types, search=search
+            action_types=action_types, search=search, db=db
         )
         connection_system_types.extend(saas_connection_types)
 
