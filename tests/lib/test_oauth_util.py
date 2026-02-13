@@ -27,7 +27,11 @@ from fides.api.oauth.roles import (
 from fides.api.oauth.utils import (
     _has_direct_scopes,
     _has_scope_via_role,
+    default_has_permissions,
+    default_has_permissions_async,
     extract_payload,
+    get_async_permission_checker,
+    get_permission_checker,
     get_root_client,
     has_permissions,
     has_scope_subset,
@@ -786,3 +790,247 @@ class TestVerifyOauthClientAsyncRoles:
                 token,
                 db=async_session,
             )
+
+
+class TestPermissionCheckerDI:
+    """Tests for the dependency-injected permission checker pattern.
+
+    The permission checker is provided via ``get_permission_checker()`` (a FastAPI
+    dependency) or passed explicitly as the ``permission_checker`` parameter to
+    ``has_permissions()``. There is no global mutable state.
+    """
+
+    def test_get_permission_checker_returns_default(self):
+        """get_permission_checker returns default_has_permissions."""
+        checker = get_permission_checker()
+        assert checker is default_has_permissions
+
+    def test_default_behavior_without_custom_checker(self, oauth_client):
+        """Without a custom checker, has_permissions uses default logic."""
+        token_data = {
+            JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
+        }
+        assert has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+
+    def test_custom_checker_is_called_via_parameter(self, oauth_client):
+        """A custom checker passed as a parameter is invoked correctly."""
+        checker_calls = []
+
+        def custom_checker(token_data, client, endpoint_scopes, db):
+            checker_calls.append(
+                {
+                    "db": db,
+                    "token_data": token_data,
+                    "client": client,
+                    "scopes": endpoint_scopes.scopes,
+                }
+            )
+            return True
+
+        token_data = {JWE_PAYLOAD_SCOPES: [USER_READ]}
+        has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+            permission_checker=custom_checker,
+        )
+
+        assert len(checker_calls) == 1
+        assert checker_calls[0]["token_data"] == token_data
+        assert checker_calls[0]["client"] == oauth_client
+        assert checker_calls[0]["scopes"] == [DATASET_CREATE_OR_UPDATE]
+
+    def test_custom_checker_grants_permission(self, oauth_client):
+        """Custom checker returning True grants permission."""
+
+        def always_allow(token_data, client, endpoint_scopes, db):
+            return True
+
+        # Even with empty token data, custom checker grants permission
+        token_data = {}
+        assert has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+            permission_checker=always_allow,
+        )
+
+    def test_custom_checker_denies_permission(self, oauth_client):
+        """Custom checker returning False denies permission."""
+
+        def always_deny(token_data, client, endpoint_scopes, db):
+            return False
+
+        # Even with valid scopes, custom checker denies permission
+        token_data = {
+            JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
+        }
+        assert not has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+            permission_checker=always_deny,
+        )
+
+    def test_omitting_checker_uses_default(self, oauth_client):
+        """When permission_checker is not passed, default_has_permissions is used."""
+        token_data = {
+            JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
+        }
+
+        # Custom checker would deny
+        def always_deny(token_data, client, endpoint_scopes, db):
+            return False
+
+        # With custom checker: denied
+        assert not has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+            permission_checker=always_deny,
+        )
+
+        # Without custom checker (default): allowed because scopes match
+        assert has_permissions(
+            token_data,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+
+    def test_db_parameter_passed_to_custom_checker(self, oauth_client):
+        """The db parameter should be passed through to the custom checker."""
+        received_db = []
+
+        def capture_db(token_data, client, endpoint_scopes, db):
+            received_db.append(db)
+            return True
+
+        mock_db = "mock_db_session"
+        has_permissions(
+            {},
+            oauth_client,
+            endpoint_scopes=SecurityScopes([USER_READ]),
+            db=mock_db,
+            permission_checker=capture_db,
+        )
+
+        assert len(received_db) == 1
+        assert received_db[0] == mock_db
+
+    def test_db_parameter_none_when_not_provided(self, oauth_client):
+        """When db is not provided, it should be None in the custom checker."""
+        received_db = []
+
+        def capture_db(token_data, client, endpoint_scopes, db):
+            received_db.append(db)
+            return True
+
+        has_permissions(
+            {},
+            oauth_client,
+            endpoint_scopes=SecurityScopes([USER_READ]),
+            permission_checker=capture_db,
+        )
+
+        assert len(received_db) == 1
+        assert received_db[0] is None
+
+    def test_checker_composes_with_default(self, oauth_client):
+        """A custom checker can call default_has_permissions internally for composition."""
+
+        def composing_checker(token_data, client, endpoint_scopes, db):
+            # First check default logic
+            if default_has_permissions(token_data, client, endpoint_scopes, db):
+                return True
+            # Then add custom logic (e.g., RBAC lookup)
+            return token_data.get("custom_rbac_allowed", False)
+
+        # Case 1: default logic allows (scopes match)
+        token_data_with_scopes = {
+            JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
+        }
+        assert has_permissions(
+            token_data_with_scopes,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+            permission_checker=composing_checker,
+        )
+
+        # Case 2: default logic denies, custom RBAC allows
+        token_data_rbac = {"custom_rbac_allowed": True}
+        assert has_permissions(
+            token_data_rbac,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+            permission_checker=composing_checker,
+        )
+
+        # Case 3: both deny
+        token_data_empty = {}
+        assert not has_permissions(
+            token_data_empty,
+            oauth_client,
+            endpoint_scopes=SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+            permission_checker=composing_checker,
+        )
+
+
+class TestAsyncPermissionChecker:
+    """Tests for the async permission checker dependency."""
+
+    def test_get_async_permission_checker_returns_default(self):
+        """get_async_permission_checker returns default_has_permissions_async."""
+        checker = get_async_permission_checker()
+        assert checker is default_has_permissions_async
+
+    @pytest.mark.asyncio
+    async def test_default_async_checker_delegates_to_sync(self, oauth_client):
+        """The default async checker produces the same result as the sync default."""
+        token_data = {
+            JWE_PAYLOAD_SCOPES: [DATASET_CREATE_OR_UPDATE, USER_READ],
+        }
+        scopes = SecurityScopes([DATASET_CREATE_OR_UPDATE])
+
+        sync_result = default_has_permissions(token_data, oauth_client, scopes)
+        async_result = await default_has_permissions_async(
+            token_data, oauth_client, scopes
+        )
+
+        assert sync_result == async_result
+        assert async_result is True
+
+    @pytest.mark.asyncio
+    async def test_default_async_checker_denies_missing_scopes(self, oauth_client):
+        """The default async checker denies when scopes are missing."""
+        token_data = {JWE_PAYLOAD_SCOPES: [USER_READ]}
+        result = await default_has_permissions_async(
+            token_data,
+            oauth_client,
+            SecurityScopes([DATASET_CREATE_OR_UPDATE]),
+        )
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_async_checker_receives_db(self, oauth_client):
+        """A custom async checker receives the db parameter."""
+        received_db = []
+
+        async def capture_db(token_data, client, endpoint_scopes, db):
+            received_db.append(db)
+            return True
+
+        mock_async_session = "mock_async_session"
+        result = await capture_db(
+            {},
+            oauth_client,
+            SecurityScopes([USER_READ]),
+            mock_async_session,
+        )
+
+        assert result is True
+        assert len(received_db) == 1
+        assert received_db[0] == mock_async_session
