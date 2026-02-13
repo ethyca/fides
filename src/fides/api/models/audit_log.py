@@ -13,6 +13,7 @@ class AuditLogAction(str, EnumType):
     denied = "denied"
     email_sent = "email_sent"
     finished = "finished"
+    policy_evaluated = "policy_evaluated"
 
 
 class AuditLog(Base):
