@@ -195,6 +195,11 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_leaf_status_urn ON stagedresource (monitor_config_id, is_leaf, diff_status, urn) WHERE is_leaf IS NOT NULL",
             "type": "index",
         },
+        {
+            "name": "ix_stagedresource_monitor_leaf_true_status_urn",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_leaf_true_status_urn ON stagedresource (monitor_config_id, is_leaf, diff_status, urn) WHERE is_leaf IS TRUE",
+            "type": "index",
+        },
     ],
 }
 
