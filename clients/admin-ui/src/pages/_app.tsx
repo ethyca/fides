@@ -45,11 +45,13 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   );
 
   React.useEffect(() => {
-    if (process.env.NEXT_PUBLIC_MOCK_API) {
-      mswReady.then(() => {
+    const waitForMsw = async () => {
+      if (process.env.NEXT_PUBLIC_MOCK_API) {
+        await mswReady;
         setIsMswReady(true);
-      });
-    }
+      }
+    };
+    waitForMsw();
   }, []);
 
   // Expose Redux store to window for Cypress testing
