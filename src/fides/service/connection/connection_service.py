@@ -397,6 +397,11 @@ class ConnectionService:
         )
         return connection_config, dataset_config
 
+    # Connection types that are limited to a single instance per deployment.
+    _singleton_connection_types: Set[str] = {
+        ConnectionType.jira_ticket.value,
+    }
+
     def create_or_update_connection_config(
         self,
         config: CreateConnectionConfigurationWithSecrets,
@@ -413,6 +418,22 @@ class ConnectionService:
             existing_connection_config = ConnectionConfig.get_by(
                 self.db, field="key", value=config.key
             )
+
+        # Enforce singleton constraint for certain connection types
+        if (
+            config.connection_type in self._singleton_connection_types
+            and not existing_connection_config
+        ):
+            existing_of_type = ConnectionConfig.get_by(
+                self.db,
+                field="connection_type",
+                value=config.connection_type,
+            )
+            if existing_of_type:
+                raise ValidationError(
+                    f"Only one {config.connection_type} connection is allowed. "
+                    f"A connection with key '{existing_of_type.key}' already exists."
+                )
 
         # Handle SaaS connections with special template-based creation
         if config.connection_type == "saas" and config.secrets:
