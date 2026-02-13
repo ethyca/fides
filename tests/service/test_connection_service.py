@@ -1578,15 +1578,10 @@ class TestConnectionService:
         stored_dataset: Dict[str, Any],
     ):
         """
-        Test that update_existing_connection_configs_for_connector_type matches
-        connection configs regardless of the case of the 'type' field stored
-        in the saas_config JSONB column.
-
-        During connection creation, the raw YAML dict is stored in saas_config
-        without going through SaaSConfig validation, which means the 'type' may
-        preserve its original case (e.g., "AMG"). During template re-upload,
-        save_template normalizes the type to lowercase via SaaSConfig's
-        lowercase_saas_type validator. The filter must match case-insensitively.
+                Test that update_existing_connection_configs_for_connector_type matches
+                connection configs regardless of the case of the 'type' field stored
+                in the saas_config JSONB column.
+        .
         """
         # Create a connection config with UPPERCASE type in saas_config
         # (simulates what happens when the raw YAML dict is stored directly)
@@ -1681,6 +1676,3 @@ class TestConnectionService:
 
         collection_names = {c["name"] for c in ctl_dataset.collections}
         assert "products" in collection_names
-
-        # Clean up
-        connection_config.delete(db)
