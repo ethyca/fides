@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.3b2.dev27+g100a84f18"
+    "version": "2.78.3b2.dev28+g1e5433194"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -24355,6 +24355,20 @@
           "ctl_dataset_fides_key": {
             "type": "string",
             "title": "Ctl Dataset Fides Key"
+          },
+          "property_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Ids"
           }
         },
         "type": "object",
