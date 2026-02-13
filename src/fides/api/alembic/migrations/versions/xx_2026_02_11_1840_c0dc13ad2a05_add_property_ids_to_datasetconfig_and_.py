@@ -1,7 +1,7 @@
 """add property_ids to datasetconfig and manual_task_config
 
 Revision ID: c0dc13ad2a05
-Revises: c3d4e5f6g7h8
+Revises: e5f6g7h8i9j0
 Create Date: 2026-02-11 18:40:41.477080
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'c0dc13ad2a05'
-down_revision = 'c3d4e5f6g7h8'
+down_revision = 'e5f6g7h8i9j0'
 branch_labels = None
 depends_on = None
 
