@@ -2,7 +2,7 @@ import types
 import warnings
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 from botocore.exceptions import ClientError
@@ -788,3 +788,157 @@ class TestAttachmentContentRetrieval:
             AttachmentService(db).create_and_upload(
                 data=attachment_data, file_data=BytesIO(b"test content")
             )
+
+
+class TestCreateAndUploadCleanup:
+    """Tests for DB cleanup on upload failure in create_and_upload."""
+
+    def test_no_orphaned_record_on_upload_failure(
+        self, s3_client, db, attachment_data, monkeypatch
+    ):
+        """Verify create_and_upload removes the DB record when upload fails.
+
+        This locks in the commit-based cleanup (Fix 3) so orphaned
+        attachment records don't persist after upload failures.
+        """
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        # Count existing attachments
+        count_before = db.query(Attachment).count()
+
+        # Use an invalid file extension to trigger a ValueError during upload
+        attachment_data["file_name"] = "test.invalid"
+        with pytest.raises(ValueError, match="Invalid or unallowed file extension"):
+            AttachmentService(db).create_and_upload(
+                data=attachment_data, file_data=BytesIO(b"test content")
+            )
+
+        # Verify no orphaned record was left behind
+        count_after = db.query(Attachment).count()
+        assert count_after == count_before
+
+
+class TestDeletePartialFailure:
+    """Tests for delete() behavior when storage deletion fails."""
+
+    def test_delete_preserves_db_record_on_storage_failure(
+        self, s3_client, db, attachment_data, monkeypatch
+    ):
+        """Verify delete() propagates storage errors and preserves the DB record.
+
+        When storage deletion fails, the error should propagate (not be
+        swallowed) and the DB record should remain intact so the caller
+        can retry or handle the issue.
+        """
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        attachment = AttachmentService(db).create_and_upload(
+            data=attachment_data, file_data=BytesIO(b"test content")
+        )
+        attachment_id = attachment.id
+
+        # Mock delete_from_storage to raise an error
+        with patch.object(
+            AttachmentService,
+            "delete_from_storage",
+            side_effect=RuntimeError("Storage unavailable"),
+        ):
+            with pytest.raises(RuntimeError, match="Storage unavailable"):
+                AttachmentService(db).delete(attachment)
+
+        # DB record should still exist
+        preserved = db.query(Attachment).filter_by(id=attachment_id).first()
+        assert preserved is not None
+
+        # Cleanup
+        AttachmentService(db).delete(attachment)
+
+
+class TestRetrieveUrlNullSafety:
+    """Tests for retrieve_url null safety (Fix 2)."""
+
+    def test_retrieve_url_raises_on_none_size(self, db, attachment_data, monkeypatch):
+        """Verify retrieve_url raises ValueError when provider returns None size."""
+        from fides.api.service.storage.providers.local_provider import (
+            LocalStorageProvider,
+        )
+
+        attachment = (
+            AttachmentService(db).create_and_upload(
+                data={**attachment_data, "storage_key": "local_storage"},
+                file_data=BytesIO(b"test"),
+            )
+            if False
+            else None
+        )  # We'll use a mock approach instead
+
+        # Create a mock attachment with the right attributes
+        mock_config = MagicMock()
+        mock_config.type = MagicMock()
+        mock_config.type.value = "local"
+        mock_config.details = {}
+        mock_config.secrets = {}
+
+        mock_attachment = MagicMock()
+        mock_attachment.id = "att_test_null"
+        mock_attachment.file_key = "att_test_null/test.pdf"
+        mock_attachment.config = mock_config
+
+        service = AttachmentService()
+
+        # Mock the provider to return None for size
+        mock_provider = MagicMock()
+        mock_provider.get_file_size.return_value = None
+        mock_provider.generate_presigned_url.return_value = "https://example.com/file"
+
+        with patch.object(
+            service, "_get_provider_and_bucket", return_value=(mock_provider, "bucket")
+        ):
+            with pytest.raises(ValueError, match="Content size not found"):
+                service.retrieve_url(mock_attachment)
+
+    def test_retrieve_url_raises_on_none_url(self):
+        """Verify retrieve_url raises ValueError when provider returns None URL."""
+        mock_attachment = MagicMock()
+        mock_attachment.id = "att_test_null_url"
+        mock_attachment.file_key = "att_test_null_url/test.pdf"
+
+        service = AttachmentService()
+
+        mock_provider = MagicMock()
+        mock_provider.get_file_size.return_value = 1024
+        mock_provider.generate_presigned_url.return_value = None
+
+        with patch.object(
+            service, "_get_provider_and_bucket", return_value=(mock_provider, "bucket")
+        ):
+            with pytest.raises(ValueError, match="Download URL not found"):
+                service.retrieve_url(mock_attachment)
+
+    def test_retrieve_url_raises_on_both_none(self):
+        """Verify retrieve_url raises ValueError mentioning both issues when both are None."""
+        mock_attachment = MagicMock()
+        mock_attachment.id = "att_test_both_null"
+        mock_attachment.file_key = "att_test_both_null/test.pdf"
+
+        service = AttachmentService()
+
+        mock_provider = MagicMock()
+        mock_provider.get_file_size.return_value = None
+        mock_provider.generate_presigned_url.return_value = None
+
+        with patch.object(
+            service, "_get_provider_and_bucket", return_value=(mock_provider, "bucket")
+        ):
+            with pytest.raises(
+                ValueError, match="Content size not found.*Download URL not found"
+            ):
+                service.retrieve_url(mock_attachment)

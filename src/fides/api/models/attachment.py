@@ -14,6 +14,7 @@ from sqlalchemy import (
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
+from typing_extensions import deprecated
 
 from fides.api.db.base_class import Base
 from fides.api.service.storage.util import AllowedFileType
@@ -143,6 +144,25 @@ class Attachment(Base):
         return f"{self.id}/{self.file_name}"
 
     @classmethod
+    def _create_record(
+        cls,
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = False,
+    ) -> "Attachment":
+        """Internal method for creating attachment records.
+
+        Used by AttachmentService.create_and_upload() to avoid triggering
+        the deprecation warning on the public create() method.
+        """
+        return super().create(db=db, data=data, check_name=check_name)
+
+    @classmethod
+    @deprecated(
+        "Attachment.create() does not upload files. "
+        "Use AttachmentService.create_and_upload() for full lifecycle management."
+    )
     def create(
         cls,
         db: Session,
@@ -151,4 +171,4 @@ class Attachment(Base):
         check_name: bool = False,
     ) -> "Attachment":
         """Creates a new attachment record in the database."""
-        return super().create(db=db, data=data, check_name=check_name)
+        return cls._create_record(db=db, data=data, check_name=check_name)

@@ -21,7 +21,6 @@ from fides.api.service.storage.providers.base import (
 from fides.api.service.storage.s3 import (
     create_presigned_url_for_s3,
     generic_delete_from_s3,
-    generic_retrieve_from_s3,
     generic_upload_to_s3,
     get_file_size,
     maybe_get_s3_client,
@@ -109,7 +108,10 @@ class S3StorageProvider(StorageProvider):
     def download(self, bucket: str, key: str) -> IO[bytes]:
         """Download data from S3.
 
-        Delegates to generic_retrieve_from_s3 with get_content=True.
+        Downloads the full object content regardless of file size, using
+        download_fileobj directly. This bypasses the LARGE_FILE_THRESHOLD
+        in generic_retrieve_from_s3 which would return a presigned URL
+        string instead of content for files above the threshold.
 
         Args:
             bucket: S3 bucket name.
@@ -120,21 +122,13 @@ class S3StorageProvider(StorageProvider):
         """
         logger.debug("S3StorageProvider.download: bucket={}, key={}", bucket, key)
 
-        _, content = generic_retrieve_from_s3(
-            storage_secrets=cast(Dict[StorageSecrets, Any], self._secrets),
-            bucket_name=bucket,
-            file_key=key,
-            auth_method=self._auth_method,
-            get_content=True,
+        s3_client = maybe_get_s3_client(
+            self._auth_method, cast(Dict[StorageSecrets, Any], self._secrets)
         )
-
-        # Ensure we return a file-like object
-        if isinstance(content, bytes):
-            return BytesIO(content)
-        if isinstance(content, str):
-            # Shouldn't happen with get_content=True, but handle for type safety
-            return BytesIO(content.encode("utf-8"))
-        return content
+        file_obj = BytesIO()
+        s3_client.download_fileobj(Bucket=bucket, Key=key, Fileobj=file_obj)
+        file_obj.seek(0)
+        return file_obj
 
     def delete(self, bucket: str, key: str) -> None:
         """Delete a single object from S3.

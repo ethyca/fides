@@ -126,6 +126,9 @@ class AttachmentService:
 
         Returns:
             Tuple of (file_size, presigned_url)
+
+        Raises:
+            ValueError: If size or URL could not be retrieved from storage.
         """
         provider, bucket = self._get_provider_and_bucket(attachment)
 
@@ -133,6 +136,16 @@ class AttachmentService:
         url = provider.generate_presigned_url(
             bucket, attachment.file_key, MAX_TTL_SECONDS
         )
+
+        errors = []
+        if size is None:
+            errors.append("Content size not found.")
+        if url is None:
+            errors.append("Download URL not found.")
+        if errors:
+            raise ValueError(
+                f"Failed to retrieve attachment {attachment.id}: {' '.join(errors)}"
+            )
 
         return size, url
 
@@ -194,8 +207,9 @@ class AttachmentService:
         """
         db = self._require_db()
 
-        # Create the attachment record using Attachment.create
-        attachment = Attachment.create(db=db, data=data, check_name=check_name)
+        # Create the attachment record using internal _create_record to avoid
+        # triggering the deprecation warning on the public create() method
+        attachment = Attachment._create_record(db=db, data=data, check_name=check_name)
 
         try:
             self.upload(attachment, file_data)
@@ -217,7 +231,7 @@ class AttachmentService:
             logger.error("Failed to upload attachment: {}", e)
             # Delete the DB record since upload failed
             db.delete(attachment)
-            db.flush()
+            db.commit()  # Must commit to ensure orphaned record is removed
             raise
 
     def delete(self, attachment: Attachment) -> None:
