@@ -28,10 +28,10 @@ const { Paragraph, Text } = Typography;
 
 // Tag colors from the fidesui palette
 const actionTypeColors: Record<ActionType, TagProps["color"]> = {
-  [ActionType.ACCESS]: "success",
-  [ActionType.ERASURE]: "error",
+  [ActionType.ACCESS]: "olive",
+  [ActionType.ERASURE]: "marble",
   [ActionType.CONSENT]: "corinth",
-  [ActionType.UPDATE]: "warning",
+  [ActionType.UPDATE]: "sandstone",
 };
 
 const PoliciesPage: NextPage = () => {
