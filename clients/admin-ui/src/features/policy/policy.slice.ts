@@ -43,8 +43,14 @@ interface PolicyConditionsUpdate {
 const policyApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     // === Policies ===
-    getPolicies: build.query<Page_PolicyResponse_, void>({
-      query: () => ({ url: `/dsr/policy` }),
+    getPolicies: build.query<
+      Page_PolicyResponse_,
+      { page?: number; size?: number } | void
+    >({
+      query: (params) => ({
+        url: `/dsr/policy`,
+        params: params ?? { size: 100 },
+      }),
       providesTags: () => ["Policies"],
     }),
 
