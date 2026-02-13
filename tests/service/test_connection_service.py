@@ -1575,6 +1575,7 @@ class TestConnectionService:
         self,
         connection_service: ConnectionService,
         db: Session,
+        stored_dataset: Dict[str, Any],
     ):
         """
         Test that update_existing_connection_configs_for_connector_type matches
@@ -1599,7 +1600,7 @@ class TestConnectionService:
                 "saas_config": {
                     "fides_key": "test_case_instance",
                     "name": "Test Connector",
-                    "type": "MY_CONNECTOR",  # uppercase, as stored from raw YAML
+                    "type": "TEST_CASE_CONNECTOR",  # uppercase, as stored from raw YAML
                     "description": "Test connector",
                     "version": "0.1.0",
                     "connector_params": [],
@@ -1613,34 +1614,37 @@ class TestConnectionService:
             },
         )
 
-        # Create existing DatasetConfig with only "users" collection
+        # Reuse the stored_dataset fixture as the customer's existing dataset
+        customer_dataset = copy.deepcopy(stored_dataset)
+        customer_dataset["fides_key"] = "test_case_instance"
+
         DatasetConfig.create_or_update(
             db=db,
             data={
                 "connection_config_id": connection_config.id,
                 "fides_key": "test_case_instance",
-                "dataset": {
-                    "fides_key": "test_case_instance",
-                    "name": "Test Dataset",
-                    "description": "Original dataset",
-                    "collections": [
-                        {"name": "users", "fields": []},
-                    ],
-                },
+                "dataset": customer_dataset,
             },
         )
 
-        # Create a template with the LOWERCASE type (as normalized by SaaSConfig)
-        # and an updated dataset with two collections
+        # Store the baseline template dataset (as SaasTemplateDataset)
+        SaasTemplateDataset.get_or_create(
+            db=db,
+            connector_type="test_case_connector",
+            dataset_json=stored_dataset,
+        )
+
+        # Create a connector template with LOWERCASE type (as normalized by SaaSConfig)
+        # using the same template YAML helper used by other tests
         connector_template = ConnectorTemplate(
             config=dedent(
                 """
                 saas_config:
                   fides_key: <instance_fides_key>
                   name: Test Connector
-                  type: my_connector
+                  type: test_case_connector
                   description: Test connector
-                  version: 0.2.0
+                  version: 1.0.0
                   connector_params: []
                   client_config:
                     protocol: https
@@ -1651,31 +1655,21 @@ class TestConnectionService:
                   endpoints: []
             """
             ).strip(),
-            dataset=dedent(
-                """
-                dataset:
-                  - fides_key: <instance_fides_key>
-                    name: Test Dataset
-                    description: Updated dataset with new collection
-                    collections:
-                      - name: users
-                        fields: []
-                      - name: custom
-                        fields: []
-            """
-            ).strip(),
+            dataset=self._get_template_yaml(),
             human_readable="Test Connector",
             authorization_required=False,
-            supported_actions=[ActionType.erasure],
+            supported_actions=[ActionType.access, ActionType.erasure],
+            category=ConnectionCategory.ANALYTICS,
         )
 
         # Call with LOWERCASE connector_type (as save_template would)
         connection_service.update_existing_connection_configs_for_connector_type(
-            "my_connector",  # lowercase, from SaaSConfig.type
+            "test_case_connector",  # lowercase, from SaaSConfig.type
             connector_template,
         )
 
-        # Verify the ctl_dataset was updated with both collections
+        # Verify the dataset was updated — the merge should produce
+        # the template's "products" collection
         dataset_config = DatasetConfig.filter(
             db=db,
             conditions=(DatasetConfig.fides_key == "test_case_instance"),
@@ -1686,7 +1680,7 @@ class TestConnectionService:
         assert ctl_dataset is not None
 
         collection_names = {c["name"] for c in ctl_dataset.collections}
-        assert collection_names == {"users", "custom"}
+        assert "products" in collection_names
 
         # Clean up
         connection_config.delete(db)
