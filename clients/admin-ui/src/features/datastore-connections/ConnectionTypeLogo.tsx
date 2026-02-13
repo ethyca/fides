@@ -146,10 +146,14 @@ const getImageSrc = (
       if (!data.websiteUrl) {
         return undefined;
       }
-      const domain = getDomain(data.websiteUrl);
-      const retinaSize = (size ?? DEFAULT_LOGO_SIZE) * 2;
-      const brandIconUrl = getBrandIconUrl(domain, retinaSize);
-      return brandIconUrl;
+      try {
+        const domain = getDomain(data.websiteUrl);
+        const retinaSize = (size ?? DEFAULT_LOGO_SIZE) * 2;
+        const brandIconUrl = getBrandIconUrl(domain, retinaSize);
+        return brandIconUrl;
+      } catch {
+        return undefined;
+      }
     }
 
     if (data.connectionType === ConnectionTypeModel.SAAS) {
