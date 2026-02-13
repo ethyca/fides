@@ -698,6 +698,11 @@ class StagedResource(Base):
             "user_assigned_data_categories",
             postgresql_using="gin",
         ),
+        # Two separate indices for different query patterns:
+        # 1. IS NOT NULL: optimizes queries filtering for containers (~is_leaf_filter)
+        # 2. IS TRUE: optimizes queries filtering for leaf fields (is_leaf = True)
+        # Both are needed because PostgreSQL won't use a partial index if the
+        # WHERE clause doesn't match the index condition exactly.
         Index(
             "ix_stagedresource_monitor_leaf_status_urn",
             "monitor_config_id",
@@ -705,6 +710,14 @@ class StagedResource(Base):
             "diff_status",
             "urn",
             postgresql_where=text("is_leaf IS NOT NULL"),
+        ),
+        Index(
+            "ix_stagedresource_monitor_leaf_true_status_urn",
+            "monitor_config_id",
+            "is_leaf",
+            "diff_status",
+            "urn",
+            postgresql_where=text("is_leaf IS TRUE"),
         ),
     )
 
