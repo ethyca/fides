@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Added a nox script to compile changelog fragments into CHANGELOG.md
-pr: 7177 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

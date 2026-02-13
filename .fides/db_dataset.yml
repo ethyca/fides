@@ -91,6 +91,156 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+  - name: answer_version
+    description: 'Immutable history of assessment answer versions'
+    fields:
+    - name: answer_id
+      data_categories:
+      - system.operations
+    - name: answer_source
+      data_categories:
+      - system.operations
+    - name: answer_status
+      data_categories:
+      - system.operations
+    - name: answer_text
+      data_categories:
+      - system.operations
+    - name: change_type
+      data_categories:
+      - system.operations
+    - name: confidence
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: created_by
+      data_categories:
+      - system.operations
+    - name: diff_from_previous
+      data_categories:
+      - system.operations
+    - name: evidence
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: source_references
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: version_number
+      data_categories:
+      - system.operations
+  - name: assessment_answer
+    description: 'Current answer for each question in an assessment'
+    fields:
+    - name: assessment_id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: current_version_id
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: question_id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+  - name: assessment_question
+    description: 'Questions belonging to an assessment template'
+    fields:
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: expected_coverage
+      data_categories:
+      - system.operations
+    - name: fides_sources
+      data_categories:
+      - system.operations
+    - name: group_order
+      data_categories:
+      - system.operations
+    - name: guidance
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: question_key
+      data_categories:
+      - system.operations
+    - name: question_order
+      data_categories:
+      - system.operations
+    - name: question_text
+      data_categories:
+      - system.operations
+    - name: required
+      data_categories:
+      - system.operations
+    - name: requirement_key
+      data_categories:
+      - system.operations
+    - name: requirement_title
+      data_categories:
+      - system.operations
+    - name: template_id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+  - name: assessment_template
+    description: 'Versioned assessment template definitions'
+    fields:
+    - name: assessment_type
+      data_categories:
+      - system.operations
+    - name: authority
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: description
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: is_active
+      data_categories:
+      - system.operations
+    - name: key
+      data_categories:
+      - system.operations
+    - name: legal_reference
+      data_categories:
+      - system.operations
+    - name: name
+      data_categories:
+      - system.operations
+    - name: region
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: version
+      data_categories:
+      - system.operations
   - name: auditlog
     fields:
     - name: created_at
@@ -143,6 +293,68 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+  - name: backfill_history
+    description: 'Table used to track completed database backfill operations'
+    data_categories: [system.operations]
+    fields:
+    - name: backfill_name
+      description: 'Unique name of the backfill operation'
+      data_categories: [system.operations]
+    - name: completed_at
+      description: 'Timestamp when the backfill completed successfully'
+      data_categories: [system.operations]
+  - name: chat_config
+    description: 'Configuration for chat providers (Slack, Microsoft Teams, etc.)'
+    data_categories: []
+    fields:
+    - name: access_token
+      description: 'Encrypted OAuth access token for the chat provider'
+      data_categories:
+      - system.operations
+    - name: client_id
+      description: 'OAuth client ID for the chat provider'
+      data_categories:
+      - system.operations
+    - name: client_secret
+      description: 'Encrypted OAuth client secret for the chat provider'
+      data_categories:
+      - system.operations
+    - name: connected_by_email
+      description: 'Email address of the user who connected the chat provider'
+      data_categories:
+      - user.contact.email
+    - name: created_at
+      description: 'Timestamp when the configuration was created'
+      data_categories:
+      - system.operations
+    - name: enabled
+      description: 'Whether the chat configuration is enabled'
+      data_categories:
+      - system.operations
+    - name: id
+      description: 'Unique identifier for the chat configuration'
+      data_categories:
+      - system.operations
+    - name: provider_type
+      description: 'Type of chat provider (slack, teams, etc.)'
+      data_categories:
+      - system.operations
+    - name: signing_secret
+      description: 'Encrypted signing secret for verifying chat provider requests'
+      data_categories:
+      - system.operations
+    - name: updated_at
+      description: 'Timestamp when the configuration was last updated'
+      data_categories:
+      - system.operations
+    - name: workspace_name
+      description: 'Name of the chat workspace'
+      data_categories:
+      - system.operations
+    - name: workspace_url
+      description: 'URL of the chat workspace'
+      data_categories:
+      - system.operations
   - name: comment
     fields:
     - name: comment_text
@@ -218,6 +430,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: monitors
+      data_categories:
+        - system.operations
   - name: systemmanager
     fields:
       - name: id
@@ -1298,6 +1513,57 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: privacy_assessment
+    description: 'A privacy assessment instance linked to a system/declaration'
+    fields:
+    - name: completeness
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: created_by
+      data_categories:
+      - system.operations
+    - name: data_categories
+      data_categories:
+      - system.operations
+    - name: data_use
+      data_categories:
+      - system.operations
+    - name: data_use_name
+      data_categories:
+      - system.operations
+    - name: declaration_id
+      data_categories:
+      - system.operations
+    - name: declaration_name
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: name
+      data_categories:
+      - system.operations
+    - name: risk_level
+      data_categories:
+      - system.operations
+    - name: status
+      data_categories:
+      - system.operations
+    - name: system_fides_key
+      data_categories:
+      - system.operations
+    - name: system_name
+      data_categories:
+      - system.operations
+    - name: template_id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: policy
     data_categories: []
     fields:
@@ -2699,6 +2965,8 @@ dataset:
       data_categories: [system]
     - name: id
       data_categories: [system]
+    - name: is_leaf
+      data_categories: [system]
     - name: meta
       data_categories: [system]
     - name: monitor_config_id
@@ -2809,6 +3077,18 @@ dataset:
       data_categories: [system.operations]
     - name: user_info_url
       description: 'Fides Generated Description for Column: user_info_url'
+      data_categories: [system.operations]
+    - name: scopes
+      description: 'Scopes with which to request the authorization token.'
+      data_categories: [system.operations]
+    - name: email_field
+      description: 'Field to pull the email from the userinfo object.'
+      data_categories: [system.operations]
+    - name: verify_email_field
+      description: 'Field to pull the verify email flag from the userinfo object.'
+      data_categories: [system.operations]
+    - name: verify_email
+      description: 'Enable or disable whether email address must be verified'
       data_categories: [system.operations]
   - name: identity_salt
     fields:
@@ -2931,6 +3211,8 @@ dataset:
       - name: created_at
         data_categories: [system.operations]
       - name: updated_at
+        data_categories: [system.operations]
+      - name: distance
         data_categories: [system.operations]
   - name: monitortask
     fields:

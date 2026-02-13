@@ -32,8 +32,8 @@ def _s3_authenticator(
     try:
         get_aws_session(
             config.details["auth_method"] or AWSAuthMethod.SECRET_KEYS.value,
-            secrets.model_dump(mode="json"),
-        )  # type: ignore
+            secrets.model_dump(mode="json"),  # type: ignore
+        )
         return True
     except ClientError:
         return False

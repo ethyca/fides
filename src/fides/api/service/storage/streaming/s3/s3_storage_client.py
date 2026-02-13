@@ -81,7 +81,7 @@ class S3StorageClient(BaseStorageClient):
             try:
                 s3_client = get_s3_client(
                     self.auth_method,
-                    self.storage_secrets,
+                    self.storage_secrets,  # type: ignore[arg-type]
                     assume_role_arn,  # type: ignore
                 )
                 logger.debug("Successfully created S3 client")
@@ -145,7 +145,7 @@ class S3StorageClient(BaseStorageClient):
             # get_s3_client returns a boto3 S3 client, not a Session
             s3_client: Any = get_s3_client(
                 self.auth_method,
-                self.storage_secrets,
+                self.storage_secrets,  # type: ignore[arg-type]
                 assume_role_arn,  # type: ignore
             )
             return create_presigned_url_for_s3(s3_client, bucket, key, ttl_seconds)

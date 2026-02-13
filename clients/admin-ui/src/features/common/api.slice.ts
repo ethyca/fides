@@ -18,6 +18,7 @@ export const baseApi = createApi({
   }),
   tagTypes: [
     "Allow List",
+    "Asset Reporting",
     "Auth",
     "Catalog Systems",
     "Catalog Projects",
@@ -81,6 +82,7 @@ export const baseApi = createApi({
     "Configuration Settings",
     "TCF Purpose Override",
     "OpenID Provider",
+    "Chat Provider Config",
     "Taxonomy",
     "Taxonomy History",
     "Digest Configs",
@@ -90,6 +92,11 @@ export const baseApi = createApi({
     "Allowed Monitor Field Actions",
     "Allowed Conditions Fields",
     "Identity Provider Monitor Results",
+    "Identity Provider Monitor Filters",
+    "Privacy Assessment",
+    "Privacy Assessment Questionnaire",
+    "Privacy Assessment Evidence",
+    "User Monitors",
   ],
   endpoints: () => ({}),
 });

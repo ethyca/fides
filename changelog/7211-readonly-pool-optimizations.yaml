@@ -1,3 +1,0 @@
-type:  Changed
-description: Add configuration knobs for readonly async pool along with pre-warming logic
-pr: 7211

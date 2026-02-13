@@ -312,7 +312,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             ROOT_COLLECTION_ADDRESS
         ]:
             dependent_values = consolidate_query_matches(
-                row=seed_data,
+                row=seed_data,  # type: ignore[arg-type]
                 target_path=foreign_field_path,  # type: ignore
             )
             grouped_data[local_field_path.string_path] = dependent_values

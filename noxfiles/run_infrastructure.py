@@ -241,10 +241,23 @@ def _open_shell(
     service_name: str,
 ) -> None:
     """
-    Opens a bash shell on the container at `service_name`
+    Opens a bash shell on the container at `service_name` with venv activated.
+
+    Runs uv sync first to ensure dependencies are up-to-date.
     """
-    _run_cmd_or_err(f'echo "Opening bash shell on {service_name}"')
-    _run_cmd_or_err(f"docker compose {path} run {service_name} /bin/bash")
+    _run_cmd_or_err(f'echo "Running uv sync on {service_name}"')
+    _run_cmd_or_err(f"docker compose {path} exec {service_name} uv sync || true")
+
+    _run_cmd_or_err(f'echo "Opening bash shell on {service_name} with venv activated"')
+
+    # Try to open shell with venv activated using source and exec to avoid nested shells
+    # Try multiple venv paths in order of preference
+    activate_cmd = (
+        f"docker compose {path} exec {service_name} bash -c 'source /opt/fides/bin/activate && exec bash' || "
+        f"docker compose {path} exec {service_name} bash -c 'source /fides/.venv/bin/activate && exec bash' || "
+        f"docker compose {path} run {service_name} /bin/bash"
+    )
+    _run_cmd_or_err(activate_cmd)
 
 
 def _run_application(docker_compose_path: str, service_name: str) -> None:
@@ -298,7 +311,7 @@ def _run_tests(
     )
     coverage_arg = "--cov-report=xml"
     _run_cmd_or_err(
-        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} pytest {coverage_arg} {pytest_path}"
+        f"docker compose {docker_compose_path} run {environment_variables} {COMPOSE_SERVICE_NAME} uv run --python /opt/fides/bin/python pytest {coverage_arg} {pytest_path}"
     )
 
     # Now tear down the infrastructure

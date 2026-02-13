@@ -23,7 +23,7 @@ The primary requirements for contributing to Fides are `Docker` and `Python`. Th
  _NOTE: Installing these requirements via Brew or other package managers is highly discouraged. Please use the provided links for a more stable experience._
 
 * __Docker Desktop (version 20.10.11 or later)__ - [Docker Desktop Download Page](https://www.docker.com/products/docker-desktop/)
-* __Python (version 3.9 through 3.10)__ - To simplify the installation experience and create a more stable Python installation that can be managed indepently, we recommend installing Python via Anaconda. The installer for Anaconda can be found [here](https://www.anaconda.com/download).
+* __Python (version 3.13)__ - To simplify the installation experience and create a more stable Python installation that can be managed indepently, we recommend installing Python via Anaconda. The installer for Anaconda can be found [here](https://www.anaconda.com/download).
 
 !!! warning
     _Mac Users_: Apple's ARM silicon (M-series chips, i.e. M1, M2, M2 Max, etc.) have a few extra requirements to get Fides running
@@ -51,10 +51,10 @@ Explicitly set resource allocations in Docker Desktop
 * Memory:8GB
 * Disk Limit: 200GB
 
-Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend doing this in a virtual environment.
+Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend using [uv](https://docs.astral.sh/uv/) and a virtual environment:
 
 ```bash
-pip install -r dev-requirements.txt
+uv sync
 ```
 
 ---

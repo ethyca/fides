@@ -109,7 +109,10 @@ class TestPolicyConditionCreate:
         assert condition.id is not None
         assert condition.policy_id == policy.id
         assert condition.condition_tree is not None
-        assert condition.condition_tree["field_address"] == "privacy_request.location_country"
+        assert (
+            condition.condition_tree["field_address"]
+            == "privacy_request.location_country"
+        )
         assert condition.condition_tree["operator"] == "list_contains"
         assert condition.condition_tree["value"] == ["FR", "DE", "PT"]
 

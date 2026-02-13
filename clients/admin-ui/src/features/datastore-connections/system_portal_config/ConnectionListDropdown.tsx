@@ -12,10 +12,11 @@ import {
   ChakraMenuItem as MenuItem,
   ChakraMenuList as MenuList,
   ChakraText as Text,
+  Icons,
   SearchLineIcon,
   Tooltip,
 } from "fidesui";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -137,6 +138,20 @@ export const useConnectionListDropDown = ({
     }
   }, [connectionConfig, connectionOptions]);
 
+  // Sync selectedValue with latest connectionOptions when data refreshes
+  // This ensures the selected value is updated after operations like deleting a custom template
+  useEffect(() => {
+    if (selectedValue && connectionOptions.length > 0) {
+      const updatedValue = connectionOptions.find(
+        (ct) => ct.identifier === selectedValue.identifier,
+      );
+      // Only update if we found a match and it's a different object reference
+      if (updatedValue && updatedValue !== selectedValue) {
+        setSelectedValue(updatedValue);
+      }
+    }
+  }, [connectionOptions, selectedValue]);
+
   return { dropDownOptions, selectedValue, setSelectedValue, systemType };
 };
 
@@ -213,9 +228,18 @@ const ConnectionListDropdown = ({
         data-testid="select-dropdown-btn"
         width="272px"
       >
-        <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
-          {selectedText ?? label}
-        </Text>
+        <Flex alignItems="center" gap={1}>
+          <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
+            {selectedText ?? label}
+          </Text>
+          {selectedValue?.custom && (
+            <Tooltip title="Custom integration" placement="top">
+              <Box as="span" display="inline-flex">
+                <Icons.SettingsCheck size={16} />
+              </Box>
+            </Tooltip>
+          )}
+        </Flex>
       </MenuButton>
       {isOpen ? (
         <MenuList
@@ -294,6 +318,18 @@ const ConnectionListDropdown = ({
                   >
                     {key}
                   </Text>
+                  {option.value.custom && (
+                    <Tooltip title="Custom integration" placement="top">
+                      <Box
+                        as="span"
+                        ml={2}
+                        display="inline-flex"
+                        cursor="pointer"
+                      >
+                        <Icons.SettingsCheck size={16} />
+                      </Box>
+                    </Tooltip>
+                  )}
                 </MenuItem>
               </Tooltip>
             ))}

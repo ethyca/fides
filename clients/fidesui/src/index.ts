@@ -114,7 +114,6 @@ export {
   VStack as ChakraVStack,
   Wrap as ChakraWrap,
   createStandaloneToast as createChakraStandaloneToast,
-  extendTheme as extendChakraTheme,
   getCSSVar as getChakraCSSVar,
 } from "@chakra-ui/react";
 
@@ -216,6 +215,7 @@ export type {
   FlexProps,
   FormInstance,
   FormItemProps,
+  FormProps,
   GetProps,
   InputProps as InputPropsOriginal,
   InputRef,

@@ -1,16 +1,31 @@
+from unittest import mock
+from unittest.mock import MagicMock
+
 import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.saas_template_dataset import SaasTemplateDataset
+from fides.api.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+    CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
+)
 from fides.common.api.scope_registry import (
     CLIENT_READ,
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
+    SAAS_CONNECTION_INSTANTIATE,
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTOR_TEMPLATES_CONFIG,
     CONNECTOR_TEMPLATES_DATASET,
     CONNECTOR_TEMPLATES_REGISTER,
+    DELETE_CUSTOM_TEMPLATE,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
@@ -542,3 +557,281 @@ class TestGetConnectorTemplateDataset:
         assert "dataset:" in yaml_content
         assert "fides_key: <instance_fides_key>" in yaml_content
         assert "name: Planet Express Dataset" in yaml_content
+
+
+@pytest.mark.unit_saas
+class TestDeleteCustomConnectorTemplate:
+    @pytest.fixture(scope="function", autouse=True)
+    def reset_connector_template_loaders(self):
+        """
+        Resets the loader singleton instances and the db_timestamp_cached
+        decorator cache before each test so tests don't bleed into each other.
+        """
+        FileConnectorTemplateLoader._instance = None
+        CustomConnectorTemplateLoader._instance = None
+        CustomConnectorTemplateLoader.get_connector_templates.cache_clear()  # type: ignore[attr-defined]
+
+    @pytest.fixture
+    def complete_connector_template(
+        self,
+        hubspot_yaml_config,
+        hubspot_yaml_dataset,
+        hubspot_yaml_icon,
+    ):
+        return create_zip_file(
+            {
+                "config.yml": hubspot_yaml_config,
+                "dataset.yml": hubspot_yaml_dataset,
+                "icon.svg": hubspot_yaml_icon,
+            }
+        )
+
+    @pytest.fixture
+    def delete_custom_connector_url(self) -> str:
+        return V1_URL_PREFIX + DELETE_CUSTOM_TEMPLATE
+
+    @pytest.fixture
+    def register_connector_template_url(self) -> str:
+        return V1_URL_PREFIX + CONNECTOR_TEMPLATES_REGISTER
+
+    def test_delete_custom_connector_not_authenticated(
+        self, api_client: TestClient, delete_custom_connector_url
+    ) -> None:
+        """Test that unauthenticated requests are rejected."""
+        response = api_client.delete(
+            delete_custom_connector_url.format(connector_template_type="test_connector")
+        )
+        assert response.status_code == 401
+
+    def test_delete_custom_connector_wrong_scope(
+        self,
+        api_client: TestClient,
+        delete_custom_connector_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that requests with wrong scope are rejected."""
+        auth_header = generate_auth_header(scopes=[CLIENT_READ])
+        response = api_client.delete(
+            delete_custom_connector_url.format(
+                connector_template_type="test_connector"
+            ),
+            headers=auth_header,
+        )
+        assert response.status_code == 403
+
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_delete_custom_connector_not_found(
+        self,
+        mock_all: MagicMock,
+        api_client: TestClient,
+        delete_custom_connector_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that non-existent connector types return 404."""
+        # Mock no custom templates exist
+        mock_all.return_value = []
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.delete(
+            delete_custom_connector_url.format(
+                connector_template_type="nonexistent_connector"
+            ),
+            headers=auth_header,
+        )
+        assert response.status_code == 404
+        assert "not yet available in Fides" in response.json()["detail"]
+
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_delete_custom_connector_not_custom_template(
+        self,
+        mock_all: MagicMock,
+        api_client: TestClient,
+        delete_custom_connector_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that non-custom templates return 400."""
+        # Mock no custom templates exist (so it will use file template)
+        mock_all.return_value = []
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.delete(
+            delete_custom_connector_url.format(connector_template_type="hubspot"),
+            headers=auth_header,
+        )
+        assert response.status_code == 400
+        assert "is not a custom template" in response.json()["detail"]
+
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_delete_custom_connector_no_default_connector_available(
+        self,
+        mock_all: MagicMock,
+        api_client: TestClient,
+        delete_custom_connector_url,
+        generate_auth_header,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+    ) -> None:
+        """Test that custom templates without file connector fallback return 400."""
+        # Mock a custom template that doesn't have a file connector fallback
+
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="custom_only_connector",
+                name="Custom Only Connector",
+                config=planet_express_config,
+                dataset=planet_express_dataset,
+                icon=planet_express_icon,
+            )
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.delete(
+            delete_custom_connector_url.format(
+                connector_template_type="custom_only_connector"
+            ),
+            headers=auth_header,
+        )
+        assert response.status_code == 400
+        assert (
+            "does not have a Fides-provided template to fall back to"
+            in response.json()["detail"]
+        )
+
+    @pytest.mark.integration
+    def test_delete_custom_connector_to_file_template_integration(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        register_connector_template_url,
+        delete_custom_connector_url,
+        complete_connector_template,
+        db,
+    ):
+        """
+        Integration test:
+        1. Register a custom connector template.
+        2. Verify the custom template is active.
+        3. Instantiate a connection using the custom template.
+        4. Call the delete endpoint.
+        5. Verify the file template is now active.
+        6. Verify the connection was updated to use the file template.
+        """
+        connector_type = "hubspot"
+
+        # 1. Register the custom template
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.post(
+            register_connector_template_url,
+            headers=auth_header,
+            files={
+                "file": (
+                    "template.zip",
+                    complete_connector_template.read(),
+                    "application/zip",
+                )
+            },
+        )
+        assert response.status_code == 200
+        assert (
+            response.json()["message"] == "Connector template successfully registered."
+        )
+
+        # 2. Verify the custom template is active
+        template = ConnectorRegistry.get_connector_template(connector_type)
+        assert template is not None
+        assert template.custom is True
+        assert template.default_connector_available is True
+
+        # 3. Instantiate a connection using the custom template
+        instance_key = "test_hubspot_instance"
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": instance_key,
+            "secrets": {
+                "domain": "test_hubspot_domain",
+                "private_app_token": "test_hubspot_token",
+            },
+            "name": "Test HubSpot Connector",
+            "description": "Test HubSpot ConnectionConfig description",
+            "key": "test_hubspot_connection_config",
+        }
+
+        # Get the base URL for instantiation
+        base_url = V1_URL_PREFIX + SAAS_CONNECTOR_FROM_TEMPLATE
+        resp = api_client.post(
+            base_url.format(connector_template_type=connector_type),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.status_code == 200
+
+        # Verify the connection was created with the custom template
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "test_hubspot_connection_config")
+        ).first()
+        assert connection_config is not None
+
+        # Store the original SaaS config to compare later
+        original_saas_config = connection_config.saas_config.copy()
+
+        # 4. Call the delete endpoint
+        delete_url = delete_custom_connector_url.format(
+            connector_template_type=connector_type
+        )
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.delete(delete_url, headers=auth_header)
+        assert response.status_code == 200
+        assert (
+            response.json()["message"]
+            == "Custom connector template successfully deleted."
+        )
+
+        # 5. Verify the file template is now active
+        template = ConnectorRegistry.get_connector_template(connector_type)
+        assert template is not None
+        assert template.custom is False
+        assert template.default_connector_available is False
+
+        # 5b. Verify the SaasTemplateDataset exists and has the file template's dataset
+        stored_template_dataset = SaasTemplateDataset.get_by(
+            db=db, field="connection_type", value=connector_type
+        )
+        assert stored_template_dataset is not None
+        assert stored_template_dataset.dataset_json is not None
+        # The stored dataset should have the template placeholder fides_key
+        # (SaasTemplateDataset stores the raw template with placeholders for merging/comparison)
+        assert (
+            stored_template_dataset.dataset_json["fides_key"] == "<instance_fides_key>"
+        )
+
+        # 5c. Verify the DatasetConfig was recreated with the file template's dataset
+        new_dataset_config = DatasetConfig.filter(
+            db=db, conditions=(DatasetConfig.fides_key == instance_key)
+        ).first()
+        assert new_dataset_config is not None
+        assert new_dataset_config.ctl_dataset is not None
+        # The dataset should have been recreated with the instance key as fides_key
+        assert new_dataset_config.ctl_dataset.fides_key == instance_key
+
+        # 6. Verify the connection was updated to use the file template
+        # Refresh the connection config from the database
+        db.refresh(connection_config)
+
+        # The SaaS config should have been updated to use the file template
+        # We can verify this by checking that the SaaS config has changed
+        assert connection_config.saas_config != original_saas_config
+
+        # Verify the connection still has the same basic properties
+        assert connection_config.key == "test_hubspot_connection_config"
+        assert connection_config.name == "Test HubSpot Connector"
+        assert (
+            connection_config.description == "Test HubSpot ConnectionConfig description"
+        )
+        assert connection_config.secrets["private_app_token"] == "test_hubspot_token"

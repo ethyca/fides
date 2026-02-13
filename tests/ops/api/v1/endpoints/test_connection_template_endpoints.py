@@ -60,8 +60,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
+        )  # there are 6 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -74,6 +74,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
         first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -101,6 +103,7 @@ class TestGetConnections:
         assert "https" not in [item["identifier"] for item in data]
         assert "custom" not in [item["identifier"] for item in data]
         assert "manual" not in [item["identifier"] for item in data]
+        assert "manual_webhook" not in [item["identifier"] for item in data]
 
     def test_get_connection_types_size_param(
         self,
@@ -117,8 +120,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
+        )  # there are 6 connection types that are not returned by the endpoint
         # this value is > 20, so we've effectively tested our "default" size is
         # > than the default of 20 (it's 100!)
 
@@ -221,6 +224,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -233,6 +238,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -245,6 +252,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
@@ -289,6 +298,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
@@ -325,6 +336,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -337,6 +350,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -349,6 +364,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
@@ -411,24 +428,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=manual", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 1
-        assert data == [
-            {
-                "identifier": "manual_webhook",
-                "type": "manual",
-                "human_readable": "Manual Process",
-                "encoded_icon": None,
-                "authorization_required": False,
-                "user_guide": None,
-                "supported_actions": [
-                    ActionType.access.value,
-                    ActionType.erasure.value,
-                ],
-                "category": None,
-                "tags": None,
-                "enabled_features": None,
-            }
-        ]
+        assert len(data) == 0
 
     def test_search_email_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -449,6 +449,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -461,6 +463,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -473,6 +477,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -485,6 +491,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -497,6 +505,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
         ]
 
@@ -559,6 +569,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             ConnectionType.manual_webhook.value: {
                 "identifier": ConnectionType.manual_webhook.value,
@@ -574,6 +586,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             HUBSPOT: actual_connection_types[HUBSPOT],
             MAILCHIMP: actual_connection_types[MAILCHIMP],
@@ -589,6 +603,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             ConnectionType.attentive_email.value: {
                 "identifier": ConnectionType.attentive_email.value,
@@ -601,6 +617,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
         }
 
@@ -611,14 +629,15 @@ class TestGetConnectionsActionTypeParams:
                 [],  # no filters should give us all connectors
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
                     ConnectionType.attentive_email.value,
                     ConnectionType.sovrn.value,
                 ],
-                [],
+                [
+                    ConnectionType.manual_webhook.value,
+                ],
             ),
             (
                 [ActionType.consent],
@@ -636,7 +655,6 @@ class TestGetConnectionsActionTypeParams:
                 [ActionType.access],
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     MAILCHIMP,
                     STRIPE,
@@ -644,6 +662,7 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.sovrn.value,
                     ConnectionType.attentive_email.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -654,10 +673,10 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     MAILCHIMP,
                     ConnectionType.attentive_email.value,
-                    ConnectionType.manual_webhook.value,
                 ],
                 [
                     ConnectionType.sovrn.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -665,13 +684,13 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
                 ],
                 [
                     ConnectionType.attentive_email.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -683,15 +702,15 @@ class TestGetConnectionsActionTypeParams:
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
                     ConnectionType.attentive_email.value,
+                ],
+                [
                     ConnectionType.manual_webhook.value,
                 ],
-                [],
             ),
             (
                 [ActionType.access, ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
@@ -699,6 +718,7 @@ class TestGetConnectionsActionTypeParams:
                 ],
                 [
                     ConnectionType.sovrn.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
         ],
@@ -1641,13 +1661,11 @@ class TestGetConnectionSecretSchema:
         resp = api_client.get(
             base_url.format(connection_type="manual_webhook"), headers=auth_header
         )
-        assert resp.status_code == 200
-        assert resp.json() == {
-            "title": "ManualWebhookSchema",
-            "description": "Secrets for manual webhooks. No secrets needed at this time.",
-            "type": "object",
-            "properties": {},
-        }
+        assert resp.status_code == 404
+        assert (
+            resp.json()["detail"]
+            == "No connection type found with name 'manual_webhook'."
+        )
 
     def test_get_connection_secrets_attentive(
         self, api_client: TestClient, generate_auth_header, base_url
@@ -2069,7 +2087,9 @@ class TestConnectorTemplateEndpoints:
             assert "supported_actions" in item
             assert "category" in item
             assert "custom" in item
+            assert "default_connector_available" in item
             assert isinstance(item["custom"], bool)
+            assert isinstance(item["default_connector_available"], bool)
             assert isinstance(item["supported_actions"], list)
 
         # Find a specific connector template to verify data
@@ -2078,6 +2098,9 @@ class TestConnectorTemplateEndpoints:
         )
         assert mailchimp_template is not None
         assert mailchimp_template["custom"] is False  # Built-in connector
+        assert (
+            mailchimp_template["default_connector_available"] is False
+        )  # No custom override
         assert len(mailchimp_template["supported_actions"]) > 0
 
     def test_config_endpoint(self, api_client, generate_auth_header):

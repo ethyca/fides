@@ -25,8 +25,10 @@ from fides.api.task.conditional_dependencies.schemas import (
     ConditionLeaf,
     EvaluationResult,
 )
-from fides.api.task.conditional_dependencies.util import extract_nested_field_value
-from fides.api.task.manual.manual_task_utils import extract_field_addresses
+from fides.api.task.conditional_dependencies.util import (
+    extract_field_addresses,
+    extract_nested_field_value,
+)
 from fides.api.util.collection_util import Row
 
 
@@ -132,7 +134,7 @@ def extract_privacy_request_only_conditional_data(
     conditional_privacy_request_data: dict[str, Any] = {}
     if privacy_request_field_addresses:
         conditional_privacy_request_data = PrivacyRequestDataTransformer(
-            privacy_request
+            privacy_request  # type: ignore[arg-type] # sqlmypy types Column as Column[T] not T
         ).to_evaluation_data(privacy_request_field_addresses)
 
     return {**conditional_privacy_request_data}
@@ -277,9 +279,9 @@ class ConsentConditionFilterResult:
     def __init__(self) -> None:
         self.filtered_condition: Optional[Condition] = None
         self.skipped_dataset_fields: list[str] = []
-        self.unavailable_privacy_request_fields: list[tuple[str, str]] = (
-            []
-        )  # (field, message) pairs
+        self.unavailable_privacy_request_fields: list[
+            tuple[str, str]
+        ] = []  # (field, message) pairs
 
     @property
     def has_skipped_conditions(self) -> bool:

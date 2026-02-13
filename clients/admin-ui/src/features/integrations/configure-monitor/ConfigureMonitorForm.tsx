@@ -6,9 +6,13 @@ import { Button, DatePicker, Form, Input, Select, Switch } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import { useFeatures } from "~/features/common/features/features.slice";
 import { enumToOptions } from "~/features/common/helpers";
+import { formatUser } from "~/features/common/utils";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
+import {
+  getMonitorType,
+  MONITOR_TYPES,
+} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
@@ -95,21 +99,20 @@ const ConfigureMonitorForm = ({
   onSubmit: (monitor: EditableMonitorConfig) => void;
 }) => {
   const isEditing = !!monitor;
-  const { flags } = useFeatures();
+
+  const isInfrastructureMonitor =
+    getMonitorType(integrationOption.identifier as ConnectionType) ===
+    MONITOR_TYPES.INFRASTRUCTURE;
 
   /**
-   * Feature flag for LLM classifier functionality within action center.
-   * Note: Action center can exist for web monitoring without this feature.
-   * This flag specifically gates the LLM-based classification capabilities.
+   * Show the LLM classifier option if the monitor is not an infrastructure monitor.
+   * Infrastructure monitors (e.g., Okta) don't use classification.
    */
-  const llmClassifierFeatureEnabled = !!flags.heliosV2;
+  const showLLMOption = !isInfrastructureMonitor;
 
-  const { data: appConfig } = useGetConfigurationSettingsQuery(
-    {
-      api_set: false,
-    },
-    { skip: !llmClassifierFeatureEnabled },
-  );
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
 
   const [form] = Form.useForm<MonitorConfigFormValues>();
   const { data: systemData, isLoading: isLoadingSystem } =
@@ -190,7 +193,7 @@ const ConfigureMonitorForm = ({
   });
 
   const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
-    label: user.username,
+    label: formatUser(user),
     value: user.id,
   }));
 
@@ -224,7 +227,7 @@ const ConfigureMonitorForm = ({
       ? monitor?.classify_params?.content_classification_enabled
       : undefined, // for now, content classification is always disabled for LLM classification
     stewards:
-      monitor?.stewards || systemData?.data_stewards?.map(({ id }) => id),
+      monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
   } as const;
 
   return (
@@ -248,8 +251,9 @@ const ConfigureMonitorForm = ({
         <Select
           mode="multiple"
           aria-label="Select stewards"
-          data-testid="controlled-select"
+          data-testid="controlled-select-stewards"
           options={dataStewardOptions}
+          optionFilterProp="label"
         />
       </Form.Item>
       <Form.Item
@@ -280,9 +284,10 @@ const ConfigureMonitorForm = ({
             MonitorFrequency.NOT_SCHEDULED
           }
           showTime
+          className="w-full"
         />
       </Form.Item>
-      {llmClassifierFeatureEnabled && (
+      {showLLMOption && (
         <>
           <Form.Item
             name="use_llm_classifier"

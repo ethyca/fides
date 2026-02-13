@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.manual_task import (
     ManualTask,
-    ManualTaskConfigField,
     ManualTaskConditionalDependency,
+    ManualTaskConfigField,
 )
 from fides.api.task.conditional_dependencies.schemas import (
     ConditionGroup,
@@ -246,7 +246,9 @@ class TestGetConditionTreeWithConfigFieldKey:
 
         # Get field-level condition by specifying config_field_key
         result = ManualTaskConditionalDependency.get_condition_tree(
-            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
+            db,
+            manual_task_id=manual_task.id,
+            config_field_key=manual_task_config_field.field_key,
         )
 
         assert isinstance(result, ConditionLeaf)
@@ -261,7 +263,11 @@ class TestGetConditionTreeWithConfigFieldKey:
     ):
         """Test that get_condition_tree correctly distinguishes between task-level and field-level conditions"""
         task_condition = {"field_address": "user.age", "operator": "gte", "value": 18}
-        field_condition = {"field_address": "privacy_request.status", "operator": "eq", "value": "approved"}
+        field_condition = {
+            "field_address": "privacy_request.status",
+            "operator": "eq",
+            "value": "approved",
+        }
 
         # Create task-level dependency
         ManualTaskConditionalDependency.create(
@@ -291,7 +297,9 @@ class TestGetConditionTreeWithConfigFieldKey:
 
         # Get field-level condition
         field_result = ManualTaskConditionalDependency.get_condition_tree(
-            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
+            db,
+            manual_task_id=manual_task.id,
+            config_field_key=manual_task_config_field.field_key,
         )
         assert field_result.field_address == "privacy_request.status"
         assert field_result.value == "approved"
@@ -315,7 +323,9 @@ class TestGetConditionTreeWithConfigFieldKey:
 
         # Try to get field-level condition that doesn't exist
         result = ManualTaskConditionalDependency.get_condition_tree(
-            db, manual_task_id=manual_task.id, config_field_key=manual_task_config_field.field_key
+            db,
+            manual_task_id=manual_task.id,
+            config_field_key=manual_task_config_field.field_key,
         )
 
         assert result is None

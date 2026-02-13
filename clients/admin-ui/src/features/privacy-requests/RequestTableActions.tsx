@@ -13,13 +13,10 @@ import Restrict from "~/features/common/Restrict";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetActiveMessagingProviderQuery } from "~/features/messaging/messaging.slice";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
-import {
-  PrivacyRequestResponse,
-  PrivacyRequestStatus,
-  ScopeRegistryEnum,
-} from "~/types/api";
+import { PrivacyRequestResponse, ScopeRegistryEnum } from "~/types/api";
 
 import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
+import { getButtonVisibility } from "./helpers";
 import { useMutations } from "./hooks/useMutations";
 import { PrivacyRequestEntity } from "./types";
 
@@ -53,11 +50,10 @@ export const RequestTableActions = ({
   const sendRequestCompletionNotification =
     config?.notifications?.send_request_completion_notification;
 
+  const buttonVisibility = getButtonVisibility(subjectRequest.status);
+
   const renderApproveButton = () => {
-    if (
-      subjectRequest.status !== "pending" &&
-      subjectRequest.status !== "duplicate"
-    ) {
+    if (!buttonVisibility.approve) {
       return null;
     }
 
@@ -76,10 +72,7 @@ export const RequestTableActions = ({
   };
 
   const renderDenyButton = () => {
-    if (
-      subjectRequest.status !== "pending" &&
-      subjectRequest.status !== "duplicate"
-    ) {
+    if (!buttonVisibility.deny) {
       return null;
     }
 
@@ -98,10 +91,7 @@ export const RequestTableActions = ({
   };
 
   const renderFinalizeButton = () => {
-    if (
-      subjectRequest.status !==
-      PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION
-    ) {
+    if (!buttonVisibility.finalize) {
       return null;
     }
     return (
@@ -121,6 +111,9 @@ export const RequestTableActions = ({
   };
 
   const renderDeleteButton = () => {
+    if (!buttonVisibility.delete) {
+      return null;
+    }
     return (
       <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_DELETE]}>
         <Button

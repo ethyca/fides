@@ -7,6 +7,7 @@ import type { DataResponsibilityTitle } from "./DataResponsibilityTitle";
 import type { LegalBasisForProfilingEnum } from "./LegalBasisForProfilingEnum";
 import type { PrivacyDeclaration } from "./PrivacyDeclaration";
 import type { SystemMetadata } from "./SystemMetadata";
+import type { UserResponse } from "./UserResponse";
 
 /**
  * Extended version of BasicSystemResponse that includes system group information.
@@ -185,7 +186,7 @@ export type BasicSystemResponseExtended = {
    */
   system_groups?: Array<string>;
   /**
-   * List of data stewards from all system groups
+   * List of data stewards assigned to this system
    */
-  data_stewards?: Array<string>;
+  data_stewards?: Array<UserResponse>;
 };

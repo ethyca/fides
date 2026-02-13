@@ -1,4 +1,8 @@
-import type { FidesEvent as DocsFidesEvent, FidesEventType } from "../docs";
+import type {
+  FidesEvent as DocsFidesEvent,
+  FidesEventType,
+  FidesLocaleEvent,
+} from "../docs";
 import { FidesCookie } from "./consent-types";
 import { applyOverridesToConsent } from "./consent-utils";
 
@@ -17,6 +21,8 @@ export enum FidesEventTargetType {
   BUTTON = "button",
   LINK = "link",
 }
+
+export const FIDES_LOCALE_UPDATED_EVENT = "FidesLocaleUpdated";
 
 /**
  * Defines the type of "extra" details that can be optionally added to certain
@@ -190,5 +196,29 @@ export const dispatchReadyEvents = (
   const mode = window.Fides?.options?.fidesInitializedEventMode;
   if (mode === "multiple" || mode === "once") {
     dispatchFidesEvent("FidesInitialized", fidesCookie, extraDetails);
+  }
+};
+
+/**
+ * Dispatch the FidesLocaleUpdated event to notify listeners of locale changes
+ */
+export const dispatchLocaleEvent = (locale: string) => {
+  if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
+    const perfMark = performance?.mark?.("FidesLocaleUpdated");
+    const timestamp = perfMark?.startTime;
+    const event: FidesLocaleEvent = new CustomEvent(
+      FIDES_LOCALE_UPDATED_EVENT,
+      {
+        detail: {
+          locale,
+          timestamp,
+        },
+        bubbles: true,
+      },
+    );
+    fidesDebugger(
+      `Dispatching FidesLocaleUpdated event for locale: ${locale} (${timestamp?.toFixed(2)}ms)`,
+    );
+    window.dispatchEvent(event);
   }
 };
