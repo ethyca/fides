@@ -7,7 +7,6 @@ keeping the Attachment model focused on data representation only.
 
 from typing import IO, Any, Optional, Tuple
 
-from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -121,7 +120,7 @@ class AttachmentService:
             result.file_size,
         )
 
-    def retrieve_url(self, attachment: Attachment) -> Tuple[int, AnyHttpUrlString]:
+    def retrieve_url(self, attachment: Attachment) -> Tuple[int, str]:
         """Get presigned URL for attachment download.
 
         Args:
@@ -140,7 +139,7 @@ class AttachmentService:
             bucket, attachment.file_key, MAX_TTL_SECONDS
         )
 
-        errors = []
+        errors: list[str] = []
         if size is None:
             errors.append("Content size not found.")
         if url is None:
