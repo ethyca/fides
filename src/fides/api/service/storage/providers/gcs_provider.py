@@ -10,6 +10,7 @@ from datetime import timedelta
 from io import BytesIO
 from typing import IO, Any, Dict, Iterator, Optional
 
+from google.api_core.exceptions import GoogleAPICallError, NotFound
 from loguru import logger
 
 from fides.api.service.storage.gcs import get_gcs_client
@@ -174,8 +175,10 @@ class GCSStorageProvider(StorageProvider):
 
         try:
             blob.delete()
-        except (AttributeError, RuntimeError) as e:
-            # Log but don't raise for non-existent objects
+        except NotFound:
+            # Object doesn't exist, nothing to delete
+            logger.debug(f"GCS object {key} not found, skipping delete")
+        except GoogleAPICallError as e:
             logger.warning(f"Error deleting GCS object {key}: {e}")
 
     def delete_prefix(self, bucket: str, prefix: str) -> None:
@@ -201,7 +204,9 @@ class GCSStorageProvider(StorageProvider):
         for blob in blobs:
             try:
                 blob.delete()
-            except (AttributeError, RuntimeError) as e:
+            except NotFound:
+                logger.debug(f"GCS object {blob.name} not found, skipping delete")
+            except GoogleAPICallError as e:
                 logger.warning(f"Error deleting GCS object {blob.name}: {e}")
 
     def generate_presigned_url(
@@ -239,7 +244,7 @@ class GCSStorageProvider(StorageProvider):
         # Reload blob metadata to ensure we have the latest
         try:
             blob.reload()
-        except (AttributeError, RuntimeError):
+        except NotFound:
             pass  # Blob may not exist yet, that's okay for URL generation
 
         url = blob.generate_signed_url(

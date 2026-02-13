@@ -18,6 +18,7 @@ from fides.api.models.attachment import (
 )
 from fides.api.schemas.storage.storage import StorageDetails
 from fides.api.service.storage.providers import StorageProviderFactory
+from fides.api.service.storage.providers.base import StorageProvider
 
 # This is 7 days in seconds and is currently the max allowed
 # configurable expiration time for presigned URLs for both s3 and gcs.
@@ -61,7 +62,9 @@ class AttachmentService:
         db = self._require_db()
         return Attachment.get_by_key_or_id(db, data={"id": attachment_id})
 
-    def _get_provider_and_bucket(self, attachment: Attachment) -> Tuple[Any, str]:
+    def _get_provider_and_bucket(
+        self, attachment: Attachment
+    ) -> Tuple[StorageProvider, str]:
         """Get the storage provider and bucket for an attachment's config.
 
         Args:
