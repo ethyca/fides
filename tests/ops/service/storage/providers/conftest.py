@@ -84,11 +84,8 @@ def s3_provider_mock() -> Generator[S3StorageProvider, None, None]:
     s3_module = "fides.api.service.storage.providers.s3_provider"
 
     with ExitStack() as stack:
-        # Patch all S3 functions at once
+        # Patch all S3 functions used by S3StorageProvider
         mock_upload = stack.enter_context(patch(f"{s3_module}.generic_upload_to_s3"))
-        mock_retrieve = stack.enter_context(
-            patch(f"{s3_module}.generic_retrieve_from_s3")
-        )
         mock_delete = stack.enter_context(patch(f"{s3_module}.generic_delete_from_s3"))
         mock_client = stack.enter_context(patch(f"{s3_module}.maybe_get_s3_client"))
         mock_url = stack.enter_context(
@@ -98,7 +95,6 @@ def s3_provider_mock() -> Generator[S3StorageProvider, None, None]:
 
         # Configure mocks
         mock_upload.return_value = (100, "https://presigned-url")
-        mock_retrieve.return_value = (100, BytesIO(b"downloaded content"))
         mock_url.return_value = "https://presigned-url"
         mock_size.return_value = 100
         mock_client.return_value = MagicMock()
@@ -113,7 +109,6 @@ def s3_provider_mock() -> Generator[S3StorageProvider, None, None]:
 
         # Attach mocks for inspection
         provider._mock_upload = mock_upload
-        provider._mock_retrieve = mock_retrieve
         provider._mock_delete = mock_delete
         provider._mock_client = mock_client
         provider._mock_url = mock_url
