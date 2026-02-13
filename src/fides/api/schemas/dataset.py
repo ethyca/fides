@@ -32,6 +32,7 @@ class ValidateDatasetResponse(FidesSchema):
 class DatasetConfigCtlDataset(FidesSchema):
     fides_key: FidesKey  # The fides_key for the DatasetConfig
     ctl_dataset_fides_key: FidesKey  # The fides_key for the ctl_datasets record
+    property_ids: Optional[List[str]] = None  # Property IDs to assign to the dataset
 
 
 class DatasetConfigSchema(FidesSchema):
