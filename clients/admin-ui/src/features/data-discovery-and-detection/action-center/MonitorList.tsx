@@ -1,3 +1,4 @@
+import { skipToken } from "@reduxjs/toolkit/query";
 import {
   Flex,
   Icons,
@@ -7,15 +8,17 @@ import {
 } from "fidesui";
 import { useEffect } from "react";
 
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import useSearchForm from "~/features/data-discovery-and-detection/action-center/hooks/useSearchForm";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { useGetUserMonitorsQuery } from "~/features/user-management";
 
 import MonitorListSearchForm from "./forms/MonitorListSearchForm";
 import { SearchFormQueryState } from "./MonitorList.const";
@@ -23,23 +26,37 @@ import { SearchFormQueryState } from "./MonitorList.const";
 const MonitorList = () => {
   const toast = useToast();
   const {
-    flags: {
-      webMonitor: webMonitorEnabled,
-      heliosV2: heliosV2Enabled,
-      oktaMonitor: oktaMonitorEnabled,
-    },
+    flags: { webMonitor: webMonitorEnabled },
   } = useFeatures();
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination();
 
   const availableMonitorTypes = [
     ...(webMonitorEnabled ? [MONITOR_TYPES.WEBSITE] : []),
-    ...(heliosV2Enabled ? [MONITOR_TYPES.DATASTORE] : []),
-    ...(oktaMonitorEnabled ? [MONITOR_TYPES.INFRASTRUCTURE] : []),
+    MONITOR_TYPES.DATASTORE,
+    MONITOR_TYPES.INFRASTRUCTURE,
   ] as const;
 
+  const currentUser = useAppSelector(selectUser);
+
+  const { data: userMonitors } = useGetUserMonitorsQuery(
+    currentUser?.id
+      ? {
+          id: currentUser.id,
+        }
+      : skipToken,
+  );
+
+  const defaultStewardFilter =
+    (userMonitors ?? []).length > 0 ? currentUser?.id : undefined;
   const { requestData, ...formProps } = useSearchForm({
-    queryState: SearchFormQueryState([...availableMonitorTypes]),
+    queryState: SearchFormQueryState(
+      [...availableMonitorTypes],
+      defaultStewardFilter,
+    ),
+    initialValues: {
+      steward_key: defaultStewardFilter,
+    },
     translate: ({
       steward_key,
       search,
@@ -50,7 +67,9 @@ const MonitorList = () => {
     > => {
       return {
         search: search || undefined,
-        monitor_type: monitor_type ? [monitor_type] : undefined,
+        monitor_type: monitor_type
+          ? [monitor_type]
+          : availableMonitorTypes /** this should be handled via ant binding ideally. * */,
         steward_user_id:
           typeof steward_key === "undefined" || !steward_key
             ? []
@@ -79,10 +98,6 @@ const MonitorList = () => {
     data?.items?.flatMap((monitor) =>
       !!monitor.key && typeof monitor.key !== "undefined" ? [monitor] : [],
     ) || [];
-
-  if (!webMonitorEnabled && !heliosV2Enabled && !oktaMonitorEnabled) {
-    return <DisabledMonitorsPage />;
-  }
 
   return (
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>

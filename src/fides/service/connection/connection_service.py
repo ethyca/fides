@@ -1,4 +1,4 @@
-from typing import Any, Optional, Set, Tuple
+from typing import Any, Iterable, Optional, Set, Tuple
 
 import yaml
 from fideslang.models import System
@@ -54,6 +54,8 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
+    CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
 )
 from fides.api.util.event_audit_util import (
     generate_connection_audit_event_details,
@@ -692,6 +694,24 @@ class ConnectionService:
             else None
         )
 
+        # Get endpoint resources and preserve monitored collections in the dataset
+        # This runs regardless of whether there's an existing customer dataset
+        monitored_endpoints = get_endpoint_resources(self.db, connection_config)
+        if monitored_endpoints:
+            # Get monitor config IDs for this connection
+            monitor_configs = MonitorConfig.filter(
+                db=self.db,
+                conditions=(MonitorConfig.connection_config_id == connection_config.id),
+            ).all()
+            monitor_config_ids = [mc.key for mc in monitor_configs]
+
+            upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
+                monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
+            )
+            normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
+            if normalized_upcoming is not None:
+                upcoming_dataset = normalized_upcoming
+
         final_dataset = upcoming_dataset
         if customer_dataset_config and customer_dataset_config.ctl_dataset:
             # Get the existing dataset structure
@@ -705,25 +725,6 @@ class ConnectionService:
                 "collections": ctl_dataset.collections,
                 "fides_meta": ctl_dataset.fides_meta,
             }
-
-            # Get endpoint resources and preserve collections from customer dataset
-            monitored_endpoints = get_endpoint_resources(self.db, connection_config)
-            if monitored_endpoints:
-                # Get monitor config IDs for this connection
-                monitor_configs = MonitorConfig.filter(
-                    db=self.db,
-                    conditions=(
-                        MonitorConfig.connection_config_id == connection_config.id
-                    ),
-                ).all()
-                monitor_config_ids = [mc.key for mc in monitor_configs]
-
-                upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
-                    monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
-                )
-                normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
-                if normalized_upcoming is not None:
-                    upcoming_dataset = normalized_upcoming
 
             if stored_dataset_template and isinstance(
                 stored_dataset_template.dataset_json, dict
@@ -763,3 +764,74 @@ class ConnectionService:
         }
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config
+
+    def update_existing_connection_configs_for_connector_type(
+        self, connector_type: str, template: ConnectorTemplate
+    ) -> None:
+        """
+        Updates all existing connection configs that use the specified connector type
+        with the provided template.
+        """
+        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
+            db=self.db,
+            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+        ).all()
+
+        for connection_config in connection_configs:
+            saas_config_instance = SaaSConfig.model_validate(
+                connection_config.saas_config
+            )
+            try:
+                self.update_saas_instance(
+                    connection_config,
+                    template,
+                    saas_config_instance,
+                )
+                logger.info(
+                    "Updated SaaS config instance '{}' of type '{}'",
+                    saas_config_instance.fides_key,
+                    connector_type,
+                )
+            except Exception:
+                logger.exception(
+                    "Encountered error attempting to update SaaS config instance {}",
+                    saas_config_instance.fides_key,
+                )
+
+    def delete_custom_connector_template(self, connector_type: str) -> None:
+        """
+        Deletes a custom connector template and updates all connection configs
+        to use the Fides-provided file template.
+
+        Args:
+            connector_type: The connector type identifier
+
+        Raises:
+            ConnectorTemplateNotFound: If the Fides-provided template is not found
+        """
+        # Verify the file template exists
+        if not FileConnectorTemplateLoader.get_connector_templates().get(
+            connector_type
+        ):
+            raise ConnectorTemplateNotFound(
+                f"Fides-provided template with type '{connector_type}' not found."
+            )
+
+        # Delete the custom template from the database and invalidate cache.
+        # The delete_template method clears the db_timestamp_cached cache so the
+        # next get_connector_templates() call rebuilds from the DB automatically.
+        CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
+
+        # Get the file template that is now active
+        file_connector_template = ConnectorRegistry.get_connector_template(
+            connector_type
+        )
+        if not file_connector_template:
+            raise ConnectorTemplateNotFound(
+                f"Fides-provided template with type '{connector_type}' not found in the registry."
+            )
+
+        # Update existing connection configs to use the file template.
+        self.update_existing_connection_configs_for_connector_type(
+            connector_type, file_connector_template
+        )

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "consent-task1",
+    "label": "Consent Preference Update",
+    "help_text": "Manually update consent preferences in third-party system",
+    "field_type": "checkbox",
+    "request_type": "consent"
+  },
+  {
+    "id": "consent-task2",
+    "label": "Consent Verification",
+    "help_text": "Verify consent preferences have been applied",
+    "field_type": "checkbox",
+    "request_type": "consent"
+  }
+]

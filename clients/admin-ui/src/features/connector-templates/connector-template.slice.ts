@@ -29,7 +29,17 @@ export const connectorTemplateApi = baseApi.injectEndpoints({
       },
       invalidatesTags: () => ["Connection Type"],
     }),
+    deleteConnectorTemplate: build.mutation<void, string>({
+      query: (connectorTemplateType) => ({
+        url: `${CONNECTOR_TEMPLATE}/${connectorTemplateType}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: () => ["Connection Type"],
+    }),
   }),
 });
 
-export const { useRegisterConnectorTemplateMutation } = connectorTemplateApi;
+export const {
+  useRegisterConnectorTemplateMutation,
+  useDeleteConnectorTemplateMutation,
+} = connectorTemplateApi;

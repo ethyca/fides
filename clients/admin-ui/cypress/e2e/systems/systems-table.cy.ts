@@ -33,7 +33,7 @@ describe("systems table", () => {
   describe("filtering", () => {
     it("filters systems by data steward", () => {
       cy.intercept("/api/v1/system?**").as("getSystemsBySteward");
-      cy.applyTableFilter("Data steward", "user_3");
+      cy.applyTableFilter("Data steward", "User Three");
       cy.get(".ant-table-filter-dropdown").within(() => {
         cy.get(".ant-btn-primary").click({ force: true });
         cy.wait("@getSystemsBySteward").then((interception) => {

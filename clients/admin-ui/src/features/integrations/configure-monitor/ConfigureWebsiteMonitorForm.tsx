@@ -183,6 +183,7 @@ const ConfigureWebsiteMonitorForm = ({
             aria-label="Select stewards"
             data-testid="controlled-select-stewards"
             options={dataStewardOptions}
+            optionFilterProp="label"
           />
         </Form.Item>
         <Form.Item
@@ -256,6 +257,7 @@ const ConfigureWebsiteMonitorForm = ({
               form.getFieldValue("execution_frequency") ===
               MonitorFrequency.NOT_SCHEDULED
             }
+            className="w-full"
             showTime
           />
         </Form.Item>

@@ -1,4 +1,0 @@
-type: Changed
-description: Customers field deletion are now preserved when merging datasets.
-pr: 7277
-labels: []

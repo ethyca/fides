@@ -35,13 +35,14 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   const search = useSearch();
 
   const tabs = useActionCenterTabs();
-  const { activeTab, filterTabs, activeParams, onTabChange } = tabs;
+  const { activeTab, filterTabs, onTabChange } = tabs;
 
   // Map status filters to diff_status parameter
   // Status filters now come directly as diff_status values from the API
   const diffStatusFilters = useMemo(() => {
+    // If statusFilters is null/undefined (not provided), use activeParams default
     if (!statusFilters || statusFilters.length === 0) {
-      return activeParams.diff_status;
+      return [DiffStatus.ADDITION, DiffStatus.MUTED];
     }
 
     // Status filters are now diff_status values directly
@@ -51,8 +52,8 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     if (diffStatuses.length === 1) {
       return diffStatuses[0];
     }
-    return diffStatuses.length > 0 ? diffStatuses : activeParams.diff_status;
-  }, [statusFilters, activeParams.diff_status]);
+    return diffStatuses;
+  }, [statusFilters]);
 
   // Map vendor filters to vendor_id parameter
   // Pass "known" and "unknown" directly to the API
@@ -133,6 +134,10 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     isLoading: oktaIsLoading,
     isFetching: oktaIsFetching,
     refetch: refetchOktaData,
+    // Filters
+    diffStatusFilters,
+    vendorFilters,
+    dataUsesFilters,
 
     // Errors
     error: oktaDataQuery.error,
@@ -148,7 +153,6 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     filterTabs,
     activeTab,
     handleTabChange,
-    activeParams,
 
     // Row click handler
     rowClickUrl,
