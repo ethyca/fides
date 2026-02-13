@@ -20,6 +20,7 @@ import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  TemplateResponse,
   useCreatePrivacyAssessmentMutation,
   useGetAssessmentTemplatesQuery,
 } from "~/features/privacy-assessments";
@@ -33,7 +34,13 @@ interface FormValues {
   use_llm: boolean;
 }
 
-const renderTemplateOption = (option: any) => {
+interface TemplateOptionData {
+  value: string;
+  label: string;
+  template: TemplateResponse;
+}
+
+const renderTemplateOption = (option: { data: TemplateOptionData }) => {
   const { template } = option.data;
   return (
     <div>
