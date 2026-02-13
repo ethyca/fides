@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
+import { TagList } from "~/features/common/TagList";
 import {
   ASSESSMENT_STATUS_LABELS,
   RISK_LEVEL_LABELS,
@@ -68,26 +69,28 @@ export const AssessmentCard = ({
           {(assessment.data_categories ?? []).length > 0 && (
             <Text type="secondary" className="mb-2 block text-xs leading-6">
               Processing{" "}
-              {(assessment.data_categories ?? []).map(
-                (category: string, idx: number) => (
-                  <span key={category}>
-                    <Tag
-                      color={CUSTOM_TAG_COLOR.DEFAULT}
-                      className="!m-0 align-middle text-[11px]"
-                    >
-                      {category}
-                    </Tag>
-                    {idx < (assessment.data_categories ?? []).length - 1 && " "}
-                  </span>
-                ),
-              )}{" "}
+              <TagList
+                tags={assessment.data_categories ?? []}
+                maxTags={2}
+                tagProps={{
+                  color: CUSTOM_TAG_COLOR.DEFAULT,
+                  className: "!m-0 align-middle text-[11px]",
+                }}
+                overflowTagProps={{
+                  className: "!m-0 align-middle text-[11px]",
+                }}
+              />{" "}
               for{" "}
-              <Tag
-                color={CUSTOM_TAG_COLOR.DEFAULT}
-                className="!m-0 align-middle text-[11px]"
-              >
-                {assessment.data_use_name ?? ""}
-              </Tag>
+              <TagList
+                tags={
+                  assessment.data_use_name ? [assessment.data_use_name] : []
+                }
+                maxTags={1}
+                tagProps={{
+                  color: CUSTOM_TAG_COLOR.DEFAULT,
+                  className: "!m-0 align-middle text-[11px]",
+                }}
+              />
             </Text>
           )}
           <div>
