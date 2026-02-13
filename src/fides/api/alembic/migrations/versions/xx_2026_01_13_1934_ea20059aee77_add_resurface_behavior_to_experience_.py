@@ -1,7 +1,7 @@
 """add resurface_behavior to experience config
 
 Revision ID: ea20059aee77
-Revises: 9cf7bb472a7c
+Revises: 627c230d9917
 Create Date: 2026-01-13 19:34:06.296198
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 # revision identifiers, used by Alembic.
 revision = 'ea20059aee77'
-down_revision = '9cf7bb472a7c'
+down_revision = '627c230d9917'
 branch_labels = None
 depends_on = None
 
