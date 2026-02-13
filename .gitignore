@@ -261,4 +261,3 @@ multilang_migration_backup_*
 
 # Cursor
 .cursor/implementation-plans
-test_report.xml
