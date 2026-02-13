@@ -427,7 +427,7 @@ class ConnectionService:
             existing_of_type = ConnectionConfig.get_by(
                 self.db,
                 field="connection_type",
-                value=config.connection_type,
+                value=str(config.connection_type),
             )
             if existing_of_type:
                 raise ValidationError(
@@ -587,7 +587,9 @@ class ConnectionService:
             ConnectionType.manual_task: ManualTaskType.privacy_request,
             ConnectionType.jira_ticket: ManualTaskType.jira_ticket,
         }
-        auto_task_type = _auto_task_type_mapping.get(connection_config.connection_type)
+        auto_task_type = _auto_task_type_mapping.get(
+            connection_config.connection_type  # type: ignore[arg-type]
+        )
         if auto_task_type and not connection_config.manual_task:
             ManualTask.create(
                 db=self.db,
