@@ -37,7 +37,7 @@ ASSESSMENT_TEMPLATES = [
         "key": "uk_gdpr_dpia",
         "version": "UK-GDPR-DPIA-ICO-2024",
         "name": "UK GDPR Data Protection Impact Assessment (DPIA)",
-        "assessment_type": "dpia",
+        "assessment_type": "uk_gdpr_dpia",
         "region": "United Kingdom",
         "authority": "Information Commissioner's Office (ICO)",
         "legal_reference": "UK GDPR Article 35, Data Protection Act 2018 Section 64, ICO DPIA Guidance, Age Appropriate Design Code",
@@ -48,7 +48,7 @@ ASSESSMENT_TEMPLATES = [
         "key": "us_co_cpa_dpa",
         "version": "US-CO-CPA-DPA-2024",
         "name": "Colorado Privacy Act Data Protection Assessment (DPA)",
-        "assessment_type": "dpa",
+        "assessment_type": "us_co_cpa_dpa",
         "region": "United States (Colorado)",
         "authority": "Colorado Attorney General",
         "legal_reference": "Colo. Rev. Stat. § 6-1-1309, Colorado Privacy Act Rules 4 CCR 904-3 Part 8",
@@ -59,7 +59,7 @@ ASSESSMENT_TEMPLATES = [
         "key": "us_va_vcdpa_dpa",
         "version": "US-VA-VCDPA-DPA-2024",
         "name": "Virginia Consumer Data Protection Act Data Protection Assessment (DPA)",
-        "assessment_type": "dpa",
+        "assessment_type": "us_va_vcdpa_dpa",
         "region": "United States (Virginia)",
         "authority": "Virginia Attorney General",
         "legal_reference": "Va. Code Ann. § 59.1-580",
@@ -70,7 +70,7 @@ ASSESSMENT_TEMPLATES = [
         "key": "us_multi_state_dpa",
         "version": "US-MULTI-STATE-DPA-2024",
         "name": "US State Privacy Law Data Protection Assessment (Generic)",
-        "assessment_type": "dpa",
+        "assessment_type": "us_multi_state_dpa",
         "region": "United States (Multi-State)",
         "authority": "Various State Attorneys General",
         "legal_reference": "Generic DPA template aligned with CO CPA, VA VCDPA, CT CTDPA, and other state privacy laws",
@@ -81,7 +81,7 @@ ASSESSMENT_TEMPLATES = [
         "key": "best_practice_pia",
         "version": "BP-PIA-2024",
         "name": "Generic Privacy Impact Assessment (Best Practice)",
-        "assessment_type": "pia",
+        "assessment_type": "best_practice_pia",
         "region": "Global",
         "authority": "Best Practice / Industry Standards",
         "legal_reference": "CNIL PIA methodology, ISO 29134, NIST Privacy Framework",
@@ -1490,6 +1490,12 @@ def upgrade() -> None:
                 question_count += 1
 
         print(f"Seeded {question_count} questions for {template_data['key']}")
+
+    # Ensure all templates have assessment_type matching their key (fixes any pre-existing templates)
+    conn.execute(
+        sa.text("UPDATE assessment_template SET assessment_type = key WHERE assessment_type != key")
+    )
+    print("Synced assessment_type to match key for all templates")
 
 
 def downgrade() -> None:
