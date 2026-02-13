@@ -62,6 +62,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
     GoogleCloudSQLPostgresSchema as GoogleCloudSQLPostgresSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_jira_ticket import (
+    JiraTicketDocsSchema as JiraTicketDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_jira_ticket import (
+    JiraTicketSchema as JiraTicketSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_manual_webhook import (
     ManualWebhookDocsSchema,
 )
@@ -174,6 +180,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.google_cloud_sql_mysql.value: GoogleCloudSQLMySQLSchema,
     ConnectionType.google_cloud_sql_postgres.value: GoogleCloudSQLPostgresSchema,
     ConnectionType.https.value: HttpsSchema,
+    ConnectionType.jira_ticket.value: JiraTicketSchema,
     ConnectionType.manual_webhook.value: ManualWebhookSchema,
     ConnectionType.mariadb.value: MariaDBSchema,
     ConnectionType.mongodb.value: MongoDBSchema,
