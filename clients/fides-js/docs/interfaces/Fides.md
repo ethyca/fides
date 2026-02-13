@@ -204,11 +204,23 @@ Promise that resolves when the cookie has been updated
 
 If Fides is not initialized, if external_id is empty or whitespace-only, or if an unsupported/reserved/verified key is provided
 
-#### Example
+#### Examples
 
 Set a custom external ID after the user logs in:
 ```ts
 await Fides.setIdentity({ external_id: "user-123" });
+```
+
+In HTML, call setIdentity when your app knows the user (e.g. after login):
+```html
+<body>
+  <script src="path/to/fides.js"></script>
+  <script>
+    function onUserLoggedIn(userId) {
+      Fides.setIdentity({ external_id: userId });
+    }
+  </script>
+</body>
 ```
 
 ***

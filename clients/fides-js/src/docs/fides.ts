@@ -166,6 +166,19 @@ export interface Fides {
    * ```ts
    * await Fides.setIdentity({ external_id: "user-123" });
    * ```
+   *
+   * @example
+   * In HTML, call setIdentity when your app knows the user (e.g. after login):
+   * ```html
+   * <body>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     function onUserLoggedIn(userId) {
+   *       Fides.setIdentity({ external_id: userId });
+   *     }
+   *   </script>
+   * </body>
+   * ```
    */
   setIdentity: (identity: { external_id?: string }) => Promise<void>;
 

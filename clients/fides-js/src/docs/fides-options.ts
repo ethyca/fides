@@ -106,16 +106,28 @@ export interface FidesOptions {
    * Defaults to `undefined`.
    *
    * @example
+   * Set external ID at init via overrides (e.g. known before Fides loads):
    * ```html
    * <head>
    *   <script>
-   *     // Configure FidesJS with an external ID
-   *     window.fides_overrides = {
-   *       fides_external_id: "example-crm-id-123",
-   *     };
+   *     window.fides_overrides = { fides_external_id: "example-crm-id-123" };
    *   </script>
    *   <script src="path/to/fides.js"></script>
    * </head>
+   * ```
+   *
+   * @example
+   * Set external ID after init when the user logs in (see {@link Fides.setIdentity}):
+   * ```html
+   * <body>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     // When your app resolves the logged-in user, set their ID so consent is linked
+   *     function onUserLoggedIn(userId) {
+   *       Fides.setIdentity({ external_id: userId });
+   *     }
+   *   </script>
+   * </body>
    * ```
    *
    */
