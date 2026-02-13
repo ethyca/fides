@@ -1570,3 +1570,123 @@ class TestConnectionService:
         }
         assert "email" in products_fields
         assert "orders_id" in orders_fields
+
+    def test_update_existing_connection_configs_case_insensitive(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+    ):
+        """
+        Test that update_existing_connection_configs_for_connector_type matches
+        connection configs regardless of the case of the 'type' field stored
+        in the saas_config JSONB column.
+
+        During connection creation, the raw YAML dict is stored in saas_config
+        without going through SaaSConfig validation, which means the 'type' may
+        preserve its original case (e.g., "AMG"). During template re-upload,
+        save_template normalizes the type to lowercase via SaaSConfig's
+        lowercase_saas_type validator. The filter must match case-insensitively.
+        """
+        # Create a connection config with UPPERCASE type in saas_config
+        # (simulates what happens when the raw YAML dict is stored directly)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_case_connection",
+                "name": "Test Case Connection",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "saas_config": {
+                    "fides_key": "test_case_instance",
+                    "name": "Test Connector",
+                    "type": "MY_CONNECTOR",  # uppercase, as stored from raw YAML
+                    "description": "Test connector",
+                    "version": "0.1.0",
+                    "connector_params": [],
+                    "client_config": {
+                        "protocol": "https",
+                        "host": "api.example.com",
+                    },
+                    "test_request": {"method": "GET", "path": "/test"},
+                    "endpoints": [],
+                },
+            },
+        )
+
+        # Create existing DatasetConfig with only "users" collection
+        DatasetConfig.create_or_update(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_case_instance",
+                "dataset": {
+                    "fides_key": "test_case_instance",
+                    "name": "Test Dataset",
+                    "description": "Original dataset",
+                    "collections": [
+                        {"name": "users", "fields": []},
+                    ],
+                },
+            },
+        )
+
+        # Create a template with the LOWERCASE type (as normalized by SaaSConfig)
+        # and an updated dataset with two collections
+        connector_template = ConnectorTemplate(
+            config=dedent(
+                """
+                saas_config:
+                  fides_key: <instance_fides_key>
+                  name: Test Connector
+                  type: my_connector
+                  description: Test connector
+                  version: 0.2.0
+                  connector_params: []
+                  client_config:
+                    protocol: https
+                    host: api.example.com
+                  test_request:
+                    method: GET
+                    path: /test
+                  endpoints: []
+            """
+            ).strip(),
+            dataset=dedent(
+                """
+                dataset:
+                  - fides_key: <instance_fides_key>
+                    name: Test Dataset
+                    description: Updated dataset with new collection
+                    collections:
+                      - name: users
+                        fields: []
+                      - name: custom
+                        fields: []
+            """
+            ).strip(),
+            human_readable="Test Connector",
+            authorization_required=False,
+            supported_actions=[ActionType.erasure],
+        )
+
+        # Call with LOWERCASE connector_type (as save_template would)
+        connection_service.update_existing_connection_configs_for_connector_type(
+            "my_connector",  # lowercase, from SaaSConfig.type
+            connector_template,
+        )
+
+        # Verify the ctl_dataset was updated with both collections
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "test_case_instance"),
+        ).first()
+
+        assert dataset_config is not None
+        ctl_dataset = dataset_config.ctl_dataset
+        assert ctl_dataset is not None
+
+        collection_names = {c["name"] for c in ctl_dataset.collections}
+        assert collection_names == {"users", "custom"}
+
+        # Clean up
+        connection_config.delete(db)
