@@ -1,0 +1,4 @@
+type: Added
+description: Added jira_ticket connection type with secrets schema, singleton enforcement, and Alembic migration
+pr: 7388
+labels: ["db-migration"]
