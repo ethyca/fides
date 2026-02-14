@@ -548,7 +548,7 @@ describe("Consent overlay", () => {
                 throw new Error("Expected setIdentity to reject");
               } catch (err) {
                 expect((err as Error).message).to.include(
-                  "external_id cannot be an empty string. Omit the key to leave identity unchanged.",
+                  "external_id cannot be empty or whitespace-only. Omit the key to leave identity unchanged.",
                 );
               }
             });
