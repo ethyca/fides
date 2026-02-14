@@ -1,3 +1,21 @@
+"""
+S3 storage operations.
+
+DEPRECATION NOTICE:
+    The functions in this module are being deprecated in favor of the
+    StorageProvider interface. For new code, use:
+
+        from fides.api.service.storage.providers import StorageProviderFactory
+
+        provider = StorageProviderFactory.create(storage_config)
+        provider.upload(bucket, key, data)
+        provider.download(bucket, key)
+        provider.delete(bucket, key)
+
+    These legacy functions are maintained for backward compatibility with
+    existing code that depends on them, including the DSR upload task functions.
+"""
+
 from __future__ import annotations
 
 from io import BytesIO
@@ -7,6 +25,7 @@ from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
+from typing_extensions import deprecated
 
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.service.storage.util import (
@@ -17,6 +36,9 @@ from fides.api.util.aws_util import get_s3_client
 from fides.config import CONFIG
 
 
+@deprecated(
+    "Use StorageProviderFactory.create(config) to get a StorageProvider instance instead."
+)
 def maybe_get_s3_client(
     auth_method: str, storage_secrets: Dict[StorageSecrets, Any]
 ) -> Any:
@@ -34,6 +56,9 @@ def maybe_get_s3_client(
         raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
+@deprecated(
+    "Use StorageProviderFactory.create(config).generate_presigned_url() instead."
+)
 def create_presigned_url_for_s3(
     s3_client: Any, bucket_name: str, file_key: str, ttl_seconds: Optional[int] = None
 ) -> AnyHttpUrlString:
@@ -62,6 +87,7 @@ def create_presigned_url_for_s3(
     return response
 
 
+@deprecated("Use StorageProviderFactory.create(config).get_file_size() instead.")
 def get_file_size(s3_client: Any, bucket_name: str, file_key: str) -> int:
     """
     Returns the size of a file in bytes.
@@ -69,6 +95,7 @@ def get_file_size(s3_client: Any, bucket_name: str, file_key: str) -> int:
     return s3_client.head_object(Bucket=bucket_name, Key=file_key)["ContentLength"]
 
 
+@deprecated("Use StorageProviderFactory.create(config).upload() instead.")
 def generic_upload_to_s3(  # pylint: disable=R0913
     storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,
@@ -131,6 +158,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     return file_size, create_presigned_url_for_s3(s3_client, bucket_name, file_key)
 
 
+@deprecated("Use StorageProviderFactory.create(config).download() instead.")
 def generic_retrieve_from_s3(
     storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,
@@ -178,6 +206,9 @@ def generic_retrieve_from_s3(
         raise e
 
 
+@deprecated(
+    "Use StorageProviderFactory.create(config).delete() or delete_prefix() instead."
+)
 def generic_delete_from_s3(
     storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,

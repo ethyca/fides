@@ -7,10 +7,11 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
-from fides.api.models.attachment import Attachment, AttachmentReferenceType
+from fides.api.models.attachment import AttachmentReferenceType
+from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
-    from fides.api.models.attachment import AttachmentReference
+    from fides.api.models.attachment import Attachment, AttachmentReference
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
 
@@ -126,9 +127,9 @@ class Comment(Base):
 
     def delete(self, db: Session) -> None:
         """Delete the comment and all associated references."""
-        # Delete the comment
-        Attachment.delete_attachments_for_reference_and_type(
-            db, self.id, AttachmentReferenceType.comment
+        # Delete attachments associated with this comment
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.comment
         )
         for reference in self.references:
             reference.delete(db)

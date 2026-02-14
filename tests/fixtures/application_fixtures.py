@@ -115,6 +115,7 @@ from fides.api.util.data_category import DataCategory, get_user_data_categories
 from fides.config import CONFIG
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 from fides.config.helpers import load_file
+from fides.service.attachment_service import AttachmentService
 from tests.ops.integration_tests.saas.connector_runner import (
     generate_random_email,
     generate_random_phone_number,
@@ -4258,11 +4259,11 @@ def attachment(s3_client, db, attachment_data, monkeypatch):
     monkeypatch.setattr(
         "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
     )
-    attachment = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content")
+    attachment = AttachmentService(db).create_and_upload(
+        data=attachment_data, file_data=BytesIO(b"file content")
     )
     yield attachment
-    attachment.delete(db)
+    AttachmentService(db).delete(attachment)
 
 
 @pytest.fixture
@@ -4276,11 +4277,11 @@ def attachment_include_in_download(s3_client, db, attachment_data, monkeypatch):
         "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
     )
     attachment_data["attachment_type"] = AttachmentType.include_with_access_package
-    attachment = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content")
+    attachment = AttachmentService(db).create_and_upload(
+        data=attachment_data, file_data=BytesIO(b"file content")
     )
     yield attachment
-    attachment.delete(db)
+    AttachmentService(db).delete(attachment)
 
 
 @pytest.fixture(scope="function")
