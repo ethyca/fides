@@ -37,8 +37,6 @@ export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
  */
 export const FIDES_IDENTITY_KEY_USER_DEVICE_ID = "fides_user_device_id";
 export const FIDES_IDENTITY_KEY_EXTERNAL_ID = "external_id";
-/** Key used in init overrides (e.g. query params) for fidesExternalId; maps to external_id in cookie. */
-export const FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID = "fides_external_id";
 
 /** Identity keys that cannot be set via setIdentity (reserved for internal use). */
 export const FIDES_RESERVED_IDENTITY_KEYS = [
