@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.3b2.dev29+gd8e61e4f8"
+    "version": "2.78.3b2.dev30+g1f45fbe04"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19566,6 +19566,27 @@
                 "type": "null"
               }
             ]
+          },
+          "default_policies": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Policies"
           }
         },
         "additionalProperties": false,
@@ -19601,7 +19622,8 @@
           "approved",
           "denied",
           "email_sent",
-          "finished"
+          "finished",
+          "policy_evaluated"
         ],
         "title": "AuditLogAction",
         "description": "Enum for audit log actions, reflecting what a user did."
