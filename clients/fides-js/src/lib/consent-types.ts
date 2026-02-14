@@ -1022,6 +1022,7 @@ export enum RequestOrigin {
   privacy_center = "privacy_center",
   overlay = "overlay",
   api = "api",
+  headless = "headless",
 }
 
 export enum GpcStatus {
