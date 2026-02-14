@@ -87,6 +87,7 @@ from fides.api.models.property import (
     PrivacyExperienceConfigProperty,
     Property,
 )
+from fides.api.models.questionnaire import ChatMessage, Questionnaire
 from fides.api.models.registration import UserRegistration
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.models.storage import StorageConfig

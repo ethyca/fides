@@ -202,6 +202,13 @@ class PrivacyAssessment(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    questionnaire = relationship(
+        "Questionnaire",
+        back_populates="assessment",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        uselist=False,
+    )
 
 
 class AssessmentAnswer(Base):
