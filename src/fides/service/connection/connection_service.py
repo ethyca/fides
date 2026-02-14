@@ -1,9 +1,10 @@
-from typing import Any, Iterable, Optional, Set, Tuple
+from typing import Any, Optional, Set, Tuple
 
 import yaml
 from fideslang.models import System
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -772,10 +773,19 @@ class ConnectionService:
         Updates all existing connection configs that use the specified connector type
         with the provided template.
         """
-        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
+        connection_configs: list[ConnectionConfig] = ConnectionConfig.filter(
             db=self.db,
-            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+            conditions=(
+                sa_func.lower(ConnectionConfig.saas_config["type"].astext)
+                == connector_type.lower()
+            ),
         ).all()
+
+        logger.info(
+            "Found {} existing connection config(s) for connector type '{}'",
+            len(connection_configs),
+            connector_type,
+        )
 
         for connection_config in connection_configs:
             saas_config_instance = SaaSConfig.model_validate(
