@@ -6,6 +6,7 @@ import {
   ConfigProvider as BaseAntDesignProvider,
   message,
   Modal,
+  notification,
   ThemeConfig,
 } from "antd/lib";
 import { createContext, ReactNode, useContext, useMemo } from "react";
@@ -16,6 +17,7 @@ import { theme as defaultTheme } from "./FidesUITheme";
 interface ComponentAPIExports {
   messageApi: ReturnType<typeof message.useMessage>[0];
   modalApi: ReturnType<typeof Modal.useModal>[0];
+  notificationApi: ReturnType<typeof notification.useNotification>[0];
 }
 
 const AntComponentAPIsContext = createContext<ComponentAPIExports | undefined>(
@@ -36,9 +38,11 @@ export const FidesUIProvider = ({
 }: FidesUIProviderProps) => {
   const [messageApi, messageContextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
   const value = useMemo(
-    () => ({ messageApi, modalApi }),
-    [messageApi, modalApi],
+    () => ({ messageApi, modalApi, notificationApi }),
+    [messageApi, modalApi, notificationApi],
   );
 
   return (
@@ -47,6 +51,7 @@ export const FidesUIProvider = ({
         <AntComponentAPIsContext.Provider value={value}>
           {messageContextHolder}
           {modalContextHolder}
+          {notificationContextHolder}
           {children}
         </AntComponentAPIsContext.Provider>
       </BaseChakraProvider>
@@ -68,4 +73,12 @@ export const useModal = () => {
     throw new Error("useModal must be used within a FidesUIProvider");
   }
   return context.modalApi;
+};
+
+export const useNotification = () => {
+  const context = useContext(AntComponentAPIsContext);
+  if (!context) {
+    throw new Error("useNotification must be used within a FidesUIProvider");
+  }
+  return context.notificationApi;
 };
