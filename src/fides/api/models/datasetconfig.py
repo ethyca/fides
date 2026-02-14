@@ -3,7 +3,8 @@ from typing import Any, Dict, Optional, Set
 from fideslang.models import Dataset, DatasetField, FidesDatasetReference
 from fideslang.validation import FidesKey
 from loguru import logger
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.common_exceptions import ValidationError
@@ -42,6 +43,17 @@ class DatasetConfig(Base):
     fides_key = Column(String, index=True, unique=True, nullable=False)
     ctl_dataset_id = Column(
         String, ForeignKey(CtlDataset.id), index=True, nullable=False
+    )
+    property_ids = Column(
+        ARRAY(String), nullable=False, server_default="{}", default=list
+    )
+
+    __table_args__ = (
+        Index(
+            "ix_datasetconfig_property_ids_gin",
+            "property_ids",
+            postgresql_using="gin",
+        ),
     )
 
     connection_config = relationship(
