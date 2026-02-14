@@ -5,6 +5,7 @@ import {
   FIDES_RESERVED_IDENTITY_KEYS,
   FIDES_SUPPORTED_SET_IDENTITY_KEYS,
   FIDES_VERIFIED_IDENTITY_KEYS,
+  normalizeIdentityValue,
   saveFidesCookie,
 } from "./cookie";
 
@@ -58,10 +59,10 @@ export async function setIdentity(
   if (rawExternalId === undefined) {
     return;
   }
-  const externalId = rawExternalId.trim();
-  if (externalId === "") {
+  const externalId = normalizeIdentityValue(rawExternalId);
+  if (externalId === undefined) {
     throw new Error(
-      "external_id cannot be an empty string. Omit the key to leave identity unchanged.",
+      "external_id cannot be empty or whitespace-only. Omit the key to leave identity unchanged.",
     );
   }
 

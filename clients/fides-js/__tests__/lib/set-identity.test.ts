@@ -108,7 +108,7 @@ describe("setIdentity", () => {
     await expect(
       setIdentity.call(mockFides, { external_id: "" }),
     ).rejects.toThrow(
-      "external_id cannot be an empty string. Omit the key to leave identity unchanged.",
+      "external_id cannot be empty or whitespace-only. Omit the key to leave identity unchanged.",
     );
     expect(saveFidesCookie).not.toHaveBeenCalled();
   });
@@ -118,7 +118,7 @@ describe("setIdentity", () => {
     await expect(
       setIdentity.call(mockFides, { external_id: "   \t\n  " }),
     ).rejects.toThrow(
-      "external_id cannot be an empty string. Omit the key to leave identity unchanged.",
+      "external_id cannot be empty or whitespace-only. Omit the key to leave identity unchanged.",
     );
     expect(saveFidesCookie).not.toHaveBeenCalled();
   });

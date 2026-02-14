@@ -51,6 +51,22 @@ export const FIDES_SUPPORTED_SET_IDENTITY_KEYS = [
   FIDES_IDENTITY_KEY_EXTERNAL_ID,
 ] as const;
 
+/**
+ * Normalize identity value: returns trimmed string if valid, undefined otherwise.
+ * Treats null, undefined, empty string, and whitespace-only as "not set".
+ * Used by makeDefaultIdentity, getOrMakeFidesCookie, and setIdentity for consistent behavior.
+ * Generic for current and future identity keys (e.g. external_id) that should be trimmed and non-empty.
+ */
+export const normalizeIdentityValue = (
+  value: string | null | undefined,
+): string | undefined => {
+  if (value == null) {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  return trimmed !== "" ? trimmed : undefined;
+};
+
 const getConsentCookieName = (
   suffix: FidesInitOptions["fidesCookieSuffix"],
 ) => {
@@ -139,12 +155,11 @@ export const makeDefaultIdentity = ({
     (useProvidedDeviceId ? fidesUserDeviceId : undefined) ??
     userDeviceId ??
     generateFidesUserDeviceId();
-  const useProvidedExternalId =
-    fidesExternalId != null && fidesExternalId.trim() !== "";
+  const normalizedExternalId = normalizeIdentityValue(fidesExternalId);
   return {
     [FIDES_IDENTITY_KEY_USER_DEVICE_ID]: deviceId,
-    ...(useProvidedExternalId
-      ? { [FIDES_IDENTITY_KEY_EXTERNAL_ID]: fidesExternalId.trim() }
+    ...(normalizedExternalId !== undefined
+      ? { [FIDES_IDENTITY_KEY_EXTERNAL_ID]: normalizedExternalId }
       : {}),
   };
 };
@@ -400,10 +415,7 @@ export const getOrMakeFidesCookie = async (
     }
 
     // Update external_id if provided (empty/whitespace-only treated as not set, consistent with setIdentity)
-    const effectiveExternalId =
-      fidesExternalId != null && fidesExternalId.trim() !== ""
-        ? fidesExternalId.trim()
-        : undefined;
+    const effectiveExternalId = normalizeIdentityValue(fidesExternalId);
     if (effectiveExternalId !== undefined) {
       parsedCookie.identity[FIDES_IDENTITY_KEY_EXTERNAL_ID] =
         effectiveExternalId;

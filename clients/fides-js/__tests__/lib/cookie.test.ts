@@ -20,6 +20,7 @@ import {
   makeConsentDefaultsLegacy,
   makeDefaultIdentity,
   makeFidesCookie,
+  normalizeIdentityValue,
   removeCookiesFromBrowser,
   saveFidesCookie,
   tcfCookieIsProperlySet,
@@ -81,6 +82,34 @@ describe("cookies", () => {
     mockGetCookie.mockClear();
     mockSetCookie.mockClear();
   });
+  describe("normalizeIdentityValue", () => {
+    it("returns undefined for null", () => {
+      expect(normalizeIdentityValue(null)).toBeUndefined();
+    });
+
+    it("returns undefined for undefined", () => {
+      expect(normalizeIdentityValue(undefined)).toBeUndefined();
+    });
+
+    it("returns undefined for empty string", () => {
+      expect(normalizeIdentityValue("")).toBeUndefined();
+    });
+
+    it("returns undefined for whitespace-only string", () => {
+      expect(normalizeIdentityValue("   ")).toBeUndefined();
+      expect(normalizeIdentityValue("\t\n")).toBeUndefined();
+    });
+
+    it("returns trimmed string for valid non-empty value", () => {
+      expect(normalizeIdentityValue("user-123")).toBe("user-123");
+      expect(normalizeIdentityValue("  user-123  ")).toBe("user-123");
+    });
+
+    it("preserves content for string with internal spaces", () => {
+      expect(normalizeIdentityValue("user 123")).toBe("user 123");
+    });
+  });
+
   describe("makeFidesCookie", () => {
     it("generates a v0.9.0 cookie with uuid", () => {
       const cookie: FidesCookie = makeFidesCookie();

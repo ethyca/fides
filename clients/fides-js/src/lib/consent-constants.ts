@@ -1,3 +1,4 @@
+import { FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID } from "./cookie";
 import {
   FidesExperienceLanguageValidatorMap,
   FidesOverrideValidatorMap,
@@ -163,7 +164,7 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
     {
       overrideName: "fidesExternalId",
       overrideType: "string",
-      overrideKey: "fides_external_id",
+      overrideKey: FIDES_IDENTITY_OPTION_KEY_EXTERNAL_ID,
       validationRegex: /.+/,
     },
   ];
