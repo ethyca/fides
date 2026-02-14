@@ -27,10 +27,11 @@ import LoginWithOIDC from "./login/[provider]";
 
 dayjs.extend(utc);
 
-if (process.env.NEXT_PUBLIC_MOCK_API) {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  import("../mocks").then(({ initMocks }) => initMocks());
-}
+// Initialize MSW before the app renders so mock handlers are ready
+// for the very first network requests (avoids race condition).
+const mswReady = process.env.NEXT_PUBLIC_MOCK_API
+  ? import("../mocks").then(({ initMocks }) => initMocks())
+  : Promise.resolve();
 
 const SafeHydrate = ({ children }: { children: ReactNode }) => (
   <div suppressHydrationWarning style={{ height: "100%", display: "flex" }}>
@@ -39,6 +40,20 @@ const SafeHydrate = ({ children }: { children: ReactNode }) => (
 );
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
+  const [isMswReady, setIsMswReady] = React.useState(
+    !process.env.NEXT_PUBLIC_MOCK_API,
+  );
+
+  React.useEffect(() => {
+    const waitForMsw = async () => {
+      if (process.env.NEXT_PUBLIC_MOCK_API) {
+        await mswReady;
+        setIsMswReady(true);
+      }
+    };
+    waitForMsw();
+  }, []);
+
   // Expose Redux store to window for Cypress testing
   React.useEffect(() => {
     if (typeof window !== "undefined" && window.Cypress) {
@@ -46,6 +61,10 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       window.__REDUX_STORE__ = store;
     }
   }, []);
+
+  if (!isMswReady) {
+    return null;
+  }
 
   return (
     <SafeHydrate>
