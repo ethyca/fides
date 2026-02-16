@@ -1,0 +1,4 @@
+type: Added
+description: Added pre-approval statuses (awaiting_pre_approval, pre_approval_not_eligible), audit log entries for webhook events, and admin UI for webhook management
+pr: 0000
+labels: ["db-migration"]

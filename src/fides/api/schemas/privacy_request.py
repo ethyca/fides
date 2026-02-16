@@ -320,6 +320,10 @@ class PrivacyRequestStatus(StrEnum):
     canceled = "canceled"
     error = "error"
     duplicate = "duplicate"  # Request identified as duplicate of another request
+    awaiting_pre_approval = (
+        "awaiting_pre_approval"  # Awaiting external pre-approval webhook responses
+    )
+    pre_approval_not_eligible = "pre_approval_not_eligible"  # Pre-approval webhook(s) responded not eligible; manual review required
 
 
 class IdentityValue(BaseModel):

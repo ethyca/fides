@@ -149,6 +149,19 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
     Note that this does not return actual secrets, instead we return the *types* of
     secret fields needed to authenticate.
     """
+    # Check built-in ConnectionType values first via secrets_schemas, since
+    # get_connection_types() excludes some types (e.g. https, manual_webhook)
+    # that have valid secret schemas.
+    if connection_type in [db_type.value for db_type in ConnectionType]:
+        if connection_type not in secrets_schemas:
+            raise NoSuchConnectionTypeSecretSchemaError(
+                f"No secret schema found for connection type '{connection_type}'."
+            )
+        schema = secrets_schemas[connection_type].schema()
+        transform_v2_to_v1_in_place(schema)
+        return schema
+
+    # For SaaS and other dynamic types, verify via get_connection_types()
     connection_system_types: list[ConnectionSystemTypeMap] = get_connection_types(
         include_test_connections=True
     )
@@ -156,11 +169,6 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
         raise NoSuchConnectionTypeSecretSchemaError(
             f"No connection type found with name '{connection_type}'."
         )
-
-    if connection_type in [db_type.value for db_type in ConnectionType]:
-        schema = secrets_schemas[connection_type].schema()
-        transform_v2_to_v1_in_place(schema)
-        return schema
 
     connector_template = ConnectorRegistry.get_connector_template(connection_type)
     if not connector_template:

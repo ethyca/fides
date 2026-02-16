@@ -286,6 +286,19 @@ def test_get_connection_type_secret_schemas_test_website():
     assert test_website_schema["properties"]["url"]["format"] == "uri"
 
 
+def test_get_connection_type_secret_schema_for_excluded_builtin_types():
+    """Built-in connection types like 'https' and 'manual_webhook' are excluded
+    from get_connection_types() but should still return valid secret schemas."""
+    https_schema = get_connection_type_secret_schema(connection_type="https")
+    assert "properties" in https_schema
+    assert "url" in https_schema["properties"]
+
+    manual_webhook_schema = get_connection_type_secret_schema(
+        connection_type="manual_webhook"
+    )
+    assert "properties" in manual_webhook_schema
+
+
 def test_get_saas_connection_types_with_display_info(monkeypatch):
     """Test SaaS connection type extraction with display_info containing category, tags, and enabled_features."""
     from unittest.mock import Mock, patch
