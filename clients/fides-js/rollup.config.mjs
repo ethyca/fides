@@ -26,8 +26,8 @@ const GZIP_SIZE_TCF_ERROR_KB = 100;
 const GZIP_SIZE_TCF_WARN_KB = 75;
 
 // Headless
-const GZIP_SIZE_HEADLESS_ERROR_KB = 27;
-const GZIP_SIZE_HEADLESS_WARN_KB = 20;
+const GZIP_SIZE_HEADLESS_ERROR_KB = 36; // raised for consent migration (headless includes shared code)
+const GZIP_SIZE_HEADLESS_WARN_KB = 30;
 
 // GPP
 const GZIP_SIZE_GPP_ERROR_KB = 40;
