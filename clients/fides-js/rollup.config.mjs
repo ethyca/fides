@@ -18,8 +18,8 @@ const GLOBAL_NAME = "Fides";
 const FILE_NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
 const IS_TEST = process.env.IS_TEST === "true";
-const GZIP_SIZE_ERROR_KB = 53; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 60; // fail build if bundle size exceeds this (raised for SourcePoint consent migration)
+const GZIP_SIZE_WARN_KB = 52; // log a warning if bundle size exceeds this
 
 // TCF
 const GZIP_SIZE_TCF_ERROR_KB = 100;
