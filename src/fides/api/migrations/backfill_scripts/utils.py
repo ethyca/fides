@@ -7,8 +7,8 @@ from loguru import logger
 from redis.lock import Lock
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError
-from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from fides.api.util.lock import get_redis_lock
 
@@ -82,7 +82,7 @@ def is_backfill_completed(db: Session, backfill_name: str) -> bool:
 async def is_backfill_completed_async(db: AsyncSession, backfill_name: str) -> bool:
     """
     Async version of is_backfill_completed for use with AsyncSession.
-    
+
     Check if a backfill has already been completed.
     Returns True if the backfill is recorded in backfill_history, False otherwise.
     """

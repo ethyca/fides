@@ -454,10 +454,10 @@ class StagedResourceAncestor(Base):
         Index("ix_staged_resource_ancestor_ancestor", "ancestor_urn"),
         Index("ix_staged_resource_ancestor_descendant", "descendant_urn"),
         Index(
-            "ix_staged_resource_ancestor_desc_anc_dist",
-            "descendant_urn",
+            "ix_staged_resource_ancestor_anc_dist_desc",
             "ancestor_urn",
             "distance",
+            "descendant_urn",
         ),
     )
 
