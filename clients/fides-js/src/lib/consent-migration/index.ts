@@ -4,6 +4,7 @@ import {
   NoticeConsent,
 } from "../consent-types";
 import { OneTrustProvider } from "./onetrust";
+import { SourcePointProvider } from "./sourcepoint";
 import { TranscendProvider } from "./transcend";
 import {
   ConsentMigrationProvider,
@@ -47,6 +48,14 @@ export function registerDefaultProviders(
     registerProvider(
       ConsentMigrationProviderName.TRANSCEND,
       new TranscendProvider(),
+    );
+  }
+
+  // Register SourcePoint provider if configured
+  if (optionsOverrides.sourcepointFidesMapping) {
+    registerProvider(
+      ConsentMigrationProviderName.SOURCEPOINT,
+      new SourcePointProvider(),
     );
   }
 }

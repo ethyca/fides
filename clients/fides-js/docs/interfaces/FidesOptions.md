@@ -343,6 +343,35 @@ Field defaults to `undefined`.
 
 ***
 
+### sourcepoint\_fides\_mapping
+
+> **sourcepoint\_fides\_mapping**: `string`
+
+Given a SourcePoint (IAB TCF) → Fides notice mapping exists and the euconsent (TC string) cookie exists,
+Fides will "migrate" those consents to Fides privacy notices, and write to the Fides cookie.
+
+This way, Fides customers that are migrating away from SourcePoint don't need to show
+their users new consent dialogues when switching to Fides.
+
+Mapping keys are TCF purpose IDs (1–10). A purpose is considered consented if it has consent OR legitimate interest in the TC string.
+
+Example original sourcepointFidesMapping data:
+{
+   '1': ['essential_cookies'],
+   '2': ['analytics_tracking'],
+   '3': ['advertising', 'targeted_ads']
+}
+
+To encode original data to the format expected by this field, use:
+encodeURIComponent(JSON.stringify(sourcepointFidesMapping))
+
+To decode this field, use:
+JSON.parse(decodeURIComponent(sourcepoint_fides_mapping))
+
+Field defaults to `undefined`.
+
+***
+
 ### fides\_consent\_non\_applicable\_flag\_mode
 
 > **fides\_consent\_non\_applicable\_flag\_mode**: `"omit"` \| `"include"`

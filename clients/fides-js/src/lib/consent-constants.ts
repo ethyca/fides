@@ -99,6 +99,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       validationRegex: /(.*)/,
     },
     {
+      overrideName: "sourcepointFidesMapping",
+      overrideType: "string",
+      overrideKey: "sourcepoint_fides_mapping",
+      validationRegex: /(.*)/,
+    },
+    {
       overrideName: "fidesDisabledNotices",
       overrideType: "array",
       overrideKey: "fides_disabled_notices",

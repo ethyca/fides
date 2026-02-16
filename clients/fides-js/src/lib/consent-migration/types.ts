@@ -10,6 +10,7 @@ import {
 export enum ConsentMigrationProviderName {
   ONETRUST = "onetrust",
   TRANSCEND = "transcend",
+  SOURCEPOINT = "sourcepoint",
 }
 
 /**

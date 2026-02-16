@@ -152,6 +152,9 @@ export interface FidesInitOptions {
   // If defined, maps Transcend cookie consent to Fides cookie consent
   transcendFidesMapping?: string | null;
 
+  // If defined, maps SourcePoint (TCF) cookie consent to Fides cookie consent
+  sourcepointFidesMapping?: string | null;
+
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
 
@@ -293,6 +296,19 @@ export interface OtToFidesConsentMapping {
  */
 export interface TranscendToFidesConsentMapping {
   [key: string]: string[];
+}
+
+/**
+ * Store the SourcePoint (TCF) to Fides consent mappings from TCF purpose ID -> array of fides notice keys, e.g.
+ * {
+ *     "1": ["essential"],
+ *     "2": ["analytics_opt_out"],
+ *     "3": ["advertising", "marketing"],
+ *   }
+ * A purpose is considered consented if it has consent OR legitimate interest in the TC string.
+ */
+export interface SourcePointToFidesConsentMapping {
+  [purposeId: string]: string[];
 }
 
 /**
@@ -911,6 +927,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentOverride"
   | "otFidesMapping"
   | "transcendFidesMapping"
+  | "sourcepointFidesMapping"
   | "fidesDisabledNotices"
   | "fidesDisabledSystems"
   | "fidesConsentNonApplicableFlagMode"
