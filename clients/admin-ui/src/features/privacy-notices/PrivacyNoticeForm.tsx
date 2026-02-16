@@ -46,7 +46,6 @@ import { ControlledSelect } from "../common/form/ControlledSelect";
 import {
   CONSENT_MECHANISM_OPTIONS,
   defaultInitialValues,
-  ENFORCEMENT_LEVEL_OPTIONS,
   transformPrivacyNoticeResponseToCreation,
   ValidationSchema,
 } from "./form";
@@ -241,13 +240,6 @@ const PrivacyNoticeForm = ({
                   label="Data use"
                   options={dataUseOptions}
                   mode="multiple"
-                  layout="stacked"
-                />
-                <ControlledSelect
-                  name="enforcement_level"
-                  label="Enforcement level"
-                  options={ENFORCEMENT_LEVEL_OPTIONS}
-                  isRequired
                   layout="stacked"
                 />
               </FormSection>
