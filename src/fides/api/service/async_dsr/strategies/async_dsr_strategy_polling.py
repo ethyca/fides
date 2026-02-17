@@ -312,6 +312,13 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         for next_request, param_value_map in prepared_requests:
             response = client.send(next_request, read_request.ignore_errors)
 
+            if read_request.ignore_errors and not response.ok:
+                logger.info(
+                    "Ignoring errored response with status code {} for initial async polling request as configured.",
+                    response.status_code,
+                )
+                continue
+
             if not response.ok:
                 raise FidesopsException(
                     f"Initial async request failed with status code {response.status_code}: {response.text}"
@@ -364,6 +371,13 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                     row, policy, privacy_request
                 )
                 response = client.send(prepared_request, request.ignore_errors)
+
+                if request.ignore_errors and not response.ok:
+                    logger.info(
+                        "Ignoring errored response with status code {} for initial async polling erasure request as configured.",
+                        response.status_code,
+                    )
+                    continue
 
                 if not response.ok:
                     raise FidesopsException(
