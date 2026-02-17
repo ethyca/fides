@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -14,10 +14,33 @@ from fides.api.graph.config import (
     FieldAddress,
     FieldPath,
     GraphDataset,
+    PropertyScope,
     SeedAddress,
 )
 
 DataCategoryFieldMapping = Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]]
+
+# Hook registry for dataset graph filters applied before traversal.
+# Fidesplus registers property-based filtering here at startup.
+DatasetGraphFilter = Callable[[List[GraphDataset], Optional[str]], List[GraphDataset]]
+_dataset_graph_filters: List[DatasetGraphFilter] = []
+
+
+def register_dataset_graph_filter(fn: DatasetGraphFilter) -> None:
+    """Register a filter function applied to dataset graphs before traversal.
+
+    Filters receive (dataset_graphs, property_id) and return a filtered list.
+    """
+    _dataset_graph_filters.append(fn)
+
+
+def apply_dataset_graph_filters(
+    dataset_graphs: List[GraphDataset], property_id: Optional[str]
+) -> List[GraphDataset]:
+    """Apply all registered dataset graph filters."""
+    for fn in _dataset_graph_filters:
+        dataset_graphs = fn(dataset_graphs, property_id)
+    return dataset_graphs
 
 
 class Node:
@@ -34,6 +57,15 @@ class Node:
         self.address = CollectionAddress(dataset.name, collection.name)
         self.dataset = dataset
         self.collection = collection
+
+    @property
+    def in_scope(self) -> bool:
+        """Whether this node is in-scope for property-based filtering.
+
+        Returns False for TRAVERSAL_ONLY bridge nodes that are only included
+        for FK traversal.
+        """
+        return self.collection.property_scope == PropertyScope.in_scope
 
     def __repr__(self) -> str:
         return f"Node({self.address})"

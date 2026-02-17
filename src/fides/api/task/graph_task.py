@@ -28,6 +28,7 @@ from fides.api.graph.config import (
     FieldAddress,
     FieldPath,
     GraphDataset,
+    PropertyScope,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
@@ -722,6 +723,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
+        is_traversal_only = (
+            self.execution_node.collection.property_scope
+            == PropertyScope.traversal_only
+        )
         with logger.contextualize(
             **{LoggerContextKeys.privacy_request_id.value: self.resources.request.id}
         ):
@@ -738,6 +743,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                     self.request_task,
                     formatted_input_data,
                 )
+
+            if is_traversal_only:
+                # TRAVERSAL_ONLY bridge nodes: retrieve data for FK propagation
+                # to downstream nodes, but don't save for erasures or access report.
+                logger.info(
+                    "TRAVERSAL_ONLY node {}: caching FK values for downstream, "
+                    "skipping access report and erasure data.",
+                    self.execution_node.address,
+                )
+                if self.request_task.id:
+                    self.request_task.access_data = output
+                self.log_end(ActionType.access, record_count=len(output))
+                return output
 
             filtered_output: List[Row] = self.access_results_post_processing(
                 self.pre_process_input_data(*inputs, group_dependent_fields=False),
@@ -766,6 +784,25 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         ] = None,  # Upstream data from corresponding access task
     ) -> int:
         """Run erasure request"""
+        if (
+            self.execution_node.collection.property_scope
+            == PropertyScope.traversal_only
+        ):
+            # TRAVERSAL_ONLY bridge nodes: skip masking entirely
+            logger.info(
+                "TRAVERSAL_ONLY node {}: skipping erasure.",
+                self.execution_node.address,
+            )
+            if self.request_task.id:
+                self.request_task.rows_masked = 0
+            self.resources.cache_erasure(self.key.value, 0)
+            self.update_status(
+                "Skipped erasure for traversal-only bridge node",
+                None,
+                ActionType.erasure,
+                ExecutionLogStatus.complete,
+            )
+            return 0
 
         if inputs is None:
             inputs = []

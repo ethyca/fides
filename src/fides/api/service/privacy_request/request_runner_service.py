@@ -25,7 +25,7 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.graph import DatasetGraph, apply_dataset_graph_filters
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
@@ -529,6 +529,11 @@ def run_privacy_request(
                     session, config_types=[ActionType.access, ActionType.erasure]
                 )
                 dataset_graphs.extend(manual_task_graphs)
+
+                # Apply registered dataset graph filters (e.g. property-based DAG filtering)
+                dataset_graphs = apply_dataset_graph_filters(
+                    dataset_graphs, privacy_request.property_id
+                )
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
 
