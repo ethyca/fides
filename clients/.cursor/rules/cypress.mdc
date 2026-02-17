@@ -1,0 +1,18 @@
+# Running Cypress from agent/automated environments
+
+When running Cypress (e.g. `npm run cy:run` or `npx cypress run`) from an environment where **ELECTRON_RUN_AS_NODE** is set (e.g. Cursor's agent), Cypress will fail with "bad option" errors during verification.
+
+**Fix:** Unset that variable before invoking Cypress:
+
+```bash
+env -u ELECTRON_RUN_AS_NODE npx cypress run
+# or for a single spec:
+env -u ELECTRON_RUN_AS_NODE npx cypress run --spec "cypress/e2e/fides-js/consent-notices.cy.ts"
+```
+
+From the privacy-center directory:
+
+```bash
+cd clients/privacy-center
+env -u ELECTRON_RUN_AS_NODE npm run cy:run
+```

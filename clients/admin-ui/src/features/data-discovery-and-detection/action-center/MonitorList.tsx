@@ -67,7 +67,9 @@ const MonitorList = () => {
     > => {
       return {
         search: search || undefined,
-        monitor_type: monitor_type ? [monitor_type] : undefined,
+        monitor_type: monitor_type
+          ? [monitor_type]
+          : availableMonitorTypes /** this should be handled via ant binding ideally. * */,
         steward_user_id:
           typeof steward_key === "undefined" || !steward_key
             ? []

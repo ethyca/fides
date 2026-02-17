@@ -1,9 +1,9 @@
 import {
   ChakraUseDisclosureReturn as UseDisclosureReturn,
+  PageSpinner,
   useChakraToast as useToast,
 } from "fidesui";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import FormModal from "~/features/common/modals/FormModal";
@@ -161,7 +161,7 @@ const ConfigureMonitorModal = ({
             integrationKey={integration.key}
           />
         ) : (
-          <FidesSpinner />
+          <PageSpinner />
         ))}
     </FormModal>
   );
