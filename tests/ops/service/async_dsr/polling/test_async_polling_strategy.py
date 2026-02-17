@@ -624,10 +624,9 @@ class TestAsyncPollingStrategy:
         self, db, async_polling_strategy
     ):
         """
-        Integration test: when all initial access requests return an ignored error
-        (e.g. 409), _initial_request_access should return [] instead of raising
-        AwaitingAsyncProcessing. This prevents the task from looping back into the
-        initial_async phase indefinitely.
+        When all initial access requests return an ignored error (I.E ignore_errors: [409] on config)
+        _initial_request_access should return [] instead of raising AwaitingAsyncProcessing.
+        This prevents the task from looping back into the initial_async phase indefinitely.
         """
         # Create a fresh task with no async_type and no sub-requests
         request_task = RequestTask.create(
@@ -691,10 +690,10 @@ class TestAsyncPollingStrategy:
         self, db, async_polling_strategy
     ):
         """
-        Integration test: when some initial requests succeed (creating sub-requests)
-        and others are ignored (409), _initial_request_access should raise
-        AwaitingAsyncProcessing for the successful ones.
+        When some initial requests succeed and others are ignored,
+        _initial_request_access should raise AwaitingAsyncProcessing for the successful ones.
         """
+
         request_task = RequestTask.create(
             db,
             data={
