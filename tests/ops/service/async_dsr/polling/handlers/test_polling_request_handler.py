@@ -1,5 +1,8 @@
 import pytest
-from starlette.status import HTTP_200_OK, HTTP_409_CONFLICT, HTTP_500_INTERNAL_SERVER_ERROR
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_409_CONFLICT,
+)
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.async_polling_configuration import (

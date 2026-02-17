@@ -321,7 +321,7 @@ def initiate_polling_task_requeue() -> None:
         id=ASYNC_TASKS_STATUS_POLLING,
         coalesce=True,
         replace_existing=True,
-        seconds=100
+        seconds=CONFIG.execution.async_polling_interval_hours * 3600,
     )
 
 
