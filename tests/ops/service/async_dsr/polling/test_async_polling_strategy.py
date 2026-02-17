@@ -652,14 +652,17 @@ class TestAsyncPollingStrategy:
             path="/api/start-request",
             correlation_id_path="request_id",
             ignore_errors=[409],
-            async_config={"strategy": "polling", "configuration": {
-                "status_request": {
-                    "method": "GET",
-                    "path": "/status/<correlation_id>",
-                    "status_path": "status",
-                    "status_completed_value": "completed",
+            async_config={
+                "strategy": "polling",
+                "configuration": {
+                    "status_request": {
+                        "method": "GET",
+                        "path": "/status/<correlation_id>",
+                        "status_path": "status",
+                        "status_completed_value": "completed",
+                    },
                 },
-            }},
+            },
         )
 
         # Mock query_config to return our read request with async_config
@@ -673,13 +676,18 @@ class TestAsyncPollingStrategy:
         mock_client = MagicMock()
         mock_response = Mock(spec=Response)
         mock_response.status_code = 409
-        mock_response.text = '{"error": "A request with this identifier is already pending"}'
+        mock_response.text = (
+            '{"error": "A request with this identifier is already pending"}'
+        )
         mock_response.ok = False
         mock_client.send.return_value = mock_response
 
         # Should return [] instead of raising AwaitingAsyncProcessing
         result = async_polling_strategy._initial_request_access(
-            mock_client, request_task, mock_query_config, {"email": ["test@example.com"]}
+            mock_client,
+            request_task,
+            mock_query_config,
+            {"email": ["test@example.com"]},
         )
 
         assert result == []
@@ -715,14 +723,17 @@ class TestAsyncPollingStrategy:
             path="/api/start-request",
             correlation_id_path="request_id",
             ignore_errors=[409],
-            async_config={"strategy": "polling", "configuration": {
-                "status_request": {
-                    "method": "GET",
-                    "path": "/status/<correlation_id>",
-                    "status_path": "status",
-                    "status_completed_value": "completed",
+            async_config={
+                "strategy": "polling",
+                "configuration": {
+                    "status_request": {
+                        "method": "GET",
+                        "path": "/status/<correlation_id>",
+                        "status_path": "status",
+                        "status_completed_value": "completed",
+                    },
                 },
-            }},
+            },
         )
 
         mock_query_config = MagicMock()
@@ -750,7 +761,10 @@ class TestAsyncPollingStrategy:
         # Should raise AwaitingAsyncProcessing because one sub-request was created
         with pytest.raises(AwaitingAsyncProcessing):
             async_polling_strategy._initial_request_access(
-                mock_client, request_task, mock_query_config, {"email": ["user1@example.com", "user2@example.com"]}
+                mock_client,
+                request_task,
+                mock_query_config,
+                {"email": ["user1@example.com", "user2@example.com"]},
             )
 
         # Only one sub-request created (the successful one), the 409 was skipped
