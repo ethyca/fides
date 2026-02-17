@@ -37,17 +37,17 @@ describe("Policies list page", () => {
 
     it("displays action type tags from policy rules", () => {
       cy.contains("Default Consent Policy")
-        .closest(".ant-list-item")
+        .closest("li")
         .within(() => {
           cy.contains("consent").should("exist");
         });
       cy.contains("Default Erasure Policy")
-        .closest(".ant-list-item")
+        .closest("li")
         .within(() => {
           cy.contains("erasure").should("exist");
         });
       cy.contains("Default Access Policy")
-        .closest(".ant-list-item")
+        .closest("li")
         .within(() => {
           cy.contains("access").should("exist");
         });

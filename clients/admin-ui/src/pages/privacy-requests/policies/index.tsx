@@ -46,83 +46,82 @@ const PoliciesPage: NextPage = () => {
         breadcrumbItems={[{ title: "All policies" }]}
       />
 
-      <div className="mb-6">
-        <Paragraph type="secondary">
-          Data Subject Request (DSR) policies define how privacy requests are
-          processed. Each policy contains rules that specify actions to take on
-          data categories, such as access, erasure, or consent operations.
-        </Paragraph>
-        <Paragraph type="secondary">
-          Policies can also include conditions that determine when the policy
-          applies based on request attributes like geography, request type, or
-          custom fields.
-        </Paragraph>
+      <Flex vertical gap="large">
+        <div>
+          <Paragraph type="secondary">
+            Data Subject Request (DSR) policies define how privacy requests are
+            processed. Each policy contains rules that specify actions to take
+            on data categories, such as access, erasure, or consent operations.
+          </Paragraph>
+          <Paragraph type="secondary">
+            Policies can also include conditions that determine when the policy
+            applies based on request attributes like geography, request type, or
+            custom fields.
+          </Paragraph>
+          <SearchInput
+            placeholder="Search policies by name or key..."
+            onChange={setSearchQuery}
+            value={searchQuery}
+            className="max-w-md"
+          />
+        </div>
 
-        <SearchInput
-          placeholder="Search policies by name or key..."
-          onChange={setSearchQuery}
-          value={searchQuery}
-          className="max-w-md"
-        />
-      </div>
+        {!isLoading && filteredPolicies.length === 0 && (
+          <Empty
+            description={
+              searchQuery
+                ? "No policies match your search"
+                : "No policies configured"
+            }
+            className="py-8"
+          />
+        )}
+        {!isLoading && filteredPolicies.length > 0 && (
+          <List
+            dataSource={filteredPolicies}
+            data-testid="policies-list"
+            renderItem={(policy: PolicyResponse) => {
+              const actionTypes = getActionTypes(policy.rules);
 
-      {!isLoading && filteredPolicies.length === 0 && (
-        <Empty
-          description={
-            searchQuery
-              ? "No policies match your search"
-              : "No policies configured"
-          }
-          className="py-8"
-        />
-      )}
-      {!isLoading && filteredPolicies.length > 0 && (
-        <List
-          dataSource={filteredPolicies}
-          data-testid="policies-list"
-          renderItem={(policy: PolicyResponse) => {
-            const actionTypes = getActionTypes(policy.rules);
-
-            return (
-              <List.Item key={policy.key ?? policy.name}>
-                <List.Item.Meta
-                  title={
-                    <Flex align="center" gap={8}>
-                      <Text strong>{policy.name}</Text>
-                      {actionTypes.map((actionType) => (
-                        <Tag key={actionType} className="capitalize">
-                          {actionType}
-                        </Tag>
-                      ))}
-                    </Flex>
-                  }
-                  description={<Text type="secondary">{policy.key}</Text>}
-                />
-                {policy.execution_timeframe && (
-                  <div className="mr-4">
+              return (
+                <List.Item key={policy.key ?? policy.name}>
+                  <List.Item.Meta
+                    title={
+                      <Flex align="center" gap={8}>
+                        <Text strong>{policy.name}</Text>
+                        {actionTypes.map((actionType) => (
+                          <Tag key={actionType} className="capitalize">
+                            {actionType}
+                          </Tag>
+                        ))}
+                      </Flex>
+                    }
+                    description={<Text type="secondary">{policy.key}</Text>}
+                  />
+                  {policy.execution_timeframe && (
                     <Text type="secondary">
                       Timeframe: {policy.execution_timeframe} days
                     </Text>
-                  </div>
-                )}
-              </List.Item>
-            );
-          }}
-        />
-      )}
-      {isLoading && (
-        <List>
-          <List.Item>
-            <Skeleton title={false} active />
-          </List.Item>
-          <List.Item>
-            <Skeleton title={false} active />
-          </List.Item>
-          <List.Item>
-            <Skeleton title={false} active />
-          </List.Item>
-        </List>
-      )}
+                  )}
+                </List.Item>
+              );
+            }}
+          />
+        )}
+        {isLoading && (
+          <List>
+            <List.Item>
+              <Skeleton title={false} active />
+            </List.Item>
+            <List.Item>
+              <Skeleton title={false} active />
+            </List.Item>
+            <List.Item>
+              <Skeleton title={false} active />
+            </List.Item>
+          </List>
+        )}
+      </Flex>
     </FixedLayout>
   );
 };
