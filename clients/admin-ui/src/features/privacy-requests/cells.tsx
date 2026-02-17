@@ -64,6 +64,14 @@ export const statusPropMap: {
     colorScheme: CUSTOM_TAG_COLOR.DEFAULT,
     label: "Duplicate",
   },
+  awaiting_pre_approval: {
+    colorScheme: CUSTOM_TAG_COLOR.CAUTION,
+    label: "Awaiting Pre-Approval",
+  },
+  pre_approval_not_eligible: {
+    colorScheme: CUSTOM_TAG_COLOR.WARNING,
+    label: "Not Eligible",
+  },
 };
 
 export const RequestStatusBadgeCell = ({
