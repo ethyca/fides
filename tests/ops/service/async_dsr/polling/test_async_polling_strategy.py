@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 from unittest.mock import MagicMock, Mock, patch
 
@@ -11,8 +12,9 @@ from fides.api.common_exceptions import (
     PrivacyRequestError,
 )
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import RequestTask
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
@@ -628,7 +630,18 @@ class TestAsyncPollingStrategy:
         _initial_request_access should return [] instead of raising AwaitingAsyncProcessing.
         This prevents the task from looping back into the initial_async phase indefinitely.
         """
-        # Create a fresh task with no async_type and no sub-requests
+        # Use a real PrivacyRequest so we never assign a mock to the relationship
+        access_policy = Policy.create(
+            db,
+            data={"name": str(uuid.uuid4()), "key": str(uuid.uuid4())},
+        )
+        privacy_request = PrivacyRequest.create(
+            db,
+            data={
+                "policy_id": access_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
         request_task = RequestTask.create(
             db,
             data={
@@ -638,13 +651,9 @@ class TestAsyncPollingStrategy:
                 "collection_name": "test_collection",
                 "status": "pending",
                 "action_type": "access",
+                "privacy_request_id": privacy_request.id,
             },
         )
-
-        # Mock the privacy_request.policy relationship
-        mock_privacy_request = MagicMock()
-        mock_privacy_request.policy = Policy()
-        request_task.privacy_request = mock_privacy_request
 
         # Create a read request with async_config and ignore_errors including 409
         read_request = ReadSaaSRequest(
@@ -701,7 +710,17 @@ class TestAsyncPollingStrategy:
         When some initial requests succeed and others are ignored,
         _initial_request_access should raise AwaitingAsyncProcessing for the successful ones.
         """
-
+        access_policy = Policy.create(
+            db,
+            data={"name": str(uuid.uuid4()), "key": str(uuid.uuid4())},
+        )
+        privacy_request = PrivacyRequest.create(
+            db,
+            data={
+                "policy_id": access_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
         request_task = RequestTask.create(
             db,
             data={
@@ -711,12 +730,9 @@ class TestAsyncPollingStrategy:
                 "collection_name": "test_collection",
                 "status": "pending",
                 "action_type": "access",
+                "privacy_request_id": privacy_request.id,
             },
         )
-
-        mock_privacy_request = MagicMock()
-        mock_privacy_request.policy = Policy()
-        request_task.privacy_request = mock_privacy_request
 
         read_request = ReadSaaSRequest(
             method="GET",
@@ -779,6 +795,14 @@ class TestAsyncPollingStrategy:
         (e.g. 409), _initial_request_erasure should return 0 instead of raising
         AwaitingAsyncProcessing.
         """
+        policy = erasure_policy(db)
+        privacy_request = PrivacyRequest.create(
+            db,
+            data={
+                "policy_id": policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
         request_task = RequestTask.create(
             db,
             data={
@@ -788,12 +812,9 @@ class TestAsyncPollingStrategy:
                 "collection_name": "test_collection",
                 "status": "pending",
                 "action_type": "erasure",
+                "privacy_request_id": privacy_request.id,
             },
         )
-
-        mock_privacy_request = MagicMock()
-        mock_privacy_request.policy = erasure_policy(db)
-        request_task.privacy_request = mock_privacy_request
 
         # Create a masking request with async_config and ignore_errors including 409
         masking_request = MagicMock()
