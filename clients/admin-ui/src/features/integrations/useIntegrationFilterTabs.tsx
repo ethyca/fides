@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { useFlags } from "~/features/common/features/features.slice";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 
 export enum IntegrationFilterTabs {
@@ -14,7 +15,14 @@ export enum IntegrationFilterTabs {
 }
 
 const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
-  const tabs = Object.values(IntegrationFilterTabs);
+  const {
+    flags: { webMonitor },
+  } = useFlags();
+  const tabs = !webMonitor
+    ? Object.values(IntegrationFilterTabs).filter(
+        (tab) => tab !== IntegrationFilterTabs.WEBSITE,
+      )
+    : Object.values(IntegrationFilterTabs);
 
   const [tabIndex, setTabIndex] = useState(0);
   const currentTab = tabs[tabIndex];

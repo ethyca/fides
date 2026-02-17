@@ -1164,8 +1164,11 @@ class TestStagedResourceAncestorModel:
         """Test creating ancestor links for multiple staged resources in bulk."""
         # Test bulk creation with multiple descendant-ancestor mappings
         ancestor_links = {
-            staged_resource_2.urn: {staged_resource_1.urn},
-            staged_resource_3.urn: {staged_resource_1.urn, staged_resource_2.urn},
+            staged_resource_2.urn: {(staged_resource_1.urn, 1)},
+            staged_resource_3.urn: {
+                (staged_resource_1.urn, 2),
+                (staged_resource_2.urn, 1),
+            },
         }
 
         StagedResourceAncestor.create_all_staged_resource_ancestor_links(
@@ -1180,6 +1183,7 @@ class TestStagedResourceAncestorModel:
         )
         assert len(links_for_resource_2) == 1
         assert links_for_resource_2[0].ancestor_urn == staged_resource_1.urn
+        assert links_for_resource_2[0].distance == 1
 
         # Verify links for resource_3
         links_for_resource_3 = (
@@ -1188,8 +1192,15 @@ class TestStagedResourceAncestorModel:
             .all()
         )
         assert len(links_for_resource_3) == 2
-        created_ancestor_urns = {link.ancestor_urn for link in links_for_resource_3}
-        assert created_ancestor_urns == {staged_resource_1.urn, staged_resource_2.urn}
+
+        # Verify ancestor URNs and distances
+        link_data = {
+            (link.ancestor_urn, link.distance) for link in links_for_resource_3
+        }
+        assert link_data == {
+            (staged_resource_1.urn, 2),
+            (staged_resource_2.urn, 1),
+        }
 
         # Verify relationships
         sr2 = StagedResource.get_urn(db, staged_resource_2.urn)
@@ -1240,7 +1251,7 @@ class TestStagedResourceAncestorModel:
     ):
         """Test that creating the same links multiple times is idempotent."""
         descendant_urn = staged_resource_2.urn
-        ancestor_urns = {staged_resource_1.urn}
+        ancestor_urns = {(staged_resource_1.urn, 1)}
 
         # Create links for the first time
         StagedResourceAncestor.create_all_staged_resource_ancestor_links(
@@ -1252,6 +1263,7 @@ class TestStagedResourceAncestorModel:
             .all()
         )
         assert len(links_first_call) == 1
+        assert links_first_call[0].distance == 1
 
         # Create links for the second time with the same data
         StagedResourceAncestor.create_all_staged_resource_ancestor_links(
@@ -1293,10 +1305,14 @@ class TestStagedResourceAncestorModel:
         # Create ancestor links that will generate 7 total links
         # This will test multiple batches with our small batch size
         ancestor_links = {
-            resources[1].urn: {resources[0].urn},
-            resources[2].urn: {resources[0].urn, resources[1].urn},
-            resources[3].urn: {resources[0].urn, resources[1].urn, resources[2].urn},
-            resources[4].urn: {resources[0].urn},
+            resources[1].urn: {(resources[0].urn, 1)},
+            resources[2].urn: {(resources[0].urn, 2), (resources[1].urn, 1)},
+            resources[3].urn: {
+                (resources[0].urn, 3),
+                (resources[1].urn, 2),
+                (resources[2].urn, 1),
+            },
+            resources[4].urn: {(resources[0].urn, 1)},
         }
 
         # Mock db.execute to count how many times it's called
@@ -1315,7 +1331,7 @@ class TestStagedResourceAncestorModel:
         assert len(all_links) == 7
 
         # Verify specific relationships
-        # Resource 1 should have 1 ancestor (resource 0)
+        # Resource 1 should have 1 ancestor (resource 0 at distance 1)
         links_for_resource_1 = (
             db.query(StagedResourceAncestor)
             .filter_by(descendant_urn=resources[1].urn)
@@ -1323,36 +1339,40 @@ class TestStagedResourceAncestorModel:
         )
         assert len(links_for_resource_1) == 1
         assert links_for_resource_1[0].ancestor_urn == resources[0].urn
+        assert links_for_resource_1[0].distance == 1
 
-        # Resource 2 should have 2 ancestors (resources 0 and 1)
+        # Resource 2 should have 2 ancestors (resources 0 at distance 2, 1 at distance 1)
         links_for_resource_2 = (
             db.query(StagedResourceAncestor)
             .filter_by(descendant_urn=resources[2].urn)
             .all()
         )
         assert len(links_for_resource_2) == 2
-        ancestor_urns_for_resource_2 = {
-            link.ancestor_urn for link in links_for_resource_2
+        link_data_resource_2 = {
+            (link.ancestor_urn, link.distance) for link in links_for_resource_2
         }
-        assert ancestor_urns_for_resource_2 == {resources[0].urn, resources[1].urn}
+        assert link_data_resource_2 == {
+            (resources[0].urn, 2),
+            (resources[1].urn, 1),
+        }
 
-        # Resource 3 should have 3 ancestors (resources 0, 1, and 2)
+        # Resource 3 should have 3 ancestors (resources 0 at distance 3, 1 at distance 2, 2 at distance 1)
         links_for_resource_3 = (
             db.query(StagedResourceAncestor)
             .filter_by(descendant_urn=resources[3].urn)
             .all()
         )
         assert len(links_for_resource_3) == 3
-        ancestor_urns_for_resource_3 = {
-            link.ancestor_urn for link in links_for_resource_3
+        link_data_resource_3 = {
+            (link.ancestor_urn, link.distance) for link in links_for_resource_3
         }
-        assert ancestor_urns_for_resource_3 == {
-            resources[0].urn,
-            resources[1].urn,
-            resources[2].urn,
+        assert link_data_resource_3 == {
+            (resources[0].urn, 3),
+            (resources[1].urn, 2),
+            (resources[2].urn, 1),
         }
 
-        # Resource 4 should have 1 ancestor (resource 0)
+        # Resource 4 should have 1 ancestor (resource 0 at distance 1)
         links_for_resource_4 = (
             db.query(StagedResourceAncestor)
             .filter_by(descendant_urn=resources[4].urn)
@@ -1360,6 +1380,7 @@ class TestStagedResourceAncestorModel:
         )
         assert len(links_for_resource_4) == 1
         assert links_for_resource_4[0].ancestor_urn == resources[0].urn
+        assert links_for_resource_4[0].distance == 1
 
     def test_cascade_delete_when_descendant_is_deleted(
         self,
@@ -1377,8 +1398,8 @@ class TestStagedResourceAncestorModel:
         StagedResourceAncestor.create_all_staged_resource_ancestor_links(
             db=db,
             ancestor_links={
-                descendant_to_delete_urn: {ancestor_urn},
-                other_descendant_urn: {ancestor_urn},
+                descendant_to_delete_urn: {(ancestor_urn, 1)},
+                other_descendant_urn: {(ancestor_urn, 1)},
             },
         )
         db.commit()  # Commit to ensure links are queryable for relationship loading
@@ -1457,7 +1478,7 @@ class TestStagedResourceAncestorModel:
         StagedResourceAncestor.create_all_staged_resource_ancestor_links(
             db=db,
             ancestor_links={
-                descendant_urn: {ancestor_to_delete_urn, other_ancestor_urn}
+                descendant_urn: {(ancestor_to_delete_urn, 1), (other_ancestor_urn, 1)}
             },
         )
         db.commit()  # Commit to ensure links are queryable for relationship loading

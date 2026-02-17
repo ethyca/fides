@@ -2,6 +2,7 @@ import {
   Button,
   Flex,
   Icons,
+  PageSpinner,
   Title,
   Tooltip,
   Upload,
@@ -10,7 +11,6 @@ import {
 } from "fidesui";
 import { useCallback, useState } from "react";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -103,7 +103,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
           <Title level={3}>Attachments</Title>
         </div>
         {isLoadingStorage || isLoadingAttachments ? (
-          <FidesSpinner size="md" alignment="start" />
+          <PageSpinner alignment="start" />
         ) : (
           <Upload
             name="attachment_file"

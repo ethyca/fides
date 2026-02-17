@@ -2,7 +2,7 @@ import { stubPlus } from "cypress/support/stubs";
 
 import { CONSENT_REPORTING_ROUTE } from "~/features/common/nav/routes";
 
-describe("Consent reporting", () => {
+describe("Consent report", () => {
   beforeEach(() => {
     cy.login();
   });

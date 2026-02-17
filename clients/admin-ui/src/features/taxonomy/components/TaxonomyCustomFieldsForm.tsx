@@ -1,9 +1,8 @@
-import { Form, FormInstance, Input, Select } from "fidesui";
+import { Form, FormInstance, Input, PageSpinner, Select } from "fidesui";
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
-import FidesSpinner from "~/features/common/FidesSpinner";
 import CustomTaxonomySelect from "~/features/taxonomy/components/CustomTaxonomySelect";
 
 interface TaxonomyCustomFieldsFormProps {
@@ -38,7 +37,7 @@ const TaxonomyCustomFieldsForm = ({
       data-testid="custom-fields-form"
     >
       {isLoading ? (
-        <FidesSpinner />
+        <PageSpinner />
       ) : (
         <div>
           {!isEmpty(sortedCustomFieldDefinitionIds) && (

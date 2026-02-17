@@ -93,8 +93,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Reporting",
+        title: "Data map report",
         path: routes.REPORTING_DATAMAP_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+      },
+      {
+        title: "Asset report",
+        path: routes.REPORTING_ASSETS_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
@@ -144,7 +150,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
       },
       {
-        title: "Consent reporting",
+        title: "Consent report",
         path: routes.CONSENT_REPORTING_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],

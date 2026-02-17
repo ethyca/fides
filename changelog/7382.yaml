@@ -1,0 +1,4 @@
+type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Website monitor features being displayed when flag is disabled
+pr: 7382 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
