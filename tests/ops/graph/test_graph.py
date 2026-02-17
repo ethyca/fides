@@ -1,6 +1,12 @@
 import pytest
 
 from fides.api.graph.config import *
+from fides.api.graph.graph import (
+    Node,
+    _dataset_graph_filters,
+    apply_dataset_graph_filters,
+    register_dataset_graph_filter,
+)
 from fides.api.graph.traversal import *
 from fides.api.models.policy import ActionType
 from fides.api.task.graph_task import retry
@@ -57,6 +63,89 @@ class TestNode:
         assert node.collection.contains_field(lambda f: f.name == "f6") is False
         assert node.collection.contains_field(lambda f: f.primary_key)
         assert node.collection.contains_field(lambda f: f.identity == "ssn")
+
+    @pytest.mark.parametrize(
+        "property_scope,expected_in_scope",
+        [
+            (PropertyScope.IN_SCOPE, True),
+            (PropertyScope.TRAVERSAL_ONLY, False),
+        ],
+    )
+    def test_node_in_scope(self, property_scope, expected_in_scope):
+        coll = Collection(
+            name="scoped",
+            fields=[ScalarField(name="f1")],
+            property_scope=property_scope,
+        )
+        ds = GraphDataset(
+            name="ds", collections=[coll], connection_key="mock_key"
+        )
+        node = Node(ds, coll)
+        assert node.in_scope is expected_in_scope
+
+
+class TestDatasetGraphFilterRegistry:
+    @pytest.fixture(autouse=True)
+    def _clear_filters(self):
+        """Ensure filter registry is clean before and after each test."""
+        _dataset_graph_filters.clear()
+        yield
+        _dataset_graph_filters.clear()
+
+    def test_no_filters_is_noop(self):
+        datasets = [
+            GraphDataset(name="ds1", collections=[], connection_key="k1"),
+            GraphDataset(name="ds2", collections=[], connection_key="k2"),
+        ]
+        result = apply_dataset_graph_filters(datasets, "prop_1")
+        assert result == datasets
+
+    def test_single_filter_applied(self):
+        def drop_ds2(graphs, property_id):
+            return [g for g in graphs if g.name != "ds2"]
+
+        register_dataset_graph_filter(drop_ds2)
+
+        datasets = [
+            GraphDataset(name="ds1", collections=[], connection_key="k1"),
+            GraphDataset(name="ds2", collections=[], connection_key="k2"),
+        ]
+        result = apply_dataset_graph_filters(datasets, "prop_1")
+        assert [d.name for d in result] == ["ds1"]
+
+    def test_filters_compose_in_order(self):
+        """Multiple filters are applied as a pipeline."""
+        register_dataset_graph_filter(
+            lambda graphs, pid: [g for g in graphs if g.name != "ds1"]
+        )
+        register_dataset_graph_filter(
+            lambda graphs, pid: [g for g in graphs if g.name != "ds3"]
+        )
+
+        datasets = [
+            GraphDataset(name="ds1", collections=[], connection_key="k1"),
+            GraphDataset(name="ds2", collections=[], connection_key="k2"),
+            GraphDataset(name="ds3", collections=[], connection_key="k3"),
+        ]
+        result = apply_dataset_graph_filters(datasets, None)
+        assert [d.name for d in result] == ["ds2"]
+
+    def test_filter_receives_property_id(self):
+        """Filter function receives the property_id argument."""
+        captured = {}
+
+        def capture_pid(graphs, property_id):
+            captured["property_id"] = property_id
+            return graphs
+
+        register_dataset_graph_filter(capture_pid)
+        datasets = [GraphDataset(name="ds1", collections=[], connection_key="k1")]
+
+        apply_dataset_graph_filters(datasets, "my_prop")
+        assert captured["property_id"] == "my_prop"
+
+        apply_dataset_graph_filters(datasets, None)
+        assert captured["property_id"] is None
 
 
 def test_retry_decorator(privacy_request, policy, db):

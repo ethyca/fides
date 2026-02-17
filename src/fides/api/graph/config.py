@@ -115,8 +115,8 @@ class PropertyScope(str, Enum):
     TRAVERSAL_ONLY: Collection is not in-scope but is needed as a bridge for FK traversal.
     """
 
-    in_scope = "in_scope"
-    traversal_only = "traversal_only"
+    IN_SCOPE = "in_scope"
+    TRAVERSAL_ONLY = "traversal_only"
 
 
 class CollectionAddress:
@@ -477,7 +477,7 @@ class Collection(BaseModel):
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
     partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]] = None
     # Property-based filtering scope: IN_SCOPE (default) or TRAVERSAL_ONLY (bridge node)
-    property_scope: PropertyScope = PropertyScope.in_scope
+    property_scope: PropertyScope = PropertyScope.IN_SCOPE
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:

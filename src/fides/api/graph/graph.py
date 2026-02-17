@@ -65,7 +65,7 @@ class Node:
         Returns False for TRAVERSAL_ONLY bridge nodes that are only included
         for FK traversal.
         """
-        return self.collection.property_scope == PropertyScope.in_scope
+        return self.collection.property_scope == PropertyScope.IN_SCOPE
 
     def __repr__(self) -> str:
         return f"Node({self.address})"

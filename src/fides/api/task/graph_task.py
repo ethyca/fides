@@ -725,7 +725,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Run an access request on a single node."""
         is_traversal_only = (
             self.execution_node.collection.property_scope
-            == PropertyScope.traversal_only
+            == PropertyScope.TRAVERSAL_ONLY
         )
         with logger.contextualize(
             **{LoggerContextKeys.privacy_request_id.value: self.resources.request.id}
@@ -786,7 +786,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Run erasure request"""
         if (
             self.execution_node.collection.property_scope
-            == PropertyScope.traversal_only
+            == PropertyScope.TRAVERSAL_ONLY
         ):
             # TRAVERSAL_ONLY bridge nodes: skip masking entirely
             logger.info(
