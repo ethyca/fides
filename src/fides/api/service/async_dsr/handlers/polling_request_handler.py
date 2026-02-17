@@ -5,8 +5,9 @@ This module contains low-level HTTP request execution for async DSR polling,
 with no business logic or orchestration dependencies.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
+from loguru import logger
 from requests import Response
 
 from fides.api.common_exceptions import PrivacyRequestError
@@ -14,6 +15,7 @@ from fides.api.schemas.saas.async_polling_configuration import (
     PollingResultRequest,
     PollingStatusRequest,
 )
+from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.util.saas_util import map_param_values
 
@@ -33,6 +35,37 @@ class PollingRequestHandler:
         self.status_request = status_request
         self.result_request = result_request
 
+    @staticmethod
+    def _send_and_handle_errors(
+        client: AuthenticatedClient,
+        prepared_request: SaaSRequestParams,
+        ignore_errors: Optional[Union[bool, List[int]]],
+        request_label: str,
+    ) -> Response:
+        """
+        Send a request and handle error responses, respecting ignore_errors configuration.
+
+        Mirrors the sync path convention from SaaSConnector._handle_errored_response:
+        when ignore_errors is configured and the response is not ok, the error is logged
+        and the response is returned without raising.
+        """
+        response: Response = client.send(prepared_request, ignore_errors)
+
+        if ignore_errors and not response.ok:
+            logger.info(
+                "Ignoring errored response with status code {} for {} as configured.",
+                response.status_code,
+                request_label,
+            )
+            return response
+
+        if not response.ok:
+            raise PrivacyRequestError(
+                f"{request_label} failed with status code {response.status_code}: {response.text}"
+            )
+
+        return response
+
     def get_status_response(
         self,
         client: AuthenticatedClient,
@@ -51,14 +84,12 @@ class PollingRequestHandler:
             param_values=param_values,
         )
 
-        response: Response = client.send(prepared_status_request)
-
-        if not response.ok:
-            raise PrivacyRequestError(
-                f"Status request failed with status code {response.status_code}: {response.text}"
-            )
-
-        return response
+        return self._send_and_handle_errors(
+            client,
+            prepared_status_request,
+            self.status_request.ignore_errors,
+            "Status request",
+        )
 
     def get_result_response(
         self,
@@ -78,11 +109,9 @@ class PollingRequestHandler:
             param_values=param_values,
         )
 
-        response: Response = client.send(prepared_result_request)
-
-        if not response.ok:
-            raise PrivacyRequestError(
-                f"Result request failed with status code {response.status_code}: {response.text}"
-            )
-
-        return response
+        return self._send_and_handle_errors(
+            client,
+            prepared_result_request,
+            self.result_request.ignore_errors,
+            "Result request",
+        )
