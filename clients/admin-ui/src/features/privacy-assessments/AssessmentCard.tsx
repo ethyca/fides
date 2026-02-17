@@ -4,13 +4,13 @@ import {
   CUSTOM_TAG_COLOR,
   Flex,
   Tag,
+  TagList,
   Text,
   Typography,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { TagList } from "~/features/common/TagList";
 
 import {
   ASSESSMENT_STATUS_LABELS,
