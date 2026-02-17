@@ -147,7 +147,7 @@ export const PrivacyRequestFiltersBar = ({
         maxTagCount="responsive"
         data-testid="request-status-filter"
         aria-label="Status"
-        className="w-44"
+        className="w-56"
         maxTagPlaceholder={maxTagPlaceholder}
       />
       <Select
