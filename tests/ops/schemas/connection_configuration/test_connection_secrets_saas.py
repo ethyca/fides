@@ -138,7 +138,7 @@ class TestSaaSConnectionSecretsDomainValidation:
             ConnectorParam(
                 name="domain",
                 default_value="api.stripe.com",
-                allowed_domains=[r"api\.stripe\.com"],
+                allowed_domains=["api.stripe.com"],
             ),
             ConnectorParam(name="api_key"),
         ]
@@ -235,7 +235,7 @@ class TestSaaSConnectionSecretsDomainValidation:
         config.connector_params = [
             ConnectorParam(
                 name="domain",
-                allowed_domains=[r".*\.salesforce\.com"],
+                allowed_domains=["*.salesforce.com"],
             ),
             ConnectorParam(name="api_key"),
         ]
@@ -257,7 +257,7 @@ class TestSaaSConnectionSecretsDomainValidation:
         config.connector_params = [
             ConnectorParam(
                 name="domain",
-                allowed_domains=[r".*\.salesforce\.com"],
+                allowed_domains=["*.salesforce.com"],
             ),
             ConnectorParam(name="api_key"),
         ]

@@ -486,7 +486,7 @@ class TestSaaSConfigHostDomainRestrictions:
                 {
                     "name": "domain",
                     "default_value": "api.stripe.com",
-                    "allowed_domains": [r"api\.stripe\.com"],
+                    "allowed_domains": ["api.stripe.com"],
                 },
             ],
             host="<domain>",
@@ -502,7 +502,7 @@ class TestSaaSConfigHostDomainRestrictions:
                 {
                     "name": "domain",
                     "default_value": "api.stripe.com",
-                    "allowed_domains": [r"api\.stripe\.com"],
+                    "allowed_domains": ["api.stripe.com"],
                 },
                 {"name": "api_key", "sensitive": True},
             ],
@@ -542,7 +542,7 @@ class TestSaaSConfigHostDomainRestrictions:
             connector_params=[
                 {
                     "name": "domain",
-                    "allowed_domains": [r"api\.stripe\.com"],
+                    "allowed_domains": ["api.stripe.com"],
                 },
                 {"name": "other_host"},
             ],
@@ -575,7 +575,7 @@ class TestSaaSConfigHostDomainRestrictions:
             connector_params=[
                 {
                     "name": "domain",
-                    "allowed_domains": [r"api\.stripe\.com"],
+                    "allowed_domains": ["api.stripe.com"],
                 },
             ],
             host="<some_other_secret>",
@@ -590,7 +590,7 @@ class TestSaaSConfigHostDomainRestrictions:
             connector_params=[
                 {
                     "name": "domain",
-                    "allowed_domains": [r"api\.stripe\.com"],
+                    "allowed_domains": ["api.stripe.com"],
                 },
             ],
             host="evil.example.com",
@@ -605,7 +605,7 @@ class TestSaaSConfigHostDomainRestrictions:
             connector_params=[
                 {
                     "name": "domain",
-                    "allowed_domains": [r"api\.stripe\.com"],
+                    "allowed_domains": ["api.stripe.com"],
                 },
                 {"name": "test_host"},
             ],

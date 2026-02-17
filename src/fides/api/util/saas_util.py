@@ -55,26 +55,42 @@ def deny_unsafe_hosts(host: str) -> str:
     return host
 
 
+def _wildcard_to_regex(pattern: str) -> str:
+    """
+    Convert a wildcard pattern (using ``*``) into a regex string.
+
+    The conversion escapes every regex-special character first, then
+    replaces the escaped ``\\*`` tokens with ``.*`` so that each ``*``
+    in the original pattern matches any sequence of characters
+    (including dots and empty strings).
+    """
+    escaped = re.escape(pattern)
+    return escaped.replace(r"\*", ".*")
+
+
 def validate_domain_against_allowed_list(
     domain: str, allowed_domains: List[str], param_name: str
 ) -> None:
     """
     Validate that a domain value matches at least one of the allowed domain patterns.
 
-    Each entry in allowed_domains is a regex pattern that is matched
-    case-insensitively against the full domain string.
+    Each entry in allowed_domains is a wildcard pattern that is matched
+    case-insensitively against the full domain string.  The only special
+    character is ``*`` which matches any sequence of characters (including
+    dots).  Everything else is treated as a literal.
 
     Examples:
-      - Exact: "api\\.stripe\\.com"
-      - Subdomain wildcard: ".*\\.salesforce\\.com"
-      - Any position: "api\\..*\\.stripe\\.com"
+      - Exact: "api.stripe.com"
+      - Subdomain wildcard: "*.salesforce.com"
+      - Any position: "api.*.stripe.com"
 
     Raises ValueError if the domain does not match any allowed pattern.
     """
     domain_stripped = domain.strip()
     for pattern in allowed_domains:
         pattern_stripped = pattern.strip()
-        if re.fullmatch(pattern_stripped, domain_stripped, re.IGNORECASE):
+        regex = _wildcard_to_regex(pattern_stripped)
+        if re.fullmatch(regex, domain_stripped, re.IGNORECASE):
             return
     raise ValueError(
         f"The value '{domain}' for '{param_name}' is not in the list of "

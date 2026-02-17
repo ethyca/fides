@@ -764,85 +764,84 @@ class TestCheckDatasetReferenceValues:
 class TestValidateDomainAgainstAllowedList:
     """Tests for validate_domain_against_allowed_list.
 
-    Each allowed_domains entry is a regex pattern matched case-insensitively
-    against the full domain string using re.fullmatch.
+    Each allowed_domains entry is a wildcard pattern where ``*`` matches
+    any sequence of characters (including dots).  Everything else is a
+    literal.  Matching is case-insensitive against the full domain string.
     """
 
     @pytest.mark.parametrize(
         "domain,allowed,should_pass",
         [
+            pytest.param("api.stripe.com", ["api.stripe.com"], True, id="exact_match"),
             pytest.param(
-                "api.stripe.com", [r"api\.stripe\.com"], True, id="exact_match"
-            ),
-            pytest.param(
-                "API.Stripe.COM", [r"api\.stripe\.com"], True, id="case_insensitive"
+                "API.Stripe.COM", ["api.stripe.com"], True, id="case_insensitive"
             ),
             pytest.param(
                 "  api.stripe.com  ",
-                [r"  api\.stripe\.com  "],
+                ["  api.stripe.com  "],
                 True,
                 id="whitespace_stripped",
             ),
             pytest.param(
                 "na1.salesforce.com",
-                [r".*\.salesforce\.com"],
+                ["*.salesforce.com"],
                 True,
                 id="wildcard_subdomain",
             ),
             pytest.param(
                 "a.b.c.salesforce.com",
-                [r".*\.salesforce\.com"],
+                ["*.salesforce.com"],
                 True,
                 id="wildcard_multi_level",
             ),
             pytest.param(
                 "NA1.Salesforce.COM",
-                [r".*\.salesforce\.com"],
+                ["*.salesforce.com"],
                 True,
                 id="wildcard_case_insensitive",
             ),
             pytest.param(
                 "api.stripe.com",
-                [r"api\.example\.com", r"api\.stripe\.com", r".*\.other\.com"],
+                ["api.example.com", "api.stripe.com", "*.other.com"],
                 True,
                 id="multiple_allowed_domains",
             ),
             pytest.param(
                 "sub.other.com",
-                [r"api\.example\.com", r"api\.stripe\.com", r".*\.other\.com"],
+                ["api.example.com", "api.stripe.com", "*.other.com"],
                 True,
                 id="multiple_allowed_wildcard",
             ),
             pytest.param(
                 "api.us-east.stripe.com",
-                [r"api\..*\.stripe\.com"],
+                ["api.*.stripe.com"],
                 True,
                 id="wildcard_in_middle",
             ),
             pytest.param(
                 "api.us-east.stripe.com",
-                [r".*\..*\.stripe\.com"],
+                ["*.*.stripe.com"],
                 True,
                 id="multiple_wildcards",
             ),
             pytest.param(
                 "salesforce.com",
-                [r".+\.salesforce\.com"],
+                ["?*.salesforce.com"],
                 False,
-                id="wildcard_no_match_base_domain",
+                id="question_mark_is_literal_not_regex",
             ),
             pytest.param(
-                "evil.example.com", [r"api\.stripe\.com"], False, id="different_domain"
+                "evil.example.com", ["api.stripe.com"], False, id="different_domain"
             ),
             pytest.param(
                 "not-api.stripe.com",
-                [r"api\.stripe\.com"],
+                ["api.stripe.com"],
                 False,
                 id="partial_match_rejected",
             ),
             pytest.param(
                 "api.stripe.com.evil.com",
-                [r"api\.stripe\.com"],
+                ["api.stripe.com"],
                 False,
                 id="suffix_attack_rejected",
             ),
@@ -859,7 +858,7 @@ class TestValidateDomainAgainstAllowedList:
         """Error message should include the param name and value."""
         with pytest.raises(ValueError, match="The value 'evil.com' for 'domain'"):
             validate_domain_against_allowed_list(
-                "evil.com", [r"api\.stripe\.com"], "domain"
+                "evil.com", ["api.stripe.com"], "domain"
             )
 
 

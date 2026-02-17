@@ -329,10 +329,11 @@ class ConnectorParam(BaseModel):
     description: Optional[str] = None
     sensitive: Optional[bool] = False
     allowed_domains: Optional[List[str]] = (
-        None  # List of allowed domain regex patterns for domain params.
+        None  # List of allowed domain wildcard patterns for domain params.
     )
     # None = not a domain param (no validation). [] = domain param permitting any value (self-hosted).
-    # [r"api\.stripe\.com", r".*\.salesforce\.com"] = only domains matching listed patterns are allowed.
+    # ["api.stripe.com", "*.salesforce.com"] = only domains matching listed patterns are allowed.
+    # Use "*" as a wildcard that matches any sequence of characters (including dots).
 
     @model_validator(mode="before")
     @classmethod
