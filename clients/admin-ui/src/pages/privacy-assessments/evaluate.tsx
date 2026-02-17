@@ -72,8 +72,10 @@ const EvaluateAssessmentPage: NextPage = () => {
   const [createAssessment, { isLoading: isCreating }] =
     useCreatePrivacyAssessmentMutation();
 
-  const templates = templatesData?.items ?? [];
-  const activeTemplates = templates.filter((t) => t.is_active !== false);
+  const activeTemplates = useMemo(
+    () => (templatesData?.items ?? []).filter((t) => t.is_active !== false),
+    [templatesData?.items],
+  );
 
   // Find selected template for description display
   const selectedTemplate = useMemo(
