@@ -66,6 +66,7 @@ class TestCustomConnectorTemplateLoader:
         """
         FileConnectorTemplateLoader._instance = None
         CustomConnectorTemplateLoader._instance = None
+        CustomConnectorTemplateLoader.get_connector_templates.cache_clear()  # type: ignore[attr-defined]
 
     @pytest.fixture
     def hubspot_config(self) -> str:
