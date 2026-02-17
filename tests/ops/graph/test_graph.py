@@ -77,9 +77,7 @@ class TestNode:
             fields=[ScalarField(name="f1")],
             property_scope=property_scope,
         )
-        ds = GraphDataset(
-            name="ds", collections=[coll], connection_key="mock_key"
-        )
+        ds = GraphDataset(name="ds", collections=[coll], connection_key="mock_key")
         node = Node(ds, coll)
         assert node.in_scope is expected_in_scope
 
