@@ -47,8 +47,14 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   React.useEffect(() => {
     const waitForMsw = async () => {
       if (process.env.NEXT_PUBLIC_MOCK_API) {
-        await mswReady;
-        setIsMswReady(true);
+        try {
+          await mswReady;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error("MSW failed to initialize:", e);
+        } finally {
+          setIsMswReady(true);
+        }
       }
     };
     waitForMsw();
