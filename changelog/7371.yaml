@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Migrated standalone page spinners from Chakra to Ant Design PageSpinner
+pr: 7371
+labels: []

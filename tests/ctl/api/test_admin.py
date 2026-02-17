@@ -230,11 +230,11 @@ class TestBackfillEndpoints:
             )
 
     @pytest.mark.parametrize(
-        "is_running,pending_count",
+        "is_running,pending_count_is_leaf, pending_count_distance",
         [
-            (True, 50000),  # Backfill running with pending items
-            (False, 0),  # Backfill complete
-            (False, 100000),  # Pending items but not running
+            (True, 50000, 10000),  # Backfill running with pending items
+            (False, 0, 0),  # Backfill complete
+            (False, 100000, 0),  # Pending items but not running
         ],
         ids=[
             "running_with_pending",
@@ -247,7 +247,8 @@ class TestBackfillEndpoints:
         test_config: FidesConfig,
         test_client: TestClient,
         is_running: bool,
-        pending_count: int,
+        pending_count_is_leaf: int,
+        pending_count_distance: int,
     ) -> None:
         """Test that GET backfill returns correct status."""
         with (
@@ -257,7 +258,11 @@ class TestBackfillEndpoints:
             ),
             patch(
                 "fides.api.api.v1.endpoints.admin.get_pending_is_leaf_count",
-                return_value=pending_count,
+                return_value=pending_count_is_leaf,
+            ),
+            patch(
+                "fides.api.api.v1.endpoints.admin.get_pending_distance_count",
+                return_value=pending_count_distance,
             ),
         ):
             response = test_client.get(
@@ -268,4 +273,8 @@ class TestBackfillEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert data["is_running"] is is_running
-        assert data["pending_count"]["stagedresource-is_leaf"] == pending_count
+        assert data["pending_count"]["stagedresource-is_leaf"] == pending_count_is_leaf
+        assert (
+            data["pending_count"]["stagedresourceancestor-distance"]
+            == pending_count_distance
+        )
