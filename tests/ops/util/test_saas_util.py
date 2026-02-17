@@ -768,78 +768,92 @@ class TestValidateDomainAgainstAllowedList:
     against the full domain string using re.fullmatch.
     """
 
-    def test_exact_match(self):
-        """Exact domain match should pass."""
-        validate_domain_against_allowed_list(
-            "api.stripe.com", [r"api\.stripe\.com"], "domain"
-        )
-
-    def test_exact_match_case_insensitive(self):
-        """Domain matching should be case-insensitive."""
-        validate_domain_against_allowed_list(
-            "API.Stripe.COM", [r"api\.stripe\.com"], "domain"
-        )
-
-    def test_exact_match_with_whitespace(self):
-        """Leading/trailing whitespace should be stripped."""
-        validate_domain_against_allowed_list(
-            "  api.stripe.com  ", [r"  api\.stripe\.com  "], "domain"
-        )
-
-    def test_wildcard_subdomain(self):
-        """Regex .* should match any subdomain."""
-        validate_domain_against_allowed_list(
-            "na1.salesforce.com", [r".*\.salesforce\.com"], "domain"
-        )
-
-    def test_wildcard_multi_level_subdomain(self):
-        """Regex .* should match multiple subdomain levels."""
-        validate_domain_against_allowed_list(
-            "a.b.c.salesforce.com", [r".*\.salesforce\.com"], "domain"
-        )
-
-    def test_wildcard_case_insensitive(self):
-        """Wildcard matching should be case-insensitive."""
-        validate_domain_against_allowed_list(
-            "NA1.Salesforce.COM", [r".*\.salesforce\.com"], "domain"
-        )
-
-    def test_wildcard_no_match_base_domain(self):
-        """`.+\\.` prefix pattern should not match the base domain itself."""
-        with pytest.raises(ValueError, match="not in the list of allowed domains"):
-            validate_domain_against_allowed_list(
-                "salesforce.com", [r".+\.salesforce\.com"], "domain"
-            )
-
-    def test_no_match_different_domain(self):
-        """Non-matching domain should raise ValueError."""
-        with pytest.raises(ValueError, match="not in the list of allowed domains"):
-            validate_domain_against_allowed_list(
-                "evil.example.com", [r"api\.stripe\.com"], "domain"
-            )
-
-    def test_no_match_partial(self):
-        """Partial match should not pass (fullmatch is used)."""
-        with pytest.raises(ValueError, match="not in the list of allowed domains"):
-            validate_domain_against_allowed_list(
-                "not-api.stripe.com", [r"api\.stripe\.com"], "domain"
-            )
-
-    def test_multiple_allowed_domains(self):
-        """Should match if any of the allowed domain patterns match."""
-        validate_domain_against_allowed_list(
-            "api.stripe.com",
-            [r"api\.example\.com", r"api\.stripe\.com", r".*\.other\.com"],
-            "domain",
-        )
-
-    def test_multiple_allowed_domains_wildcard(self):
-        """Should match wildcard among multiple allowed domains."""
-        validate_domain_against_allowed_list(
-            "sub.other.com",
-            [r"api\.example\.com", r"api\.stripe\.com", r".*\.other\.com"],
-            "domain",
-        )
+    @pytest.mark.parametrize(
+        "domain,allowed,should_pass",
+        [
+            pytest.param(
+                "api.stripe.com", [r"api\.stripe\.com"], True, id="exact_match"
+            ),
+            pytest.param(
+                "API.Stripe.COM", [r"api\.stripe\.com"], True, id="case_insensitive"
+            ),
+            pytest.param(
+                "  api.stripe.com  ",
+                [r"  api\.stripe\.com  "],
+                True,
+                id="whitespace_stripped",
+            ),
+            pytest.param(
+                "na1.salesforce.com",
+                [r".*\.salesforce\.com"],
+                True,
+                id="wildcard_subdomain",
+            ),
+            pytest.param(
+                "a.b.c.salesforce.com",
+                [r".*\.salesforce\.com"],
+                True,
+                id="wildcard_multi_level",
+            ),
+            pytest.param(
+                "NA1.Salesforce.COM",
+                [r".*\.salesforce\.com"],
+                True,
+                id="wildcard_case_insensitive",
+            ),
+            pytest.param(
+                "api.stripe.com",
+                [r"api\.example\.com", r"api\.stripe\.com", r".*\.other\.com"],
+                True,
+                id="multiple_allowed_domains",
+            ),
+            pytest.param(
+                "sub.other.com",
+                [r"api\.example\.com", r"api\.stripe\.com", r".*\.other\.com"],
+                True,
+                id="multiple_allowed_wildcard",
+            ),
+            pytest.param(
+                "api.us-east.stripe.com",
+                [r"api\..*\.stripe\.com"],
+                True,
+                id="wildcard_in_middle",
+            ),
+            pytest.param(
+                "api.us-east.stripe.com",
+                [r".*\..*\.stripe\.com"],
+                True,
+                id="multiple_wildcards",
+            ),
+            pytest.param(
+                "salesforce.com",
+                [r".+\.salesforce\.com"],
+                False,
+                id="wildcard_no_match_base_domain",
+            ),
+            pytest.param(
+                "evil.example.com", [r"api\.stripe\.com"], False, id="different_domain"
+            ),
+            pytest.param(
+                "not-api.stripe.com",
+                [r"api\.stripe\.com"],
+                False,
+                id="partial_match_rejected",
+            ),
+            pytest.param(
+                "api.stripe.com.evil.com",
+                [r"api\.stripe\.com"],
+                False,
+                id="suffix_attack_rejected",
+            ),
+        ],
+    )
+    def test_domain_validation(self, domain, allowed, should_pass):
+        if should_pass:
+            validate_domain_against_allowed_list(domain, allowed, "domain")
+        else:
+            with pytest.raises(ValueError):
+                validate_domain_against_allowed_list(domain, allowed, "domain")
 
     def test_error_message_includes_param_name(self):
         """Error message should include the param name and value."""
@@ -848,115 +862,87 @@ class TestValidateDomainAgainstAllowedList:
                 "evil.com", [r"api\.stripe\.com"], "domain"
             )
 
-    def test_wildcard_in_middle(self):
-        """Wildcard in the middle of the pattern should work."""
-        validate_domain_against_allowed_list(
-            "api.us-east.stripe.com", [r"api\..*\.stripe\.com"], "domain"
-        )
-
-    def test_multiple_wildcards(self):
-        """Multiple wildcards in a pattern should work."""
-        validate_domain_against_allowed_list(
-            "api.us-east.stripe.com", [r".*\..*\.stripe\.com"], "domain"
-        )
-
-    def test_fullmatch_prevents_suffix_attack(self):
-        """fullmatch should prevent evil.com from matching by appending to a valid domain."""
-        with pytest.raises(ValueError):
-            validate_domain_against_allowed_list(
-                "api.stripe.com.evil.com", [r"api\.stripe\.com"], "domain"
-            )
-
-    @pytest.mark.parametrize(
-        "domain,allowed,should_pass",
-        [
-            ("api.stripe.com", [r"api\.stripe\.com"], True),
-            ("sub.stripe.com", [r".*\.stripe\.com"], True),
-            ("deep.sub.stripe.com", [r".*\.stripe\.com"], True),
-            ("stripe.com", [r".+\.stripe\.com"], False),
-            ("evil.com", [r"api\.stripe\.com"], False),
-            ("api.stripe.com.evil.com", [r"api\.stripe\.com"], False),
-            ("api.us.stripe.com", [r"api\..*\.stripe\.com"], True),
-        ],
-    )
-    def test_parametrized_domain_validation(self, domain, allowed, should_pass):
-        if should_pass:
-            validate_domain_against_allowed_list(domain, allowed, "domain")
-        else:
-            with pytest.raises(ValueError):
-                validate_domain_against_allowed_list(domain, allowed, "domain")
-
 
 @pytest.mark.unit_saas
 class TestValidateAllowedDomainsNotModified:
     """Tests for validate_allowed_domains_not_modified (Rule A)."""
 
-    def test_no_change_passes(self):
-        """Identical allowed_domains should pass."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
-        incoming = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+    @pytest.mark.parametrize(
+        "original,incoming",
+        [
+            pytest.param(
+                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
+                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
+                id="identical_allowed_domains",
+            ),
+            pytest.param(
+                [{"name": "api_key"}],
+                [{"name": "api_key"}],
+                id="no_allowed_domains",
+            ),
+            pytest.param(
+                [
+                    {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+                    {"name": "extra_param"},
+                ],
+                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
+                id="remove_param_without_allowed_domains",
+            ),
+            pytest.param(
+                [{"name": "domain", "allowed_domains": []}],
+                [{"name": "domain", "allowed_domains": []}],
+                id="empty_list_to_empty_list",
+            ),
+        ],
+    )
+    def test_modification_passes(self, original, incoming):
+        """Cases where allowed_domains are unchanged or not present."""
         validate_allowed_domains_not_modified(original, incoming)
 
-    def test_none_allowed_domains_passes(self):
-        """Params with no allowed_domains can be freely modified."""
-        original = [{"name": "api_key"}]
-        incoming = [{"name": "api_key"}]
-        validate_allowed_domains_not_modified(original, incoming)
-
-    def test_removing_allowed_domains_fails(self):
-        """Cannot remove allowed_domains from an existing param."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
-        incoming = [{"name": "domain"}]
-        with pytest.raises(ValueError, match="Cannot modify allowed_domains"):
-            validate_allowed_domains_not_modified(original, incoming)
-
-    def test_modifying_allowed_domains_fails(self):
-        """Cannot change the allowed_domains values."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
-        incoming = [{"name": "domain", "allowed_domains": ["evil.com"]}]
-        with pytest.raises(ValueError, match="Cannot modify allowed_domains"):
-            validate_allowed_domains_not_modified(original, incoming)
-
-    def test_adding_allowed_domains_via_api_fails(self):
-        """Cannot add allowed_domains on a new param via the API."""
-        original = [{"name": "domain"}]
-        incoming = [
-            {"name": "domain"},
-            {"name": "new_param", "allowed_domains": ["x.com"]},
-        ]
-        with pytest.raises(ValueError, match="Cannot set allowed_domains"):
-            validate_allowed_domains_not_modified(original, incoming)
-
-    def test_removing_param_with_allowed_domains_fails(self):
-        """Cannot remove a param that has allowed_domains."""
-        original = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
-            {"name": "api_key"},
-        ]
-        incoming = [{"name": "api_key"}]
-        with pytest.raises(ValueError, match="Cannot remove connector param"):
-            validate_allowed_domains_not_modified(original, incoming)
-
-    def test_removing_param_without_allowed_domains_passes(self):
-        """Removing a param without allowed_domains is fine."""
-        original = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
-            {"name": "extra_param"},
-        ]
-        incoming = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
-        validate_allowed_domains_not_modified(original, incoming)
-
-    def test_empty_list_to_empty_list_passes(self):
-        """Empty list allowed_domains is valid and immutable."""
-        original = [{"name": "domain", "allowed_domains": []}]
-        incoming = [{"name": "domain", "allowed_domains": []}]
-        validate_allowed_domains_not_modified(original, incoming)
-
-    def test_empty_list_to_none_fails(self):
-        """Cannot change from empty list to None."""
-        original = [{"name": "domain", "allowed_domains": []}]
-        incoming = [{"name": "domain"}]
-        with pytest.raises(ValueError, match="Cannot modify allowed_domains"):
+    @pytest.mark.parametrize(
+        "original,incoming,error_match",
+        [
+            pytest.param(
+                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
+                [{"name": "domain"}],
+                "Cannot modify allowed_domains",
+                id="remove_allowed_domains",
+            ),
+            pytest.param(
+                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
+                [{"name": "domain", "allowed_domains": ["evil.com"]}],
+                "Cannot modify allowed_domains",
+                id="change_allowed_domains_values",
+            ),
+            pytest.param(
+                [{"name": "domain"}],
+                [
+                    {"name": "domain"},
+                    {"name": "new_param", "allowed_domains": ["x.com"]},
+                ],
+                "Cannot set allowed_domains",
+                id="add_allowed_domains_via_api",
+            ),
+            pytest.param(
+                [
+                    {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+                    {"name": "api_key"},
+                ],
+                [{"name": "api_key"}],
+                "Cannot remove connector param",
+                id="remove_param_with_allowed_domains",
+            ),
+            pytest.param(
+                [{"name": "domain", "allowed_domains": []}],
+                [{"name": "domain"}],
+                "Cannot modify allowed_domains",
+                id="empty_list_to_none",
+            ),
+        ],
+    )
+    def test_modification_fails(self, original, incoming, error_match):
+        """Cases where allowed_domains modification is prohibited."""
+        with pytest.raises(ValueError, match=error_match):
             validate_allowed_domains_not_modified(original, incoming)
 
 
