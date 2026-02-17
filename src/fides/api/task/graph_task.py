@@ -747,7 +747,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             if is_traversal_only:
                 # TRAVERSAL_ONLY bridge nodes: retrieve data for FK propagation
                 # to downstream nodes, but don't save for erasures or access report.
-                logger.info(
+                logger.debug(
                     "TRAVERSAL_ONLY node {}: caching FK values for downstream, "
                     "skipping access report and erasure data.",
                     self.execution_node.address,
@@ -798,7 +798,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             == PropertyScope.TRAVERSAL_ONLY
         ):
             # TRAVERSAL_ONLY bridge nodes: skip masking entirely
-            logger.info(
+            logger.debug(
                 "TRAVERSAL_ONLY node {}: skipping erasure.",
                 self.execution_node.address,
             )
