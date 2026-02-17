@@ -168,9 +168,13 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             )
 
         self.session.refresh(request_task)
-        raise AwaitingAsyncProcessing(
-            f"Waiting for next scheduled check of {request_task.dataset_name} access results."
-        )
+        if request_task.sub_requests:
+            raise AwaitingAsyncProcessing(
+                f"Waiting for next scheduled check of {request_task.dataset_name} access results."
+            )
+        # If no sub-requests were created (e.g. all initial requests returned
+        # ignored errors like 409), the task is already complete with no data.
+        return []
 
     def _initial_request_erasure(
         self,
