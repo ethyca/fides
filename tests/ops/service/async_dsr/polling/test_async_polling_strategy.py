@@ -415,10 +415,10 @@ class TestAsyncPollingStrategy:
         self, db, async_polling_strategy, action_type, policy_factory
     ):
         """
-        Test that _handle_polling_initial_request raises FidesopsException
-        when initial request fails with a status code IN the ignore_errors list,
-        with both access and erasure policy flows.
-        The client.send returns the failed response, then response.ok check triggers FidesopsException.
+        Test that _handle_polling_initial_request skips sub-request creation
+        when initial request fails with a status code IN the ignore_errors list.
+        The client.send returns the failed response, but the ignore_errors guard
+        causes the loop to continue without raising or creating a sub-request.
         """
         # Create a mock request task
         request_task = RequestTask.create(
@@ -453,7 +453,7 @@ class TestAsyncPollingStrategy:
         mock_response = Mock(spec=Response)
         mock_response.status_code = 404  # This is IN the ignore_errors list
         mock_response.text = "Not Found"
-        mock_response.ok = False  # This will trigger the response.ok check in the code
+        mock_response.ok = False
 
         # Since 404 is in ignore_errors list, client.send returns the response without raising
         mock_client.send.return_value = mock_response
@@ -461,21 +461,21 @@ class TestAsyncPollingStrategy:
         input_data = {"email": "test@example.com"}
         policy = policy_factory(db)
 
-        # Test that FidesopsException is raised due to response.ok check
-        with pytest.raises(FidesopsException) as exc_info:
-            async_polling_strategy._handle_polling_initial_request(
-                request_task=request_task,
-                query_config=mock_query_config,
-                read_request=read_request,
-                input_data=input_data,
-                policy=policy,
-                client=mock_client,
-            )
+        # Method should return without raising — the ignored error is skipped
+        async_polling_strategy._handle_polling_initial_request(
+            request_task=request_task,
+            query_config=mock_query_config,
+            read_request=read_request,
+            input_data=input_data,
+            policy=policy,
+            client=mock_client,
+        )
 
-        # Verify the exception message indicates initial request failure
-        assert "Initial async request failed" in str(exc_info.value)
-        assert "404" in str(exc_info.value)
-        assert "Not Found" in str(exc_info.value)
+        # Verify the request was still sent
+        mock_client.send.assert_called_once()
+
+        # Verify no sub-requests were created (ignored response has no correlation ID)
+        assert len(request_task.sub_requests) == 0
 
     def test_check_sub_request_status_wraps_bool_true_to_polling_status_result(
         self, db, async_polling_strategy
