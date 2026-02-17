@@ -1,0 +1,4 @@
+type: Fixed
+description:  Fixed async polling requests not fully respecting `ignore_errors` configuration.
+pr: 7401
+labels: []
