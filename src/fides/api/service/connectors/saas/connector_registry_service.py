@@ -202,10 +202,12 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             **display_info,
         )
 
-        # register the template in the loader's template dictionary
-        CustomConnectorTemplateLoader.get_connector_templates()[template.key] = (
-            connector_template
-        )
+        # register the template in the singleton's _templates dict directly.
+        # We must NOT go through get_connector_templates() here because that
+        # method is wrapped by @redis_version_cached — calling it during a
+        # cache-miss reload (from _load_connector_templates) would recurse
+        # infinitely since the cache is not yet populated.
+        cls()._templates[template.key] = connector_template  # type: ignore[attr-defined]
 
     @classmethod
     def delete_template(cls, db: Session, key: str) -> None:
