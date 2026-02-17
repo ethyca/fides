@@ -10,19 +10,19 @@ import { ActionType, PolicyResponse, RuleResponse } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
 
+// Extract unique action types from rules for each policy
+const getActionTypes = (rules?: RuleResponse[] | null): ActionType[] => {
+  if (!rules || rules.length === 0) {
+    return [];
+  }
+  const actionTypes = rules.map((rule) => rule.action_type);
+  return [...new Set(actionTypes)];
+};
+
 const PoliciesPage: NextPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: policiesData, isLoading } = useGetPoliciesQuery();
-
-  // Extract unique action types from rules for each policy
-  const getActionTypes = (rules?: RuleResponse[] | null): ActionType[] => {
-    if (!rules || rules.length === 0) {
-      return [];
-    }
-    const actionTypes = rules.map((rule) => rule.action_type);
-    return [...new Set(actionTypes)];
-  };
 
   const allPolicies = useMemo(() => policiesData?.items ?? [], [policiesData]);
 
