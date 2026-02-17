@@ -1,7 +1,7 @@
 """Add jira_ticket to ConnectionType enum
 
 Revision ID: cc9a5690f9e7
-Revises: e5f6g7h8i9j0
+Revises: c0dc13ad2a05
 Create Date: 2026-02-13 12:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "cc9a5690f9e7"
-down_revision = "e5f6g7h8i9j0"
+down_revision = "c0dc13ad2a05"
 branch_labels = None
 depends_on = None
 
