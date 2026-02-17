@@ -36,6 +36,25 @@ class PollingRequestHandler:
         self.result_request = result_request
 
     @staticmethod
+    def _should_ignore_error(
+        status_code: int,
+        ignore_errors: Optional[Union[bool, List[int]]],
+    ) -> bool:
+        """
+        Determine if an error response should be ignored based on the ignore_errors config.
+
+        Mirrors AuthenticatedClient._should_ignore_error:
+        - False: do not ignore any errors
+        - True: ignore all errors
+        - List[int]: ignore only if status_code is in the list
+        """
+        if ignore_errors is True:
+            return True
+        if isinstance(ignore_errors, list):
+            return status_code in ignore_errors
+        return False
+
+    @staticmethod
     def _send_and_handle_errors(
         client: AuthenticatedClient,
         prepared_request: SaaSRequestParams,
@@ -46,12 +65,14 @@ class PollingRequestHandler:
         Send a request and handle error responses, respecting ignore_errors configuration.
 
         Mirrors the sync path convention from SaaSConnector._handle_errored_response:
-        when ignore_errors is configured and the response is not ok, the error is logged
-        and the response is returned without raising.
+        when ignore_errors is configured and the response status code matches, the error
+        is logged and the response is returned without raising.
         """
         response: Response = client.send(prepared_request, ignore_errors)
 
-        if ignore_errors and not response.ok:
+        if not response.ok and PollingRequestHandler._should_ignore_error(
+            response.status_code, ignore_errors
+        ):
             logger.info(
                 "Ignoring errored response with status code {} for {} as configured.",
                 response.status_code,
