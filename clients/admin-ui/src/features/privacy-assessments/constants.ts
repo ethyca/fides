@@ -9,16 +9,16 @@ export const ASSESSMENT_STATUS_LABELS: Record<string, string> = {
   outdated: "Out of date",
 } satisfies Record<AssessmentStatus, string>;
 
-export const RISK_LEVEL_LABELS: Record<string, string> = {
-  high: "High",
-  medium: "Med",
-  low: "Low",
-} satisfies Record<RiskLevel, string>;
+export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {
+  [RiskLevel.HIGH]: "High",
+  [RiskLevel.MEDIUM]: "Med",
+  [RiskLevel.LOW]: "Low",
+};
 
-export const RISK_TAG_COLORS: Record<string, CUSTOM_TAG_COLOR> = {
-  High: CUSTOM_TAG_COLOR.ERROR,
-  Med: CUSTOM_TAG_COLOR.WARNING,
-  Low: CUSTOM_TAG_COLOR.DEFAULT,
+export const RISK_TAG_COLORS: Record<RiskLevel, CUSTOM_TAG_COLOR> = {
+  [RiskLevel.HIGH]: CUSTOM_TAG_COLOR.ERROR,
+  [RiskLevel.MEDIUM]: CUSTOM_TAG_COLOR.WARNING,
+  [RiskLevel.LOW]: CUSTOM_TAG_COLOR.DEFAULT,
 };
 
 export const STATUS_COLORS: Record<string, string | undefined> = {
