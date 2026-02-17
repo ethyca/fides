@@ -502,6 +502,27 @@ def _has_polling_tasks(db: Session, privacy_request_id: str) -> bool:
     ).scalar()
 
 
+def _has_callback_tasks(db: Session, privacy_request_id: str) -> bool:
+    """
+    Check if a privacy request has any callback async tasks.
+
+    Args:
+        db: Database session
+        privacy_request_id: The ID of the privacy request to check
+
+    Returns:
+        bool: True if the privacy request has callback tasks, False otherwise
+    """
+    return db.query(
+        db.query(RequestTask)
+        .filter(
+            RequestTask.privacy_request_id == privacy_request_id,
+            RequestTask.async_type == AsyncTaskType.callback,
+        )
+        .exists()
+    ).scalar()
+
+
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -644,11 +665,20 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
                             # Check if the Privacy request has polling tasks
                             if _has_polling_tasks(db, privacy_request.id):
-                                # If the polling request task has no cached task ID, it's stuck
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) Contains polling tasks - "
                                     f"keeping request in current status as it may be waiting for polling task to complete"
+                                )
+                                should_requeue = False
+                                break
+
+                            # Check if the Privacy request has callback tasks
+                            if _has_callback_tasks(db, privacy_request.id):
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) Contains callback tasks - "
+                                    f"keeping request in current status as it may be waiting for callback to complete"
                                 )
                                 should_requeue = False
                                 break
