@@ -37,6 +37,10 @@ describe("configureNavGroups", () => {
           title: "Connection manager",
           path: routes.DATASTORE_CONNECTION_ROUTE,
         },
+        {
+          title: "Pre-approval webhooks",
+          path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+        },
       ],
     });
   });
