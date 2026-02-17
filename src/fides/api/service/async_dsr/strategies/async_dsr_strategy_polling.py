@@ -316,7 +316,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         for next_request, param_value_map in prepared_requests:
             response = client.send(next_request, read_request.ignore_errors)
 
-            if read_request.ignore_errors and not response.ok:
+            if not response.ok and PollingRequestHandler._should_ignore_error(
+                response.status_code, read_request.ignore_errors
+            ):
                 logger.info(
                     "Ignoring errored response with status code {} for initial async polling request as configured.",
                     response.status_code,
@@ -376,7 +378,9 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 )
                 response = client.send(prepared_request, request.ignore_errors)
 
-                if request.ignore_errors and not response.ok:
+                if not response.ok and PollingRequestHandler._should_ignore_error(
+                    response.status_code, request.ignore_errors
+                ):
                     logger.info(
                         "Ignoring errored response with status code {} for initial async polling erasure request as configured.",
                         response.status_code,
