@@ -1,5 +1,5 @@
-import { baseApi } from "~/features/common/api.slice";
 import { CONNECTION_ROUTE } from "~/constants";
+import { baseApi } from "~/features/common/api.slice";
 import {
   Page_PreApprovalWebhookResponse_,
   PreApprovalWebhookCreate,
@@ -22,15 +22,14 @@ interface ConnectionConfigWithSecrets {
 
 const preApprovalWebhooksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getPreApprovalWebhooks: build.query<
-      Page_PreApprovalWebhookResponse_,
-      void
-    >({
-      query: () => ({
-        url: PRE_APPROVAL_WEBHOOK_ROUTE,
-      }),
-      providesTags: ["Pre-Approval Webhooks"],
-    }),
+    getPreApprovalWebhooks: build.query<Page_PreApprovalWebhookResponse_, void>(
+      {
+        query: () => ({
+          url: PRE_APPROVAL_WEBHOOK_ROUTE,
+        }),
+        providesTags: ["Pre-Approval Webhooks"],
+      },
+    ),
     getConnectionConfigByKey: build.query<ConnectionConfigWithSecrets, string>({
       query: (connectionKey) => ({
         url: `${CONNECTION_ROUTE}/${connectionKey}`,

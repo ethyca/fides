@@ -41,7 +41,8 @@ const PreApprovalWebhooksPage = () => {
   const [deleteWebhook] = useDeletePreApprovalWebhookMutation();
   const [createConnectionConfig] =
     useCreateConnectionConfigForWebhookMutation();
-  const [patchConnectionSecrets] = usePatchConnectionSecretsForWebhookMutation();
+  const [patchConnectionSecrets] =
+    usePatchConnectionSecretsForWebhookMutation();
   const [getConnectionConfig] = useLazyGetConnectionConfigByKeyQuery();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,7 +52,7 @@ const PreApprovalWebhooksPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const { errorAlert, successAlert } = useAlert();
 
-  const webhooks = data?.items ?? [];
+  const webhooks = useMemo(() => data?.items ?? [], [data?.items]);
 
   // Fetch the URL for each webhook's connection config via the dedicated endpoint
   // which returns secrets with sensitive fields redacted.
@@ -191,8 +192,7 @@ const PreApprovalWebhooksPage = () => {
   };
 
   const getWebhookUrl = (record: PreApprovalWebhookResponse): string =>
-    (record.connection_config?.key &&
-      urlMap[record.connection_config.key]) ||
+    (record.connection_config?.key && urlMap[record.connection_config.key]) ||
     "—";
 
   const columns = [
@@ -295,9 +295,7 @@ const PreApprovalWebhooksPage = () => {
           <Form.Item
             label="Webhook name"
             name="name"
-            rules={[
-              { required: true, message: "Please enter a webhook name" },
-            ]}
+            rules={[{ required: true, message: "Please enter a webhook name" }]}
           >
             <Input placeholder="e.g. Identity Verification Service" />
           </Form.Item>
