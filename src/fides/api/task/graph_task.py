@@ -754,6 +754,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 )
                 if self.request_task.id:
                     self.request_task.access_data = output
+                # TODO Remove when we stop support for DSR 2.0
+                # Maintain backward compat: DSR 2.0 downstream nodes read
+                # upstream FK values from Redis, so bridge nodes must cache there too.
+                if not use_dsr_3_0_scheduler(
+                    self.resources.request, ActionType.access
+                ):
+                    self.resources.cache_object(
+                        f"access_request__{self.key}", output
+                    )
                 self.log_end(ActionType.access, record_count=len(output))
                 return output
 
