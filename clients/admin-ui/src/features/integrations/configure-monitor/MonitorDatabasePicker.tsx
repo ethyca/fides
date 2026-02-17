@@ -6,10 +6,14 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, ChakraFlex as Flex, ChakraText as Text } from "fidesui";
+import {
+  Button,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  PageSpinner,
+} from "fidesui";
 import { useMemo } from "react";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -109,7 +113,7 @@ const MonitorDatabasePicker = ({
             <FidesTableFooter totalColumns={2}>
               <Flex justify="center">
                 {moreLoading ? (
-                  <FidesSpinner size="xs" />
+                  <PageSpinner size="small" />
                 ) : (
                   <Flex align="center">
                     <Text fontSize="xs" mr={4}>
