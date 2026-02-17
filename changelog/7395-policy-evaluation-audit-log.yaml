@@ -1,0 +1,4 @@
+type: Added
+description: Added policy_evaluated audit log action and default_policies to ApplicationConfig schema
+pr: 7395
+labels: ["db-migration"]

@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed PyPI package build to include admin UI assets (src/fides/ui-build) when using hatchling/uv.
+pr: 7372
+labels: []
