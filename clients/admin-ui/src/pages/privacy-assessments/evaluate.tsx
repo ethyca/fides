@@ -16,6 +16,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
+import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -24,6 +25,7 @@ import {
   useCreatePrivacyAssessmentMutation,
   useGetAssessmentTemplatesQuery,
 } from "~/features/privacy-assessments";
+import { RTKErrorResult } from "~/types/errors/api";
 
 const { Title, Paragraph } = Typography;
 const { Item } = Form;
@@ -99,7 +101,7 @@ const EvaluateAssessmentPage: NextPage = () => {
       router.push(PRIVACY_ASSESSMENTS_ROUTE);
     } catch (error) {
       message.error(
-        `Failed to evaluate assessment: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to evaluate assessment: ${getErrorMessage(error as RTKErrorResult["error"])}`,
       );
     }
   };
