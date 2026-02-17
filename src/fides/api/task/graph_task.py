@@ -789,7 +789,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             == PropertyScope.TRAVERSAL_ONLY
         ):
             # TRAVERSAL_ONLY bridge nodes: skip masking entirely
-            logger.info(
+            logger.debug(
                 "TRAVERSAL_ONLY node {}: skipping erasure.",
                 self.execution_node.address,
             )
