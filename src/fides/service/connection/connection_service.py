@@ -583,12 +583,12 @@ class ConnectionService:
 
         # Automatically create a ManualTask if this is a manual_task or
         # jira_ticket connection and it doesn't already have one
-        _auto_task_type_mapping = {
-            ConnectionType.manual_task: ManualTaskType.privacy_request,
-            ConnectionType.jira_ticket: ManualTaskType.jira_ticket,
+        _auto_task_type_mapping: dict[str, ManualTaskType] = {
+            ConnectionType.manual_task.value: ManualTaskType.privacy_request,
+            ConnectionType.jira_ticket.value: ManualTaskType.jira_ticket,
         }
         auto_task_type = _auto_task_type_mapping.get(
-            connection_config.connection_type  # type: ignore[arg-type]
+            str(connection_config.connection_type)
         )
         if auto_task_type and not connection_config.manual_task:
             ManualTask.create(
