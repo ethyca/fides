@@ -206,6 +206,7 @@ serialized_collection = {
     "erase_after": ["g:h"],
     "grouped_inputs": ["test_param"],
     "data_categories": ["user"],
+    "property_scope": "in_scope",
 }
 
 
