@@ -1,6 +1,6 @@
+import { PageSpinner } from "fidesui";
 import { useRouter } from "next/router";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -14,7 +14,7 @@ const CatalogProjectView = () => {
   const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemKey);
 
   if (isLoading) {
-    return <FidesSpinner />;
+    return <PageSpinner />;
   }
 
   return (
