@@ -1,5 +1,10 @@
 import { PrivacyRequestResponse } from "~/features/privacy-requests/types";
-import { HealthCheck, PrivacyRequestStatus, Schema } from "~/types/api";
+import {
+  HealthCheck,
+  PolicyResponse,
+  PrivacyRequestStatus,
+  Schema,
+} from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
@@ -1194,4 +1199,13 @@ export const stubInfrastructureSystemsBulkActions = (
       },
     },
   ).as("bulkUnmuteInfrastructureSystems");
+};
+
+export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
+  stubFeatureFlags();
+  cy.intercept("GET", "/api/v1/dsr/policy*", {
+    fixture: options?.isEmpty
+      ? "policies/empty-list.json"
+      : "policies/list.json",
+  }).as("getDSRPolicies");
 };
