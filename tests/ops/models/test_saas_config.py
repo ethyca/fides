@@ -568,8 +568,9 @@ class TestSaaSConfigHostDomainRestrictions:
         assert "does not have allowed_domains defined" in str(exc.value)
         assert "'other_host'" in str(exc.value)
 
-    def test_host_placeholder_not_in_connector_params_is_skipped(self):
-        """Placeholders that don't correspond to a connector_param are skipped."""
+    def test_host_placeholder_not_in_connector_params_fails(self):
+        """Placeholders that don't correspond to a connector_param should fail
+        when domain restrictions exist."""
         config = self._make_config(
             connector_params=[
                 {
@@ -577,11 +578,26 @@ class TestSaaSConfigHostDomainRestrictions:
                     "allowed_domains": [r"api\.stripe\.com"],
                 },
             ],
-            # References a param not in connector_params (e.g. a directly-set secret)
             host="<some_other_secret>",
         )
-        # Should not raise — unknown placeholders are not checked
-        SaaSConfig(**config)
+        with pytest.raises(ValidationError) as exc:
+            SaaSConfig(**config)
+        assert "not a known connector param" in str(exc.value)
+
+    def test_direct_host_value_fails_when_restrictions_exist(self):
+        """A direct host value (no placeholder) should fail when domain restrictions exist."""
+        config = self._make_config(
+            connector_params=[
+                {
+                    "name": "domain",
+                    "allowed_domains": [r"api\.stripe\.com"],
+                },
+            ],
+            host="evil.example.com",
+        )
+        with pytest.raises(ValidationError) as exc:
+            SaaSConfig(**config)
+        assert "does not reference any connector param" in str(exc.value)
 
     def test_test_request_host_references_unrestricted_param_fails(self):
         """Rule B should also catch unrestricted references in test_request client_config."""

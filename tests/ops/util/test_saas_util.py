@@ -1077,3 +1077,21 @@ class TestValidateHostReferencesDomainRestrictedParams:
             ],
         )
         validate_host_references_domain_restricted_params(original, incoming, config)
+
+    def test_unknown_placeholder_fails(self):
+        """Placeholder not in connector_params should fail when domain restrictions exist."""
+        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        incoming = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        with pytest.raises(ValueError, match="not a known connector param"):
+            validate_host_references_domain_restricted_params(
+                original, incoming, self._make_config("<unknown_param>")
+            )
+
+    def test_direct_host_value_fails(self):
+        """Direct host value (no placeholder) should fail when domain restrictions exist."""
+        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        incoming = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        with pytest.raises(ValueError, match="does not reference any connector param"):
+            validate_host_references_domain_restricted_params(
+                original, incoming, self._make_config("evil.example.com")
+            )

@@ -453,12 +453,20 @@ class SaaSConfig(SaaSConfigBase):
 
         for host_value in all_hosts:
             placeholders = re.findall(r"<([^<>]+)>", host_value)
+            if not placeholders:
+                raise ValueError(
+                    f"client_config.host value '{host_value}' does not reference any "
+                    f"connector param. When domain restrictions are defined, the host "
+                    f"must reference a connector param with allowed_domains."
+                )
             for placeholder in placeholders:
                 param = params_by_name.get(placeholder)
                 if param is None:
-                    # Placeholder references something that isn't a connector_param
-                    # (e.g. a secret set directly). Skip.
-                    continue
+                    raise ValueError(
+                        f"client_config.host references '{placeholder}' which is not a "
+                        f"known connector param. When domain restrictions are defined, all "
+                        f"host placeholders must reference connector params with allowed_domains."
+                    )
                 if param.allowed_domains is None:
                     raise ValueError(
                         f"client_config.host references connector param '{placeholder}' "

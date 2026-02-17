@@ -174,12 +174,20 @@ def validate_host_references_domain_restricted_params(
 
     for host_value in all_hosts:
         placeholders = re.findall(r"<([^<>]+)>", host_value)
+        if not placeholders:
+            raise ValueError(
+                f"client_config.host value '{host_value}' does not reference any "
+                f"connector param. When domain restrictions are defined, the host "
+                f"must reference a connector param with allowed_domains."
+            )
         for placeholder in placeholders:
             incoming_param = incoming_by_name.get(placeholder)
             if incoming_param is None:
-                # Placeholder references a param that doesn't exist in connector_params;
-                # this may be valid (e.g. it could reference a secret set directly).
-                continue
+                raise ValueError(
+                    f"client_config.host references '{placeholder}' which is not a "
+                    f"known connector param. When domain restrictions are defined, all "
+                    f"host placeholders must reference connector params with allowed_domains."
+                )
             if incoming_param.get("allowed_domains") is None:
                 raise ValueError(
                     f"client_config.host references connector param '{placeholder}' which does not "
