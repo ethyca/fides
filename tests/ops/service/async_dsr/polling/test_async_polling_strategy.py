@@ -619,3 +619,194 @@ class TestAsyncPollingStrategy:
                     db.refresh(sub_request)
                     assert sub_request.status == ExecutionLogStatus.skipped.value
                     assert sub_request.access_data == []
+
+    def test_initial_request_access_all_ignored_returns_empty(
+        self, db, async_polling_strategy
+    ):
+        """
+        Integration test: when all initial access requests return an ignored error
+        (e.g. 409), _initial_request_access should return [] instead of raising
+        AwaitingAsyncProcessing. This prevents the task from looping back into the
+        initial_async phase indefinitely.
+        """
+        # Create a fresh task with no async_type and no sub-requests
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "test_access_all_ignored",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "pending",
+                "action_type": "access",
+            },
+        )
+
+        # Mock the privacy_request.policy relationship
+        mock_privacy_request = MagicMock()
+        mock_privacy_request.policy = Policy()
+        request_task.privacy_request = mock_privacy_request
+
+        # Create a read request with async_config and ignore_errors including 409
+        read_request = ReadSaaSRequest(
+            method="GET",
+            path="/api/start-request",
+            correlation_id_path="request_id",
+            ignore_errors=[409],
+            async_config={"strategy": "polling", "configuration": {
+                "status_request": {
+                    "method": "GET",
+                    "path": "/status/<correlation_id>",
+                    "status_path": "status",
+                    "status_completed_value": "completed",
+                },
+            }},
+        )
+
+        # Mock query_config to return our read request with async_config
+        mock_query_config = MagicMock()
+        mock_query_config.get_read_requests_by_identity.return_value = [read_request]
+        mock_query_config.generate_requests.return_value = [
+            (MagicMock(), {"email": "test@example.com"})
+        ]
+
+        # Mock client returning 409 (ignored error)
+        mock_client = MagicMock()
+        mock_response = Mock(spec=Response)
+        mock_response.status_code = 409
+        mock_response.text = '{"error": "A request with this identifier is already pending"}'
+        mock_response.ok = False
+        mock_client.send.return_value = mock_response
+
+        # Should return [] instead of raising AwaitingAsyncProcessing
+        result = async_polling_strategy._initial_request_access(
+            mock_client, request_task, mock_query_config, {"email": ["test@example.com"]}
+        )
+
+        assert result == []
+        assert len(request_task.sub_requests) == 0
+        mock_client.send.assert_called_once()
+
+    def test_initial_request_access_mixed_ignored_and_success(
+        self, db, async_polling_strategy
+    ):
+        """
+        Integration test: when some initial requests succeed (creating sub-requests)
+        and others are ignored (409), _initial_request_access should raise
+        AwaitingAsyncProcessing for the successful ones.
+        """
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "test_access_mixed",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "pending",
+                "action_type": "access",
+            },
+        )
+
+        mock_privacy_request = MagicMock()
+        mock_privacy_request.policy = Policy()
+        request_task.privacy_request = mock_privacy_request
+
+        read_request = ReadSaaSRequest(
+            method="GET",
+            path="/api/start-request",
+            correlation_id_path="request_id",
+            ignore_errors=[409],
+            async_config={"strategy": "polling", "configuration": {
+                "status_request": {
+                    "method": "GET",
+                    "path": "/status/<correlation_id>",
+                    "status_path": "status",
+                    "status_completed_value": "completed",
+                },
+            }},
+        )
+
+        mock_query_config = MagicMock()
+        mock_query_config.get_read_requests_by_identity.return_value = [read_request]
+
+        # Two prepared requests: first succeeds, second gets 409
+        success_response = Mock(spec=Response)
+        success_response.status_code = 200
+        success_response.ok = True
+        success_response.json.return_value = {"request_id": "corr_123"}
+
+        ignored_response = Mock(spec=Response)
+        ignored_response.status_code = 409
+        ignored_response.text = "Already pending"
+        ignored_response.ok = False
+
+        mock_client = MagicMock()
+        mock_client.send.side_effect = [success_response, ignored_response]
+
+        mock_query_config.generate_requests.return_value = [
+            (MagicMock(), {"email": "user1@example.com"}),
+            (MagicMock(), {"email": "user2@example.com"}),
+        ]
+
+        # Should raise AwaitingAsyncProcessing because one sub-request was created
+        with pytest.raises(AwaitingAsyncProcessing):
+            async_polling_strategy._initial_request_access(
+                mock_client, request_task, mock_query_config, {"email": ["user1@example.com", "user2@example.com"]}
+            )
+
+        # Only one sub-request created (the successful one), the 409 was skipped
+        assert len(request_task.sub_requests) == 1
+        assert mock_client.send.call_count == 2
+
+    def test_initial_request_erasure_all_ignored_returns_zero(
+        self, db, async_polling_strategy
+    ):
+        """
+        Integration test: when all initial erasure requests return an ignored error
+        (e.g. 409), _initial_request_erasure should return 0 instead of raising
+        AwaitingAsyncProcessing.
+        """
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "test_erasure_all_ignored",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "pending",
+                "action_type": "erasure",
+            },
+        )
+
+        mock_privacy_request = MagicMock()
+        mock_privacy_request.policy = erasure_policy(db)
+        request_task.privacy_request = mock_privacy_request
+
+        # Create a masking request with async_config and ignore_errors including 409
+        masking_request = MagicMock()
+        masking_request.async_config = {"strategy": "polling", "configuration": {}}
+        masking_request.ignore_errors = [409]
+        masking_request.path = "/api/delete"
+        masking_request.skip_missing_param_values = False
+
+        mock_query_config = MagicMock()
+        mock_query_config.get_masking_request.return_value = masking_request
+        mock_query_config.generate_update_param_values.return_value = {"user_id": "123"}
+        mock_query_config.generate_update_stmt.return_value = MagicMock()
+
+        # Mock client returning 409
+        mock_client = MagicMock()
+        mock_response = Mock(spec=Response)
+        mock_response.status_code = 409
+        mock_response.text = "Already pending"
+        mock_response.ok = False
+        mock_client.send.return_value = mock_response
+
+        # Should return 0 instead of raising AwaitingAsyncProcessing
+        result = async_polling_strategy._initial_request_erasure(
+            mock_client, request_task, mock_query_config, [{"user_id": "123"}]
+        )
+
+        assert result == 0
+        assert len(request_task.sub_requests) == 0
+        mock_client.send.assert_called_once()
