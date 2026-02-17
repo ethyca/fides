@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { TemplateResponse } from './TemplateResponse';
+import type { TemplateResponse } from "./TemplateResponse";
 
 export type Page_TemplateResponse_ = {
   items: Array<TemplateResponse>;
@@ -11,4 +11,3 @@ export type Page_TemplateResponse_ = {
   size: number;
   pages: number;
 };
-

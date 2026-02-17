@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AssessmentResponse } from './AssessmentResponse';
+import type { AssessmentResponse } from "./AssessmentResponse";
 
 export type Page_AssessmentResponse_ = {
   items: Array<AssessmentResponse>;
@@ -11,4 +11,3 @@ export type Page_AssessmentResponse_ = {
   size: number;
   pages: number;
 };
-

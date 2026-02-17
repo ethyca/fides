@@ -10,11 +10,10 @@ export type TemplateResponse = {
   key: string;
   version: string;
   name: string;
-  assessment_type?: (string | null);
-  region?: (string | null);
-  authority?: (string | null);
-  legal_reference?: (string | null);
-  description?: (string | null);
+  assessment_type?: string | null;
+  region?: string | null;
+  authority?: string | null;
+  legal_reference?: string | null;
+  description?: string | null;
   is_active?: boolean;
 };
-
