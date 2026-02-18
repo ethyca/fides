@@ -111,7 +111,6 @@ from fides.api.util.cache import (
     FidesopsRedis,
     get_async_task_tracking_cache_key,
     get_cache,
-    get_drp_request_body_cache_key,
 )
 from fides.common.cache import get_dsr_cache_store
 from fides.api.util.collection_util import Row, extract_key_for_address
@@ -713,22 +712,25 @@ class PrivacyRequest(
         return res
 
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
-        """Sets the identity's values at their specific locations in the Fides app cache"""
-        cache: FidesopsRedis = get_cache()
+        """Sets the DRP request body values at their specific locations in the Fides app cache"""
         drp_request_body_dict: Dict[str, Any] = dict(drp_request_body)
+        
+        # Serialize complex objects to repr format for storage
+        serialized_body = {}
         for key, value in drp_request_body_dict.items():
             if value is not None:
-                # handle nested dict/objects
+                # Handle nested dict/objects
                 if not isinstance(value, (bytes, str, int, float)):
-                    cache.set_with_autoexpire(
-                        get_drp_request_body_cache_key(self.id, key),
-                        repr(value),
-                    )
+                    serialized_body[key] = repr(value)
                 else:
-                    cache.set_with_autoexpire(
-                        get_drp_request_body_cache_key(self.id, key),
-                        value,
-                    )
+                    serialized_body[key] = value
+        
+        with get_dsr_cache_store() as store:
+            store.cache_drp_request_body(
+                self.id,
+                serialized_body,
+                expire_seconds=CONFIG.redis.default_ttl_seconds,
+            )
 
     def cache_encryption(self, encryption_key: Optional[str] = None) -> None:
         """Sets the encryption key in the Fides app cache if provided"""
