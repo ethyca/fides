@@ -103,6 +103,7 @@ export const FORMS_POC_ROUTE = "/poc/forms";
 export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
+export const PROMPT_EXPLORER_ROUTE = "/poc/prompt-explorer";
 
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";

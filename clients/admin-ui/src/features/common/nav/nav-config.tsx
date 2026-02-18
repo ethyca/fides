@@ -315,6 +315,12 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
     icon: <Icons.Code />,
     routes: [
       {
+        title: "Prompt Explorer",
+        path: routes.PROMPT_EXPLORER_ROUTE,
+        scopes: [],
+        requiresPlus: true,
+      },
+      {
         title: "Ant Design POC",
         path: routes.ANT_POC_ROUTE,
         scopes: [],
