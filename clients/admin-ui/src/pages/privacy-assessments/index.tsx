@@ -20,10 +20,13 @@ const PrivacyAssessmentsPage: NextPage = () => {
     data: assessmentsData,
     isLoading,
     isError,
-  } = useGetPrivacyAssessmentsQuery();
+  } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
 
   // Fetch templates from API
-  const { data: templatesData } = useGetAssessmentTemplatesQuery();
+  const { data: templatesData } = useGetAssessmentTemplatesQuery({
+    page: 1,
+    size: 100,
+  });
 
   const assessments = assessmentsData?.items ?? [];
   const templates = templatesData?.items ?? [];

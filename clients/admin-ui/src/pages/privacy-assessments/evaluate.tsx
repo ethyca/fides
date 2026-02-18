@@ -67,7 +67,7 @@ const EvaluateAssessmentPage: NextPage = () => {
 
   // Fetch templates
   const { data: templatesData, isLoading: isLoadingTemplates } =
-    useGetAssessmentTemplatesQuery();
+    useGetAssessmentTemplatesQuery({ page: 1, size: 100 });
 
   const [createAssessment, { isLoading: isCreating }] =
     useCreatePrivacyAssessmentMutation();
