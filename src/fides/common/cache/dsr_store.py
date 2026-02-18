@@ -305,6 +305,53 @@ class DSRCacheStore:
         part = f"drp:{attr}"
         return self.get_with_legacy(dsr_id, part, KeyMapper.drp(dsr_id, attr)[1])
 
+    def cache_drp_request_body(
+        self, dsr_id: str, drp_body: Dict[str, Any], expire_seconds: Optional[int] = None
+    ) -> None:
+        """
+        Cache all DRP request body fields for a DSR.
+        Writes each non-None field to dsr:{id}:drp:{field_key} format.
+        """
+        for key, value in drp_body.items():
+            if value is not None:
+                self.write_drp(dsr_id, key, value, expire_seconds)
+
+    def get_cached_drp_request_body(self, dsr_id: str) -> Dict[str, Any]:
+        """
+        Retrieve all cached DRP request body data for a DSR.
+        Returns dict with DRP fields. Automatically migrates legacy keys on read.
+        Returns empty dict if no DRP data cached.
+        """
+        result: Dict[str, Any] = {}
+        all_keys = self.get_all_keys(dsr_id)
+
+        # Filter for DRP keys (both new and legacy formats)
+        drp_keys = [k for k in all_keys if ":drp:" in k or "-drp-" in k]
+
+        for key in drp_keys:
+            # Extract field name from key
+            # New format: dsr:{id}:drp:{field}
+            # Legacy format: id-{id}-drp-{field}
+            if ":drp:" in key:
+                field = key.split(":")[-1]
+            else:
+                # Legacy format
+                field = key.split("-")[-1]
+
+            value = self.get_drp(dsr_id, field)
+            if value:
+                result[field] = value
+
+        return result
+
+    def has_cached_drp_request_body(self, dsr_id: str) -> bool:
+        """
+        Check if any DRP request body data is cached for this DSR.
+        Checks both new and legacy key formats.
+        """
+        all_keys = self.get_all_keys(dsr_id)
+        return any(":drp:" in k or "-drp-" in k for k in all_keys)
+
     # --- Convenience: masking secret ---
 
     def write_masking_secret(
