@@ -5,7 +5,7 @@ Adds database tables for SME questionnaire sessions:
 - chat_message: stores per-message conversation history with sender info
 
 Revision ID: 5b2fbaaa7d6d
-Revises: c0dc13ad2a05
+Revises: a0109cdde920
 Create Date: 2026-02-13 16:00:00.000000
 
 """
@@ -16,7 +16,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "5b2fbaaa7d6d"
-down_revision = "c0dc13ad2a05"
+down_revision = "a0109cdde920"
 branch_labels = None
 depends_on = None
 
@@ -39,8 +39,12 @@ def upgrade() -> None:
             nullable=False,
             server_default="in_progress",
         ),
-        sa.Column("current_question_index", sa.Integer(), nullable=False, server_default="0"),
-        sa.Column("provider_context", postgresql.JSONB(), nullable=False, server_default="{}"),
+        sa.Column(
+            "current_question_index", sa.Integer(), nullable=False, server_default="0"
+        ),
+        sa.Column(
+            "provider_context", postgresql.JSONB(), nullable=False, server_default="{}"
+        ),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -92,7 +96,9 @@ def upgrade() -> None:
         sa.Column("sender_email", sa.String(), nullable=True),
         sa.Column("sender_display_name", sa.String(), nullable=True),
         sa.Column("text", sa.Text(), nullable=False),
-        sa.Column("is_bot_message", sa.Boolean(), nullable=False, server_default="false"),
+        sa.Column(
+            "is_bot_message", sa.Boolean(), nullable=False, server_default="false"
+        ),
         sa.Column("question_index", sa.Integer(), nullable=True),
         sa.Column(
             "created_at",
