@@ -103,9 +103,9 @@ def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
     if not issued_at:
         return True
 
-    minutes_remaining = (datetime.now() - issued_at).total_seconds() / 60.0
+    minutes_since_issuance = (datetime.now() - issued_at).total_seconds() / 60.0
 
-    return minutes_remaining > CONFIG.execution.privacy_request_delay_timeout
+    return minutes_since_issuance > CONFIG.execution.privacy_request_delay_timeout
 
 
 def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
