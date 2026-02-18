@@ -1,7 +1,7 @@
 """Tests for JiraTicketTask model, pending_external status, and polling task skeleton."""
 
 import uuid
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -254,21 +254,13 @@ class TestJiraTicketTaskModel:
 
 
 class TestPollJiraTicketsTask:
+class TestPollJiraTicketsTask:
     def test_poll_task_no_op_without_service(self):
-        from fides.service.jira.polling_task import poll_jira_tickets
-
         assert poll_jira_tickets is not None
 
     def test_register_poll_service(self):
-        from fides.service.jira.polling_task import (
-            _poll_service_fn,
-            register_poll_service,
-        )
-
         mock_fn = MagicMock()
         register_poll_service(mock_fn)
-
-        from fides.service.jira import polling_task
 
         assert polling_task._poll_service_fn is mock_fn
 

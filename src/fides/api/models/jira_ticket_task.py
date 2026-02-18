@@ -65,12 +65,17 @@ class JiraTicketTask(Base):
     @classmethod
     def get_open_tasks(cls, db: Session) -> list["JiraTicketTask"]:
         """Return all tasks that still need polling (not done)."""
+    @classmethod
+    def get_open_tasks(cls, db: Session) -> list["JiraTicketTask"]:
+        """Return all tasks that still need polling (not done)."""
         return (
             db.query(cls)
             .filter(
                 (cls.external_status_category.is_(None))
-                | (cls.external_status_category != "done")
+                | (cls.external_status_category != DONE_STATUS_CATEGORY)
             )
+            .all()
+        )
             .all()
         )
 
