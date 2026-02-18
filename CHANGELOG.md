@@ -59,6 +59,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Filtered GPP notices from TCF experience privacy notice options [#7274](https://github.com/ethyca/fides/pull/7274)
 - Fixed duplicate action type tags in privacy request dashboard [#7358](https://github.com/ethyca/fides/pull/7358)
 - Encode database password when reused for readonly connection [#7375](https://github.com/ethyca/fides/pull/7375)
+- Re-ordered activity tabs to show attention required first [#7376](https://github.com/ethyca/fides/pull/7376)
+- Website monitor features being displayed when flag is disabled [#7382](https://github.com/ethyca/fides/pull/7382)
+- Fixed PyPI package build to include admin UI assets (src/fides/ui-build) when using hatchling/uv. [#7372](https://github.com/ethyca/fides/pull/7372)
+- Fixed Chakra theme which cause checkboxes and other components to not render correctly. [#7379](https://github.com/ethyca/fides/pull/7379)
 
 ## [2.78.2](https://github.com/ethyca/fides/compare/2.78.1..2.78.2)
 
