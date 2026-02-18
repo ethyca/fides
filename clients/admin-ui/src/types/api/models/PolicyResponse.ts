@@ -14,4 +14,5 @@ export type PolicyResponse = {
   drp_action?: DrpAction | null;
   execution_timeframe?: number | null;
   rules?: Array<RuleResponse> | null;
+  conditions?: any;
 };
