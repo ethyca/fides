@@ -119,12 +119,6 @@ export const MAP_DATASTORE_RESOURCE_TYPE_TO_ICON: Partial<
   [StagedResourceTypeValue.TABLE]: Icons.Table,
 } as const;
 
-export const FIELDS_FILTER_SECTION_KEYS = {
-  STATUS: "status-section",
-  DATA_CATEGORY: "data-category-section",
-  CONFIDENCE: "confidence-section",
-} as const;
-
 // Map tree resource change indicator to status info
 export const MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO: Record<
   TreeResourceChangeIndicator,
