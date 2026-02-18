@@ -1203,7 +1203,7 @@ export const stubInfrastructureSystemsBulkActions = (
 
 export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
   stubFeatureFlags();
-  cy.intercept("GET", "/api/v1/dsr/policy?*", {
+  cy.intercept("GET", "/api/v1/dsr/policy", {
     fixture: options?.isEmpty
       ? "policies/empty-list.json"
       : "policies/list.json",
