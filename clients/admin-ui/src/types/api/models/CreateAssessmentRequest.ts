@@ -20,11 +20,11 @@ export type CreateAssessmentRequest = {
   /**
    * System fides key
    */
-  system_fides_key?: (string | null);
+  system_fides_key?: string | null;
   /**
    * Declaration ID
    */
-  declaration_id?: (string | null);
+  declaration_id?: string | null;
   /**
    * Whether to use LLM for AI-assisted answers
    */
@@ -32,6 +32,5 @@ export type CreateAssessmentRequest = {
   /**
    * Specific LLM model to use
    */
-  model?: (string | null);
+  model?: string | null;
 };
-

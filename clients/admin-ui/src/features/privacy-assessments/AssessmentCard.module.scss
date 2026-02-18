@@ -1,0 +1,43 @@
+.cardWrapper {
+  display: flex;
+  flex-direction: column;
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+}
+
+.cardComplete {
+  border-left: 4px solid var(--fidesui-success);
+}
+
+.separator {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--fidesui-neutral-100);
+}
+
+.completeContainer {
+  border-radius: 8px;
+  padding: 12px;
+  background-color: color-mix(in srgb, var(--fidesui-success) 10%, transparent);
+}
+
+.secondaryText {
+  display: block;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.textWithTags {
+  display: block;
+  font-size: 12px;
+  line-height: 2em;
+}
+
+.captionText {
+  display: block;
+  font-size: 12px;
+}

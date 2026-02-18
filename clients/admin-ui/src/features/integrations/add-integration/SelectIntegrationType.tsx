@@ -1,8 +1,7 @@
-import { Input, Select } from "fidesui";
+import { Input, PageSpinner, Select } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import getIntegrationTypeInfo, {
   INTEGRATION_TYPE_LIST,
@@ -190,7 +189,7 @@ const SelectIntegrationType = ({
       </div>
 
       {isFiltering ? (
-        <FidesSpinner />
+        <PageSpinner />
       ) : (
         <div className="grid grid-cols-3 gap-6">
           {filteredTypes.map((i) => (

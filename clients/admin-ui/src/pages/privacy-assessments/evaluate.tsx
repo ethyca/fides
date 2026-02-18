@@ -16,6 +16,7 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
+import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -24,6 +25,7 @@ import {
   useCreatePrivacyAssessmentMutation,
   useGetAssessmentTemplatesQuery,
 } from "~/features/privacy-assessments";
+import { RTKErrorResult } from "~/types/errors/api";
 
 const { Title, Paragraph } = Typography;
 const { Item } = Form;
@@ -67,16 +69,23 @@ const EvaluateAssessmentPage: NextPage = () => {
 
   // Fetch templates
   const { data: templatesData, isLoading: isLoadingTemplates } =
-    useGetAssessmentTemplatesQuery();
+    useGetAssessmentTemplatesQuery({ page: 1, size: 100 });
 
   const [createAssessment] = useCreatePrivacyAssessmentMutation();
 
-  const templates = templatesData?.items ?? [];
-  const activeTemplates = templates.filter((t) => t.is_active !== false);
+  const activeTemplates = useMemo(
+    () => (templatesData?.items ?? []).filter((t) => t.is_active !== false),
+    [templatesData?.items],
+  );
 
   // Find selected template for description display
   const selectedTemplate = useMemo(
-    () => activeTemplates.find((t) => t.assessment_type === selectedTemplateId),
+    () =>
+      activeTemplates.find(
+        (t) =>
+          t.assessment_type === selectedTemplateId ||
+          t.key === selectedTemplateId,
+      ),
     [activeTemplates, selectedTemplateId],
   );
 
@@ -112,10 +121,13 @@ const EvaluateAssessmentPage: NextPage = () => {
         });
       })
       .catch((error) => {
+        const errorMessage = getErrorMessage(
+          (error as RTKErrorResult["error"]) ?? "An unexpected error occurred.",
+        );
         notificationApi.error({
           key: EVALUATION_NOTIFICATION_KEY,
           message: "Evaluation failed",
-          description: error?.data?.detail ?? "An unexpected error occurred.",
+          description: errorMessage,
         });
       });
   };

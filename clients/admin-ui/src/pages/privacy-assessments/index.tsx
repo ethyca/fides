@@ -20,10 +20,13 @@ const PrivacyAssessmentsPage: NextPage = () => {
     data: assessmentsData,
     isLoading,
     isError,
-  } = useGetPrivacyAssessmentsQuery();
+  } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
 
   // Fetch templates from API
-  const { data: templatesData } = useGetAssessmentTemplatesQuery();
+  const { data: templatesData } = useGetAssessmentTemplatesQuery({
+    page: 1,
+    size: 100,
+  });
 
   const assessments = assessmentsData?.items ?? [];
   const templates = templatesData?.items ?? [];
@@ -91,7 +94,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
       {!hasAssessments ? (
         <EmptyState />
       ) : (
-        <div className="px-10 py-6">
+        <div className="py-6">
           <Space direction="vertical" size="large" className="w-full">
             {groupedAssessments.map((template) => (
               <AssessmentGroup
