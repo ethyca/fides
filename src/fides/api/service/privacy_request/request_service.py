@@ -498,9 +498,7 @@ def _has_async_tasks_awaiting_external_completion(
         db.query(RequestTask)
         .filter(
             RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.async_type.in_(
-                [AsyncTaskType.polling, AsyncTaskType.callback]
-            ),
+            RequestTask.async_type.in_([AsyncTaskType.polling, AsyncTaskType.callback]),
         )
         .exists()
     ).scalar()
