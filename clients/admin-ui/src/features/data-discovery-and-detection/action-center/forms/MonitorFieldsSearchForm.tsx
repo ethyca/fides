@@ -37,11 +37,6 @@ const MonitorFieldsSearchForm = ({
     useTaxonomies();
 
   const options: TaxonomySelectOption[] = getDataCategories()
-    .filter(
-      (category) =>
-        category.active &&
-        !!availableFilters.data_category?.includes(category.fides_key),
-    )
     .flatMap((category) => {
       if (
         !category.active ||
