@@ -821,9 +821,6 @@ class ConnectionService:
         # The delete_template method bumps the Redis version counter so every
         # server detects the change on its next get_connector_templates() call.
         CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
-        CustomConnectorTemplateLoader.get_connector_templates().pop(
-            connector_type, None
-        )
 
         # Get the file template that is now active
         file_connector_template = ConnectorRegistry.get_connector_template(
