@@ -91,7 +91,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
       {!hasAssessments ? (
         <EmptyState />
       ) : (
-        <div className="px-10 py-6">
+        <div className="py-6">
           <Space direction="vertical" size="large" className="w-full">
             {groupedAssessments.map((template) => (
               <AssessmentGroup
