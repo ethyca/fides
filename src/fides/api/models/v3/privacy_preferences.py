@@ -11,6 +11,7 @@ from sqlalchemy import (  # type: ignore[attr-defined]
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import Session
 
 from fides.api.cryptography.cryptographic_util import hash_value_with_salt
 from fides.api.cryptography.identity_salt import get_identity_salt
@@ -53,6 +54,13 @@ class PrivacyPreferences(Base):
         nullable=True,
     )
 
+    is_encrypted = Column(
+        Boolean,
+        nullable=False,
+        default=lambda: CONFIG.consent.consent_v3_encryption_enabled,
+        index=True,
+    )
+
     # Partition key - determines if record goes to _current or _historic partition
     is_latest = Column(
         Boolean, nullable=False, server_default=text("false"), primary_key=True
@@ -66,6 +74,25 @@ class PrivacyPreferences(Base):
         index=True,
     )
     updated_at = Column(DateTime(timezone=True), nullable=True)
+
+    @classmethod
+    def has_encryption_mismatch(cls, db: Session) -> bool:
+        """
+        Check whether any rows have an is_encrypted value that doesn't match
+        the current consent_v3_encryption_enabled setting.
+        """
+        expected = CONFIG.consent.consent_v3_encryption_enabled
+        return (
+            db.execute(
+                text(
+                    "SELECT 1 FROM privacy_preferences "
+                    "WHERE is_encrypted = :mismatched "
+                    "LIMIT 1"
+                ),
+                {"mismatched": not expected},
+            ).scalar()
+            is not None
+        )
 
     @classmethod
     def hash_value(

@@ -112,6 +112,8 @@ def migrate_consent_encryption(
     """
     Encrypt or decrypt v3 privacy preferences record_data.
 
+    Warning: This script is not meant for production use.
+
     Run this while the server is stopped or no privacy preferences records are being saved,
     before toggling FIDES__CONSENT__CONSENT_V3_ENCRYPTION_ENABLED.
     """

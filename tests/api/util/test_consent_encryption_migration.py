@@ -14,8 +14,8 @@ class TestMigrateConsentEncryption:
         row_id = db.execute(
             text(
                 "INSERT INTO privacy_preferences "
-                "(is_latest, record_data) "
-                "VALUES (true, :data) "
+                "(is_latest, record_data, is_encrypted) "
+                "VALUES (true, :data, false) "
                 "RETURNING id"
             ),
             {"data": "test_plaintext_value"},
@@ -60,8 +60,8 @@ class TestMigrateConsentEncryption:
         self.row_id = db.execute(
             text(
                 "INSERT INTO privacy_preferences "
-                "(is_latest, record_data) "
-                "VALUES (true, :data) "
+                "(is_latest, record_data, is_encrypted) "
+                "VALUES (true, :data, false) "
                 "RETURNING id"
             ),
             {"data": "test_plaintext_value"},
@@ -111,8 +111,8 @@ class TestMigrateConsentEncryption:
             row_id = db.execute(
                 text(
                     "INSERT INTO privacy_preferences "
-                    "(is_latest, record_data) "
-                    "VALUES (true, :data) "
+                    "(is_latest, record_data, is_encrypted) "
+                    "VALUES (true, :data, false) "
                     "RETURNING id"
                 ),
                 {"data": f"batch_test_{i}"},

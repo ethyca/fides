@@ -31,7 +31,7 @@ SELECT_QUERY = text(
 UPDATE_QUERY = text(
     """
     UPDATE privacy_preferences
-    SET record_data = :record_data
+    SET record_data = :record_data, is_encrypted = :is_encrypted
     WHERE id = :id AND is_latest = :is_latest
     """
 )
@@ -113,6 +113,7 @@ def _process_batch(
             UPDATE_QUERY,
             {
                 "record_data": transformed,
+                "is_encrypted": direction == "encrypt",
                 "id": row.id,
                 "is_latest": row.is_latest,
             },
@@ -127,6 +128,7 @@ def migrate_consent_encryption(
 ) -> MigrationResult:
     """
     Encrypt or decrypt all record_data in the v3 privacy_preferences table.
+    Warning: This script is not meant for production use.
 
     Uses raw SQL to avoid ORM column type auto-transformation. Processes rows
     in batches and commits after each batch.
@@ -140,6 +142,11 @@ def migrate_consent_encryption(
     Returns:
         MigrationResult with total_processed, batches, and any errors.
     """
+    if not CONFIG.dev_mode:
+        raise ValueError(
+            "Dev mode is disabled -- this script is not meant for production use."
+        )
+
     if direction not in ("encrypt", "decrypt"):
         raise ValueError('direction must be "encrypt" or "decrypt"')
 
