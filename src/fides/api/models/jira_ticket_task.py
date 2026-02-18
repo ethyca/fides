@@ -5,12 +5,19 @@ stores Jira-specific fields (ticket key, URL, external status) that the
 polling service uses to track ticket lifecycle.
 """
 
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, Index, String, text
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+
+if TYPE_CHECKING:
+    from fides.api.models.connectionconfig import ConnectionConfig
+    from fides.api.models.manual_task import ManualTaskInstance
+
+DONE_STATUS_CATEGORY = "done"
 
 
 class JiraTicketTask(Base):
@@ -21,7 +28,9 @@ class JiraTicketTask(Base):
     updates them from the Jira API.
     """
 
-    __tablename__ = "jira_ticket_task"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "jira_ticket_task"
 
     manual_task_instance_id = Column(
         String,
@@ -65,17 +74,12 @@ class JiraTicketTask(Base):
     @classmethod
     def get_open_tasks(cls, db: Session) -> list["JiraTicketTask"]:
         """Return all tasks that still need polling (not done)."""
-    @classmethod
-    def get_open_tasks(cls, db: Session) -> list["JiraTicketTask"]:
-        """Return all tasks that still need polling (not done)."""
         return (
             db.query(cls)
             .filter(
                 (cls.external_status_category.is_(None))
                 | (cls.external_status_category != DONE_STATUS_CATEGORY)
             )
-            .all()
-        )
             .all()
         )
 
