@@ -64,37 +64,35 @@ export const AssessmentCard = ({
       })}
     >
       <Flex vertical gap="small" justify="space-between">
-        <div>
-          <Title level={5}>{assessment.name}</Title>
-          <Text type="secondary" className={styles.secondaryText}>
-            System: {assessment.system_name ?? ""}
-          </Text>
-          <Text type="secondary" className={styles.textWithTags}>
-            Processing{" "}
-            {(assessment.data_categories ?? []).length > 0 ? (
-              <TagList
-                tags={(assessment.data_categories ?? []).map((key) => ({
-                  value: key,
-                  label: getDataCategoryDisplayName(key),
-                }))}
-                maxTags={1}
-                expandable
-              />
-            ) : (
-              <Tag>0 data categories</Tag>
-            )}{" "}
-            for{" "}
+        <Title level={5}>{assessment.name}</Title>
+        <Text type="secondary" className={styles.secondaryText}>
+          System: {assessment.system_name ?? ""}
+        </Text>
+        <Text type="secondary" className={styles.textWithTags}>
+          Processing{" "}
+          {(assessment.data_categories ?? []).length > 0 ? (
             <TagList
-              tags={assessment.data_use_name ? [assessment.data_use_name] : []}
+              tags={(assessment.data_categories ?? []).map((key) => ({
+                value: key,
+                label: getDataCategoryDisplayName(key),
+              }))}
               maxTags={1}
+              expandable
             />
-          </Text>
-          {riskLevel && (
-            <Tag color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
-              {`${riskLabel} risk`}
-            </Tag>
-          )}
-        </div>
+          ) : (
+            <Tag>0 data categories</Tag>
+          )}{" "}
+          for{" "}
+          <TagList
+            tags={assessment.data_use_name ? [assessment.data_use_name] : []}
+            maxTags={1}
+          />
+        </Text>
+        {riskLevel && (
+          <Tag color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
+            {`${riskLabel} risk`}
+          </Tag>
+        )}
 
         <div className={styles.separator}>
           {isComplete ? (
