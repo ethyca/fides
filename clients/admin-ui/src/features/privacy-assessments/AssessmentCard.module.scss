@@ -1,0 +1,53 @@
+.cardWrapper {
+  display: flex;
+  flex-direction: column;
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+}
+
+.cardComplete {
+  border-left: 4px solid var(--fidesui-success);
+}
+
+.separator {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--fidesui-neutral-100);
+}
+
+.completeContainer {
+  border-radius: 8px;
+  padding: 12px;
+  background-color: color-mix(in srgb, var(--fidesui-success) 10%, transparent);
+}
+
+.checkCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--fidesui-success);
+  color: var(--fidesui-full-white);
+}
+
+.secondaryText {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.captionText {
+  display: block;
+  font-size: 12px;
+}
+
+.tinyText {
+  font-size: 11px;
+}

@@ -1,4 +1,4 @@
-import { Flex, Icons, Text, Typography } from "fidesui";
+import { Col, Flex, Icons, Row, Text, Typography } from "fidesui";
 import { useRouter } from "next/router";
 
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
@@ -44,17 +44,18 @@ export const AssessmentGroup = ({
         </Flex>
       </Flex>
 
-      <Flex gap="middle" wrap="wrap">
+      <Row gutter={[16, 16]}>
         {assessments.map((assessment) => (
-          <AssessmentCard
-            key={assessment.id}
-            assessment={assessment}
-            onClick={() =>
-              router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`)
-            }
-          />
+          <Col key={assessment.id} span={6}>
+            <AssessmentCard
+              assessment={assessment}
+              onClick={() =>
+                router.push(`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`)
+              }
+            />
+          </Col>
         ))}
-      </Flex>
+      </Row>
     </div>
   );
 };
