@@ -402,6 +402,12 @@ class ConnectionService:
         ConnectionType.jira_ticket.value,
     }
 
+    # Connection types that auto-create a ManualTask on first save.
+    _auto_task_type_mapping: dict[str, ManualTaskType] = {
+        ConnectionType.manual_task.value: ManualTaskType.privacy_request,
+        ConnectionType.jira_ticket.value: ManualTaskType.jira_ticket,
+    }
+
     def create_or_update_connection_config(
         self,
         config: CreateConnectionConfigurationWithSecrets,
@@ -581,14 +587,8 @@ class ConnectionService:
                 connection_config.secrets,  # type: ignore[arg-type]
             )
 
-        # Automatically create a ManualTask if this is a manual_task or
-        # jira_ticket connection and it doesn't already have one
-        _auto_task_type_mapping: dict[str, ManualTaskType] = {
-            ConnectionType.manual_task.value: ManualTaskType.privacy_request,
-            ConnectionType.jira_ticket.value: ManualTaskType.jira_ticket,
-        }
-        auto_task_type = _auto_task_type_mapping.get(
-            str(connection_config.connection_type)
+        auto_task_type = self._auto_task_type_mapping.get(
+            connection_config.connection_type.value  # type: ignore
         )
         if auto_task_type and not connection_config.manual_task:
             ManualTask.create(

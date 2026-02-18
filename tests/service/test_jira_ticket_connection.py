@@ -7,11 +7,10 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.models.connectionconfig import (
-    AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.models.manual_task.manual_task import ManualTaskType
+from fides.api.models.manual_task.manual_task import ManualTask, ManualTaskType
 from fides.api.schemas.connection_configuration import (
     JiraTicketSchema,
     get_connection_secrets_schema,
@@ -102,7 +101,7 @@ class TestJiraTicketSingletonEnforcement:
         connection_service: ConnectionService,
         db: Session,
     ):
-        """Creating a jira_ticket connection succeeds."""
+        """Creating a jira_ticket connection succeeds and auto-creates a ManualTask."""
         config = CreateConnectionConfigurationWithSecrets(
             key="jira_ticket_1",
             name="Jira Ticket Connection",
@@ -113,9 +112,15 @@ class TestJiraTicketSingletonEnforcement:
         assert result.key == "jira_ticket_1"
         assert result.connection_type.value == "jira_ticket"
 
-        # Clean up
-        created = ConnectionConfig.get_by(db, field="key", value="jira_ticket_1")
-        created.delete(db)
+        connection_config = ConnectionConfig.get_by(
+            db, field="key", value="jira_ticket_1"
+        )
+        assert connection_config.manual_task is not None
+
+        manual_task = connection_config.manual_task
+        assert manual_task.task_type == ManualTaskType.jira_ticket
+        assert manual_task.parent_entity_id == connection_config.id
+        assert manual_task.parent_entity_type == "connection_config"
 
     def test_singleton_prevents_second_jira_ticket_connection(
         self,
@@ -141,10 +146,6 @@ class TestJiraTicketSingletonEnforcement:
         )
         with pytest.raises(ValidationError, match="Only one jira_ticket connection"):
             connection_service.create_or_update_connection_config(second_config)
-
-        # Clean up
-        created = ConnectionConfig.get_by(db, field="key", value="jira_ticket_first")
-        created.delete(db)
 
     def test_update_existing_jira_ticket_connection_allowed(
         self,
