@@ -356,3 +356,37 @@ class TestRedisUnavailable:
         assert decorated() == 2  # cache miss (version changed)
         assert decorated() == 2  # cache hit
         assert call_count == 2
+
+    def test_redis_recovery_reloads_even_with_same_version(
+        self, mock_get_redis_version
+    ):
+        """When Redis goes down the cached version is set to None, so
+        recovery forces a reload even if the Redis version counter did
+        not change (e.g. bump_version INCR failed on another server)."""
+        call_count = 0
+
+        def counting_fn():
+            nonlocal call_count
+            call_count += 1
+            return call_count
+
+        decorated = redis_version_cached(redis_key=REDIS_KEY, cache_key=CACHE_KEY)(
+            counting_fn
+        )
+
+        # Populate cache while Redis is healthy (version "5")
+        mock_get_redis_version.return_value = "5"
+        assert decorated() == 1
+        assert call_count == 1
+
+        # Redis goes down — stale value returned, version set to None
+        mock_get_redis_version.side_effect = Exception("Redis down")
+        assert decorated() == 1
+        assert call_count == 1
+
+        # Redis recovers with the SAME version (INCR never succeeded)
+        mock_get_redis_version.side_effect = None
+        mock_get_redis_version.return_value = "5"
+        assert decorated() == 2  # cache miss: None != "5"
+        assert decorated() == 2  # cache hit
+        assert call_count == 2
