@@ -51,7 +51,7 @@ const useSearchForm = <RequestData, FormType>({
     }
   };
 
-  // Unfortunate need for effect due to current routin strategy
+  // Unfortunate need for effect due to current routing strategy
   useEffect(() => {
     form.setFieldsValue(searchForm);
     // eslint-disable-next-line react-hooks/exhaustive-deps
