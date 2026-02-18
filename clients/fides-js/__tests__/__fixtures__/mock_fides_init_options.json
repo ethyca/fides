@@ -32,5 +32,6 @@
   "fidesConsentNonApplicableFlagMode": null,
   "fidesConsentFlagType": null,
   "fidesInitializedEventMode": "once",
-  "fidesCookieCompression": "none"
+  "fidesCookieCompression": "none",
+  "fidesExternalId": null
 }

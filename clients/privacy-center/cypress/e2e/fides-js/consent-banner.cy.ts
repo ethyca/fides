@@ -26,6 +26,15 @@ const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
 const PRIVACY_NOTICE_KEY_3 = "analytics_opt_out";
 
+/** Used in setIdentity tests to pass invalid keys and assert runtime validation. */
+type WindowWithSetIdentity = {
+  Fides: { setIdentity: (identity: Record<string, string>) => Promise<void> };
+};
+
+interface PatchPrivacyPreferenceRequestBody {
+  browser_identity?: { external_id?: string; fides_user_device_id?: string };
+}
+
 describe("Consent overlay", () => {
   describe("when overlay is disabled", () => {
     describe("when both experience and legacy consent exist", () => {
@@ -415,6 +424,212 @@ describe("Consent overlay", () => {
                 "href",
                 "https://ethyca.com/",
               );
+            });
+          });
+        });
+
+        describe("external_id support", () => {
+          it("includes external_id in privacy-preferences API when fides_external_id is provided", () => {
+            const externalId = "example-customer-id-789";
+            stubConfig({
+              options: {
+                isOverlayEnabled: true,
+                fidesExternalId: externalId,
+              },
+            });
+            cy.contains("button", "Manage preferences").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+            cy.getByTestId("toggle-Advertising").should("exist");
+            cy.getByTestId("toggle-Advertising").click();
+            cy.getByTestId("Save-btn").click();
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              const { body } = interception.request;
+              expect(body.browser_identity.external_id).to.eql(externalId);
+              expect(body.browser_identity.fides_user_device_id).to.be.a(
+                "string",
+              );
+            });
+          });
+
+          it("includes external_id in notices-served API when fides_external_id is provided", () => {
+            const externalId = "example-customer-id-890";
+            stubConfig({
+              options: {
+                fidesExternalId: externalId,
+              },
+            });
+            cy.get("#fides-modal-link").click();
+            cy.wait("@patchNoticesServed").then((interception) => {
+              const { body } = interception.request;
+              expect(body.browser_identity.external_id).to.eql(externalId);
+              expect(body.browser_identity.fides_user_device_id).to.be.a(
+                "string",
+              );
+            });
+          });
+        });
+
+        describe("setIdentity", () => {
+          it("includes external_id in privacy-preferences API when set via setIdentity then save", () => {
+            const externalId = "set-via-setidentity-id";
+            stubConfig({ options: { isOverlayEnabled: true } });
+            cy.waitUntilFidesInitialized();
+            cy.window().then((win) =>
+              win.Fides.setIdentity({ external_id: externalId }),
+            );
+            cy.contains("button", "Manage preferences").click();
+            cy.getByTestId("consent-modal").should("be.visible");
+            cy.getByTestId("toggle-Advertising").click();
+            cy.getByTestId("Save-btn").click();
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              const { body } = interception.request;
+              expect(body.browser_identity.external_id).to.eql(externalId);
+              expect(body.browser_identity.fides_user_device_id).to.be.a(
+                "string",
+              );
+            });
+          });
+
+          it("rejects reserved key fides_user_device_id with expected error", () => {
+            stubConfig({ options: { isOverlayEnabled: true } });
+            cy.waitUntilFidesInitialized();
+            cy.window().then(async (win) => {
+              const fides = (win as unknown as WindowWithSetIdentity).Fides;
+              try {
+                await fides.setIdentity({ fides_user_device_id: "device-123" });
+                throw new Error("Expected setIdentity to reject");
+              } catch (err) {
+                expect((err as Error).message).to.eql(
+                  "fides_user_device_id is reserved and cannot be set via setIdentity.",
+                );
+              }
+            });
+          });
+
+          it("rejects verified key email with expected error", () => {
+            stubConfig({ options: { isOverlayEnabled: true } });
+            cy.waitUntilFidesInitialized();
+            cy.window().then(async (win) => {
+              const fides = (win as unknown as WindowWithSetIdentity).Fides;
+              try {
+                await fides.setIdentity({ email: "u@example.com" });
+                throw new Error("Expected setIdentity to reject");
+              } catch (err) {
+                expect((err as Error).message).to.include(
+                  "email and phone_number are verified identity keys",
+                );
+              }
+            });
+          });
+
+          it("rejects unsupported custom key with expected error", () => {
+            stubConfig({ options: { isOverlayEnabled: true } });
+            cy.waitUntilFidesInitialized();
+            cy.window().then(async (win) => {
+              const fides = (win as unknown as WindowWithSetIdentity).Fides;
+              try {
+                await fides.setIdentity({ custom_key: "value" });
+                throw new Error("Expected setIdentity to reject");
+              } catch (err) {
+                expect((err as Error).message).to.include(
+                  "Only external_id is supported. Unsupported key: custom_key",
+                );
+              }
+            });
+          });
+
+          it("throws when external_id is empty string", () => {
+            stubConfig({ options: { isOverlayEnabled: true } });
+            cy.waitUntilFidesInitialized();
+            cy.window().then(async (win) => {
+              const fides = (win as unknown as WindowWithSetIdentity).Fides;
+              try {
+                await fides.setIdentity({ external_id: "" });
+                throw new Error("Expected setIdentity to reject");
+              } catch (err) {
+                expect((err as Error).message).to.include(
+                  "external_id cannot be empty or whitespace-only. Omit the key to leave identity unchanged.",
+                );
+              }
+            });
+          });
+
+          it("after GPC initial save, setIdentity does not trigger PATCH; next modal save includes external_id", () => {
+            cy.on("window:before:load", (win) => {
+              // eslint-disable-next-line no-param-reassign
+              win.navigator.globalPrivacyControl = true;
+            });
+            stubConfig({
+              experience: {
+                privacy_notices: [
+                  mockPrivacyNotice(
+                    {
+                      title: "Advertising with GPC",
+                      id: "pri_notice-advertising-gpc",
+                      notice_key: "advertising_gpc",
+                      has_gpc_flag: true,
+                      consent_mechanism: ConsentMechanism.OPT_OUT,
+                    },
+                    [
+                      mockPrivacyNoticeTranslation({
+                        title: "Advertising with GPC",
+                        privacy_notice_history_id:
+                          "pri_exp-history-advertising-gpc-en-000",
+                      }),
+                    ],
+                  ),
+                  mockPrivacyNotice(
+                    {
+                      title: "Data Sales and Sharing",
+                      id: "pri_notice-data-sales",
+                      notice_key: "data_sales_and_sharing",
+                      has_gpc_flag: false,
+                      consent_mechanism: ConsentMechanism.OPT_IN,
+                    },
+                    [
+                      mockPrivacyNoticeTranslation({
+                        title: "Data Sales and Sharing",
+                        privacy_notice_history_id:
+                          "pri_notice-history-data-sales-en-000",
+                      }),
+                    ],
+                  ),
+                ],
+              },
+            });
+            cy.window().its("Fides").its("consent").should("include", {
+              advertising_gpc: false,
+            });
+            cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+            cy.get("@patchPrivacyPreference").then((interception) => {
+              const body = interception.request
+                .body as PatchPrivacyPreferenceRequestBody;
+              expect(body.browser_identity?.external_id).to.be.undefined;
+            });
+            cy.window().then((win) =>
+              win.Fides.setIdentity({ external_id: "after-gpc-id" }),
+            );
+            /*
+             * NOTE: This confirms the *current* behavior that we don't automatically
+             * re-trigger a GPC save if the identity changes during the session via
+             * a call to setIdentity().
+             * However, if we implement this "re-trigger" in the future, that does
+             * sound like a reasonably good idea! If you're an engineer seeing this
+             * test fail because you implemented that automatic re-trigger, thanks
+             * for going the extra mile, and you definitely should update this test
+             * with your new expectation :)
+             */
+            cy.get("@patchPrivacyPreference.all").should("have.length", 1);
+            cy.get("#fides-modal-link").click();
+            cy.getByTestId("consent-modal").within(() => {
+              cy.getByTestId("toggle-Data Sales and Sharing").click();
+              cy.get("button").contains("Save").click();
+            });
+            cy.get("@patchPrivacyPreference.all").should("have.length", 2);
+            cy.get("@patchPrivacyPreference.2").then((interception) => {
+              const body = interception.request
+                .body as PatchPrivacyPreferenceRequestBody;
+              expect(body.browser_identity?.external_id).to.eql("after-gpc-id");
             });
           });
         });

@@ -26,6 +26,7 @@ import {
 import { onFidesEvent } from "./events";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./i18n";
 import { updateConsent } from "./preferences";
+import { setIdentity } from "./set-identity";
 
 declare global {
   interface Window {
@@ -120,6 +121,7 @@ export const getCoreFides = ({
       fidesConsentFlagType: null,
       fidesInitializedEventMode: "once",
       fidesCookieCompression: "none",
+      fidesExternalId: null,
     },
     fides_meta: {},
     identity: {},
@@ -139,6 +141,7 @@ export const getCoreFides = ({
     getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
     encodeNoticeConsentString,
     decodeNoticeConsentString,
+    setIdentity,
     reinitialize(this: FidesGlobal): Promise<void> {
       if (typeof this.init !== "function") {
         return Promise.reject(new Error("Fides.init method is not available"));
