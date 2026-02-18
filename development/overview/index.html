@@ -1560,8 +1560,8 @@ You're not viewing the latest version.
 <li>Memory:8GB</li>
 <li>Disk Limit: 200GB</li>
 </ul>
-<p>Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend doing this in a virtual environment.</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>dev-requirements.txt
+<p>Now that those are installed, the final step is to install the Python dev requirements for the Fides project. We recommend using <a href="https://docs.astral.sh/uv/">uv</a> and a virtual environment:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>uv<span class="w"> </span>sync
 </code></pre></div></td></tr></table></div>
 <hr />
 <h3 id="write-your-code">Write your code</h3>
