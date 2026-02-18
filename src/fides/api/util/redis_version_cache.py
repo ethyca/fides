@@ -23,6 +23,7 @@ R = TypeVar("R")
 
 _cache_store: Dict[str, Dict[str, Any]] = {}
 _cache_lock = Lock()
+_UNVERIFIED = object()
 
 
 def _get_redis_version(redis_key: str) -> Optional[str]:
@@ -85,7 +86,7 @@ def redis_version_cached(
                 with _cache_lock:
                     cached = _cache_store.get(cache_key)
                     if cached is not None:
-                        cached["version"] = None
+                        cached["version"] = _UNVERIFIED
                         logger.debug(
                             "redis_version_cache '{}': Redis unavailable, returning stale cached value",
                             cache_key,
@@ -99,7 +100,7 @@ def redis_version_cached(
 
                 with _cache_lock:
                     _cache_store[cache_key] = {
-                        "version": None,
+                        "version": _UNVERIFIED,
                         "value": value,
                     }
 
