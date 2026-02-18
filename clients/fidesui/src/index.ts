@@ -324,6 +324,8 @@ export { iso31661, iso31662 } from "iso-3166";
 // Export data-display components
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
+export type { IconBadgeProps } from "./components/data-display/IconBadge";
+export { IconBadge } from "./components/data-display/IconBadge";
 export type { TagListProps } from "./components/data-display/TagList";
 export { TagList } from "./components/data-display/TagList";
 

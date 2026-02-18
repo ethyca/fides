@@ -4,6 +4,7 @@ import {
   Card,
   CUSTOM_TAG_COLOR,
   Flex,
+  IconBadge,
   Icons,
   Progress,
   Tag,
@@ -106,9 +107,14 @@ export const AssessmentCard = ({
               gap="middle"
               className={styles.completeContainer}
             >
-              <div className={styles.checkCircle}>
+              <IconBadge
+                shape="circle"
+                variant="filled"
+                color="var(--fidesui-success)"
+                size={28}
+              >
                 <Icons.Checkmark size={14} />
-              </div>
+              </IconBadge>
               <div>
                 <Text strong type="success" className={styles.captionText}>
                   Assessment complete

@@ -25,16 +25,6 @@
   background-color: color-mix(in srgb, var(--fidesui-success) 10%, transparent);
 }
 
-.checkCircle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: var(--fidesui-success);
-  color: var(--fidesui-full-white);
-}
 
 .secondaryText {
   display: block;
