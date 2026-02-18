@@ -13,9 +13,9 @@ describe("Policies list page", () => {
 
     it("shows page heading and description", () => {
       cy.contains("DSR policies").should("be.visible");
-      cy.contains("Data Subject Request (DSR) policies define").should(
-        "be.visible",
-      );
+      cy.contains(
+        "DSR policies define how privacy requests are processed",
+      ).should("be.visible");
     });
 
     it("renders all policies in the list", () => {
