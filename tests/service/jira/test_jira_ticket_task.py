@@ -40,12 +40,11 @@ def jira_connection_config(db: Session) -> ConnectionConfig:
         },
     )
     yield config
-    config.delete(db)
 
 
 @pytest.fixture
 def manual_task(db: Session, jira_connection_config: ConnectionConfig) -> ManualTask:
-    task = ManualTask.create(
+    return ManualTask.create(
         db=db,
         data={
             "task_type": ManualTaskType.privacy_request,
@@ -53,13 +52,11 @@ def manual_task(db: Session, jira_connection_config: ConnectionConfig) -> Manual
             "parent_entity_type": ManualTaskParentEntityType.connection_config,
         },
     )
-    yield task
-    task.delete(db)
 
 
 @pytest.fixture
 def manual_task_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig:
-    config = ManualTaskConfig.create(
+    return ManualTaskConfig.create(
         db=db,
         data={
             "task_id": manual_task.id,
@@ -68,8 +65,6 @@ def manual_task_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig
             "is_current": True,
         },
     )
-    yield config
-    config.delete(db)
 
 
 @pytest.fixture
@@ -79,7 +74,7 @@ def manual_task_instance(
     manual_task_config: ManualTaskConfig,
     privacy_request: PrivacyRequest,
 ) -> ManualTaskInstance:
-    instance = ManualTaskInstance.create(
+    return ManualTaskInstance.create(
         db=db,
         data={
             "task_id": manual_task.id,
@@ -88,9 +83,6 @@ def manual_task_instance(
             "entity_type": "privacy_request",
         },
     )
-    yield instance
-    db.delete(instance)
-    db.commit()
 
 
 @pytest.fixture
@@ -99,7 +91,7 @@ def jira_ticket_task(
     manual_task_instance: ManualTaskInstance,
     jira_connection_config: ConnectionConfig,
 ) -> JiraTicketTask:
-    task = JiraTicketTask.create(
+    return JiraTicketTask.create(
         db=db,
         data={
             "manual_task_instance_id": manual_task_instance.id,
@@ -110,8 +102,6 @@ def jira_ticket_task(
             "external_status_category": "new",
         },
     )
-    yield task
-    task.delete(db)
 
 
 # ── PrivacyRequestStatus Tests ──────────────────────────────────────
