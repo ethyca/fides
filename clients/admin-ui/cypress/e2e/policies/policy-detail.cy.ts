@@ -6,7 +6,7 @@ describe("Policy detail page", () => {
   beforeEach(() => {
     cy.login();
     stubDSRPolicies();
-    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "default_consent_policy"));
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "default_erasure_policy"));
     cy.wait("@getDSRPolicy");
   });
 
