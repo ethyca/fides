@@ -12,11 +12,6 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.service.jira import polling_task
-from fides.service.jira.polling_task import (
-    poll_jira_tickets,
-    register_poll_service,
-)
 from fides.api.models.jira_ticket_task import JiraTicketTask
 from fides.api.models.manual_task import (
     ManualTask,
@@ -29,6 +24,11 @@ from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.config import CONFIG
+from fides.service.jira import polling_task
+from fides.service.jira.polling_task import (
+    poll_jira_tickets,
+    register_poll_service,
+)
 
 # ── Fixtures ────────────────────────────────────────────────────────
 
