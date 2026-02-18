@@ -93,7 +93,6 @@ const MonitorFieldsSearchForm = ({
           className="w-auto min-w-[200px]"
           placeholder="Status"
           allowClear
-          data-testid="monitor-type-filter"
           aria-label="Filter by status"
           mode="multiple"
           maxTagCount="responsive"
