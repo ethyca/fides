@@ -155,28 +155,6 @@ class TestAuthenticatedClient:
             test_authenticated_client.send(test_saas_request)
         assert send.call_count == 1
 
-    def test_client_ignores_errors(
-        self,
-        test_authenticated_client,
-    ):
-        """Test that _should_ignore_errors ignores the correct errors."""
-        assert test_authenticated_client._should_ignore_error(
-            status_code=400,
-            errors_to_ignore=True,
-        )
-        assert not test_authenticated_client._should_ignore_error(
-            status_code=400,
-            errors_to_ignore=False,
-        )
-        assert test_authenticated_client._should_ignore_error(
-            status_code=400,
-            errors_to_ignore=[400],
-        )
-        assert not test_authenticated_client._should_ignore_error(
-            status_code=400,
-            errors_to_ignore=[401],
-        )
-
     def test_sending_special_characters(
         self, test_authenticated_client, test_http_server
     ):

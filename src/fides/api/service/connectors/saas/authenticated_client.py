@@ -26,7 +26,7 @@ from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-from fides.api.util.saas_util import deny_unsafe_hosts
+from fides.api.util.saas_util import deny_unsafe_hosts, should_ignore_error
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -181,29 +181,6 @@ class AuthenticatedClient:
         ]
         return rate_limit_requests
 
-    def _should_ignore_error(
-        self,
-        status_code: int,
-        errors_to_ignore: Optional[Union[bool, List[int]]] = False,
-    ) -> bool:
-        """Should an error of `status_code` be ignored?"""
-        if errors_to_ignore is False:
-            # `errors_to_ignore` is a bool and explicitly set to False so Fides should not
-            # ignore any errors
-            return False
-
-        if errors_to_ignore is True:
-            # `errors_to_ignore` is a bool and explicitly set to True so Fides should ignore
-            # all errors
-            return True
-
-        if isinstance(errors_to_ignore, list):
-            # `errors_to_ignore` is a list of status codes so Fides should ignore the error
-            # if the status code is within the list
-            return status_code in errors_to_ignore
-
-        return False
-
     @retry_send(retry_count=3, backoff_factor=1.0)  # pylint: disable=E1124
     def send(
         self,
@@ -232,12 +209,12 @@ class AuthenticatedClient:
         # utf-8 encode the body before sending
         if isinstance(prepared_request.body, str):
             prepared_request.body = prepared_request.body.encode("utf-8")
-
         response = self.session.send(
             prepared_request, timeout=(self.connect_timeout, self.read_timeout)
         )
-        ignore_error = self._should_ignore_error(
-            status_code=response.status_code, errors_to_ignore=ignore_errors
+        ignore_error = should_ignore_error(
+            status_code=response.status_code, ignore_errors=ignore_errors
+
         )
         context_logger = logger.bind(
             **request_details(prepared_request, response, ignore_error)

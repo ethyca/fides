@@ -5,7 +5,7 @@ This module contains low-level HTTP request execution for async DSR polling,
 with no business logic or orchestration dependencies.
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Type, Union
 
 from loguru import logger
 from requests import Response
@@ -17,7 +17,7 @@ from fides.api.schemas.saas.async_polling_configuration import (
 )
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.util.saas_util import map_param_values
+from fides.api.util.saas_util import map_param_values, should_ignore_error
 
 
 class PollingRequestHandler:
@@ -36,43 +36,23 @@ class PollingRequestHandler:
         self.result_request = result_request
 
     @staticmethod
-    def _should_ignore_error(
-        status_code: int,
-        ignore_errors: Optional[Union[bool, List[int]]],
-    ) -> bool:
-        """
-        Determine if an error response should be ignored based on the ignore_errors config.
-
-        Mirrors AuthenticatedClient._should_ignore_error:
-        - False: do not ignore any errors
-        - True: ignore all errors
-        - List[int]: ignore only if status_code is in the list
-        """
-        if ignore_errors is True:
-            return True
-        if isinstance(ignore_errors, list):
-            return status_code in ignore_errors
-        return False
-
-    @staticmethod
     def _send_and_handle_errors(
         client: AuthenticatedClient,
         prepared_request: SaaSRequestParams,
-        ignore_errors: Optional[Union[bool, List[int]]],
+        ignore_errors: Optional[Union[bool, list]],
         request_label: str,
+        exception_cls: Type[Exception] = PrivacyRequestError,
     ) -> Response:
         """
         Send a request and handle error responses, respecting ignore_errors configuration.
 
-        Mirrors the sync path convention from SaaSConnector._handle_errored_response:
-        when ignore_errors is configured and the response status code matches, the error
-        is logged and the response is returned without raising.
+        When ignore_errors is configured and the response status code matches, the error
+        is logged and the response is returned without raising. Otherwise raises
+        exception_cls (PrivacyRequestError by default; e.g. FidesopsException for strategy callers).
         """
         response: Response = client.send(prepared_request, ignore_errors)
 
-        if not response.ok and PollingRequestHandler._should_ignore_error(
-            response.status_code, ignore_errors
-        ):
+        if not response.ok and should_ignore_error(response.status_code, ignore_errors):
             logger.info(
                 "Ignoring errored response with status code {} for {} as configured.",
                 response.status_code,
@@ -81,7 +61,7 @@ class PollingRequestHandler:
             return response
 
         if not response.ok:
-            raise PrivacyRequestError(
+            raise exception_cls(
                 f"{request_label} failed with status code {response.status_code}: {response.text}"
             )
 
