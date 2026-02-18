@@ -128,19 +128,19 @@ The project uses `pdb` for debugging as a `dev-requirement`. You can set breakpo
 
 ## Docker
 
-As a **last resort** you may need to tear _everything_ down in Docker and rebuild. The following commands will achieve that, but be warned that rebuild times can be long!
+As a __last resort__ you may need to tear _everything_ down in Docker and rebuild. The following commands will achieve that, but be warned that rebuild times can be long!
 
 ```bash
 nox -s clean
 ```
 
 !!! warning
-If you find yourself feeling the need to run this command regularly, open an issue or slack a member of the dev team as it is not expected that this will need to be run regularly.
+    If you find yourself feeling the need to run this command regularly, open an issue or slack a member of the dev team as it is not expected that this will need to be run regularly.
 
 ## Performance and Benchmarking
 
 The following are a few options we have for monitoring and benchmarking application performance:
 
 1. [docker stats](https://docs.docker.com/engine/reference/commandline/stats/) - Running this command will show you the CPU and Memory usage of your containers. This is very handy for quickly checking the memory footprint of an image while running.
-1. [drill](https://github.com/fcsonline/drill) - This is a CLI tool used for load-testing applications. It requires [Rust](https://www.rust-lang.org/tools/install) and OpenSSL. This is used in CI to continually benchmark performance.
+1. [drill](https://github.com/fcsonline/drill) - This is a CLI tool used for load-testing applications. It requires [Rust](https://www.rust-lang.org/tools/install) and OpenSSL.
 1. `profile-request` - When in `dev_mode`, Adding `profile-request: true` to any request header will tell the server to profile the request and send back a text response containing the profile data, instead of returning the typical JSON response. This allows arbitrary profiling of any endpoint or feature.
