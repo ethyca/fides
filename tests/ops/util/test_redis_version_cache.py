@@ -279,11 +279,12 @@ class TestRedisUnavailable:
     """When Redis is unreachable the decorator should return stale cached
     data if available, or call the function directly as a last resort."""
 
-    def test_redis_unavailable_with_no_cache_calls_function(
+    def test_redis_unavailable_with_no_cache_calls_function_once(
         self, mock_get_redis_version
     ):
         """If Redis is down and no cached value exists (cold start),
-        the underlying function is called directly."""
+        the underlying function is called and the result is cached
+        locally so subsequent calls don't hit the DB again."""
         mock_get_redis_version.side_effect = Exception("Redis down")
 
         call_count = 0
@@ -297,10 +298,9 @@ class TestRedisUnavailable:
             counting_fn
         )
 
-        # No cached value, so function is called each time
         assert decorated() == 1
-        assert decorated() == 2
-        assert call_count == 2
+        assert decorated() == 1  # cached locally, function not called again
+        assert call_count == 1
 
     def test_redis_unavailable_with_stale_cache_returns_stale_value(
         self, mock_get_redis_version

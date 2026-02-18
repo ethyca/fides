@@ -94,7 +94,15 @@ def redis_version_cached(
                     "redis_version_cache '{}': Redis unavailable and no cached value, calling function directly",
                     cache_key,
                 )
-                return func(*args, **kwargs)
+                value = func(*args, **kwargs)
+
+                with _cache_lock:
+                    _cache_store[cache_key] = {
+                        "version": None,
+                        "value": value,
+                    }
+
+                return value
 
             with _cache_lock:
                 cached = _cache_store.get(cache_key)
