@@ -45,7 +45,8 @@ class PrivacyPreferences(Base):
     # Searchable/queryable data stored as JSONB
     search_data = Column(JSONB, nullable=True)
 
-    # Full record data stored as encrypted text (contains PII)
+    # Full record data stored as encrypted text (contains PII) if encryption is enabled,
+    # stored in plaintext otherwise. Default is to encrypt.
     record_data = Column(
         optionally_encrypted_type(
             encryption_enabled=CONFIG.consent.consent_v3_encryption_enabled,

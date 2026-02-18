@@ -70,7 +70,7 @@ def _is_encrypted(encryptor: StringEncryptedType, value: str) -> bool:
     try:
         encryptor.process_result_value(value, dialect="")
         return True
-    except (InvalidCiphertextError, Exception):
+    except InvalidCiphertextError:
         return False
 
 

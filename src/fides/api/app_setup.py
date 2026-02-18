@@ -293,8 +293,7 @@ def check_consent_encryption_consistency() -> None:
             expected = CONFIG.consent.consent_v3_encryption_enabled
             logger.error(
                 f"privacy_preferences table contains rows where is_encrypted is {not expected}, "
-                "which is not consistent the current setting consent_v3_encryption_enabled={}. ",
-                expected,
+                f"which is not consistent the current setting consent_v3_encryption_enabled={expected}. ",
             )
     except Exception as e:
         logger.error("Failed to check consent encryption consistency: {}", str(e))
