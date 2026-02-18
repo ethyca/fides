@@ -79,7 +79,12 @@ const EvaluateAssessmentPage: NextPage = () => {
 
   // Find selected template for description display
   const selectedTemplate = useMemo(
-    () => activeTemplates.find((t) => t.assessment_type === selectedTemplateId),
+    () =>
+      activeTemplates.find(
+        (t) =>
+          t.assessment_type === selectedTemplateId ||
+          t.key === selectedTemplateId,
+      ),
     [activeTemplates, selectedTemplateId],
   );
 
