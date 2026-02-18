@@ -1,4 +1,4 @@
 type: Added
 description: Added JiraTicketTask model, pending_external privacy request status, and Jira polling task skeleton
-pr: 0
+pr: 7410
 labels: ["db-migration"]
