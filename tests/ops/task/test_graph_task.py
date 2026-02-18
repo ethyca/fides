@@ -1409,6 +1409,7 @@ class TestTraversalOnlyBehavior:
                     ExecutionLog.collection_name == "bridge_coll",
                     ExecutionLog.action_type == ActionType.erasure,
                 )
+                .order_by(ExecutionLog.created_at.desc())
                 .first()
             )
             assert log is not None
