@@ -54,6 +54,33 @@ def test_init_opt_in(test_cli_runner: CliRunner) -> None:
     )
     print(result.output)
     assert result.exit_code == 0
+    with open(".fides/fides.toml", "r") as f:
+        assert "analytics_opt_out = false" in f.read().lower()
+
+
+@pytest.mark.integration
+def test_init_opt_out(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["init", "--opt-out"],
+    )
+    print(result.output)
+    assert result.exit_code == 0
+    with open(".fides/fides.toml", "r") as f:
+        assert "analytics_opt_out = true" in f.read().lower()
+
+
+@pytest.mark.unit
+def test_init_opt_in_and_opt_out_are_mutually_exclusive(
+    test_cli_runner: CliRunner,
+) -> None:
+    result = test_cli_runner.invoke(
+        cli,
+        ["init", "--opt-in", "--opt-out"],
+    )
+    print(result.output)
+    assert result.exit_code != 0
+    assert "Cannot use both --opt-in and --opt-out flags together" in result.output
 
 
 @pytest.mark.unit

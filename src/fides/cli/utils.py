@@ -137,7 +137,9 @@ def register_user(config: FidesConfig, email: str, organization: str) -> None:
     )
 
 
-def request_analytics_consent(config: FidesConfig, opt_in: bool = False) -> FidesConfig:
+def request_analytics_consent(
+    config: FidesConfig, opt_in: bool = False, opt_out: bool = False
+) -> FidesConfig:
     """
     Request the user's consent for analytics collection.
 
@@ -150,17 +152,20 @@ def request_analytics_consent(config: FidesConfig, opt_in: bool = False) -> Fide
     if analytics_env_var and analytics_env_var.lower() != "false":
         return config
 
+    if opt_out:
+        config.user.analytics_opt_out = True
+        return config
+
     if analytics_env_var and analytics_env_var.lower() == "true":
         opt_in = True
 
-    # Otherwise, ask for consent
     print(OPT_OUT_COPY)
     if not opt_in:
         config.user.analytics_opt_out = not click.confirm(
             "Opt-in to anonymous usage analytics?"
         )
     else:
-        config.user.analytics_opt_out = opt_in
+        config.user.analytics_opt_out = not opt_in
 
     # If we've not opted out, attempt to register the user if they are
     # currently connected to a Fides server
