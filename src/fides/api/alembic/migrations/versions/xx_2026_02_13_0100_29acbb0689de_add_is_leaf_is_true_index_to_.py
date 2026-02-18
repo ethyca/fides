@@ -36,13 +36,13 @@ def upgrade():
             f"stagedresource table has {stagedresource_table_size} rows, creating index directly"
         )
         op.create_index(
-            'ix_stagedresource_monitor_leaf_true_status_urn',
+            'ix_stagedresource_leaf_true_monitor_status_urn',
             'stagedresource',
-            ['monitor_config_id', 'is_leaf', 'diff_status', 'urn'],
+            ['monitor_config_id', 'diff_status', 'urn'],
             unique=False,
             postgresql_where=text('is_leaf IS TRUE')
         )
-        logger.info("ix_stagedresource_monitor_leaf_true_status_urn index created successfully")
+        logger.info("ix_stagedresource_leaf_true_monitor_status_urn index created successfully")
     else:
         logger.warning(
             "The stagedresource table has more than 1 million rows, "
@@ -108,22 +108,22 @@ def downgrade():
         sa.text("""
             SELECT EXISTS (
                 SELECT 1 FROM pg_indexes 
-                WHERE indexname = 'ix_stagedresource_monitor_leaf_true_status_urn'
+                WHERE indexname = 'ix_stagedresource_leaf_true_monitor_status_urn'
             )
         """)
     ).scalar()
     
     if stagedresource_index_exists:
-        logger.info("Dropping ix_stagedresource_monitor_leaf_true_status_urn index")
+        logger.info("Dropping ix_stagedresource_leaf_true_monitor_status_urn index")
         op.drop_index(
-            'ix_stagedresource_monitor_leaf_true_status_urn',
+            'ix_stagedresource_leaf_true_monitor_status_urn',
             table_name='stagedresource',
             postgresql_where=text('is_leaf IS TRUE')
         )
-        logger.info("Successfully dropped ix_stagedresource_monitor_leaf_true_status_urn")
+        logger.info("Successfully dropped ix_stagedresource_leaf_true_monitor_status_urn")
     else:
         logger.debug(
-            "Index ix_stagedresource_monitor_leaf_true_status_urn does not exist "
+            "Index ix_stagedresource_leaf_true_monitor_status_urn does not exist "
             "(expected if table had >1M rows during upgrade)"
         )
     

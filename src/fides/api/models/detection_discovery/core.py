@@ -712,9 +712,8 @@ class StagedResource(Base):
             postgresql_where=text("is_leaf IS NOT NULL"),
         ),
         Index(
-            "ix_stagedresource_monitor_leaf_true_status_urn",
+            "ix_stagedresource_leaf_true_monitor_status_urn",
             "monitor_config_id",
-            "is_leaf",
             "diff_status",
             "urn",
             postgresql_where=text("is_leaf IS TRUE"),
