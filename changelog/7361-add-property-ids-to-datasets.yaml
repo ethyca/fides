@@ -1,0 +1,4 @@
+type: Added
+description: Added property_ids column to DatasetConfig and ManualTaskConfig for property-based dataset scoping
+pr: 7361
+labels: ["db-migration"]

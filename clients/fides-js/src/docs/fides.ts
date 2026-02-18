@@ -149,6 +149,40 @@ export interface Fides {
   getModalLinkLabel: (options?: { disableLocalization: boolean }) => string;
 
   /**
+   * Set identity fields on the Fides consent cookie (e.g. a custom user ID).
+   * Call after {@link Fides.init}; the values are persisted in the cookie and
+   * included in subsequent save/API requests (e.g. in `browser_identity.external_id`).
+   * Only `external_id` is supported today. Reserved keys (e.g. `fides_user_device_id`)
+   * and verified keys (e.g. `email`, `phone_number`) cannot be set and will throw; support for
+   * custom and verified identity keys is planned on the roadmap.
+   * Empty or whitespace-only `external_id` throws; omit the key to leave identity unchanged.
+   *
+   * @param identity - Object with optional `external_id` string (trimmed before use; empty/whitespace-only throws)
+   * @returns Promise that resolves when the cookie has been updated
+   * @throws If Fides is not initialized, if external_id is empty or whitespace-only, or if an unsupported/reserved/verified key is provided
+   *
+   * @example
+   * Set a custom external ID after the user logs in:
+   * ```ts
+   * await Fides.setIdentity({ external_id: "user-123" });
+   * ```
+   *
+   * @example
+   * In HTML, call setIdentity when your app knows the user (e.g. after login):
+   * ```html
+   * <body>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     function onUserLoggedIn(userId) {
+   *       Fides.setIdentity({ external_id: userId });
+   *     }
+   *   </script>
+   * </body>
+   * ```
+   */
+  setIdentity: (identity: { external_id?: string }) => Promise<void>;
+
+  /**
    * Display the FidesJS modal component on the page, if the current user's
    * session (location, property ID, etc.) matches an `experience` with a modal
    * component. If the `experience` does not match, this function has no effect
