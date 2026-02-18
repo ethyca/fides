@@ -90,13 +90,9 @@ export const AssessmentCard = ({
             />
           </Text>
           {riskLevel && (
-            <div>
-              <Tag
-                color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}
-              >
-                {`${riskLabel} risk`}
-              </Tag>
-            </div>
+            <Tag color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
+              {`${riskLabel} risk`}
+            </Tag>
           )}
         </div>
 
