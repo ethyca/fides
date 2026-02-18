@@ -124,7 +124,7 @@ export const AssessmentCard = ({
                 <Text type="secondary" size="sm">
                   Completeness
                 </Text>
-                <Text strong className={styles.tinyText}>
+                <Text strong size="sm">
                   {completeness}%
                 </Text>
               </Flex>
