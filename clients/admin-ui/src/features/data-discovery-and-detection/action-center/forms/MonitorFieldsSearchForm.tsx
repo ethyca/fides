@@ -29,7 +29,6 @@ const MonitorFieldsSearchForm = ({
 > & {
   shortcutCallback: () => void;
   availableFilters: {
-    confidenceBucket?: ConfidenceBucket[];
     data_category?: string[];
   };
 }) => {
@@ -101,16 +100,10 @@ const MonitorFieldsSearchForm = ({
 
       <Form.Item name="confidence_bucket" className="!me-0 self-end">
         <Select
-          options={CONFIDENCE_BUCKETS.flatMap((confidenceBucket) =>
-            availableFilters.confidenceBucket?.includes(confidenceBucket)
-              ? [
-                  {
-                    value: confidenceBucket,
-                    label: capitalize(confidenceBucket),
-                  },
-                ]
-              : [],
-          )}
+          options={CONFIDENCE_BUCKETS.map((confidenceBucket) => ({
+            value: confidenceBucket,
+            label: capitalize(confidenceBucket),
+          }))}
           className="w-auto min-w-[200px]"
           placeholder="Confidence"
           allowClear
