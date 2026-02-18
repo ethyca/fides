@@ -1319,6 +1319,7 @@ class TestTraversalOnlyBehavior:
                     ConnectionConfig(
                         key="mock_connection_config_key_bridge_ds",
                         connection_type=ConnectionType.postgres,
+                        access=AccessLevel.write,
                     )
                 ],
                 rq,
