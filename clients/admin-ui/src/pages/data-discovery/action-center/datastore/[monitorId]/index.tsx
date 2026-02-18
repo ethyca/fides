@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Icons } from "fidesui";
 import { NextPage } from "next";
 import { useParams } from "next/navigation";
 
@@ -16,6 +18,11 @@ export const MONITOR_ACTION_CENTER_CONFIG = {
 
 const DatastoreMonitorResultSystems: NextPage = () => {
   const params = useParams<{ monitorId: string }>();
+  const [pageSettings, setPageSettings] = useState({
+    showIgnored: false,
+    showApproved: false
+  })
+
 
   const monitorId = params?.monitorId
     ? decodeURIComponent(params.monitorId)
@@ -26,6 +33,29 @@ const DatastoreMonitorResultSystems: NextPage = () => {
     <ActionCenterLayout
       monitorId={monitorId}
       routeConfig={MONITOR_ACTION_CENTER_CONFIG}
+      pageSettings={
+        {
+          menu: {
+            onSelect: ((info) => setPageSettings({
+              showApproved: !!info.selectedKeys.includes('showApproved'),
+              showIgnored: !!info.selectedKeys.includes('showApproved')
+            })),
+            selectedKeys: Object.entries(pageSettings).flatMap(([key, value]) => value ? [key] : []),
+            selectable: true,
+            items: [{
+              key: "showIgnored",
+              label: "Show ignored",
+              icon: pageSettings.showIgnored && <Icons.Checkmark />
+            },
+            {
+              key: "showApproved",
+              label: "Show approved",
+              icon: pageSettings.showApproved && <Icons.Checkmark />
+            }]
+          }
+        }
+      }
+
     >
       {loading ? null : <ActionCenterFields monitorId={monitorId} />}
     </ActionCenterLayout>

@@ -1,4 +1,4 @@
-import { Menu } from "fidesui";
+import { Button, Dropdown, DropdownProps, Flex, Icons, Menu } from "fidesui";
 import _ from "lodash";
 import { PropsWithChildren } from "react";
 
@@ -13,12 +13,15 @@ import useActionCenterNavigation, {
 export interface ActionCenterLayoutProps {
   monitorId?: string;
   routeConfig: ActionCenterRouteConfig;
+  pageSettings?: DropdownProps
+
 }
 
 const ActionCenterLayout = ({
   children,
   monitorId,
   routeConfig,
+  pageSettings
 }: PropsWithChildren<ActionCenterLayoutProps>) => {
   const {
     items: menuItems,
@@ -39,6 +42,14 @@ const ActionCenterLayout = ({
           ...(monitorId ? [{ title: monitorId }] : []),
         ]}
         isSticky={false}
+        rightContent={pageSettings && <Flex>
+          <Dropdown
+            {...pageSettings}
+          >
+            <Button icon={<Icons.SettingsView />} />
+          </Dropdown>
+        </Flex>}
+
       />
       <Menu
         aria-label="Action center tabs"
