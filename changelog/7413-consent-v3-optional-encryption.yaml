@@ -1,0 +1,4 @@
+type: Added
+description: Added FIDES__CONSENT__CONSENT_V3_ENCRYPTION_ENABLED setting to optionally disable encryption for v3 consent records
+pr: 7413
+labels: []
