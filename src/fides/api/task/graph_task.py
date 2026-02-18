@@ -759,7 +759,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 # upstream FK values from Redis, so bridge nodes must cache there too.
                 if not use_dsr_3_0_scheduler(self.resources.request, ActionType.access):
                     self.resources.cache_object(f"access_request__{self.key}", output)
-                self.log_end(ActionType.access, record_count=len(output))
+                self.update_status(
+                    f"Traversal-only bridge node - retrieved {len(output)} records for FK propagation",
+                    None,
+                    ActionType.access,
+                    ExecutionLogStatus.complete,
+                )
                 return output
 
             filtered_output: List[Row] = self.access_results_post_processing(
