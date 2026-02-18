@@ -40,11 +40,11 @@ import {
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
 import TaxonomySelectCell from "~/features/common/table/v2/TaxonomySelectCell";
-import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
+import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
 import { getDatasetPath } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";

@@ -22,4 +22,6 @@ export type ConnectionSystemTypeMap = {
   category?: ConnectionCategory | null;
   tags?: Array<string> | null;
   enabled_features?: Array<IntegrationFeature> | null;
+  custom?: boolean;
+  default_connector_available?: boolean;
 };

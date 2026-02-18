@@ -15,6 +15,10 @@ export type OpenIDProvider = {
   token_url?: string | null;
   user_info_url?: string | null;
   domain?: string | null;
+  scopes?: Array<string> | null;
+  email_field?: string | null;
+  verify_email?: boolean | null;
+  verify_email_field?: string | null;
   id: string;
   created_at: string;
   updated_at: string;

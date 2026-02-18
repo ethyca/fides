@@ -122,15 +122,59 @@ def shell(session: Session) -> None:
     """
     Open a shell in an already-running Fides webserver container.
 
+    This session runs uv sync inside the container to ensure dependencies
+    are up-to-date, then opens an interactive bash shell with the virtual
+    environment activated.
+
     If the container is not running, the command will fail.
     """
-    shell_command = (*EXEC_IT, "/bin/bash")
-    try:
-        session.run(*shell_command, external=True)
-    except CommandFailed:
+    # First, check if container is running
+    if not is_container_running("fides"):
         session.error(
             "Could not connect to the webserver container. Please confirm it is running and try again."
         )
+
+    session.log("Running uv sync inside the container...")
+    try:
+        # Run uv sync in the container
+        session.run(*EXEC_IT, "uv", "sync", external=True)
+    except CommandFailed as e:
+        session.warn(f"uv sync failed: {e}. Continuing to open shell...")
+
+    # Determine the venv path to use
+    # The container uses UV_PROJECT_ENVIRONMENT=/opt/fides
+    # But we'll check if .venv exists and use that, or fall back to /opt/fides
+    check_venv_cmd = [
+        *EXEC_IT,
+        "bash",
+        "-c",
+        "[ -d /fides/.venv ] && echo '.venv' || echo '/opt/fides'",
+    ]
+
+    result = subprocess.run(check_venv_cmd, capture_output=True, text=True)
+    venv_path = result.stdout.strip() if result.returncode == 0 else "/opt/fides"
+
+    session.log("")
+    session.log("=" * 60)
+    session.log("Opening interactive shell in Fides container")
+    session.log(f"Virtual environment: {venv_path}")
+    session.log("Type 'exit' or press Ctrl+D to exit the shell")
+    session.log("=" * 60)
+    session.log("")
+
+    # Open shell with venv activated using source and exec to avoid nested shells
+    try:
+        session.run(
+            *EXEC_IT,
+            "bash",
+            "-c",
+            f"source {venv_path}/bin/activate && exec bash",
+            external=True,
+        )
+    except CommandFailed:
+        # Fallback to regular shell without activation if activation fails
+        session.warn("Could not activate venv, opening regular shell...")
+        session.run(*EXEC_IT, "/bin/bash", external=True)
 
 
 # ruff: noqa: PLR0912
@@ -270,7 +314,47 @@ def dev(session: Session) -> None:
         if open_shell:
             session.run(*START_APP, external=True)
             session.log("~~Remember to login with `fides user login`!~~")
-            session.run(*EXEC_IT, "/bin/bash", external=True)
+
+            # Run uv sync inside the container
+            session.log("Running uv sync inside the container...")
+            try:
+                session.run(*EXEC_IT, "uv", "sync", external=True)
+            except CommandFailed as e:
+                session.warn(f"uv sync failed: {e}. Continuing to open shell...")
+
+            # Determine the venv path to use
+            check_venv_cmd = [
+                *EXEC_IT,
+                "bash",
+                "-c",
+                "[ -d /fides/.venv ] && echo '.venv' || echo '/opt/fides'",
+            ]
+
+            result = subprocess.run(check_venv_cmd, capture_output=True, text=True)
+            venv_path = (
+                result.stdout.strip() if result.returncode == 0 else "/opt/fides"
+            )
+
+            session.log("")
+            session.log("=" * 60)
+            session.log("Opening interactive shell in Fides container")
+            session.log(f"Virtual environment: {venv_path}")
+            session.log("=" * 60)
+            session.log("")
+
+            # Open shell with venv activated using source and exec to avoid nested shells
+            try:
+                session.run(
+                    *EXEC_IT,
+                    "bash",
+                    "-c",
+                    f"source {venv_path}/bin/activate && exec bash",
+                    external=True,
+                )
+            except CommandFailed:
+                # Fallback to regular shell without activation if activation fails
+                session.warn("Could not activate venv, opening regular shell...")
+                session.run(*EXEC_IT, "/bin/bash", external=True)
         else:
             if remote_debug:
                 session.run(*START_APP_REMOTE_DEBUG, external=True)
@@ -341,7 +425,7 @@ def fides_env(session: Session, fides_image: Literal["test", "dev"] = "test") ->
     install_requirements(session)
     session.install("-e", ".", "--no-deps")
     session.run("fides", "--version")
-    timestamps.append({"time": time.monotonic(), "label": "pip install"})
+    timestamps.append({"time": time.monotonic(), "label": "uv install"})
 
     # Configure the args for 'fides deploy up' for testing
     env_file_path = Path(__file__, "../../.env").resolve()

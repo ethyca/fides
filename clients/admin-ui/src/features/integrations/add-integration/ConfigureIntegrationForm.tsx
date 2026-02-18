@@ -1,6 +1,7 @@
 import {
   ChakraBox as Box,
   ChakraVStack as VStack,
+  PageSpinner,
   useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -8,7 +9,6 @@ import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
 import { CustomTextInput } from "~/features/common/form/inputs";
@@ -147,10 +147,14 @@ const ConfigureIntegrationForm = ({
     name: connection?.name ?? "",
     description: connection?.description ?? "",
     ...(hasSecrets && {
-      secrets: mapValues(
-        secrets?.properties,
-        (s, key) => connection?.secrets?.[key] ?? s.default ?? "",
-      ),
+      secrets: mapValues(secrets?.properties, (s, key) => {
+        const value = connection?.secrets?.[key] ?? s.default;
+        // Convert booleans to strings to match select options
+        if (typeof value === "boolean") {
+          return String(value);
+        }
+        return value ?? "";
+      }),
     }),
     dataset: initialDatasets,
   };
@@ -166,9 +170,11 @@ const ConfigureIntegrationForm = ({
   // and we don't want to PATCH with those values.
   const excludeUnchangedSecrets = (secretsValues: ConnectionSecrets) =>
     omitBy(
-      mapValues(secretsValues, (s, key) =>
-        (connection?.secrets?.[key] ?? "") === s ? undefined : s,
-      ),
+      mapValues(secretsValues, (s, key) => {
+        const original = connection?.secrets?.[key] ?? "";
+        // Convert both to strings for comparison to handle booleans and numbers
+        return String(original) === String(s) ? undefined : s;
+      }),
       isUndefined,
     );
 
@@ -288,7 +294,7 @@ const ConfigureIntegrationForm = ({
   const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
   if (secretsSchemaIsLoading) {
-    return <FidesSpinner />;
+    return <PageSpinner />;
   }
 
   const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>

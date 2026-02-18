@@ -114,7 +114,6 @@ export {
   VStack as ChakraVStack,
   Wrap as ChakraWrap,
   createStandaloneToast as createChakraStandaloneToast,
-  extendTheme as extendChakraTheme,
   getCSSVar as getChakraCSSVar,
 } from "@chakra-ui/react";
 
@@ -197,8 +196,6 @@ export {
 } from "@chakra-ui/icons";
 
 // Unmodified component exported directly from Ant Design
-export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
-export { LocationSelect } from "./components/data-entry/LocationSelect";
 export type { ThemeConfig } from "antd/es";
 export type {
   FilterValue,
@@ -342,6 +339,17 @@ export {
   OpenCloseArrow,
 } from "./components/animation";
 
+// Export data-entry components
+export type { LocationSelectProps } from "./components/data-entry/LocationSelect";
+export { LocationSelect } from "./components/data-entry/LocationSelect";
+export { SelectInline } from "./components/data-entry/SelectInline";
+
+// Export feedback components
+export { PageSpinner } from "./components/feedback/PageSpinner";
+
+// Export navigation components
+export { FloatingMenu } from "./components/navigation/FloatingMenu";
+
 // Export the destructured Typography components individually
 export const { Text, Title, Paragraph, Link } = CustomTypography;
 
@@ -381,7 +389,7 @@ export { createDefaultAntTheme, defaultAntTheme } from "./ant-theme";
 export { theme as antTheme } from "antd";
 
 /**
- * Custom Components
+ * Custom ChakraUI Components (deprecated)
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
 export { CheckboxTree } from "./components/chakra-base/checkbox-tree";
@@ -392,8 +400,6 @@ export { DataCategoryDropdown } from "./components/chakra-base/data-category-dro
 export { ExampleComponent } from "./components/chakra-base/example-component";
 export { PrimaryLink, SecondaryLink } from "./components/chakra-base/links";
 export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-table";
-export { SelectInline } from "./components/data-entry/SelectInline";
-export { FloatingMenu } from "./components/navigation";
 
 /**
  * Custom Hooks

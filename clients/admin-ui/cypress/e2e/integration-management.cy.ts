@@ -572,6 +572,7 @@ describe("Integration management for data detection & discovery", () => {
         .should("have.value", "BQ Integration")
         .clear()
         .type("A different name");
+      cy.findByLabelText("Edit Secret").click();
       cy.getByTestId("input-secrets.keyfile_creds").type(
         `{"credentials": "test221312"}`,
         {

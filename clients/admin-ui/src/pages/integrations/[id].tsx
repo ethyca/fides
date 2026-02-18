@@ -1,4 +1,4 @@
-import { ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
+import { Button, ChakraSpinner as Spinner, Col, Row, Tabs } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -15,6 +15,7 @@ import getIntegrationTypeInfo, {
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import { useFeatureBasedTabs } from "~/features/integrations/hooks/useFeatureBasedTabs";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
+import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
@@ -41,6 +42,13 @@ const IntegrationDetailView: NextPage = () => {
     connection?.connection_type,
     connection?.saas_config?.type as SaasConnectionTypes,
   );
+
+  const { handleRemove: handleRemoveCustomIntegration, modalContext } =
+    useRemoveCustomIntegration(integrationOption);
+
+  const showRemoveCustomButton =
+    !!integrationOption?.custom &&
+    !!integrationOption?.default_connector_available;
 
   const {
     testData,
@@ -127,7 +135,20 @@ const IntegrationDetailView: NextPage = () => {
             integration={connection}
             integrationTypeInfo={integrationTypeInfo}
             showDeleteButton
+            otherButtons={
+              showRemoveCustomButton ? (
+                <Button
+                  type="link"
+                  danger
+                  data-testid="remove-custom-integration-btn"
+                  onClick={handleRemoveCustomIntegration}
+                >
+                  Remove
+                </Button>
+              ) : undefined
+            }
           />
+          {modalContext}
           {isLoading ? (
             <Spinner />
           ) : (

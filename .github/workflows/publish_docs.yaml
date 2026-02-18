@@ -20,29 +20,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
 
       - name: Echo the Release Tag
         run: echo ${{ env.TAG }}
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Install Docs Requirements
-        run: pip install -r docs/fides/requirements.txt
-
-      - name: Install fides
-        run: pip install -e ./[all]
+      - name: Install fides and docs dependencies
+        run: |
+          uv venv
+          uv pip install setuptools==80.10.2 wheel
+          uv sync --extra all
+          uv pip install -r docs/fides/requirements.txt
 
       - name: Checkout the gh-pages branches
         run: git fetch origin gh-pages --depth=1
 
       - name: Build docs
-        run: nox -s generate_docs
+        run: uv run nox -s generate_docs
 
       # This is required by "mike"
       - name: Set the Git Username & Email
@@ -55,15 +57,15 @@ jobs:
 
       - name: Deploy the Legacy Docs if a Release is Published
         if: ${{ env.TAG }}
-        run: mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
+        run: uv run mkdocs gh-deploy -v -f docs/fides/mkdocs.yml --force
 
       - name: Deploy Stable Docs if a Release is Published
         if: ${{ env.TAG }}
-        run: mike deploy --config-file docs/fides/mkdocs.yml --push --update-aliases ${{ env.TAG }} stable
+        run: uv run mike deploy --config-file docs/fides/mkdocs.yml --push --update-aliases ${{ env.TAG }} stable
 
       # This will match "stable" when a new release is cut
       - name: Deploy Dev Docs
-        run: mike deploy --config-file docs/fides/mkdocs.yml --push dev
+        run: uv run mike deploy --config-file docs/fides/mkdocs.yml --push dev
 
       - name: Set Default Version
-        run: mike set-default --config-file docs/fides/mkdocs.yml --push stable
+        run: uv run mike set-default --config-file docs/fides/mkdocs.yml --push stable

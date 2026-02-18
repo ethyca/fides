@@ -134,8 +134,9 @@ class Attachment(Base):
         cascade="all, delete-orphan",
         uselist=True,
         foreign_keys=[AttachmentReference.attachment_id],
-        primaryjoin=lambda: Attachment.id
-        == orm.foreign(AttachmentReference.attachment_id),
+        primaryjoin=lambda: (
+            Attachment.id == orm.foreign(AttachmentReference.attachment_id)
+        ),
     )
 
     config = relationship(

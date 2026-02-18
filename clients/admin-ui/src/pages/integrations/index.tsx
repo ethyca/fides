@@ -2,6 +2,7 @@ import {
   Button,
   ColumnsType,
   CUSTOM_TAG_COLOR,
+  Icons,
   Table,
   TableProps,
   Tag,
@@ -16,7 +17,6 @@ import React, { useCallback, useMemo, useState } from "react";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFlags } from "~/features/common/features";
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { useConnectionLogo } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
@@ -30,7 +30,25 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  ConnectionType,
+} from "~/types/api";
+
+const isCustomIntegration = (
+  record: ConnectionConfigurationResponse,
+  connectionTypes: ConnectionSystemTypeMap[],
+): boolean => {
+  const identifier =
+    record.connection_type === ConnectionType.SAAS
+      ? record.saas_config?.type
+      : record.connection_type;
+  const connectionType = connectionTypes.find(
+    (ct) => ct.identifier === identifier,
+  );
+  return connectionType?.custom ?? false;
+};
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -136,6 +154,11 @@ const IntegrationListView: NextPage = () => {
           >
             {name || "(No name)"}
           </Typography.Text>
+          {isCustomIntegration(record, connectionTypes) && (
+            <Tooltip title="Custom integration">
+              <Icons.SettingsCheck size={16} />
+            </Tooltip>
+          )}
         </div>
       ),
     },
@@ -275,27 +298,23 @@ const IntegrationListView: NextPage = () => {
         <SharedConfigModal />
       </div>
 
-      {isLoading ? (
-        <FidesSpinner />
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={tableData}
-          rowKey="key"
-          pagination={paginationConfig}
-          loading={isLoading}
-          size="small"
-          locale={tableLocale}
-          bordered
-          onRow={(record) => ({
-            onClick: () => handleManageClick(record),
-            "data-testid": `integration-info-${record.key}`,
-          })}
-          rowClassName="cursor-pointer"
-          onChange={handleTableChange}
-          data-testid="integrations-table"
-        />
-      )}
+      <Table
+        columns={columns}
+        dataSource={tableData}
+        rowKey="key"
+        pagination={paginationConfig}
+        loading={isLoading}
+        size="small"
+        locale={tableLocale}
+        bordered
+        onRow={(record) => ({
+          onClick: () => handleManageClick(record),
+          "data-testid": `integration-info-${record.key}`,
+        })}
+        rowClassName="cursor-pointer"
+        onChange={handleTableChange}
+        data-testid="integrations-table"
+      />
 
       <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
     </Layout>

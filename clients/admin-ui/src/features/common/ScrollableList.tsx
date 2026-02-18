@@ -9,6 +9,7 @@ import {
   ChakraText as Text,
   Icons,
   Select,
+  SelectProps,
   Space,
 } from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
@@ -126,11 +127,15 @@ const ScrollableListAdd = ({
   options,
   onOptionSelected,
   baseTestId,
+  popupMatchSelectWidth = true,
+  selectStyles,
 }: {
   label: string;
   options: Option[];
   onOptionSelected: (opt: Option) => void;
   baseTestId: string;
+  popupMatchSelectWidth?: boolean;
+  selectStyles?: SelectProps["styles"];
 }) => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectValue, setSelectValue] = useState<Option | undefined>(undefined);
@@ -155,6 +160,9 @@ const ScrollableListAdd = ({
         className="w-full"
         data-testid={`select-${baseTestId}`}
         aria-label={label}
+        optionFilterProp="label"
+        popupMatchSelectWidth={popupMatchSelectWidth}
+        styles={selectStyles}
       />
     </Box>
   ) : (
@@ -189,6 +197,9 @@ const ScrollableList = <T extends unknown>({
   createNewValue,
   maxHeight = 36,
   baseTestId,
+  isItemDisabled,
+  popupMatchSelectWidth,
+  selectStyles,
 }: {
   label?: string;
   tooltip?: string;
@@ -208,6 +219,9 @@ const ScrollableList = <T extends unknown>({
   createNewValue?: (opt: Option) => T;
   maxHeight?: number;
   baseTestId: string;
+  isItemDisabled?: (item: T) => boolean;
+  popupMatchSelectWidth?: boolean;
+  selectStyles?: SelectProps["styles"];
 }) => {
   const getItemId = (item: T) =>
     item instanceof Object && idField && idField in item
@@ -240,7 +254,13 @@ const ScrollableList = <T extends unknown>({
       item instanceof Object && idField && idField in item
         ? (item[idField] as string)
         : (item as string);
-    return { label: getItemDisplayName(item), value };
+    const option: Option = { label: getItemDisplayName(item), value };
+
+    if (isItemDisabled) {
+      option.disabled = isItemDisabled(item);
+    }
+
+    return option;
   };
 
   const getValueFromOption = (opt: Option) =>
@@ -342,6 +362,8 @@ const ScrollableList = <T extends unknown>({
           )}
           onOptionSelected={handleAddNewValue}
           baseTestId={baseTestId}
+          selectStyles={selectStyles}
+          popupMatchSelectWidth={popupMatchSelectWidth}
         />
       ) : null}
     </Flex>
@@ -351,6 +373,8 @@ const ScrollableList = <T extends unknown>({
       options={unselectedValues.map((value) => createOptionFromValue(value))}
       onOptionSelected={handleAddNewValue}
       baseTestId={baseTestId}
+      selectStyles={selectStyles}
+      popupMatchSelectWidth={popupMatchSelectWidth}
     />
   );
 };

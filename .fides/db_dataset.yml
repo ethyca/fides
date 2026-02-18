@@ -293,6 +293,16 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+  - name: backfill_history
+    description: 'Table used to track completed database backfill operations'
+    data_categories: [system.operations]
+    fields:
+    - name: backfill_name
+      description: 'Unique name of the backfill operation'
+      data_categories: [system.operations]
+    - name: completed_at
+      description: 'Timestamp when the backfill completed successfully'
+      data_categories: [system.operations]
   - name: chat_config
     description: 'Configuration for chat providers (Slack, Microsoft Teams, etc.)'
     data_categories: []
@@ -1231,6 +1241,8 @@ dataset:
       data_categories: [system.operations]
     - name: id
       data_categories: [system.operations]
+    - name: property_ids
+      data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
   - name: digest_config
@@ -1401,6 +1413,8 @@ dataset:
     - name: version
       data_categories: [system.operations]
     - name: execution_timing
+      data_categories: [system.operations]
+    - name: property_ids
       data_categories: [system.operations]
   - name: manual_task_config_field
     fields:
@@ -2955,6 +2969,8 @@ dataset:
       data_categories: [system]
     - name: id
       data_categories: [system]
+    - name: is_leaf
+      data_categories: [system]
     - name: meta
       data_categories: [system]
     - name: monitor_config_id
@@ -3065,6 +3081,18 @@ dataset:
       data_categories: [system.operations]
     - name: user_info_url
       description: 'Fides Generated Description for Column: user_info_url'
+      data_categories: [system.operations]
+    - name: scopes
+      description: 'Scopes with which to request the authorization token.'
+      data_categories: [system.operations]
+    - name: email_field
+      description: 'Field to pull the email from the userinfo object.'
+      data_categories: [system.operations]
+    - name: verify_email_field
+      description: 'Field to pull the verify email flag from the userinfo object.'
+      data_categories: [system.operations]
+    - name: verify_email
+      description: 'Enable or disable whether email address must be verified'
       data_categories: [system.operations]
   - name: identity_salt
     fields:
@@ -3187,6 +3215,8 @@ dataset:
       - name: created_at
         data_categories: [system.operations]
       - name: updated_at
+        data_categories: [system.operations]
+      - name: distance
         data_categories: [system.operations]
   - name: monitortask
     fields:
