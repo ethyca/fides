@@ -1,23 +1,15 @@
 import { Empty, Flex, List, Skeleton, Tag, Typography } from "fidesui";
+import { uniqBy } from "lodash";
 import type { NextPage } from "next";
 import { useMemo, useState } from "react";
 
-import FixedLayout from "~/features/common/FixedLayout";
+import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import SearchInput from "~/features/common/SearchInput";
 import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
-import { ActionType, PolicyResponse, RuleResponse } from "~/types/api";
+import { PolicyResponse } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
-
-// Extract unique action types from rules for each policy
-const getActionTypes = (rules?: RuleResponse[] | null): ActionType[] => {
-  if (!rules || rules.length === 0) {
-    return [];
-  }
-  const actionTypes = rules.map((rule) => rule.action_type);
-  return [...new Set(actionTypes)];
-};
 
 const PoliciesPage: NextPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,32 +32,25 @@ const PoliciesPage: NextPage = () => {
   }, [allPolicies, searchQuery]);
 
   return (
-    <FixedLayout title="Policies">
+    <Layout title="Policies">
       <PageHeader
         heading="DSR policies"
         breadcrumbItems={[{ title: "All policies" }]}
-      />
+      >
+        <Paragraph className="max-w-screen-md">
+          DSR policies define how privacy requests are processed. Each policy
+          contains rules that specify actions like access or erasure, and
+          conditions that determine when the policy applies.
+        </Paragraph>
+        <SearchInput
+          placeholder="Search policies by name or key..."
+          onChange={setSearchQuery}
+          value={searchQuery}
+          className="max-w-md"
+        />
+      </PageHeader>
 
       <Flex vertical gap="large">
-        <div>
-          <Paragraph type="secondary">
-            Data Subject Request (DSR) policies define how privacy requests are
-            processed. Each policy contains rules that specify actions to take
-            on data categories, such as access, erasure, or consent operations.
-          </Paragraph>
-          <Paragraph type="secondary">
-            Policies can also include conditions that determine when the policy
-            applies based on request attributes like geography, request type, or
-            custom fields.
-          </Paragraph>
-          <SearchInput
-            placeholder="Search policies by name or key..."
-            onChange={setSearchQuery}
-            value={searchQuery}
-            className="max-w-md"
-          />
-        </div>
-
         {!isLoading && filteredPolicies.length === 0 && (
           <Empty
             description={
@@ -81,7 +66,7 @@ const PoliciesPage: NextPage = () => {
             dataSource={filteredPolicies}
             data-testid="policies-list"
             renderItem={(policy: PolicyResponse) => {
-              const actionTypes = getActionTypes(policy.rules);
+              const uniqueRules = uniqBy(policy.rules ?? [], "action_type");
 
               return (
                 <List.Item key={policy.key ?? policy.name}>
@@ -89,9 +74,9 @@ const PoliciesPage: NextPage = () => {
                     title={
                       <Flex align="center" gap={8}>
                         <Text strong>{policy.name}</Text>
-                        {actionTypes.map((actionType) => (
-                          <Tag key={actionType} className="capitalize">
-                            {actionType}
+                        {uniqueRules.map((rule) => (
+                          <Tag key={rule.action_type} className="capitalize">
+                            {rule.action_type}
                           </Tag>
                         ))}
                       </Flex>
@@ -122,7 +107,7 @@ const PoliciesPage: NextPage = () => {
           </List>
         )}
       </Flex>
-    </FixedLayout>
+    </Layout>
   );
 };
 
