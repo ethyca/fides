@@ -5,6 +5,7 @@ from unittest import mock
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
@@ -393,6 +394,137 @@ class TestRequeueInterruptedTasks:
             mock_cancel_interrupted_tasks.assert_not_called()
         finally:
             # Clean up
+            request_task.delete(db)
+            privacy_request.delete(db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        return_value=[],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
+    )
+    def test_in_processing_with_callback_async_task_and_stuck_subtask_is_not_canceled(
+        self,
+        mock_celery_tasks_in_flight,
+        mock_requeue_privacy_request,
+        mock_get_task_ids_from_dsr_queue,
+        mock_cancel_interrupted_tasks,
+        db,
+        policy,
+    ):
+        """Request with callback (webhook) async task and stuck subtask is not canceled.
+
+        When a privacy request is in_processing and has a request task with async_type
+        callback (awaiting webhook), a pending request task with no cached subtask ID
+        should NOT cause cancellation since we may be awaiting external callback.
+        """
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        # Stuck-looking task (pending, no subtask ID) plus callback async_type so we skip erroring
+        request_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "gateway_api:users",
+                "dataset_name": "gateway_api",
+                "collection_name": "users",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+                "async_type": AsyncTaskType.callback,
+            },
+        )
+        try:
+            requeue_interrupted_tasks.apply().get()
+            mock_requeue_privacy_request.assert_not_called()
+            mock_cancel_interrupted_tasks.assert_not_called()
+        finally:
+            request_task.delete(db)
+            privacy_request.delete(db)
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        return_value=[],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
+    )
+    def test_in_processing_with_polling_async_task_and_stuck_subtask_is_not_canceled(
+        self,
+        mock_celery_tasks_in_flight,
+        mock_requeue_privacy_request,
+        mock_get_task_ids_from_dsr_queue,
+        mock_cancel_interrupted_tasks,
+        db,
+        policy,
+    ):
+        """Request with polling async task and stuck subtask is not canceled.
+
+        When a privacy request is in_processing and has a request task with async_type
+        polling, a pending request task with no cached subtask ID should NOT cause
+        cancellation (unified helper preserves existing polling behavior).
+        """
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        request_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "polling_api:users",
+                "dataset_name": "polling_api",
+                "collection_name": "users",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+                "async_type": AsyncTaskType.polling,
+            },
+        )
+        try:
+            requeue_interrupted_tasks.apply().get()
+            mock_requeue_privacy_request.assert_not_called()
+            mock_cancel_interrupted_tasks.assert_not_called()
+        finally:
             request_task.delete(db)
             privacy_request.delete(db)
 
