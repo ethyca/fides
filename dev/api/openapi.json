@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.0"
+    "version": "2.78.3b2.dev35+gfe18c9eb6"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19566,6 +19566,27 @@
                 "type": "null"
               }
             ]
+          },
+          "default_policies": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Policies"
           }
         },
         "additionalProperties": false,
@@ -19601,7 +19622,8 @@
           "approved",
           "denied",
           "email_sent",
-          "finished"
+          "finished",
+          "policy_evaluated"
         ],
         "title": "AuditLogAction",
         "description": "Enum for audit log actions, reflecting what a user did."
@@ -24355,6 +24377,20 @@
           "ctl_dataset_fides_key": {
             "type": "string",
             "title": "Ctl Dataset Fides Key"
+          },
+          "property_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Ids"
           }
         },
         "type": "object",
@@ -28920,6 +28956,12 @@
               }
             ],
             "title": "Rules"
+          },
+          "conditions": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Conditions",
+            "default": {}
           }
         },
         "type": "object",
