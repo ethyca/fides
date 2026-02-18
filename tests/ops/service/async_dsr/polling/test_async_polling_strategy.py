@@ -14,8 +14,8 @@ from fides.api.common_exceptions import (
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
     PollingResultRequest,
