@@ -822,9 +822,11 @@ class ConnectionService:
         # server detects the change on its next get_connector_templates() call.
         CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
 
-        # Get the file template that is now active
-        file_connector_template = ConnectorRegistry.get_connector_template(
-            connector_type
+        # Get the file template directly from the file loader rather than
+        # going through ConnectorRegistry, which would trigger a cache reload
+        # on CustomConnectorTemplateLoader before the DB transaction commits.
+        file_connector_template = (
+            FileConnectorTemplateLoader.get_connector_templates().get(connector_type)
         )
         if not file_connector_template:
             raise ConnectorTemplateNotFound(
