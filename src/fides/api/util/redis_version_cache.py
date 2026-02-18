@@ -1,7 +1,7 @@
 """Caching decorator that uses a Redis version counter for cross-server invalidation.
 
-Instead of querying the database on every call (as ``db_timestamp_cache`` does),
-this decorator checks a lightweight integer counter in Redis.  When a write
+Instead of querying the database on every call, this decorator checks a
+lightweight integer counter in Redis.  When a write
 operation occurs the caller invokes ``bump_version()`` which increments the
 counter and clears the local in-memory cache.  Other servers detect the
 version change on their next read and reload from the database.
