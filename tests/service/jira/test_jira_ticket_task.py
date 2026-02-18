@@ -12,6 +12,11 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.service.jira import polling_task
+from fides.service.jira.polling_task import (
+    poll_jira_tickets,
+    register_poll_service,
+)
 from fides.api.models.jira_ticket_task import JiraTicketTask
 from fides.api.models.manual_task import (
     ManualTask,
@@ -243,7 +248,6 @@ class TestJiraTicketTaskModel:
 # ── Polling Task Tests ───────────────────────────────────────────────
 
 
-class TestPollJiraTicketsTask:
 class TestPollJiraTicketsTask:
     def test_poll_task_no_op_without_service(self):
         assert poll_jira_tickets is not None
