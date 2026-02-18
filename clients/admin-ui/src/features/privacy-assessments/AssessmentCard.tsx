@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import {
   Button,
   Card,
@@ -57,15 +58,17 @@ export const AssessmentCard = ({
 
   return (
     <Card
-      className={`${styles.cardWrapper} flex flex-col ${isComplete ? styles.cardComplete : ""}`}
+      className={classNames(styles.cardWrapper, {
+        [styles.cardComplete]: isComplete,
+      })}
     >
-      <Flex vertical gap="small" className="flex-1" justify="space-between">
+      <Flex vertical gap="small" justify="space-between">
         <div>
           <Title level={5}>{assessment.name}</Title>
           <Text type="secondary" className={styles.secondaryText}>
             System: {assessment.system_name ?? ""}
           </Text>
-          <Text type="secondary" className={styles.secondaryText}>
+          <Text type="secondary" className={styles.textWithTags}>
             Processing{" "}
             {(assessment.data_categories ?? []).length > 0 ? (
               <TagList
@@ -117,8 +120,8 @@ export const AssessmentCard = ({
             </Flex>
           ) : (
             <>
-              <Flex justify="space-between" className="mb-2">
-                <Text type="secondary" className={styles.tinyText}>
+              <Flex justify="space-between">
+                <Text type="secondary" size="sm">
                   Completeness
                 </Text>
                 <Text strong className={styles.tinyText}>
@@ -126,11 +129,8 @@ export const AssessmentCard = ({
                 </Text>
               </Flex>
               <Progress percent={completeness} showInfo={false} size="small" />
-              <Flex justify="space-between" align="center" className="mt-2">
-                <Text
-                  type={getStatusTextType(status)}
-                  className={styles.tinyText}
-                >
+              <Flex justify="space-between" align="center" className="mt-1">
+                <Text type={getStatusTextType(status)} size="sm">
                   {statusLabel}
                 </Text>
                 <Button type="link" style={{ padding: 0 }} onClick={onClick}>

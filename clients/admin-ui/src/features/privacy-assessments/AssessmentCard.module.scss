@@ -43,11 +43,14 @@
   line-height: 20px;
 }
 
+.textWithTags {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 2em;
+}
+
 .captionText {
   display: block;
   font-size: 12px;
-}
-
-.tinyText {
-  font-size: 11px;
 }
