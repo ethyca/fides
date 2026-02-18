@@ -481,22 +481,26 @@ def _get_request_task_ids_in_progress(
     return [task[0] for task in request_tasks_in_progress]
 
 
-def _has_polling_tasks(db: Session, privacy_request_id: str) -> bool:
+def _has_async_tasks_awaiting_external_completion(
+    db: Session, privacy_request_id: str
+) -> bool:
     """
-    Check if a privacy request has any polling async tasks.
+    Check if a privacy request has any async task pending external completion.
 
     Args:
         db: Database session
         privacy_request_id: The ID of the privacy request to check
 
     Returns:
-        bool: True if the privacy request has polling tasks, False otherwise
+        bool: True if the privacy request has async tasks awaiting external completion, False otherwise
     """
     return db.query(
         db.query(RequestTask)
         .filter(
             RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.async_type == AsyncTaskType.polling,
+            RequestTask.async_type.in_(
+                [AsyncTaskType.polling, AsyncTaskType.callback]
+            ),
         )
         .exists()
     ).scalar()
@@ -642,13 +646,14 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # Check if the Privacy request has polling tasks
-                            if _has_polling_tasks(db, privacy_request.id):
-                                # If the polling request task has no cached task ID, it's stuck
+                            # Check if the request has async tasks awaiting external completion
+                            if _has_async_tasks_awaiting_external_completion(
+                                db, privacy_request.id
+                            ):
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) Contains polling tasks - "
-                                    f"keeping request in current status as it may be waiting for polling task to complete"
+                                    f"(privacy request {privacy_request.id}) contains async tasks awaiting "
+                                    f"external completion - keeping request in current status"
                                 )
                                 should_requeue = False
                                 break
