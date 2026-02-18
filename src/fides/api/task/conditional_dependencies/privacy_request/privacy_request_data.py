@@ -1,10 +1,10 @@
-from typing import Any, Optional
+from typing import Any, Optional, Protocol
 
 from pydantic.v1.utils import deep_update
 
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import Policy as PolicySchema
+from fides.api.schemas.redis_cache import Identity
 from fides.api.task.conditional_dependencies.privacy_request.convenience_fields import (
     get_location_convenience_fields,
     get_policy_convenience_fields,
@@ -17,6 +17,21 @@ from fides.api.task.conditional_dependencies.util import (
     set_nested_value,
     transform_value_for_evaluation,
 )
+
+
+class EvaluablePrivacyRequest(Protocol):
+    """Protocol for objects that can be used in policy condition evaluation.
+
+    Both the PrivacyRequest ORM model and lightweight evaluation objects
+    (e.g. EvaluationPrivacyRequest dataclass) satisfy this protocol.
+    """
+
+    policy: Any
+    location: Optional[str]
+
+    def get_persisted_identity(self) -> Identity: ...
+
+    def get_persisted_custom_privacy_request_fields(self) -> dict[str, Any]: ...
 
 
 class PrivacyRequestDataTransformer:
@@ -33,7 +48,7 @@ class PrivacyRequestDataTransformer:
     Note: Privacy request relationships are eager loaded in the execute_request_tasks.py file.
     """
 
-    def __init__(self, privacy_request: PrivacyRequest):
+    def __init__(self, privacy_request: EvaluablePrivacyRequest):
         self.privacy_request = privacy_request
         self.policy_data = self._transform_policy_object(privacy_request.policy)
         self.identity_data = self.privacy_request.get_persisted_identity()

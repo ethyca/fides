@@ -1,0 +1,5 @@
+type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Re-ordered activity tabs to show attention required first
+pr: 7376 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
+
