@@ -8,15 +8,18 @@ This module provides the database schema for:
 
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 
 from fides.api.db.base_class import Base
+
+if TYPE_CHECKING:
+    from fides.api.models.privacy_assessment import PrivacyAssessment
 
 
 class QuestionnaireStatus(str, EnumType):
@@ -35,6 +38,11 @@ class Questionnaire(Base):
     chat providers, including progress, reminders, and conversation history.
     Answers collected through the questionnaire are persisted to the
     existing AssessmentAnswer/AnswerVersion tables with answer_source=team_input.
+
+    Relationship: An assessment may have multiple questionnaire attempts
+    (e.g., retries after abandonment). The ``PrivacyAssessment.questionnaire``
+    relationship uses ``uselist=False`` and returns the latest active
+    session; lookups by assessment_id should order by ``created_at desc``.
     """
 
     @declared_attr
@@ -64,8 +72,10 @@ class Questionnaire(Base):
     reminder_count = Column(Integer, nullable=False, default=0)
 
     # Relationships
-    assessment = relationship("PrivacyAssessment", back_populates="questionnaire")
-    messages = relationship(
+    assessment: Mapped["PrivacyAssessment"] = relationship(
+        "PrivacyAssessment", back_populates="questionnaire"
+    )
+    messages: Mapped[List["ChatMessage"]] = relationship(
         "ChatMessage",
         back_populates="questionnaire",
         cascade="all, delete-orphan",
