@@ -263,7 +263,7 @@ multilang_migration_backup_*
 .cursor/*
 !.cursor/rules/
 .cursor/rules/*
-!.cursor/rules/general.mdc
+!.cursor/rules/sensitive-info-protection.mdc
 
 # Claude Code
 .claude/*
