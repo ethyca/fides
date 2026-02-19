@@ -1,0 +1,4 @@
+type: Removed
+description: Removed Drill tests from CI
+pr: 7417
+labels: []

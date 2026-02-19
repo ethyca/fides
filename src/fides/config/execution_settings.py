@@ -13,7 +13,7 @@ class ExecutionSettings(FidesSettings):
 
     privacy_request_delay_timeout: int = Field(
         default=3600,
-        description="The amount of time to wait for actions which delay privacy requests (e.g., pre- and post-processing webhooks).",
+        description="The amount of time to wait, in minutes, for actions which delay privacy requests (e.g., pre- and post-processing webhooks). Default: 3600 minutes",
     )
     require_manual_request_approval: bool = Field(
         default=False,
