@@ -521,13 +521,6 @@ class ConnectionService:
         system: Optional[System] = None,
     ) -> ConnectionConfigurationResponse:
         """Create or update a standard (non-template-based) connection configuration."""
-        # #region agent log
-        logger.info(
-            "[cursor-debug] _create_or_update_standard_connection entry | hypothesisId=H2 | connection_type=%s | has_existing=%s",
-            getattr(config, "connection_type", None),
-            existing_connection_config is not None,
-        )
-        # #endregion
         config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
         config_dict.pop("saas_connector_type", None)
 
@@ -550,21 +543,9 @@ class ConnectionService:
         if system:
             config_dict["system_id"] = system.id  # type: ignore[attr-defined]
 
-        # #region agent log
-        logger.info(
-            "[cursor-debug] before ConnectionConfig.create_or_update | hypothesisId=H1 | connection_type_in_dict=%s",
-            config_dict.get("connection_type"),
-        )
-        # #endregion
         connection_config = ConnectionConfig.create_or_update(
             self.db, data=config_dict, check_name=False
         )
-        # #region agent log
-        logger.info(
-            "[cursor-debug] after ConnectionConfig.create_or_update | hypothesisId=H1 | connection_config_id=%s",
-            getattr(connection_config, "id", None),
-        )
-        # #endregion
 
         # Track which connection configuration fields changed (only for updates)
         changed_fields = None

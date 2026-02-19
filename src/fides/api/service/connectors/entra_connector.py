@@ -4,7 +4,6 @@ Used for IDP discovery: list enterprise applications (service principals)
 via OAuth 2.0 client credentials.
 """
 
-import re
 from typing import Any, Dict, List, NoReturn, Optional, Tuple
 
 from fides.api.common_exceptions import ConnectionException
@@ -35,16 +34,6 @@ class EntraConnector(BaseConnector):
         """
         secrets = self.configuration.secrets
         try:
-            secret_val = (secrets.get("client_secret") or "").strip()
-            if secret_val and re.match(
-                r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$",
-                secret_val,
-            ):
-                raise ConnectionException(
-                    "Client secret must be the secret value, not the secret ID. "
-                    "In Azure Portal: App registrations > Your app > Certificates & secrets: "
-                    "use the secret's Value (long string), not the Secret ID (GUID)."
-                )
             return EntraHttpClient(
                 tenant_id=secrets["tenant_id"],
                 client_id=secrets["client_id"],
