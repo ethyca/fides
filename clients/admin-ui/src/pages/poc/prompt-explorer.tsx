@@ -6,7 +6,6 @@ import {
   Col,
   Flex,
   Input,
-  InputNumber,
   Layout,
   Radio,
   Row,
@@ -25,7 +24,6 @@ import {
   DataSectionConfig,
   PromptCategory,
   PromptInfo,
-  PromptType,
   TemplateSummary,
   useExecutePromptMutation,
   useGetAssessmentsQuery,
@@ -93,17 +91,17 @@ const PromptExplorer: NextPage = () => {
   >(undefined);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [userMessage, setUserMessage] = useState<string>(
-    "We use this data for analytics purposes"
+    "We use this data for analytics purposes",
   );
   const [conversationHistory, setConversationHistory] = useState<string>("");
   const [selectedAction, setSelectedAction] = useState<string>("answer");
-  const [actionParams, setActionParams] = useState<string>("");
+  const [actionParams] = useState<string>("");
   const [isFinalQuestion, setIsFinalQuestion] = useState<boolean>(false);
   const [questionToRephrase, setQuestionToRephrase] = useState<string>(
-    "What is the retention period for this data?"
+    "What is the retention period for this data?",
   );
   const [previousPhrasings, setPreviousPhrasings] = useState<string>(
-    "How long do you keep this data?"
+    "How long do you keep this data?",
   );
 
   // State for rendered prompt and response
@@ -123,7 +121,7 @@ const PromptExplorer: NextPage = () => {
   const { data: templates } = useGetTemplatesQuery();
   const { data: templateQuestions } = useGetTemplateQuestionsQuery(
     questionSourceTemplate || "",
-    { skip: !questionSourceTemplate }
+    { skip: !questionSourceTemplate },
   );
 
   // Mutations
@@ -137,7 +135,9 @@ const PromptExplorer: NextPage = () => {
 
   // Build questions list from template
   const questions = useMemo(() => {
-    if (!templateQuestions) return [];
+    if (!templateQuestions) {
+      return [];
+    }
     return templateQuestions.map((q, i) => ({
       index: i,
       text: q.question_text,
@@ -147,7 +147,9 @@ const PromptExplorer: NextPage = () => {
 
   // Get current question text
   const currentQuestion = useMemo(() => {
-    if (questions.length === 0) return "What is the retention period for this data?";
+    if (questions.length === 0) {
+      return "What is the retention period for this data?";
+    }
     return questions[currentQuestionIndex]?.text || questions[0]?.text || "";
   }, [questions, currentQuestionIndex]);
 
@@ -160,12 +162,12 @@ const PromptExplorer: NextPage = () => {
     }
     return questions
       .map((q, i) => {
-        const status =
-          i < currentQuestionIndex
-            ? "answered"
-            : i === currentQuestionIndex
-              ? "current - not answered yet"
-              : "not answered yet";
+        let status = "not answered yet";
+        if (i < currentQuestionIndex) {
+          status = "answered";
+        } else if (i === currentQuestionIndex) {
+          status = "current - not answered yet";
+        }
         return `${i + 1}. ${q.text} (${status})`;
       })
       .join("\n");
@@ -179,7 +181,7 @@ const PromptExplorer: NextPage = () => {
         [section]: !prev[section],
       }));
     },
-    []
+    [],
   );
 
   // Build questionnaire variables based on prompt type
@@ -192,9 +194,11 @@ const PromptExplorer: NextPage = () => {
       const unanswered = totalQuestions - currentQuestionIndex;
 
       let positionDescription = "a middle question";
-      if (questionNum === 1) positionDescription = "the first question";
-      else if (questionNum === totalQuestions)
+      if (questionNum === 1) {
+        positionDescription = "the first question";
+      } else if (questionNum === totalQuestions) {
         positionDescription = "the final question";
+      }
 
       return {
         current_question_num: questionNum,
@@ -265,7 +269,9 @@ const PromptExplorer: NextPage = () => {
 
   // Render prompt with data
   const handleRenderPrompt = useCallback(async () => {
-    if (!selectedPrompt) return;
+    if (!selectedPrompt) {
+      return;
+    }
 
     try {
       const questionnaireVariables =
@@ -296,7 +302,9 @@ const PromptExplorer: NextPage = () => {
 
   // Execute prompt against LLM
   const handleExecutePrompt = useCallback(async () => {
-    if (!renderedPrompt) return;
+    if (!renderedPrompt) {
+      return;
+    }
 
     try {
       const result = await executePrompt({
@@ -354,10 +362,11 @@ const PromptExplorer: NextPage = () => {
           promptType === "message_generation" ||
           promptType === "question_rephrase_batch") && (
           <Card title="Question Source" size="small">
-            <Text type="secondary" className="block mb-2">
+            <Text type="secondary" className="mb-2 block">
               Load questions from an assessment template
             </Text>
             <Select
+              aria-label="Select template for questions"
               placeholder="Select template for questions"
               allowClear
               className="w-full"
@@ -372,7 +381,7 @@ const PromptExplorer: NextPage = () => {
               }))}
             />
             {questions.length > 0 && (
-              <Text type="secondary" className="block mt-2 text-xs">
+              <Text type="secondary" className="mt-2 block text-xs">
                 Loaded {questions.length} questions
               </Text>
             )}
@@ -384,12 +393,13 @@ const PromptExplorer: NextPage = () => {
           <Card title="Conversation State" size="small">
             <Space direction="vertical" className="w-full">
               <div>
-                <Text strong className="block mb-1">
+                <Text strong className="mb-1 block">
                   Current Question ({currentQuestionIndex + 1} of{" "}
                   {questions.length || 5})
                 </Text>
                 {questions.length > 0 ? (
                   <Select
+                    aria-label="Current question"
                     className="w-full"
                     value={currentQuestionIndex}
                     onChange={(value) => setCurrentQuestionIndex(value)}
@@ -399,15 +409,11 @@ const PromptExplorer: NextPage = () => {
                     }))}
                   />
                 ) : (
-                  <Input
-                    value={currentQuestion}
-                    disabled
-                    className="text-xs"
-                  />
+                  <Input value={currentQuestion} disabled className="text-xs" />
                 )}
               </div>
               <div>
-                <Text strong className="block mb-1">
+                <Text strong className="mb-1 block">
                   User Message
                 </Text>
                 <TextArea
@@ -418,7 +424,7 @@ const PromptExplorer: NextPage = () => {
                 />
               </div>
               <div>
-                <Text strong className="block mb-1">
+                <Text strong className="mb-1 block">
                   Conversation History (optional)
                 </Text>
                 <TextArea
@@ -438,10 +444,11 @@ const PromptExplorer: NextPage = () => {
           <Card title="Action Context" size="small">
             <Space direction="vertical" className="w-full">
               <div>
-                <Text strong className="block mb-1">
+                <Text strong className="mb-1 block">
                   Action Type
                 </Text>
                 <Select
+                  aria-label="Action type"
                   className="w-full"
                   value={selectedAction}
                   onChange={(value) => setSelectedAction(value)}
@@ -449,7 +456,7 @@ const PromptExplorer: NextPage = () => {
                 />
               </div>
               <div>
-                <Text strong className="block mb-1">
+                <Text strong className="mb-1 block">
                   User Message
                 </Text>
                 <TextArea
@@ -475,7 +482,7 @@ const PromptExplorer: NextPage = () => {
           <Card title="Rephrase Input" size="small">
             <Space direction="vertical" className="w-full">
               <div>
-                <Text strong className="block mb-1">
+                <Text strong className="mb-1 block">
                   Question to Rephrase
                 </Text>
                 <TextArea
@@ -485,7 +492,7 @@ const PromptExplorer: NextPage = () => {
                 />
               </div>
               <div>
-                <Text strong className="block mb-1">
+                <Text strong className="mb-1 block">
                   Previous Phrasings (one per line)
                 </Text>
                 <TextArea
@@ -503,11 +510,11 @@ const PromptExplorer: NextPage = () => {
         {/* Batch Rephrase - just uses question source */}
         {promptType === "question_rephrase_batch" && questions.length > 0 && (
           <Card title="Questions to Rephrase" size="small">
-            <Text type="secondary" className="block mb-2">
+            <Text type="secondary" className="mb-2 block">
               Will rephrase all {questions.length} questions from the selected
               template
             </Text>
-            <div className="max-h-32 overflow-y-auto text-xs bg-gray-50 p-2 rounded">
+            <div className="max-h-32 overflow-y-auto rounded bg-gray-50 p-2 text-xs">
               {questions.map((q, i) => (
                 <div key={q.id} className="mb-1">
                   {i + 1}. {q.text}
@@ -548,6 +555,7 @@ const PromptExplorer: NextPage = () => {
               className="h-full"
               extra={
                 <Select
+                  aria-label="Filter by category"
                   placeholder="Filter"
                   allowClear
                   size="small"
@@ -588,11 +596,11 @@ const PromptExplorer: NextPage = () => {
                         </Radio>
                         <Text
                           type="secondary"
-                          className="block text-xs mt-1 ml-6"
+                          className="ml-6 mt-1 block text-xs"
                         >
                           {prompt.description}
                         </Text>
-                        <Text code className="text-xs ml-6">
+                        <Text code className="ml-6 text-xs">
                           {prompt.category}
                         </Text>
                       </Card>
@@ -609,7 +617,7 @@ const PromptExplorer: NextPage = () => {
               {/* Data Sections - only for assessment prompts */}
               {selectedPrompt?.category === "assessment" && (
                 <Card title="Data Sections" size="small">
-                  <Text type="secondary" className="block mb-3">
+                  <Text type="secondary" className="mb-3 block">
                     Toggle which Fides data to include in the prompt context.
                   </Text>
                   <Space direction="vertical" className="w-full">
@@ -622,13 +630,13 @@ const PromptExplorer: NextPage = () => {
                           }
                           onChange={() =>
                             handleDataSectionToggle(
-                              section.id as keyof DataSectionConfig
+                              section.id as keyof DataSectionConfig,
                             )
                           }
                         >
                           {section.name}
                         </Checkbox>
-                      )
+                      ),
                     )}
                   </Space>
                 </Card>
@@ -637,22 +645,25 @@ const PromptExplorer: NextPage = () => {
               {/* Assessment Context - only for assessment prompts */}
               {selectedPrompt?.category === "assessment" && (
                 <Card title="Assessment Context" size="small">
-                  <Text type="secondary" className="block mb-3">
+                  <Text type="secondary" className="mb-3 block">
                     Select a template for questions, or an existing assessment.
                   </Text>
                   <Space direction="vertical" className="w-full">
                     <div>
-                      <Text strong className="block mb-1">
+                      <Text strong className="mb-1 block">
                         Template (for questions)
                       </Text>
                       <Select
+                        aria-label="Select template"
                         placeholder="Select template"
                         allowClear
                         className="w-full"
                         value={selectedTemplateKey}
                         onChange={(value) => {
                           setSelectedTemplateKey(value);
-                          if (value) setSelectedAssessmentId(undefined);
+                          if (value) {
+                            setSelectedAssessmentId(undefined);
+                          }
                         }}
                         options={templates?.map((t: TemplateSummary) => ({
                           label: `${t.name} (${t.question_count} Qs)`,
@@ -660,21 +671,24 @@ const PromptExplorer: NextPage = () => {
                         }))}
                       />
                     </div>
-                    <Text type="secondary" className="text-center block">
+                    <Text type="secondary" className="block text-center">
                       — or —
                     </Text>
                     <div>
-                      <Text strong className="block mb-1">
+                      <Text strong className="mb-1 block">
                         Existing Assessment
                       </Text>
                       <Select
+                        aria-label="Select existing assessment"
                         placeholder="Select existing assessment"
                         allowClear
                         className="w-full"
                         value={selectedAssessmentId}
                         onChange={(value) => {
                           setSelectedAssessmentId(value);
-                          if (value) setSelectedTemplateKey(undefined);
+                          if (value) {
+                            setSelectedTemplateKey(undefined);
+                          }
                         }}
                         options={assessments?.map((a) => ({
                           label: `${a.system_name || a.system_fides_key || "No system"}: ${a.name || `Assessment ${a.id.slice(0, 8)}`} (${a.status})`,
@@ -702,7 +716,7 @@ const PromptExplorer: NextPage = () => {
                     Render Prompt
                   </Button>
                   <div>
-                    <Text strong className="block mb-1">
+                    <Text strong className="mb-1 block">
                       Model Override
                     </Text>
                     <Input
@@ -728,7 +742,7 @@ const PromptExplorer: NextPage = () => {
 
           {/* Right - Output */}
           <Col xs={24} md={12}>
-            <Space direction="vertical" className="w-full h-full" size="middle">
+            <Space direction="vertical" className="size-full" size="middle">
               {/* Rendered Prompt */}
               <Card
                 title="Rendered Prompt"
