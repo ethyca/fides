@@ -17,6 +17,9 @@ from fides.api.util.saas_util import (
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
+    validate_allowed_domains_not_modified,
+    validate_domain_against_allowed_list,
+    validate_host_references_domain_restricted_params,
 )
 
 
@@ -755,3 +758,111 @@ class TestCheckDatasetReferenceValues:
         assert check_dataset_missing_reference_values(input_data, param_values) == [
             "missing_param"
         ]
+
+
+@pytest.mark.unit_saas
+class TestValidateDomainAgainstAllowedList:
+    """Tests for validate_domain_against_allowed_list.
+
+    Each allowed_domains entry is a wildcard pattern where ``*`` matches
+    any sequence of characters (including dots).  Everything else is a
+    literal.  Matching is case-insensitive against the full domain string.
+    """
+
+    @pytest.mark.parametrize(
+        "domain,allowed,should_pass",
+        [
+            pytest.param("api.stripe.com", ["api.stripe.com"], True, id="exact_match"),
+            pytest.param(
+                "API.Stripe.COM", ["api.stripe.com"], True, id="case_insensitive"
+            ),
+            pytest.param(
+                "  api.stripe.com  ",
+                ["  api.stripe.com  "],
+                True,
+                id="whitespace_stripped",
+            ),
+            pytest.param(
+                "na1.salesforce.com",
+                ["*.salesforce.com"],
+                True,
+                id="wildcard_subdomain",
+            ),
+            pytest.param(
+                "a.b.c.salesforce.com",
+                ["*.salesforce.com"],
+                True,
+                id="wildcard_multi_level",
+            ),
+            pytest.param(
+                "NA1.Salesforce.COM",
+                ["*.salesforce.com"],
+                True,
+                id="wildcard_case_insensitive",
+            ),
+            pytest.param(
+                "api.stripe.com",
+                ["api.example.com", "api.stripe.com", "*.other.com"],
+                True,
+                id="multiple_allowed_domains",
+            ),
+            pytest.param(
+                "sub.other.com",
+                ["api.example.com", "api.stripe.com", "*.other.com"],
+                True,
+                id="multiple_allowed_wildcard",
+            ),
+            pytest.param(
+                "api.us-east.stripe.com",
+                ["api.*.stripe.com"],
+                True,
+                id="wildcard_in_middle",
+            ),
+            pytest.param(
+                "api.us-east.stripe.com",
+                ["*.*.stripe.com"],
+                True,
+                id="multiple_wildcards",
+            ),
+            pytest.param(
+                "salesforce.com",
+                ["?*.salesforce.com"],
+                False,
+                id="question_mark_is_literal_not_regex",
+            ),
+            pytest.param(
+                "evil.example.com", ["api.stripe.com"], False, id="different_domain"
+            ),
+            pytest.param(
+                "not-api.stripe.com",
+                ["api.stripe.com"],
+                False,
+                id="partial_match_rejected",
+            ),
+            pytest.param(
+                "api.stripe.com.evil.com",
+                ["api.stripe.com"],
+                False,
+                id="suffix_attack_rejected",
+            ),
+        ],
+    )
+    def test_domain_validation(self, domain, allowed, should_pass):
+        if should_pass:
+            validate_domain_against_allowed_list(domain, allowed, "domain")
+        else:
+            with pytest.raises(ValueError):
+                validate_domain_against_allowed_list(domain, allowed, "domain")
+
+    def test_error_message_includes_param_name(self):
+        """Error message should include the param name and value."""
+        with pytest.raises(ValueError, match="The value 'evil.com' for 'domain'"):
+            validate_domain_against_allowed_list(
+                "evil.com", ["api.stripe.com"], "domain"
+            )
+
+    def test_empty_allowed_domains_permits_any_value(self):
+        """Empty allowed_domains list should permit any domain value."""
+        validate_domain_against_allowed_list(
+            "literally-anything.example.com", [], "domain"
+        )

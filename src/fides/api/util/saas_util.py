@@ -18,6 +18,7 @@ from fides.api.graph.config import Collection, CollectionAddress, Field, GraphDa
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.util.domain_util import wildcard_to_regex
 from fides.config import CONFIG
 from fides.config.helpers import load_file
 
@@ -53,6 +54,47 @@ def deny_unsafe_hosts(host: str) -> str:
     if host_ip.is_link_local or host_ip.is_loopback:
         raise ValueError(f"Host '{host}' with IP Address '{host_ip}' is not safe!")
     return host
+
+
+def is_domain_validation_disabled() -> bool:
+    """Check if domain validation is disabled via config flags."""
+    return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
+
+
+def validate_domain_against_allowed_list(
+    domain: str, allowed_domains: List[str], param_name: str
+) -> None:
+    """
+    Validate that a domain value matches at least one of the allowed domain patterns.
+
+    Each entry in allowed_domains is a wildcard pattern that is matched
+    case-insensitively against the full domain string.  The only special
+    character is ``*`` which matches any sequence of characters (including
+    dots).  Everything else is treated as a literal.
+
+    An empty ``allowed_domains`` list means the param is self-hosted and any
+    domain is permitted.
+
+    Examples:
+      - Exact: "api.stripe.com"
+      - Subdomain wildcard: "*.salesforce.com"
+      - Any position: "api.*.stripe.com"
+
+    Raises ValueError if the domain does not match any allowed pattern.
+    """
+    if not allowed_domains:
+        return
+
+    domain_stripped = domain.strip()
+    for pattern in allowed_domains:
+        pattern_stripped = pattern.strip()
+        regex = wildcard_to_regex(pattern_stripped)
+        if re.fullmatch(regex, domain_stripped, re.IGNORECASE):
+            return
+    raise ValueError(
+        f"The value '{domain}' for '{param_name}' is not in the list of "
+        f"allowed domains: [{', '.join(allowed_domains)}]"
+    )
 
 
 def load_yaml_as_string(filename: str) -> str:
