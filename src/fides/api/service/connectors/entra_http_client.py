@@ -56,9 +56,7 @@ class EntraHttpClient:
             self._session.mount("https://", HTTPAdapter(max_retries=retries))
 
     def _token_url(self) -> str:
-        return (
-            f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/token"
-        )
+        return f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/token"
 
     def _get_token(self) -> str:
         """Obtain OAuth2 access token via client credentials grant."""

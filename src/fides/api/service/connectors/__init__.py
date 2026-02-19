@@ -25,10 +25,10 @@ from fides.api.service.connectors.dynamodb_connector import (
     DynamoDBConnector as DynamoDBConnector,
 )
 from fides.api.service.connectors.email.attentive_connector import AttentiveConnector
+from fides.api.service.connectors.email.sovrn_connector import SovrnConnector
 from fides.api.service.connectors.entra_connector import (
     EntraConnector as EntraConnector,
 )
-from fides.api.service.connectors.email.sovrn_connector import SovrnConnector
 from fides.api.service.connectors.erasure_email_connector import (
     GenericErasureEmailConnector,
 )
