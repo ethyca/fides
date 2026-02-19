@@ -151,7 +151,11 @@ class SaaSSchemaFactory:
                 extra["hidden"] = True
 
             default_value = connector_param.default_value
-            if is_single_exact_domain and not default_value:
+            if (
+                is_single_exact_domain
+                and not default_value
+                and connector_param.allowed_domains
+            ):
                 default_value = connector_param.allowed_domains[0]
 
             field_definitions[connector_param.name] = (
