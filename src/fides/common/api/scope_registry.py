@@ -64,6 +64,7 @@ SCOPE = "scope"
 SEND = "send"
 STORAGE = "storage"
 SYSTEM = "system"
+SYSTEM_INTEGRATION_LINK = "system_integration_link"
 SYSTEM_MANAGER = "system_manager"
 TAXONOMY = "taxonomy"
 TEST = "test"
@@ -229,6 +230,10 @@ SYSTEM_UPDATE = f"{SYSTEM}:{UPDATE}"
 SYSTEM_DELETE = f"{SYSTEM}:{DELETE}"
 
 
+SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE = f"{SYSTEM_INTEGRATION_LINK}:{CREATE}"
+SYSTEM_INTEGRATION_LINK_DELETE = f"{SYSTEM_INTEGRATION_LINK}:{DELETE}"
+SYSTEM_INTEGRATION_LINK_READ = f"{SYSTEM_INTEGRATION_LINK}:{READ}"
+
 SYSTEM_MANAGER_READ = f"{SYSTEM_MANAGER}:{READ}"
 SYSTEM_MANAGER_UPDATE = f"{SYSTEM_MANAGER}:{UPDATE}"
 SYSTEM_MANAGER_DELETE = f"{SYSTEM_MANAGER}:{DELETE}"
@@ -360,6 +365,9 @@ SCOPE_DOCS = {
     SYSTEM_READ: "Read systems",
     SYSTEM_DELETE: "Delete systems",
     SYSTEM_UPDATE: "Update systems",
+    SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE: "Create or update system-integration links",
+    SYSTEM_INTEGRATION_LINK_DELETE: "Delete system-integration links",
+    SYSTEM_INTEGRATION_LINK_READ: "Read system-integration links",
     SYSTEM_MANAGER_READ: "Read systems users can manage",
     SYSTEM_MANAGER_DELETE: "Delete systems user can manage",
     SYSTEM_MANAGER_UPDATE: "Update systems user can manage",
