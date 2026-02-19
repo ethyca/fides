@@ -111,6 +111,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     icon: <Icons.MessageQueue />,
     routes: [
       {
+        title: "Policies",
+        path: routes.POLICIES_ROUTE,
+        scopes: [ScopeRegistryEnum.POLICY_READ],
+      },
+      {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
         scopes: [

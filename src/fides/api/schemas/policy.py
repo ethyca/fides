@@ -1,6 +1,6 @@
 from enum import Enum as EnumType
 from enum import StrEnum
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -9,6 +9,10 @@ from pydantic import ConfigDict, field_validator
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.storage.storage import StorageDestinationResponse
+from fides.api.task.conditional_dependencies.schemas import (
+    ConditionGroup,
+    ConditionLeaf,
+)
 
 
 class ActionType(StrEnum):
@@ -143,11 +147,13 @@ class PolicyResponse(Policy):
 
     rules: Optional[list[RuleResponse]] = None
     drp_action: Optional[DrpAction] = None
-    conditions: dict[str, Any] = {}
+    conditions: Optional[Union[ConditionLeaf, ConditionGroup]] = None
 
     @field_validator("conditions", mode="before")
     @classmethod
-    def extract_conditions(cls, v: Any) -> dict[str, Any]:
+    def extract_conditions(
+        cls, v: Any
+    ) -> Optional[Union[dict[str, Any], ConditionLeaf, ConditionGroup]]:
         """Extract the condition tree from the ORM conditions relationship.
 
         With from_attributes=True, Pydantic passes the raw ORM relationship
@@ -156,10 +162,10 @@ class PolicyResponse(Policy):
 
         Each policy has at most one PolicyCondition row (enforced at creation).
         """
-        if isinstance(v, dict):
-            return v
+        if isinstance(v, (dict, ConditionLeaf, ConditionGroup)):
+            return v or None
         if not v:
-            return {}
+            return None
         if isinstance(v, list):
             # Multiple rows per policy is prevented by the DB unique constraint
             # `uq_policy_condition_policy_id` on policy_condition.policy_id
@@ -179,7 +185,7 @@ class PolicyResponse(Policy):
                 )
             if hasattr(v[0], "condition_tree") and v[0].condition_tree:
                 return v[0].condition_tree
-        return {}
+        return None
 
 
 class BulkPutRuleTargetResponse(BulkResponse):
