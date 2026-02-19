@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.task.action_strategies.base import ActionStrategy
 
@@ -37,7 +36,6 @@ class ConsentStrategy(ActionStrategy):
             session=ctx.session,
             privacy_request_proceed=True,
         )
-        raise PrivacyRequestExit()
 
     def execute_node(
         self,

@@ -26,7 +26,6 @@ from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, Reque
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.task.action_strategies.registry import ACTION_STRATEGIES
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
@@ -291,6 +290,8 @@ def _execute_node(
     Handles session management, prerequisite checks, resource setup, and
     downstream task queuing. Delegates action-specific logic to the strategy.
     """
+    from fides.api.task.action_strategies.registry import ACTION_STRATEGIES
+
     strategy = ACTION_STRATEGIES[action_type]
     try:
         with database_task.get_new_session() as session:

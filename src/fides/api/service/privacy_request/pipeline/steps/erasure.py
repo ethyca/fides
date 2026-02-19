@@ -44,4 +44,4 @@ class ErasureStep(PipelineStep):
     def execute(self, ctx: PipelineContext) -> StepResult:
         _verify_masking_secrets(ctx.policy, ctx.privacy_request, ctx.resume_step)
         ACTION_STRATEGIES[ActionType.erasure].run_pipeline_action(ctx)
-        return StepResult.CONTINUE
+        return StepResult.HALT

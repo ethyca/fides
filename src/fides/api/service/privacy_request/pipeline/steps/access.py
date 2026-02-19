@@ -19,4 +19,4 @@ class AccessStep(PipelineStep):
 
     def execute(self, ctx: PipelineContext) -> StepResult:
         ACTION_STRATEGIES[ActionType.access].run_pipeline_action(ctx)
-        return StepResult.CONTINUE
+        return StepResult.HALT

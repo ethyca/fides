@@ -19,4 +19,4 @@ class ConsentStep(PipelineStep):
 
     def execute(self, ctx: PipelineContext) -> StepResult:
         ACTION_STRATEGIES[ActionType.consent].run_pipeline_action(ctx)
-        return StepResult.CONTINUE
+        return StepResult.HALT

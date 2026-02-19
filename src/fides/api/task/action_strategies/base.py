@@ -27,7 +27,7 @@ class ActionStrategy(ABC):
 
     @abstractmethod
     def run_pipeline_action(self, ctx: PipelineContext) -> None:
-        """Called by pipeline steps. Creates request tasks and raises PrivacyRequestExit."""
+        """Called by pipeline steps. Creates and queues request tasks, then returns."""
         ...
 
     @abstractmethod
