@@ -97,6 +97,102 @@ def validate_domain_against_allowed_list(
     )
 
 
+def validate_allowed_domains_not_modified(
+    original_connector_params: List[Dict[str, Any]],
+    incoming_connector_params: List[Dict[str, Any]],
+) -> None:
+    """
+    Rule A: Verify that allowed_domains has not been modified via the API.
+
+    Compares incoming connector params against the original stored config.
+    If any connector_param's allowed_domains value differs (added, removed, or modified),
+    raises a ValueError.
+    """
+    original_by_name = {p["name"]: p for p in original_connector_params}
+    incoming_by_name = {p["name"]: p for p in incoming_connector_params}
+
+    for name, original_param in original_by_name.items():
+        original_allowed = original_param.get("allowed_domains")
+        incoming_param = incoming_by_name.get(name)
+        if incoming_param is None:
+            # Param was removed; if it had allowed_domains, that's a modification
+            if original_allowed is not None:
+                raise ValueError(
+                    f"Cannot remove connector param '{name}' that has allowed_domains defined."
+                )
+            continue
+        incoming_allowed = incoming_param.get("allowed_domains")
+        if original_allowed != incoming_allowed:
+            raise ValueError(
+                f"Cannot modify allowed_domains for connector param '{name}'. "
+                f"allowed_domains is immutable once defined in the connector template."
+            )
+
+    # Also check for new params that try to set allowed_domains when there was no original
+    for name, incoming_param in incoming_by_name.items():
+        if name not in original_by_name:
+            incoming_allowed = incoming_param.get("allowed_domains")
+            if incoming_allowed is not None:
+                raise ValueError(
+                    f"Cannot set allowed_domains on new connector param '{name}' via the API."
+                )
+
+
+def validate_host_references_domain_restricted_params(
+    original_connector_params: List[Dict[str, Any]],
+    incoming_connector_params: List[Dict[str, Any]],
+    incoming_saas_config: Dict[str, Any],
+) -> None:
+    """
+    Rule B: Verify that client_config.host placeholders reference connector params
+    with allowed_domains defined.
+
+    Walks the ENTIRE incoming SaaS config (top-level, endpoints, test_request,
+    auth strategy configs, etc.) to find all client_config.host values.
+
+    If the original config had any connector param with allowed_domains (non-None),
+    then every host placeholder in the incoming config must reference a connector param
+    that also has allowed_domains (non-None, including empty list).
+    """
+    # Check if the original config had domain restrictions on any connector param
+    original_host_had_restrictions = False
+    for param in original_connector_params:
+        if param.get("allowed_domains") is not None:
+            original_host_had_restrictions = True
+            break
+
+    if not original_host_had_restrictions:
+        return
+
+    incoming_by_name = {p["name"]: p for p in incoming_connector_params}
+
+    # Extract ALL host values from the entire incoming config
+    all_hosts = SaaSConfig._collect_client_config_hosts(incoming_saas_config)
+
+    for host_value in all_hosts:
+        placeholders = re.findall(r"<([^<>]+)>", host_value)
+        if not placeholders:
+            raise ValueError(
+                f"client_config.host value '{host_value}' does not reference any "
+                f"connector param. When domain restrictions are defined, the host "
+                f"must reference a connector param with allowed_domains."
+            )
+        for placeholder in placeholders:
+            incoming_param = incoming_by_name.get(placeholder)
+            if incoming_param is None:
+                raise ValueError(
+                    f"client_config.host references '{placeholder}' which is not a "
+                    f"known connector param. When domain restrictions are defined, all "
+                    f"host placeholders must reference connector params with allowed_domains."
+                )
+            if incoming_param.get("allowed_domains") is None:
+                raise ValueError(
+                    f"client_config.host references connector param '{placeholder}' which does not "
+                    f"have allowed_domains defined. All host-referenced params must have "
+                    f"allowed_domains set (use an empty list for self-hosted services)."
+                )
+
+
 def load_yaml_as_string(filename: str) -> str:
     yaml_file = load_file([filename])
     with open(yaml_file, "r", encoding="utf-8") as file:

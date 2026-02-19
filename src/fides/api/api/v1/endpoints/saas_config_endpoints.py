@@ -48,6 +48,10 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
+from fides.api.util.saas_util import (
+    validate_allowed_domains_not_modified,
+    validate_host_references_domain_restricted_params,
+)
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
@@ -175,6 +179,31 @@ def patch_saas_config(
         saas_config.fides_key,
         connection_config.key,
     )
+
+    # Enforce domain restriction rules if the existing config has connector params
+    existing_saas_config = connection_config.get_saas_config()
+    if existing_saas_config:
+        original_params = [
+            p.model_dump() for p in existing_saas_config.connector_params
+        ]
+        incoming_params = [p.model_dump() for p in saas_config.connector_params]
+
+        try:
+            # Rule A: allowed_domains is immutable via the API
+            validate_allowed_domains_not_modified(original_params, incoming_params)
+            # Rule B: all client_config.host placeholders (at any nesting level)
+            # must reference domain-restricted params
+            validate_host_references_domain_restricted_params(
+                original_params,
+                incoming_params,
+                saas_config.model_dump(mode="json"),
+            )
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            )
+
     connection_config.update_saas_config(db, saas_config=saas_config)
 
     # Create audit event for SaaS config update

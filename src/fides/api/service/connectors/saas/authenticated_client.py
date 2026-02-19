@@ -26,7 +26,11 @@ from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-from fides.api.util.saas_util import deny_unsafe_hosts
+from fides.api.util.saas_util import (
+    deny_unsafe_hosts,
+    is_domain_validation_disabled,
+    validate_domain_against_allowed_list,
+)
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -55,6 +59,38 @@ class AuthenticatedClient:
         self.configuration = configuration
         self.client_config = client_config
         self.rate_limit_config = rate_limit_config
+
+    def _validate_request_domain(self, host: str) -> None:
+        """
+        Defense-in-depth: validate the resolved request host against allowed_domains
+        from the connector's SaaS config. This catches cases where secrets were set
+        before allowed_domains was added, or if the database was manipulated directly.
+
+        The host must match at least one domain-restricted connector param's
+        allowed_domains list.  This handles connectors with multiple
+        domain-restricted params (e.g. separate hosts for different endpoints).
+        """
+        if is_domain_validation_disabled():
+            return
+
+        saas_config = self.configuration.get_saas_config()
+        if not saas_config:
+            return
+
+        # Strip port from host if present (e.g., "api.stripe.com:443" -> "api.stripe.com")
+        host_without_port = host.split(":")[0] if ":" in host else host
+
+        # Collect all non-empty allowed_domains lists across connector params
+        all_allowed: List[str] = []
+        for connector_param in saas_config.connector_params:
+            if (
+                connector_param.allowed_domains is not None
+                and len(connector_param.allowed_domains) > 0
+            ):
+                all_allowed.extend(connector_param.allowed_domains)
+
+        if all_allowed:
+            validate_domain_against_allowed_list(host_without_port, all_allowed, "host")
 
     def get_authenticated_request(
         self, request_params: SaaSRequestParams
@@ -218,7 +254,11 @@ class AuthenticatedClient:
             raise ValueError("The URL for the prepared request is missing.")
 
         # extract the hostname from the complete URL and verify its safety
-        deny_unsafe_hosts(urlparse(prepared_request.url).netloc)
+        request_host = urlparse(prepared_request.url).netloc
+        deny_unsafe_hosts(request_host)
+
+        # Defense-in-depth: validate the resolved host against allowed_domains
+        self._validate_request_domain(request_host)
 
         # utf-8 encode the body before sending
         if isinstance(prepared_request.body, str):
