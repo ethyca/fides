@@ -1,5 +1,5 @@
-import { ConfigProvider } from "antd/lib";
 import {
+  ConfigProvider,
   darkAntTheme,
   defaultAntTheme,
   Flex,

@@ -31,10 +31,9 @@ export interface FidesUIProviderProps {
 export const FidesUIProvider = ({
   children,
   theme = defaultTheme,
-  antTheme = defaultAntTheme,
+  antTheme = defaultAntTheme, // Use default theme if none provided
   wave,
 }: FidesUIProviderProps) => {
-
   const [messageApi, messageContextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
   const value = useMemo(
