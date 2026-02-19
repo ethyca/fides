@@ -13,7 +13,7 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.schemas.saas.saas_config import ClientConfig
+from fides.api.schemas.saas.saas_config import ClientConfig, ConnectorParam
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.saas.authenticated_client import (
     AuthenticatedClient,
@@ -194,6 +194,123 @@ class TestAuthenticatedClient:
         self, test_authenticated_client, test_http_server
     ):
         assert test_authenticated_client.session.verify == certifi.where()
+
+
+def _make_client_with_allowed_domains(
+    allowed_domains_by_param: Dict[str, Any],
+) -> AuthenticatedClient:
+    """Build an AuthenticatedClient with a mocked ConnectionConfig
+    whose SaaS config has the given connector params."""
+    connector_params = [
+        ConnectorParam(name=name, allowed_domains=domains)
+        for name, domains in allowed_domains_by_param.items()
+    ]
+
+    saas_config = mock.MagicMock()
+    saas_config.connector_params = connector_params
+
+    configuration = mock.MagicMock()
+    configuration.get_saas_config.return_value = saas_config
+
+    client_config = ClientConfig(protocol="https", host="placeholder")
+    return AuthenticatedClient(
+        "https://api.stripe.com", configuration, client_config
+    )
+
+
+@pytest.mark.unit_saas
+class TestValidateRequestDomain:
+    """Tests for AuthenticatedClient._validate_request_domain (defense-in-depth)."""
+
+    @pytest.mark.parametrize(
+        "params,host,should_pass",
+        [
+            pytest.param(
+                {"domain": ["api.stripe.com"]},
+                "api.stripe.com",
+                True,
+                id="exact_match",
+            ),
+            pytest.param(
+                {"domain": ["api.stripe.com"]},
+                "api.stripe.com:443",
+                True,
+                id="port_stripped",
+            ),
+            pytest.param(
+                {"domain": []},
+                "literally-anything.example.com",
+                True,
+                id="empty_allowed_domains_permits_any",
+            ),
+            pytest.param(
+                {"api_key": None},
+                "anything.example.com",
+                True,
+                id="no_domain_restricted_params_skips",
+            ),
+            pytest.param(
+                {"domain": ["api.stripe.com"], "other_domain": ["pi.pardot.com"]},
+                "api.stripe.com",
+                True,
+                id="multi_param_first_match",
+            ),
+            pytest.param(
+                {"domain": ["api.stripe.com"], "other_domain": ["pi.pardot.com"]},
+                "pi.pardot.com",
+                True,
+                id="multi_param_second_match",
+            ),
+            pytest.param(
+                {"domain": ["api.stripe.com"]},
+                "evil.example.com",
+                False,
+                id="disallowed_domain_rejected",
+            ),
+            pytest.param(
+                {"domain": ["api.stripe.com"], "other_domain": ["pi.pardot.com"]},
+                "evil.example.com",
+                False,
+                id="multi_param_no_match_rejected",
+            ),
+        ],
+    )
+    @mock.patch(
+        "fides.api.service.connectors.saas.authenticated_client.is_domain_validation_disabled",
+        return_value=False,
+    )
+    def test_domain_validation(self, mock_disabled, params, host, should_pass):
+        client = _make_client_with_allowed_domains(params)
+        if should_pass:
+            client._validate_request_domain(host)
+        else:
+            with pytest.raises(
+                ValueError, match="not in the list of allowed domains"
+            ):
+                client._validate_request_domain(host)
+
+    @mock.patch(
+        "fides.api.service.connectors.saas.authenticated_client.is_domain_validation_disabled",
+        return_value=True,
+    )
+    def test_validation_disabled_skips(self, mock_disabled):
+        """Validation should be skipped when disabled."""
+        client = _make_client_with_allowed_domains({"domain": ["api.stripe.com"]})
+        client._validate_request_domain("evil.example.com")
+
+    @mock.patch(
+        "fides.api.service.connectors.saas.authenticated_client.is_domain_validation_disabled",
+        return_value=False,
+    )
+    def test_no_saas_config_skips(self, mock_disabled):
+        """No SaaS config should skip validation."""
+        configuration = mock.MagicMock()
+        configuration.get_saas_config.return_value = None
+        client_config = ClientConfig(protocol="https", host="placeholder")
+        client = AuthenticatedClient(
+            "https://example.com", configuration, client_config
+        )
+        client._validate_request_domain("anything.example.com")
 
 
 @pytest.mark.unit_saas

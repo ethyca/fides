@@ -17,9 +17,6 @@ from fides.api.common_exceptions import (
     ConnectionException,
     FidesopsException,
 )
-from fides.api.schemas.connection_configuration.connection_secrets_saas import (
-    _is_domain_validation_disabled,
-)
 from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiter,
     RateLimiterPeriod,
@@ -31,6 +28,7 @@ from fides.api.util.logger_context_utils import (
 )
 from fides.api.util.saas_util import (
     deny_unsafe_hosts,
+    is_domain_validation_disabled,
     validate_domain_against_allowed_list,
 )
 from fides.config import CONFIG
@@ -67,8 +65,12 @@ class AuthenticatedClient:
         Defense-in-depth: validate the resolved request host against allowed_domains
         from the connector's SaaS config. This catches cases where secrets were set
         before allowed_domains was added, or if the database was manipulated directly.
+
+        The host must match at least one domain-restricted connector param's
+        allowed_domains list.  This handles connectors with multiple
+        domain-restricted params (e.g. separate hosts for different endpoints).
         """
-        if _is_domain_validation_disabled():
+        if is_domain_validation_disabled():
             return
 
         saas_config = self.configuration.get_saas_config()
@@ -78,19 +80,17 @@ class AuthenticatedClient:
         # Strip port from host if present (e.g., "api.stripe.com:443" -> "api.stripe.com")
         host_without_port = host.split(":")[0] if ":" in host else host
 
-        # Find connector params that have allowed_domains with actual entries
+        # Collect all non-empty allowed_domains lists across connector params
+        all_allowed: List[str] = []
         for connector_param in saas_config.connector_params:
             if (
                 connector_param.allowed_domains is not None
                 and len(connector_param.allowed_domains) > 0
             ):
-                # This is a domain-restricted param; validate the host against it
-                validate_domain_against_allowed_list(
-                    host_without_port,
-                    connector_param.allowed_domains,
-                    connector_param.name,
-                )
-                return  # Only need to validate against the first domain-restricted param
+                all_allowed.extend(connector_param.allowed_domains)
+
+        if all_allowed:
+            validate_domain_against_allowed_list(host_without_port, all_allowed, "host")
 
     def get_authenticated_request(
         self, request_params: SaaSRequestParams

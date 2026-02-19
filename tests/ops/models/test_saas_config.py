@@ -10,13 +10,11 @@ from fides.api.graph.config import CollectionAddress, FieldAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.saas.saas_config import (
-    ClientConfig,
     ConnectorParam,
     Endpoint,
     ParamValue,
     SaaSConfig,
     SaaSRequest,
-    SaaSRequestMap,
 )
 
 

@@ -1,0 +1,4 @@
+type: Security
+description: Added core domain validation for SaaS connector parameters to restrict endpoints to allowed domains
+pr: 7374
+labels: []

@@ -146,7 +146,7 @@ class TestSaaSConnectionSecretsDomainValidation:
         return config
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas._is_domain_validation_disabled",
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
     def test_allowed_domain_passes(
@@ -157,7 +157,7 @@ class TestSaaSConnectionSecretsDomainValidation:
         schema.model_validate({"domain": "api.stripe.com", "api_key": "sk_test_123"})
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas._is_domain_validation_disabled",
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
     def test_disallowed_domain_fails(
@@ -171,7 +171,7 @@ class TestSaaSConnectionSecretsDomainValidation:
             )
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas._is_domain_validation_disabled",
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=True,
     )
     def test_disallowed_domain_passes_when_validation_disabled(
@@ -182,7 +182,7 @@ class TestSaaSConnectionSecretsDomainValidation:
         schema.model_validate({"domain": "evil.example.com", "api_key": "sk_test_123"})
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas._is_domain_validation_disabled",
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
     def test_empty_allowed_domains_permits_any_value(
@@ -205,7 +205,7 @@ class TestSaaSConnectionSecretsDomainValidation:
         )
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas._is_domain_validation_disabled",
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
     def test_none_allowed_domains_no_validation(
@@ -224,7 +224,7 @@ class TestSaaSConnectionSecretsDomainValidation:
         )
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas._is_domain_validation_disabled",
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
     def test_wildcard_allowed_domain(
@@ -246,7 +246,7 @@ class TestSaaSConnectionSecretsDomainValidation:
         )
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas._is_domain_validation_disabled",
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
     def test_wildcard_disallowed_domain(

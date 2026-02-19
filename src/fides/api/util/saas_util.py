@@ -18,6 +18,7 @@ from fides.api.graph.config import Collection, CollectionAddress, Field, GraphDa
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.util.domain_util import wildcard_to_regex
 from fides.config import CONFIG
 from fides.config.helpers import load_file
 
@@ -55,17 +56,9 @@ def deny_unsafe_hosts(host: str) -> str:
     return host
 
 
-def _wildcard_to_regex(pattern: str) -> str:
-    """
-    Convert a wildcard pattern (using ``*``) into a regex string.
-
-    The conversion escapes every regex-special character first, then
-    replaces the escaped ``\\*`` tokens with ``.*`` so that each ``*``
-    in the original pattern matches any sequence of characters
-    (including dots and empty strings).
-    """
-    escaped = re.escape(pattern)
-    return escaped.replace(r"\*", ".*")
+def is_domain_validation_disabled() -> bool:
+    """Check if domain validation is disabled via config flags."""
+    return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
 
 
 def validate_domain_against_allowed_list(
@@ -79,6 +72,9 @@ def validate_domain_against_allowed_list(
     character is ``*`` which matches any sequence of characters (including
     dots).  Everything else is treated as a literal.
 
+    An empty ``allowed_domains`` list means the param is self-hosted and any
+    domain is permitted.
+
     Examples:
       - Exact: "api.stripe.com"
       - Subdomain wildcard: "*.salesforce.com"
@@ -86,10 +82,13 @@ def validate_domain_against_allowed_list(
 
     Raises ValueError if the domain does not match any allowed pattern.
     """
+    if not allowed_domains:
+        return
+
     domain_stripped = domain.strip()
     for pattern in allowed_domains:
         pattern_stripped = pattern.strip()
-        regex = _wildcard_to_regex(pattern_stripped)
+        regex = wildcard_to_regex(pattern_stripped)
         if re.fullmatch(regex, domain_stripped, re.IGNORECASE):
             return
     raise ValueError(
@@ -139,24 +138,6 @@ def validate_allowed_domains_not_modified(
                 )
 
 
-def _extract_all_client_config_hosts(obj: Any) -> List[str]:
-    """
-    Recursively walk a dict/list structure and collect every
-    value found at a key path of client_config -> host.
-    """
-    hosts: List[str] = []
-    if isinstance(obj, dict):
-        cc = obj.get("client_config")
-        if isinstance(cc, dict) and "host" in cc:
-            hosts.append(cc["host"])
-        for value in obj.values():
-            hosts.extend(_extract_all_client_config_hosts(value))
-    elif isinstance(obj, list):
-        for item in obj:
-            hosts.extend(_extract_all_client_config_hosts(item))
-    return hosts
-
-
 def validate_host_references_domain_restricted_params(
     original_connector_params: List[Dict[str, Any]],
     incoming_connector_params: List[Dict[str, Any]],
@@ -186,7 +167,7 @@ def validate_host_references_domain_restricted_params(
     incoming_by_name = {p["name"]: p for p in incoming_connector_params}
 
     # Extract ALL host values from the entire incoming config
-    all_hosts = _extract_all_client_config_hosts(incoming_saas_config)
+    all_hosts = SaaSConfig._collect_client_config_hosts(incoming_saas_config)
 
     for host_value in all_hosts:
         placeholders = re.findall(r"<([^<>]+)>", host_value)

@@ -20,13 +20,10 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.util.saas_util import validate_domain_against_allowed_list
-from fides.config import CONFIG
-
-
-def _is_domain_validation_disabled() -> bool:
-    """Check if domain validation is disabled via config flags."""
-    return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
+from fides.api.util.saas_util import (
+    is_domain_validation_disabled,
+    validate_domain_against_allowed_list,
+)
 
 
 class SaaSSchema(BaseModel, abc.ABC):
@@ -85,7 +82,7 @@ class SaaSSchema(BaseModel, abc.ABC):
                     allowed_domains is not None
                     and len(allowed_domains) > 0
                     and isinstance(value, str)
-                    and not _is_domain_validation_disabled()
+                    and not is_domain_validation_disabled()
                 ):
                     validate_domain_against_allowed_list(value, allowed_domains, name)
 

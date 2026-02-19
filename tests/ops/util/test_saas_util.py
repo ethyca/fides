@@ -861,6 +861,12 @@ class TestValidateDomainAgainstAllowedList:
                 "evil.com", ["api.stripe.com"], "domain"
             )
 
+    def test_empty_allowed_domains_permits_any_value(self):
+        """Empty allowed_domains list should permit any domain value."""
+        validate_domain_against_allowed_list(
+            "literally-anything.example.com", [], "domain"
+        )
+
 
 @pytest.mark.unit_saas
 class TestValidateAllowedDomainsNotModified:
