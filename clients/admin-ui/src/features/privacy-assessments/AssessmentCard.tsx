@@ -7,6 +7,7 @@ import {
   Divider,
   Flex,
   Icons,
+  Paragraph,
   Progress,
   Tag,
   TagList,
@@ -66,10 +67,10 @@ export const AssessmentCard = ({
     >
       <Flex vertical gap="small" justify="space-between">
         <Title level={5}>{assessment.name}</Title>
-        <Text type="secondary" className={styles.secondaryText}>
+        <Text type="secondary" size="sm">
           System: {assessment.system_name ?? ""}
         </Text>
-        <Text type="secondary" className={styles.textWithTags}>
+        <Text type="secondary" size="sm" className={styles.textWithTags}>
           Processing{" "}
           {(assessment.data_categories ?? []).length > 0 ? (
             <TagList
@@ -110,12 +111,12 @@ export const AssessmentCard = ({
                 style={{ backgroundColor: "var(--fidesui-success)" }}
               />
               <div>
-                <Text strong type="success" className={styles.captionText}>
+                <Text strong type="success" size="sm">
                   Assessment complete
                 </Text>
-                <Text type="secondary" className={styles.captionText}>
+                <Paragraph type="secondary" size="sm">
                   {statusLabel}
-                </Text>
+                </Paragraph>
               </div>
             </Flex>
           ) : (
