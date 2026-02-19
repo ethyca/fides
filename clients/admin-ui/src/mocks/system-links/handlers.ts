@@ -152,11 +152,35 @@ export const systemLinksHandlers = () => {
         const systemKey = dsrLink?.system_fides_key || null;
 
         // Transform links to linked_systems format
-        const linkedSystems = links.map((link) => ({
+        // If no links exist, use deterministic sample links
+        let linkedSystems = links.map((link) => ({
           system_fides_key: link.system_fides_key,
           system_name: link.system_name,
           link_type: link.link_type,
         }));
+
+        // Use deterministic sample links if no actual links exist
+        if (linkedSystems.length === 0) {
+          linkedSystems = [
+            {
+              system_fides_key: "test_system_1",
+              system_name: "Test System 1",
+              link_type: "dsr" as SystemConnectionLinkType,
+            },
+            {
+              system_fides_key: "some_new_system",
+              system_name: "Some New System",
+              link_type: "monitoring" as SystemConnectionLinkType,
+            },
+          ];
+        }
+
+        // Update system_key from dsr link (either from actual links or deterministic sample)
+        const finalSystemKey =
+          systemKey ||
+          linkedSystems.find((link) => link.link_type === "dsr")
+            ?.system_fides_key ||
+          null;
 
         // Try to get mock connection data, otherwise return minimal response
         const mockConnection = getMockConnection(connectionKey as string);
@@ -165,7 +189,7 @@ export const systemLinksHandlers = () => {
             ctx.status(200),
             ctx.json({
               ...mockConnection,
-              system_key: systemKey,
+              system_key: finalSystemKey,
               linked_systems: linkedSystems,
             }),
           );
@@ -178,7 +202,7 @@ export const systemLinksHandlers = () => {
             key: connectionKey,
             name: `Connection ${connectionKey}`,
             connection_type: "postgres",
-            system_key: systemKey,
+            system_key: finalSystemKey,
             linked_systems: linkedSystems,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),

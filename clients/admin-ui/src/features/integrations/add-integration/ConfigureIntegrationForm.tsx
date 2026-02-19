@@ -25,10 +25,7 @@ import {
 } from "~/features/datastore-connections";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import {
-  useGetAllSystemsQuery,
-  usePatchSystemConnectionConfigsMutation,
-} from "~/features/system";
+import { usePatchSystemConnectionConfigsMutation } from "~/features/system";
 import {
   AccessLevel,
   BigQueryDocsSchema,
@@ -119,13 +116,6 @@ const ConfigureIntegrationForm = ({
       skip: !hasSecrets,
     });
 
-  const { data: allSystems } = useGetAllSystemsQuery();
-
-  const systemOptions = allSystems?.map((s) => ({
-    label: s.name ?? s.fides_key,
-    value: s.fides_key,
-  }));
-
   const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
     minimal: true,
     connection_type: ConnectionType.BIGQUERY,
@@ -163,7 +153,6 @@ const ConfigureIntegrationForm = ({
 
   const isEditing = !!connection;
   const isSaas = connectionOption.type === SystemType.SAAS;
-  const isWebsite = connectionOption.identifier === ConnectionType.WEBSITE;
 
   // Exclude secrets fields that haven't changed
   // The api returns secrets masked as asterisks (*****)
@@ -350,16 +339,6 @@ const ConfigureIntegrationForm = ({
                   variant="stacked"
                 />
                 {hasSecrets && secrets && generateFields(secrets)}
-                {!isEditing && !isSaas && !isWebsite && (
-                  <ControlledSelect
-                    id="system_fides_key"
-                    name="system_fides_key"
-                    options={systemOptions ?? []}
-                    label="System"
-                    tooltip="The system to associate with the integration"
-                    layout="stacked"
-                  />
-                )}
                 {connectionOption.identifier === ConnectionType.DATAHUB && (
                   <ControlledSelect
                     id="dataset"
