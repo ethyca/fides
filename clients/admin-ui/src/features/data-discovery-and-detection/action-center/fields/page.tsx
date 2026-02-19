@@ -26,6 +26,7 @@ import {
   useGetMonitorConfigQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
 import {
@@ -50,6 +51,7 @@ import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import { useLazyGetAllowedActionsQuery } from "./monitor-fields.slice";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
+  DIFF_TO_RESOURCE_STATUS,
   EXCLUDED_FILTER_STATUSES,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
@@ -67,7 +69,7 @@ import useNormalizedResources from "./useNormalizedResources";
 const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
   Object.values(DiffStatus).flatMap((status) =>
     MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[status].label ===
-      resourceStatusLabel
+    resourceStatusLabel
       ? [status]
       : [],
   );
@@ -76,40 +78,47 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
   const router = useRouter();
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
+  const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
     });
 
   const { requestData, form, ...formProps } = useSearchForm<
-    any,
+    {
+      path: {
+        monitor_config_id: string;
+      };
+      query: {
+        staged_resource_urn?: string[];
+        search?: string;
+        diff_status?: DiffStatus[];
+        confidence_bucket?: ConfidenceBucket[];
+        data_category?: string[];
+      };
+    },
     MonitorFieldSearchForm
   >({
     queryState: MonitorFieldSearchFormQueryState,
     initialValues: {},
-    translate: (input) => input,
+    translate: (query) => ({
+      path: { monitor_config_id: monitorId },
+      query: {
+        confidence_bucket: query.confidence_bucket ?? undefined,
+        data_category: query.confidence_bucket ?? undefined,
+        diff_status: query.resource_status.flatMap(intoDiffStatus) ?? undefined,
+        search: query.search ?? undefined,
+        staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
+      },
+    }),
     schema: MonitorFieldSearchFormQuerySchema,
   });
 
   const { data: monitorConfigData } = useGetMonitorConfigQuery({
     monitor_config_id: monitorId,
   });
-  const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
 
-  const baseMonitorFilters = {
-    path: {
-      monitor_config_id: monitorId,
-    },
-    query: {
-      staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
-      search: form.getFieldValue("search"),
-      diff_status:
-        form.getFieldValue("resource_status")?.flatMap(intoDiffStatus) ||
-        undefined,
-      confidence_bucket: form.getFieldValue("confidence_bucket") || undefined,
-      data_category: form.getFieldValue("data_category") || undefined,
-    },
-  };
+  const baseMonitorFilters = requestData;
 
   const { data: availableFilters } = useGetDatastoreFiltersQuery({
     monitor_config_id: monitorId,
@@ -163,9 +172,9 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
   } = useBulkListSelect(Array.from(listNodes.keys()), {
     activeListItem: activeListItem
       ? {
-        ...activeListItem,
-        key: activeListItem?.key.toString(),
-      }
+          ...activeListItem,
+          key: activeListItem?.key.toString(),
+        }
       : undefined,
     enableKeyboardShortcuts: true,
   });
@@ -209,11 +218,11 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
     listSelectMode === "exclusive"
       ? allowedActionsResult?.allowed_actions
       : getAvailableActions(
-        selectedKeys.flatMap((key) => {
-          const node = resourceNodes.get(key);
-          return node?.diff_status ? [node.diff_status] : [];
-        }),
-      );
+          selectedKeys.flatMap((key) => {
+            const node = resourceNodes.get(key);
+            return node?.diff_status ? [node.diff_status] : [];
+          }),
+        );
   const responseCount = listQueryMeta.data?.total ?? 0;
   const selectedListItemCount =
     listSelectMode === "exclusive" && listQueryMeta.data?.total
@@ -273,7 +282,7 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
                         if (
                           (action === FieldActionType.PROMOTE_REMOVALS &&
                             node.status ===
-                            TreeResourceChangeIndicator.REMOVAL) ||
+                              TreeResourceChangeIndicator.REMOVAL) ||
                           (action === FieldActionType.CLASSIFY &&
                             node.classifyable &&
                             node.diffStatus !== DiffStatus.MUTED) ||
@@ -325,7 +334,9 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
                   resetPagination();
                   resetListSelect();
                 }}
-                availableFilters={{ data_category: availableFilters?.data_category ?? undefined }}
+                availableFilters={{
+                  data_category: availableFilters?.data_category ?? undefined,
+                }}
                 shortcutCallback={() => setHotkeysHelperModalOpen(true)}
               />
               <Flex gap="small">
@@ -337,7 +348,7 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
                         key: actionType,
                         label:
                           isFetchingAllowedActions ||
-                            !availableActions?.includes(actionType) ? (
+                          !availableActions?.includes(actionType) ? (
                             <Tooltip
                               title={ACTIONS_DISABLED_MESSAGE[actionType]}
                             >
@@ -402,52 +413,56 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
               loading={listQueryMeta.isFetching}
               enableKeyboardShortcuts
               locale={
-                !form.getFieldValue("search") &&
-                  _(form.getFieldValue("resource_status"))
-                    .intersection(EXCLUDED_FILTER_STATUSES)
-                    .isEmpty()
+                !baseMonitorFilters.query.search &&
+                _(
+                  baseMonitorFilters.query.diff_status?.map(
+                    (diffStatus) => DIFF_TO_RESOURCE_STATUS[diffStatus],
+                  ),
+                )
+                  .intersection(EXCLUDED_FILTER_STATUSES)
+                  .isEmpty()
                   ? {
-                    emptyText: (
-                      <Empty
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description={
-                          <>
-                            <div>
-                              All resources have been either approved or
-                              ignored.
-                            </div>
-                            <div>
-                              Approved resources can be found in the manage
-                              datasets view.
-                            </div>
-                            <div>
-                              To see ignored resources, adjust your filters.
-                            </div>
-                          </>
-                        }
-                      >
-                        <Flex gap="middle" justify="center">
-                          <NextLink
-                            href={DATASET_ROUTE}
-                            passHref
-                            legacyBehavior
-                          >
-                            <Button>Manage datasets view</Button>
-                          </NextLink>
-                          <Button
-                            type="primary"
-                            aria-label="Refresh page"
-                            onClick={() => {
-                              form.resetFields();
-                              router.reload();
-                            }}
-                          >
-                            Refresh page
-                          </Button>
-                        </Flex>
-                      </Empty>
-                    ),
-                  }
+                      emptyText: (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={
+                            <>
+                              <div>
+                                All resources have been either approved or
+                                ignored.
+                              </div>
+                              <div>
+                                Approved resources can be found in the manage
+                                datasets view.
+                              </div>
+                              <div>
+                                To see ignored resources, adjust your filters.
+                              </div>
+                            </>
+                          }
+                        >
+                          <Flex gap="middle" justify="center">
+                            <NextLink
+                              href={DATASET_ROUTE}
+                              passHref
+                              legacyBehavior
+                            >
+                              <Button>Manage datasets view</Button>
+                            </NextLink>
+                            <Button
+                              type="primary"
+                              aria-label="Refresh page"
+                              onClick={() => {
+                                form.resetFields();
+                                router.reload();
+                              }}
+                            >
+                              Refresh page
+                            </Button>
+                          </Flex>
+                        </Empty>
+                      ),
+                    }
                   : undefined
               }
               onActiveItemChange={(
@@ -482,35 +497,35 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
                     }),
                   dataCategoriesDisabled: props?.diff_status
                     ? !ACTION_ALLOWED_STATUSES["assign-categories"].some(
-                      (status) => status === props.diff_status,
-                    )
+                        (status) => status === props.diff_status,
+                      )
                     : true,
                   actions: props?.diff_status
                     ? LIST_ITEM_ACTIONS[props.diff_status].map((action) => (
-                      <Tooltip
-                        key={action}
-                        title={FIELD_ACTION_LABEL[action]}
-                      >
-                        <Button
-                          aria-label={FIELD_ACTION_LABEL[action]}
-                          icon={FIELD_ACTION_ICON[action]}
-                          onClick={() => fieldActions[action]([props.urn])}
-                          disabled={
-                            props?.diff_status
-                              ? !ACTION_ALLOWED_STATUSES[action].some(
-                                (status) => status === props.diff_status,
-                              )
-                              : true
-                          }
-                          style={{
-                            // Hack: because Sparkle is so weird, and Ant is using `inline-block`
-                            // for actions, this is needed to get the buttons to align correctly.
-                            fontSize:
-                              "var(--ant-button-content-font-size-lg)",
-                          }}
-                        />
-                      </Tooltip>
-                    ))
+                        <Tooltip
+                          key={action}
+                          title={FIELD_ACTION_LABEL[action]}
+                        >
+                          <Button
+                            aria-label={FIELD_ACTION_LABEL[action]}
+                            icon={FIELD_ACTION_ICON[action]}
+                            onClick={() => fieldActions[action]([props.urn])}
+                            disabled={
+                              props?.diff_status
+                                ? !ACTION_ALLOWED_STATUSES[action].some(
+                                    (status) => status === props.diff_status,
+                                  )
+                                : true
+                            }
+                            style={{
+                              // Hack: because Sparkle is so weird, and Ant is using `inline-block`
+                              // for actions, this is needed to get the buttons to align correctly.
+                              fontSize:
+                                "var(--ant-button-content-font-size-lg)",
+                            }}
+                          />
+                        </Tooltip>
+                      ))
                     : [],
                 })
               }
@@ -538,12 +553,12 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
           bordered: false,
           color: resource?.diff_status
             ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
-              .color
+                .color
             : undefined,
           className: "font-normal text-[var(--ant-font-size-sm)]",
           children: resource?.diff_status
             ? MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[resource.diff_status]
-              .label
+                .label
             : null,
         }}
         actions={(resource?.diff_status
@@ -554,8 +569,8 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
           callback: (key) => fieldActions[action]([key]),
           disabled: resource?.diff_status
             ? !ACTION_ALLOWED_STATUSES[action].some(
-              (status) => status === resource.diff_status,
-            )
+                (status) => status === resource.diff_status,
+              )
             : true,
         }))}
         open={!!detailsUrn}

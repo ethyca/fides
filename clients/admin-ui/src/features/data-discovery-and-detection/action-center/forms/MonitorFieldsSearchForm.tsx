@@ -35,8 +35,8 @@ const MonitorFieldsSearchForm = ({
   const { getDataCategoryDisplayNameProps, getDataCategories } =
     useTaxonomies();
 
-  const options: TaxonomySelectOption[] = getDataCategories()
-    .flatMap((category) => {
+  const options: TaxonomySelectOption[] = getDataCategories().flatMap(
+    (category) => {
       if (
         !category.active ||
         !availableFilters.data_category?.includes(category.fides_key)
@@ -61,7 +61,8 @@ const MonitorFieldsSearchForm = ({
           title: category.fides_key,
         },
       ];
-    });
+    },
+  );
 
   return (
     <Form
