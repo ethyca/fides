@@ -1,6 +1,7 @@
 """Tests for Microsoft Entra ID connection secrets schema."""
 
 import pytest
+from pydantic import ValidationError
 
 from fides.api.schemas.connection_configuration import EntraSchema
 
@@ -47,7 +48,9 @@ class TestEntraSchema:
             )
 
     def test_tenant_id_empty(self):
-        with pytest.raises(ValueError, match="Tenant ID cannot be empty"):
+        # Base class model_validator (required_components_supplied) runs before field
+        # validators and rejects empty required fields with this message.
+        with pytest.raises(ValidationError, match="must be supplied all of"):
             EntraSchema(
                 tenant_id="",
                 client_id=VALID_CLIENT_ID,

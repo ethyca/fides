@@ -387,10 +387,15 @@ class TestGetConnections:
         data = resp.json()["items"]
         assert len(data) == len(ConnectorRegistry.connector_types())
 
+        resp = api_client.get(url + "system_type=system", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        assert len(data) == 2  # Includes Entra and Okta
+
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 22  # Includes test_datastore
+        assert len(data) == 21    # Includes test_datastore
 
     def test_search_system_type_and_connection_type(
         self,
