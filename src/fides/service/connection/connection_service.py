@@ -852,15 +852,16 @@ class ConnectionService:
                 f"Fides-provided template with type '{connector_type}' not found."
             )
 
-        # Delete the custom template from the database and in-memory cache
+        # Delete the custom template from the database and invalidate cache.
+        # The delete_template method bumps the Redis version counter so every
+        # server detects the change on its next get_connector_templates() call.
         CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
-        CustomConnectorTemplateLoader.get_connector_templates().pop(
-            connector_type, None
-        )
 
-        # Get the file template that is now active
-        file_connector_template = ConnectorRegistry.get_connector_template(
-            connector_type
+        # Get the file template directly from the file loader rather than
+        # going through ConnectorRegistry, which would trigger a cache reload
+        # on CustomConnectorTemplateLoader before the DB transaction commits.
+        file_connector_template = (
+            FileConnectorTemplateLoader.get_connector_templates().get(connector_type)
         )
         if not file_connector_template:
             raise ConnectorTemplateNotFound(
