@@ -10,7 +10,6 @@ import {
 import { useCallback, useMemo, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
-import { getErrorMessage } from "~/features/common/helpers";
 import { EDIT_SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import {
@@ -31,9 +30,6 @@ const IntegrationLinkedSystems = ({
 }) => {
   const messageApi = useMessage();
   const [isLinking, setIsLinking] = useState(false);
-  const [selectedSystemKey, setSelectedSystemKey] = useState<
-    string | undefined
-  >(undefined);
 
   const { data: systemLinksData, isLoading } = useGetSystemLinksQuery(
     connection.key,
@@ -42,8 +38,7 @@ const IntegrationLinkedSystems = ({
     },
   );
 
-  const [setSystemLinks, { isLoading: isSettingLinks }] =
-    useSetSystemLinksMutation();
+  const [setSystemLinks] = useSetSystemLinksMutation();
   const [deleteSystemLink, { isLoading: isDeletingLink }] =
     useDeleteSystemLinkMutation();
 
@@ -63,10 +58,10 @@ const IntegrationLinkedSystems = ({
         }).unwrap();
         messageApi.success("System unlinked successfully");
       } catch (error) {
-        messageApi.error(error);
+        messageApi.error("Failed to unlink system");
       }
     },
-    [connection.key, deleteSystemLink],
+    [connection.key, deleteSystemLink, messageApi],
   );
 
   const columns: ColumnsType<SystemLink> = useMemo(
@@ -111,8 +106,8 @@ const IntegrationLinkedSystems = ({
     [handleUnlink, isDeletingLink],
   );
 
-  const handleLinkSystem = async () => {
-    if (!selectedSystemKey || !connection.key) {
+  const handleLinkSystem = async (systemKey: string) => {
+    if (!systemKey || !connection.key) {
       return;
     }
 
@@ -122,13 +117,12 @@ const IntegrationLinkedSystems = ({
         body: {
           links: [
             {
-              system_fides_key: selectedSystemKey,
+              system_fides_key: systemKey,
               link_type: "monitoring" as SystemConnectionLinkType,
             },
           ],
         },
       }).unwrap();
-      setSelectedSystemKey(undefined);
       setIsLinking(false);
     } catch (error) {
       // Error handling can be added here
@@ -158,27 +152,10 @@ const IntegrationLinkedSystems = ({
       {isLinking ? (
         <Flex gap="middle" align="flex-start">
           <SystemSelect
-            value={selectedSystemKey}
-            onChange={(value) => setSelectedSystemKey(value as string)}
+            onSelect={(value) => handleLinkSystem(value)}
             style={{ flex: 1 }}
             placeholder="Search for a system..."
           />
-          <Button
-            type="primary"
-            onClick={handleLinkSystem}
-            loading={isSettingLinks}
-            disabled={!selectedSystemKey}
-          >
-            Link
-          </Button>
-          <Button
-            onClick={() => {
-              setIsLinking(false);
-              setSelectedSystemKey(undefined);
-            }}
-          >
-            Cancel
-          </Button>
         </Flex>
       ) : (
         <Flex>
