@@ -9,7 +9,7 @@ import {
   Switch,
   Text,
   Typography,
-  useMessage,
+  useNotification,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -29,6 +29,8 @@ import { RTKErrorResult } from "~/types/errors/api";
 
 const { Title, Paragraph } = Typography;
 const { Item } = Form;
+
+const EVALUATION_NOTIFICATION_KEY = "evaluation-progress";
 
 interface FormValues {
   assessment_type: string;
@@ -58,7 +60,7 @@ const renderTemplateOption = (option: { data: TemplateOptionData }) => {
 
 const EvaluateAssessmentPage: NextPage = () => {
   const router = useRouter();
-  const message = useMessage();
+  const notificationApi = useNotification();
   const [form] = Form.useForm<FormValues>();
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<
@@ -69,8 +71,7 @@ const EvaluateAssessmentPage: NextPage = () => {
   const { data: templatesData, isLoading: isLoadingTemplates } =
     useGetAssessmentTemplatesQuery({ page: 1, size: 100 });
 
-  const [createAssessment, { isLoading: isCreating }] =
-    useCreatePrivacyAssessmentMutation();
+  const [createAssessment] = useCreatePrivacyAssessmentMutation();
 
   const activeTemplates = useMemo(
     () => (templatesData?.items ?? []).filter((t) => t.is_active !== false),
@@ -92,25 +93,43 @@ const EvaluateAssessmentPage: NextPage = () => {
     setSelectedTemplateId(value);
   };
 
-  const handleSubmit = async (values: FormValues) => {
-    try {
-      const result = await createAssessment({
-        assessment_type: values.assessment_type,
-        system_fides_key: values.system_fides_key || undefined,
-        use_llm: values.use_llm,
-      }).unwrap();
+  const handleSubmit = (values: FormValues) => {
+    // 1. Show in-progress notification
+    notificationApi.info({
+      key: EVALUATION_NOTIFICATION_KEY,
+      message: "Evaluation in progress",
+      description:
+        "Your assessment is being evaluated. This may take a moment.",
+      duration: 0, // Don't auto-close
+    });
 
-      message.success(
-        `Successfully evaluated ${result.total_created} system(s)`,
-      );
+    // 2. Redirect immediately
+    router.push(PRIVACY_ASSESSMENTS_ROUTE);
 
-      // Navigate to assessments list
-      router.push(PRIVACY_ASSESSMENTS_ROUTE);
-    } catch (error) {
-      message.error(
-        `Failed to evaluate assessment: ${getErrorMessage(error as RTKErrorResult["error"])}`,
-      );
-    }
+    // 3. Fire mutation (no await) with callbacks
+    createAssessment({
+      assessment_type: values.assessment_type,
+      system_fides_key: values.system_fides_key || undefined,
+      use_llm: values.use_llm,
+    })
+      .unwrap()
+      .then((result) => {
+        notificationApi.success({
+          key: EVALUATION_NOTIFICATION_KEY,
+          message: "Evaluation complete",
+          description: `Successfully evaluated ${result.total_created} system(s).`,
+        });
+      })
+      .catch((error) => {
+        const errorMessage = getErrorMessage(
+          (error as RTKErrorResult["error"]) ?? "An unexpected error occurred.",
+        );
+        notificationApi.error({
+          key: EVALUATION_NOTIFICATION_KEY,
+          message: "Evaluation failed",
+          description: errorMessage,
+        });
+      });
   };
 
   const handleCancel = () => {
@@ -217,7 +236,7 @@ const EvaluateAssessmentPage: NextPage = () => {
               <Item className="mb-0">
                 <Flex gap="middle" justify="flex-end">
                   <Button onClick={handleCancel}>Cancel</Button>
-                  <Button type="primary" htmlType="submit" loading={isCreating}>
+                  <Button type="primary" htmlType="submit">
                     Run evaluation
                   </Button>
                 </Flex>
