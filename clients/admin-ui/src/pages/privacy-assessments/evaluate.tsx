@@ -48,7 +48,7 @@ const renderTemplateOption = (option: { data: TemplateOptionData }) => {
     <div>
       <Text strong>{template.name}</Text>
       {template.region && (
-        <Text type="secondary" className="ml-2 text-xs">
+        <Text type="secondary" className="ml-2" size="sm">
           {template.region}
         </Text>
       )}
