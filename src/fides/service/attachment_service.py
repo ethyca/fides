@@ -230,10 +230,19 @@ class AttachmentService:
 
             return attachment
         except Exception as e:
-            logger.error("Failed to upload attachment: {}", e)
-            # Delete the DB record since upload failed
+            logger.error("Failed to create attachment: {}", e)
+            # Full cleanup: storage, refs, and DB record
+            try:
+                self.delete_from_storage(attachment)
+            except Exception as storage_err:
+                logger.debug(
+                    "Storage cleanup during rollback (may not exist yet): {}",
+                    storage_err,
+                )
+            for ref in attachment.references:
+                db.delete(ref)
             db.delete(attachment)
-            db.commit()  # Must commit to ensure orphaned record is removed
+            db.commit()
             raise
 
     def delete(self, attachment: Attachment) -> None:

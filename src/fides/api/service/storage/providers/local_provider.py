@@ -67,6 +67,31 @@ class LocalStorageProvider(StorageProvider):
         """
         return get_local_filename(key)
 
+    def _get_validated_dir_path(self, prefix: str) -> str:
+        """Get a validated directory path for a prefix, with path traversal protection.
+
+        Args:
+            prefix: The prefix/directory path to validate.
+
+        Returns:
+            The validated absolute directory path.
+
+        Raises:
+            ValueError: If the prefix is empty or would escape the base directory.
+        """
+        if not prefix:
+            raise ValueError("Prefix cannot be empty")
+
+        normalized = os.path.normpath(prefix.rstrip("/"))
+        dir_path = os.path.join(self._base_path, normalized)
+
+        if not os.path.abspath(dir_path).startswith(os.path.abspath(self._base_path)):
+            raise ValueError(
+                "Invalid prefix: would result in path outside upload directory"
+            )
+
+        return dir_path
+
     def upload(
         self,
         bucket: str,
@@ -164,8 +189,7 @@ class LocalStorageProvider(StorageProvider):
         """
         logger.debug("LocalStorageProvider.delete_prefix: prefix={}", prefix)
 
-        # Construct the directory path
-        dir_path = os.path.join(self._base_path, prefix.rstrip("/"))
+        dir_path = self._get_validated_dir_path(prefix)
 
         if os.path.exists(dir_path) and os.path.isdir(dir_path):
             shutil.rmtree(dir_path)
@@ -244,7 +268,7 @@ class LocalStorageProvider(StorageProvider):
         """
         logger.debug("LocalStorageProvider.list_objects: prefix={}", prefix)
 
-        dir_path = os.path.join(self._base_path, prefix.rstrip("/"))
+        dir_path = self._get_validated_dir_path(prefix)
 
         if not os.path.exists(dir_path):
             return

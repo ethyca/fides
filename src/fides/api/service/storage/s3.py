@@ -1,9 +1,9 @@
 """
 S3 storage operations.
 
-DEPRECATION NOTICE:
-    The functions in this module are being deprecated in favor of the
-    StorageProvider interface. For new code, use:
+INTERNAL MODULE:
+    The functions in this module are internal implementation details used by
+    S3StorageProvider. External callers should not use them directly. Instead use:
 
         from fides.api.service.storage.providers import StorageProviderFactory
 
@@ -11,9 +11,6 @@ DEPRECATION NOTICE:
         provider.upload(bucket, key, data)
         provider.download(bucket, key)
         provider.delete(bucket, key)
-
-    These legacy functions are maintained for backward compatibility with
-    existing code that depends on them, including the DSR upload task functions.
 """
 
 from __future__ import annotations
