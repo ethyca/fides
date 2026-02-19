@@ -61,15 +61,8 @@ class AuthenticatedClient:
         self.rate_limit_config = rate_limit_config
 
     def _validate_request_domain(self, host: str) -> None:
-        """
-        Defense-in-depth: validate the resolved request host against allowed_domains
-        from the connector's SaaS config. This catches cases where secrets were set
-        before allowed_domains was added, or if the database was manipulated directly.
-
-        The host must match at least one domain-restricted connector param's
-        allowed_domains list.  This handles connectors with multiple
-        domain-restricted params (e.g. separate hosts for different endpoints).
-        """
+        """Defense-in-depth: validate the resolved host against allowed_domains
+        from the connector's SaaS config."""
         if is_domain_validation_disabled():
             return
 
@@ -77,18 +70,14 @@ class AuthenticatedClient:
         if not saas_config:
             return
 
-        # Strip port from host if present (e.g., "api.stripe.com:443" -> "api.stripe.com")
         host_without_port = host.split(":")[0] if ":" in host else host
 
-        # Collect all non-empty allowed_domains lists across connector params
-        all_allowed: List[str] = []
-        for connector_param in saas_config.connector_params:
-            if (
-                connector_param.allowed_domains is not None
-                and len(connector_param.allowed_domains) > 0
-            ):
-                all_allowed.extend(connector_param.allowed_domains)
-
+        all_allowed: List[str] = [
+            d
+            for cp in saas_config.connector_params
+            if cp.allowed_domains
+            for d in cp.allowed_domains
+        ]
         if all_allowed:
             validate_domain_against_allowed_list(host_without_port, all_allowed, "host")
 

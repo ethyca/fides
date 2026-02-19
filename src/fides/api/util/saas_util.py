@@ -154,14 +154,7 @@ def validate_host_references_domain_restricted_params(
     then every host placeholder in the incoming config must reference a connector param
     that also has allowed_domains (non-None, including empty list).
     """
-    # Check if the original config had domain restrictions on any connector param
-    original_host_had_restrictions = False
-    for param in original_connector_params:
-        if param.get("allowed_domains") is not None:
-            original_host_had_restrictions = True
-            break
-
-    if not original_host_had_restrictions:
+    if not any(p.get("allowed_domains") is not None for p in original_connector_params):
         return
 
     incoming_by_name = {p["name"]: p for p in incoming_connector_params}
