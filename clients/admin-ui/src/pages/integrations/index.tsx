@@ -124,10 +124,7 @@ const IntegrationListView: NextPage = () => {
 
   const tableData: IntegrationTableData[] = useMemo(() => {
     const list = items ?? [];
-    const filtered = !entraMonitor
-      ? list.filter((i) => i.connection_type !== ConnectionType.ENTRA)
-      : list;
-    return filtered.map((integration) => ({
+    return list.map((integration) => ({
       ...integration,
       integrationTypeInfo: getIntegrationTypeInfo(
         integration.connection_type,
@@ -135,7 +132,7 @@ const IntegrationListView: NextPage = () => {
         connectionTypes,
       ),
     }));
-  }, [items, connectionTypes, entraMonitor]);
+  }, [items, connectionTypes]);
 
   const handleManageClick = (integration: ConnectionConfigurationResponse) => {
     router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${integration.key}`);

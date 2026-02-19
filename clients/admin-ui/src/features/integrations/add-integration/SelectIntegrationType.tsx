@@ -132,13 +132,6 @@ const SelectIntegrationType = ({
       );
     }
 
-    // Filter out Entra when entraMonitor flag is disabled
-    if (!entraMonitor) {
-      filtered = filtered.filter(
-        (i) => i.placeholder.connection_type !== ConnectionType.ENTRA,
-      );
-    }
-
     // Filter by search term (name only)
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
@@ -153,7 +146,7 @@ const SelectIntegrationType = ({
       const nameB = b.placeholder.name || "";
       return nameA.localeCompare(nameB);
     });
-  }, [searchTerm, selectedCategory, webMonitor, entraMonitor, allIntegrationTypes]);
+  }, [searchTerm, selectedCategory, webMonitor, allIntegrationTypes]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);
