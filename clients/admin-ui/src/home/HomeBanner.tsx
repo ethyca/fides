@@ -25,17 +25,18 @@ const HomeBanner = () => {
       >
         {hasSystems && (
           <>
-            <Title level={3} style={{ margin: 0 }}>
+            <Title level={1}>
               Welcome back!
             </Title>
             <Text
               strong
-              style={{ fontSize: "1.125rem", display: "block", marginTop: 4 }}
+              size="lg"
+              style={{ display: "block", marginTop: 4 }}
             >
               {`${systemsCount} system${systemsCount > 1 ? "s" : ""
                 } currently under management`}
             </Text>
-            <Text style={{ fontSize: "0.875rem", display: "block", marginTop: 4 }}>
+            <Text style={{ display: "block", marginTop: 4 }}>
               {`Fides is currently managing privacy for ${systemsCount} system${systemsCount > 1 ? "s" : ""
                 }. From here you can continue adding and managing systems, process privacy requests or generate reports for your privacy compliance requirements.`}
             </Text>
@@ -43,16 +44,17 @@ const HomeBanner = () => {
         )}
         {!hasSystems && (
           <>
-            <Title level={3} style={{ margin: 0 }}>
+            <Title level={1}>
               Welcome to Fides!
             </Title>
             <Text
               strong
-              style={{ fontSize: "1.125rem", display: "block", marginTop: 4 }}
+              size="lg"
+              style={{ display: "block", marginTop: 4 }}
             >
               Start your privacy engineering journey today
             </Text>
-            <Text style={{ fontSize: "0.875rem", display: "block", marginTop: 4 }}>
+            <Text style={{ display: "block", marginTop: 4 }}>
               Step one in setting up your privacy engineering platform is adding
               the systems you need to manage. Use the links below to add and
               configure systems within Fides for data mapping and privacy
