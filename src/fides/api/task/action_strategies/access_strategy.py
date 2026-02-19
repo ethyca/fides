@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, List
 from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.task.action_strategies.base import ActionStrategy
-from fides.api.task.execute_request_tasks import _build_upstream_access_data
 from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
@@ -48,6 +47,8 @@ class AccessStrategy(ActionStrategy):
         session: Session,
         resources: TaskResources,
     ) -> None:
+        from fides.api.task.execute_request_tasks import _build_upstream_access_data
+
         upstream_access_data: List[List[Row]] = _build_upstream_access_data(
             graph_task.execution_node.input_keys, upstream_results
         )

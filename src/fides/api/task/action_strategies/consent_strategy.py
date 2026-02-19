@@ -28,6 +28,7 @@ class ConsentStrategy(ActionStrategy):
         from fides.api.task.create_request_tasks import run_consent_request
         from fides.api.task.graph_task import build_consent_dataset_graph
 
+        assert ctx.datasets is not None
         graph = build_consent_dataset_graph(ctx.datasets, ctx.session)
         run_consent_request(
             privacy_request=ctx.privacy_request,

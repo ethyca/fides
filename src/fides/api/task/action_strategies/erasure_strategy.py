@@ -7,9 +7,6 @@ from loguru import logger
 from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.task.action_strategies.base import ActionStrategy
-from fides.api.task.execute_request_tasks import (
-    get_upstream_access_data_for_erasure_task,
-)
 from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:
@@ -51,6 +48,10 @@ class ErasureStrategy(ActionStrategy):
         retrieved_data: List[Row] = request_task.get_data_for_erasures() or []
         upstream_access_data: List[List[Row]] = []
         try:
+            from fides.api.task.execute_request_tasks import (
+                get_upstream_access_data_for_erasure_task,
+            )
+
             upstream_access_data = get_upstream_access_data_for_erasure_task(
                 request_task, session, resources
             )
