@@ -17,7 +17,9 @@ from fides.api.util.saas_util import (
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
+    validate_allowed_domains_not_modified,
     validate_domain_against_allowed_list,
+    validate_host_references_domain_restricted_params,
 )
 
 
