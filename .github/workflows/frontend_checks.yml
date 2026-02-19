@@ -80,7 +80,7 @@ jobs:
         run: npm run build
 
       - name: Unit tests
-        run: npm run test:ci
+        run: npm run test
 
   # Summary job for branch protection - consolidates all frontend checks
   Frontend-Checks-Summary:
