@@ -84,6 +84,7 @@ export interface RenderPromptResponse {
 export interface ExecutePromptRequest {
   prompt: string;
   model?: string;
+  prompt_type?: PromptType;
 }
 
 export interface ExecutePromptResponse {

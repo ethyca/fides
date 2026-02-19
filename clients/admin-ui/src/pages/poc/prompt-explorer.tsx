@@ -310,13 +310,19 @@ const PromptExplorer: NextPage = () => {
       const result = await executePrompt({
         prompt: renderedPrompt,
         model: modelOverride || undefined,
+        prompt_type: selectedPrompt?.prompt_type,
       }).unwrap();
 
       setLlmResponse(result.response_text);
     } catch (error) {
       console.error("Failed to execute prompt:", error);
     }
-  }, [renderedPrompt, modelOverride, executePrompt]);
+  }, [
+    renderedPrompt,
+    modelOverride,
+    selectedPrompt?.prompt_type,
+    executePrompt,
+  ]);
 
   // Reset prompt when selection changes
   useEffect(() => {
