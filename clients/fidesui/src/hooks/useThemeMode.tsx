@@ -67,7 +67,14 @@ export const ThemeModeProvider = ({
         return;
       }
       setModeState(newMode);
-      localStorage.setItem(STORAGE_KEY, newMode);
+      if (typeof window === "undefined") {
+        return;
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY, newMode);
+      } catch {
+        // Swallow storage errors to avoid crashing the app
+      }
     },
     [locked],
   );
