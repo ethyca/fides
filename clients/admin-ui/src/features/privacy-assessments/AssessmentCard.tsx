@@ -21,13 +21,13 @@ import {
   RISK_LEVEL_LABELS,
   RISK_TAG_COLORS,
 } from "./constants";
-import { PrivacyAssessmentResponse } from "./types";
+import { AssessmentStatus, PrivacyAssessmentResponse } from "./types";
 
 const { Title } = Typography;
 
-function getStatusTextType(
-  status: string | null,
-): "success" | "danger" | "secondary" {
+type TextType = React.ComponentProps<typeof Typography.Text>["type"];
+
+function getStatusTextType(status: AssessmentStatus): TextType {
   if (status === "completed") {
     return "success";
   }
