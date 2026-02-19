@@ -142,9 +142,6 @@ def retry(
                     traceback.print_exc()
                     self.request_task.rows_masked = 0
                     self.log_end(action_type, ex=None, success_override_msg=exc)
-                    self.resources.cache_erasure(
-                        f"{self.traversal_node.address.value}", 0
-                    )  # Cache that the erasure was performed in case we need to restart for DSR 2.0
                     return 0
                 except (
                     CollectionDisabled,
@@ -212,11 +209,6 @@ def retry(
                 ]  # Convert ActionType into a CurrentStep, no longer coerced with Pydantic V2
             )
             self.add_error_status_for_consent_reporting()
-            if not self.request_task.id:
-                # TODO Remove when we stop support for DSR 2.0
-                # Re-raise to stop privacy request execution on failure for
-                # deprecated DSR 2.0 sequential execution
-                raise raised_ex  # type: ignore
             return default_return
 
         return result
@@ -434,19 +426,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 },
             )
 
-            # For DSR 3.0, updating the Request Task status when the ExecutionLog is
-            # created to keep these in sync.
-            # TODO remove conditional above alongside deprecating DSR 2.0
-            if self.request_task.id:
-                # Merge the request_task into the current session to make it persistent,
-                # then refresh its `async_type` to load the latest state from the
-                # database. This is crucial for async tasks where `async_type` might be
-                # updated by another process, and avoids overwriting local data like
-                # `access_data`.
-                request_task = db.merge(self.request_task)
-                db.refresh(request_task, attribute_names=["async_type"])
-                request_task.update_status(db, status)
-                self.request_task = request_task
+            # Merge the request_task into the current session to make it persistent,
+            # then refresh its `async_type` to load the latest state from the
+            # database. This is crucial for async tasks where `async_type` might be
+            # updated by another process, and avoids overwriting local data like
+            # `access_data`.
+            request_task = db.merge(self.request_task)
+            db.refresh(request_task, attribute_names=["async_type"])
+            request_task.update_status(db, status)
+            self.request_task = request_task
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
@@ -745,7 +733,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def erasure_request(
         self,
         retrieved_data: List[Row],
-        *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0. DSR 3.0 enforces with downstream_tasks.
         inputs: Optional[
             List[List[Row]]
         ] = None,  # Upstream data from corresponding access task
@@ -768,12 +755,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
                 self.connector.configuration.connection_type,
             )
-            if self.request_task.id:
-                # For DSR 3.0, largely for testing. DSR 3.0 uses Request Task status
-                # instead of presence of cached erasure data to know if we should rerun a node
-                self.request_task.rows_masked = 0  # Saved as part of update_status
-            # TODO Remove when we stop support for DSR 2.0
-            self.resources.cache_erasure(self.key.value, 0)
+            self.request_task.rows_masked = 0  # Saved as part of update_status
             self.update_status(
                 "No values were erased since no primary key was defined in any of the fields for this collection",
                 None,
@@ -787,11 +769,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "No erasures on {} as its ConnectionConfig does not have write access.",
                 self.execution_node.address,
             )
-            if self.request_task.id:
-                # DSR 3.0
-                self.request_task.rows_masked = 0  # Saved as part of update_status
-            # TODO Remove when we stop support for DSR 2.0
-            self.resources.cache_erasure(self.key.value, 0)
+            self.request_task.rows_masked = 0  # Saved as part of update_status
             self.update_status(
                 f"No values were erased since this connection {self.connector.configuration.key} has not been "
                 f"given write access",
@@ -816,16 +794,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 formatted_input_data,
             )
 
-        if self.request_task.id:
-            # For DSR 3.0, largely for testing. DSR 3.0 uses Request Task status
-            # instead of presence of cached erasure data to know if we should rerun a node
-            self.request_task.rows_masked = (
-                output  # Saved as part of update_status below
-            )
-        # TODO Remove when we stop support for DSR 2.0
-        self.resources.cache_erasure(
-            self.key.value, output
-        )  # Cache that the erasure was performed in case we need to restart
+        self.request_task.rows_masked = (
+            output  # Saved as part of update_status below
+        )
 
         # Include postprocessor messages in success message if available
         success_message = None
