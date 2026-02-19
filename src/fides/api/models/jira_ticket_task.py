@@ -65,10 +65,12 @@ class JiraTicketTask(Base):
         "ManualTaskInstance",
         backref="jira_ticket_task",
         uselist=False,
+        passive_deletes=True,
     )
     connection_config = relationship(
         "ConnectionConfig",
         backref="jira_ticket_tasks",
+        passive_deletes=True,
     )
 
     @classmethod
