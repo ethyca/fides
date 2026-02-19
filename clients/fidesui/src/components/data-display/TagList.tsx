@@ -1,8 +1,8 @@
-import { ReactNode, useState } from "react";
+import { HTMLAttributes, ReactNode, useState } from "react";
 
 import { CustomTag, CustomTagProps } from "../../hoc/CustomTag";
 
-export interface TagListProps {
+export interface TagListProps extends HTMLAttributes<HTMLSpanElement> {
   /**
    * Array of tag items to display. Can be strings or objects with value/label.
    */
@@ -28,10 +28,6 @@ export interface TagListProps {
     tag: string | { value: string; label?: ReactNode },
     index: number,
   ) => ReactNode;
-  /**
-   * Class name for the container span.
-   */
-  className?: string;
   /**
    * Enable expand/collapse functionality for overflow tags.
    * When true, clicking the "+N" tag will expand to show all tags.
@@ -59,8 +55,8 @@ export const TagList = ({
   tagProps,
   overflowTagProps,
   renderTag,
-  className,
   expandable = false,
+  ...props
 }: TagListProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -72,7 +68,7 @@ export const TagList = ({
   const remainingCount = tags.length - maxTags;
 
   return (
-    <span className={className}>
+    <span {...props}>
       {displayTags.map((tag, index) => {
         const tagValue = typeof tag === "string" ? tag : tag.value;
         const tagLabel =
