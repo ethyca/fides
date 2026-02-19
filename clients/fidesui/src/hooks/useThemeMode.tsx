@@ -28,9 +28,13 @@ function getStoredMode(): ThemeMode | undefined {
   if (typeof window === "undefined") {
     return undefined;
   }
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "light" || stored === "dark") {
-    return stored;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "light" || stored === "dark") {
+      return stored;
+    }
+  } catch {
+    // Swallow storage errors (e.g. disabled storage, privacy mode, quota issues)
   }
   return undefined;
 }
