@@ -1,16 +1,20 @@
+import type { TextAreaRef } from "antd/es/input/TextArea";
+import classNames from "classnames";
 import {
+  Button,
   CheckOutlined,
   CloseOutlined,
-  CommentOutlined,
-} from "@ant-design/icons";
-import type { TextAreaRef } from "antd/es/input/TextArea";
-import { Button, Flex, Icons, Input } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
-import React, { useEffect, useRef, useState } from "react";
+  Flex,
+  Icons,
+  Input,
+} from "fidesui";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
+import styles from "./EditableTextBlock.module.scss";
 import { SlackIcon } from "./SlackIcon";
 
-interface EditableTextBlockProps {
+interface EditableTextBlockProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   value: string;
   onChange: (value: string) => void;
   onSave?: (value: string) => void;
@@ -24,10 +28,9 @@ interface EditableTextBlockProps {
     end: number;
   }) => void;
   renderContent?: (text: string) => React.ReactNode;
-  style?: React.CSSProperties;
 }
 
-export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
+export const EditableTextBlock = ({
   value,
   onChange,
   onSave,
@@ -37,8 +40,9 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
   onComment,
   onRequestInput,
   renderContent,
-  style,
-}) => {
+  className,
+  ...props
+}: EditableTextBlockProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [selectedText, setSelectedText] = useState<{
@@ -76,7 +80,7 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
     setIsEditing(false);
   };
 
-  const handleTextSelection = () => {
+  const handleTextSelection = useCallback(() => {
     if (isEditing) {
       setSelectedText(null);
       setToolbarPosition(null);
@@ -118,24 +122,6 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
     const end = start + text.length;
 
     setSelectedText({ text, start, end });
-  };
-
-  useEffect(() => {
-    document.addEventListener("selectionchange", handleTextSelection);
-    const handleClickOutside = (e: MouseEvent) => {
-      if (textRef.current && !textRef.current.contains(e.target as Node)) {
-        const selection = window.getSelection();
-        if (selection && selection.toString().trim().length === 0) {
-          setSelectedText(null);
-          setToolbarPosition(null);
-        }
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("selectionchange", handleTextSelection);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
   }, [isEditing]);
 
   const handleComment = () => {
@@ -156,21 +142,34 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
     }
   };
 
+  useEffect(() => {
+    document.addEventListener("selectionchange", handleTextSelection);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (textRef.current && !textRef.current.contains(e.target as Node)) {
+        const selection = window.getSelection();
+        if (selection && selection.toString().trim().length === 0) {
+          setSelectedText(null);
+          setToolbarPosition(null);
+        }
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("selectionchange", handleTextSelection);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [handleTextSelection]);
+
   if (isEditing) {
     return (
-      <div style={style}>
+      <div className={className} {...props}>
         <Input.TextArea
           ref={textareaRef}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           placeholder={placeholder}
           rows={4}
-          style={{
-            marginBottom: 8,
-            fontFamily: "inherit",
-            fontSize: "inherit",
-            lineHeight: 1.6,
-          }}
+          className={styles.textarea}
         />
         <Flex justify="flex-end" gap="small">
           <Button
@@ -195,102 +194,49 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
   }
 
   return (
-    <div style={{ position: "relative", ...style }}>
-      {showEditButton && !readOnly && !isEditing && (
+    <div className={classNames(styles.root, className)} {...props}>
+      {showEditButton && !readOnly && (
         <Button
           type="text"
           icon={<Icons.Edit size={16} />}
           size="small"
           onClick={() => setIsEditing(true)}
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            zIndex: 10,
-            padding: "4px 8px",
-            borderRadius: 4,
-            backgroundColor: "transparent",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = palette.FIDESUI_BG_CORINTH;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
+          className={styles.editButton}
+          aria-label="Edit"
         />
       )}
 
       <div
         ref={textRef}
-        style={{
-          padding: style?.padding || "8px 12px",
-          minHeight: style?.minHeight === "auto" ? "auto" : 60,
-          borderRadius: 6,
-          border: readOnly ? "none" : `1px solid transparent`,
-          cursor: "text",
-          transition: "all 0.2s ease",
-          position: "relative",
-          lineHeight: 1.6,
-          color: value ? "inherit" : palette.FIDESUI_NEUTRAL_500,
-          paddingRight:
-            showEditButton && !readOnly ? 40 : style?.paddingRight || 12,
-          display: style?.display || "block",
-          ...style,
-        }}
+        className={classNames(styles.content, {
+          [styles.contentWithEditButton]: showEditButton && !readOnly,
+        })}
       >
         {value ? (
-          renderContent ? (
-            renderContent(value)
-          ) : (
-            value
-          )
+          (renderContent?.(value) ?? value)
         ) : (
-          <span
-            style={{ fontStyle: "italic", color: palette.FIDESUI_NEUTRAL_400 }}
-          >
-            {placeholder}
-          </span>
+          <span className={styles.placeholder}>{placeholder}</span>
         )}
       </div>
 
       {selectedText && toolbarPosition && (
         <div
+          className={styles.selectionToolbar}
           style={{
-            position: "fixed",
             left: `${toolbarPosition.x}px`,
             top: `${toolbarPosition.y}px`,
-            transform: "translate(-50%, -100%)",
-            backgroundColor: "#FFFFFF",
-            border: `1px solid ${palette.FIDESUI_NEUTRAL_200}`,
-            borderRadius: 6,
-            padding: "4px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            zIndex: 1000,
-            display: "flex",
-            gap: 4,
-            marginBottom: 8,
-            alignItems: "center",
           }}
           onMouseDown={(e) => e.preventDefault()}
-          onClick={(e) => e.stopPropagation()}
+          role="toolbar"
+          aria-label="Text actions"
         >
           {onComment && (
             <Button
               type="text"
               size="small"
-              icon={<CommentOutlined style={{ fontSize: 14 }} />}
+              icon={<Icons.Chat size={14} />}
               onClick={handleComment}
-              style={{
-                fontSize: 13,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
-                borderRadius: 4,
-                height: "auto",
-                fontWeight: 500,
-              }}
+              className={styles.toolbarButton}
             >
               Comment
             </Button>
@@ -301,16 +247,7 @@ export const EditableTextBlock: React.FC<EditableTextBlockProps> = ({
               size="small"
               icon={<SlackIcon size={14} />}
               onClick={handleRequestInput}
-              style={{
-                fontSize: 13,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
-                borderRadius: 4,
-                height: "auto",
-                fontWeight: 500,
-              }}
+              className={styles.toolbarButton}
             >
               Request input from team
             </Button>

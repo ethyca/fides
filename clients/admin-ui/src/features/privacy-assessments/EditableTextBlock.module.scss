@@ -1,0 +1,71 @@
+.root {
+  position: relative;
+}
+
+.textarea {
+  margin-bottom: 8px;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.6;
+}
+
+.editButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  padding: 4px 8px;
+  border-radius: var(--ant-border-radius);
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--fidesui-bg-corinth) !important;
+  }
+}
+
+.content {
+  padding: 8px 12px;
+  min-height: 60px;
+  border-radius: var(--ant-border-radius);
+  border: 1px solid transparent;
+  cursor: text;
+  transition: all 0.2s ease;
+  position: relative;
+  line-height: 1.6;
+  display: block;
+}
+
+.contentWithEditButton {
+  padding-right: 40px;
+}
+
+.placeholder {
+  font-style: italic;
+  color: var(--ant-color-text-quaternary);
+}
+
+.selectionToolbar {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  background-color: var(--ant-color-bg-container);
+  border: 1px solid var(--ant-color-border);
+  border-radius: var(--ant-border-radius);
+  padding: 4px;
+  box-shadow: var(--ant-box-shadow);
+  z-index: 1000;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.toolbarButton {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  height: auto;
+  font-weight: 500;
+}

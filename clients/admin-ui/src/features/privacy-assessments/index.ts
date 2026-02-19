@@ -1,12 +1,18 @@
-/**
- * Privacy Assessments Feature
- *
- * Re-exports all types and hooks for the privacy assessments feature.
- */
-
 export * from "./AssessmentCard";
 export * from "./AssessmentGroup";
+export * from "./CitationBadge";
 export * from "./constants";
+export * from "./DeleteAssessmentModal";
+export * from "./EditableTextBlock";
 export * from "./EmptyState";
+export * from "./EvidenceDrawer";
+export * from "./EvidenceSection";
 export * from "./privacy-assessments.slice";
+export * from "./QuestionCard";
+export * from "./QuestionGroupCollapse";
+export * from "./QuestionGroupPanel";
+export * from "./QuestionnaireStatusBar";
+export * from "./ReferenceBadge";
+export * from "./SlackIcon";
 export * from "./types";
+export * from "./utils";

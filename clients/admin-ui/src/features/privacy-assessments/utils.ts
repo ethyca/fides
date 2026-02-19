@@ -1,0 +1,98 @@
+import { uniqBy } from "lodash";
+
+import { AnswerSource, AnswerStatus, EvidenceType } from "./types";
+import type { AssessmentQuestion, EvidenceItem, QuestionGroup } from "./types";
+
+export const getTimeSince = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) {
+    return `${diffDays}d ago`;
+  }
+  if (diffHours > 0) {
+    return `${diffHours}h ago`;
+  }
+  if (diffMins > 0) {
+    return `${diffMins}m ago`;
+  }
+  return "Just now";
+};
+
+export const truncate = (text: string, maxLength: number): string =>
+  text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+
+export const getGroupEvidence = (
+  questionGroups: QuestionGroup[],
+  groupId: string,
+): EvidenceItem[] => {
+  const group = questionGroups.find((g) => g.id === groupId);
+  if (!group) {
+    return [];
+  }
+  return uniqBy(
+    group.questions.flatMap((q) => q.evidence),
+    "id",
+  );
+};
+
+export const filterEvidence = (
+  evidence: EvidenceItem[],
+  query: string,
+): EvidenceItem[] => {
+  if (!query) {
+    return evidence;
+  }
+  const q = query.toLowerCase();
+  return evidence.filter((item) => {
+    if (item.type === EvidenceType.SYSTEM) {
+      return (
+        item.source.source_name.toLowerCase().includes(q) ||
+        item.value_display.toLowerCase().includes(q)
+      );
+    }
+    if (item.type === EvidenceType.MANUAL_ENTRY) {
+      return (
+        item.author.user_name.toLowerCase().includes(q) ||
+        item.entry.new_value.toLowerCase().includes(q)
+      );
+    }
+    if (item.type === EvidenceType.SLACK_COMMUNICATION) {
+      return (
+        item.channel.channel_name.toLowerCase().includes(q) ||
+        (item.summary?.toLowerCase().includes(q) ?? false)
+      );
+    }
+    return false;
+  });
+};
+
+export const isAssessmentComplete = (
+  questions: AssessmentQuestion[],
+  getAnswerValue: (questionId: string, apiAnswer: string) => string,
+): boolean =>
+  questions.every(
+    (q) => getAnswerValue(q.question_id, q.answer_text).trim().length > 0,
+  );
+
+export const getSlackQuestions = (
+  questions: AssessmentQuestion[],
+  getAnswerValue: (questionId: string, apiAnswer: string) => string,
+): {
+  slackQuestions: AssessmentQuestion[];
+  answeredSlackQuestions: AssessmentQuestion[];
+} => {
+  const slackQuestions = questions.filter(
+    (q) =>
+      q.answer_source === AnswerSource.SLACK ||
+      q.answer_status === AnswerStatus.NEEDS_INPUT,
+  );
+  const answeredSlackQuestions = slackQuestions.filter(
+    (q) => getAnswerValue(q.question_id, q.answer_text).trim().length > 0,
+  );
+  return { slackQuestions, answeredSlackQuestions };
+};
