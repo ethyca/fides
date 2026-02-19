@@ -213,9 +213,7 @@ def _make_client_with_allowed_domains(
     configuration.get_saas_config.return_value = saas_config
 
     client_config = ClientConfig(protocol="https", host="placeholder")
-    return AuthenticatedClient(
-        "https://api.stripe.com", configuration, client_config
-    )
+    return AuthenticatedClient("https://api.stripe.com", configuration, client_config)
 
 
 @pytest.mark.unit_saas
@@ -284,9 +282,7 @@ class TestValidateRequestDomain:
         if should_pass:
             client._validate_request_domain(host)
         else:
-            with pytest.raises(
-                ValueError, match="not in the list of allowed domains"
-            ):
+            with pytest.raises(ValueError, match="not in the list of allowed domains"):
                 client._validate_request_domain(host)
 
     @mock.patch(
