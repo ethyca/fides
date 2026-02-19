@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.3b2.dev38+g58c548124"
+    "version": "2.78.3b2.dev39+g6a6e44ca9"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20792,6 +20792,94 @@
         ],
         "title": "ColumnSort"
       },
+      "ConditionGroup": {
+        "properties": {
+          "logical_operator": {
+            "$ref": "#/components/schemas/GroupOperator",
+            "description": "Logical operator: 'and' or 'or'"
+          },
+          "conditions": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ConditionLeaf"
+                },
+                {
+                  "$ref": "#/components/schemas/ConditionGroup"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Conditions",
+            "description": "List of conditions or nested groups"
+          }
+        },
+        "type": "object",
+        "required": [
+          "logical_operator",
+          "conditions"
+        ],
+        "title": "ConditionGroup"
+      },
+      "ConditionLeaf": {
+        "properties": {
+          "field_address": {
+            "type": "string",
+            "title": "Field Address",
+            "description": "Field path to check (e.g., 'user.name', 'billing.subscription.status')"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/Operator",
+            "description": "Operator to apply"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "Expected value for comparison"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_address",
+          "operator"
+        ],
+        "title": "ConditionLeaf"
+      },
       "ConnectionCategory": {
         "type": "string",
         "enum": [
@@ -26135,6 +26223,14 @@
         "title": "GoogleCloudSQLPostgresDocsSchema",
         "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
       },
+      "GroupOperator": {
+        "type": "string",
+        "enum": [
+          "and",
+          "or"
+        ],
+        "title": "GroupOperator"
+      },
       "HTTPMethod": {
         "type": "string",
         "enum": [
@@ -27959,6 +28055,29 @@
         "title": "OktaDocsSchema",
         "description": "Okta Secrets Schema for API Docs"
       },
+      "Operator": {
+        "type": "string",
+        "enum": [
+          "eq",
+          "neq",
+          "lt",
+          "lte",
+          "gt",
+          "gte",
+          "exists",
+          "not_exists",
+          "list_contains",
+          "not_in_list",
+          "list_intersects",
+          "list_subset",
+          "list_superset",
+          "list_disjoint",
+          "starts_with",
+          "ends_with",
+          "contains"
+        ],
+        "title": "Operator"
+      },
       "Organization": {
         "properties": {
           "fides_key": {
@@ -28958,10 +29077,18 @@
             "title": "Rules"
           },
           "conditions": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Conditions",
-            "default": {}
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConditionLeaf"
+              },
+              {
+                "$ref": "#/components/schemas/ConditionGroup"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conditions"
           }
         },
         "type": "object",
