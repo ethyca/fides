@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
 from loguru import logger
@@ -504,98 +504,8 @@ def _has_async_tasks_awaiting_external_completion(
     ).scalar()
 
 
-def _compute_requeue_decision(
-    db: Session,
-    privacy_request: PrivacyRequest,
-    queued_tasks_ids: Set[str],
-) -> Tuple[bool, Optional[str]]:
-    """
-    Determine whether to requeue a privacy request, cancel it, or take no action.
-
-    Returns:
-        (should_requeue, cancel_reason). If cancel_reason is set, caller should cancel
-        and error the request. If should_requeue is True and cancel_reason is None,
-        caller should requeue. Otherwise no action.
-    """
-    logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
-
-    try:
-        task_id = get_cached_task_id(privacy_request.id)
-    except Exception as cache_exc:
-        return (
-            False,
-            f"Cache failure when getting task ID for privacy request {privacy_request.id}, "
-            f"failing safe by canceling tasks: {cache_exc}",
-        )
-
-    if not task_id:
-        return (
-            False,
-            f"No task ID found for privacy request {privacy_request.id}, "
-            f"request is stuck without a running task - canceling",
-        )
-
-    # Main task still in queue or running: no action
-    if task_id in queued_tasks_ids or celery_tasks_in_flight([task_id]):
-        return (False, None)
-
-    # Main task is dead: check if we should requeue or inspect subtasks
-    request_tasks_count = (
-        db.query(RequestTask)
-        .filter(RequestTask.privacy_request_id == privacy_request.id)
-        .count()
-    )
-    if request_tasks_count == 0:
-        logger.warning(
-            f"The task for privacy request {privacy_request.id} was terminated before it could schedule any request tasks, requeueing privacy request"
-        )
-        return (True, None)
-
-    request_task_ids_in_progress = _get_request_task_ids_in_progress(
-        db, privacy_request.id
-    )
-    for request_task_id in request_task_ids_in_progress:
-        try:
-            subtask_id = get_cached_task_id(request_task_id)
-        except Exception as cache_exc:
-            return (
-                False,
-                f"Cache failure when getting subtask ID for request task {request_task_id} "
-                f"(privacy request {privacy_request.id}), failing safe by canceling tasks: {cache_exc}",
-            )
-
-        if not subtask_id:
-            if privacy_request.status == PrivacyRequestStatus.requires_input:
-                logger.warning(
-                    f"No task ID found for request task {request_task_id} "
-                    f"(privacy request {privacy_request.id}) in requires_input status - "
-                    f"keeping request in current status as it may be waiting for manual input"
-                )
-                return (False, None)
-            if _has_async_tasks_awaiting_external_completion(db, privacy_request.id):
-                logger.warning(
-                    f"No task ID found for request task {request_task_id} "
-                    f"(privacy request {privacy_request.id}) contains async tasks awaiting "
-                    f"external completion - keeping request in current status"
-                )
-                return (False, None)
-            return (
-                False,
-                f"No task ID found for request task {request_task_id} "
-                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
-            )
-
-        if subtask_id not in queued_tasks_ids and not celery_tasks_in_flight(
-            [subtask_id]
-        ):
-            logger.warning(
-                f"Request task {request_task_id} is not in the queue or running, requeueing privacy request"
-            )
-            return (True, None)
-
-    return (False, None)
-
-
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     """
@@ -656,14 +566,118 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
             # Check each privacy request
             for privacy_request in in_progress_requests:
-                should_requeue, cancel_reason = _compute_requeue_decision(
-                    db, privacy_request, queued_tasks_ids
-                )
-                if cancel_reason:
+                should_requeue = False
+                logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
+
+                try:
+                    task_id = get_cached_task_id(privacy_request.id)
+                except Exception as cache_exc:
+                    # If we can't get the task ID due to cache failure, fail safe by canceling
                     _cancel_interrupted_tasks_and_error_privacy_request(
-                        db, privacy_request, cancel_reason
+                        db,
+                        privacy_request,
+                        f"Cache failure when getting task ID for privacy request {privacy_request.id}, "
+                        f"failing safe by canceling tasks: {cache_exc}",
                     )
-                elif should_requeue:
+                    continue
+
+                # If the task ID is not cached, we can't check if it's running
+                # This means the request is stuck - cancel it
+                if not task_id:
+                    _cancel_interrupted_tasks_and_error_privacy_request(
+                        db,
+                        privacy_request,
+                        f"No task ID found for privacy request {privacy_request.id}, "
+                        f"request is stuck without a running task - canceling",
+                    )
+                    continue
+
+                # Check if the main privacy request task is active
+                if task_id not in queued_tasks_ids and not celery_tasks_in_flight(
+                    [task_id]
+                ):
+                    request_tasks_count = (
+                        db.query(RequestTask)
+                        .filter(RequestTask.privacy_request_id == privacy_request.id)
+                        .count()
+                    )
+                    if request_tasks_count == 0:
+                        logger.warning(
+                            f"The task for privacy request {privacy_request.id} was terminated before it could schedule any request tasks, requeueing privacy request"
+                        )
+                        should_requeue = True
+
+                    request_task_ids_in_progress = _get_request_task_ids_in_progress(
+                        db, privacy_request.id
+                    )
+
+                    # Check each individual request task
+                    for request_task_id in request_task_ids_in_progress:
+                        try:
+                            subtask_id = get_cached_task_id(request_task_id)
+                        except Exception as cache_exc:
+                            # If we can't get the subtask ID due to cache failure, fail safe by canceling
+                            _cancel_interrupted_tasks_and_error_privacy_request(
+                                db,
+                                privacy_request,
+                                f"Cache failure when getting subtask ID for request task {request_task_id} "
+                                f"(privacy request {privacy_request.id}), failing safe by canceling tasks: {cache_exc}",
+                            )
+                            should_requeue = False
+                            break
+
+                        # If the task ID is not cached, we can't check if it's running
+                        # This means the subtask is stuck - but we need to handle this differently
+                        # based on the privacy request status
+                        if not subtask_id:
+                            if (
+                                privacy_request.status
+                                == PrivacyRequestStatus.requires_input
+                            ):
+                                # For requires_input status, don't automatically error the request
+                                # as it's intentionally waiting for user input
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) in requires_input status - "
+                                    f"keeping request in current status as it may be waiting for manual input"
+                                )
+                                should_requeue = False
+                                break
+
+                            # Check if the request has async tasks awaiting external completion
+                            if _has_async_tasks_awaiting_external_completion(
+                                db, privacy_request.id
+                            ):
+                                logger.warning(
+                                    f"No task ID found for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) contains async tasks awaiting "
+                                    f"external completion - keeping request in current status"
+                                )
+                                should_requeue = False
+                                break
+
+                            # For other statuses, cancel the entire privacy request
+                            _cancel_interrupted_tasks_and_error_privacy_request(
+                                db,
+                                privacy_request,
+                                f"No task ID found for request task {request_task_id} "
+                                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
+                            )
+                            should_requeue = False
+                            break
+
+                        if (
+                            subtask_id not in queued_tasks_ids
+                            and not celery_tasks_in_flight([subtask_id])
+                        ):
+                            logger.warning(
+                                f"Request task {request_task_id} is not in the queue or running, requeueing privacy request"
+                            )
+                            should_requeue = True
+                            break
+
+                # Requeue the privacy request if needed
+                if should_requeue:
                     _handle_privacy_request_requeue(db, privacy_request)
 
 
