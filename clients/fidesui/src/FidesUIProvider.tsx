@@ -31,9 +31,11 @@ export interface FidesUIProviderProps {
 export const FidesUIProvider = ({
   children,
   theme = defaultTheme,
-  antTheme = defaultAntTheme, // Use default theme if none provided
+  antTheme,
   wave,
 }: FidesUIProviderProps) => {
+  const resolvedAntTheme = antTheme ?? defaultAntTheme;
+
   const [messageApi, messageContextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
   const value = useMemo(
@@ -42,7 +44,7 @@ export const FidesUIProvider = ({
   );
 
   return (
-    <BaseAntDesignProvider theme={antTheme} wave={wave}>
+    <BaseAntDesignProvider theme={resolvedAntTheme} wave={wave}>
       <BaseChakraProvider theme={theme}>
         <AntComponentAPIsContext.Provider value={value}>
           {messageContextHolder}

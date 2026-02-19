@@ -29,8 +29,43 @@ h6 {
   }
 }
 
+/**
+ * Dark mode overrides for CSS custom properties.
+ * These are applied when data-theme="dark" is set on the document element.
+ * Ant Design components handle their own dark mode via the darkAlgorithm,
+ * but these variables are used by custom CSS/SCSS outside of Ant components.
+ */
+[data-theme="dark"] {
+  --fidesui-full-white: #1f1f1f;
+  --fidesui-bg-white: #1f1f1f;
+  --fidesui-neutral-50: #2a2a2a;
+  --fidesui-neutral-75: #232323;
+  --fidesui-neutral-100: #3a3a3a;
+  --fidesui-neutral-200: #4a4a4a;
+  --fidesui-neutral-300: #5a5a5a;
+  --fidesui-neutral-400: #7a7a7a;
+  --fidesui-neutral-500: #9a9a9a;
+  --fidesui-neutral-600: #b0b0b0;
+  --fidesui-neutral-700: #c0c0c0;
+  --fidesui-neutral-800: #d0d0d0;
+  --fidesui-neutral-900: #e0e0e0;
+  --fidesui-bg-default: #1a1a1a;
+  --fidesui-corinth: #fafafa;
+  --fidesui-bg-corinth: #1a1a1a;
+  --fidesui-minos: #e0e0e0;
+  --fidesui-bg-minos: #2a2a2a;
+  --fidesui-link: #5b9bd5;
+
+  color-scheme: dark;
+}
+
 :focus-visible {
   outline-color: var(--fidesui-minos);
+}
+
+html, body {
+  min-height: 100%;
+  overflow-y: hidden;
 }
 
 /**
