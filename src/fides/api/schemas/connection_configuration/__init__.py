@@ -31,12 +31,6 @@ from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasu
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailSchema as DynamicErasureEmailSchema,
 )
-from fides.api.schemas.connection_configuration.connection_secrets_entra import (
-    EntraDocsSchema as EntraDocsSchema,
-)
-from fides.api.schemas.connection_configuration.connection_secrets_entra import (
-    EntraSchema as EntraSchema,
-)
 from fides.api.schemas.connection_configuration.connection_secrets_dynamodb import (
     DynamoDBDocsSchema as DynamoDBDocsSchema,
 )
@@ -51,6 +45,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
 )
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     ExtendedEmailSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_entra import (
+    EntraDocsSchema as EntraDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_entra import (
+    EntraSchema as EntraSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,

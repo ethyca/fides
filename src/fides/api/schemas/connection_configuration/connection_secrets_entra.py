@@ -36,7 +36,11 @@ class EntraSchema(ConnectionConfigSecretsSchema):
         json_schema_extra={"sensitive": True},
     )
 
-    _required_components: ClassVar[List[str]] = ["tenant_id", "client_id", "client_secret"]
+    _required_components: ClassVar[List[str]] = [
+        "tenant_id",
+        "client_id",
+        "client_secret",
+    ]
 
     @field_validator("tenant_id")
     @classmethod

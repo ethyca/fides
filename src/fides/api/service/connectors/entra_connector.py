@@ -14,8 +14,8 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.entra_http_client import (
-    EntraHttpClient,
     SERVICE_PRINCIPALS_PAGE_SIZE,
+    EntraHttpClient,
 )
 from fides.api.util.collection_util import Row
 
@@ -59,9 +59,7 @@ class EntraConnector(BaseConnector):
 
     def query_config(self, node: ExecutionNode) -> NoReturn:
         """Query config not implemented for Entra."""
-        raise NotImplementedError(
-            "Query config not implemented for Entra connector"
-        )
+        raise NotImplementedError("Query config not implemented for Entra connector")
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
