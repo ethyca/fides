@@ -75,10 +75,6 @@ jobs:
       - name: Format
         run: npm run format:ci
 
-      - name: Build FidesJS # needed for type checks
-        working-directory: clients/fides-js
-        run: npm run build
-
       - name: Unit tests
         run: npm run test
 

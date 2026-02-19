@@ -37,16 +37,20 @@
       "cache": false
     },
     "format": {
-      "dependsOn": [],
-      "cache": false
+      "dependsOn": []
     },
     "format:ci": {
       "dependsOn": []
     },
     "typecheck": {
-      "dependsOn": []
+      "dependsOn": ["build"]
     },
     "test": {
+      "dependsOn": ["^typecheck"],
+      "cache": false,
+      "persistent": true
+    },
+    "test:watch": {
       "dependsOn": ["^typecheck"],
       "cache": false,
       "persistent": true
