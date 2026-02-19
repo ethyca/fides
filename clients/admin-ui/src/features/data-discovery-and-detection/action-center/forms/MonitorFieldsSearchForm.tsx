@@ -71,8 +71,8 @@ const MonitorFieldsSearchForm = ({
       layout="inline"
       className="flex grow gap-2"
     >
-      <Flex className="grow self-stretch">
-        <Form.Item name="search" className="self-end">
+      <Flex className="grow gap-2 self-stretch">
+        <Form.Item name="search" className="!me-0 self-end">
           <SearchInput />
         </Form.Item>
 
@@ -90,7 +90,7 @@ const MonitorFieldsSearchForm = ({
             value: resourceStatus,
             label: resourceStatus,
           }))}
-          className="w-auto min-w-[200px]"
+          className="!w-[200px]"
           placeholder="Status"
           allowClear
           aria-label="Filter by status"
@@ -105,7 +105,7 @@ const MonitorFieldsSearchForm = ({
             value: confidenceBucket,
             label: capitalize(confidenceBucket),
           }))}
-          className="w-auto min-w-[200px]"
+          className="!w-[200px]"
           placeholder="Confidence"
           allowClear
           aria-label="Filter by confidence score"
@@ -116,7 +116,7 @@ const MonitorFieldsSearchForm = ({
 
       <Form.Item name="data_category" className="!me-0 self-end">
         <DataCategorySelect
-          className="w-auto min-w-[220px]"
+          className="!w-[200px]"
           variant="outlined"
           allowClear
           maxTagCount="responsive"
