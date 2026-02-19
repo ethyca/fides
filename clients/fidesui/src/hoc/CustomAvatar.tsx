@@ -47,4 +47,9 @@ const withCustomProps = (WrappedComponent: typeof Avatar) => {
   return WrappedAvatar;
 };
 
-export const CustomAvatar = withCustomProps(Avatar);
+type CustomAvatarType = ReturnType<typeof withCustomProps> & {
+  Group: typeof Avatar.Group;
+};
+
+export const CustomAvatar = withCustomProps(Avatar) as CustomAvatarType;
+CustomAvatar.Group = Avatar.Group;
