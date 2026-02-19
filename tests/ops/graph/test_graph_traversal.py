@@ -739,3 +739,135 @@ def test_different_seed_alters_traversal() -> None:
         len(Traversal(graph, {"ssn": "1", "email": 1, "user_id": 1}).root_node.children)
         == 4
     )
+
+
+def test_property_filtered_datasets_excluded_from_traversal() -> None:
+    """Only datasets matching the property_id (and bridge nodes needed to
+    reach them) appear in the traversal map. Unrelated datasets, including
+    universal ones not needed for FK traversal, are excluded.
+
+    Graph topology:
+        ROOT -> ds_a:users -> ds_bridge:accounts -> ds_b:transactions
+                (prop_a)      (prop_b, bridge)      (prop_a)
+
+        ds_universal:preferences  (no property_ids, not needed)
+        ds_excluded:logs          (prop_b, not needed)
+
+    After filtering for property_id="prop_a":
+        - ds_a: IN_SCOPE (matches prop_a, has identity)
+        - ds_b: IN_SCOPE (matches prop_a, reachable via bridge)
+        - ds_bridge: TRAVERSAL_ONLY (needed as FK bridge between ds_a and ds_b)
+        - ds_universal: excluded (not needed to reach any prop_a node)
+        - ds_excluded: excluded (wrong property, not a bridge)
+    """
+    ds_a = GraphDataset(
+        name="ds_a",
+        collections=[
+            Collection(
+                name="users",
+                fields=[
+                    ScalarField(name="email", identity="email"),
+                    ScalarField(name="id"),
+                ],
+            )
+        ],
+        connection_key="mock_1",
+        property_ids=["prop_a"],
+    )
+    ds_bridge = GraphDataset(
+        name="ds_bridge",
+        collections=[
+            Collection(
+                name="accounts",
+                fields=[
+                    ScalarField(
+                        name="user_id",
+                        references=[
+                            (FieldAddress("ds_a", "users", "id"), "from")
+                        ],
+                    ),
+                    ScalarField(name="account_id"),
+                ],
+            )
+        ],
+        connection_key="mock_2",
+        property_ids=["prop_b"],
+    )
+    ds_b = GraphDataset(
+        name="ds_b",
+        collections=[
+            Collection(
+                name="transactions",
+                fields=[
+                    ScalarField(
+                        name="account_id",
+                        references=[
+                            (
+                                FieldAddress(
+                                    "ds_bridge", "accounts", "account_id"
+                                ),
+                                "from",
+                            )
+                        ],
+                    ),
+                    ScalarField(name="amount"),
+                ],
+            )
+        ],
+        connection_key="mock_3",
+        property_ids=["prop_a"],
+    )
+
+    # Simulate property-based DAG filtering for property_id="prop_a":
+    # 1. Keep only datasets matching prop_a (ds_a, ds_b)
+    # 2. Add ds_bridge as TRAVERSAL_ONLY since it's needed for FK path ds_a -> ds_b
+    # 3. Exclude ds_universal (not needed) and ds_excluded (wrong property, not a bridge)
+    filtered = [ds_a, ds_bridge, ds_b]
+    for col in ds_bridge.collections:
+        col.property_scope = PropertyScope.TRAVERSAL_ONLY
+
+    graph = DatasetGraph(*filtered)
+    traversal = Traversal(graph, {"email": "test@example.com"})
+    traversal_map, terminators = traversal.traversal_map()
+
+    assert "ds_a:users" in traversal_map
+    assert "ds_bridge:accounts" in traversal_map
+    assert "ds_b:transactions" in traversal_map
+    assert "ds_universal:preferences" not in traversal_map
+    assert "ds_excluded:logs" not in traversal_map
+
+    assert traversal_map == {
+        "__ROOT__:__ROOT__": {
+            "from": {},
+            "to": {"ds_a:users": {"email -> email"}},
+        },
+        "ds_a:users": {
+            "from": {"__ROOT__:__ROOT__": {"email -> email"}},
+            "to": {"ds_bridge:accounts": {"id -> user_id"}},
+        },
+        "ds_bridge:accounts": {
+            "from": {"ds_a:users": {"id -> user_id"}},
+            "to": {"ds_b:transactions": {"account_id -> account_id"}},
+        },
+        "ds_b:transactions": {
+            "from": {"ds_bridge:accounts": {"account_id -> account_id"}},
+            "to": {},
+        },
+    }
+    assert terminators == [CollectionAddress("ds_b", "transactions")]
+
+    # Verify the bridge node is marked TRAVERSAL_ONLY
+    bridge_node = graph.nodes[CollectionAddress("ds_bridge", "accounts")]
+    assert bridge_node.collection.property_scope == PropertyScope.TRAVERSAL_ONLY
+
+    # Verify in-scope nodes are IN_SCOPE (default)
+    assert (
+        graph.nodes[CollectionAddress("ds_a", "users")].collection.property_scope
+        == PropertyScope.IN_SCOPE
+    )
+    assert (
+        graph.nodes[
+            CollectionAddress("ds_b", "transactions")
+        ].collection.property_scope
+        == PropertyScope.IN_SCOPE
+    )
