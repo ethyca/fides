@@ -1,4 +1,5 @@
 import { Flex, FlexProps, Typography } from "fidesui";
+import { Url } from "next/dist/shared/lib/router/router";
 import NextLink from "next/link";
 import { ComponentProps } from "react";
 
@@ -10,7 +11,8 @@ export const LinkCell = ({
   containerProps,
   strong = true,
   ...props
-}: ComponentProps<typeof LinkText> & {
+}: Omit<ComponentProps<typeof LinkText>, "href"> & {
+  href?: Url;
   containerProps?: FlexProps;
 }) => {
   return (
