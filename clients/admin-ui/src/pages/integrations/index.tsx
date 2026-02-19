@@ -73,7 +73,7 @@ const IntegrationListView: NextPage = () => {
   const router = useRouter();
 
   const {
-    flags: { entraMonitor, newIntegrationManagement },
+    flags: { newIntegrationManagement },
   } = useFlags();
 
   const handleSearchChange = (value: string) => {
@@ -100,17 +100,17 @@ const IntegrationListView: NextPage = () => {
     [connectionTypesData],
   );
 
-  // Filter connection types based on feature flags
+  // Filter connection types based on the new integration management flag
   const connectionTypesToQuery = useMemo(() => {
-    let types = SUPPORTED_INTEGRATIONS;
-    if (!newIntegrationManagement) {
-      types = types.filter((type) => type !== ConnectionType.SAAS);
+    if (newIntegrationManagement) {
+      // Show all integrations (including SaaS) when the flag is enabled
+      return SUPPORTED_INTEGRATIONS;
     }
-    if (!entraMonitor) {
-      types = types.filter((type) => type !== ConnectionType.ENTRA);
-    }
-    return types;
-  }, [entraMonitor, newIntegrationManagement]);
+    // Hide SaaS integrations when the flag is disabled
+    return SUPPORTED_INTEGRATIONS.filter(
+      (type) => type !== ConnectionType.SAAS,
+    );
+  }, [newIntegrationManagement]);
 
   const { data, isLoading, error } = useGetAllDatastoreConnectionsQuery({
     connection_type: connectionTypesToQuery,
@@ -122,20 +122,18 @@ const IntegrationListView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const tableData: IntegrationTableData[] = useMemo(() => {
-    const list = items ?? [];
-    const filtered = !entraMonitor
-      ? list.filter((i) => i.connection_type !== ConnectionType.ENTRA)
-      : list;
-    return filtered.map((integration) => ({
-      ...integration,
-      integrationTypeInfo: getIntegrationTypeInfo(
-        integration.connection_type,
-        integration.saas_config?.type,
-        connectionTypes,
-      ),
-    }));
-  }, [items, connectionTypes, entraMonitor]);
+  const tableData: IntegrationTableData[] = useMemo(
+    () =>
+      items?.map((integration) => ({
+        ...integration,
+        integrationTypeInfo: getIntegrationTypeInfo(
+          integration.connection_type,
+          integration.saas_config?.type,
+          connectionTypes,
+        ),
+      })) ?? [],
+    [items, connectionTypes],
+  );
 
   const handleManageClick = (integration: ConnectionConfigurationResponse) => {
     router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${integration.key}`);

@@ -45,9 +45,7 @@ export const useMonitorConfigTable = ({
 
   const { pageIndex, pageSize } = tableState;
 
-  const isIdentityProviderIntegration =
-    integration.connection_type === ConnectionType.OKTA ||
-    integration.connection_type === ConnectionType.ENTRA;
+  const isOktaIntegration = integration.connection_type === ConnectionType.OKTA;
 
   // Use discovery_monitor endpoint for all monitor types, including Okta
   const monitorsQuery = useGetMonitorsByIntegrationQuery({
@@ -199,7 +197,7 @@ export const useMonitorConfigTable = ({
             onEditMonitor({ ...data, stewards: stewards?.map(({ id }) => id) })
           }
           isWebsiteMonitor={isWebsiteMonitor}
-          isOktaMonitor={isIdentityProviderIntegration}
+          isOktaMonitor={isOktaIntegration}
           monitorId={data.key}
         />
       ),
