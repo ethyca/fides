@@ -33,10 +33,12 @@
       "dependsOn": []
     },
     "lint:fix": {
-      "dependsOn": []
+      "dependsOn": [],
+      "cache": false
     },
     "format": {
-      "dependsOn": []
+      "dependsOn": [],
+      "cache": false
     },
     "format:ci": {
       "dependsOn": []
@@ -45,12 +47,9 @@
       "dependsOn": []
     },
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^typecheck"],
       "cache": false,
       "persistent": true
-    },
-    "test:ci": {
-      "dependsOn": ["build"]
     },
     "cy:open": {
       "dependsOn": []
