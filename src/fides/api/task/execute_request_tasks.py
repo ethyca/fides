@@ -26,6 +26,7 @@ from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, Reque
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.task.action_strategies.registry import ACTION_STRATEGIES
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
@@ -278,25 +279,21 @@ def queue_downstream_tasks(
         request_task.update_status(session, ExecutionLogStatus.complete)
 
 
-@celery_app.task(base=DatabaseTask, bind=True)
-@memory_limiter
-@log_context(
-    capture_args={
-        "privacy_request_id": LoggerContextKeys.privacy_request_id,
-        "privacy_request_task_id": LoggerContextKeys.task_id,
-    }
-)
-def run_access_node(
-    self: DatabaseTask,
+def _execute_node(
+    database_task: DatabaseTask,
     privacy_request_id: str,
     privacy_request_task_id: str,
+    action_type: ActionType,
     privacy_request_proceed: bool = True,
 ) -> None:
-    """Run an individual task in the access graph for DSR 3.0 and queue downstream nodes
-    upon completion if applicable"""
+    """Shared execution template for all node types (access, erasure, consent).
 
+    Handles session management, prerequisite checks, resource setup, and
+    downstream task queuing. Delegates action-specific logic to the strategy.
+    """
+    strategy = ACTION_STRATEGIES[action_type]
     try:
-        with self.get_new_session() as session:
+        with database_task.get_new_session() as session:
             (
                 privacy_request,
                 request_task,
@@ -313,7 +310,6 @@ def run_access_node(
                 log_task_starting(request_task)
 
                 if can_run_task_body(request_task):
-                    # Build GraphTask resource to facilitate execution
                     with TaskResources(
                         privacy_request,
                         privacy_request.policy,
@@ -324,26 +320,50 @@ def run_access_node(
                         graph_task: GraphTask = create_graph_task(
                             session, request_task, resources
                         )
-                        # Currently, upstream tasks and "input keys" (which are built by data dependencies)
-                        # are the same, but they may not be the same in the future.
-                        upstream_access_data: List[List[Row]] = (
-                            _build_upstream_access_data(
-                                graph_task.execution_node.input_keys, upstream_results
-                            )
+                        strategy.execute_node(
+                            graph_task,
+                            request_task,
+                            upstream_results,
+                            session,
+                            resources,
                         )
-                        # Run the main access function
-                        graph_task.access_request(*upstream_access_data)
 
         queue_downstream_tasks_with_retries(
-            self,
+            database_task,
             privacy_request_id,
             privacy_request_task_id,
-            CurrentStep.upload_access,
+            strategy.next_step,
             privacy_request_proceed,
         )
     except Exception as e:
-        logger.error(f"Error in run_access_node: {e}")
+        logger.error(
+            "Error in {} node {}: {}", action_type.value, privacy_request_task_id, e
+        )
         raise
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+@memory_limiter
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+        "privacy_request_task_id": LoggerContextKeys.task_id,
+    }
+)
+def run_access_node(
+    self: DatabaseTask,
+    privacy_request_id: str,
+    privacy_request_task_id: str,
+    privacy_request_proceed: bool = True,
+) -> None:
+    """Run an individual task in the access graph and queue downstream nodes upon completion."""
+    _execute_node(
+        self,
+        privacy_request_id,
+        privacy_request_task_id,
+        ActionType.access,
+        privacy_request_proceed,
+    )
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -360,62 +380,12 @@ def run_erasure_node(
     privacy_request_task_id: str,
     privacy_request_proceed: bool = True,
 ) -> None:
-    """Run an individual task in the erasure graph for DSR 3.0 and queue downstream nodes
-    upon completion if applicable"""
-    with self.get_new_session() as session:
-        privacy_request, request_task, _ = run_prerequisite_task_checks(
-            session, privacy_request_id, privacy_request_task_id
-        )
-        with logger.contextualize(
-            privacy_request_source=(
-                privacy_request.source.value if privacy_request.source else None
-            ),
-            collection=request_task.collection_address,
-        ):
-            log_task_starting(request_task)
-
-            if can_run_task_body(request_task):
-                with TaskResources(
-                    privacy_request,
-                    privacy_request.policy,
-                    session.query(ConnectionConfig).all(),
-                    request_task,
-                    session,
-                ) as resources:
-                    # Build GraphTask resource to facilitate execution
-                    erasure_graph_task: GraphTask = create_graph_task(
-                        session, request_task, resources
-                    )
-                    # Get access data that was saved in the erasure format that was collected from the
-                    # access task for the same collection.  This data is used to build the masking request
-                    retrieved_data: List[Row] = (
-                        request_task.get_data_for_erasures() or []
-                    )
-
-                    upstream_access_data: List[List[Row]] = []
-
-                    try:
-                        upstream_access_data = (
-                            get_upstream_access_data_for_erasure_task(
-                                request_task, session, resources
-                            )
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Unable to get upstream access data for erasure task {request_task.collection_address}: {e}"
-                        )
-
-                    # Run the main erasure function, passing along the upstream access data.
-                    # The extra data is currently only needed for generating BigQuery delete statements.
-                    erasure_graph_task.erasure_request(
-                        retrieved_data, inputs=upstream_access_data
-                    )
-
-    queue_downstream_tasks_with_retries(
+    """Run an individual task in the erasure graph and queue downstream nodes upon completion."""
+    _execute_node(
         self,
         privacy_request_id,
         privacy_request_task_id,
-        CurrentStep.finalize_erasure,
+        ActionType.erasure,
         privacy_request_proceed,
     )
 
@@ -434,46 +404,12 @@ def run_consent_node(
     privacy_request_task_id: str,
     privacy_request_proceed: bool = True,
 ) -> None:
-    """Run an individual task in the consent graph for DSR 3.0 and queue downstream nodes
-    upon completion if applicable"""
-    with self.get_new_session() as session:
-        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
-            session, privacy_request_id, privacy_request_task_id
-        )
-        with logger.contextualize(
-            privacy_request_source=(
-                privacy_request.source.value if privacy_request.source else None
-            ),
-            collection=request_task.collection_address,
-        ):
-            log_task_starting(request_task)
-
-            if can_run_task_body(request_task):
-                # Build GraphTask resource to facilitate execution
-                with TaskResources(
-                    privacy_request,
-                    privacy_request.policy,
-                    session.query(ConnectionConfig).all(),
-                    request_task,
-                    session,
-                ) as resources:
-                    graph_task: GraphTask = create_graph_task(
-                        session, request_task, resources
-                    )
-                    access_data: List = []
-                    if upstream_results:
-                        # For consent, expected that there is only one upstream node, the root node,
-                        # and it holds the identity data (stored in a list for consistency with other
-                        # data stored in access_data)
-                        access_data = upstream_results[0].get_access_data() or []
-
-                    graph_task.consent_request(access_data[0] if access_data else {})
-
-    queue_downstream_tasks_with_retries(
+    """Run an individual task in the consent graph and queue downstream nodes upon completion."""
+    _execute_node(
         self,
         privacy_request_id,
         privacy_request_task_id,
-        CurrentStep.finalize_consent,
+        ActionType.consent,
         privacy_request_proceed,
     )
 
