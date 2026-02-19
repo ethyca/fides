@@ -21,7 +21,7 @@ class CommentType(str, EnumType):
     Enum for comment types. Indicates comment usage.
 
     - notes are internal comments.
-    - reply comments are public and may cause an email or other communciation to be sent
+    - reply is reserved for future use and is not currently supported
     """
 
     note = "note"

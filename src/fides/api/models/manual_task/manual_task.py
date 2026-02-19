@@ -47,7 +47,7 @@ class ManualTaskType(StrEnum):
     """Enum for manual task types."""
 
     privacy_request = "privacy_request"
-    # Add more task types as needed
+    jira_ticket = "jira_ticket"
 
 
 class ManualTaskParentEntityType(StrEnum):
