@@ -2080,9 +2080,7 @@ class TestAsyncCallbacks:
         # SaaS Request was marked as needing async results, so the Request
         # Task was put in a paused state
         assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
-        assert (
-            request_tasks[1].collection_address == "saas_async_callback_config:user"
-        )
+        assert request_tasks[1].collection_address == "saas_async_callback_config:user"
 
         # Terminator task is downstream so it is still in a pending state
         assert request_tasks[2].status == ExecutionLogStatus.pending

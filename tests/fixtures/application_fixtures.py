@@ -4123,7 +4123,6 @@ def served_notice_history(
     pref_1.delete(db)
 
 
-
 @pytest.fixture()
 def postgres_dataset_graph(example_datasets, connection_config):
     dataset_postgres = Dataset(**example_datasets[0])

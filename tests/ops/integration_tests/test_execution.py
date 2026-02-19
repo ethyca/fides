@@ -74,11 +74,9 @@ class TestDeleteCollection:
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
-
     def test_delete_collection_before_new_request(
         self,
         db,
-
         policy,
         read_connection_config,
         run_privacy_request_task,
@@ -86,7 +84,6 @@ class TestDeleteCollection:
         """Delete the connection config before execution starts which also
         deletes its dataset config. The graph is built with nothing in it, and no results are returned.
         """
-
 
         customer_email = "customer-4@example.com"
         data = {
@@ -113,7 +110,6 @@ class TestDeleteCollection:
         assert pr.get_raw_access_results() == {}
 
     @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
-
     @pytest.mark.asyncio
     async def test_delete_collection_while_in_progress(
         self,
@@ -123,12 +119,10 @@ class TestDeleteCollection:
         integration_postgres_config,
         example_datasets,
         privacy_request,
-
     ) -> None:
         """Assert that deleting a collection while the privacy request is in progress doesn't affect the current execution plan.
         We still proceed to visit the deleted collections, because we rely on the ConnectionConfigs already in memory.
         """
-
 
         # Create a new ConnectionConfig instead of using the fixture because I need to be able to access this
         # outside of the current session.
@@ -203,7 +197,6 @@ class TestDeleteCollection:
         db.delete(mongo_connection_config)
 
     @pytest.mark.asyncio
-
     async def test_collection_omitted_on_restart_from_failure(
         self,
         db,
@@ -213,11 +206,9 @@ class TestDeleteCollection:
         mongo_postgres_dataset_graph,
         example_datasets,
         privacy_request,
-
     ) -> None:
         """Remove secrets to make privacy request fail, then delete the connection config. Build a graph
         that does not contain the deleted dataset config and re-run."""
-
 
         integration_mongodb_config.secrets = {}
         integration_mongodb_config.save(db)
@@ -287,17 +278,14 @@ class TestDeleteCollection:
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
-
     def test_delete_connection_config_on_completed_request(
         self,
         db,
-
         policy,
         read_connection_config,
         run_privacy_request_task,
     ) -> None:
         """Delete the connection config on a completed request leaves execution logs untouched"""
-
 
         customer_email = "customer-4@example.com"
         data = {
@@ -327,7 +315,6 @@ class TestDeleteCollection:
 @pytest.mark.integration
 class TestSkipCollectionDueToDisabledConnectionConfig:
     @pytest.mark.asyncio
-
     async def test_skip_collection_new_request(
         self,
         db,
@@ -335,12 +322,10 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         integration_postgres_config,
         integration_mongodb_config,
         mongo_postgres_dataset_graph,
-
         privacy_request,
     ) -> None:
         """Mark Mongo ConnectionConfig as disabled, run access request,
         and then assert that all mongo collections are skipped"""
-
 
         integration_mongodb_config.disabled = True
         integration_mongodb_config.save(db)
@@ -464,7 +449,6 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         db.delete(mongo_connection_config)
 
     @pytest.mark.asyncio
-
     async def test_skip_collection_on_restart(
         self,
         db,
@@ -473,11 +457,9 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         integration_mongodb_config,
         mongo_postgres_dataset_graph,
         privacy_request,
-
     ) -> None:
         """Remove secrets to make privacy request fail, then disable connection config
         and confirm that datastores are skipped on re-run"""
-
 
         integration_mongodb_config.secrets = {}
         integration_mongodb_config.save(db)
@@ -544,17 +526,14 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
-
     def test_disable_connection_config_on_completed_request(
         self,
         db,
         policy,
         read_connection_config,
         run_privacy_request_task,
-
     ) -> None:
         """Disabling the connection config on a completed request leaves execution logs untouched"""
-
 
         customer_email = "customer-4@example.com"
         data = {
@@ -607,18 +586,15 @@ class TestSkipMarkedCollections:
         return dataset_graph
 
     @pytest.mark.asyncio
-
     async def test_no_collections_marked_as_skipped(
         self,
         db,
         policy,
         example_datasets,
-
         integration_postgres_config,
         privacy_request,
     ) -> None:
         """Sanity check - nothing marked as skipped. All collections expected in results."""
-
 
         postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
             example_datasets, integration_postgres_config, skipped_collection_name=None
@@ -637,18 +613,15 @@ class TestSkipMarkedCollections:
         assert "login" not in results
 
     @pytest.mark.asyncio
-
     async def test_collection_marked_as_skipped_with_nothing_downstream(
         self,
         db,
         policy,
         example_datasets,
         privacy_request,
-
         integration_postgres_config,
     ) -> None:
         """Mark the login collection as skipped.  This collection has no downstream dependencies, so skipping is fine!"""
-
 
         postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
             example_datasets,
@@ -669,19 +642,16 @@ class TestSkipMarkedCollections:
         assert "login" not in results
 
     @pytest.mark.asyncio
-
     async def test_collection_marked_as_skipped_with_dependencies(
         self,
         db,
         policy,
         privacy_request,
         example_datasets,
-
         integration_postgres_config,
     ) -> None:
         """Mark the address collection as skipped.  Many collections are marked as relying on this collection so this fails
         early when building the DatasetGraph"""
-
 
         with pytest.raises(common_exceptions.ValidationError):
             postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
@@ -702,7 +672,6 @@ class TestSkipMarkedCollections:
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-
 async def test_restart_graph_from_failure(
     db,
     policy,
@@ -711,10 +680,8 @@ async def test_restart_graph_from_failure(
     integration_mongodb_config,
     mongo_postgres_dataset_graph,
     privacy_request,
-
 ) -> None:
     """Run a failed privacy request and restart from failure"""
-
 
     # Temporarily remove the secrets from the mongo connection to prevent execution from occurring
     saved_secrets = integration_mongodb_config.secrets
@@ -806,7 +773,6 @@ async def test_restart_graph_from_failure(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-
 async def test_restart_graph_from_failure_on_different_scheduler(
     db,
     policy,
@@ -815,10 +781,8 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     integration_mongodb_config,
     mongo_postgres_dataset_graph,
     privacy_request,
-
 ) -> None:
     """Run a failed privacy request and restart from failure."""
-
 
     # Temporarily remove the secrets from the mongo connection to prevent execution from occurring
     saved_secrets = integration_mongodb_config.secrets
@@ -897,14 +861,12 @@ async def test_restart_graph_from_failure_on_different_scheduler(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-
 async def test_restart_graph_from_failure_during_erasure(
     db,
     erasure_policy,
     integration_postgres_config,
     integration_mongodb_config,
     mongo_postgres_dataset_graph,
-
     privacy_request_with_erasure_policy,
 ) -> None:
     """Run a failed privacy request and restart from failure during the erasure portion.
@@ -912,7 +874,6 @@ async def test_restart_graph_from_failure_during_erasure(
     An erasure request first runs an access and then an erasure request.
     If the erasure portion fails, and we reprocess, we don't re-run the access portion currently.
     """
-
 
     # Run access portion like normal
     access_runner_tester(

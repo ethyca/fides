@@ -20,7 +20,9 @@ class EmailPostSendStep(PipelineStep):
         return {ActionType.erasure, ActionType.consent}
 
     def execute(self, ctx: PipelineContext) -> StepResult:
-        if needs_batch_email_send(ctx.session, ctx.identity_data or {}, ctx.privacy_request):
+        if needs_batch_email_send(
+            ctx.session, ctx.identity_data or {}, ctx.privacy_request
+        ):
             ctx.privacy_request.pause_processing_for_email_send(ctx.session)
             logger.info("Privacy request exiting: awaiting email send.")
             return StepResult.HALT

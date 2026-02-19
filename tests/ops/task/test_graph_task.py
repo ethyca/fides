@@ -691,6 +691,7 @@ class TestUpdateErasureMappingFromCache:
         dsk[ROOT_COLLECTION_ADDRESS.value] = 0
         return dsk
 
+
 class TestFormatDataUseMapForCaching:
     def create_dataset(self, db, fides_key, connection_config):
         """
