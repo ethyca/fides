@@ -174,6 +174,15 @@ def patch_connection_configs(
                 "Create/update failed for connection config with key '{}'.", config.key
             )
             logger.error(e)
+            # #region agent log
+            logger.info(
+                "[cursor-debug] patch_connection_configs exception | hypothesisId=H1 | exception_type=%s | exception_msg=%s | config_key=%s | connection_type=%s",
+                type(e).__name__,
+                str(e),
+                config.key,
+                getattr(config, "connection_type", None),
+            )
+            # #endregion
             # remove secrets information from the return for security reasons.
             orig_data.pop("secrets", None)
             orig_data.pop("saas_connector_type", None)
