@@ -21,6 +21,7 @@ class UploadAccessStep(PipelineStep):
         return {ActionType.access, ActionType.erasure}
 
     def execute(self, ctx: PipelineContext) -> StepResult:
+        assert ctx.connection_configs is not None
         raw_access_results: dict = ctx.privacy_request.get_raw_access_results()
         filtered_access_results = filter_by_enabled_actions(
             raw_access_results, ctx.connection_configs

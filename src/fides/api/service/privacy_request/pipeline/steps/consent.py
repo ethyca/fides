@@ -19,6 +19,9 @@ class ConsentStep(PipelineStep):
         return {ActionType.consent}
 
     def execute(self, ctx: PipelineContext) -> StepResult:
+        assert ctx.datasets is not None
+        assert ctx.connection_configs is not None
+        assert ctx.identity_data is not None
         consent_runner(
             privacy_request=ctx.privacy_request,
             policy=ctx.policy,

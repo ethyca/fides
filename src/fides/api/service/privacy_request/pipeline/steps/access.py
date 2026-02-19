@@ -18,6 +18,9 @@ class AccessStep(PipelineStep):
         return {ActionType.access, ActionType.erasure}
 
     def execute(self, ctx: PipelineContext) -> StepResult:
+        assert ctx.dataset_graph is not None
+        assert ctx.connection_configs is not None
+        assert ctx.identity_data is not None
         access_runner(
             privacy_request=ctx.privacy_request,
             policy=ctx.policy,

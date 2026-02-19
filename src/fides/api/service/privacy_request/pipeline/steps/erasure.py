@@ -44,7 +44,9 @@ class ErasureStep(PipelineStep):
 
     def execute(self, ctx: PipelineContext) -> StepResult:
         _verify_masking_secrets(ctx.policy, ctx.privacy_request, ctx.resume_step)
-
+        assert ctx.dataset_graph is not None
+        assert ctx.connection_configs is not None
+        assert ctx.identity_data is not None
         erasure_runner(
             privacy_request=ctx.privacy_request,
             policy=ctx.policy,

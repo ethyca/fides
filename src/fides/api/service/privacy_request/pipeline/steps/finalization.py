@@ -135,7 +135,7 @@ class FinalizationStep(PipelineStep):
                 ctx.session,
                 ctx.policy,
                 access_result_urls,
-                ctx.identity_data,
+                ctx.identity_data or {},
                 ctx.privacy_request.property_id,
                 ctx.privacy_request.id,
             )
@@ -179,7 +179,7 @@ class FinalizationStep(PipelineStep):
         try:
             email_sent = initiate_consent_request_completion_email(
                 ctx.session,
-                ctx.identity_data,
+                ctx.identity_data or {},
                 ctx.privacy_request.property_id,
             )
             if email_sent:
