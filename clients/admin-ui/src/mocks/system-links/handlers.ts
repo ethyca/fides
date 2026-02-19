@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { random } from "lodash";
 import { rest } from "msw";
 
 import { CONNECTION_ROUTE, PLUS_CONNECTION_API_ROUTE } from "~/constants";
@@ -210,7 +211,21 @@ export const systemLinksHandlers = () => {
         connectionMap.set(mockConn.key, {
           ...mockConn,
           system_key: null,
-          linked_systems: [],
+          linked_systems:
+            random(0, 1) > 0.5
+              ? [
+                  {
+                    system_fides_key: "test_system_1",
+                    system_name: "Test System 1",
+                    link_type: "dsr",
+                  },
+                  {
+                    system_fides_key: "some_new_system",
+                    system_name: "Some New System",
+                    link_type: "monitoring",
+                  },
+                ]
+              : [],
         });
       });
 
