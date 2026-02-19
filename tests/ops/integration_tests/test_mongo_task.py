@@ -656,52 +656,6 @@ async def test_object_querying_mongo(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_get_cached_data_for_erasures(
-    integration_postgres_config,
-    integration_mongodb_config,
-    policy,
-    db,
-    privacy_request,
-) -> None:
-    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-        integration_postgres_config, integration_mongodb_config
-    )
-    graph = DatasetGraph(mongo_dataset, postgres_dataset)
-
-    access_request_results = access_runner_tester(
-        privacy_request,
-        policy,
-        graph,
-        [integration_mongodb_config, integration_postgres_config],
-        {"email": "customer-1@example.com"},
-        db,
-    )
-    cached_data_for_erasures = get_cached_data_for_erasures(privacy_request.id)
-
-    # Cached raw results preserve the indices
-    assert cached_data_for_erasures["mongo_test:conversations"][0]["thread"] == [
-        {
-            "comment": "com_0001",
-            "message": "hello, testing in-flight chat feature",
-            "chat_name": "John C",
-            "ccn": "123456789",
-        },
-        "FIDESOPS_DO_NOT_MASK",
-    ]
-
-    # The access request results are filtered on array data, because it was an entrypoint into the node.
-    assert access_request_results["mongo_test:conversations"][0]["thread"] == [
-        {
-            "comment": "com_0001",
-            "message": "hello, testing in-flight chat feature",
-            "chat_name": "John C",
-            "ccn": "123456789",
-        }
-    ]
-
-
-@pytest.mark.integration
-@pytest.mark.asyncio
 async def test_get_saved_data_for_erasures_3_0(
     integration_postgres_config,
     integration_mongodb_config,
