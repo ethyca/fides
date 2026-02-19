@@ -1,3 +1,4 @@
+import { ConfigProvider } from "antd/lib";
 import {
   darkAntTheme,
   defaultAntTheme,
@@ -5,11 +6,10 @@ import {
   ThemeModeProvider,
   useThemeMode,
 } from "fidesui";
-import { useFlags } from "~/features/common/features";
-import { ConfigProvider } from "antd/lib";
-import * as React from "react";
 import palette from "fidesui/src/palette/palette.module.scss";
+import * as React from "react";
 
+import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
 
@@ -22,8 +22,11 @@ const HomeContainerInner = () => {
     flags: { alphaDarkMode },
   } = useFlags();
 
-  const activeTheme = resolvedMode === "dark" ? darkAntTheme : defaultAntTheme
-  const bgColor = resolvedMode === "dark" ? palette.FIDESUI_BG_MINOS : palette.FIDESUI_FULL_WHITE
+  const activeTheme = resolvedMode === "dark" ? darkAntTheme : defaultAntTheme;
+  const bgColor =
+    resolvedMode === "dark"
+      ? palette.FIDESUI_BG_MINOS
+      : palette.FIDESUI_FULL_WHITE;
 
   return (
     <ConfigProvider theme={activeTheme}>
@@ -39,7 +42,7 @@ const HomeContainerInner = () => {
           <Flex vertical gap={40} style={{ paddingBottom: 24 }}>
             {/* NOTE: temporary button placement for testing */}
             {alphaDarkMode && (
-              <div className="absolute pt-2 pl-2">
+              <div className="absolute pl-2 pt-2">
                 <ThemeModeSegmented />
               </div>
             )}
@@ -58,11 +61,15 @@ const HomeContainer = () => {
     flags: { alphaDarkMode },
   } = useFlags();
   return (
-    <ThemeModeProvider defaultMode="light" locked={!alphaDarkMode} scoped wrapperStyle={{ width: "100%" }}>
+    <ThemeModeProvider
+      defaultMode="light"
+      locked={!alphaDarkMode}
+      scoped
+      wrapperStyle={{ width: "100%" }}
+    >
       <HomeContainerInner />
     </ThemeModeProvider>
   );
-}
-
+};
 
 export default HomeContainer;
