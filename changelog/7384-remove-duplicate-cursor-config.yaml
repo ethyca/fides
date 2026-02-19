@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Removed duplicate cursor config files now managed in shared cursor repo
+pr: 7384
+labels: []
