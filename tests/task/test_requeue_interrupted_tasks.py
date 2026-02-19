@@ -414,8 +414,8 @@ class TestRequeueInterruptedTasks:
     def test_in_processing_with_callback_async_task_and_stuck_subtask_is_not_canceled(
         self,
         mock_celery_tasks_in_flight,
-        mock_requeue_privacy_request,
         mock_get_task_ids_from_dsr_queue,
+        mock_requeue_privacy_request,
         mock_cancel_interrupted_tasks,
         db,
         policy,
@@ -457,6 +457,7 @@ class TestRequeueInterruptedTasks:
         )
         try:
             requeue_interrupted_tasks.apply().get()
+            mock_get_task_ids_from_dsr_queue.assert_called_once()
             mock_requeue_privacy_request.assert_not_called()
             mock_cancel_interrupted_tasks.assert_not_called()
         finally:
@@ -480,8 +481,8 @@ class TestRequeueInterruptedTasks:
     def test_in_processing_with_polling_async_task_and_stuck_subtask_is_not_canceled(
         self,
         mock_celery_tasks_in_flight,
-        mock_requeue_privacy_request,
         mock_get_task_ids_from_dsr_queue,
+        mock_requeue_privacy_request,
         mock_cancel_interrupted_tasks,
         db,
         policy,
@@ -522,6 +523,7 @@ class TestRequeueInterruptedTasks:
         )
         try:
             requeue_interrupted_tasks.apply().get()
+            mock_get_task_ids_from_dsr_queue.assert_called_once()
             mock_requeue_privacy_request.assert_not_called()
             mock_cancel_interrupted_tasks.assert_not_called()
         finally:
