@@ -4212,8 +4212,3 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Exceptions are no longer raised when sending `AnalyticsEvent`s on Windows
 - Running `fidesctl init` now generates a `server_host` and `server_protocol`
   rather than `server_url`
-
-### Added
-
-- Added ability to toggle light/dark mode through ant design theming, scoped only to Home page
-- Created new `alphaDarkMode` flag to hide theme switcher UI
