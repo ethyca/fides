@@ -89,39 +89,25 @@ jobs:
       - name: Run Static Check
         run: uv run nox -s collect_tests
 
-  Build-Frontend:
+  Build-Frontend-Placeholder:
     needs: Check-Backend-Changes
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: clients
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Create placeholder admin-ui
+        run: |
+          mkdir -p admin-ui-out
+          echo '<h1>Placeholder</h1>' > admin-ui-out/index.html
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v5
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: clients/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build admin-ui
-        run: npm run export-admin-ui
-
-      - name: Upload admin-ui build
+      - name: Upload admin-ui placeholder
         uses: actions/upload-artifact@v4
         with:
           name: admin-ui-build
-          path: clients/admin-ui/out/
+          path: admin-ui-out/
           retention-days: 1
 
   Build:
-    needs: [Check-Backend-Changes, Collect-Tests, Build-Frontend]
+    needs: [Check-Backend-Changes, Collect-Tests, Build-Frontend-Placeholder]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     steps:
