@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   CUSTOM_TAG_COLOR,
+  Divider,
   Flex,
   IconBadge,
   Icons,
@@ -94,7 +95,8 @@ export const AssessmentCard = ({
           </Tag>
         )}
 
-        <div className={styles.separator}>
+        <Divider className="my-3" />
+        <div>
           {isComplete ? (
             <Flex
               align="center"
