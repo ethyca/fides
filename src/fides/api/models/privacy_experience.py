@@ -122,7 +122,7 @@ class PrivacyExperienceConfigBase:
     )  # base is nullable for privacy experience config history
 
     resurface_behavior = Column(
-        ARRAY(EnumColumn(ResurfaceBehavior)),
+        ARRAY(EnumColumn(ResurfaceBehavior, native_enum=False)),
         nullable=True,
     )
 

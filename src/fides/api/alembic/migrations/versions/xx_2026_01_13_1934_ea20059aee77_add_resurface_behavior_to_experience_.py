@@ -7,7 +7,6 @@ Create Date: 2026-01-13 19:34:06.296198
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import ARRAY
 
 
 # revision identifiers, used by Alembic.
@@ -18,17 +17,12 @@ depends_on = None
 
 
 def upgrade():
-    # Create the resurface behavior enum type
-    op.execute(
-        "CREATE TYPE resurfacebehavior AS ENUM ('reject', 'dismiss')"
-    )
-
     # Add resurface_behavior array column to all three experience config tables
     op.add_column(
         "experienceconfigtemplate",
         sa.Column(
             "resurface_behavior",
-            ARRAY(sa.Enum("reject", "dismiss", name="resurfacebehavior")),
+            sa.ARRAY(sa.String()),
             nullable=True,
         ),
     )
@@ -36,7 +30,7 @@ def upgrade():
         "privacyexperienceconfig",
         sa.Column(
             "resurface_behavior",
-            ARRAY(sa.Enum("reject", "dismiss", name="resurfacebehavior")),
+            sa.ARRAY(sa.String()),
             nullable=True,
         ),
     )
@@ -44,7 +38,7 @@ def upgrade():
         "privacyexperienceconfighistory",
         sa.Column(
             "resurface_behavior",
-            ARRAY(sa.Enum("reject", "dismiss", name="resurfacebehavior")),
+            sa.ARRAY(sa.String()),
             nullable=True,
         ),
     )
@@ -55,5 +49,3 @@ def downgrade():
     op.drop_column("privacyexperienceconfighistory", "resurface_behavior")
     op.drop_column("privacyexperienceconfig", "resurface_behavior")
     op.drop_column("experienceconfigtemplate", "resurface_behavior")
-    # Drop the enum type
-    op.execute("DROP TYPE IF EXISTS resurfacebehavior")
