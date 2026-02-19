@@ -1,8 +1,9 @@
 import {
   Button,
   ChakraBox as Box,
-  ChakraFlex as Flex,
+  ChakraFlex,
   ChakraSpacer as Spacer,
+  Flex,
   TabsProps,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
@@ -85,21 +86,21 @@ export const useFeatureBasedTabs = ({
         label: "Connection",
         key: "connection",
         children: (
-          <Box>
+          <Flex vertical gap="middle">
             {supportsConnectionTest && (
-              <Flex
+              <ChakraFlex
                 borderRadius="md"
                 outline="1px solid"
                 outlineColor="gray.100"
                 align="center"
                 p={3}
               >
-                <Flex flexDirection="column">
+                <ChakraFlex flexDirection="column">
                   <ConnectionStatusNotice
                     testData={testData}
                     connectionOption={integrationOption}
                   />
-                </Flex>
+                </ChakraFlex>
                 <Spacer />
                 <div className="flex gap-4">
                   {needsAuthorization && (
@@ -123,7 +124,7 @@ export const useFeatureBasedTabs = ({
                     Manage
                   </Button>
                 </div>
-              </Flex>
+              </ChakraFlex>
             )}
             <ConfigureIntegrationModal
               isOpen={isOpen}
@@ -134,7 +135,7 @@ export const useFeatureBasedTabs = ({
             <IntegrationLinkedSystems connection={connection!} />
             {overview}
             {instructions}
-          </Box>
+          </Flex>
         ),
       });
     }
