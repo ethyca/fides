@@ -89,13 +89,50 @@ jobs:
       - name: Run Static Check
         run: uv run nox -s collect_tests
 
+  Build-Frontend:
+    needs: Check-Backend-Changes
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: clients/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build admin-ui
+        run: npm run export-admin-ui
+
+      - name: Upload admin-ui build
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-ui-build
+          path: clients/admin-ui/out/
+          retention-days: 1
+
   Build:
-    needs: [Check-Backend-Changes, Collect-Tests]
+    needs: [Check-Backend-Changes, Collect-Tests, Build-Frontend]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download admin-ui build
+        uses: actions/download-artifact@v4
+        with:
+          name: admin-ui-build
+          path: prebuilt/fides/clients/admin-ui/out
 
       - name: Set up Docker Buildx
         id: buildx
@@ -107,6 +144,8 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           build-args: PYTHON_VERSION=${{ env.DEFAULT_PYTHON_VERSION }}
+          build-contexts: |
+            built_frontend=prebuilt
           target: test
           outputs: type=docker,dest=/tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
           push: false
