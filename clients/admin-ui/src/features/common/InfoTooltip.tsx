@@ -6,7 +6,12 @@ interface InfoTooltipProps extends Omit<TooltipProps, "children" | "title"> {
 
 export const InfoTooltip = ({ label, ...props }: InfoTooltipProps) =>
   label ? (
-    <Tooltip title={label} placement="right" {...props}>
+    <Tooltip
+      title={label}
+      trigger={["hover", "focus"]}
+      placement="right"
+      {...props}
+    >
       <span
         style={{ color: "var(--fidesui-neutral-200)", display: "inline-block" }}
       >

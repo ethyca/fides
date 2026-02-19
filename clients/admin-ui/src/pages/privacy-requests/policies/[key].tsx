@@ -34,8 +34,8 @@ const PolicyDetailPage: NextPage = () => {
     () => [
       {
         key: TAB_KEYS.RULES,
-        label: "Rules",
-        children: <RulesTab />,
+        label: `Rules (${policy?.rules?.length ?? 0})`,
+        children: <RulesTab rules={policy?.rules ?? []} />,
       },
       {
         key: TAB_KEYS.CONDITIONS,
@@ -43,7 +43,7 @@ const PolicyDetailPage: NextPage = () => {
         children: <PolicyConditionsTab />,
       },
     ],
-    [],
+    [policy?.rules],
   );
 
   const { activeTab, onTabChange } = useURLHashedTabs({
