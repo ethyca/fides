@@ -97,6 +97,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
     ConnectionType.manual_task.value: ManualTaskConnector,
+    ConnectionType.jira_ticket.value: ManualTaskConnector,
     ConnectionType.mariadb.value: MariaDBConnector,
     ConnectionType.mongodb.value: MongoDBConnector,
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,
