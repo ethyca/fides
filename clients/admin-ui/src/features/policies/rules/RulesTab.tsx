@@ -1,7 +1,7 @@
 import { Collapse, CollapseProps, Empty, Flex, Tag, Typography } from "fidesui";
 import { useMemo } from "react";
 
-import RulePanel from "~/features/policies/rules/RulePanel";
+import { RulePanel } from "~/features/policies/rules/RulePanel";
 import { RuleResponse } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
@@ -10,10 +10,10 @@ interface RulesTabProps {
   rules: RuleResponse[];
 }
 
-const RulesTab = ({ rules = [] }: RulesTabProps) => {
+export const RulesTab = ({ rules = [] }: RulesTabProps) => {
   const collapseItems: CollapseProps["items"] = useMemo(
     () =>
-      rules?.map((rule: RuleResponse) => ({
+      rules.map((rule: RuleResponse) => ({
         key: rule.key ?? rule.name,
         label: (
           <Flex align="center" gap="small">
@@ -25,10 +25,6 @@ const RulesTab = ({ rules = [] }: RulesTabProps) => {
       })),
     [rules],
   );
-
-  if (!rules || rules.length === 0) {
-    return <Empty description="No rules configured for this policy" />;
-  }
 
   return (
     <Flex vertical gap="large">
@@ -59,5 +55,3 @@ const RulesTab = ({ rules = [] }: RulesTabProps) => {
     </Flex>
   );
 };
-
-export default RulesTab;

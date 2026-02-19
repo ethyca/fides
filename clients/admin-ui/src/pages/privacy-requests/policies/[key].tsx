@@ -10,7 +10,7 @@ import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import PolicyConditionsTab from "~/features/policies/conditions/PolicyConditionsTab";
 import PolicyBox from "~/features/policies/PolicyBox";
-import RulesTab from "~/features/policies/rules/RulesTab";
+import { RulesTab } from "~/features/policies/rules/RulesTab";
 import { useGetPolicyQuery } from "~/features/policy/policy.slice";
 
 const TAB_KEYS = {
