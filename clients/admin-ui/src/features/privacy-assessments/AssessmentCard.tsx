@@ -1,11 +1,11 @@
 import classNames from "classnames";
 import {
+  Avatar,
   Button,
   Card,
   CUSTOM_TAG_COLOR,
   Divider,
   Flex,
-  IconBadge,
   Icons,
   Progress,
   Tag,
@@ -103,14 +103,12 @@ export const AssessmentCard = ({
               gap="middle"
               className={styles.completeContainer}
             >
-              <IconBadge
+              <Avatar
                 shape="circle"
-                variant="filled"
-                color="var(--fidesui-success)"
                 size={28}
-              >
-                <Icons.Checkmark size={14} />
-              </IconBadge>
+                icon={<Icons.Checkmark size={14} />}
+                style={{ backgroundColor: "var(--fidesui-success)" }}
+              />
               <div>
                 <Text strong type="success" className={styles.captionText}>
                   Assessment complete
