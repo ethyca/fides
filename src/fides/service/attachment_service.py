@@ -239,8 +239,8 @@ class AttachmentService:
                     "Storage cleanup during rollback (may not exist yet): {}",
                     storage_err,
                 )
-            for ref in attachment.references:
-                db.delete(ref)
+            for existing_ref in attachment.references:
+                db.delete(existing_ref)
             db.delete(attachment)
             db.commit()
             raise
