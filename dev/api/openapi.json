@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.3b2.dev40+ge005d4e4a"
+    "version": "2.78.3b2.dev41+g7479a64f5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2790,6 +2790,69 @@
                   },
                   {
                     "type": "object",
+                    "properties": {
+                      "access_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Token"
+                      },
+                      "refresh_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Refresh Token"
+                      },
+                      "token_expiry": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Token Expiry"
+                      },
+                      "cloud_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Cloud Id"
+                      },
+                      "site_url": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Site Url"
+                      }
+                    },
+                    "title": "JiraTicketDocsSchema",
+                    "description": "Jira Ticket Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
                     "properties": {},
                     "title": "ManualWebhookDocsSchema",
                     "description": "Manual Webhooks Secrets Schema for API Docs"
@@ -5536,6 +5599,69 @@
                   },
                   {
                     "type": "object",
+                    "properties": {
+                      "access_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Token"
+                      },
+                      "refresh_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Refresh Token"
+                      },
+                      "token_expiry": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Token Expiry"
+                      },
+                      "cloud_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Cloud Id"
+                      },
+                      "site_url": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Site Url"
+                      }
+                    },
+                    "title": "JiraTicketDocsSchema",
+                    "description": "Jira Ticket Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
                     "properties": {},
                     "title": "ManualWebhookDocsSchema",
                     "description": "Manual Webhooks Secrets Schema for API Docs"
@@ -6884,6 +7010,69 @@
                     ],
                     "title": "GoogleCloudSQLPostgresDocsSchema",
                     "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "access_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Token"
+                      },
+                      "refresh_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Refresh Token"
+                      },
+                      "token_expiry": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Token Expiry"
+                      },
+                      "cloud_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Cloud Id"
+                      },
+                      "site_url": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Site Url"
+                      }
+                    },
+                    "title": "JiraTicketDocsSchema",
+                    "description": "Jira Ticket Secrets Schema for API Docs"
                   },
                   {
                     "type": "object",
@@ -21347,6 +21536,7 @@
           "manual",
           "manual_webhook",
           "manual_task",
+          "jira_ticket",
           "mariadb",
           "mongodb",
           "mssql",
@@ -22319,6 +22509,69 @@
                 ],
                 "title": "GoogleCloudSQLPostgresDocsSchema",
                 "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+              },
+              {
+                "properties": {
+                  "access_token": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Access Token"
+                  },
+                  "refresh_token": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Refresh Token"
+                  },
+                  "token_expiry": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Token Expiry"
+                  },
+                  "cloud_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Cloud Id"
+                  },
+                  "site_url": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Site Url"
+                  }
+                },
+                "type": "object",
+                "title": "JiraTicketDocsSchema",
+                "description": "Jira Ticket Secrets Schema for API Docs"
               },
               {
                 "properties": {},
@@ -26488,6 +26741,69 @@
         ],
         "title": "IntegrationFeature",
         "description": "Features that can be enabled for different integration types.\nThese control which tabs and functionality are available in the integration detail view."
+      },
+      "JiraTicketDocsSchema": {
+        "properties": {
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          },
+          "token_expiry": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Expiry"
+          },
+          "cloud_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cloud Id"
+          },
+          "site_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site Url"
+          }
+        },
+        "type": "object",
+        "title": "JiraTicketDocsSchema",
+        "description": "Jira Ticket Secrets Schema for API Docs"
       },
       "LegalBasisForProcessingEnum": {
         "type": "string",
@@ -33115,6 +33431,69 @@
                 ],
                 "title": "GoogleCloudSQLPostgresDocsSchema",
                 "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+              },
+              {
+                "properties": {
+                  "access_token": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Access Token"
+                  },
+                  "refresh_token": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Refresh Token"
+                  },
+                  "token_expiry": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Token Expiry"
+                  },
+                  "cloud_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Cloud Id"
+                  },
+                  "site_url": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Site Url"
+                  }
+                },
+                "type": "object",
+                "title": "JiraTicketDocsSchema",
+                "description": "Jira Ticket Secrets Schema for API Docs"
               },
               {
                 "properties": {},
