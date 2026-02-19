@@ -21,7 +21,7 @@ export const useIntegrationFilters = () => {
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { entraMonitor, newIntegrationManagement, webMonitor },
+    flags: { newIntegrationManagement, webMonitor },
   } = useFlags();
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
@@ -32,14 +32,6 @@ export const useIntegrationFilters = () => {
 
   const allIntegrationTypes = useMemo(() => {
     let staticIntegrations = INTEGRATION_TYPE_LIST;
-
-    // Filter out Entra when entraMonitor flag is disabled
-    if (!entraMonitor) {
-      staticIntegrations = staticIntegrations.filter(
-        (integration) =>
-          integration.placeholder.connection_type !== ConnectionType.ENTRA,
-      );
-    }
 
     // Filter out SaaS integrations if the new integration management flag is disabled
     if (!newIntegrationManagement) {
@@ -73,7 +65,7 @@ export const useIntegrationFilters = () => {
       : [];
 
     return [...staticIntegrations, ...dynamicSaasIntegrations];
-  }, [connectionTypes, entraMonitor, newIntegrationManagement]);
+  }, [connectionTypes, newIntegrationManagement]);
 
   const availableCategories = useMemo(() => {
     const allCategories: IntegrationCategoryFilter[] = [
@@ -110,13 +102,6 @@ export const useIntegrationFilters = () => {
       );
     }
 
-    // Filter out Entra when entraMonitor flag is disabled
-    if (!entraMonitor) {
-      filtered = filtered.filter(
-        (i) => i.placeholder.connection_type !== ConnectionType.ENTRA,
-      );
-    }
-
     // Filter by search term (name only)
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
@@ -130,7 +115,7 @@ export const useIntegrationFilters = () => {
       const nameB = b.placeholder.name || "";
       return nameA.localeCompare(nameB);
     });
-  }, [searchTerm, selectedCategory, webMonitor, entraMonitor, allIntegrationTypes]);
+  }, [searchTerm, selectedCategory, webMonitor, allIntegrationTypes]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);
