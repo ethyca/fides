@@ -141,6 +141,19 @@ class SaaSSchemaFactory:
                 "multiselect": connector_param.multiselect,
                 "allowed_domains": connector_param.allowed_domains,
             }
+
+            is_single_exact_domain = (
+                connector_param.allowed_domains is not None
+                and len(connector_param.allowed_domains) == 1
+                and "*" not in connector_param.allowed_domains[0]
+            )
+            if is_single_exact_domain:
+                extra["hidden"] = True
+
+            default_value = connector_param.default_value
+            if is_single_exact_domain and not default_value:
+                default_value = connector_param.allowed_domains[0]
+
             field_definitions[connector_param.name] = (
                 (
                     Optional[
@@ -149,11 +162,11 @@ class SaaSSchemaFactory:
                     Field(
                         title=connector_param.label,
                         description=connector_param.description,
-                        default=connector_param.default_value,
+                        default=default_value,
                         json_schema_extra=extra,
                     ),
                 )
-                if connector_param.default_value
+                if default_value
                 else (
                     param_type,
                     FieldInfo(

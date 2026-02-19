@@ -192,6 +192,16 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
     if schema.get("additionalProperties"):
         schema.pop("additionalProperties")
 
+    hidden_props = [
+        name
+        for name, attrs in schema["properties"].items()
+        if attrs.get("hidden") is True
+    ]
+    for prop_name in hidden_props:
+        schema["properties"].pop(prop_name)
+        if prop_name in schema.get("required", []):
+            schema["required"].remove(prop_name)
+
     # set an empty array for the 'required' key, if there are no required fields on the schema
     # this helps the FE, which is expecting _some_ value here, even if it's an empty list
     if "required" not in schema:
