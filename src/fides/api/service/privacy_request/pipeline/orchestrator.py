@@ -3,7 +3,6 @@ from __future__ import annotations
 from loguru import logger
 
 from fides.api.common_exceptions import (
-    PrivacyRequestExit,
     PrivacyRequestPaused,
     ValidationError,
 )
@@ -74,10 +73,6 @@ class RequestPipelineOrchestrator:
         except PrivacyRequestPaused as exc:
             ctx.privacy_request.pause_processing(ctx.session)
             _log_warning(exc, CONFIG.dev_mode)
-        except PrivacyRequestExit:
-            logger.info(
-                "Privacy Request exited awaiting sub task processing (Request Tasks)"
-            )
         except ValidationError as exc:
             logger.error(f"Error validating dataset references: {str(exc)}")
             ctx.privacy_request.add_error_execution_log(

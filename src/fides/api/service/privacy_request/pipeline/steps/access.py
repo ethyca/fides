@@ -5,7 +5,7 @@ from typing import Optional
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.service.privacy_request.pipeline.base import PipelineStep, StepResult
 from fides.api.service.privacy_request.pipeline.context import PipelineContext
-from fides.api.task.graph_runners import access_runner
+from fides.api.task.action_strategies.registry import ACTION_STRATEGIES
 
 
 class AccessStep(PipelineStep):
@@ -18,16 +18,5 @@ class AccessStep(PipelineStep):
         return {ActionType.access, ActionType.erasure}
 
     def execute(self, ctx: PipelineContext) -> StepResult:
-        assert ctx.dataset_graph is not None
-        assert ctx.connection_configs is not None
-        assert ctx.identity_data is not None
-        access_runner(
-            privacy_request=ctx.privacy_request,
-            policy=ctx.policy,
-            graph=ctx.dataset_graph,
-            connection_configs=ctx.connection_configs,
-            identity=ctx.identity_data,
-            session=ctx.session,
-            privacy_request_proceed=True,
-        )
-        return StepResult.CONTINUE
+        ACTION_STRATEGIES[ActionType.access].run_pipeline_action(ctx)
+        return StepResult.HALT

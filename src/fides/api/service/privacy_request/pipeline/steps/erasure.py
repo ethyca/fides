@@ -8,8 +8,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.service.privacy_request.pipeline.base import PipelineStep, StepResult
 from fides.api.service.privacy_request.pipeline.context import PipelineContext
-from fides.api.task.graph_runners import erasure_runner
-from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.api.task.action_strategies.registry import ACTION_STRATEGIES
 from fides.api.util.cache import get_all_masking_secret_keys
 
 
@@ -44,17 +43,5 @@ class ErasureStep(PipelineStep):
 
     def execute(self, ctx: PipelineContext) -> StepResult:
         _verify_masking_secrets(ctx.policy, ctx.privacy_request, ctx.resume_step)
-        assert ctx.dataset_graph is not None
-        assert ctx.connection_configs is not None
-        assert ctx.identity_data is not None
-        erasure_runner(
-            privacy_request=ctx.privacy_request,
-            policy=ctx.policy,
-            graph=ctx.dataset_graph,
-            connection_configs=ctx.connection_configs,
-            identity=ctx.identity_data,
-            access_request_data=get_cached_data_for_erasures(ctx.privacy_request.id),
-            session=ctx.session,
-            privacy_request_proceed=True,
-        )
-        return StepResult.CONTINUE
+        ACTION_STRATEGIES[ActionType.erasure].run_pipeline_action(ctx)
+        return StepResult.HALT

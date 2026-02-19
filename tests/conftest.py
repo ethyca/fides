@@ -31,7 +31,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -59,7 +58,11 @@ from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
+from fides.api.task.create_request_tasks import (
+    run_access_request,
+    run_consent_request,
+    run_erasure_request,
+)
 from fides.api.tasks import celery_app, celery_healthcheck
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
@@ -924,18 +927,15 @@ def access_runner_tester(
     session: Session,
 ):
     """Run an access request and wait for tasks to complete, returning raw results."""
-    try:
-        access_runner(
-            privacy_request,
-            policy,
-            graph,
-            connection_configs,
-            identity,
-            session,
-            privacy_request_proceed=False,
-        )
-    except PrivacyRequestExit:
-        pass
+    run_access_request(
+        privacy_request=privacy_request,
+        policy=policy,
+        graph=graph,
+        connection_configs=connection_configs,
+        identity=identity,
+        session=session,
+        privacy_request_proceed=False,
+    )
     wait_for_tasks_to_complete(session, privacy_request, ActionType.access)
     return privacy_request.get_raw_access_results()
 
@@ -950,19 +950,11 @@ def erasure_runner_tester(
     session: Session,
 ):
     """Run an erasure request and wait for tasks to complete, returning masking counts."""
-    try:
-        erasure_runner(
-            privacy_request,
-            policy,
-            graph,
-            connection_configs,
-            identity,
-            access_request_data,
-            session,
-            privacy_request_proceed=False,
-        )
-    except PrivacyRequestExit:
-        pass
+    run_erasure_request(
+        privacy_request=privacy_request,
+        session=session,
+        privacy_request_proceed=False,
+    )
     wait_for_tasks_to_complete(session, privacy_request, ActionType.erasure)
     return privacy_request.get_raw_masking_counts()
 
@@ -976,18 +968,13 @@ def consent_runner_tester(
     session: Session,
 ):
     """Run a consent request and wait for tasks to complete, returning consent results."""
-    try:
-        consent_runner(
-            privacy_request,
-            policy,
-            graph,
-            connection_configs,
-            identity,
-            session,
-            privacy_request_proceed=False,
-        )
-    except PrivacyRequestExit:
-        pass
+    run_consent_request(
+        privacy_request=privacy_request,
+        graph=graph,
+        identity=identity,
+        session=session,
+        privacy_request_proceed=False,
+    )
     wait_for_tasks_to_complete(session, privacy_request, ActionType.consent)
     return privacy_request.get_consent_results()
 
