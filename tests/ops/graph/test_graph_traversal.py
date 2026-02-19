@@ -782,9 +782,7 @@ def test_property_filtered_datasets_excluded_from_traversal() -> None:
                 fields=[
                     ScalarField(
                         name="user_id",
-                        references=[
-                            (FieldAddress("ds_a", "users", "id"), "from")
-                        ],
+                        references=[(FieldAddress("ds_a", "users", "id"), "from")],
                     ),
                     ScalarField(name="account_id"),
                 ],
@@ -803,9 +801,7 @@ def test_property_filtered_datasets_excluded_from_traversal() -> None:
                         name="account_id",
                         references=[
                             (
-                                FieldAddress(
-                                    "ds_bridge", "accounts", "account_id"
-                                ),
+                                FieldAddress("ds_bridge", "accounts", "account_id"),
                                 "from",
                             )
                         ],
@@ -866,8 +862,6 @@ def test_property_filtered_datasets_excluded_from_traversal() -> None:
         == PropertyScope.IN_SCOPE
     )
     assert (
-        graph.nodes[
-            CollectionAddress("ds_b", "transactions")
-        ].collection.property_scope
+        graph.nodes[CollectionAddress("ds_b", "transactions")].collection.property_scope
         == PropertyScope.IN_SCOPE
     )
