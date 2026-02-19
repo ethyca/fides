@@ -1516,6 +1516,11 @@ class PrivacyRequest(
                     [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
                 ),
             ):
+                if (
+                    task.collection
+                    and task.collection.get("property_scope") == "traversal_only"
+                ):
+                    continue
                 final_results[task.collection_address] = task.get_access_data()
 
             return final_results
