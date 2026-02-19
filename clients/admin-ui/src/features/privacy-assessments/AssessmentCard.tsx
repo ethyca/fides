@@ -30,10 +30,10 @@ const { Title } = Typography;
 type TextType = React.ComponentProps<typeof Typography.Text>["type"];
 
 function getStatusTextType(status: AssessmentStatus): TextType {
-  if (status === "completed") {
+  if (status === AssessmentStatus.COMPLETED) {
     return "success";
   }
-  if (status === "outdated") {
+  if (status === AssessmentStatus.OUTDATED) {
     return "danger";
   }
   return "secondary";
