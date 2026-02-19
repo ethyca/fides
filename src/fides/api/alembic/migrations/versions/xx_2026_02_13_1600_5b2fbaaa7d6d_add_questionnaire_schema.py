@@ -5,7 +5,7 @@ Adds database tables for SME questionnaire sessions:
 - chat_message: stores per-message conversation history with sender info
 
 Revision ID: 5b2fbaaa7d6d
-Revises: a0109cdde920
+Revises: cc9a5690f9e7
 Create Date: 2026-02-13 16:00:00.000000
 
 """
@@ -16,7 +16,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "5b2fbaaa7d6d"
-down_revision = "a0109cdde920"
+down_revision = "cc9a5690f9e7"
 branch_labels = None
 depends_on = None
 
