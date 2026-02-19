@@ -107,7 +107,7 @@ jobs:
           retention-days: 1
 
   Build:
-    needs: [Check-Backend-Changes, Collect-Tests, Build-Frontend-Placeholder]
+    needs: [Check-Backend-Changes, Build-Frontend-Placeholder]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     steps:
