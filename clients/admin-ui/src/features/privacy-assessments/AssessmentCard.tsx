@@ -134,7 +134,7 @@ export const AssessmentCard = ({
                 <Text type={getStatusTextType(status)} size="sm">
                   {statusLabel}
                 </Text>
-                <Button type="link" style={{ padding: 0 }} onClick={onClick}>
+                <Button type="link" className="p-0" onClick={onClick}>
                   Resume
                 </Button>
               </Flex>
