@@ -1,6 +1,7 @@
 import {
   ChakraBox as Box,
   ChakraVStack as VStack,
+  PageSpinner,
   useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -8,7 +9,6 @@ import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
 import { CustomTextInput } from "~/features/common/form/inputs";
@@ -294,7 +294,7 @@ const ConfigureIntegrationForm = ({
   const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
   if (secretsSchemaIsLoading) {
-    return <FidesSpinner />;
+    return <PageSpinner />;
   }
 
   const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>

@@ -17,7 +17,6 @@ import React, { useCallback, useMemo, useState } from "react";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFlags } from "~/features/common/features";
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { useConnectionLogo } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
@@ -299,27 +298,23 @@ const IntegrationListView: NextPage = () => {
         <SharedConfigModal />
       </div>
 
-      {isLoading ? (
-        <FidesSpinner />
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={tableData}
-          rowKey="key"
-          pagination={paginationConfig}
-          loading={isLoading}
-          size="small"
-          locale={tableLocale}
-          bordered
-          onRow={(record) => ({
-            onClick: () => handleManageClick(record),
-            "data-testid": `integration-info-${record.key}`,
-          })}
-          rowClassName="cursor-pointer"
-          onChange={handleTableChange}
-          data-testid="integrations-table"
-        />
-      )}
+      <Table
+        columns={columns}
+        dataSource={tableData}
+        rowKey="key"
+        pagination={paginationConfig}
+        loading={isLoading}
+        size="small"
+        locale={tableLocale}
+        bordered
+        onRow={(record) => ({
+          onClick: () => handleManageClick(record),
+          "data-testid": `integration-info-${record.key}`,
+        })}
+        rowClassName="cursor-pointer"
+        onChange={handleTableChange}
+        data-testid="integrations-table"
+      />
 
       <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
     </Layout>

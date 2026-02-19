@@ -13,7 +13,7 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
@@ -47,7 +47,7 @@ class ManualTaskType(StrEnum):
     """Enum for manual task types."""
 
     privacy_request = "privacy_request"
-    # Add more task types as needed
+    jira_ticket = "jira_ticket"
 
 
 class ManualTaskParentEntityType(StrEnum):
@@ -499,6 +499,9 @@ class ManualTaskConfig(Base):
         EnumColumn(ManualTaskExecutionTiming),
         nullable=False,
         default=ManualTaskExecutionTiming.pre_execution,
+    )
+    property_ids = Column(
+        ARRAY(String), nullable=False, server_default="{}", default=list
     )
 
     __table_args__ = (
