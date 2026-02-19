@@ -38,11 +38,11 @@ const HomeContainerInner = () => {
         <Layout title="Home" padded={false}>
           <Flex vertical gap={40} style={{ paddingBottom: 24 }}>
             {/* NOTE: temporary button placement for testing */}
-            {alphaDarkMode &&
+            {alphaDarkMode && (
               <div className="absolute pt-2 pl-2">
                 <ThemeModeSegmented />
               </div>
-            }
+            )}
 
             <HomeBanner />
             <HomeContent />
