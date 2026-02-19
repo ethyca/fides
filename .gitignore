@@ -260,4 +260,10 @@ saas_config.toml
 multilang_migration_backup_*
 
 # Cursor
-.cursor/implementation-plans
+.cursor/*
+!.cursor/rules/
+.cursor/rules/*
+!.cursor/rules/sensitive-info-protection.mdc
+
+# Claude Code
+.claude/*
