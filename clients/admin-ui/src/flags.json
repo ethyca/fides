@@ -69,5 +69,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaDashboardCharts": {
+    "label": "Alpha dashboard chart UI",
+    "description": "Enable charts UI",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
