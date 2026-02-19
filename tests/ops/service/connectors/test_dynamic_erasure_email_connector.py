@@ -19,7 +19,7 @@ from fides.api.service.connectors.base_erasure_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
 )
-from fides.api.service.privacy_request.request_runner_service import (
+from fides.api.service.privacy_request.email_batch_service import (
     get_erasure_email_connection_configs,
 )
 

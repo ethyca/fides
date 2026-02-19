@@ -1,18 +1,22 @@
 import uuid
 from enum import Enum
+from typing import Any
 
 from loguru import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors import get_connector
-from fides.api.service.privacy_request.request_runner_service import (
-    get_consent_email_connection_configs,
-    get_erasure_email_connection_configs,
+from fides.api.service.connectors.consent_email_connector import (
+    CONSENT_EMAIL_CONNECTOR_TYPES,
+)
+from fides.api.service.connectors.erasure_email_connector import (
+    ERASURE_EMAIL_CONNECTOR_TYPES,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import create_cron_trigger, scheduler
@@ -24,6 +28,98 @@ CONFIG = get_config()
 BATCH_EMAIL_SEND = "batch_email_send"
 BATCH_EMAIL_SEND_LOCK = "batch_email_send_lock"
 BATCH_EMAIL_SEND_LOCK_TIMEOUT = 600
+
+
+def get_consent_email_connection_configs(db: Session) -> Query:
+    """Return enabled consent email connection configs."""
+    return db.query(ConnectionConfig).filter(
+        ConnectionConfig.connection_type.in_(CONSENT_EMAIL_CONNECTOR_TYPES),
+        ConnectionConfig.disabled.is_(False),
+        ConnectionConfig.access == AccessLevel.write,
+    )
+
+
+def get_erasure_email_connection_configs(db: Session) -> Query:
+    """Return enabled erasure email connection configs."""
+    return db.query(ConnectionConfig).filter(
+        ConnectionConfig.connection_type.in_(ERASURE_EMAIL_CONNECTOR_TYPES),
+        ConnectionConfig.disabled.is_(False),
+        ConnectionConfig.access == AccessLevel.write,
+    )
+
+
+def needs_batch_email_send(
+    db: Session, user_identities: dict[str, Any], privacy_request: PrivacyRequest
+) -> bool:
+    """
+    Delegates the "needs email" check to each configured email or
+    generic email consent connector. Returns true if at least one
+    connector needs to send an email.
+
+    Only checks connectors relevant to the policy's action types.
+    For example, consent-only policies will only check consent email connectors.
+
+    If we don't need to send any emails, add skipped logs for any
+    relevant erasure and consent email connectors.
+    """
+    can_skip_erasure_email: list[ConnectionConfig] = []
+    can_skip_consent_email: list[ConnectionConfig] = []
+
+    needs_email_send: bool = False
+
+    # Get the action types for this policy
+    policy_action_types = privacy_request.policy.get_all_action_types()
+    has_erasure_rules = ActionType.erasure in policy_action_types
+    has_consent_rules = ActionType.consent in policy_action_types
+
+    # Only check erasure email connectors if the policy has erasure rules
+    if has_erasure_rules:
+        for connection_config in get_erasure_email_connection_configs(db):
+            if get_connector(connection_config).needs_email(  # type: ignore
+                user_identities, privacy_request
+            ):
+                needs_email_send = True
+            else:
+                can_skip_erasure_email.append(connection_config)
+
+    # Only check consent email connectors if the policy has consent rules
+    if has_consent_rules:
+        for connection_config in get_consent_email_connection_configs(db):
+            if get_connector(connection_config).needs_email(  # type: ignore
+                user_identities, privacy_request
+            ):
+                needs_email_send = True
+            else:
+                can_skip_consent_email.append(connection_config)
+
+    if not needs_email_send:
+        _create_execution_logs_for_skipped_email_send(
+            db, privacy_request, can_skip_erasure_email, can_skip_consent_email
+        )
+
+    return needs_email_send
+
+
+def _create_execution_logs_for_skipped_email_send(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    can_skip_erasure_email: list[ConnectionConfig],
+    can_skip_consent_email: list[ConnectionConfig],
+) -> None:
+    """Create skipped execution logs for relevant connectors
+    if this privacy request does not need an email send at all.  For consent requests,
+    cache that the system was skipped on any privacy preferences for consent reporting.
+
+    Otherwise, any needed skipped execution logs will be added later
+    in the weekly email send.
+    """
+    for connection_config in can_skip_erasure_email:
+        connector = get_connector(connection_config)
+        connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]
+
+    for connection_config in can_skip_consent_email:
+        connector = get_connector(connection_config)
+        connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]
 
 
 class EmailExitState(Enum):

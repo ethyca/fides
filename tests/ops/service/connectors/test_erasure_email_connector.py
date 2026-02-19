@@ -20,7 +20,7 @@ from fides.api.service.connectors.base_erasure_email_connector import (
 from fides.api.service.connectors.erasure_email_connector import (
     GenericErasureEmailConnector,
 )
-from fides.api.service.privacy_request.request_runner_service import (
+from fides.api.service.privacy_request.email_batch_service import (
     get_erasure_email_connection_configs,
 )
 
