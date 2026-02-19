@@ -1,6 +1,6 @@
 import { Button, Flex, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter } from "next/router";
+import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_EVALUATE_ROUTE } from "~/features/common/nav/routes";
@@ -13,8 +13,6 @@ import {
 } from "~/features/privacy-assessments";
 
 const PrivacyAssessmentsPage: NextPage = () => {
-  const router = useRouter();
-
   // Fetch assessments from API
   const {
     data: assessmentsData,
@@ -80,12 +78,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
         heading="Privacy assessments"
         rightContent={
           hasAssessments ? (
-            <Button
-              type="primary"
-              onClick={() => router.push(PRIVACY_ASSESSMENTS_EVALUATE_ROUTE)}
-            >
-              Evaluate assessments
-            </Button>
+            <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
+              <Button type="primary">Evaluate assessments</Button>
+            </NextLink>
           ) : undefined
         }
         isSticky

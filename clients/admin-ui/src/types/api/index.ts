@@ -6,6 +6,7 @@ export { AccessLevel } from "./models/AccessLevel";
 export type { AccessManualWebhookResponse } from "./models/AccessManualWebhookResponse";
 export type { AccessManualWebhooks } from "./models/AccessManualWebhooks";
 export type { AccessToken } from "./models/AccessToken";
+export type { AccuracyMetrics } from "./models/AccuracyMetrics";
 export { ActionType } from "./models/ActionType";
 export type { AdminUIConfig } from "./models/AdminUIConfig";
 export type { AdvancedSettings } from "./models/AdvancedSettings";

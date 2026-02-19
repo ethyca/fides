@@ -1,8 +1,8 @@
 import {
+  Avatar,
   Col,
   Divider,
   Flex,
-  IconBadge,
   Icons,
   Row,
   Text,
@@ -34,9 +34,12 @@ export const AssessmentGroup = ({
     <div>
       <Flex justify="space-between" align="flex-end">
         <Flex gap="middle" align="center">
-          <IconBadge size={40}>
-            <Icons.Document />
-          </IconBadge>
+          <Avatar
+            shape="square"
+            variant="outlined"
+            size={40}
+            icon={<Icons.Document />}
+          />
           <div>
             <Title level={4} className="!m-0">
               {title}

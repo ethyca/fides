@@ -1,0 +1,4 @@
+type: Changed
+description: Increase the limit of execution logs to 1000 for long running requests like polling requests.
+pr: 7412
+labels: []

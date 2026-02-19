@@ -2,11 +2,11 @@ import { CUSTOM_TAG_COLOR } from "fidesui";
 
 import { AssessmentStatus, RiskLevel } from "./types";
 
-export const ASSESSMENT_STATUS_LABELS: Record<string, string> = {
-  in_progress: "In progress",
-  completed: "Completed",
-  outdated: "Out of date",
-} satisfies Record<AssessmentStatus, string>;
+export const ASSESSMENT_STATUS_LABELS: Record<AssessmentStatus, string> = {
+  [AssessmentStatus.IN_PROGRESS]: "In progress",
+  [AssessmentStatus.COMPLETED]: "Completed",
+  [AssessmentStatus.OUTDATED]: "Out of date",
+};
 
 export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {
   [RiskLevel.HIGH]: "High",

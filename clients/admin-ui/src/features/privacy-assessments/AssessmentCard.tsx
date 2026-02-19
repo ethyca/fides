@@ -1,11 +1,13 @@
 import classNames from "classnames";
 import {
+  Avatar,
   Button,
   Card,
   CUSTOM_TAG_COLOR,
+  Divider,
   Flex,
-  IconBadge,
   Icons,
+  Paragraph,
   Progress,
   Tag,
   TagList,
@@ -21,17 +23,17 @@ import {
   RISK_LEVEL_LABELS,
   RISK_TAG_COLORS,
 } from "./constants";
-import { PrivacyAssessmentResponse } from "./types";
+import { AssessmentStatus, PrivacyAssessmentResponse } from "./types";
 
 const { Title } = Typography;
 
-function getStatusTextType(
-  status: string | null,
-): "success" | "danger" | "secondary" {
-  if (status === "completed") {
+type TextType = React.ComponentProps<typeof Typography.Text>["type"];
+
+function getStatusTextType(status: AssessmentStatus): TextType {
+  if (status === AssessmentStatus.COMPLETED) {
     return "success";
   }
-  if (status === "outdated") {
+  if (status === AssessmentStatus.OUTDATED) {
     return "danger";
   }
   return "secondary";
@@ -65,10 +67,10 @@ export const AssessmentCard = ({
     >
       <Flex vertical gap="small" justify="space-between">
         <Title level={5}>{assessment.name}</Title>
-        <Text type="secondary" className={styles.secondaryText}>
+        <Text type="secondary" size="sm">
           System: {assessment.system_name ?? ""}
         </Text>
-        <Text type="secondary" className={styles.textWithTags}>
+        <Text type="secondary" size="sm" className={styles.textWithTags}>
           Processing{" "}
           {(assessment.data_categories ?? []).length > 0 ? (
             <TagList
@@ -94,28 +96,27 @@ export const AssessmentCard = ({
           </Tag>
         )}
 
-        <div className={styles.separator}>
+        <Divider className="my-3" />
+        <div>
           {isComplete ? (
             <Flex
               align="center"
               gap="middle"
               className={styles.completeContainer}
             >
-              <IconBadge
+              <Avatar
                 shape="circle"
-                variant="filled"
-                color="var(--fidesui-success)"
                 size={28}
-              >
-                <Icons.Checkmark size={14} />
-              </IconBadge>
+                icon={<Icons.Checkmark size={14} />}
+                style={{ backgroundColor: "var(--fidesui-success)" }}
+              />
               <div>
-                <Text strong type="success" className={styles.captionText}>
+                <Text strong type="success" size="sm">
                   Assessment complete
                 </Text>
-                <Text type="secondary" className={styles.captionText}>
+                <Paragraph type="secondary" size="sm">
                   {statusLabel}
-                </Text>
+                </Paragraph>
               </div>
             </Flex>
           ) : (
@@ -133,7 +134,7 @@ export const AssessmentCard = ({
                 <Text type={getStatusTextType(status)} size="sm">
                   {statusLabel}
                 </Text>
-                <Button type="link" style={{ padding: 0 }} onClick={onClick}>
+                <Button type="link" className="p-0" onClick={onClick}>
                   Resume
                 </Button>
               </Flex>
