@@ -8,10 +8,7 @@ export const InfoPopover = ({ title, ...props }: InfoPopoverProps) =>
   title ? (
     <Popover title={title} trigger={["hover", "focus"]} {...props}>
       <span
-        style={{
-          color: "var(--fidesui-neutral-200)",
-          display: "inline-block",
-        }}
+        style={{ color: "var(--fidesui-neutral-200)", display: "inline-block" }}
         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- popover makes it interactive
         tabIndex={0}
       >

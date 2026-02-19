@@ -19,7 +19,7 @@ interface RulePanelProps {
   rule: RuleResponse;
 }
 
-const RulePanel = ({ rule }: RulePanelProps) => {
+export const RulePanel = ({ rule }: RulePanelProps) => {
   const isAccessRule = rule.action_type === ActionType.ACCESS;
   const isErasureRule = rule.action_type === ActionType.ERASURE;
 
@@ -133,5 +133,3 @@ const RulePanel = ({ rule }: RulePanelProps) => {
     </Form>
   );
 };
-
-export default RulePanel;
