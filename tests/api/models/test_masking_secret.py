@@ -148,7 +148,7 @@ class TestMaskingSecretFallback:
     """
 
     @patch(
-        "fides.api.service.privacy_request.request_runner_service.get_all_masking_secret_keys"
+        "fides.api.service.privacy_request.pipeline.steps.erasure.get_all_masking_secret_keys"
     )
     def test_verify_masking_secrets_expired(
         self, mock_get_all_keys, db: Session, privacy_request
@@ -199,7 +199,7 @@ class TestMaskingSecretFallback:
         _verify_masking_secrets(policy_mock, privacy_request, CurrentStep.erasure)
 
     @patch(
-        "fides.api.service.privacy_request.request_runner_service.get_all_masking_secret_keys"
+        "fides.api.service.privacy_request.pipeline.steps.erasure.get_all_masking_secret_keys"
     )
     def test_verify_masking_secrets_success_cache(
         self, mock_get_all_keys, db: Session, privacy_request
