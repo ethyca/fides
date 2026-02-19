@@ -12,7 +12,6 @@ from sqlalchemy import Text, text
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
-    InvalidCiphertextError,
     StringEncryptedType,
 )
 
@@ -64,13 +63,15 @@ def _is_encrypted(encryptor: StringEncryptedType, value: str) -> bool:
     """
     Return True if value is valid ciphertext, False if it appears to be plaintext.
 
-    Uses a trial decrypt: AesGcmEngine raises InvalidCiphertextError when the
-    input is not valid ciphertext (wrong length, bad tag, etc.).
+    Uses a trial decrypt; any failure means the value is not valid ciphertext.
+    The decrypt path can fail in several ways (InvalidCiphertextError,
+    binascii.Error, cryptography.exceptions.InvalidTag, etc.) so we catch
+    broadly here.
     """
     try:
         encryptor.process_result_value(value, dialect="")
         return True
-    except InvalidCiphertextError:
+    except Exception:  # noqa: BLE001 - intentional broad catch for trial decrypt
         return False
 
 
