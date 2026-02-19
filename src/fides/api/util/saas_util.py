@@ -58,7 +58,7 @@ def deny_unsafe_hosts(host: str) -> str:
 
 def is_domain_validation_disabled() -> bool:
     """Check if domain validation is disabled via config flags."""
-    return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
+    return CONFIG.dev_mode or not CONFIG.security.enable_domain_validation
 
 
 def validate_domain_against_allowed_list(
