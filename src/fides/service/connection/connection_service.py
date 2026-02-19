@@ -397,6 +397,17 @@ class ConnectionService:
         )
         return connection_config, dataset_config
 
+    # Connection types that are limited to a single instance per deployment.
+    _singleton_connection_types: Set[str] = {
+        ConnectionType.jira_ticket.value,
+    }
+
+    # Connection types that auto-create a ManualTask on first save.
+    _auto_task_type_mapping: dict[str, ManualTaskType] = {
+        ConnectionType.manual_task.value: ManualTaskType.privacy_request,
+        ConnectionType.jira_ticket.value: ManualTaskType.jira_ticket,
+    }
+
     def create_or_update_connection_config(
         self,
         config: CreateConnectionConfigurationWithSecrets,
@@ -413,6 +424,22 @@ class ConnectionService:
             existing_connection_config = ConnectionConfig.get_by(
                 self.db, field="key", value=config.key
             )
+
+        # Enforce singleton constraint for certain connection types
+        if (
+            config.connection_type in self._singleton_connection_types
+            and not existing_connection_config
+        ):
+            existing_of_type = ConnectionConfig.get_by(
+                self.db,
+                field="connection_type",
+                value=str(config.connection_type),
+            )
+            if existing_of_type:
+                raise ValidationError(
+                    f"Only one {config.connection_type} connection is allowed. "
+                    f"A connection with key '{existing_of_type.key}' already exists."
+                )
 
         # Handle SaaS connections with special template-based creation
         if config.connection_type == "saas" and config.secrets:
@@ -560,16 +587,14 @@ class ConnectionService:
                 connection_config.secrets,  # type: ignore[arg-type]
             )
 
-        # Automatically create a ManualTask if this is a manual_task connection
-        # and it doesn't already have one
-        if (
-            connection_config.connection_type == ConnectionType.manual_task
-            and not connection_config.manual_task
-        ):
+        auto_task_type = self._auto_task_type_mapping.get(
+            connection_config.connection_type.value  # type: ignore
+        )
+        if auto_task_type and not connection_config.manual_task:
             ManualTask.create(
                 db=self.db,
                 data={
-                    "task_type": ManualTaskType.privacy_request,
+                    "task_type": auto_task_type,
                     "parent_entity_id": connection_config.id,
                     "parent_entity_type": ManualTaskParentEntityType.connection_config,
                 },
