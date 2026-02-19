@@ -28,6 +28,13 @@
     "test": true,
     "production": false
   },
+  "entraMonitor": {
+    "label": "Entra monitor",
+    "description": "Microsoft Entra ID (Azure AD) identity provider discovery monitor",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "assetConsentStatusLabels": {
     "label": "Asset consent status labels",
     "description": "Consent status labels for assets discovered by the web monitor",

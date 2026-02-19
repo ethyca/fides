@@ -31,7 +31,7 @@ const SelectIntegrationType = ({
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { newIntegrationManagement, webMonitor },
+    flags: { entraMonitor, newIntegrationManagement, webMonitor },
   } = useFlags();
 
   // Fetch connection types for SAAS integration generation
@@ -44,6 +44,14 @@ const SelectIntegrationType = ({
   // Generate dynamic integration list including all SAAS integrations
   const allIntegrationTypes = useMemo(() => {
     let staticIntegrations = INTEGRATION_TYPE_LIST;
+
+    // Filter out Entra when entraMonitor flag is disabled
+    if (!entraMonitor) {
+      staticIntegrations = staticIntegrations.filter(
+        (integration) =>
+          integration.placeholder.connection_type !== ConnectionType.ENTRA,
+      );
+    }
 
     // Filter out SaaS integrations if the new integration management flag is disabled
     if (!newIntegrationManagement) {
@@ -79,7 +87,7 @@ const SelectIntegrationType = ({
       : [];
 
     return [...staticIntegrations, ...dynamicSaasIntegrations];
-  }, [connectionTypes, newIntegrationManagement]);
+  }, [connectionTypes, entraMonitor, newIntegrationManagement]);
 
   // Get available categories based on flags and whether they have any integrations
   const availableCategories = useMemo(() => {
@@ -124,6 +132,13 @@ const SelectIntegrationType = ({
       );
     }
 
+    // Filter out Entra when entraMonitor flag is disabled
+    if (!entraMonitor) {
+      filtered = filtered.filter(
+        (i) => i.placeholder.connection_type !== ConnectionType.ENTRA,
+      );
+    }
+
     // Filter by search term (name only)
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
@@ -138,7 +153,7 @@ const SelectIntegrationType = ({
       const nameB = b.placeholder.name || "";
       return nameA.localeCompare(nameB);
     });
-  }, [searchTerm, selectedCategory, webMonitor, allIntegrationTypes]);
+  }, [searchTerm, selectedCategory, webMonitor, entraMonitor, allIntegrationTypes]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);
