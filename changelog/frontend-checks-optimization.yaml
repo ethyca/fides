@@ -1,0 +1,6 @@
+# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
+# Fill in the required fields and delete this comment block
+
+type: Developer Experience
+description: Optimized frontend checks workflow to reduce CI time by running unit tests with turbo
+pr: 7426
