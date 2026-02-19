@@ -366,9 +366,7 @@ class TestSingleExactDomainAutoFill:
         instance = schema.model_validate({"api_key": "sk_test_123"})
         assert instance.domain == "api.stripe.com"
 
-    def test_none_allowed_domains_not_hidden(
-        self, saas_example_config: Dict[str, Any]
-    ):
+    def test_none_allowed_domains_not_hidden(self, saas_example_config: Dict[str, Any]):
         """A param with allowed_domains=None should NOT be hidden."""
         config = SaaSConfig(**saas_example_config)
         config.connector_params = [
