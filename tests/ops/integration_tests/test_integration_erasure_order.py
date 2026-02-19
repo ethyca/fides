@@ -63,7 +63,6 @@ def delete_no_op(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@pytest.mark.usefixtures("use_dsr_2_0")
 async def test_saas_erasure_order_request_task(
     db,
     policy,
@@ -152,7 +151,6 @@ async def test_saas_erasure_order_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@pytest.mark.usefixtures("use_dsr_2_0")
 async def test_saas_erasure_order_request_task_with_cycle(
     db,
     privacy_request,
@@ -228,10 +226,6 @@ async def test_saas_erasure_order_request_task_with_cycle(
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.SaaSConnector.mask_data")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_saas_erasure_order_request_task_resume_from_error(
     mock_mask_data,
     db,
@@ -240,10 +234,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
     saas_erasure_order_connection_config,
     saas_erasure_order_dataset_config,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     # Policy needs to actually be set correctly on the privacy request for 3.0 testing
     privacy_request.policy_id = erasure_policy_complete_mask.id
@@ -295,27 +286,15 @@ async def test_saas_erasure_order_request_task_resume_from_error(
 
     mock_mask_data.side_effect = side_effect
 
-    if dsr_version == "use_dsr_2_0":
-        with pytest.raises(Exception):
-            erasure_runner_tester(
-                privacy_request,
-                erasure_policy_complete_mask,
-                graph,
-                [saas_erasure_order_connection_config],
-                identity_kwargs,
-                get_cached_data_for_erasures(privacy_request.id),
-                db,
-            )
-    else:
-        erasure_runner_tester(
-            privacy_request,
-            erasure_policy_complete_mask,
-            graph,
-            [saas_erasure_order_connection_config],
-            identity_kwargs,
-            get_cached_data_for_erasures(privacy_request.id),
-            db,
-        )
+    erasure_runner_tester(
+        privacy_request,
+        erasure_policy_complete_mask,
+        graph,
+        [saas_erasure_order_connection_config],
+        identity_kwargs,
+        get_cached_data_for_erasures(privacy_request.id),
+        db,
+    )
 
     # "fix" the refunds_to_orders collection and resume the erasure
     def side_effect(node, policy, privacy_request, request_task, rows, input_data):
@@ -346,52 +325,29 @@ async def test_saas_erasure_order_request_task_resume_from_error(
         f"{dataset_name}:refunds_to_orders": 1,
     }
 
-    if dsr_version == "use_dsr_2_0":
-        assert [
-            (log.collection_name, log.status.value)
-            for log in erasure_execution_logs(db, privacy_request)
-        ] == [
-            ("products", "in_processing"),
-            ("products", "complete"),
-            ("orders_to_refunds", "in_processing"),
-            ("orders_to_refunds", "complete"),
-            ("refunds_to_orders", "in_processing"),
-            ("refunds_to_orders", "error"),
-            ("refunds_to_orders", "in_processing"),
-            ("refunds_to_orders", "complete"),
-            ("orders", "in_processing"),
-            ("orders", "complete"),
-            ("refunds", "in_processing"),
-            ("refunds", "complete"),
-            ("labels", "in_processing"),
-            ("labels", "complete"),
-        ], (
-            "Cached collections were not re-executed after resuming the privacy request from errored state"
+    ordered_logs = [
+        (el.collection_name, el.status.value)
+        for el in db.query(ExecutionLog)
+        .filter(
+            ExecutionLog.privacy_request_id == privacy_request.id,
+            ExecutionLog.action_type == ActionType.erasure,
         )
-    else:
-        ordered_logs = [
-            (el.collection_name, el.status.value)
-            for el in db.query(ExecutionLog)
-            .filter(
-                ExecutionLog.privacy_request_id == privacy_request.id,
-                ExecutionLog.action_type == ActionType.erasure,
-            )
-            .order_by(ExecutionLog.collection_name, ExecutionLog.created_at)
-            .all()
-        ]
-        assert ordered_logs == [
-            ("labels", "in_processing"),
-            ("labels", "complete"),
-            ("orders", "in_processing"),
-            ("orders", "complete"),
-            ("orders_to_refunds", "in_processing"),
-            ("orders_to_refunds", "complete"),
-            ("products", "in_processing"),
-            ("products", "complete"),
-            ("refunds", "in_processing"),
-            ("refunds", "complete"),
-            ("refunds_to_orders", "in_processing"),
-            ("refunds_to_orders", "error"),
-            ("refunds_to_orders", "in_processing"),
-            ("refunds_to_orders", "complete"),
-        ]
+        .order_by(ExecutionLog.collection_name, ExecutionLog.created_at)
+        .all()
+    ]
+    assert ordered_logs == [
+        ("labels", "in_processing"),
+        ("labels", "complete"),
+        ("orders", "in_processing"),
+        ("orders", "complete"),
+        ("orders_to_refunds", "in_processing"),
+        ("orders_to_refunds", "complete"),
+        ("products", "in_processing"),
+        ("products", "complete"),
+        ("refunds", "in_processing"),
+        ("refunds", "complete"),
+        ("refunds_to_orders", "in_processing"),
+        ("refunds_to_orders", "error"),
+        ("refunds_to_orders", "in_processing"),
+        ("refunds_to_orders", "complete"),
+    ]

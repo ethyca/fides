@@ -67,10 +67,6 @@ def create_atlas_datasets(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_combined_erasure_task_atlas(
     db,
     postgres_inserts,
@@ -80,13 +76,9 @@ async def test_combined_erasure_task_atlas(
     privacy_request_with_erasure_policy,
     privacy_request,
     mongodb_atlas_inserts,
-    dsr_version,
-    request,
     unique_database_name,
 ):
     """Includes examples of mongo atlas nested and array erasures"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     policy = erasure_policy(db, "user.name", "user.contact")
     seed_email = postgres_inserts["customer"][0]["email"]
     privacy_request_with_erasure_policy.policy_id = policy.id
@@ -325,22 +317,14 @@ async def test_combined_erasure_task_atlas(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_mongodb_atlas_erasure_task(
     db,
     mongodb_atlas_inserts,
     integration_mongodb_atlas_config,
-    dsr_version,
-    request,
     privacy_request_with_erasure_policy,
     unique_database_name,
 ):
     """Test erasure functionality with MongoDB Atlas"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     policy = erasure_policy(db, "user.name", "user.contact")
     seed_email = mongodb_atlas_inserts["customer"][0]["email"]
     privacy_request_with_erasure_policy.policy_id = policy.id
@@ -400,22 +384,14 @@ async def test_mongodb_atlas_erasure_task(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_access_mongodb_atlas_task(
     db,
     integration_mongodb_atlas_config: ConnectionConfig,
     seed_mongo_sample_data,
-    dsr_version,
     privacy_request,
-    request,
     unique_database_name,
 ) -> None:
     """Test data access functionality with MongoDB Atlas"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     access_results = access_runner_tester(
         privacy_request,
         empty_policy,
@@ -453,10 +429,6 @@ async def test_access_mongodb_atlas_task(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_composite_key_erasure_atlas(
     db,
     integration_mongodb_atlas_config: ConnectionConfig,
@@ -464,13 +436,9 @@ async def test_composite_key_erasure_atlas(
     mongodb_atlas_inserts,
     privacy_request,
     privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
     unique_database_name,
 ) -> None:
     """Test composite key erasure with MongoDB Atlas (parity with mongo test)"""
-
-    request.getfixturevalue(dsr_version)
 
     policy = erasure_policy(db, "user.name")
     privacy_request_with_erasure_policy.policy_id = policy.id
@@ -557,24 +525,16 @@ async def test_composite_key_erasure_atlas(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_access_erasure_type_conversion_atlas(
     db,
     integration_mongodb_atlas_config: ConnectionConfig,
     seed_mongo_sample_data,
     privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
     unique_database_name,
 ) -> None:
     """Retrieve data from the type_link table using MongoDB Atlas. This requires retrieving data from
     the employee foreign_id field, which is an object_id stored as a string, and
     converting it into an object_id to query against the type_link_test._id field."""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     policy = erasure_policy(db, "user.name")
 
     privacy_request_with_erasure_policy.policy_id = policy.id
@@ -658,10 +618,6 @@ async def test_access_erasure_type_conversion_atlas(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_object_querying_mongo_atlas(
     db,
     privacy_request,
@@ -670,12 +626,9 @@ async def test_object_querying_mongo_atlas(
     integration_mongodb_atlas_config,
     integration_postgres_config,
     seed_mongo_sample_data,
-    dsr_version,
-    request,
     unique_database_name,
 ):
     """Test cross-database querying with MongoDB Atlas and Postgres"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     postgres_config = copy.copy(integration_postgres_config)
 
     mongo_dataset, postgres_dataset = create_atlas_datasets(
@@ -811,7 +764,6 @@ async def test_get_cached_data_for_erasures_atlas(
     example_datasets,
     policy,
     db,
-    use_dsr_2_0,
     privacy_request,
     seed_mongo_sample_data,
     unique_database_name,
@@ -923,10 +875,6 @@ async def test_get_saved_data_for_erasures_3_0_atlas(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_return_all_elements_config_access_request_atlas(
     db,
     privacy_request,
@@ -936,8 +884,6 @@ async def test_return_all_elements_config_access_request_atlas(
     integration_postgres_config,
     integration_mongodb_atlas_connector,
     seed_mongo_sample_data,
-    dsr_version,
-    request,
     unique_database_name,
 ):
     """Annotating array entrypoint field with return_all_elements=true means both the entire array is returned from the
@@ -946,8 +892,6 @@ async def test_return_all_elements_config_access_request_atlas(
     internal_customer_profile.customer_identifiers.derived_phone field and rewards.owner field
     have return_all_elements set to True
     """
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     postgres_config = copy.copy(integration_postgres_config)
 
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
@@ -986,10 +930,6 @@ async def test_return_all_elements_config_access_request_atlas(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_return_all_elements_config_erasure_atlas(
     db,
     mongodb_atlas_inserts,
@@ -998,14 +938,10 @@ async def test_return_all_elements_config_erasure_atlas(
     integration_postgres_config,
     integration_mongodb_atlas_connector,
     example_datasets,
-    dsr_version,
-    request,
     privacy_request,
     unique_database_name,
 ):
     """Includes examples of mongo atlas nested and array erasures with return_all_elements config"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     policy = erasure_policy(db, "user.name", "user.contact")
     privacy_request.policy_id = policy.id
     privacy_request.save(db)
@@ -1078,10 +1014,6 @@ async def test_return_all_elements_config_erasure_atlas(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_array_querying_mongo_atlas(
     db,
     privacy_request,
@@ -1091,12 +1023,9 @@ async def test_array_querying_mongo_atlas(
     integration_mongodb_atlas_config,
     integration_postgres_config,
     seed_mongo_sample_data,
-    dsr_version,
-    request,
     unique_database_name,
 ):
     """Test complex array querying scenarios with MongoDB Atlas"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     postgres_config = copy.copy(integration_postgres_config)
 
     mongo_dataset, postgres_dataset = create_atlas_datasets(

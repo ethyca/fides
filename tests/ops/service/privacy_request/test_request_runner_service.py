@@ -84,34 +84,15 @@ PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 100
 
 
 class TestManualFinalization:
-    @pytest.mark.parametrize(
-        "dsr_version,enable_fixture,pending_fixture",
-        [
-            (
-                "use_dsr_3_0",
-                "enable_erasure_request_finalization_required",
-                "privacy_request_erasure_pending",
-            ),
-            (
-                "use_dsr_2_0",
-                "enable_erasure_request_finalization_required",
-                "privacy_request_erasure_pending",
-            ),
-        ],
-    )
     def test_mark_as_requires_manual_finalization_if_config_true(
         self,
         db: Session,
         run_privacy_request_task,
-        dsr_version,
-        enable_fixture,
-        pending_fixture,
-        request,
+        enable_erasure_request_finalization_required,
+        privacy_request_erasure_pending,
     ) -> None:
         """Assert marking privacy request as requires_manual_finalization for erasure"""
-        request.getfixturevalue(dsr_version)
-        request.getfixturevalue(enable_fixture)
-        privacy_request = request.getfixturevalue(pending_fixture)
+        privacy_request = privacy_request_erasure_pending
         run_privacy_request_task.delay(privacy_request.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
@@ -120,68 +101,30 @@ class TestManualFinalization:
             privacy_request.status == PrivacyRequestStatus.requires_manual_finalization
         )
 
-    @pytest.mark.parametrize(
-        "dsr_version,disable_fixture,pending_fixture",
-        [
-            (
-                "use_dsr_3_0",
-                "disable_erasure_request_finalization_required",
-                "privacy_request_erasure_pending",
-            ),
-            (
-                "use_dsr_2_0",
-                "disable_erasure_request_finalization_required",
-                "privacy_request_erasure_pending",
-            ),
-        ],
-    )
     def test_no_manual_finalization_if_config_false(
         self,
         db: Session,
         run_privacy_request_task,
-        dsr_version,
-        disable_fixture,
-        pending_fixture,
-        request,
+        disable_erasure_request_finalization_required,
+        privacy_request_erasure_pending,
     ) -> None:
         """Assert marking pending privacy request as complete when finalization disabled"""
-        request.getfixturevalue(dsr_version)
-        request.getfixturevalue(disable_fixture)
-        privacy_request = request.getfixturevalue(pending_fixture)
+        privacy_request = privacy_request_erasure_pending
         run_privacy_request_task.delay(privacy_request.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.complete
 
-    @pytest.mark.parametrize(
-        "dsr_version,enable_fixture,finalization_fixture",
-        [
-            (
-                "use_dsr_3_0",
-                "enable_erasure_request_finalization_required",
-                "privacy_request_requires_manual_finalization",
-            ),
-            (
-                "use_dsr_2_0",
-                "enable_erasure_request_finalization_required",
-                "privacy_request_requires_manual_finalization",
-            ),
-        ],
-    )
     def test_mark_as_complete_when_finalized_at_exists(
         self,
         db: Session,
         run_privacy_request_task,
-        dsr_version,
-        enable_fixture,
-        finalization_fixture,
-        request,
+        enable_erasure_request_finalization_required,
+        privacy_request_requires_manual_finalization,
     ) -> None:
         """Ensures that if finalized_at exists, we mark it as complete"""
-        request.getfixturevalue(dsr_version)
-        request.getfixturevalue(enable_fixture)
-        privacy_request = request.getfixturevalue(finalization_fixture)
+        privacy_request = privacy_request_requires_manual_finalization
         privacy_request.finalized_at = "2021-08-30T16:09:37.359Z"
         privacy_request.save(db)
 
@@ -206,25 +149,13 @@ def privacy_request_complete_email_notification_enabled(db):
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
-    "dsr_version,privacy_request_fixture,expected_action_type",
+    "privacy_request_fixture,expected_action_type",
     [
         (
-            "use_dsr_3_0",
             "privacy_request_status_pending",
             MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
         ),
         (
-            "use_dsr_2_0",
-            "privacy_request_status_pending",
-            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-        ),
-        (
-            "use_dsr_3_0",
-            "privacy_request_with_consent_policy",
-            MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
-        ),
-        (
-            "use_dsr_2_0",
             "privacy_request_with_consent_policy",
             MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
         ),
@@ -234,14 +165,12 @@ def test_completion_email_sent_for_request(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
     run_privacy_request_task,
-    dsr_version,
     privacy_request_fixture,
     expected_action_type,
     request,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
     """Test that completion email is sent for access and consent requests."""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     privacy_request = request.getfixturevalue(privacy_request_fixture)
 
     upload_mock.return_value = "http://www.data-download-url"
@@ -254,17 +183,11 @@ def test_completion_email_sent_for_request(
 
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_consent_completion_skips_email_when_no_email(
     mock_email_dispatch: Mock,
     db: Session,
     consent_policy,
     run_privacy_request_task,
-    request,
-    dsr_version,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
     """Test that consent completion succeeds without sending email when identity has no email.
@@ -272,8 +195,6 @@ def test_consent_completion_skips_email_when_no_email(
     Consent requests can be submitted with only fides_user_device_id (e.g., browser-based consent).
     The completion email should be skipped gracefully rather than erroring out the entire request.
     """
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     # Create privacy request with only fides_user_device_id (no email)
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -305,22 +226,14 @@ def test_consent_completion_skips_email_when_no_email(
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_start_processing_sets_started_processing_at(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
     db: Session,
     privacy_request_status_pending: PrivacyRequest,
     run_privacy_request_task,
-    request,
-    dsr_version,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     upload_mock.return_value = "http://www.data-download-url"
     updated_at = privacy_request_status_pending.updated_at
     assert privacy_request_status_pending.started_processing_at is None
@@ -337,22 +250,14 @@ def test_start_processing_sets_started_processing_at(
 
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_start_processing_doesnt_overwrite_started_processing_at(
     upload_mock: Mock,
     mock_email_dispatch: Mock,
     db: Session,
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
-    request,
-    dsr_version,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     upload_mock.return_value = "http://www.data-download-url"
     before = privacy_request.started_processing_at
     assert before is not None
@@ -372,21 +277,13 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 @mock.patch(
     "fides.api.service.privacy_request.request_runner_service.upload_access_results"
 )
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_halts_proceeding_if_cancelled(
     upload_access_results_mock,
     db: Session,
     privacy_request_status_canceled: PrivacyRequest,
     run_privacy_request_task,
-    dsr_version,
-    request,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     assert privacy_request_status_canceled.status == PrivacyRequestStatus.canceled
     run_privacy_request_task.delay(privacy_request_status_canceled.id).get(
         timeout=PRIVACY_REQUEST_TASK_TIMEOUT
@@ -409,10 +306,6 @@ def test_halts_proceeding_if_cancelled(
 )
 @mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
     run_access,
@@ -423,12 +316,8 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     privacy_request: PrivacyRequest,
     run_privacy_request_task,
     erasure_policy,
-    dsr_version,
-    request,
     privacy_request_complete_email_notification_enabled,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     upload_mock.return_value = "http://www.data-download-url"
     privacy_request.started_processing_at = None
     privacy_request.policy = erasure_policy
@@ -785,10 +674,6 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.dispatch_message"
     )
@@ -803,13 +688,9 @@ class TestPrivacyRequestsEmailNotifications:
         erasure_policy,
         read_connection_config,
         messaging_config,
-        dsr_version,
-        request,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -833,10 +714,6 @@ class TestPrivacyRequestsEmailNotifications:
         "fides.api.service.privacy_request.request_runner_service.dispatch_message"
     )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_email_complete_send_access(
         self,
         upload_mock,
@@ -851,11 +728,7 @@ class TestPrivacyRequestsEmailNotifications:
         messaging_config,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
-        dsr_version,
-        request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         upload_mock.return_value = "http://www.data-download-url"
         customer_email = "customer-1@example.com"
         data = {
@@ -876,10 +749,6 @@ class TestPrivacyRequestsEmailNotifications:
 
     @pytest.mark.integration_postgres
     @pytest.mark.integration
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.dispatch_message"
     )
@@ -896,13 +765,9 @@ class TestPrivacyRequestsEmailNotifications:
         access_and_erasure_policy,
         read_connection_config,
         messaging_config,
-        dsr_version,
-        request,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         upload_mock.return_value = "http://www.data-download-url"
         download_time_in_days = "5"
         customer_email = "customer-1@example.com"
@@ -952,10 +817,6 @@ class TestPrivacyRequestsEmailNotifications:
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_email_complete_send_access_no_messaging_config(
         self,
         upload_mock,
@@ -967,13 +828,9 @@ class TestPrivacyRequestsEmailNotifications:
         generate_auth_header,
         policy,
         read_connection_config,
-        dsr_version,
-        request,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         upload_mock.return_value = "http://www.data-download-url"
         customer_email = "customer-1@example.com"
         data = {
@@ -1000,10 +857,6 @@ class TestPrivacyRequestsEmailNotifications:
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_email_complete_send_access_no_email_identity(
         self,
         upload_mock,
@@ -1017,11 +870,7 @@ class TestPrivacyRequestsEmailNotifications:
         read_connection_config,
         privacy_request_complete_email_notification_enabled,
         run_privacy_request_task,
-        dsr_version,
-        request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         upload_mock.return_value = "http://www.data-download-url"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -1047,10 +896,6 @@ class TestPrivacyRequestsManualWebhooks:
     LAST_NAME = "McCustomer"
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_privacy_request_needs_manual_input_key_in_cache(
         self,
         mock_upload,
@@ -1059,11 +904,7 @@ class TestPrivacyRequestsManualWebhooks:
         policy,
         run_privacy_request_task,
         db,
-        dsr_version,
-        request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
@@ -1084,10 +925,6 @@ class TestPrivacyRequestsManualWebhooks:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.erasure_runner"
     )
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_manual_input_required_for_erasure_only_policies(
         self,
         mock_erasure,
@@ -1095,13 +932,10 @@ class TestPrivacyRequestsManualWebhooks:
         integration_manual_webhook_config,
         access_manual_webhook,
         erasure_policy,
-        dsr_version,
-        request,
         run_privacy_request_task,
         db,
     ):
         """Manual inputs are not tied to policies, but should still hold up a request even for erasure requests."""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": erasure_policy.key,
@@ -1120,10 +954,6 @@ class TestPrivacyRequestsManualWebhooks:
         assert not mock_erasure.called
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_pass_on_manually_added_input(
         self,
         mock_upload,
@@ -1133,13 +963,9 @@ class TestPrivacyRequestsManualWebhooks:
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
-        dsr_version,
-        request,
         cached_access_input,
     ):
         mock_upload.return_value = "http://www.data-download-url"
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         run_privacy_request_task.delay(privacy_request_requires_input.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
@@ -1157,10 +983,6 @@ class TestPrivacyRequestsManualWebhooks:
         }
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_pass_on_partial_manually_added_input(
         self,
         mock_upload,
@@ -1168,14 +990,10 @@ class TestPrivacyRequestsManualWebhooks:
         access_manual_webhook,
         policy,
         run_privacy_request_task,
-        dsr_version,
-        request,
         privacy_request_requires_input: PrivacyRequest,
         db,
     ):
         mock_upload.return_value = "http://www.data-download-url"
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {"email": self.EMAIL},
@@ -1198,10 +1016,6 @@ class TestPrivacyRequestsManualWebhooks:
             ]
         }
 
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_pass_on_empty_confirmed_input(
         self,
@@ -1212,12 +1026,8 @@ class TestPrivacyRequestsManualWebhooks:
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
-        dsr_version,
-        request,
     ):
         mock_upload.return_value = "http://www.data-download-url"
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
             {},
@@ -1241,10 +1051,6 @@ class TestPrivacyRequestsManualWebhooks:
         }
 
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_multiple_manual_webhooks(
         self,
         mock_upload,
@@ -1255,13 +1061,9 @@ class TestPrivacyRequestsManualWebhooks:
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
-        dsr_version,
-        request,
     ):
         """Test that multiple manual webhooks are processed correctly"""
         mock_upload.return_value = "http://www.data-download-url"
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         # Create a second manual webhook
         second_webhook = AccessManualWebhook.create(
             db=db,
@@ -1323,10 +1125,6 @@ class TestPrivacyRequestsManualWebhooks:
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @mock.patch(
     "fides.api.service.privacy_request.request_runner_service.save_access_results"
-)
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
 )
 class TestPrivacyRequestAttachments:
     """Tests for attachments associated with privacy requests)"""
@@ -1415,8 +1213,6 @@ class TestPrivacyRequestAttachments:
         privacy_request: PrivacyRequest,
         run_privacy_request_task,
         db,
-        dsr_version,
-        request,
         monkeypatch,
     ):
         """Test that top-level attachments (attachments directly associated with the privacy request)
@@ -1427,8 +1223,6 @@ class TestPrivacyRequestAttachments:
             return s3_client
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         # Create test attachments
         attachment1 = self.create_test_attachment(
             db, "test1.txt", b"test1", storage_config
@@ -1492,8 +1286,6 @@ class TestPrivacyRequestAttachments:
         privacy_request: PrivacyRequest,
         run_privacy_request_task,
         db,
-        dsr_version,
-        request,
         monkeypatch,
     ):
         """Test that attachments with different types are properly handled for top-level attachments"""
@@ -1503,8 +1295,6 @@ class TestPrivacyRequestAttachments:
             return s3_client
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         # Create test attachments with different types
         included_attachment = self.create_test_attachment(
             db,
@@ -1574,8 +1364,6 @@ class TestPrivacyRequestAttachments:
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
-        dsr_version,
-        request,
         monkeypatch,
     ):
         """Test that manual webhook attachments are properly processed and included in both upload and storage"""
@@ -1585,8 +1373,6 @@ class TestPrivacyRequestAttachments:
             return s3_client
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         # Create test attachments
         attachment1 = self.create_test_attachment(
             db, "test1.txt", b"test1", storage_config
@@ -1664,8 +1450,6 @@ class TestPrivacyRequestAttachments:
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
-        dsr_version,
-        request,
         monkeypatch,
     ):
         """Test that manual webhook attachments are properly processed and included in both upload and storage"""
@@ -1675,8 +1459,6 @@ class TestPrivacyRequestAttachments:
             return s3_client
 
         monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         # Create test attachments with different types
         included_attachment = self.create_test_attachment(
             db,
@@ -1777,7 +1559,6 @@ def test_build_consent_dataset_graph(
 class TestConsentManualTaskIntegration:
     """Integration tests for consent manual tasks in the privacy request runner"""
 
-    @pytest.mark.usefixtures("use_dsr_3_0")
     def test_consent_request_with_manual_task_full_flow(
         self,
         db,
@@ -1875,7 +1656,6 @@ class TestConsentManualTaskIntegration:
 
         assert privacy_request.status == PrivacyRequestStatus.complete
 
-    @pytest.mark.usefixtures("use_dsr_3_0")
     def test_consent_request_with_privacy_request_condition(
         self,
         db,
@@ -1967,21 +1747,13 @@ class TestConsentManualTaskIntegration:
 
 
 class TestConsentEmailStep:
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_privacy_request_completes_if_no_consent_email_send_needed(
         self,
         db,
         privacy_request_with_consent_policy,
         run_privacy_request_task,
-        dsr_version,
-        request,
         sovrn_email_connection_config,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         run_privacy_request_task.delay(
             privacy_request_id=privacy_request_with_consent_policy.id,
             from_step=None,
@@ -2002,20 +1774,12 @@ class TestConsentEmailStep:
         ]
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_privacy_request_is_put_in_awaiting_email_send_status_old_workflow(
         self,
         db,
         privacy_request_with_consent_policy,
         run_privacy_request_task,
-        dsr_version,
-        request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_with_consent_policy.cache_identity(identity)
         privacy_request_with_consent_policy.consent_preferences = [
@@ -2037,21 +1801,13 @@ class TestConsentEmailStep:
         assert privacy_request_with_consent_policy.awaiting_email_send_at is not None
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_privacy_request_is_put_in_awaiting_email_new_workflow(
         self,
         db,
         privacy_request_with_consent_policy,
         run_privacy_request_task,
-        dsr_version,
-        request,
         privacy_preference_history,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_with_consent_policy.cache_identity(identity)
         privacy_preference_history.privacy_request_id = (
@@ -2173,23 +1929,15 @@ class TestConsentEmailStep:
         )
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_skipped_batch_email_send_updates_privacy_preferences_with_system_status(
         self,
         db,
         privacy_request_with_consent_policy,
         system,
-        dsr_version,
-        request,
         privacy_preference_history_us_ca_provide,
         sovrn_email_connection_config,
         run_privacy_request_task,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         sovrn_email_connection_config.system_id = system.id
         sovrn_email_connection_config.save(db)
 
@@ -2217,20 +1965,12 @@ class TestConsentEmailStep:
         ].affected_system_status == {system.fides_key: "skipped"}
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_needs_batch_email_send_new_workflow(
         self,
         db,
         privacy_request_with_consent_policy,
         privacy_preference_history,
-        dsr_version,
-        request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
@@ -2310,10 +2050,6 @@ class TestConsentEmailStep:
 @pytest.mark.async_dsr
 class TestAsyncCallbacks:
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_async_callback_access_request(
         self,
         mock_send,
@@ -2322,12 +2058,9 @@ class TestAsyncCallbacks:
         saas_async_example_connection_config: Dict[str, str],
         db,
         policy,
-        dsr_version,
-        request,
         run_privacy_request_task,
     ):
         """Demonstrate end-to-end support for tasks expecting async callbacks for DSR 3.0"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
         mock_send().json.return_value = {"id": "123"}
 
         pr = get_privacy_request_results(
@@ -2339,56 +2072,45 @@ class TestAsyncCallbacks:
         )
         db.refresh(pr)
 
-        if dsr_version == "use_dsr_2_0":
-            # Async Access Requests not supported for DSR 2.0 - the given
-            # node cannot be paused
-            assert pr.status == PrivacyRequestStatus.complete
-            return
+        assert pr.status == PrivacyRequestStatus.in_processing
 
-        if dsr_version == "use_dsr_3_0":
-            assert pr.status == PrivacyRequestStatus.in_processing
+        request_tasks = pr.access_tasks
+        assert request_tasks[0].status == ExecutionLogStatus.complete
 
-            request_tasks = pr.access_tasks
-            assert request_tasks[0].status == ExecutionLogStatus.complete
+        # SaaS Request was marked as needing async results, so the Request
+        # Task was put in a paused state
+        assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
+        assert (
+            request_tasks[1].collection_address == "saas_async_callback_config:user"
+        )
 
-            # SaaS Request was marked as needing async results, so the Request
-            # Task was put in a paused state
-            assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
-            assert (
-                request_tasks[1].collection_address == "saas_async_callback_config:user"
-            )
+        # Terminator task is downstream so it is still in a pending state
+        assert request_tasks[2].status == ExecutionLogStatus.pending
 
-            # Terminator task is downstream so it is still in a pending state
-            assert request_tasks[2].status == ExecutionLogStatus.pending
-
-            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
-            auth_header = {"Authorization": "Bearer " + jwe_token}
-            # Post to callback URL to supply access results async
-            # This requeues task and proceeds downstream
-            api_client.post(
-                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
-                headers=auth_header,
-                json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
-            )
-            db.refresh(pr)
-            assert pr.status == PrivacyRequestStatus.complete
-            assert pr.get_raw_access_results() == {
-                "saas_async_callback_config:user": [
-                    {"id": 1, "user_id": "abcde", "state": "VA"}
-                ]
+        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+        auth_header = {"Authorization": "Bearer " + jwe_token}
+        # Post to callback URL to supply access results async
+        # This requeues task and proceeds downstream
+        api_client.post(
+            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+            headers=auth_header,
+            json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
+        assert pr.get_raw_access_results() == {
+            "saas_async_callback_config:user": [
+                {"id": 1, "user_id": "abcde", "state": "VA"}
+            ]
+        }
+        # User data supplied async was filtered before being returned to the end user
+        assert pr.get_filtered_final_upload() == {
+            "access_request_rule": {
+                "saas_async_callback_config:user": [{"state": "VA", "id": 1}]
             }
-            # User data supplied async was filtered before being returned to the end user
-            assert pr.get_filtered_final_upload() == {
-                "access_request_rule": {
-                    "saas_async_callback_config:user": [{"state": "VA", "id": 1}]
-                }
-            }
+        }
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_async_callback_erasure_request(
         self,
         mock_send,
@@ -2397,14 +2119,10 @@ class TestAsyncCallbacks:
         db,
         api_client,
         erasure_policy,
-        dsr_version,
-        request,
         run_privacy_request_task,
     ):
         """Demonstrate end-to-end support for erasure tasks expecting async callbacks for DSR 3.0"""
         mock_send().json.return_value = {"id": "123"}
-
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         pr = get_privacy_request_results(
             db,
@@ -2414,25 +2132,24 @@ class TestAsyncCallbacks:
             task_timeout=120,
         )
 
-        if dsr_version == "use_dsr_3_0":
-            # Erasure task is also expected async results and is now paused
-            assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
-            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
-            auth_header = {"Authorization": "Bearer " + jwe_token}
-            # Post to callback URL to supply erasure results async
-            # This requeues task and proceeds downstream to complete privacy request
-            response = api_client.post(
-                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
-                headers=auth_header,
-                json={"rows_masked": 2},
-            )
-            assert response.status_code == 200
+        # Erasure task is also expected async results and is now paused
+        assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
+        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+        auth_header = {"Authorization": "Bearer " + jwe_token}
+        # Post to callback URL to supply erasure results async
+        # This requeues task and proceeds downstream to complete privacy request
+        response = api_client.post(
+            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+            headers=auth_header,
+            json={"rows_masked": 2},
+        )
+        assert response.status_code == 200
 
-            db.refresh(pr)
-            assert pr.status == PrivacyRequestStatus.complete
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
 
-            assert pr.erasure_tasks[1].rows_masked == 2
-            assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
+        assert pr.erasure_tasks[1].rows_masked == 2
+        assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
 
 
 class TestDatasetReferenceValidation:
@@ -2440,22 +2157,14 @@ class TestDatasetReferenceValidation:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_dataset_reference_validation_success(
         self,
         run_access,
         db: Session,
         privacy_request: PrivacyRequest,
         run_privacy_request_task,
-        request,
-        dsr_version,
     ):
         """Test that successful dataset reference validation is logged"""
-
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         # Run privacy request
         run_privacy_request_task.delay(privacy_request.id).get(
@@ -2484,10 +2193,6 @@ class TestDatasetReferenceValidation:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.access_runner"
     )
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_dataset_reference_validation_error(
         self,
         run_access,
@@ -2495,12 +2200,8 @@ class TestDatasetReferenceValidation:
         privacy_request: PrivacyRequest,
         dataset_config: DatasetConfig,
         run_privacy_request_task,
-        request,
-        dsr_version,
     ):
         """Test that dataset reference validation errors are logged"""
-
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         # Add invalid dataset reference that will cause validation error
         dataset_config.ctl_dataset.collections[0]["fields"][0]["fides_meta"] = {
@@ -2537,21 +2238,13 @@ class TestDatasetReferenceValidation:
 
 
 class TestSkipCollectionsWithOptionalIdentities:
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_skip_collections_with_optional_identities(
         self,
         privacy_request: PrivacyRequest,
         run_privacy_request_task,
         optional_identities_dataset_config,
-        dsr_version,
-        request,
     ):
         """Test that collections with optional identities are skipped"""
-
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         # Run privacy request
         run_privacy_request_task.delay(privacy_request.id).get(timeout=300)

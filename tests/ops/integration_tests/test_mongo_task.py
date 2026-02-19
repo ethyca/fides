@@ -34,10 +34,6 @@ empty_policy = Policy()
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_combined_erasure_task(
     db,
     postgres_inserts,
@@ -47,11 +43,8 @@ async def test_combined_erasure_task(
     privacy_request_with_erasure_policy,
     privacy_request,
     mongo_inserts,
-    dsr_version,
-    request,
 ):
     """Includes examples of mongo nested and array erasures"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     policy = erasure_policy(db, "user.name", "user.contact")
     seed_email = postgres_inserts["customer"][0]["email"]
@@ -267,19 +260,12 @@ async def test_combined_erasure_task(
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_mongo_erasure_task(
     db,
     mongo_inserts,
     integration_mongodb_config,
-    dsr_version,
-    request,
     privacy_request_with_erasure_policy,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     policy = erasure_policy(db, "user.name", "user.contact")
     seed_email = mongo_inserts["customer"][0]["email"]
@@ -324,18 +310,11 @@ async def test_mongo_erasure_task(
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_access_mongo_task(
     db,
     integration_mongodb_config: ConnectionConfig,
-    dsr_version,
     privacy_request,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     v = access_runner_tester(
         privacy_request,
@@ -375,7 +354,6 @@ async def test_composite_key_erasure(
     mongo_inserts,
     privacy_request,
     privacy_request_with_erasure_policy,
-    use_dsr_3_0,
 ) -> None:
     policy = erasure_policy(db, "user.name")
     privacy_request_with_erasure_policy.policy_id = policy.id
@@ -475,7 +453,6 @@ async def test_access_erasure_type_conversion(
     db,
     integration_mongodb_config: ConnectionConfig,
     privacy_request_with_erasure_policy,
-    use_dsr_3_0,
 ) -> None:
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee foreign_id field, which is an object_id stored as a string, and
@@ -557,10 +534,6 @@ async def test_access_erasure_type_conversion(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_object_querying_mongo(
     db,
     privacy_request,
@@ -568,10 +541,7 @@ async def test_object_querying_mongo(
     policy,
     integration_mongodb_config,
     integration_postgres_config,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     postgres_config = copy.copy(integration_postgres_config)
 
     dataset_postgres = Dataset(**example_datasets[0])
@@ -691,7 +661,6 @@ async def test_get_cached_data_for_erasures(
     integration_mongodb_config,
     policy,
     db,
-    use_dsr_2_0,
     privacy_request,
 ) -> None:
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
@@ -738,7 +707,6 @@ async def test_get_saved_data_for_erasures_3_0(
     integration_mongodb_config,
     policy,
     db,
-    use_dsr_3_0,
     privacy_request,
 ) -> None:
     mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
@@ -784,10 +752,6 @@ async def test_get_saved_data_for_erasures_3_0(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_return_all_elements_config_access_request(
     db,
     privacy_request,
@@ -796,8 +760,6 @@ async def test_return_all_elements_config_access_request(
     integration_mongodb_config,
     integration_postgres_config,
     integration_mongodb_connector,
-    dsr_version,
-    request,
 ):
     """Annotating array entrypoint field with return_all_elements=true means both the entire array is returned from the
     queried data and used to locate data in other collections
@@ -805,7 +767,6 @@ async def test_return_all_elements_config_access_request(
     mongo_test:internal_customer_profile.customer_identifiers.derived_phone field and mongo_test:rewards.owner field
     have return_all_elements set to True
     """
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     postgres_config = copy.copy(integration_postgres_config)
 
@@ -845,10 +806,6 @@ async def test_return_all_elements_config_access_request(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_return_all_elements_config_erasure(
     db,
     mongo_inserts,
@@ -856,12 +813,9 @@ async def test_return_all_elements_config_erasure(
     integration_mongodb_config,
     integration_postgres_config,
     integration_mongodb_connector,
-    dsr_version,
-    request,
     privacy_request,
 ):
     """Includes examples of mongo nested and array erasures"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     policy = erasure_policy(db, "user.name", "user.contact")
     privacy_request.policy_id = policy.id
@@ -932,10 +886,6 @@ async def test_return_all_elements_config_erasure(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_array_querying_mongo(
     db,
     privacy_request,
@@ -944,10 +894,7 @@ async def test_array_querying_mongo(
     policy,
     integration_mongodb_config,
     integration_postgres_config,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     postgres_config = copy.copy(integration_postgres_config)
 

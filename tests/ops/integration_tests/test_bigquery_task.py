@@ -10,10 +10,6 @@ from ...conftest import access_runner_tester, erasure_runner_tester
 @pytest.mark.xfail(reason="BigQuery integration test failures")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 @pytest.mark.asyncio
 async def test_bigquery_nested_field_update(
     db,
@@ -21,11 +17,8 @@ async def test_bigquery_nested_field_update(
     bigquery_example_test_dataset_config,
     privacy_request,
     erasure_policy,
-    dsr_version,
-    request,
 ):
     """Test that updates to nested fields in BigQuery are executed correctly."""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     # Configure policy to mask user data
     erasure_policy.rules[0].targets[0].data_category = "user"
@@ -101,10 +94,6 @@ async def test_bigquery_nested_field_update(
 @pytest.mark.xfail(reason="BigQuery integration test failures")
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 @pytest.mark.asyncio
 async def test_bigquery_deeply_nested_field_update(
     db,
@@ -112,11 +101,8 @@ async def test_bigquery_deeply_nested_field_update(
     bigquery_example_test_dataset_config,
     privacy_request,
     erasure_policy,
-    dsr_version,
-    request,
 ):
     """Test that updates to deeply nested fields in BigQuery are executed correctly."""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     # Configure policy to mask user data
     erasure_policy.rules[0].targets[0].data_category = "user"

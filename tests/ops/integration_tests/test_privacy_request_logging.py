@@ -4,7 +4,6 @@ from unittest import mock
 import pytest
 from requests import Response
 
-from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.util.logger_context_utils import ErrorGroup
 from fides.common.api.scope_registry import PRIVACY_REQUEST_CREATE
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
@@ -36,14 +35,8 @@ class TestPrivacyRequestLogging:
             yield mock_send
 
     @pytest.mark.usefixtures("zendesk_runner")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_access_error_logs(
         self,
-        dsr_version,
-        request,
         mock_send,
         api_client,
         url,
@@ -52,7 +45,6 @@ class TestPrivacyRequestLogging:
         loguru_caplog,
         provided_identity_value,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         response = api_client.post(
             url,
@@ -85,14 +77,8 @@ class TestPrivacyRequestLogging:
         )
 
     @pytest.mark.usefixtures("typeform_runner")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_erasure_error_logs(
         self,
-        dsr_version,
-        request,
         mock_send,
         api_client,
         url,
@@ -102,7 +88,6 @@ class TestPrivacyRequestLogging:
         typeform_secrets,
         provided_identity_value,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         response = api_client.post(
             url,
@@ -135,35 +120,19 @@ class TestPrivacyRequestLogging:
         )
 
     @pytest.mark.usefixtures("klaviyo_runner")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_consent_error_logs(
         self,
-        dsr_version,
-        request,
         mock_send,
         klaviyo_runner,
         consent_policy,
         loguru_caplog,
         provided_identity_value,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-        if dsr_version == "use_dsr_2_0":
-            with pytest.raises(ClientUnsuccessfulException):
-                await klaviyo_runner.new_consent_request(
-                    consent_policy,
-                    {"email": provided_identity_value},
-                    privacy_request_id="123",
-                )
-        else:
-            await klaviyo_runner.new_consent_request(
-                consent_policy,
-                {"email": provided_identity_value},
-                privacy_request_id="123",
-            )
+        await klaviyo_runner.new_consent_request(
+            consent_policy,
+            {"email": provided_identity_value},
+            privacy_request_id="123",
+        )
 
         extra = {
             "action_type": "consent",

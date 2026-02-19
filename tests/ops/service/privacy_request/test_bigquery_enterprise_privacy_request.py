@@ -135,10 +135,6 @@ def validate_erasure_privacy_request(
 @pytest.mark.integration_external
 @pytest.mark.serial
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
-@pytest.mark.parametrize(
     "bigquery_fixtures",
     [
         "bigquery_enterprise_test_dataset_config",
@@ -150,7 +146,6 @@ def test_access_request(
     db,
     cache,
     policy,
-    dsr_version,
     bigquery_fixtures,
     request,
     policy_pre_execution_webhooks,
@@ -158,7 +153,6 @@ def test_access_request(
     run_privacy_request_task,
     bigquery_enterprise_test_dataset_collections,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test DSR 3.0
     request.getfixturevalue(
         bigquery_fixtures
     )  # required to test partitioning and non-partitioned tables
@@ -221,10 +215,6 @@ def test_access_request(
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
-@pytest.mark.parametrize(
     "bigquery_fixtures",
     [
         "bigquery_enterprise_resources",
@@ -236,13 +226,11 @@ def test_erasure_request(
     request,
     policy,
     cache,
-    dsr_version,
     bigquery_fixtures,
     bigquery_enterprise_erasure_policy,
     run_privacy_request_task,
     bigquery_enterprise_test_dataset_collections,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test DSR 3.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
 
     # first test access request against manually added data
@@ -300,10 +288,6 @@ def test_erasure_request(
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
 @pytest.mark.serial
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_access_request_multiple_custom_identities(
     trigger_webhook_mock,
@@ -311,15 +295,12 @@ def test_access_request_multiple_custom_identities(
     db,
     cache,
     policy,
-    dsr_version,
     request,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
     bigquery_enterprise_test_dataset_collections,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     user_id = (
         1754  # this is a real (not generated) user id in the Stackoverflow dataset
     )
@@ -377,10 +358,6 @@ def test_access_request_multiple_custom_identities(
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
-@pytest.mark.parametrize(
     "bigquery_fixtures",
     [
         "bigquery_enterprise_resources",
@@ -392,13 +369,11 @@ def test_erasure_request_multiple_custom_identities(
     request,
     policy,
     cache,
-    dsr_version,
     bigquery_fixtures,
     bigquery_enterprise_erasure_policy,
     run_privacy_request_task,
     bigquery_enterprise_test_dataset_collections,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
 
     # first test access request against manually added data

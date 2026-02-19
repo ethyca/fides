@@ -177,7 +177,7 @@ def conditional_email_exists(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.usefixtures("use_dsr_3_0", "automatically_approved")
+@pytest.mark.usefixtures("automatically_approved")
 def test_privacy_request_runs_after_manual_input_simple(
     example_datasets: list[Dict],
     db: Session,
@@ -299,7 +299,7 @@ def test_privacy_request_runs_after_manual_input_simple(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures(
-    "use_dsr_3_0", "automatically_approved", "conditional_email_exists"
+    "automatically_approved", "conditional_email_exists"
 )
 def test_manual_task_with_conditional_dependencies(
     db: Session,
@@ -606,7 +606,7 @@ def test_manual_task_with_conditional_dependencies(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures(
-    "use_dsr_3_0", "automatically_approved", "conditional_email_exists"
+    "automatically_approved", "conditional_email_exists"
 )
 def test_manual_tasks_are_integrated_into_dag(
     db: Session,
@@ -825,7 +825,7 @@ def test_manual_tasks_are_integrated_into_dag(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.usefixtures(
-    "use_dsr_3_0", "automatically_approved", "conditional_email_exists"
+    "automatically_approved", "conditional_email_exists"
 )
 def test_manual_task_output_data_available_for_downstream(
     db: Session,
@@ -1014,7 +1014,7 @@ def test_manual_task_output_data_available_for_downstream(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.usefixtures("use_dsr_3_0", "automatically_approved")
+@pytest.mark.usefixtures("automatically_approved")
 def test_manual_task_conditional_dependencies_skip_execution(
     db: Session,
     example_datasets: list[Dict],
@@ -1116,7 +1116,7 @@ def test_manual_task_conditional_dependencies_skip_execution(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.usefixtures("use_dsr_3_0", "automatically_approved")
+@pytest.mark.usefixtures("automatically_approved")
 def test_manual_task_conditional_dependencies_execute_when_met(
     db: Session,
     example_datasets: list[Dict],

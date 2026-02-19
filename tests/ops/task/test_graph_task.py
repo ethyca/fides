@@ -29,10 +29,9 @@ from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.task.deprecated_graph_task import (
+from fides.api.task.create_request_tasks import (
     _evaluate_erasure_dependencies,
     format_data_use_map_for_caching,
-    update_erasure_mapping_from_cache,
 )
 from fides.api.task.graph_task import (
     EMPTY_REQUEST,
@@ -691,24 +690,6 @@ class TestUpdateErasureMappingFromCache:
         )
         dsk[ROOT_COLLECTION_ADDRESS.value] = 0
         return dsk
-
-    def test_update_erasure_mapping_from_cache_without_data(self, dsk, task_resource):
-        task_resource.get_all_cached_erasures = lambda: {}  # represents an empty cache
-        update_erasure_mapping_from_cache(dsk, task_resource)
-        (task, retrieved_data, input_list, *erasure_prereqs) = dsk["dr_1:ds_1"]
-        assert callable(task)
-        assert task.__name__ == "erasure_request"
-        assert retrieved_data == []
-        assert input_list == [[]]
-        assert erasure_prereqs == [ROOT_COLLECTION_ADDRESS.value]
-
-    def test_update_erasure_mapping_from_cache_with_data(self, dsk, task_resource):
-        task_resource.get_all_cached_erasures = lambda: {
-            "dr_1:ds_1": 1
-        }  # a cache with the results of the ds_1 collection erasure
-        update_erasure_mapping_from_cache(dsk, task_resource)
-        assert dsk["dr_1:ds_1"] == 1
-
 
 class TestFormatDataUseMapForCaching:
     def create_dataset(self, db, fides_key, connection_config):

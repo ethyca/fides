@@ -14,10 +14,6 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_2_0", "use_dsr_3_0"],
-)
-@pytest.mark.parametrize(
     "bigquery_fixtures",
     ["bigquery_resources", "bigquery_resources_with_namespace_meta"],
 )
@@ -25,12 +21,10 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 def test_create_and_process_access_request_bigquery(
     db,
     policy,
-    dsr_version,
     request,
     bigquery_fixtures,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_resources = request.getfixturevalue(bigquery_fixtures)
 
     customer_email = bigquery_resources["email"]
@@ -100,23 +94,17 @@ def test_create_and_process_access_request_bigquery(
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_2_0", "use_dsr_3_0"],
-)
-@pytest.mark.parametrize(
     "bigquery_fixtures",
     ["bigquery_resources", "bigquery_resources_with_namespace_meta"],
 )
 @pytest.mark.xfail(reason="BigQuery integration test failures")
 def test_create_and_process_erasure_request_bigquery(
     db,
-    dsr_version,
     request,
     bigquery_fixtures,
     erasure_policy,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_resources = request.getfixturevalue(bigquery_fixtures)
 
     bigquery_client = bigquery_resources["client"]
@@ -205,7 +193,6 @@ def test_create_and_process_erasure_request_bigquery(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
-@pytest.mark.parametrize("dsr_version", ["use_dsr_2_0", "use_dsr_3_0"])
 @pytest.mark.parametrize(
     "scenario,expected_status",
     [
@@ -217,7 +204,6 @@ def test_create_and_process_erasure_request_bigquery(
 def test_bigquery_missing_tables_handling(
     db,
     policy,
-    dsr_version,
     request,
     scenario,
     expected_status,
@@ -229,7 +215,6 @@ def test_bigquery_missing_tables_handling(
     - Missing leaf collections should be skipped gracefully
     - Missing collections with dependencies should cause errors
     """
-    request.getfixturevalue(dsr_version)
 
     # Get dataset config and collection key
     dataset_config = request.getfixturevalue(f"bigquery_missing_{scenario}_config")
@@ -283,12 +268,10 @@ def test_bigquery_missing_tables_handling(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
-@pytest.mark.parametrize("dsr_version", ["use_dsr_2_0", "use_dsr_3_0"])
 @pytest.mark.xfail(reason="BigQuery integration test failures")
 def test_bigquery_missing_tables_handling_erasure_leaf_collection(
     db,
     erasure_policy,
-    dsr_version,
     request,
     bigquery_missing_table_resources,
     run_privacy_request_task,
@@ -298,7 +281,6 @@ def test_bigquery_missing_tables_handling_erasure_leaf_collection(
     - Missing leaf collections complete successfully during access (skipped gracefully)
     - Erasure then runs normally and completes successfully
     """
-    request.getfixturevalue(dsr_version)
 
     # Get dataset config for customer_profile (leaf collection)
     dataset_config = request.getfixturevalue("bigquery_missing_customer_profile_config")
@@ -352,12 +334,10 @@ def test_bigquery_missing_tables_handling_erasure_leaf_collection(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
-@pytest.mark.parametrize("dsr_version", ["use_dsr_2_0", "use_dsr_3_0"])
 @pytest.mark.xfail(reason="BigQuery integration test failures")
 def test_bigquery_missing_tables_handling_erasure_dependency_collection(
     db,
     erasure_policy,
-    dsr_version,
     request,
     bigquery_missing_table_resources,
     run_privacy_request_task,
@@ -367,7 +347,6 @@ def test_bigquery_missing_tables_handling_erasure_dependency_collection(
     - Missing collections with dependencies fail during access (hard error)
     - Erasure phase never runs for these collections
     """
-    request.getfixturevalue(dsr_version)
 
     # Get dataset config for customer (collection with dependencies)
     dataset_config = request.getfixturevalue("bigquery_missing_customer_config")

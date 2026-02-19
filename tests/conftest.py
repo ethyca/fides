@@ -923,11 +923,9 @@ def access_runner_tester(
     identity: Dict[str, Any],
     session: Session,
 ):
-    """
-    Function for testing the access request for either DSR 2.0 and DSR 3.0
-    """
+    """Run an access request and wait for tasks to complete, returning raw results."""
     try:
-        return access_runner(
+        access_runner(
             privacy_request,
             policy,
             graph,
@@ -935,13 +933,11 @@ def access_runner_tester(
             identity,
             session,
             privacy_request_proceed=False,
-            # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
         )
     except PrivacyRequestExit:
-        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
-        # RequestTasks to finish
-        wait_for_tasks_to_complete(session, privacy_request, ActionType.access)
-        return privacy_request.get_raw_access_results()
+        pass
+    wait_for_tasks_to_complete(session, privacy_request, ActionType.access)
+    return privacy_request.get_raw_access_results()
 
 
 def erasure_runner_tester(
@@ -953,11 +949,9 @@ def erasure_runner_tester(
     access_request_data: Dict[str, List[Row]],
     session: Session,
 ):
-    """
-    Function for testing the erasure runner for either DSR 2.0 and DSR 3.0
-    """
+    """Run an erasure request and wait for tasks to complete, returning masking counts."""
     try:
-        return erasure_runner(
+        erasure_runner(
             privacy_request,
             policy,
             graph,
@@ -965,13 +959,12 @@ def erasure_runner_tester(
             identity,
             access_request_data,
             session,
-            privacy_request_proceed=False,  # This allows the DSR 3.0 Erasure Runner to be tested in isolation
+            privacy_request_proceed=False,
         )
     except PrivacyRequestExit:
-        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits
-        # for RequestTasks to finish
-        wait_for_tasks_to_complete(session, privacy_request, ActionType.erasure)
-        return privacy_request.get_raw_masking_counts()
+        pass
+    wait_for_tasks_to_complete(session, privacy_request, ActionType.erasure)
+    return privacy_request.get_raw_masking_counts()
 
 
 def consent_runner_tester(
@@ -982,11 +975,9 @@ def consent_runner_tester(
     identity: Dict[str, Any],
     session: Session,
 ):
-    """
-    Function for testing the consent request for either DSR 2.0 and DSR 3.0
-    """
+    """Run a consent request and wait for tasks to complete, returning consent results."""
     try:
-        return consent_runner(
+        consent_runner(
             privacy_request,
             policy,
             graph,
@@ -994,13 +985,11 @@ def consent_runner_tester(
             identity,
             session,
             privacy_request_proceed=False,
-            # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
         )
     except PrivacyRequestExit:
-        # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
-        # RequestTasks to finish
-        wait_for_tasks_to_complete(session, privacy_request, ActionType.consent)
-        return privacy_request.get_consent_results()
+        pass
+    wait_for_tasks_to_complete(session, privacy_request, ActionType.consent)
+    return privacy_request.get_consent_results()
 
 
 @pytest.fixture(scope="session")

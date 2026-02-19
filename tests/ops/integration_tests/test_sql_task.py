@@ -34,20 +34,12 @@ from ..task.traversal_data import integration_db_graph, postgres_db_graph_datase
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_sql_erasure_does_not_ignore_collections_without_pk(
     db,
     postgres_inserts,
     integration_postgres_config,
     privacy_request,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     seed_email = postgres_inserts["customer"][0]["email"]
     policy = erasure_policy(
         db, "user.contact", "system.operations"
@@ -120,20 +112,12 @@ async def test_sql_erasure_does_not_ignore_collections_without_pk(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_composite_key_erasure(
     db,
     integration_postgres_config: ConnectionConfig,
-    dsr_version,
-    request,
     privacy_request,
     privacy_request_with_erasure_policy,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     policy = erasure_policy(db, "user")
     privacy_request_with_erasure_policy.policy_id = policy.id
     privacy_request_with_erasure_policy.save(db)
@@ -235,20 +219,12 @@ async def test_composite_key_erasure(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_sql_erasure_task(
     db,
     postgres_inserts,
     integration_postgres_config,
     privacy_request,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     seed_email = postgres_inserts["customer"][0]["email"]
 
     policy = erasure_policy(db, "user.name", "system")
@@ -302,21 +278,13 @@ async def test_sql_erasure_task(
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_postgres_access_request_task(
     db,
     policy,
     integration_postgres_config,
     postgres_integration_db,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     v = access_runner_tester(
         privacy_request,
         policy,
@@ -396,22 +364,14 @@ async def test_postgres_access_request_task(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_postgres_privacy_requests_against_non_default_schema(
     db,
     postgres_connection_config_with_schema,
     postgres_integration_db,
     erasure_policy,
-    request,
-    dsr_version,
     privacy_request_with_erasure_policy,
 ) -> None:
     """Assert that the postgres connector can make access and erasure requests against the non-default (public) schema"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     database_name = "postgres_backup"
     customer_email = "customer-500@example.com"
 
@@ -488,21 +448,14 @@ async def test_postgres_privacy_requests_against_non_default_schema(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_filter_on_data_categories(
     db,
     privacy_request,
     connection_config,
     example_datasets,
     policy,
-    dsr_version,
-    request,
     integration_postgres_config,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     postgres_config = copy.copy(integration_postgres_config)
 
     rule = Rule.create(
@@ -636,21 +589,14 @@ async def test_filter_on_data_categories(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_access_erasure_type_conversion(
     db,
     integration_postgres_config: ConnectionConfig,
     privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
 ) -> None:
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee id field, which is an int, and converting it into a string to query
     against the type_link_test.id field."""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     policy = erasure_policy(db, "user.name")
     privacy_request_with_erasure_policy.policy_id = policy.id
     privacy_request_with_erasure_policy.save(db)
@@ -841,10 +787,6 @@ class TestRetrievingData:
 class TestRetryIntegration:
     @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.retrieve_data")
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_retry_access_request(
         self,
         mock_retrieve,
@@ -853,11 +795,7 @@ class TestRetryIntegration:
         connection_config,
         example_datasets,
         integration_postgres_config,
-        dsr_version,
-        request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         sample_postgres_configuration_policy = erasure_policy(
             db,
             "system.operations",
@@ -885,101 +823,64 @@ class TestRetryIntegration:
 
         # Call run_access_request with an email that isn't in the database
 
-        if dsr_version == "use_dsr_2_0":
-            with pytest.raises(Exception) as exc:
-                # DSR 2.0 will raise an exception when the first node is hit,
-                # stopping all other nodes from running
-                access_runner_tester(
-                    privacy_request,
-                    sample_postgres_configuration_policy,
-                    dataset_graph,
-                    [integration_postgres_config],
-                    {"email": "customer-5@example.com"},
-                    db,
-                )
-                execution_logs = db.query(ExecutionLog).filter_by(
-                    privacy_request_id=privacy_request.id
-                )
-                assert 3 == execution_logs.count()
+        access_runner_tester(
+            privacy_request,
+            sample_postgres_configuration_policy,
+            dataset_graph,
+            [integration_postgres_config],
+            {"email": "customer-5@example.com"},
+            db,
+        )
+        execution_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id
+        )
+        assert 13 == execution_logs.count()
 
-                # Execution starts with the employee collection, retries once on failure, and then errors
-                assert [
-                    (
-                        get_collection_identifier(log),
-                        log.status.value,
-                    )
-                    for log in execution_logs.order_by("created_at")
-                ] == [
-                    ("Dataset traversal", "complete"),
-                    ("postgres_example_test_dataset:employee", "in_processing"),
-                    ("postgres_example_test_dataset:employee", "retrying"),
-                    ("postgres_example_test_dataset:employee", "error"),
-                ]
-        else:
-            # DSR 3.0 will run the nodes that can run, an exception on one node
-            # will not necessarily stop all nodes from running
-            access_runner_tester(
-                privacy_request,
-                sample_postgres_configuration_policy,
-                dataset_graph,
-                [integration_postgres_config],
-                {"email": "customer-5@example.com"},
-                db,
-            )
-            execution_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id
-            )
-            assert 13 == execution_logs.count()
-
-            # All four nodes directly downstream of the root node attempt to process,
-            # and nothing further processes downstream
-            assert set(
-                [
-                    (
-                        get_collection_identifier(log),
-                        log.status.value,
-                    )
-                    for log in execution_logs.order_by(ExecutionLog.created_at)
-                ]
-            ) == set(
-                [
-                    ("Dataset traversal", "complete"),
-                    ("postgres_example_test_dataset:customer", "in_processing"),
-                    ("postgres_example_test_dataset:customer", "retrying"),
-                    ("postgres_example_test_dataset:customer", "error"),
-                    ("postgres_example_test_dataset:employee", "in_processing"),
-                    ("postgres_example_test_dataset:employee", "retrying"),
-                    ("postgres_example_test_dataset:employee", "error"),
-                    ("postgres_example_test_dataset:report", "in_processing"),
-                    ("postgres_example_test_dataset:report", "retrying"),
-                    ("postgres_example_test_dataset:report", "error"),
-                    ("postgres_example_test_dataset:visit", "in_processing"),
-                    ("postgres_example_test_dataset:visit", "retrying"),
-                    ("postgres_example_test_dataset:visit", "error"),
-                ]
-            )
-            # Downstream request tasks were marked as error
-            assert [rt.status.value for rt in privacy_request.access_tasks] == [
-                "complete",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
+        # All four nodes directly downstream of the root node attempt to process,
+        # and nothing further processes downstream
+        assert set(
+            [
+                (
+                    get_collection_identifier(log),
+                    log.status.value,
+                )
+                for log in execution_logs.order_by(ExecutionLog.created_at)
             ]
+        ) == set(
+            [
+                ("Dataset traversal", "complete"),
+                ("postgres_example_test_dataset:customer", "in_processing"),
+                ("postgres_example_test_dataset:customer", "retrying"),
+                ("postgres_example_test_dataset:customer", "error"),
+                ("postgres_example_test_dataset:employee", "in_processing"),
+                ("postgres_example_test_dataset:employee", "retrying"),
+                ("postgres_example_test_dataset:employee", "error"),
+                ("postgres_example_test_dataset:report", "in_processing"),
+                ("postgres_example_test_dataset:report", "retrying"),
+                ("postgres_example_test_dataset:report", "error"),
+                ("postgres_example_test_dataset:visit", "in_processing"),
+                ("postgres_example_test_dataset:visit", "retrying"),
+                ("postgres_example_test_dataset:visit", "error"),
+            ]
+        )
+        # Downstream request tasks were marked as error
+        assert [rt.status.value for rt in privacy_request.access_tasks] == [
+            "complete",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+        ]
 
     @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.mask_data")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     @pytest.mark.asyncio
     async def test_retry_erasure(
         self,
@@ -990,11 +891,7 @@ class TestRetryIntegration:
         example_datasets,
         policy,
         integration_postgres_config,
-        dsr_version,
-        request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         sample_postgres_configuration_policy = erasure_policy(
             db,
             "system.operations",
@@ -1030,101 +927,54 @@ class TestRetryIntegration:
         )
 
         # Call run_erasure with an email that isn't in the database
-        if dsr_version == "use_dsr_2_0":
-            with pytest.raises(Exception):
-                erasure_runner_tester(
-                    privacy_request,
-                    sample_postgres_configuration_policy,
-                    dataset_graph,
-                    [integration_postgres_config],
-                    {"email": "customer-5@example.com"},
-                    {
-                        "postgres_example_test_dataset:employee": [],
-                        "postgres_example_test_dataset:visit": [],
-                        "postgres_example_test_dataset:customer": [],
-                        "postgres_example_test_dataset:report": [],
-                        "postgres_example_test_dataset:orders": [],
-                        "postgres_example_test_dataset:payment_card": [],
-                        "postgres_example_test_dataset:service_request": [],
-                        "postgres_example_test_dataset:login": [],
-                        "postgres_example_test_dataset:address": [],
-                        "postgres_example_test_dataset:order_item": [],
-                        "postgres_example_test_dataset:product": [],
-                    },
-                    db,
-                )
-                execution_logs = db.query(ExecutionLog).filter_by(
-                    privacy_request_id=privacy_request.id
-                )
+        erasure_runner_tester(
+            privacy_request,
+            sample_postgres_configuration_policy,
+            dataset_graph,
+            [integration_postgres_config],
+            {"email": "customer-5@example.com"},
+            {},
+            db,
+        )
+        execution_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id, action_type=ActionType.erasure
+        )
+        assert 44 == execution_logs.count()
 
-                # DSR 2.0 raises an exception on the first node hit
-                assert 4 == execution_logs.count()
+        visit_logs = execution_logs.filter_by(collection_name="visit").order_by(
+            "created_at"
+        )
+        assert ["in_processing", "retrying", "retrying", "error"] == [
+            el.status.value for el in visit_logs
+        ]
 
-                # Execution starts with the address collection, retries twice on failure, and then errors
-                assert [
-                    (
-                        get_collection_identifier(log),
-                        log.status.value,
-                    )
-                    for log in execution_logs.order_by("created_at")
-                ] == [
-                    ("Dataset traversal", "complete"),
-                    ("postgres_example_test_dataset:address", "in_processing"),
-                    ("postgres_example_test_dataset:address", "retrying"),
-                    ("postgres_example_test_dataset:address", "retrying"),
-                    ("postgres_example_test_dataset:address", "error"),
-                ]
-        else:
-            # DSR 3.0 does not raise an exception on the first node hit.
-            # Every node has a chance to process
-            erasure_runner_tester(
-                privacy_request,
-                sample_postgres_configuration_policy,
-                dataset_graph,
-                [integration_postgres_config],
-                {"email": "customer-5@example.com"},
-                {},
-                db,
-            )
-            execution_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id, action_type=ActionType.erasure
-            )
-            assert 44 == execution_logs.count()
+        order_item_logs = execution_logs.filter_by(
+            collection_name="order_item"
+        ).order_by("created_at")
+        assert ["in_processing", "retrying", "retrying", "error"] == [
+            el.status.value for el in order_item_logs
+        ]
+        # Address log mask data couldn't run, attempted to retry twice per configuration
+        address_logs = execution_logs.filter_by(collection_name="address").order_by(
+            ExecutionLog.created_at
+        )
+        assert ["in_processing", "retrying", "retrying", "error"] == [
+            el.status.value for el in address_logs
+        ]
 
-            visit_logs = execution_logs.filter_by(collection_name="visit").order_by(
-                "created_at"
-            )
-            assert ["in_processing", "retrying", "retrying", "error"] == [
-                el.status.value for el in visit_logs
-            ]
-
-            order_item_logs = execution_logs.filter_by(
-                collection_name="order_item"
-            ).order_by("created_at")
-            assert ["in_processing", "retrying", "retrying", "error"] == [
-                el.status.value for el in order_item_logs
-            ]
-            # Address log mask data couldn't run, attempted to retry twice per configuration
-            address_logs = execution_logs.filter_by(collection_name="address").order_by(
-                ExecutionLog.created_at
-            )
-            assert ["in_processing", "retrying", "retrying", "error"] == [
-                el.status.value for el in address_logs
-            ]
-
-            # Downstream request tasks (other than __ROOT__) were marked as error.
-            assert [rt.status.value for rt in privacy_request.erasure_tasks] == [
-                "complete",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-                "error",
-            ]
+        # Downstream request tasks (other than __ROOT__) were marked as error.
+        assert [rt.status.value for rt in privacy_request.erasure_tasks] == [
+            "complete",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+            "error",
+        ]
