@@ -21,6 +21,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFeatures } from "~/features/common/features";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  ACTION_TYPES,
+  DEFAULT_DATA_SECTIONS,
+} from "~/features/prompt-explorer/constants";
+import {
   DataSectionConfig,
   PromptCategory,
   PromptInfo,
@@ -38,32 +42,6 @@ const { Content } = Layout;
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
-const defaultDataSections: DataSectionConfig = {
-  organization: true,
-  data_categories: true,
-  data_uses: true,
-  data_subjects: true,
-  systems: true,
-  datasets: true,
-  policies: true,
-  privacy_notices: true,
-  connections: true,
-};
-
-// Intent classification action types
-const ACTION_TYPES = [
-  { value: "answer", label: "Answer" },
-  { value: "skip", label: "Skip" },
-  { value: "correct", label: "Correct Previous" },
-  { value: "wait", label: "Wait" },
-  { value: "clarify_question", label: "Clarify Question" },
-  { value: "request_clarification", label: "Request Clarification" },
-  { value: "acknowledge", label: "Acknowledge" },
-  { value: "restart_all", label: "Restart All" },
-  { value: "restart_from", label: "Restart From" },
-  { value: "summary", label: "Summary" },
-];
-
 const PromptExplorer: NextPage = () => {
   const { plus: hasPlus } = useFeatures();
 
@@ -74,8 +52,9 @@ const PromptExplorer: NextPage = () => {
   >(undefined);
 
   // State for data sections (assessment prompts only)
-  const [dataSections, setDataSections] =
-    useState<DataSectionConfig>(defaultDataSections);
+  const [dataSections, setDataSections] = useState<DataSectionConfig>(
+    DEFAULT_DATA_SECTIONS,
+  );
 
   // State for assessment context
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<
@@ -95,7 +74,7 @@ const PromptExplorer: NextPage = () => {
   );
   const [conversationHistory, setConversationHistory] = useState<string>("");
   const [selectedAction, setSelectedAction] = useState<string>("answer");
-  const [actionParams] = useState<string>("");
+  const [actionParams, setActionParams] = useState<string>("");
   const [isFinalQuestion, setIsFinalQuestion] = useState<boolean>(false);
   const [questionToRephrase, setQuestionToRephrase] = useState<string>(
     "What is the retention period for this data?",
@@ -469,6 +448,18 @@ const PromptExplorer: NextPage = () => {
                   value={userMessage}
                   onChange={(e) => setUserMessage(e.target.value)}
                   rows={2}
+                />
+              </div>
+              <div>
+                <Text strong className="mb-1 block">
+                  Action Params (JSON, optional)
+                </Text>
+                <TextArea
+                  value={actionParams}
+                  onChange={(e) => setActionParams(e.target.value)}
+                  rows={2}
+                  placeholder='e.g., {"answer": "Custom answer"}'
+                  className="font-mono text-xs"
                 />
               </div>
               <div className="flex items-center gap-2">
