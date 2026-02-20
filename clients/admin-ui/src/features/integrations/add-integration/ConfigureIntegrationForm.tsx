@@ -7,7 +7,7 @@ import {
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
@@ -15,6 +15,7 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { INTEGRATION_DETAIL_ROUTE } from "~/features/common/nav/routes";
+import { debounce } from "~/features/common/utils";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
@@ -25,7 +26,15 @@ import {
 } from "~/features/datastore-connections";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import { usePatchSystemConnectionConfigsMutation } from "~/features/system";
+import {
+  useGetSystemLinksQuery,
+  useSetSystemLinksMutation,
+} from "~/features/integrations/system-links.slice";
+import {
+  useGetSystemsQuery,
+  usePatchSystemConnectionConfigsMutation,
+} from "~/features/system";
+import { SystemConnectionLinkType } from "~/mocks/system-links/data";
 import {
   AccessLevel,
   BigQueryDocsSchema,
@@ -109,12 +118,61 @@ const ConfigureIntegrationForm = ({
   const [createUnlinkedSassConnectionConfigTrigger] =
     useCreateUnlinkedSassConnectionConfigMutation();
 
+  const [setSystemLinks] = useSetSystemLinksMutation();
+
   const hasSecrets = connectionOption.identifier !== ConnectionType.MANUAL_TASK;
 
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier, {
       skip: !hasSecrets,
     });
+
+  // Fetch currently linked systems for editing
+  const { data: systemLinksData } = useGetSystemLinksQuery(
+    connection?.key || "",
+    {
+      skip: !connection?.key,
+    },
+  );
+
+  // System select search state
+  const [systemSearchValue, setSystemSearchValue] = useState<string>();
+  const OPTIONS_LIMIT = 25;
+
+  // Fetch systems for the select dropdown
+  const { data: systemsData, isFetching: isFetchingSystems } =
+    useGetSystemsQuery({
+      page: 1,
+      size: OPTIONS_LIMIT,
+      search: systemSearchValue || undefined,
+    });
+
+  const systemOptions = useMemo(
+    () =>
+      systemsData?.items?.map((system) => ({
+        value: system.fides_key,
+        label: system.name,
+      })) || [],
+    [systemsData],
+  );
+
+  // Handle system search with debouncing
+  const handleSystemSearch = useCallback(
+    (search: string) => {
+      if (search?.length > 1) {
+        setSystemSearchValue(search);
+      }
+      if (search?.length === 0) {
+        setSystemSearchValue(undefined);
+      }
+    },
+    [setSystemSearchValue],
+  );
+
+  const onSystemSearch = useMemo(
+    () => debounce(handleSystemSearch, 300),
+    [handleSystemSearch],
+  );
 
   const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
     minimal: true,
@@ -133,9 +191,24 @@ const ConfigureIntegrationForm = ({
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secrets);
 
+  // Get the currently linked system for editing (prefer monitoring link type, fallback to first link)
+  const currentLinkedSystem = useMemo(() => {
+    if (!systemLinksData?.links || systemLinksData.links.length === 0) {
+      return undefined;
+    }
+    const monitoringLink = systemLinksData.links.find(
+      (link) => link.link_type === "monitoring",
+    );
+    return (
+      monitoringLink?.system_fides_key ||
+      systemLinksData.links[0]?.system_fides_key
+    );
+  }, [systemLinksData]);
+
   const initialValues: FormValues = {
     name: connection?.name ?? "",
     description: connection?.description ?? "",
+    system_fides_key: currentLinkedSystem,
     ...(hasSecrets && {
       secrets: mapValues(secrets?.properties, (s, key) => {
         const value = connection?.secrets?.[key] ?? s.default;
@@ -221,13 +294,60 @@ const ConfigureIntegrationForm = ({
       return;
     }
     if (!hasSecrets || !values.secrets) {
+      // Link system if provided (using system-links API)
+      if (values.system_fides_key && connectionPayload.key) {
+        try {
+          await setSystemLinks({
+            connectionKey: connectionPayload.key,
+            body: {
+              links: [
+                {
+                  system_fides_key: values.system_fides_key,
+                  link_type: "monitoring" as SystemConnectionLinkType,
+                },
+              ],
+            },
+          }).unwrap();
+        } catch (error) {
+          // Log error but don't fail the form submission
+          // eslint-disable-next-line no-console
+          console.error("Failed to link system:", error);
+          toast({
+            status: "warning",
+            description:
+              "Integration saved but system linking failed. You can link it later.",
+          });
+        }
+      }
+
       toast({
         status: "success",
         description: `Integration ${
           isEditing ? "updated" : "created"
         } successfully`,
       });
+
       onClose();
+
+      // Redirect to the newly created integration detail page
+      if (!isEditing) {
+        router.push({
+          pathname: INTEGRATION_DETAIL_ROUTE,
+          query: {
+            id: connectionPayload.key,
+          },
+        });
+      }
+
+      if (
+        connectionPayload &&
+        values.dataset &&
+        connectionOption.identifier === ConnectionType.DATAHUB
+      ) {
+        await patchConnectionDatasetConfig(values, connectionPayload.key, {
+          showSuccessAlert: false,
+        });
+      }
       return;
     }
 
@@ -256,6 +376,32 @@ const ConfigureIntegrationForm = ({
         isEditing ? "updated" : "created"
       } successfully`,
     });
+
+    // Link system if provided (using system-links API)
+    if (values.system_fides_key && connectionPayload.key) {
+      try {
+        await setSystemLinks({
+          connectionKey: connectionPayload.key,
+          body: {
+            links: [
+              {
+                system_fides_key: values.system_fides_key,
+                link_type: "monitoring" as SystemConnectionLinkType,
+              },
+            ],
+          },
+        }).unwrap();
+      } catch (error) {
+        // Log error but don't fail the form submission
+        // eslint-disable-next-line no-console
+        console.error("Failed to link system:", error);
+        toast({
+          status: "warning",
+          description:
+            "Integration saved but system linking failed. You can link it later.",
+        });
+      }
+    }
 
     onClose();
 
@@ -337,6 +483,18 @@ const ConfigureIntegrationForm = ({
                   name="description"
                   label="Description"
                   variant="stacked"
+                />
+                <ControlledSelect
+                  id="system_fides_key"
+                  name="system_fides_key"
+                  label="System"
+                  tooltip="Link this integration to a system for monitoring purposes"
+                  layout="stacked"
+                  options={systemOptions}
+                  onSearch={onSystemSearch}
+                  loading={isFetchingSystems}
+                  allowClear
+                  placeholder="Search for a system..."
                 />
                 {hasSecrets && secrets && generateFields(secrets)}
                 {connectionOption.identifier === ConnectionType.DATAHUB && (

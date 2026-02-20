@@ -17,7 +17,6 @@ import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrat
 import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
-import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
 import { ConnectionSystemTypeMap, IntegrationFeature } from "~/types/api";
 
 interface UseFeatureBasedTabsProps {
@@ -132,7 +131,6 @@ export const useFeatureBasedTabs = ({
               connection={connection!}
               description={description}
             />
-            <IntegrationLinkedSystems connection={connection!} />
             {overview}
             {instructions}
           </Flex>
