@@ -10,7 +10,6 @@ import {
 import {
   Avatar,
   Button,
-  Checkbox,
   Collapse,
   CUSTOM_TAG_COLOR,
   Drawer,
@@ -22,6 +21,7 @@ import {
   Result,
   Space,
   Spin,
+  Switch,
   Tag,
   Tooltip,
   Typography,
@@ -605,7 +605,10 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               <Button
                 type="primary"
                 disabled={false /* TEMP: removed !isComplete for testing */}
-                onClick={() => setIsReportModalOpen(true)}
+                onClick={() => {
+                  setIsExternalExport(isComplete);
+                  setIsReportModalOpen(true);
+                }}
               >
                 Generate report
               </Button>
@@ -1162,33 +1165,28 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 color: palette.FIDESUI_NEUTRAL_700,
               }}
             >
-              Export Options
+              Export Format
             </Title>
-            <Tooltip
-              title={
-                !isComplete
-                  ? "Assessment must be 100% complete to export for external signing"
-                  : undefined
-              }
-            >
-              <Checkbox
-                checked={isExternalExport}
-                disabled={!isComplete}
-                onChange={(e) => setIsExternalExport(e.target.checked)}
+            <Flex align="center" gap="middle">
+              <Tooltip
+                title={
+                  !isComplete
+                    ? "Assessment must be 100% complete to enable compliance documentation format"
+                    : undefined
+                }
               >
-                <Text style={{ fontSize: 14 }}>
-                  Export for external signing
-                </Text>
-              </Checkbox>
-            </Tooltip>
-            <Text
-              type="secondary"
-              style={{ display: "block", marginTop: 8, fontSize: 12 }}
-            >
-              {isExternalExport
-                ? "Final document format: includes only questions and answers, without status, risk assessment, or evidence details."
-                : "Internal format: includes full details including status, risk assessment, and supporting evidence."}
-            </Text>
+                <Switch
+                  checked={isExternalExport}
+                  disabled={!isComplete}
+                  onChange={(checked) => setIsExternalExport(checked)}
+                />
+              </Tooltip>
+              <Text style={{ fontSize: 14 }}>
+                {isExternalExport
+                  ? "Compliance Documentation Format: Excludes executive summary, risk assessment, and supporting evidence."
+                  : "Internal Format: Includes executive summary, risk assessment, and supporting evidence."}
+              </Text>
+            </Flex>
           </div>
 
           <Flex
