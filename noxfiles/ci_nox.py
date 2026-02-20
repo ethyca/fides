@@ -334,10 +334,16 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-unit-api": partial(pytest_ops, mark="unit", subset_dir="api"),
     "ops-unit-api-privacy": partial(pytest_ops, mark="unit", subset_dir="api-privacy"),
     "ops-unit-service": partial(pytest_ops, mark="unit", subset_dir="service"),
-    "ops-unit-other": partial(pytest_ops, mark="unit", subset_dir="non-api-non-service"),
+    "ops-unit-other": partial(
+        pytest_ops, mark="unit", subset_dir="non-api-non-service"
+    ),
     "ops-integration": partial(pytest_ops, mark="integration"),
-    "ops-integration-service": partial(pytest_ops, mark="integration", subset_dir="service"),
-    "ops-integration-other": partial(pytest_ops, mark="integration", subset_dir="other"),
+    "ops-integration-service": partial(
+        pytest_ops, mark="integration", subset_dir="service"
+    ),
+    "ops-integration-other": partial(
+        pytest_ops, mark="integration", subset_dir="other"
+    ),
     "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
     "ops-saas": partial(pytest_ops, mark="saas"),
     "api": pytest_api,
