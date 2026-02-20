@@ -10,8 +10,6 @@ This module provides the database schema for:
 """
 
 from enum import Enum as EnumType
-from typing import TYPE_CHECKING, Optional
-
 from sqlalchemy import (
     ARRAY,
     Boolean,
@@ -25,12 +23,9 @@ from sqlalchemy import (
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
-
-if TYPE_CHECKING:
-    from fides.api.models.questionnaire import Questionnaire
 
 
 class AssessmentStatus(str, EnumType):
@@ -209,7 +204,7 @@ class PrivacyAssessment(Base):
     # uselist=False returns the most recently loaded questionnaire row.
     # Multiple attempts may exist (see Questionnaire model docstring);
     # for explicit "latest" semantics, query with order_by(created_at.desc()).
-    questionnaire: Mapped[Optional["Questionnaire"]] = relationship(
+    questionnaire = relationship(
         "Questionnaire",
         back_populates="assessment",
         cascade="all, delete-orphan",
