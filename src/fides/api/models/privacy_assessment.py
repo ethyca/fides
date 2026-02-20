@@ -25,7 +25,7 @@ from sqlalchemy import (
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
 
@@ -209,7 +209,7 @@ class PrivacyAssessment(Base):
     # uselist=False returns the most recently loaded questionnaire row.
     # Multiple attempts may exist (see Questionnaire model docstring);
     # for explicit "latest" semantics, query with order_by(created_at.desc()).
-    questionnaire: Mapped[Optional["Questionnaire"]] = relationship(
+    questionnaire: "RelationshipProperty[Optional[Questionnaire]]" = relationship(
         "Questionnaire",
         back_populates="assessment",
         cascade="all, delete-orphan",

@@ -14,7 +14,7 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, T
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
 
@@ -72,10 +72,10 @@ class Questionnaire(Base):
     reminder_count = Column(Integer, nullable=False, default=0)
 
     # Relationships
-    assessment: Mapped["PrivacyAssessment"] = relationship(
+    assessment: "RelationshipProperty[PrivacyAssessment]" = relationship(
         "PrivacyAssessment", back_populates="questionnaire"
     )
-    messages: Mapped[List["ChatMessage"]] = relationship(
+    messages: "RelationshipProperty[List[ChatMessage]]" = relationship(
         "ChatMessage",
         back_populates="questionnaire",
         cascade="all, delete-orphan",

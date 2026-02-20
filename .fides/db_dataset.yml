@@ -355,6 +355,42 @@ dataset:
       description: 'URL of the chat workspace'
       data_categories:
       - system.operations
+  - name: chat_message
+    description: 'A single message in a questionnaire conversation'
+    fields:
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: is_bot_message
+      data_categories:
+      - system.operations
+    - name: message_id
+      data_categories:
+      - system.operations
+    - name: question_index
+      data_categories:
+      - system.operations
+    - name: questionnaire_id
+      data_categories:
+      - system.operations
+    - name: sender_display_name
+      data_categories:
+      - system.operations
+    - name: sender_email
+      data_categories:
+      - user.contact.email
+    - name: text
+      data_categories:
+      - system.operations
+    - name: timestamp
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: comment
     fields:
     - name: comment_text
@@ -1563,6 +1599,42 @@ dataset:
       data_categories:
       - system.operations
     - name: template_id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+  - name: questionnaire
+    description: 'A questionnaire session linked to a privacy assessment'
+    fields:
+    - name: assessment_id
+      data_categories:
+      - system.operations
+    - name: completed_at
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: current_question_index
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: last_reminder_at
+      data_categories:
+      - system.operations
+    - name: provider_context
+      data_categories:
+      - system.operations
+    - name: reminder_count
+      data_categories:
+      - system.operations
+    - name: status
+      data_categories:
+      - system.operations
+    - name: title
       data_categories:
       - system.operations
     - name: updated_at
