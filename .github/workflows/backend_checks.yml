@@ -89,13 +89,36 @@ jobs:
       - name: Run Static Check
         run: uv run nox -s collect_tests
 
+  Build-Frontend-Placeholder:
+    needs: Check-Backend-Changes
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create placeholder admin-ui
+        run: |
+          mkdir -p admin-ui-out
+          echo '<h1>Placeholder</h1>' > admin-ui-out/index.html
+
+      - name: Upload admin-ui placeholder
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-ui-build
+          path: admin-ui-out/
+          retention-days: 1
+
   Build:
-    needs: [Check-Backend-Changes, Collect-Tests]
+    needs: [Check-Backend-Changes, Build-Frontend-Placeholder]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download admin-ui build
+        uses: actions/download-artifact@v4
+        with:
+          name: admin-ui-build
+          path: prebuilt/fides/clients/admin-ui/out
 
       - name: Set up Docker Buildx
         id: buildx
@@ -107,6 +130,8 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           build-args: PYTHON_VERSION=${{ env.DEFAULT_PYTHON_VERSION }}
+          build-contexts: |
+            built_frontend=prebuilt
           target: test
           outputs: type=docker,dest=/tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
           push: false

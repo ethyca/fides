@@ -1,3 +1,21 @@
+"""
+Service for uploading DSR (Data Subject Request) packages to storage.
+
+This module handles the specialized upload of DSR data packages which require
+data transformation (JSON/CSV/HTML generation, zipping) before uploading.
+
+Note: This service uses task functions from fides.api.tasks.storage that handle
+both data transformation AND upload. For raw file I/O operations, use the
+StorageProviderFactory from fides.api.service.storage.providers instead.
+
+The task functions are kept for DSR uploads because they handle:
+- JSON serialization with BSON/ObjectId handling
+- CSV generation from nested data structures
+- HTML report building with templates
+- ZIP file creation for multi-file packages
+- DSR-specific metadata and formatting
+"""
+
 from typing import Any, Dict, Optional, Set
 
 from fideslang.validation import FidesKey

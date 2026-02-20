@@ -69,9 +69,12 @@ class TestGetAttachmentsContent:
         attachment.file_key = f"{attachment.id}/{attachment.file_name}"
         return attachment
 
-    def test_get_attachments_content_success(self, mock_attachment):
+    @patch("fides.api.service.privacy_request.attachment_handling.AttachmentService")
+    def test_get_attachments_content_success(
+        self, mock_attachment_service, mock_attachment
+    ):
         """Test successful attachment content retrieval"""
-        mock_attachment.retrieve_attachment.return_value = (
+        mock_attachment_service.return_value.retrieve_url.return_value = (
             100,
             "https://example.com/test.txt",
         )
@@ -99,18 +102,26 @@ class TestGetAttachmentsContent:
 
         assert len(results) == 0
 
-    def test_get_attachments_content_error_handling(self, mock_attachment):
+    @patch("fides.api.service.privacy_request.attachment_handling.AttachmentService")
+    def test_get_attachments_content_error_handling(
+        self, mock_attachment_service, mock_attachment
+    ):
         """Test error handling during attachment content retrieval"""
-        mock_attachment.retrieve_attachment.side_effect = Exception("Test error")
+        mock_attachment_service.return_value.retrieve_url.side_effect = Exception(
+            "Test error"
+        )
 
         attachments = [mock_attachment]
         results = list(get_attachments_content(attachments))
 
         assert len(results) == 0
 
-    def test_get_attachments_content_missing_url(self, mock_attachment):
+    @patch("fides.api.service.privacy_request.attachment_handling.AttachmentService")
+    def test_get_attachments_content_missing_url(
+        self, mock_attachment_service, mock_attachment
+    ):
         """Test handling missing download URL"""
-        mock_attachment.retrieve_attachment.return_value = (100, None)
+        mock_attachment_service.return_value.retrieve_url.return_value = (100, None)
 
         attachments = [mock_attachment]
         results = list(get_attachments_content(attachments))
