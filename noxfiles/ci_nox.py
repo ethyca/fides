@@ -309,8 +309,12 @@ TEST_GROUPS = [
     nox.param("ctl-external", id="ctl-external"),
     nox.param("ops-unit", id="ops-unit"),
     nox.param("ops-unit-api", id="ops-unit-api"),
-    nox.param("ops-unit-non-api", id="ops-unit-non-api"),
+    nox.param("ops-unit-api-privacy", id="ops-unit-api-privacy"),
+    nox.param("ops-unit-service", id="ops-unit-service"),
+    nox.param("ops-unit-other", id="ops-unit-other"),
     nox.param("ops-integration", id="ops-integration"),
+    nox.param("ops-integration-service", id="ops-integration-service"),
+    nox.param("ops-integration-other", id="ops-integration-other"),
     nox.param("ops-external-datastores", id="ops-external-datastores"),
     nox.param("ops-saas", id="ops-saas"),
     nox.param("api", id="api"),
@@ -328,8 +332,18 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ctl-external": partial(pytest_ctl, mark="external"),
     "ops-unit": partial(pytest_ops, mark="unit"),
     "ops-unit-api": partial(pytest_ops, mark="unit", subset_dir="api"),
-    "ops-unit-non-api": partial(pytest_ops, mark="unit", subset_dir="non-api"),
+    "ops-unit-api-privacy": partial(pytest_ops, mark="unit", subset_dir="api-privacy"),
+    "ops-unit-service": partial(pytest_ops, mark="unit", subset_dir="service"),
+    "ops-unit-other": partial(
+        pytest_ops, mark="unit", subset_dir="non-api-non-service"
+    ),
     "ops-integration": partial(pytest_ops, mark="integration"),
+    "ops-integration-service": partial(
+        pytest_ops, mark="integration", subset_dir="service"
+    ),
+    "ops-integration-other": partial(
+        pytest_ops, mark="integration", subset_dir="other"
+    ),
     "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
     "ops-saas": partial(pytest_ops, mark="saas"),
     "api": pytest_api,
@@ -352,8 +366,12 @@ TEST_DIRECTORY_COVERAGE = {
     "tests/ops/": [
         "ops-unit",
         "ops-unit-api",
-        "ops-unit-non-api",
+        "ops-unit-api-privacy",
+        "ops-unit-service",
+        "ops-unit-other",
         "ops-integration",
+        "ops-integration-service",
+        "ops-integration-other",
         "ops-external-datastores",
         "ops-saas",
     ],
@@ -361,7 +379,7 @@ TEST_DIRECTORY_COVERAGE = {
     "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/integration/": ["ops-integration"],  # Workflow integration tests
+    "tests/integration/": ["ops-integration", "ops-integration-other"],
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 
