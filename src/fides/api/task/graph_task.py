@@ -425,15 +425,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 },
             )
 
-            # Merge the request_task into the current session to make it persistent,
-            # then refresh its `async_type` to load the latest state from the
-            # database. This is crucial for async tasks where `async_type` might be
-            # updated by another process, and avoids overwriting local data like
-            # `access_data`.
-            request_task = db.merge(self.request_task)
-            db.refresh(request_task, attribute_names=["async_type"])
-            request_task.update_status(db, status)
-            self.request_task = request_task
+            if self.request_task.id:
+                # Merge the request_task into the current session to make it
+                # persistent, then refresh its `async_type` to load the latest
+                # state from the database. This is crucial for async tasks where
+                # `async_type` might be updated by another process, and avoids
+                # overwriting local data like `access_data`.
+                request_task = db.merge(self.request_task)
+                db.refresh(request_task, attribute_names=["async_type"])
+                request_task.update_status(db, status)
+                self.request_task = request_task
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
