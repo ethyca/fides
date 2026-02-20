@@ -18,7 +18,7 @@ export const DEFAULT_DATA_SECTIONS: DataSectionConfig = {
 /**
  * Intent classification action types for questionnaire prompts.
  */
-export const ACTION_TYPES = [
+export const ACTION_TYPES: Array<{ value: string; label: string }> = [
   { value: "answer", label: "Answer" },
   { value: "skip", label: "Skip" },
   { value: "correct", label: "Correct Previous" },
@@ -29,6 +29,4 @@ export const ACTION_TYPES = [
   { value: "restart_all", label: "Restart All" },
   { value: "restart_from", label: "Restart From" },
   { value: "summary", label: "Summary" },
-] as const;
-
-export type ActionType = (typeof ACTION_TYPES)[number]["value"];
+];
