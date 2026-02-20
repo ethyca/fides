@@ -220,11 +220,40 @@ def pytest_ops(
                 "pytest",
                 *pytest_config.args,
                 *OPS_API_TEST_DIRS,
+                f"--ignore={OPS_TEST_DIR}api/v1/endpoints/privacy_request/",
                 "-m",
                 "not integration and not integration_external and not integration_saas",
             )
-        elif subset_dir == "non-api":
-            ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]
+        elif subset_dir == "api-privacy":
+            run_command = (
+                *EXEC_UV,
+                "uv",
+                "run",
+                "--python",
+                "/opt/fides/bin/python",
+                "pytest",
+                *pytest_config.args,
+                f"{OPS_TEST_DIR}api/v1/endpoints/privacy_request/",
+                "-m",
+                "not integration and not integration_external and not integration_saas",
+            )
+        elif subset_dir == "service":
+            run_command = (
+                *EXEC_UV,
+                "uv",
+                "run",
+                "--python",
+                "/opt/fides/bin/python",
+                "pytest",
+                *pytest_config.args,
+                f"{OPS_TEST_DIR}service/",
+                "-m",
+                "not integration and not integration_external and not integration_saas",
+            )
+        elif subset_dir == "non-api-non-service":
+            ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS] + [
+                f"--ignore={OPS_TEST_DIR}service/"
+            ]
             run_command = (
                 *EXEC_UV,
                 "uv",
@@ -253,12 +282,22 @@ def pytest_ops(
             )
         session.run(*run_command, external=True)
     elif mark == "integration":
-        # The coverage_arg is hardcoded in 'run_infrastructure.py'
+        if subset_dir == "service":
+            pytest_path = f"{OPS_TEST_DIR}service/ {OPS_TEST_DIR}integration_tests/"
+        elif subset_dir == "other":
+            pytest_path = (
+                f"{OPS_TEST_DIR} tests/integration/"
+                f" --ignore={OPS_TEST_DIR}service/"
+                f" --ignore={OPS_TEST_DIR}integration_tests/"
+                f" --ignore={OPS_TEST_DIR}api/"
+            )
+        else:
+            pytest_path = f"{OPS_TEST_DIR} tests/integration/"
         run_infrastructure(
             run_tests=True,
             analytics_opt_out=True,
             datastores=[],
-            pytest_path=f"{OPS_TEST_DIR} tests/integration/",
+            pytest_path=pytest_path,
         )
     elif mark == "external_datastores":
         session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
