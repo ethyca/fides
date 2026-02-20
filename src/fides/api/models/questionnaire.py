@@ -8,15 +8,18 @@ This module provides the database schema for:
 
 from datetime import datetime
 from enum import Enum as EnumType
-from typing import Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
+
+if TYPE_CHECKING:
+    from fides.api.models.privacy_assessment import PrivacyAssessment
 
 
 class QuestionnaireStatus(str, EnumType):
@@ -69,10 +72,10 @@ class Questionnaire(Base):
     reminder_count = Column(Integer, nullable=False, default=0)
 
     # Relationships
-    assessment = relationship(
+    assessment: RelationshipProperty["PrivacyAssessment"] = relationship(
         "PrivacyAssessment", back_populates="questionnaire"
     )
-    messages = relationship(
+    messages: RelationshipProperty[List["ChatMessage"]] = relationship(
         "ChatMessage",
         back_populates="questionnaire",
         cascade="all, delete-orphan",
