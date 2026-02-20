@@ -897,6 +897,13 @@ class TraversalNode(Contextualizable):
             traversal_details=self.format_traversal_details_for_save(),
         )
 
+    def to_mock_execution_node(self) -> ExecutionNode:
+        """Converts a TraversalNode into an ExecutionNode in memory via a mock
+        RequestTask. Used by test infrastructure and connector query config tests.
+        """
+        request_task: RequestTask = self.to_mock_request_task()
+        return ExecutionNode(request_task)
+
     def get_data_categories(self) -> Set[str]:
         """
         Returns a set of unique data categories across the collection and child fields.

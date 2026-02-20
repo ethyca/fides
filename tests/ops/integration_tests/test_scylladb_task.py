@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
-from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
 
 from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import assert_rows_match, erasure_policy
@@ -18,38 +17,7 @@ class TestScyllaDSRs:
         "dsr_version",
         ["use_dsr_3_0"],
     )
-    async def test_scylladb_access_request_task_no_keyspace_dsr2(
-        self,
-        db: Session,
-        policy,
-        integration_scylladb_config,
-        scylladb_integration_no_keyspace,
-        privacy_request,
-        dsr_version,
-        request,
-    ) -> None:
-        request.getfixturevalue(dsr_version)
-
-        with pytest.raises(ScyllaConnectorMissingKeyspace) as err:
-            v = access_runner_tester(
-                privacy_request,
-                policy,
-                integration_scylladb_graph("scylla_example"),
-                [integration_scylladb_config],
-                {"email": "customer-1@example.com"},
-                db,
-            )
-
-        assert (
-            "No keyspace provided in the ScyllaDB configuration for connector scylla_example"
-            in str(err.value)
-        )
-
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
-    async def test_scylladb_access_request_task_no_keyspace_dsr3(
+    async def test_scylladb_access_request_task_no_keyspace(
         self,
         db,
         policy,
