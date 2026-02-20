@@ -37,14 +37,6 @@ const config: StorybookConfig = {
           "@chakra-ui/react": chakraCjsEntry,
         },
       },
-      optimizeDeps: {
-        // Mark msw as external during dep pre-bundling. The msw imports in
-        // @vitest/mocker (bundled with Storybook) are optional dynamic imports
-        // that only execute when msw is actively used for browser mocking.
-        esbuildOptions: {
-          external: ["msw", "msw/browser", "msw/core/http"],
-        },
-      },
     });
   },
 };
