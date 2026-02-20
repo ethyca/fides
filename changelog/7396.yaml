@@ -1,0 +1,4 @@
+type: Added
+description: Added Questionnaire and ChatMessage database models for SME questionnaire sessions
+pr: 7396
+labels: ["db-migration"]
