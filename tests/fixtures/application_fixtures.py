@@ -100,22 +100,24 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.service.connectors.fides.fides_client import FidesClient
-from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_nullify import (
-    NullMaskingStrategy,
-)
-from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite import (
-    RandomStringRewriteMaskingStrategy,
-)
-from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
-    StringRewriteMaskingStrategy,
-)
 from fides.api.util.data_category import DataCategory, get_user_data_categories
 from fides.config import CONFIG
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 from fides.config.utils import load_file
-from fides.service.attachment_service import AttachmentService
+from fides.connectors.fides.fides_client import FidesClient
+from fides.service.attachment.attachment_service import AttachmentService
+from fides.service.privacy_request.masking.strategy.masking_strategy_hmac import (
+    HmacMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_nullify import (
+    NullMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_random_string_rewrite import (
+    RandomStringRewriteMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_string_rewrite import (
+    StringRewriteMaskingStrategy,
+)
 from tests.ops.integration_tests.saas.connector_runner import (
     generate_random_email,
     generate_random_phone_number,
@@ -258,7 +260,7 @@ integration_secrets = {
 @pytest.fixture(scope="session", autouse=True)
 def mock_upload_logic() -> Generator:
     with mock.patch(
-        "fides.api.service.storage.storage_uploader_service.upload_to_s3"
+        "fides.service.storage.storage_uploader_service.upload_to_s3"
     ) as _fixture:
         _fixture.return_value = "http://www.data-download-url"
         yield _fixture
@@ -4218,9 +4220,7 @@ def attachment(s3_client, db, attachment_data, monkeypatch):
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
 
-    monkeypatch.setattr(
-        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
-    )
+    monkeypatch.setattr("fides.service.storage.s3.get_s3_client", mock_get_s3_client)
     attachment = AttachmentService(db).create_and_upload(
         data=attachment_data, file_data=BytesIO(b"file content")
     )
@@ -4235,9 +4235,7 @@ def attachment_include_in_download(s3_client, db, attachment_data, monkeypatch):
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
 
-    monkeypatch.setattr(
-        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
-    )
+    monkeypatch.setattr("fides.service.storage.s3.get_s3_client", mock_get_s3_client)
     attachment_data["attachment_type"] = AttachmentType.include_with_access_package
     attachment = AttachmentService(db).create_and_upload(
         data=attachment_data, file_data=BytesIO(b"file content")

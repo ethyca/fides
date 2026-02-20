@@ -19,11 +19,11 @@ from fides.api.models.storage import get_active_default_storage_config
 from fides.api.oauth.utils import validate_download_token
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.storage.storage import StorageType
-from fides.api.service.storage.streaming.s3 import S3StorageClient
 from fides.api.util.api_router import APIRouter
 from fides.api.util.rate_limit import fides_limiter
 from fides.common.urn_registry import PRIVACY_CENTER_DSR_PACKAGE, V1_URL_PREFIX
 from fides.config import CONFIG
+from fides.service.storage.streaming.s3 import S3StorageClient
 
 router = APIRouter(tags=["Privacy Center"], prefix=V1_URL_PREFIX)
 

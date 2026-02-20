@@ -6,7 +6,7 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
-from fides.service.attachment_service import AttachmentService
+from fides.service.attachment.attachment_service import AttachmentService
 
 
 @pytest.fixture
@@ -16,9 +16,7 @@ def multiple_attachments(s3_client, db, attachment_data, user, monkeypatch):
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
 
-    monkeypatch.setattr(
-        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
-    )
+    monkeypatch.setattr("fides.service.storage.s3.get_s3_client", mock_get_s3_client)
 
     attachment_data["user_id"] = user.id
     attachment_data["file_name"] = "file_1.txt"

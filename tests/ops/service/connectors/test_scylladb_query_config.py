@@ -5,7 +5,7 @@ from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.service.connectors.scylla_query_config import ScyllaDBQueryConfig
+from fides.connectors.scylla.scylla_query_config import ScyllaDBQueryConfig
 
 
 class TestScyllaDBQueryConfig:

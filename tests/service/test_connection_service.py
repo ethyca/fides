@@ -36,7 +36,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.connection.merge_configs_util import merge_datasets
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 
 
 class TestConnectionService:

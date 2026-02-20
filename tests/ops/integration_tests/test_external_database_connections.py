@@ -7,7 +7,7 @@ from toml import load as load_toml
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.schemas.connection_configuration import RedshiftSchema, SnowflakeSchema
-from fides.api.service.connectors import (
+from fides.connectors import (
     RedshiftConnector,
     SnowflakeConnector,
     get_connector,

@@ -39,12 +39,6 @@ from fides.api.schemas.saas.saas_config import (
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
-from fides.api.service.authentication.authentication_strategy import (
-    AuthenticationStrategy,
-)
-from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
-    OAuth2AuthorizationCodeAuthenticationStrategy,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
@@ -66,7 +60,7 @@ from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,
 )
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
 

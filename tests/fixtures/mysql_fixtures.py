@@ -12,8 +12,8 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.service.connectors import MySQLConnector
 from fides.config import CONFIG
+from fides.connectors import MySQLConnector
 
 from .application_fixtures import integration_secrets
 

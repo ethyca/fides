@@ -52,12 +52,6 @@ from fides.api.schemas.connection_configuration.saas_config_template_values impo
 )
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.service.connectors import get_connector
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-    CustomConnectorTemplateLoader,
-    FileConnectorTemplateLoader,
-)
 from fides.api.util.event_audit_util import (
     generate_connection_audit_event_details,
     generate_connection_secrets_event_details,
@@ -77,7 +71,7 @@ from fides.service.connection.merge_configs_util import (
     normalize_dataset,
     preserve_monitored_collections_in_dataset_merge,
 )
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 

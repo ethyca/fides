@@ -14,9 +14,9 @@ from fides.api.schemas.messaging.messaging import (
     UserInviteBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.message_dispatch_service import dispatch_message
 from fides.service.messaging.messaging_service import MessagingService
 
 

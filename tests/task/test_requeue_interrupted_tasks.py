@@ -9,11 +9,11 @@ from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.privacy_request.request_service import (
+from fides.api.util.cache import cache_task_tracking_key, get_cache
+from fides.service.privacy_request.request_service import (
     REQUEUE_INTERRUPTED_TASKS_LOCK,
     requeue_interrupted_tasks,
 )
-from fides.api.util.cache import cache_task_tracking_key, get_cache
 
 
 @pytest.fixture
@@ -75,11 +75,11 @@ class TestRequeueInterruptedTasks:
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=True,
     )
     def test_active_request_task_is_not_requeued(
@@ -101,11 +101,11 @@ class TestRequeueInterruptedTasks:
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_interrupted_privacy_request_with_no_request_tasks_is_requeued(
@@ -127,11 +127,11 @@ class TestRequeueInterruptedTasks:
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=["request_task_id"],  # Mock the task as being in the queue
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_interrupted_privacy_request_with_active_request_tasks_is_not_requeued(
@@ -153,11 +153,11 @@ class TestRequeueInterruptedTasks:
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_interrupted_privacy_request_with_inactive_request_tasks_is_requeued(
@@ -216,17 +216,17 @@ class TestRequeueInterruptedTasks:
             privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_privacy_request_with_no_cached_task_id_is_skipped(
@@ -267,13 +267,13 @@ class TestRequeueInterruptedTasks:
             privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_request_task_with_no_cached_subtask_id_is_skipped(
@@ -332,13 +332,13 @@ class TestRequeueInterruptedTasks:
             privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_requires_input_privacy_request_with_stuck_subtask_is_not_canceled(
@@ -398,17 +398,17 @@ class TestRequeueInterruptedTasks:
             privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_in_processing_with_callback_async_task_and_stuck_subtask_is_not_canceled(
@@ -465,17 +465,17 @@ class TestRequeueInterruptedTasks:
             privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_in_processing_with_polling_async_task_and_stuck_subtask_is_not_canceled(
@@ -535,11 +535,11 @@ class TestRequeueInterruptedTasks:
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_task_in_queue_is_not_requeued(
@@ -661,11 +661,11 @@ class TestEnhancedRequeueInterruptedTasks:
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_privacy_request_near_retry_limit_is_requeued(
@@ -683,15 +683,15 @@ class TestEnhancedRequeueInterruptedTasks:
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     def test_privacy_request_over_retry_limit_is_canceled(
         self,
@@ -709,16 +709,16 @@ class TestEnhancedRequeueInterruptedTasks:
         # Should cancel the tasks and error the request
         mock_cancel_interrupted_tasks.assert_called_once()
 
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        "fides.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_requeue_with_retry_count_logging(

@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
+from fides.service.storage.streaming.base_storage_client import BaseStorageClient
 
 
 class TestBaseStorageClient:

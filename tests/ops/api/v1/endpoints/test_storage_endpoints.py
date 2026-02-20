@@ -442,9 +442,7 @@ class TestPutStorageConfigSecretsS3:
             "failure_reason": None,
         }
 
-    @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.get_aws_session"
-    )
+    @mock.patch("fides.service.storage.storage_authenticator_service.get_aws_session")
     def test_put_s3_config_secrets_and_verify(
         self,
         get_aws_session_mock: Mock,
@@ -1206,9 +1204,7 @@ class TestPutDefaultStorageConfigSecretsS3:
             "failure_reason": None,
         }
 
-    @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.get_aws_session"
-    )
+    @mock.patch("fides.service.storage.storage_authenticator_service.get_aws_session")
     def test_put_default_s3_config_secrets_and_verify(
         self,
         get_aws_session_mock: Mock,

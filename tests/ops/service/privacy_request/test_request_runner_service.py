@@ -63,8 +63,13 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.storage.storage import StorageType
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.service.privacy_request.request_runner_service import (
+from fides.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
+from fides.config import CONFIG
+from fides.service.attachment.attachment_service import AttachmentService
+from fides.service.privacy_request.masking.strategy.masking_strategy import (
+    MaskingStrategy,
+)
+from fides.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
     initiate_privacy_request_completion_email,
     needs_batch_email_send,
@@ -177,8 +182,8 @@ def privacy_request_complete_email_notification_enabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
     "privacy_request_fixture,expected_action_type",
     [
@@ -309,7 +314,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 
 
 @mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.upload_access_results"
+    "fides.service.privacy_request.request_runner_service.upload_access_results"
 )
 def test_halts_proceeding_if_cancelled(
     upload_access_results_mock,
@@ -332,12 +337,12 @@ def test_halts_proceeding_if_cancelled(
     assert not upload_access_results_mock.called
 
 
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.upload_access_results"
+    "fides.service.privacy_request.request_runner_service.upload_access_results"
 )
 @mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fides.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
 @mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
 @mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
@@ -379,12 +384,12 @@ def test_from_graph_resume_does_not_run_pre_webhooks(
     assert mock_email_dispatch.call_count == 1
 
 
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fides.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
+@mock.patch("fides.service.privacy_request.request_runner_service.access_runner")
+@mock.patch("fides.service.privacy_request.request_runner_service.erasure_runner")
 def test_resume_privacy_request_from_erasure(
     run_erasure,
     run_access,
@@ -427,12 +432,12 @@ def test_resume_privacy_request_from_erasure(
         ("erasure_policy_aes", PrivacyRequestStatus.error),
     ],
 )
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fides.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
+@mock.patch("fides.service.privacy_request.request_runner_service.access_runner")
+@mock.patch("fides.service.privacy_request.request_runner_service.erasure_runner")
 def test_resume_privacy_request_from_erasure_with_expired_masking_secrets(
     run_erasure,
     run_access,
@@ -471,12 +476,12 @@ def test_resume_privacy_request_from_erasure_with_expired_masking_secrets(
         ("erasure_policy_aes", PrivacyRequestStatus.complete),
     ],
 )
-@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
 @mock.patch(
-    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+    "fides.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
 )
-@mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
-@mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
+@mock.patch("fides.service.privacy_request.request_runner_service.access_runner")
+@mock.patch("fides.service.privacy_request.request_runner_service.erasure_runner")
 def test_resume_privacy_request_from_erasure_with_available_masking_secrets(
     run_erasure,
     run_access,
@@ -2336,7 +2341,7 @@ class TestDSRPackageURLGeneration:
     def mock_config_proxy(self):
         """Mock config proxy with privacy center URL"""
         with mock.patch(
-            "fides.api.service.privacy_request.request_runner_service.ConfigProxy"
+            "fides.service.privacy_request.request_runner_service.ConfigProxy"
         ) as mock_proxy:
             mock_config = mock.MagicMock()
             mock_config.privacy_center.url = "https://privacy.example.com"
@@ -2392,11 +2397,9 @@ class TestDSRPackageURLGeneration:
         )
         return mock_policy
 
+    @mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+        "fides.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
     )
     def test_generate_dsr_package_urls_when_enabled(
         self,
@@ -2449,11 +2452,9 @@ class TestDSRPackageURLGeneration:
         token_part = download_url.split("?token=")[1]
         assert len(token_part) >= 3, "Token should be present and at least 3 characters"
 
+    @mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+        "fides.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
     )
     def test_use_direct_urls_when_redirect_disabled(
         self,
@@ -2503,11 +2504,9 @@ class TestDSRPackageURLGeneration:
         # Check that direct storage URLs were used
         assert message_params.download_links == access_result_urls
 
+    @mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+        "fides.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
     )
     def test_use_direct_urls_for_non_s3_storage(
         self,
@@ -2554,11 +2553,9 @@ class TestDSRPackageURLGeneration:
         # Check that direct storage URLs were used
         assert message_params.download_links == access_result_urls
 
+    @mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+        "fides.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
     )
     def test_use_direct_urls_when_no_privacy_center_url(
         self,
@@ -2572,7 +2569,7 @@ class TestDSRPackageURLGeneration:
         """Test that direct storage URLs are used when privacy center URL is not configured"""
         # Mock config proxy without privacy center URL
         with mock.patch(
-            "fides.api.service.privacy_request.request_runner_service.ConfigProxy"
+            "fides.service.privacy_request.request_runner_service.ConfigProxy"
         ) as mock_proxy:
             mock_config = mock.MagicMock()
             mock_config.privacy_center.url = None
@@ -2613,11 +2610,9 @@ class TestDSRPackageURLGeneration:
             # Check that direct storage URLs were used
             assert message_params.download_links == access_result_urls
 
+    @mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+        "fides.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
     )
     def test_multiple_rules_with_mixed_storage_types(
         self,
@@ -2685,11 +2680,9 @@ class TestDSRPackageURLGeneration:
         token_part = download_url.split("?token=")[1]
         assert len(token_part) >= 3, "Token should be present and at least 3 characters"
 
+    @mock.patch("fides.service.privacy_request.request_runner_service.dispatch_message")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.dispatch_message"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
+        "fides.service.privacy_request.request_runner_service.generate_privacy_request_download_token"
     )
     def test_dsr_package_url_format(
         self,

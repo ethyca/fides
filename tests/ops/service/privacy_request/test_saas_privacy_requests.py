@@ -5,8 +5,10 @@ import pytest
 from fides.api.schemas.masking.masking_configuration import HmacMaskingConfiguration
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas_connector import SaaSConnector
-from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
+from fides.connectors.saas.saas_connector import SaaSConnector
+from fides.service.privacy_request.masking.strategy.masking_strategy_hmac import (
+    HmacMaskingStrategy,
+)
 from tests.ops.service.privacy_request.test_request_runner_service import (
     PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     get_privacy_request_results,

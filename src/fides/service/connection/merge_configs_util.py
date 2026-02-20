@@ -15,8 +15,8 @@ from fides.api.models.detection_discovery.core import (
     StagedResourceAncestor,
 )
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.service.connectors import ConnectionConfig
 from fides.api.util.saas_util import replace_dataset_placeholders
+from fides.connectors import ConnectionConfig
 
 
 def get_saas_config_referenced_fields(

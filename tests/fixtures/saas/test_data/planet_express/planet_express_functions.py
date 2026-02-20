@@ -7,16 +7,16 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
-from fides.api.service.authentication.authentication_strategy import (
+from fides.api.util.collection_util import Row
+from fides.api.util.saas_util import assign_placeholders
+from fides.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.connectors.saas.strategies.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.service.saas_request.saas_request_override_factory import (
+from fides.service.privacy_request.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.util.collection_util import Row
-from fides.api.util.saas_util import assign_placeholders
 
 
 @register("planet_express_user_access", [SaaSRequestType.READ])

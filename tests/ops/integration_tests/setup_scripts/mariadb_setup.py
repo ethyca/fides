@@ -11,8 +11,8 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.service.connectors.mariadb_connector import MariaDBConnector
 from fides.config import CONFIG
+from fides.connectors.mariadb.mariadb_connector import MariaDBConnector
 
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 

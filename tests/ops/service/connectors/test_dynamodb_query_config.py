@@ -9,7 +9,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.service.connectors.query_configs.dynamodb_query_config import (
+from fides.connectors.dynamodb.dynamodb_query_config import (
     DynamoDBQueryConfig,
 )
 

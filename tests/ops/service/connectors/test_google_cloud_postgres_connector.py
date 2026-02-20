@@ -8,7 +8,7 @@ from sqlalchemy.engine import Engine
 from fides.api.schemas.connection_configuration.enums import (
     google_cloud_sql_ip_type as ip_type,
 )
-from fides.api.service.connectors.google_cloud_postgres_connector import (
+from fides.connectors.google_cloud.google_cloud_postgres_connector import (
     GoogleCloudSQLPostgresConnector,
 )
 
@@ -55,16 +55,15 @@ def connector(mock_config):
 
 
 @patch(
-    "fides.api.service.connectors.google_cloud_postgres_connector"
-    ".service_account.Credentials",
+    "fides.connectors.google_cloud.google_cloud_postgres_connector.service_account.Credentials",
     autospec=True,
 )
 @patch(
-    "fides.api.service.connectors.google_cloud_postgres_connector.Connector",
+    "fides.connectors.google_cloud.google_cloud_postgres_connector.Connector",
     autospec=True,
 )
 @patch(
-    "fides.api.service.connectors.google_cloud_postgres_connector.create_engine",
+    "fides.connectors.google_cloud.google_cloud_postgres_connector.create_engine",
     autospec=True,
 )
 class TestGoogleCloudSQLPostgresConnectorCreateClient:

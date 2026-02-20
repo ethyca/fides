@@ -11,7 +11,13 @@ from starlette.testclient import TestClient
 from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionTestStatus
-from fides.api.service.connectors import (
+from fides.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
+from fides.common.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_READ,
+    STORAGE_READ,
+)
+from fides.connectors import (
     MongoDBConnector,
     OktaConnector,
     PostgreSQLConnector,
@@ -21,12 +27,12 @@ from fides.api.service.connectors import (
     ScyllaConnector,
     get_connector,
 )
-from fides.api.service.connectors.mariadb_connector import MariaDBConnector
-from fides.api.service.connectors.microsoft_sql_server_connector import (
+from fides.connectors.mariadb.mariadb_connector import MariaDBConnector
+from fides.connectors.microsoft_sql_server.microsoft_sql_server_connector import (
     MicrosoftSQLServerConnector,
 )
-from fides.api.service.connectors.mysql_connector import MySQLConnector
-from fides.api.service.saas_request.saas_request_override_factory import (
+from fides.connectors.mysql.mysql_connector import MySQLConnector
+from fides.service.privacy_request.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )

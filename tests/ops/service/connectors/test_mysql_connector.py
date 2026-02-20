@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.service.connectors.mysql_connector import MySQLConnector
+from fides.connectors.mysql.mysql_connector import MySQLConnector
 
 
 @pytest.mark.integration

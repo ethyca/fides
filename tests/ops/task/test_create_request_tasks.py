@@ -1982,7 +1982,7 @@ class TestRunErasureRequestWithRequestTasks:
         CONFIG.execution.task_retry_delay = 0.1
         CONFIG.execution.task_retry_backoff = 0.01
         p = mock.patch(
-            "fides.api.service.connectors.MongoDBConnector.mask_data",
+            "fides.connectors.MongoDBConnector.mask_data",
             new=MagicMock(side_effect=Exception("Key Error")),
         )
         p.start()

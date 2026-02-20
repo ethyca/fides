@@ -6,7 +6,7 @@ from requests import Response
 
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.schemas.saas.strategy_configuration import CursorPaginationConfiguration
-from fides.api.service.pagination.pagination_strategy_cursor import (
+from fides.connectors.saas.strategies.pagination.pagination_strategy_cursor import (
     CursorPaginationStrategy,
 )
 

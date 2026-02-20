@@ -15,11 +15,11 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from fides.connectors.saas.saas_connector import SaaSConnector
 from tests.ops.test_helpers.onepassword_client import get_secrets
 
 secrets = get_secrets("mailchimp")

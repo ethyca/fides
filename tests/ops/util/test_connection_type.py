@@ -3,13 +3,13 @@ import pytest
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.policy import ActionType
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-)
 from fides.api.util.connection_type import (
     NoSuchConnectionTypeSecretSchemaError,
     get_connection_type_secret_schema,
     get_connection_types,
+)
+from fides.service.connection.connector_registry_service import (
+    ConnectorRegistry,
 )
 
 
@@ -354,10 +354,10 @@ def test_get_saas_connection_types_with_display_info(monkeypatch):
 
     with (
         patch(
-            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.connector_types"
+            "fides.service.connection.connector_registry_service.ConnectorRegistry.connector_types"
         ) as mock_connector_types,
         patch(
-            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.get_connector_template"
+            "fides.service.connection.connector_registry_service.ConnectorRegistry.get_connector_template"
         ) as mock_get_template,
         patch("fides.api.util.connection_type.SaaSConfig") as mock_saas_config_class,
         patch(
@@ -407,10 +407,10 @@ def test_get_saas_connection_types_with_no_display_info(monkeypatch):
 
     with (
         patch(
-            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.connector_types"
+            "fides.service.connection.connector_registry_service.ConnectorRegistry.connector_types"
         ) as mock_connector_types,
         patch(
-            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.get_connector_template"
+            "fides.service.connection.connector_registry_service.ConnectorRegistry.get_connector_template"
         ) as mock_get_template,
         patch("fides.api.util.connection_type.SaaSConfig") as mock_saas_config_class,
         patch(
@@ -456,10 +456,10 @@ def test_get_saas_connection_types_config_parsing_exception():
 
     with (
         patch(
-            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.connector_types"
+            "fides.service.connection.connector_registry_service.ConnectorRegistry.connector_types"
         ) as mock_connector_types,
         patch(
-            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.get_connector_template"
+            "fides.service.connection.connector_registry_service.ConnectorRegistry.get_connector_template"
         ) as mock_get_template,
         patch("fides.api.util.connection_type.SaaSConfig") as mock_saas_config_class,
     ):
@@ -503,10 +503,10 @@ def test_get_saas_connection_types_load_config_exception():
 
     with (
         patch(
-            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.connector_types"
+            "fides.service.connection.connector_registry_service.ConnectorRegistry.connector_types"
         ) as mock_connector_types,
         patch(
-            "fides.api.service.connectors.saas.connector_registry_service.ConnectorRegistry.get_connector_template"
+            "fides.service.connection.connector_registry_service.ConnectorRegistry.get_connector_template"
         ) as mock_get_template,
         patch(
             "fides.api.util.connection_type.load_config_from_string"

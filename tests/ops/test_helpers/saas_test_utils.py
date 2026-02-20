@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from requests import PreparedRequest, Request
 
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.connectors.saas.authenticated_client import AuthenticatedClient
 
 
 @dataclass

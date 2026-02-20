@@ -1,6 +1,6 @@
 import threading
 
-from fides.api.service.execution_context import (
+from fides.service.privacy_request.execution_context import (
     add_execution_log_message,
     collect_execution_log_messages,
     get_execution_log_messages,
