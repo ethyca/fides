@@ -48,6 +48,7 @@ class ConnectionType(enum.Enum):
     generic_consent_email = "generic_consent_email"  # Run after the traversal
     generic_erasure_email = "generic_erasure_email"  # Run after the traversal
     dynamic_erasure_email = "dynamic_erasure_email"  # Run after the traversal
+    entra = "entra"  # Microsoft Entra ID (Azure AD) for IDP discovery
     google_cloud_sql_mysql = "google_cloud_sql_mysql"
     google_cloud_sql_postgres = "google_cloud_sql_postgres"
     https = "https"
@@ -86,6 +87,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
             ConnectionType.dynamodb.value: "DynamoDB",
+            ConnectionType.entra.value: "Microsoft Entra ID",
             ConnectionType.fides.value: "Fides Connector",
             ConnectionType.generic_consent_email.value: "Generic Consent Email",
             ConnectionType.generic_erasure_email.value: "Generic Erasure Email",
@@ -134,6 +136,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.datahub.value: SystemType.data_catalog,
             ConnectionType.dynamic_erasure_email.value: SystemType.email,
             ConnectionType.dynamodb.value: SystemType.database,
+            ConnectionType.entra.value: SystemType.system,
             ConnectionType.fides.value: SystemType.manual,
             ConnectionType.generic_consent_email.value: SystemType.email,
             ConnectionType.generic_erasure_email.value: SystemType.email,
