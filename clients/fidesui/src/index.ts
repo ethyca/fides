@@ -203,7 +203,6 @@ export type {
   TablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
-  AvatarProps,
   ButtonProps,
   CheckboxProps,
   CollapseProps,
@@ -235,7 +234,6 @@ export type {
 export {
   Alert,
   AutoComplete,
-  Avatar,
   Badge,
   Breadcrumb,
   Button,
@@ -288,11 +286,13 @@ export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
 export type {
+  CustomAvatarProps as AvatarProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
 } from "./hoc";
 export {
+  CustomAvatar as Avatar,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomInput as Input,
@@ -324,6 +324,8 @@ export { iso31661, iso31662 } from "iso-3166";
 // Export data-display components
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
+export type { TagListProps } from "./components/data-display/TagList";
+export { TagList } from "./components/data-display/TagList";
 
 // Export animation components
 export type {

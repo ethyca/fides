@@ -1,4 +1,5 @@
 export * from "./CopyTooltip";
+export * from "./CustomAvatar";
 export * from "./CustomDateRangePicker";
 export * from "./CustomInput";
 export * from "./CustomList";
