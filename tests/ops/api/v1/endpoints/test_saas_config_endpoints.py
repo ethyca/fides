@@ -1,9 +1,11 @@
+import copy
 import json
 from typing import Optional
 from unittest import mock
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -195,7 +197,7 @@ class TestPutSaaSConfig:
         )
         assert response.status_code == 404
 
-    def test_patch_saas_config_create(
+    def test_patch_saas_config_create_rejected_without_template(
         self,
         saas_example_connection_config_without_saas_config,
         saas_example_config,
@@ -203,6 +205,8 @@ class TestPutSaaSConfig:
         db: Session,
         generate_auth_header,
     ) -> None:
+        """PATCHing a SaaS config onto a connection that has no existing config
+        and no registered template should be rejected."""
         path = V1_URL_PREFIX + SAAS_CONFIG
         path_params = {
             "connection_key": saas_example_connection_config_without_saas_config.key
@@ -213,16 +217,8 @@ class TestPutSaaSConfig:
         response = api_client.patch(
             saas_config_url, headers=auth_header, json=saas_example_config
         )
-        assert response.status_code == 200
-
-        updated_config = ConnectionConfig.get_by(
-            db=db,
-            field="key",
-            value=saas_example_connection_config_without_saas_config.key,
-        )
-        db.expire(updated_config)
-        saas_config = updated_config.saas_config
-        assert saas_config is not None
+        assert response.status_code == 422
+        assert "connector template" in response.json()["detail"].lower()
 
     def test_patch_saas_config_update(
         self,
@@ -417,6 +413,134 @@ class TestDeleteSaaSConfig:
             "before deleting this SaaS config. Must clear the secrets from this connection "
             "config before deleting the SaaS config."
         )
+
+
+@pytest.mark.unit_saas
+class TestPatchSaaSConfigAllowedDomainsAfterDelete:
+    """Verify that deleting a SaaS config and re-PATCHing it cannot bypass
+    allowed_domains restrictions (the template is used as a fallback)."""
+
+    @pytest.fixture
+    def _config_with_allowed_domains(self, saas_example_config):
+        """Return a copy of the example config whose domain param has allowed_domains."""
+        config = saas_example_config.copy()
+        config["fides_key"] = "domain_validation_delete_test"
+        for param in config["connector_params"]:
+            if param["name"] == "domain":
+                param["allowed_domains"] = ["safe.example.com"]
+        return config
+
+    @pytest.fixture
+    def _connection_config(self, db, _config_with_allowed_domains):
+        fides_key = _config_with_allowed_domains["fides_key"]
+        cc = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": fides_key,
+                "name": fides_key,
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "saas_config": _config_with_allowed_domains,
+            },
+        )
+        yield cc
+        cc.delete(db)
+
+    @pytest.fixture
+    def _template_yaml(self, _config_with_allowed_domains):
+        """Build a minimal YAML string that mirrors the original config (as the template would)."""
+        return yaml.dump({"saas_config": _config_with_allowed_domains})
+
+    def test_patch_after_delete_rejects_stripped_allowed_domains(
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        _connection_config,
+        _config_with_allowed_domains,
+        _template_yaml,
+    ):
+        """After deleting the SaaS config, PATCHing it back with allowed_domains
+        removed should be rejected because the template still enforces them."""
+
+        _connection_config.update(db, data={"saas_config": None})
+        db.expire(_connection_config)
+        assert _connection_config.saas_config is None
+
+        tampered_config = copy.deepcopy(_config_with_allowed_domains)
+        for param in tampered_config["connector_params"]:
+            if param["name"] == "domain":
+                param.pop("allowed_domains", None)
+
+        url = get_saas_config_url(_connection_config)
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+
+        with mock.patch(
+            "fides.api.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
+        ) as mock_template:
+            mock_template.return_value = MagicMock(config=_template_yaml)
+            response = api_client.patch(url, headers=auth_header, json=tampered_config)
+
+        assert response.status_code == 422
+        assert "allowed_domains" in response.json()["detail"].lower()
+
+    def test_patch_after_delete_accepts_matching_allowed_domains(
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        _connection_config,
+        _config_with_allowed_domains,
+        _template_yaml,
+    ):
+        """After deleting the SaaS config, PATCHing it back with the same
+        allowed_domains should succeed."""
+
+        _connection_config.update(db, data={"saas_config": None})
+        db.expire(_connection_config)
+        assert _connection_config.saas_config is None
+
+        url = get_saas_config_url(_connection_config)
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+
+        with mock.patch(
+            "fides.api.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
+        ) as mock_template:
+            mock_template.return_value = MagicMock(config=_template_yaml)
+            response = api_client.patch(
+                url, headers=auth_header, json=_config_with_allowed_domains
+            )
+
+        assert response.status_code == 200
+
+    def test_patch_after_delete_rejects_unknown_type(
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        _connection_config,
+        _config_with_allowed_domains,
+    ):
+        """After deleting the SaaS config, PATCHing with a different type that
+        has no registered template should be rejected outright."""
+
+        _connection_config.update(db, data={"saas_config": None})
+        db.expire(_connection_config)
+        assert _connection_config.saas_config is None
+
+        tampered_config = copy.deepcopy(_config_with_allowed_domains)
+        tampered_config["type"] = "nonexistent_connector_type"
+        for param in tampered_config["connector_params"]:
+            if param["name"] == "domain":
+                param.pop("allowed_domains", None)
+
+        url = get_saas_config_url(_connection_config)
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+
+        response = api_client.patch(url, headers=auth_header, json=tampered_config)
+
+        assert response.status_code == 422
+        assert "connector template" in response.json()["detail"].lower()
 
 
 class TestAuthorizeConnection:
