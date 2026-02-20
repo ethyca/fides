@@ -43,7 +43,6 @@ export interface ThemeModeProviderProps {
   children: ReactNode;
   defaultMode?: ThemeMode;
   attribute?: string;
-  scoped?: boolean;
   wrapperStyle?: CSSProperties;
   locked?: boolean;
 }
@@ -52,7 +51,6 @@ export const ThemeModeProvider = ({
   children,
   defaultMode = "light",
   attribute = "data-theme",
-  scoped = false,
   wrapperStyle = { height: "100%" },
   locked = false,
 }: ThemeModeProviderProps) => {
@@ -91,13 +89,6 @@ export const ThemeModeProvider = ({
 
   const effectiveMode: ThemeMode = locked ? defaultMode : mode;
 
-  useEffect(() => {
-    if (scoped) {
-      return;
-    }
-    document.documentElement.setAttribute(attribute, effectiveMode);
-  }, [effectiveMode, attribute, scoped]);
-
   const value = useMemo(
     () => ({
       mode: effectiveMode,
@@ -113,19 +104,17 @@ export const ThemeModeProvider = ({
     </ThemeModeContext.Provider>
   );
 
-  if (scoped) {
-    return (
-      <div
-        ref={wrapperRef}
-        {...{ [attribute]: effectiveMode }}
-        style={wrapperStyle}
-      >
-        {contextProvider}
-      </div>
-    );
-  }
+  return (
+    <div
+      ref={wrapperRef}
+      {...{ [attribute]: effectiveMode }}
+      style={wrapperStyle}
+    >
+      {contextProvider}
+    </div>
+  );
 
-  return contextProvider;
+
 };
 
 export const useThemeMode = (): ThemeModeContextValue => {

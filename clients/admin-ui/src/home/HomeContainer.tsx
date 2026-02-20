@@ -64,7 +64,6 @@ const HomeContainer = () => {
     <ThemeModeProvider
       defaultMode="light"
       locked={!alphaDarkMode}
-      scoped
       wrapperStyle={{ width: "100%" }}
     >
       <HomeContainerInner />
