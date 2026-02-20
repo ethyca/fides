@@ -1,0 +1,3 @@
+type: Developer Experience
+description: Update PR size check to exclude auto-generated API types, docs, etc.
+pr: 7414

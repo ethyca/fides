@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from io import BytesIO
 from unittest import mock
 from unittest.mock import MagicMock
@@ -62,7 +61,7 @@ class TestCustomConnectorTemplateLoader:
     @pytest.fixture(scope="function", autouse=True)
     def reset_connector_template_loaders(self):
         """
-        Resets the loader singleton instances and the db_timestamp_cached
+        Resets the loader singleton instances and the redis_version_cached
         decorator cache before each test so tests don't bleed into each other.
         """
         FileConnectorTemplateLoader._instance = None
@@ -303,12 +302,12 @@ class TestCustomConnectorTemplateLoader:
 
 
 class TestCustomConnectorTemplateLoaderCaching:
-    """Tests that the db_timestamp_cached decorator works correctly when
+    """Tests that the redis_version_cached decorator works correctly when
     integrated with CustomConnectorTemplateLoader and ConnectorRegistry.
 
-    All tests mock _get_table_state to control the DB fingerprint and
+    All tests mock _get_redis_version to control the Redis version and
     CustomConnectorTemplate.all to control the loaded data, so no real
-    DB session is needed.
+    DB session or Redis connection is needed.
     """
 
     @pytest.fixture(scope="function", autouse=True)
@@ -318,23 +317,22 @@ class TestCustomConnectorTemplateLoaderCaching:
         CustomConnectorTemplateLoader._instance = None
         CustomConnectorTemplateLoader.get_connector_templates.cache_clear()  # type: ignore[attr-defined]
 
-    @mock.patch("fides.api.util.db_timestamp_cache._get_table_state")
+    @mock.patch("fides.api.util.redis_version_cache._get_redis_version")
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
-    def test_unchanged_db_state_returns_cached_result_without_reloading(
+    def test_unchanged_version_returns_cached_result_without_reloading(
         self,
         mock_all: MagicMock,
-        mock_table_state: MagicMock,
+        mock_redis_version: MagicMock,
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
     ):
-        """When the DB fingerprint is unchanged between calls,
+        """When the Redis version is unchanged between calls,
         get_connector_templates should return the cached dict and NOT
         call CustomConnectorTemplate.all a second time."""
-        t1 = datetime(2026, 1, 1, tzinfo=timezone.utc)
-        mock_table_state.return_value = (t1, 1)
+        mock_redis_version.return_value = "1"
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="planet_express",
@@ -353,24 +351,21 @@ class TestCustomConnectorTemplateLoaderCaching:
         # all() should only be called once; the second call is a cache hit
         assert mock_all.call_count == 1
 
-    @mock.patch("fides.api.util.db_timestamp_cache._get_table_state")
+    @mock.patch("fides.api.util.redis_version_cache._get_redis_version")
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
-    def test_db_state_change_triggers_reload(
+    def test_version_change_triggers_reload(
         self,
         mock_all: MagicMock,
-        mock_table_state: MagicMock,
+        mock_redis_version: MagicMock,
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
     ):
-        """When the DB fingerprint changes (updated_at advances), the
-        cached result must be discarded and the function re-invoked."""
-        t1 = datetime(2026, 1, 1, tzinfo=timezone.utc)
-        t2 = datetime(2026, 1, 2, tzinfo=timezone.utc)
-
-        mock_table_state.return_value = (t1, 1)
+        """When the Redis version changes, the cached result must be
+        discarded and the function re-invoked."""
+        mock_redis_version.return_value = "1"
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="planet_express",
@@ -384,74 +379,38 @@ class TestCustomConnectorTemplateLoaderCaching:
         first = CustomConnectorTemplateLoader.get_connector_templates()
         assert "planet_express" in first
 
-        # Simulate a DB change: updated_at advances
-        mock_table_state.return_value = (t2, 1)
+        # Simulate a version bump (another server saved/deleted a template)
+        mock_redis_version.return_value = "2"
         mock_all.return_value = []  # templates were cleared
 
         second = CustomConnectorTemplateLoader.get_connector_templates()
         assert second == {}
         assert mock_all.call_count == 2
 
-    @mock.patch("fides.api.util.db_timestamp_cache._get_table_state")
+    @mock.patch("fides.api.util.redis_version_cache._bump_redis_version")
+    @mock.patch("fides.api.util.redis_version_cache._get_redis_version")
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
-    def test_row_deletion_detected_by_count_change(
+    def test_save_template_bumps_version(
         self,
         mock_all: MagicMock,
-        mock_table_state: MagicMock,
+        mock_redis_version: MagicMock,
+        mock_bump_version: MagicMock,
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
     ):
-        """A row deletion that doesn't change MAX(updated_at) must still
-        invalidate the cache because COUNT(*) decreases."""
-        now = datetime(2026, 1, 1, tzinfo=timezone.utc)
-        mock_table_state.return_value = (now, 1)
-        mock_all.return_value = [
-            CustomConnectorTemplate(
-                key="planet_express",
-                name="Planet Express",
-                config=planet_express_config,
-                dataset=planet_express_dataset,
-                icon=planet_express_icon,
-            )
-        ]
-
-        first = CustomConnectorTemplateLoader.get_connector_templates()
-        assert "planet_express" in first
-
-        # Count drops (row deleted) but max_updated_at unchanged
-        mock_table_state.return_value = (now, 0)
-        mock_all.return_value = []
-
-        second = CustomConnectorTemplateLoader.get_connector_templates()
-        assert second == {}
-        assert mock_all.call_count == 2
-
-    @mock.patch("fides.api.util.db_timestamp_cache._get_table_state")
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
-    )
-    def test_save_template_invalidates_cache(
-        self,
-        mock_all: MagicMock,
-        mock_table_state: MagicMock,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        """After save_template() the cache must be cleared so that the
-        next get_connector_templates() call reloads from the DB."""
-        now = datetime(2026, 1, 1, tzinfo=timezone.utc)
-        mock_table_state.return_value = (now, 0)
+        """After save_template() the Redis version must be bumped and the
+        local cache cleared so that get_connector_templates() reloads."""
+        mock_redis_version.return_value = "1"
         mock_all.return_value = []
 
         # Populate cache with empty result
         assert CustomConnectorTemplateLoader.get_connector_templates() == {}
         assert mock_all.call_count == 1
 
-        # save_template clears cache; simulate the DB now having a record
+        # save_template bumps version; simulate the DB now having a record
         with mock.patch(
             "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
         ):
@@ -468,8 +427,11 @@ class TestCustomConnectorTemplateLoaderCaching:
                 ),
             )
 
-        # DB state has changed after the save
-        mock_table_state.return_value = (now, 1)
+        # Verify bump_version was called (INCR on the Redis key)
+        mock_bump_version.assert_called_once_with("custom_connector_templates:version")
+
+        # Version has advanced after the bump
+        mock_redis_version.return_value = "2"
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="planet_express",
@@ -482,25 +444,26 @@ class TestCustomConnectorTemplateLoaderCaching:
 
         result = CustomConnectorTemplateLoader.get_connector_templates()
         assert "planet_express" in result
-        # all() called again because save_template cleared the cache
+        # all() called again because save_template bumped the version
         assert mock_all.call_count >= 2
 
-    @mock.patch("fides.api.util.db_timestamp_cache._get_table_state")
+    @mock.patch("fides.api.util.redis_version_cache._bump_redis_version")
+    @mock.patch("fides.api.util.redis_version_cache._get_redis_version")
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
-    def test_delete_template_invalidates_cache(
+    def test_delete_template_bumps_version(
         self,
         mock_all: MagicMock,
-        mock_table_state: MagicMock,
+        mock_redis_version: MagicMock,
+        mock_bump_version: MagicMock,
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
     ):
-        """After delete_template() the cache must be cleared so the
-        deleted template no longer appears."""
-        now = datetime(2026, 1, 1, tzinfo=timezone.utc)
-        mock_table_state.return_value = (now, 1)
+        """After delete_template() the Redis version must be bumped so the
+        deleted template no longer appears on any server."""
+        mock_redis_version.return_value = "1"
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="planet_express",
@@ -515,37 +478,39 @@ class TestCustomConnectorTemplateLoaderCaching:
             "planet_express" in CustomConnectorTemplateLoader.get_connector_templates()
         )
 
-        # delete_template clears cache
+        # delete_template bumps version
         with mock.patch(
             "fides.api.models.custom_connector_template.CustomConnectorTemplate.filter"
         ) as mock_filter:
             mock_filter.return_value.delete.return_value = None
             CustomConnectorTemplateLoader.delete_template(MagicMock(), "planet_express")
 
-        # DB state now reflects deletion
-        mock_table_state.return_value = (now, 0)
+        # Verify bump_version was called
+        mock_bump_version.assert_called_once_with("custom_connector_templates:version")
+
+        # Version has advanced after the bump
+        mock_redis_version.return_value = "2"
         mock_all.return_value = []
 
         result = CustomConnectorTemplateLoader.get_connector_templates()
         assert result == {}
 
-    @mock.patch("fides.api.util.db_timestamp_cache._get_table_state")
+    @mock.patch("fides.api.util.redis_version_cache._get_redis_version")
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_connector_registry_uses_cached_custom_templates(
         self,
         mock_all: MagicMock,
-        mock_table_state: MagicMock,
+        mock_redis_version: MagicMock,
         planet_express_config,
         planet_express_dataset,
         planet_express_icon,
     ):
         """ConnectorRegistry._get_combined_templates should benefit from
-        the cache: repeated calls with unchanged DB state should not
+        the cache: repeated calls with unchanged Redis version should not
         trigger additional loads of custom templates."""
-        now = datetime(2026, 1, 1, tzinfo=timezone.utc)
-        mock_table_state.return_value = (now, 1)
+        mock_redis_version.return_value = "1"
         mock_all.return_value = [
             CustomConnectorTemplate(
                 key="planet_express",

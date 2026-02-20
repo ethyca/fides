@@ -564,7 +564,7 @@ class TestDeleteCustomConnectorTemplate:
     @pytest.fixture(scope="function", autouse=True)
     def reset_connector_template_loaders(self):
         """
-        Resets the loader singleton instances and the db_timestamp_cached
+        Resets the loader singleton instances and the redis_version_cached
         decorator cache before each test so tests don't bleed into each other.
         """
         FileConnectorTemplateLoader._instance = None

@@ -11,5 +11,5 @@ export enum PropagationPolicyKey {
   CASCADE_DOWN_ALL = "cascade_down_all",
   CASCADE_UP_ALL = "cascade_up_all",
   CASCADE_UP_ALL_CASCADE_DOWN_ALL = "cascade_up_all_cascade_down_all",
-  CASCADE_DOWN_ALL_CASCADE_UP_OPT_IN = "cascade_down_all_cascade_up_opt_in",
+  CASCADE_DOWN_ALL_CASCADE_UP_OPT_IN_ALL_OPT_OUT_CONSERVATIVE = "cascade_down_all_cascade_up_opt_in_all_opt_out_conservative",
 }

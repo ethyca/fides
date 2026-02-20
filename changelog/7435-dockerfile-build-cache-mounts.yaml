@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Optimized backend CI by skipping frontend build, adding Docker cache mounts, and parallelizing jobs
+pr: 7435
+labels: []
