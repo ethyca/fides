@@ -42,9 +42,9 @@ const HomeContainerInner = () => {
           <Flex vertical gap={40} style={{ paddingBottom: 24 }}>
             {/* NOTE: temporary button placement for testing */}
             {alphaDarkMode && (
-              <div className="absolute pl-2 pt-2">
+              <Flex className="absolute pl-2 pt-2">
                 <ThemeModeSegmented />
-              </div>
+              </Flex>
             )}
 
             <HomeBanner />
