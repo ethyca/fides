@@ -154,6 +154,7 @@ payment_card_serialized_collection = {
     "grouped_inputs": [],
     "skip_processing": False,
     "data_categories": [],
+    "property_scope": "in_scope",
 }
 
 payment_card_serialized_traversal_details = {
@@ -561,6 +562,7 @@ class TestPersistAccessRequestTasks:
             "grouped_inputs": [],
             "skip_processing": False,
             "data_categories": [],
+            "property_scope": "in_scope",
         }
 
     def test_no_collections(self, db, privacy_request):
@@ -1366,6 +1368,7 @@ class TestPersistConsentRequestTasks:
             "data_categories": [],
             "skip_processing": False,
             "masking_strategy_override": None,
+            "property_scope": "in_scope",
         }
         assert ga_task.traversal_details == {
             "input_keys": [],
