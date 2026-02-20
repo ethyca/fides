@@ -31,15 +31,9 @@ const HomeContainerInner = () => {
   return (
     <ConfigProvider theme={activeTheme}>
       {/* this wrapping div can be removed once global theming is applied */}
-      <div
-        style={{
-          backgroundColor: bgColor,
-          minHeight: "100%",
-          width: "100%",
-        }}
-      >
+      <div className="min-h-full w-full" style={{ backgroundColor: bgColor }}>
         <Layout title="Home" padded={false}>
-          <Flex vertical gap={40} style={{ paddingBottom: 24 }}>
+          <Flex vertical gap={40} className="pb-6">
             {/* NOTE: temporary button placement for testing */}
             {alphaDarkMode && (
               <Flex className="absolute pl-2 pt-2">

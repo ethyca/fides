@@ -9,7 +9,7 @@ type HomeLayoutProps = {
 };
 
 const HomeLayout = ({ children, title }: HomeLayoutProps) => (
-  <Flex vertical data-testid={title} style={{ height: "100%" }}>
+  <Flex vertical data-testid={title} className="h-full">
     <Head>
       <title>Fides Admin UI - {title}</title>
       <meta name="description" content="Privacy Engineering Platform" />

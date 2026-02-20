@@ -20,16 +20,16 @@ const HomeBanner = () => {
 
   return (
     <Flex style={{ background: bgColor }}>
-      <Flex vertical style={{ maxWidth: 600, padding: 40, paddingBottom: 64 }}>
+      <Flex vertical className="max-w-[600px] p-10 pb-16">
         {hasSystems && (
           <>
             <Title level={1}>Welcome back!</Title>
-            <Text strong size="lg" style={{ display: "block", marginTop: 4 }}>
+            <Text strong size="lg" className="mt-1 block">
               {`${systemsCount} system${
                 systemsCount > 1 ? "s" : ""
               } currently under management`}
             </Text>
-            <Text style={{ display: "block", marginTop: 4 }}>
+            <Text className="mt-1 block">
               {`Fides is currently managing privacy for ${systemsCount} system${
                 systemsCount > 1 ? "s" : ""
               }. From here you can continue adding and managing systems, process privacy requests or generate reports for your privacy compliance requirements.`}
@@ -39,10 +39,10 @@ const HomeBanner = () => {
         {!hasSystems && (
           <>
             <Title level={1}>Welcome to Fides!</Title>
-            <Text strong size="lg" style={{ display: "block", marginTop: 4 }}>
+            <Text strong size="lg" className="mt-1 block">
               Start your privacy engineering journey today
             </Text>
-            <Text style={{ display: "block", marginTop: 4 }}>
+            <Text className="mt-1 block">
               Step one in setting up your privacy engineering platform is adding
               the systems you need to manage. Use the links below to add and
               configure systems within Fides for data mapping and privacy

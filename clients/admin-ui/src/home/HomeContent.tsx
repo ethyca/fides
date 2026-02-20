@@ -27,8 +27,8 @@ const HomeContent = () => {
   );
 
   return (
-    <Flex style={{ paddingInline: 40 }} data-testid="home-content">
-      <Row gutter={[24, 24]} style={{ width: "100%" }}>
+    <Flex className="px-10" data-testid="home-content">
+      <Row gutter={[24, 24]} className="w-full">
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
