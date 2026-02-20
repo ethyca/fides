@@ -47,8 +47,8 @@ from fides.api.common_exceptions import (
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
-    PrivacyRequestNotFound,
     PrivacyRequestError,
+    PrivacyRequestNotFound,
     TraversalError,
     ValidationError,
 )
@@ -175,16 +175,16 @@ from fides.service.dataset.dataset_config_service import (
     replace_references_with_identities,
 )
 from fides.service.messaging.messaging_service import MessagingService
+from fides.service.privacy_request.privacy_request_diagnostics import (
+    PrivacyRequestDiagnostics,
+    get_privacy_request_diagnostics,
+)
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
     _process_privacy_request_restart,
     _requeue_privacy_request,
     handle_approval,
     queue_privacy_request,
-)
-from fides.service.privacy_request.privacy_request_diagnostics import (
-    PrivacyRequestDiagnostics,
-    get_privacy_request_diagnostics,
 )
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
