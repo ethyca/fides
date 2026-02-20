@@ -6,7 +6,7 @@ import yaml
 from pydantic import BaseModel
 
 from fides.api.util.text import to_snake_case
-from fides.config.helpers import load_file
+from fides.config.utils import load_file
 
 LANGUAGES_YAML_FILE_PATH = join(
     dirname(__file__),

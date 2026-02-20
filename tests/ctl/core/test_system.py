@@ -11,10 +11,10 @@ from fides.api.db.system import upsert_system
 from fides.api.models.sql_models import PrivacyDeclaration
 from fides.api.models.sql_models import System as sql_System
 from fides.api.util.data_category import get_data_categories_map
+from fides.cli.connectors.models import OktaConfig
+from fides.cli.core import api
+from fides.cli.core import system as _system
 from fides.config import FidesConfig
-from fides.connectors.models import OktaConfig
-from fides.core import api
-from fides.core import system as _system
 
 
 @pytest.mark.usefixtures("default_taxonomy")

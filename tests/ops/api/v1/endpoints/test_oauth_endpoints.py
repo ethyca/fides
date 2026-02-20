@@ -22,7 +22,7 @@ from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fides.common.api.scope_registry import (
+from fides.api.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
@@ -31,7 +31,7 @@ from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
     STORAGE_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,

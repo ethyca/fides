@@ -14,12 +14,12 @@ from fideslang.models import (
 )
 from loguru import logger
 
-from fides.connectors.models import (
+from fides.cli.connectors.models import (
     AWSConfig,
     ConnectorAuthFailureException,
     ConnectorFailureException,
 )
-from fides.core.utils import generate_unique_fides_key
+from fides.cli.core.utils import generate_unique_fides_key
 
 
 def get_aws_client(service: str, aws_config: Optional[AWSConfig]) -> Any:

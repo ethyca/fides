@@ -6,7 +6,7 @@ from typing import Dict
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
-from fides.core.utils import create_auth_header, get_auth_header
+from fides.cli.core.utils import create_auth_header, get_auth_header
 
 from .fides_settings import FidesSettings
 

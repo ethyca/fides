@@ -19,16 +19,16 @@ from fides.api.schemas.saas.connector_template import (
     ConnectorTemplate,
     ConnectorTemplateListResponse,
 )
+from fides.api.scope_registry import (
+    CONNECTOR_TEMPLATE_READ,
+    CONNECTOR_TEMPLATE_REGISTER,
+)
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
 )
 from fides.api.util.api_router import APIRouter
-from fides.common.api.scope_registry import (
-    CONNECTOR_TEMPLATE_READ,
-    CONNECTOR_TEMPLATE_REGISTER,
-)
-from fides.common.api.v1.urn_registry import (
+from fides.api.v1.urn_registry import (
     CONNECTION_TYPES,
     CONNECTOR_TEMPLATES,
     CONNECTOR_TEMPLATES_CONFIG,

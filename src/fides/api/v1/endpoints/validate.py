@@ -8,11 +8,11 @@ from typing import Callable, Dict, Union
 from fastapi import Response, Security, status
 from pydantic import BaseModel
 
+from fides.api import scope_registry
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import API_PREFIX
-from fides.common.api import scope_registry
-from fides.connectors.models import (
+from fides.cli.connectors.models import (
     AWSConfig,
     BigQueryConfig,
     ConnectorAuthFailureException,
@@ -105,7 +105,7 @@ async def validate_aws(aws_config: AWSConfig) -> None:
     Validates that given aws credentials are valid. Dependency
     exception is raised if failure occurs.
     """
-    import fides.connectors.aws as aws_connector
+    import fides.cli.connectors.aws as aws_connector
 
     aws_connector.validate_credentials(aws_config=aws_config)
 
@@ -115,7 +115,7 @@ async def validate_bigquery(bigquery_config: BigQueryConfig) -> None:
     Validates that given GCP BigQuery credentials are valid. Dependency
     exception is raised if failure occurs.
     """
-    import fides.connectors.bigquery as bigquery_connector
+    import fides.cli.connectors.bigquery as bigquery_connector
 
     bigquery_engine = bigquery_connector.get_bigquery_engine(bigquery_config)
     bigquery_connector.validate_bigquery_engine(bigquery_engine)
@@ -126,6 +126,6 @@ async def validate_okta(okta_config: OktaConfig) -> None:
     Validates that given okta credentials are valid. Dependency
     exception is raised if failure occurs.
     """
-    import fides.connectors.okta as okta_connector
+    import fides.cli.connectors.okta as okta_connector
 
     okta_connector.validate_credentials(okta_config=okta_config)

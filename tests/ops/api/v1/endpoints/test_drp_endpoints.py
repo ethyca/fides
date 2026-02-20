@@ -18,14 +18,14 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestDRPStatus,
     PrivacyRequestStatus,
 )
-from fides.api.util.cache import cache_task_tracking_key, get_drp_request_body_cache_key
-from fides.common.api.scope_registry import (
+from fides.api.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.api.util.cache import cache_task_tracking_key, get_drp_request_body_cache_key
+from fides.api.v1.urn_registry import (
     DRP_DATA_RIGHTS,
     DRP_EXERCISE,
     DRP_REVOKE,

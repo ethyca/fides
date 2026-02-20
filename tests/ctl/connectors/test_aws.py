@@ -6,9 +6,9 @@ from typing import Generator
 import pytest
 from fideslang.models import System, SystemMetadata
 
-import fides.connectors.aws as aws_connector
+import fides.cli.connectors.aws as aws_connector
+from fides.cli.connectors.models import AWSConfig
 from fides.config import FidesConfig
-from fides.connectors.models import AWSConfig
 
 
 @pytest.fixture()

@@ -22,7 +22,7 @@ from fides.api.service.privacy_request.request_service import (
     requeue_interrupted_tasks,
 )
 from fides.api.util.cache import cache_task_tracking_key
-from fides.common.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
+from fides.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
 from fides.config import CONFIG
 
 

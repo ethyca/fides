@@ -52,7 +52,7 @@ from fides.api.util.saas_util import (
     UUID,
     get_identities,
 )
-from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
+from fides.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 
 T = TypeVar("T")
 

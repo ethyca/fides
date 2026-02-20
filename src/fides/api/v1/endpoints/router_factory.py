@@ -22,6 +22,7 @@ from fides.api.db.crud import (
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import ModelWithDefaultField, sql_model_map
 from fides.api.oauth.utils import verify_oauth_client_prod
+from fides.api.scope_registry import CREATE, DELETE, READ, UPDATE
 from fides.api.util import errors
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import (
@@ -31,7 +32,6 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_any_is_default,
     forbid_if_editing_is_default,
 )
-from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
 
 
 def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:

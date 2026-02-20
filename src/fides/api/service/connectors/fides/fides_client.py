@@ -19,8 +19,8 @@ from fides.api.schemas.user import UserLogin
 from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
 from fides.api.util.wrappers import sync
-from fides.common.api.v1 import urn_registry as urls
-from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS
+from fides.api.v1 import urn_registry as urls
+from fides.api.v1.urn_registry import PRIVACY_REQUESTS
 
 COMPLETION_STATUSES = [
     PrivacyRequestStatus.complete,

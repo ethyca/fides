@@ -3,7 +3,7 @@ import pytest
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.oauth.utils import get_root_client, roles_have_scopes
-from fides.common.api.scope_registry import POLICY_READ, USER_CREATE, USER_READ
+from fides.api.scope_registry import POLICY_READ, USER_CREATE, USER_READ
 
 
 class TestGetRootClient:

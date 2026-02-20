@@ -22,7 +22,7 @@ from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.aws_util import get_aws_session
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii
-from fides.connectors.models import (
+from fides.cli.connectors.models import (
     ConnectorAuthFailureException,
     ConnectorFailureException,
 )
