@@ -113,8 +113,6 @@ export const ThemeModeProvider = ({
       {contextProvider}
     </div>
   );
-
-
 };
 
 export const useThemeMode = (): ThemeModeContextValue => {
