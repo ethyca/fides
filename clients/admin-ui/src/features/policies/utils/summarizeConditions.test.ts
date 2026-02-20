@@ -1,4 +1,9 @@
-import { ConditionGroup, ConditionLeaf, GroupOperator, Operator } from "~/types/api";
+import {
+  ConditionGroup,
+  ConditionLeaf,
+  GroupOperator,
+  Operator,
+} from "~/types/api";
 
 import { summarizeConditions } from "./summarizeConditions";
 
@@ -49,10 +54,7 @@ describe("summarizeConditions", () => {
   });
 
   it("counts leaves in deeply nested groups", () => {
-    const deep = group([
-      group([group([leaf("a"), leaf("b")])]),
-      leaf("c"),
-    ]);
+    const deep = group([group([group([leaf("a"), leaf("b")])]), leaf("c")]);
     expect(summarizeConditions(deep)).toBe("3 conditions");
   });
 });
