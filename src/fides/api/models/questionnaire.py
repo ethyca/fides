@@ -6,6 +6,8 @@ This module provides the database schema for:
 - Chat messages (conversation history within questionnaires)
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING, List, Optional

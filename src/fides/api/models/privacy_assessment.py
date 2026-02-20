@@ -9,6 +9,8 @@ This module provides the database schema for:
 - Answer versions (immutable history of all answer changes)
 """
 
+from __future__ import annotations
+
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING, Optional
 
