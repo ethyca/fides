@@ -41,7 +41,7 @@ class TestCreateDrpPrivacyRequest:
         return V1_URL_PREFIX + DRP_EXERCISE
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request(
         self,
@@ -106,7 +106,7 @@ class TestCreateDrpPrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request_unsupported_identity_props(
         self,
@@ -244,7 +244,7 @@ class TestCreateDrpPrivacyRequest:
         assert resp.status_code == 404
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request_with_masking_secrets(
         self,
@@ -292,11 +292,9 @@ class TestCreateDrpPrivacyRequest:
         "policy_drp_action",
         "set_notification_service_type_to_mailgun",
     )
+    @mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request_error_notification(
         self,

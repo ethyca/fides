@@ -7,22 +7,28 @@ from fides.api.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
 from fides.api.scope_registry import MASKING_EXEC, MASKING_READ
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fides.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
+from fides.service.privacy_request.masking.strategy.masking_strategy import (
+    MaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
-from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_nullify import (
+from fides.service.privacy_request.masking.strategy.masking_strategy_hash import (
+    HashMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_hmac import (
+    HmacMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
-from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite import (
+from fides.service.privacy_request.masking.strategy.masking_strategy_random_string_rewrite import (
     RandomStringRewriteMaskingStrategy,
 )
-from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.service.privacy_request.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fides.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 
 
 class TestGetMaskingStrategies:

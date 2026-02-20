@@ -86,7 +86,7 @@ class TestCustomPrivacyRequestFields:
         "dsr_version",
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_access(
         self,
         mock_send,
@@ -149,7 +149,7 @@ class TestCustomPrivacyRequestFields:
         "dsr_version",
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_erasure(
         self,
         mock_send,

@@ -14,11 +14,13 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fides.api.service.connectors.query_configs.mongodb_query_config import (
+from fides.api.util.data_category import DataCategory
+from fides.connectors.mongodb.mongodb_query_config import (
     MongoQueryConfig,
 )
-from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
-from fides.api.util.data_category import DataCategory
+from fides.service.privacy_request.masking.strategy.masking_strategy_hash import (
+    HashMaskingStrategy,
+)
 
 from ...task.traversal_data import combined_mongo_postgresql_graph
 from ...test_helpers.cache_secrets_helper import cache_secret

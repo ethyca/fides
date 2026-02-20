@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.service.connectors.datahub_connector import DatahubConnector
+from fides.connectors.datahub.datahub_connector import DatahubConnector
 
 
 class TestDatahubConnector:

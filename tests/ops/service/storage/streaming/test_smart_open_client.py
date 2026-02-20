@@ -6,9 +6,9 @@ from unittest.mock import Mock, create_autospec, patch
 import pytest
 
 from fides.api.schemas.storage.storage import StorageSecrets
-from fides.api.service.storage.streaming.base_storage_client import BaseStorageClient
-from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
-from fides.api.service.storage.streaming.storage_client_factory import (
+from fides.service.storage.streaming.base_storage_client import BaseStorageClient
+from fides.service.storage.streaming.smart_open_client import SmartOpenStorageClient
+from fides.service.storage.streaming.storage_client_factory import (
     StorageClientFactory,
 )
 
@@ -210,7 +210,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
@@ -243,7 +243,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
@@ -275,7 +275,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
@@ -307,7 +307,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
@@ -339,7 +339,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
@@ -376,7 +376,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
@@ -407,7 +407,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_smart_open.side_effect = Exception("smart_open error")
 
@@ -435,7 +435,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
@@ -467,7 +467,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_smart_open.side_effect = Exception("smart_open read error")
 
@@ -495,7 +495,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_stream = Mock()
                 mock_smart_open.return_value = mock_stream
@@ -532,7 +532,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_stream = Mock()
                 mock_smart_open.return_value = mock_stream
@@ -565,7 +565,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_stream = Mock()
                 mock_smart_open.return_value = mock_stream
@@ -598,7 +598,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_stream = Mock()
                 mock_smart_open.return_value = mock_stream
@@ -631,7 +631,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_stream = Mock()
                 mock_smart_open.return_value = mock_stream
@@ -923,7 +923,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)
@@ -957,7 +957,7 @@ class TestSmartOpenStorageClient:
             mock_create.return_value = mock_provider_client
 
             with patch(
-                "fides.api.service.storage.streaming.smart_open_client.smart_open.open"
+                "fides.service.storage.streaming.smart_open_client.smart_open.open"
             ) as mock_smart_open:
                 mock_file = Mock()
                 mock_file.__enter__ = Mock(return_value=mock_file)

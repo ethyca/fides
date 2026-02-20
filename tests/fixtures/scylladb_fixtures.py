@@ -14,7 +14,7 @@ from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.connection_configuration.connection_secrets_scylla import (
     ScyllaSchema,
 )
-from fides.api.service.connectors.scylla_connector import ScyllaConnector
+from fides.connectors.scylla.scylla_connector import ScyllaConnector
 
 
 @pytest.fixture(scope="function")

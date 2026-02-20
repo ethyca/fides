@@ -11,14 +11,14 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.service.saas_request.saas_request_override_factory import (
-    SaaSRequestType,
-    register,
-)
 from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.collection_util import Row
+from fides.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.service.privacy_request.saas_request.saas_request_override_factory import (
+    SaaSRequestType,
+    register,
+)
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
@@ -227,7 +227,7 @@ async def test_saas_erasure_order_request_task_with_cycle(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@mock.patch("fides.api.service.connectors.saas_connector.SaaSConnector.mask_data")
+@mock.patch("fides.connectors.saas.saas_connector.SaaSConnector.mask_data")
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],

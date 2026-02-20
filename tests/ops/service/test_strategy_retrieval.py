@@ -7,7 +7,7 @@ from requests import Response
 from fides.api.common_exceptions import NoSuchStrategyException
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
-from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
+from fides.connectors.saas.strategies.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
 

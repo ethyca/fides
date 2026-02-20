@@ -18,7 +18,7 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.service.storage.providers import (
+from fides.service.storage.providers import (
     GCSStorageProvider,
     LocalStorageProvider,
     S3StorageProvider,
@@ -60,13 +60,13 @@ def local_provider(tmp_path) -> Generator[LocalStorageProvider, None, None]:
         # Patch the upload directory constants to use tmp_path
         stack.enter_context(
             patch(
-                "fides.api.service.storage.providers.local_provider.LOCAL_FIDES_UPLOAD_DIRECTORY",
+                "fides.service.storage.providers.local_provider.LOCAL_FIDES_UPLOAD_DIRECTORY",
                 str(tmp_path),
             )
         )
         stack.enter_context(
             patch(
-                "fides.api.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
+                "fides.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
                 str(tmp_path),
             )
         )
@@ -81,7 +81,7 @@ def s3_provider_mock() -> Generator[S3StorageProvider, None, None]:
 
     This fixture mocks the underlying S3 functions to avoid actual AWS calls.
     """
-    s3_module = "fides.api.service.storage.providers.s3_provider"
+    s3_module = "fides.service.storage.providers.s3_provider"
 
     with ExitStack() as stack:
         # Patch all S3 functions used by S3StorageProvider
@@ -124,7 +124,7 @@ def gcs_provider_mock() -> Generator[GCSStorageProvider, None, None]:
     This fixture mocks the GCS client to avoid actual GCP calls.
     """
     with patch(
-        "fides.api.service.storage.providers.gcs_provider.get_gcs_client"
+        "fides.service.storage.providers.gcs_provider.get_gcs_client"
     ) as mock_get_client:
         # Create mock client, bucket, and blob
         mock_client = MagicMock()

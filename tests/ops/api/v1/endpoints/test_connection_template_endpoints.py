@@ -18,9 +18,6 @@ from fides.api.scope_registry import (
     CONNECTOR_TEMPLATE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-)
 from fides.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
@@ -29,6 +26,9 @@ from fides.api.v1.urn_registry import (
     CONNECTOR_TEMPLATES_DATASET,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
+)
+from fides.service.connection.connector_registry_service import (
+    ConnectorRegistry,
 )
 
 

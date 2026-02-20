@@ -7,8 +7,8 @@ from httpx import AsyncClient, Client, HTTPStatusError
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.connectors.fides.fides_client import FidesClient
 from fides.api.util.errors import FidesError
+from fides.connectors.fides.fides_client import FidesClient
 
 SAMPLE_TOKEN = "SOME_TOKEN"
 

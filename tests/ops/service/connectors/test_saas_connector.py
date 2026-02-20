@@ -33,20 +33,20 @@ from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus, HTTPMethod
-from fides.api.service.connectors import get_connector
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.service.connectors.saas_connector import SaaSConnector
-from fides.api.service.saas_request.saas_request_override_factory import (
-    SaaSRequestOverrideFactory,
-    SaaSRequestType,
-    register,
-)
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
 )
 from fides.config import CONFIG
+from fides.connectors import get_connector
+from fides.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.connectors.saas.saas_connector import SaaSConnector
+from fides.service.privacy_request.saas_request.saas_request_override_factory import (
+    SaaSRequestOverrideFactory,
+    SaaSRequestType,
+    register,
+)
 from tests.ops.graph.graph_test_util import generate_node
 
 
@@ -208,7 +208,7 @@ class TestSaasConnector:
             execution_node, Policy(), PrivacyRequest(id="123"), request_task, {}
         ) == [{}]
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_input_values(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -250,7 +250,7 @@ class TestSaasConnector:
             {"fidesops_grouped_inputs": [], "conversation_id": ["456"]},
         ) == [{"id": "123", "from_email": "test@example.com"}]
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_no_content_response(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -322,7 +322,7 @@ class TestSaasConnector:
             == []
         )
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_grouped_input_values(
         self, mock_send: Mock, saas_example_config, saas_example_connection_config
     ):
@@ -392,7 +392,7 @@ class TestSaasConnector:
             == []
         )
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_skip_missing_param_values_masking(
         self,
         mock_send: Mock,
@@ -564,7 +564,7 @@ class TestSaaSConnectorTestRequestOverride:
 
 @pytest.mark.unit_saas
 class TestSaaSConnectorOutputTemplate:
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_request_with_output_template(
         self, mock_send, saas_example_config, saas_example_connection_config
     ):
@@ -618,7 +618,7 @@ class TestSaaSConnectorOutputTemplate:
             {"email": ["test@example.com"]},
         ) == [{"email": "test@example.com"}]
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_output_template_multiple_requests_and_input_values(
         self, mock_send, saas_example_config, saas_example_connection_config
     ):
@@ -655,7 +655,7 @@ class TestSaaSConnectorOutputTemplate:
             {"id": "456", "site_id": "site-2", "status": "closed"},
         ]
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_request_with_invalid_output_template(
         self, mock_send, saas_example_config, saas_example_connection_config
     ):
@@ -967,7 +967,7 @@ class TestSaasConnectorRunConsentRequest:
             "Updated to skipped in graph task, not updated here"
         )
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_preferences_executable(
         self,
         mock_send,
@@ -1139,7 +1139,7 @@ class TestAsyncConnectors:
             db, privacy_request, traversal_nodes, end_nodes, graph
         )
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_read_request_expects_async_results(
         self,
         mock_send,
@@ -1237,7 +1237,7 @@ class TestAsyncConnectors:
             }
         ]
 
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_masking_request_expects_async_results(
         self,
         mock_send,
@@ -1325,9 +1325,7 @@ class TestAsyncConnectors:
             == 5
         )
 
-    @mock.patch(
-        "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
-    )
+    @mock.patch("fides.connectors.saas.saas_connector.SaaSConnector.create_client")
     def test_guard_access_request_with_access_policy(
         self,
         mock_create_client,
@@ -1360,9 +1358,7 @@ class TestAsyncConnectors:
                 {},
             )
 
-    @mock.patch(
-        "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
-    )
+    @mock.patch("fides.connectors.saas.saas_connector.SaaSConnector.create_client")
     def test_guard_access_request_with_erasure_only_policy(
         self,
         mock_create_client,
@@ -1436,9 +1432,7 @@ class TestAsyncConnectors:
         # Should return empty list without calling async_retrieve_data
         assert result == []
 
-    @mock.patch(
-        "fides.api.service.connectors.saas_connector.SaaSConnector.create_client"
-    )
+    @mock.patch("fides.connectors.saas.saas_connector.SaaSConnector.create_client")
     def test_callback_requests_ignore_guard_clause(
         self,
         mock_create_client,

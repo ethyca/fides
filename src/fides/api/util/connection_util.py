@@ -40,7 +40,7 @@ from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,
 )
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 from fides.service.privacy_request.privacy_request_service import queue_privacy_request
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements

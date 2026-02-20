@@ -6,14 +6,14 @@ from google.oauth2.service_account import Credentials
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import GCSAuthMethod
-from fides.api.service.storage.gcs import get_gcs_client
+from fides.service.storage.gcs import get_gcs_client
 
 
 class TestGetGCSClient:
     def test_get_gcs_client_adc(self):
         """Test getting GCS client using ADC authentication."""
         with patch(
-            "fides.api.service.storage.gcs.Client", autospec=True
+            "fides.service.storage.gcs.Client", autospec=True
         ) as mock_client_cls:
             mock_client_cls.return_value = MagicMock()
             client = get_gcs_client(GCSAuthMethod.ADC.value, None)
@@ -42,10 +42,10 @@ class TestGetGCSClient:
 
         mock_credentials = create_autospec(Credentials)
         with patch(
-            "fides.api.service.storage.gcs.service_account.Credentials", autospec=True
+            "fides.service.storage.gcs.service_account.Credentials", autospec=True
         ) as mock_creds_cls:
             with patch(
-                "fides.api.service.storage.gcs.Client", autospec=True
+                "fides.service.storage.gcs.Client", autospec=True
             ) as mock_client_cls:
                 mock_creds_cls.from_service_account_info.return_value = mock_credentials
                 mock_client_cls.return_value = MagicMock()
@@ -89,10 +89,10 @@ class TestGetGCSBlob:
         base_gcs_client_mock.bucket = MagicMock(return_value=mock_bucket)
 
         with patch(
-            "fides.api.service.storage.gcs.get_gcs_client",
+            "fides.service.storage.gcs.get_gcs_client",
             return_value=base_gcs_client_mock,
         ):
-            from fides.api.service.storage.gcs import get_gcs_blob
+            from fides.service.storage.gcs import get_gcs_blob
 
             result = get_gcs_blob(
                 GCSAuthMethod.ADC.value, None, "test-bucket", "test-file.txt"
@@ -110,10 +110,10 @@ class TestGetGCSBlob:
         base_gcs_client_mock.bucket = MagicMock(side_effect=Exception("Test error"))
 
         with patch(
-            "fides.api.service.storage.gcs.get_gcs_client",
+            "fides.service.storage.gcs.get_gcs_client",
             return_value=base_gcs_client_mock,
         ):
-            from fides.api.service.storage.gcs import get_gcs_blob
+            from fides.service.storage.gcs import get_gcs_blob
 
             with pytest.raises(Exception) as exc_info:
                 get_gcs_blob(

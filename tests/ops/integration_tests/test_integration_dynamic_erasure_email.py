@@ -15,10 +15,10 @@ from fides.api.schemas.privacy_request import (
     CustomPrivacyRequestField,
     PrivacyRequestStatus,
 )
-from fides.api.service.connectors.dynamic_erasure_email_connector import (
+from fides.connectors.email.dynamic_erasure_email_connector import (
     DynamicErasureEmailConnectorException,
 )
-from fides.api.service.privacy_request.email_batch_service import (
+from fides.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
@@ -35,9 +35,9 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -123,9 +123,9 @@ async def test_erasure_email(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_multiple_requests(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -253,9 +253,9 @@ async def test_erasure_email_multiple_requests(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_multiple_requests_same_email_different_vendor(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -383,9 +383,9 @@ async def test_erasure_email_multiple_requests_same_email_different_vendor(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_multiple_requests_same_email(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -495,11 +495,11 @@ async def test_erasure_email_multiple_requests_same_email(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @mock.patch(
-    "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
+    "fides.connectors.email.dynamic_erasure_email_connector.logger",
     autospec=True,
 )
 async def test_erasure_email_invalid_dataset(
@@ -592,11 +592,11 @@ async def test_erasure_email_invalid_dataset(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @mock.patch(
-    "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
+    "fides.connectors.email.dynamic_erasure_email_connector.logger",
     autospec=True,
 )
 async def test_erasure_email_invalid_field(
@@ -690,11 +690,11 @@ async def test_erasure_email_invalid_field(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @mock.patch(
-    "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
+    "fides.connectors.email.dynamic_erasure_email_connector.logger",
     autospec=True,
 )
 async def test_erasure_email_mismatched_datasets(
@@ -788,11 +788,11 @@ async def test_erasure_email_mismatched_datasets(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @mock.patch(
-    "fides.api.service.connectors.dynamic_erasure_email_connector.logger",
+    "fides.connectors.email.dynamic_erasure_email_connector.logger",
     autospec=True,
 )
 async def test_erasure_email_mismatched_collections(
@@ -886,9 +886,9 @@ async def test_erasure_email_mismatched_collections(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_no_email_address(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -969,9 +969,9 @@ async def test_erasure_email_no_email_address(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_multiple_email_addresses(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -1052,9 +1052,9 @@ async def test_erasure_email_multiple_email_addresses(
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_property_specific_messaging(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -1138,9 +1138,9 @@ async def test_erasure_email_property_specific_messaging(
 @pytest.mark.integration_postgres
 @pytest.mark.asyncio
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
@@ -1208,7 +1208,7 @@ async def test_erasure_email_no_messaging_config(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_no_write_permissions(
     mock_mailgun_dispatcher: Mock,
     # Need to allow custom privacy request fields
@@ -1309,9 +1309,9 @@ async def test_erasure_email_no_updates_needed(
 @pytest.mark.integration
 @pytest.mark.asyncio
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
@@ -1377,9 +1377,9 @@ async def test_erasure_email_disabled_connector(
 @pytest.mark.integration
 @pytest.mark.asyncio
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @pytest.mark.parametrize(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],

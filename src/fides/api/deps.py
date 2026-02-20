@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from fides.service.connection.connection_service import ConnectionService
     from fides.service.dataset.dataset_config_service import DatasetConfigService
     from fides.service.dataset.dataset_service import DatasetService
-    from fides.service.event_audit_service import EventAuditService
+    from fides.service.event_audit.event_audit_service import EventAuditService
     from fides.service.messaging.messaging_service import MessagingService
     from fides.service.privacy_request.privacy_request_service import (
         PrivacyRequestService,
@@ -213,7 +213,7 @@ def get_user_service(
 def get_event_audit_service(
     db: Session = Depends(get_db),
 ) -> "EventAuditService":
-    from fides.service.event_audit_service import EventAuditService
+    from fides.service.event_audit.event_audit_service import EventAuditService
 
     return EventAuditService(db)
 

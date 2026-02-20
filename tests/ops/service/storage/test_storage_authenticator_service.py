@@ -19,7 +19,7 @@ from fides.api.schemas.storage.storage import (
     StorageSecretsS3,
     StorageType,
 )
-from fides.api.service.storage.storage_authenticator_service import (
+from fides.service.storage.storage_authenticator_service import (
     _s3_authenticator,
     secrets_are_valid,
 )
@@ -130,7 +130,7 @@ def s3_storage_config(db: Session) -> Generator[StorageConfig, None, None]:
 
 
 @mock.patch(
-    "fides.api.service.storage.storage_authenticator_service.get_aws_session",
+    "fides.service.storage.storage_authenticator_service.get_aws_session",
     autospec=True,
 )
 class TestS3Authenticator:
@@ -252,10 +252,10 @@ class TestS3Authenticator:
 
 
 @mock.patch(
-    "fides.api.service.storage.storage_authenticator_service.Request", autospec=True
+    "fides.service.storage.storage_authenticator_service.Request", autospec=True
 )
 @mock.patch(
-    "fides.api.service.storage.storage_authenticator_service.service_account.Credentials",
+    "fides.service.storage.storage_authenticator_service.service_account.Credentials",
     autospec=True,
 )
 class TestGCSAuthenticator:
@@ -322,7 +322,7 @@ class TestGCSAuthenticator:
         mock_creds_instance.refresh.assert_called_once_with(mock_request())
 
     @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.logger",
+        "fides.service.storage.storage_authenticator_service.logger",
         autospec=True,
     )
     def test_secrets_are_invalid_for_gcs(
@@ -358,7 +358,7 @@ class TestGCSAuthenticator:
         )
 
     @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.logger",
+        "fides.service.storage.storage_authenticator_service.logger",
         autospec=True,
     )
     def test_secrets_validation_unexpected_error(

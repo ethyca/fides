@@ -4,7 +4,7 @@ from requests import PreparedRequest, Request
 from fides.api.common_exceptions import ValidationError as FidesopsValidationError
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.service.authentication.authentication_strategy import (
+from fides.connectors.saas.strategies.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 

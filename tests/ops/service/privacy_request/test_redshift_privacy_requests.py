@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from fides.api.service.connectors.redshift_connector import RedshiftConnector
+from fides.connectors.redshift.redshift_connector import RedshiftConnector
 from tests.ops.service.privacy_request.test_request_runner_service import (
     PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     get_privacy_request_results,

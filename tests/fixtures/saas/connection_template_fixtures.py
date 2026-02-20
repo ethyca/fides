@@ -9,13 +9,13 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
-from fides.api.service.connectors.saas.connector_registry_service import (
+from fides.api.util.connection_util import validate_secrets
+from fides.service.connection.connection_service import ConnectionService
+from fides.service.connection.connector_registry_service import (
     ConnectorRegistry,
     ConnectorTemplate,
 )
-from fides.api.util.connection_util import validate_secrets
-from fides.service.connection.connection_service import ConnectionService
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 
 
 @pytest.fixture(scope="function")

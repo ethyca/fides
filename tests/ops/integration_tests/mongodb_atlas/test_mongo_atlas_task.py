@@ -17,9 +17,9 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request.request_task import RequestTask
-from fides.api.service.connectors import get_connector
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import get_cached_data_for_erasures
+from fides.connectors import get_connector
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match, erasure_policy, field
 from tests.ops.task.traversal_data import (

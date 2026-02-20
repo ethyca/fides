@@ -15,8 +15,8 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.connection_configuration import GoogleCloudSQLPostgresSchema
-from fides.api.service.connectors import GoogleCloudSQLPostgresConnector
 from fides.config import CONFIG
+from fides.connectors import GoogleCloudSQLPostgresConnector
 
 from .application_fixtures import integration_config
 

@@ -13,7 +13,7 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.service.connectors import MongoDBConnector
+from fides.connectors import MongoDBConnector
 from tests.fixtures.integration_fixtures import (
     generate_integration_records,
     generate_mongo_specific_records,

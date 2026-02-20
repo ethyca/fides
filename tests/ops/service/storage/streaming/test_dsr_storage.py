@@ -6,11 +6,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from fides.api.service.storage.streaming.dsr_storage import (
+from fides.service.storage.streaming.dsr_storage import (
     create_dsr_report_files_generator,
     stream_dsr_buffer_to_storage,
 )
-from fides.api.service.storage.streaming.smart_open_client import SmartOpenStorageClient
+from fides.service.storage.streaming.smart_open_client import SmartOpenStorageClient
 
 
 @pytest.fixture

@@ -6,7 +6,6 @@ from fides.api.v1.endpoints import (
     connector_template_endpoints,
     consent_request_endpoints,
     dataset_config_endpoints,
-    drp_endpoints,
     dsr_package_link,
     encryption_endpoints,
     identity_verification_endpoints,
@@ -27,6 +26,7 @@ from fides.api.v1.endpoints import (
     user_permission_endpoints,
     worker_endpoints,
 )
+from fides.api.v1.endpoints.drp import drp_endpoints
 
 api_router = APIRouter()
 api_router.include_router(config_endpoints.router)

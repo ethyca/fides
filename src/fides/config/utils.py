@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 import os
 from os import environ, getenv
 from pathlib import Path
 from re import compile as regex
 from textwrap import wrap
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
+
+if TYPE_CHECKING:
+    from fides.config import FidesConfig
 
 import toml
 from click import echo

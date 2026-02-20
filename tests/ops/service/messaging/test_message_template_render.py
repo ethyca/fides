@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.service.messaging.message_dispatch_service import _render
+from fides.service.messaging.message_dispatch_service import _render
 
 
 @pytest.mark.unit

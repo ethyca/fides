@@ -5,7 +5,7 @@ import requests_mock
 from attr import dataclass
 
 from fides.api.common_exceptions import ClientUnsuccessfulException
-from fides.api.service.connectors import HTTPSConnector
+from fides.connectors import HTTPSConnector
 
 
 @dataclass

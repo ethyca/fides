@@ -7,7 +7,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.privacy_request_redaction_pattern import (
     PrivacyRequestRedactionPattern,
 )
-from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+from fides.service.privacy_request.dsr_package.dsr_report_builder import (
     DSRReportBuilder,
 )
 

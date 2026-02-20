@@ -15,11 +15,11 @@ from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionE
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.schemas.saas.saas_config import ClientConfig
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import (
+from fides.api.util.saas_util import load_config_with_replacement
+from fides.connectors.saas.authenticated_client import (
     AuthenticatedClient,
     get_retry_after,
 )
-from fides.api.util.saas_util import load_config_with_replacement
 
 
 @pytest.fixture

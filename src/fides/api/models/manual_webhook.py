@@ -13,7 +13,7 @@ from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
-from fides.service.attachment_service import AttachmentService
+from fides.service.attachment.attachment_service import AttachmentService
 
 
 class AccessManualWebhook(Base):

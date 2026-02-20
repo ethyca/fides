@@ -13,8 +13,8 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.service.connectors.postgres_connector import PostgreSQLConnector
 from fides.config import CONFIG
+from fides.connectors.postgres.postgres_connector import PostgreSQLConnector
 
 integration_config = load_toml("tests/ops/integration_test_config.toml")
 

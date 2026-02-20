@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.schemas.messaging.messaging import MessagingServiceType
-from fides.api.service.messaging.message_dispatch_service import (
+from fides.service.messaging.message_dispatch_service import (
     get_email_messaging_config_service_type,
 )
 

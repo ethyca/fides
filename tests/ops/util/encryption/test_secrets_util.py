@@ -9,13 +9,15 @@ from fides.api.schemas.masking.masking_secrets import (
     MaskingSecretMeta,
     SecretType,
 )
-from fides.api.service.masking.strategy.masking_strategy_aes_encrypt import (
-    AesEncryptionMaskingStrategy,
-)
-from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.util.cache import get_cache, get_masking_secret_cache_key
 from fides.api.util.encryption.secrets_util import SecretsUtil
 from fides.config import CONFIG
+from fides.service.privacy_request.masking.strategy.masking_strategy_aes_encrypt import (
+    AesEncryptionMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_hmac import (
+    HmacMaskingStrategy,
+)
 
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 

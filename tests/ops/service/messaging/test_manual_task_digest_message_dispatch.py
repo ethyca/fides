@@ -12,16 +12,14 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.service.messaging.message_dispatch_service import dispatch_message
 
 
 @pytest.mark.unit
 class TestManualTaskDigestMessageDispatch:
     """Test manual task digest message dispatch functionality."""
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
+    @mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
     def test_manual_task_digest_email_dispatch_mailgun_success(
         self,
         mock_mailgun_dispatcher: Mock,
@@ -80,9 +78,7 @@ class TestManualTaskDigestMessageDispatch:
         assert template_vars["upcoming_task_count"] == 7
         assert template_vars["total_task_count"] == 10
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
+    @mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
     def test_manual_task_digest_email_dispatch_with_logo(
         self,
         mock_mailgun_dispatcher: Mock,
@@ -131,9 +127,7 @@ class TestManualTaskDigestMessageDispatch:
         template_vars = email_for_action_type.template_variables
         assert template_vars["company_logo_url"] == "https://example.com/logo.png"
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
+    @mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
     def test_manual_task_digest_email_dispatch_zero_tasks(
         self,
         mock_mailgun_dispatcher: Mock,
@@ -210,9 +204,7 @@ class TestManualTaskDigestMessageDispatch:
 
         assert params_no_logo.company_logo_url is None
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
+    @mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
     def test_manual_task_digest_email_dispatch_special_characters(
         self,
         mock_mailgun_dispatcher: Mock,
@@ -256,9 +248,7 @@ class TestManualTaskDigestMessageDispatch:
         assert template_vars["vendor_contact_name"] == "María José García-López"
         assert template_vars["organization_name"] == "Acme Corp & Associates, LLC"
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
+    @mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
     def test_manual_task_digest_email_dispatch_with_custom_template(
         self,
         mock_mailgun_dispatcher: Mock,
@@ -319,9 +309,7 @@ class TestManualTaskDigestMessageDispatch:
         # Clean up
         custom_template.delete(db)
 
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
+    @mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
     def test_manual_task_digest_email_dispatch_uses_default_template(
         self,
         mock_mailgun_dispatcher: Mock,
@@ -382,11 +370,9 @@ class TestManualTaskDigestMessageDispatch:
         # Validate that URLs with the expected hostname are present in the email
         assert_url_hostname_present(email_for_action_type.body, "privacy.example.com")
 
+    @mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
-    )
-    @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.get_basic_messaging_template_by_type_or_default"
+        "fides.service.messaging.message_dispatch_service.get_basic_messaging_template_by_type_or_default"
     )
     def test_manual_task_digest_email_dispatch_fallback_to_html_template(
         self,

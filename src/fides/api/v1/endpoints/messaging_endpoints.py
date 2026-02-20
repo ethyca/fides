@@ -64,18 +64,6 @@ from fides.api.scope_registry import (
     MESSAGING_READ,
     MESSAGING_TEMPLATE_UPDATE,
 )
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
-from fides.api.service.messaging.messaging_crud_service import (
-    create_or_update_basic_templates,
-    create_or_update_messaging_config,
-    delete_messaging_config,
-    delete_template_by_id,
-    get_all_basic_messaging_templates,
-    get_default_template_by_type,
-    get_messaging_config_by_key,
-    get_template_by_id,
-    update_messaging_config,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
 from fides.api.v1.urn_registry import (
@@ -97,6 +85,18 @@ from fides.api.v1.urn_registry import (
 )
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.message_dispatch_service import dispatch_message
+from fides.service.messaging.messaging_crud_service import (
+    create_or_update_basic_templates,
+    create_or_update_messaging_config,
+    delete_messaging_config,
+    delete_template_by_id,
+    get_all_basic_messaging_templates,
+    get_default_template_by_type,
+    get_messaging_config_by_key,
+    get_template_by_id,
+    update_messaging_config,
+)
 
 CONFIG = get_config()
 

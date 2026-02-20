@@ -7,7 +7,7 @@ from fides.api.schemas.saas.async_polling_configuration import (
     PollingStatusRequest,
 )
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.service.async_dsr.handlers.polling_request_handler import (
+from fides.service.privacy_request.async_dsr.handlers.polling_request_handler import (
     PollingRequestHandler,
 )
 from tests.ops.test_helpers.saas_test_utils import MockAuthenticatedClient

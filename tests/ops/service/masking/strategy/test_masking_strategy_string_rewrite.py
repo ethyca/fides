@@ -1,7 +1,7 @@
 from fides.api.schemas.masking.masking_configuration import (
     StringRewriteMaskingConfiguration,
 )
-from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.service.privacy_request.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 

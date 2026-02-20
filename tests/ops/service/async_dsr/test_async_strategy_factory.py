@@ -1,13 +1,13 @@
 import pytest
 
 from fides.api.common_exceptions import NoSuchStrategyException, ValidationError
-from fides.api.service.async_dsr.strategies.async_dsr_strategy_callback import (
+from fides.service.privacy_request.async_dsr.strategies.async_dsr_strategy_callback import (
     AsyncCallbackStrategy,
 )
-from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
+from fides.service.privacy_request.async_dsr.strategies.async_dsr_strategy_factory import (
     get_strategy,
 )
-from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
+from fides.service.privacy_request.async_dsr.strategies.async_dsr_strategy_polling import (
     AsyncPollingStrategy,
 )
 
