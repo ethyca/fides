@@ -322,7 +322,7 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Prompt Explorer",
         path: routes.PROMPT_EXPLORER_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DEVELOPER_READ],
         requiresPlus: true,
       },
       {
