@@ -57,6 +57,7 @@ def validate_html_str(val: str) -> str:
         "i",
         "li",
         "ol",
+        "ul",
         "p",
         "pre",
         "q",
