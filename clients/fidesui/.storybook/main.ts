@@ -1,14 +1,9 @@
-import type { StorybookConfig } from "@storybook/react-vite";
+import { createRequire } from "module";
 import { dirname, join } from "path";
 
-/**
- * This function is used to resolve the absolute path of a package.
- * It is needed in projects that use Yarn PnP or are set up within a monorepo.
- * Might be able to depreciate this if everyone gets on a newer node version
- */
-// function getAbsolutePath(value: string): any {
-//   return dirname(require.resolve(join(value, "package.json")));
-// }
+import type { StorybookConfig } from "@storybook/react-vite";
+
+const require = createRequire(import.meta.url);
 const config: StorybookConfig = {
   refs: {
     "@chakra-ui/react": {
@@ -27,10 +22,29 @@ const config: StorybookConfig = {
     // Merge custom configuration into the default config
     const { mergeConfig } = await import("vite");
 
+    // Resolve the CJS entry for @chakra-ui/react because the ESM distribution
+    // (dist/esm/index.mjs) has broken relative imports referencing non-existent files.
+    const chakraCjsEntry = join(
+      dirname(require.resolve("@chakra-ui/react/package.json")),
+      "dist/cjs/index.cjs",
+    );
+
     return mergeConfig(config, {
-      // Add dependencies to pre-optimization
       plugins: [],
       esbuild: { jsx: "automatic" },
+      resolve: {
+        alias: {
+          "@chakra-ui/react": chakraCjsEntry,
+        },
+      },
+      optimizeDeps: {
+        // Mark msw as external during dep pre-bundling. The msw imports in
+        // @vitest/mocker (bundled with Storybook) are optional dynamic imports
+        // that only execute when msw is actively used for browser mocking.
+        esbuildOptions: {
+          external: ["msw", "msw/browser", "msw/core/http"],
+        },
+      },
     });
   },
 };
