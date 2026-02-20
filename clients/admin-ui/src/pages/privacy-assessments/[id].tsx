@@ -1171,7 +1171,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               <Tooltip
                 title={
                   !isComplete
-                    ? "Assessment must be 100% complete to enable compliance documentation format"
+                    ? "Assessment must be 100% complete to enable Compliance Documentation Format"
                     : undefined
                 }
               >
@@ -1181,11 +1181,19 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   onChange={(checked) => setIsExternalExport(checked)}
                 />
               </Tooltip>
-              <Text style={{ fontSize: 14 }}>
-                {isExternalExport
-                  ? "Compliance Documentation Format: Excludes executive summary, risk assessment, and supporting evidence."
-                  : "Internal Format: Includes executive summary, risk assessment, and supporting evidence."}
-              </Text>
+              <Tooltip
+                title={
+                  isExternalExport
+                    ? "Excludes executive summary, risk assessment, and supporting evidence"
+                    : "Includes executive summary, risk assessment, and supporting evidence"
+                }
+              >
+                <Text style={{ fontSize: 14, cursor: "help" }}>
+                  {isExternalExport
+                    ? "Compliance Documentation Format"
+                    : "Internal Format"}
+                </Text>
+              </Tooltip>
             </Flex>
           </div>
 
