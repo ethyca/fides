@@ -61,8 +61,6 @@ export const ThemeModeProvider = ({
     return getStoredMode() ?? defaultMode;
   });
 
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-
   const setMode = useCallback(
     (newMode: ThemeMode) => {
       if (locked) {
@@ -106,7 +104,6 @@ export const ThemeModeProvider = ({
 
   return (
     <div
-      ref={wrapperRef}
       {...{ [attribute]: effectiveMode }}
       style={wrapperStyle}
     >

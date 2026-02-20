@@ -24,36 +24,3 @@ export const ThemeModeSegmented = () => {
     />
   );
 };
-
-export const ThemeModeButton = () => {
-  const { mode, setMode } = useThemeMode();
-
-  const toggleMode = () => {
-    setMode(mode === "light" ? "dark" : "light");
-  };
-
-  const getIcon = () => {
-    if (mode === "dark") {
-      return <Icons.Asleep size={16} />;
-    }
-    return <Icons.Light size={16} />;
-  };
-
-  const getTooltipText = () => {
-    if (mode === "dark") {
-      return "Dark mode (click for light)";
-    }
-    return "Light mode (click for dark)";
-  };
-
-  return (
-    <Button
-      type="primary"
-      className="border-none bg-transparent hover:!bg-gray-700"
-      icon={getIcon()}
-      onClick={toggleMode}
-      aria-label={getTooltipText()}
-      title={getTooltipText()}
-    />
-  );
-};
