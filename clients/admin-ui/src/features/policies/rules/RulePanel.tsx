@@ -2,8 +2,8 @@ import { Flex, Form, Input, Select, Typography } from "fidesui";
 import { useMemo } from "react";
 
 import { InfoPopover } from "~/features/common/InfoPopover";
+import { useGetMaskingStrategiesQuery } from "~/features/policies/policy.slice";
 import { formatMaskingStrategyName } from "~/features/policies/utils/formatMaskingStrategyName";
-import { useGetMaskingStrategiesQuery } from "~/features/policy/policy.slice";
 import { ActionType, RuleResponse } from "~/types/api";
 
 const { Text } = Typography;
