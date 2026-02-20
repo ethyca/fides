@@ -50,17 +50,11 @@ export const darkAntTheme: ThemeConfig = {
       ...defaultAntTheme.components?.Card,
       boxShadow: "rgba(255, 255, 255, 1) 0px 5px 5px",
     },
-    Drawer: {
-      ...defaultAntTheme.components?.Drawer,
-    },
     Input: {
       colorBgContainer: "#1f1f1f",
     },
     Layout: {
       bodyBg: palette.FIDESUI_BG_MINOS,
-    },
-    Menu: {
-      ...defaultAntTheme.components?.Menu,
     },
     Select: {
       optionActiveBg: "#2a2a2a",
@@ -77,9 +71,6 @@ export const darkAntTheme: ThemeConfig = {
     },
     Transfer: {
       controlItemBgActiveHover: "#2a2a2a",
-    },
-    Typography: {
-      ...defaultAntTheme.components?.Typography,
     },
     Tag: {
       colorText: palette.FIDESUI_NEUTRAL_200,
