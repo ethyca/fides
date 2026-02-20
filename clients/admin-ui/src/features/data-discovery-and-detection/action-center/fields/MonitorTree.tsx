@@ -30,10 +30,12 @@ import {
   useLazyGetMonitorTreeAncestorsStatusesQuery,
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { StagedResourceTypeValue } from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
 
+import { DatastorePageSettings } from "../types";
 import {
+  DEFAULT_FILTER_STATUSES,
   MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
   MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
@@ -51,6 +53,7 @@ import {
   updateNodeStatus,
 } from "./treeUtils";
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
+import { intoDiffStatus } from "./utils";
 
 const mapResponseToTreeData = (
   data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
@@ -243,9 +246,19 @@ interface MonitorTreeProps
   selectedNodeKeys: Key[];
 }
 
-const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
+const MonitorTree = forwardRef<
+  MonitorTreeRef,
+  MonitorTreeProps & DatastorePageSettings
+>(
   (
-    { setSelectedNodeKeys, selectedNodeKeys, nodeActions, primaryAction },
+    {
+      setSelectedNodeKeys,
+      selectedNodeKeys,
+      nodeActions,
+      primaryAction,
+      showApproved,
+      showIgnored,
+    },
     ref,
   ) => {
     const router = useRouter();
@@ -281,6 +294,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           staged_resource_urn?: string;
           size: number;
           cursor?: string;
+          diff_status?: DiffStatus[];
         };
         fastUpdateFn: (
           data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
@@ -292,7 +306,6 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
         // Increment sequence for this node to track this request
         const currentSequence = (requestSequenceRef.current[nodeKey] ?? 0) + 1;
         requestSequenceRef.current[nodeKey] = currentSequence;
-
         // Trigger both queries simultaneously
         const fastQuery = trigger({
           ...queryParams,
@@ -330,7 +343,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           }
         });
       },
-      [trigger],
+      [trigger, showApproved, showIgnored],
     );
 
     const onLoadData = useCallback(
@@ -349,6 +362,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             queryParams: {
               monitor_config_id: monitorId,
               staged_resource_urn: nodeKey,
+              diff_status: [
+                ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
+                ...(showIgnored ? intoDiffStatus("Ignored") : []),
+                ...(showApproved ? intoDiffStatus("Approved") : []),
+              ],
               size: TREE_PAGE_SIZE,
             },
             fastUpdateFn: (data) => {
@@ -373,7 +391,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           resolve();
         });
       },
-      [fetchTreeDataWithDetails, monitorId],
+      [fetchTreeDataWithDetails, monitorId, showApproved, showIgnored],
     );
 
     const onLoadMore = useCallback(
@@ -399,6 +417,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             queryParams: {
               monitor_config_id: monitorId,
               staged_resource_urn: key,
+              diff_status: [
+                ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
+                ...(showIgnored ? intoDiffStatus("Ignored") : []),
+                ...(showApproved ? intoDiffStatus("Approved") : []),
+              ],
               size: TREE_PAGE_SIZE,
               cursor: currentNodePagination.cursor_end,
             },
@@ -434,7 +457,13 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           });
         }
       },
-      [nodePagination, fetchTreeDataWithDetails, monitorId],
+      [
+        nodePagination,
+        fetchTreeDataWithDetails,
+        monitorId,
+        showApproved,
+        showIgnored,
+      ],
     );
 
     /**
@@ -590,6 +619,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           nodeKey: "root",
           queryParams: {
             monitor_config_id: monitorId,
+            diff_status: [
+              ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
+              ...(showIgnored ? intoDiffStatus("Ignored") : []),
+              ...(showApproved ? intoDiffStatus("Approved") : []),
+            ],
             size: TREE_PAGE_SIZE,
           },
           fastUpdateFn: (data) => {
@@ -599,7 +633,45 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
       };
 
       getInitTreeData();
-    }, [fetchTreeDataWithDetails, monitorId, setTreeData, treeData.length]);
+    }, [
+      fetchTreeDataWithDetails,
+      monitorId,
+      setTreeData,
+      treeData.length,
+      showIgnored,
+      showApproved,
+    ]);
+
+    useEffect(() => {
+      const getInitTreeData = async () => {
+        // Only load if tree is empty
+        if (treeData.length > 0) {
+          return;
+        }
+
+        fetchTreeDataWithDetails({
+          nodeKey: "root",
+          queryParams: {
+            monitor_config_id: monitorId,
+            diff_status: [
+              ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
+              ...(showIgnored ? intoDiffStatus("Ignored") : []),
+              ...(showApproved ? intoDiffStatus("Approved") : []),
+            ],
+            size: TREE_PAGE_SIZE,
+          },
+          fastUpdateFn: (data) => {
+            setTreeData(mapResponseToTreeData(data));
+          },
+        });
+      };
+      setTreeData([]);
+
+      setExpandedKeys([]);
+      setNodePaginationState({});
+
+      getInitTreeData();
+    }, [showIgnored, showApproved]);
 
     return (
       <Flex gap="middle" vertical className="h-full">

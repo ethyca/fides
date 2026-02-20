@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { Icons } from "fidesui";
 import { NextPage } from "next";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 import {
   ACTION_CENTER_DATASTORE_MONITOR_ACTIVITY_ROUTE,
@@ -20,9 +20,8 @@ const DatastoreMonitorResultSystems: NextPage = () => {
   const params = useParams<{ monitorId: string }>();
   const [pageSettings, setPageSettings] = useState({
     showIgnored: false,
-    showApproved: false
-  })
-
+    showApproved: false,
+  });
 
   const monitorId = params?.monitorId
     ? decodeURIComponent(params.monitorId)
@@ -33,31 +32,57 @@ const DatastoreMonitorResultSystems: NextPage = () => {
     <ActionCenterLayout
       monitorId={monitorId}
       routeConfig={MONITOR_ACTION_CENTER_CONFIG}
-      pageSettings={
-        {
+      pageSettings={{
+        badgeProps: {
+          count: Object.values(pageSettings).flatMap((s) => (s ? [s] : []))
+            .length,
+          size: "small",
+        },
+        dropdownProps: {
           menu: {
-            onSelect: ((info) => setPageSettings({
-              showApproved: !!info.selectedKeys.includes('showApproved'),
-              showIgnored: !!info.selectedKeys.includes('showApproved')
-            })),
-            selectedKeys: Object.entries(pageSettings).flatMap(([key, value]) => value ? [key] : []),
-            selectable: true,
-            items: [{
-              key: "showIgnored",
-              label: "Show ignored",
-              icon: pageSettings.showIgnored && <Icons.Checkmark />
+            onDeselect: (info) => {
+              setPageSettings({
+                showApproved: info.selectedKeys.includes("showApproved")
+                  ? false
+                  : pageSettings.showApproved,
+                showIgnored: info.selectedKeys.includes("showIgnored")
+                  ? false
+                  : pageSettings.showIgnored,
+              });
             },
-            {
-              key: "showApproved",
-              label: "Show approved",
-              icon: pageSettings.showApproved && <Icons.Checkmark />
-            }]
-          }
-        }
-      }
-
+            onSelect: (info) => {
+              setPageSettings({
+                showApproved: info.selectedKeys.includes("showApproved")
+                  ? true
+                  : pageSettings.showApproved,
+                showIgnored: info.selectedKeys.includes("showIgnored")
+                  ? true
+                  : pageSettings.showIgnored,
+              });
+            },
+            selectedKeys: Object.entries(pageSettings).flatMap(
+              ([key, value]) => (value ? [key] : []),
+            ),
+            selectable: true,
+            items: [
+              {
+                key: "showIgnored",
+                label: "Show ignored",
+                icon: pageSettings.showIgnored && <Icons.Checkmark />,
+              },
+              {
+                key: "showApproved",
+                label: "Show approved",
+                icon: pageSettings.showApproved && <Icons.Checkmark />,
+              },
+            ],
+          },
+        },
+      }}
     >
-      {loading ? null : <ActionCenterFields monitorId={monitorId} />}
+      {loading ? null : (
+        <ActionCenterFields monitorId={monitorId} {...pageSettings} />
+      )}
     </ActionCenterLayout>
   );
 };

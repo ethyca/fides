@@ -204,6 +204,7 @@ export type {
 } from "antd/es/table/interface";
 export type {
   AvatarProps,
+  BadgeProps,
   ButtonProps,
   CheckboxProps,
   CollapseProps,
