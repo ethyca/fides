@@ -1754,6 +1754,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: asset_disclosure_include_types
       data_categories: [ system.operations ]
+    - name: resurface_behavior
+      data_categories: [ system.operations ]
   - name: privacyexperienceconfighistory
     description: 'Historical table to store all versions of Experience Config History for record keeping'
     fields:
@@ -1838,6 +1840,8 @@ dataset:
     - name: allow_vendor_asset_disclosure
       data_categories: [ system.operations ]
     - name: asset_disclosure_include_types
+      data_categories: [ system.operations ]
+    - name: resurface_behavior
       data_categories: [ system.operations ]
   - name: privacynoticetemplate
     data_categories: []
@@ -2744,6 +2748,8 @@ dataset:
     - name: allow_vendor_asset_disclosure
       data_categories: [ system.operations ]
     - name: asset_disclosure_include_types
+      data_categories: [ system.operations ]
+    - name: resurface_behavior
       data_categories: [ system.operations ]
   - name: experiencenotices
     description: 'The table that links Privacy Notices to Experience Configs (many-to-many)'
