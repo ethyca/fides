@@ -1,4 +1,4 @@
 type: Developer Experience
-description: Added BuildKit cache mounts to Dockerfile to speed up CI builds
+description: Optimized backend CI by skipping frontend build, adding Docker cache mounts, and parallelizing jobs
 pr: 7435
 labels: []
