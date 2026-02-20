@@ -22,7 +22,7 @@ def access_runner(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-    privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
+    privacy_request_proceed: bool = True,
 ) -> Dict[str, List[Row]]:
     """Run an access request using task-based execution."""
     run_access_request(
@@ -45,7 +45,7 @@ def erasure_runner(
     identity: Dict[str, Any],
     access_request_data: Dict[str, List[Row]],
     session: Session,
-    privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
+    privacy_request_proceed: bool = True,
 ) -> Dict[str, int]:
     """Run an erasure request using task-based execution."""
     run_erasure_request(
@@ -63,7 +63,7 @@ def consent_runner(
     connection_configs: List[ConnectionConfig],
     identity: Dict[str, Any],
     session: Session,
-    privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
+    privacy_request_proceed: bool = True,
 ) -> Dict[str, bool]:
     """Run a consent request using task-based execution."""
     run_consent_request(
