@@ -241,12 +241,12 @@ export const systemLinksHandlers = () => {
                   {
                     system_fides_key: "test_system_1",
                     system_name: "Test System 1",
-                    link_type: "dsr",
+                    link_type: SystemConnectionLinkType.DSR,
                   },
                   {
                     system_fides_key: "some_new_system",
                     system_name: "Some New System",
-                    link_type: "monitoring",
+                    link_type: SystemConnectionLinkType.MONITORING,
                   },
                 ]
               : [],

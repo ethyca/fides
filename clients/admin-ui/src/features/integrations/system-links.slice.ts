@@ -1,7 +1,9 @@
-import { baseApi } from "~/features/common/api.slice";
 import { PLUS_CONNECTION_API_ROUTE } from "~/constants";
-
-import { SystemConnectionLinkType, SystemLink } from "~/mocks/system-links/data";
+import { baseApi } from "~/features/common/api.slice";
+import {
+  SystemConnectionLinkType,
+  SystemLink,
+} from "~/mocks/system-links/data";
 
 export interface SetSystemLinksRequest {
   links: Array<{
@@ -16,7 +18,7 @@ export interface SystemLinksResponse {
 
 export const systemLinksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getSystemLinks: build.query<SystemLinksResponse, string>({
+    getSystemLinks: build.query<SystemLink[], string>({
       query: (connectionKey) => ({
         url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/system-links`,
         method: "GET",
@@ -68,4 +70,3 @@ export const {
   useSetSystemLinksMutation,
   useDeleteSystemLinkMutation,
 } = systemLinksApi;
-

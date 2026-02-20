@@ -17,6 +17,7 @@ import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrat
 import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
+import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
 import { ConnectionSystemTypeMap, IntegrationFeature } from "~/types/api";
 
 interface UseFeatureBasedTabsProps {
@@ -137,6 +138,12 @@ export const useFeatureBasedTabs = ({
         ),
       });
     }
+
+    tabItems.push({
+      label: "Linked systems",
+      key: "linked-systems",
+      children: <IntegrationLinkedSystems connection={connection!} />,
+    });
 
     // Add conditional tabs based on enabled features
     if (enabledFeatures?.includes(IntegrationFeature.DATA_SYNC)) {

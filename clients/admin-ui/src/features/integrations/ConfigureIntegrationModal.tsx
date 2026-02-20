@@ -2,10 +2,11 @@ import {
   Button,
   ChakraUseDisclosureReturn as UseDisclosureReturn,
 } from "fidesui";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import FormModal from "~/features/common/modals/FormModal";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
+import { useGetSystemLinksQuery } from "~/features/integrations/system-links.slice";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse } from "~/types/api";
@@ -30,6 +31,24 @@ const ConfigureIntegrationModal = ({
     connection.connection_type,
     connection?.saas_config?.type as SaasConnectionTypes,
   );
+
+  // Fetch currently linked systems for editing
+  const { data: systemLinksData } = useGetSystemLinksQuery(connection.key, {
+    skip: !connection.key,
+  });
+
+  // Get the currently linked system (prefer monitoring link type, fallback to first link)
+  const initialSystemFidesKey = useMemo(() => {
+    if (!systemLinksData || systemLinksData.length === 0) {
+      return undefined;
+    }
+    const monitoringLink = systemLinksData.find(
+      (link) => link.link_type === "monitoring",
+    );
+    return (
+      monitoringLink?.system_fides_key || systemLinksData[0]?.system_fides_key
+    );
+  }, [systemLinksData]);
 
   const handleSave = () => {
     if (formState && formState.submitForm) {
@@ -67,6 +86,7 @@ const ConfigureIntegrationModal = ({
         onClose={onClose}
         description={description}
         onFormStateChange={setFormState}
+        initialSystemFidesKey={initialSystemFidesKey}
       />
     </FormModal>
   );

@@ -2,7 +2,7 @@ import {
   ChakraBox as Box,
   ChakraVStack as VStack,
   PageSpinner,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
@@ -26,10 +26,7 @@ import {
 } from "~/features/datastore-connections";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
-import {
-  useGetSystemLinksQuery,
-  useSetSystemLinksMutation,
-} from "~/features/integrations/system-links.slice";
+import { useSetSystemLinksMutation } from "~/features/integrations/system-links.slice";
 import {
   useGetSystemsQuery,
   usePatchSystemConnectionConfigsMutation,
@@ -93,6 +90,7 @@ const ConfigureIntegrationForm = ({
   onClose,
   description,
   onFormStateChange,
+  initialSystemFidesKey,
 }: {
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
@@ -104,6 +102,7 @@ const ConfigureIntegrationForm = ({
     submitForm: () => void;
     loading: boolean;
   }) => void;
+  initialSystemFidesKey?: string;
 }) => {
   const [
     patchConnectionSecretsMutationTrigger,
@@ -126,14 +125,6 @@ const ConfigureIntegrationForm = ({
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier, {
       skip: !hasSecrets,
     });
-
-  // Fetch currently linked systems for editing
-  const { data: systemLinksData } = useGetSystemLinksQuery(
-    connection?.key || "",
-    {
-      skip: !connection?.key,
-    },
-  );
 
   // System select search state
   const [systemSearchValue, setSystemSearchValue] = useState<string>();
@@ -191,24 +182,10 @@ const ConfigureIntegrationForm = ({
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secrets);
 
-  // Get the currently linked system for editing (prefer monitoring link type, fallback to first link)
-  const currentLinkedSystem = useMemo(() => {
-    if (!systemLinksData?.links || systemLinksData.links.length === 0) {
-      return undefined;
-    }
-    const monitoringLink = systemLinksData.links.find(
-      (link) => link.link_type === "monitoring",
-    );
-    return (
-      monitoringLink?.system_fides_key ||
-      systemLinksData.links[0]?.system_fides_key
-    );
-  }, [systemLinksData]);
-
   const initialValues: FormValues = {
     name: connection?.name ?? "",
     description: connection?.description ?? "",
-    system_fides_key: currentLinkedSystem,
+    system_fides_key: initialSystemFidesKey,
     ...(hasSecrets && {
       secrets: mapValues(secrets?.properties, (s, key) => {
         const value = connection?.secrets?.[key] ?? s.default;
@@ -222,7 +199,7 @@ const ConfigureIntegrationForm = ({
     dataset: initialDatasets,
   };
 
-  const toast = useToast();
+  const messageApi = useMessage();
 
   const isEditing = !!connection;
   const isSaas = connectionOption.type === SystemType.SAAS;
@@ -290,7 +267,7 @@ const ConfigureIntegrationForm = ({
           isEditing ? "updating" : "creating"
         } this integration. Please try again.`,
       );
-      toast({ status: "error", description: patchErrorMsg });
+      messageApi.error(patchErrorMsg);
       return;
     }
     if (!hasSecrets || !values.secrets) {
@@ -309,23 +286,15 @@ const ConfigureIntegrationForm = ({
             },
           }).unwrap();
         } catch (error) {
-          // Log error but don't fail the form submission
-          // eslint-disable-next-line no-console
-          console.error("Failed to link system:", error);
-          toast({
-            status: "warning",
-            description:
-              "Integration saved but system linking failed. You can link it later.",
-          });
+          messageApi.error(
+            "Integration saved but system linking failed. You can link it later.",
+          );
         }
       }
 
-      toast({
-        status: "success",
-        description: `Integration ${
-          isEditing ? "updated" : "created"
-        } successfully`,
-      });
+      messageApi.success(
+        `Integration ${isEditing ? "updated" : "created"} successfully`,
+      );
 
       onClose();
 
@@ -365,19 +334,16 @@ const ConfigureIntegrationForm = ({
             isEditing ? "updating" : "creating"
           } this integration's secret.  Please try again.`,
         );
-        toast({ status: "error", description: secretsErrorMsg });
+        messageApi.error(secretsErrorMsg);
         return;
       }
     }
 
-    toast({
-      status: "success",
-      description: `Integration secret ${
-        isEditing ? "updated" : "created"
-      } successfully`,
-    });
+    messageApi.success(
+      `Integration secret ${isEditing ? "updated" : "created"} successfully`,
+    );
 
-    // Link system if provided (using system-links API)
+    // If a system is provided, link it to the integration
     if (values.system_fides_key && connectionPayload.key) {
       try {
         await setSystemLinks({
@@ -395,11 +361,9 @@ const ConfigureIntegrationForm = ({
         // Log error but don't fail the form submission
         // eslint-disable-next-line no-console
         console.error("Failed to link system:", error);
-        toast({
-          status: "warning",
-          description:
-            "Integration saved but system linking failed. You can link it later.",
-        });
+        messageApi.error(
+          "Failed to link this integration to a system.  The integration was saved, please try again.",
+        );
       }
     }
 

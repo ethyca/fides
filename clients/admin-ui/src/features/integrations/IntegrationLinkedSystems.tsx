@@ -42,7 +42,7 @@ const IntegrationLinkedSystems = ({
   const [deleteSystemLink, { isLoading: isDeletingLink }] =
     useDeleteSystemLinkMutation();
 
-  const linkedSystems = systemLinksData?.links || [];
+  const linkedSystems = systemLinksData || [];
 
   const handleUnlink = useCallback(
     async (systemFidesKey: string, linkType: SystemConnectionLinkType) => {

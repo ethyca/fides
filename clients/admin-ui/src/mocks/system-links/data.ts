@@ -2,7 +2,10 @@
  * Mock data types for system links
  */
 
-export type SystemConnectionLinkType = "dsr" | "monitoring";
+export enum SystemConnectionLinkType {
+  DSR = "dsr",
+  MONITORING = "monitoring",
+}
 
 export interface SystemLink {
   system_fides_key: string;
