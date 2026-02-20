@@ -1,7 +1,7 @@
 """add is_leaf IS TRUE index to stagedresource and ancestor_urn index to stagedresourceancestor
 
 Revision ID: 29acbb0689de
-Revises: cc9a5690f9e7
+Revises: 5b2fbaaa7d6d
 Create Date: 2026-02-13 01:00:04.789019
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision = '29acbb0689de'
-down_revision = 'cc9a5690f9e7'
+down_revision = '5b2fbaaa7d6d'
 branch_labels = None
 depends_on = None
 
