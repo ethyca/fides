@@ -15,7 +15,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.collection_util import Row
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
@@ -134,7 +133,7 @@ def mailchimp_member_update(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_mailchimp_override_access_request_task(
     db,
@@ -217,7 +216,7 @@ async def test_mailchimp_override_access_request_task(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_mailchimp_erasure_request_task(
     db,
@@ -258,7 +257,7 @@ async def test_mailchimp_erasure_request_task(
         graph,
         [mailchimp_override_connection_config],
         {"email": mailchimp_identity_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        {},
         db,
     )
 

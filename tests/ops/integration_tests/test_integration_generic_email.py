@@ -23,7 +23,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
@@ -96,7 +96,7 @@ async def test_erasure_email(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 @mock.patch(
     "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
@@ -174,7 +174,7 @@ async def test_erasure_email_property_specific_messaging(
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_erasure_email_no_messaging_config(
     mock_mailgun_dispatcher: Mock,
@@ -228,7 +228,7 @@ async def test_erasure_email_no_messaging_config(
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_erasure_email_no_email_for_access_and_erasure_policy(
     mock_mailgun_dispatcher: Mock,
@@ -281,7 +281,7 @@ async def test_erasure_email_no_email_for_access_and_erasure_policy(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_erasure_email_no_write_permissions(
     db,
@@ -326,7 +326,7 @@ async def test_erasure_email_no_write_permissions(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_erasure_email_no_updates_needed(
     db,
@@ -371,7 +371,7 @@ async def test_erasure_email_no_updates_needed(
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_erasure_email_disabled_connector(
     mock_mailgun_dispatcher: Mock,
@@ -423,7 +423,7 @@ async def test_erasure_email_disabled_connector(
 @mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_erasure_email_unsupported_identity(
     mock_mailgun_dispatcher: Mock,

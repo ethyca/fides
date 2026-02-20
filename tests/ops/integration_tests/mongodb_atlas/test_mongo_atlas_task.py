@@ -19,7 +19,6 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.service.connectors import get_connector
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import get_cached_data_for_erasures
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match, erasure_policy, field
 from tests.ops.task.traversal_data import (
@@ -69,7 +68,7 @@ def create_atlas_datasets(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_combined_erasure_task_atlas(
     db,
@@ -184,7 +183,7 @@ async def test_combined_erasure_task_atlas(
         graph,
         [integration_mongodb_atlas_config, integration_postgres_config],
         {"email": seed_email},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
 
@@ -327,7 +326,7 @@ async def test_combined_erasure_task_atlas(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_mongodb_atlas_erasure_task(
     db,
@@ -402,7 +401,7 @@ async def test_mongodb_atlas_erasure_task(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_access_mongodb_atlas_task(
     db,
@@ -455,7 +454,7 @@ async def test_access_mongodb_atlas_task(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_composite_key_erasure_atlas(
     db,
@@ -559,7 +558,7 @@ async def test_composite_key_erasure_atlas(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_access_erasure_type_conversion_atlas(
     db,
@@ -645,7 +644,7 @@ async def test_access_erasure_type_conversion_atlas(
         DatasetGraph(dataset),
         [integration_mongodb_atlas_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
 
@@ -660,7 +659,7 @@ async def test_access_erasure_type_conversion_atlas(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_object_querying_mongo_atlas(
     db,
@@ -805,66 +804,6 @@ async def test_object_querying_mongo_atlas(
 @pytest.mark.integration_mongodb_atlas
 @pytest.mark.integration_external
 @pytest.mark.asyncio
-async def test_get_cached_data_for_erasures_atlas(
-    integration_postgres_config,
-    integration_mongodb_atlas_config,
-    example_datasets,
-    policy,
-    db,
-    use_dsr_2_0,
-    privacy_request,
-    seed_mongo_sample_data,
-    unique_database_name,
-) -> None:
-    """Test DSR 2.0 cached data functionality with MongoDB Atlas"""
-
-    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-        integration_postgres_config,
-        integration_mongodb_atlas_config,
-        unique_database_name,
-    )
-    graph = DatasetGraph(mongo_dataset, postgres_dataset)
-
-    access_request_results = access_runner_tester(
-        privacy_request,
-        policy,
-        graph,
-        [integration_mongodb_atlas_config, integration_postgres_config],
-        {"email": "customer-1@example.com"},
-        db,
-    )
-
-    cached_data_for_erasures = get_cached_data_for_erasures(privacy_request.id)
-
-    # Cached raw results preserve the indices
-    assert cached_data_for_erasures[f"{unique_database_name}:conversations"][0][
-        "thread"
-    ] == [
-        {
-            "comment": "com_0001",
-            "message": "hello, testing in-flight chat feature",
-            "chat_name": "John C",
-            "ccn": "123456789",
-        },
-        "FIDESOPS_DO_NOT_MASK",
-    ]
-
-    # The access request results are filtered on array data, because it was an entrypoint into the node.
-    assert access_request_results[f"{unique_database_name}:conversations"][0][
-        "thread"
-    ] == [
-        {
-            "comment": "com_0001",
-            "message": "hello, testing in-flight chat feature",
-            "chat_name": "John C",
-            "ccn": "123456789",
-        }
-    ]
-
-
-@pytest.mark.integration_mongodb_atlas
-@pytest.mark.integration_external
-@pytest.mark.asyncio
 async def test_get_saved_data_for_erasures_3_0_atlas(
     integration_postgres_config,
     integration_mongodb_atlas_config,
@@ -925,7 +864,7 @@ async def test_get_saved_data_for_erasures_3_0_atlas(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_return_all_elements_config_access_request_atlas(
     db,
@@ -988,7 +927,7 @@ async def test_return_all_elements_config_access_request_atlas(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_return_all_elements_config_erasure_atlas(
     db,
@@ -1047,7 +986,7 @@ async def test_return_all_elements_config_erasure_atlas(
         graph,
         [integration_mongodb_atlas_config, integration_postgres_config],
         {"email": seed_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        {},
         db,
     )
 
@@ -1080,7 +1019,7 @@ async def test_return_all_elements_config_erasure_atlas(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_array_querying_mongo_atlas(
     db,

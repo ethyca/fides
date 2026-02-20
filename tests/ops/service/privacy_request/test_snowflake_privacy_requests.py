@@ -87,7 +87,7 @@ def snowflake_resources_with_namespace_meta(
 @pytest.mark.integration_snowflake
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_access_request_snowflake(
     snowflake_resources,
@@ -126,7 +126,7 @@ def test_create_and_process_access_request_snowflake(
 @pytest.mark.integration_snowflake
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_snowflake(
     snowflake_resources,
@@ -166,7 +166,7 @@ def test_create_and_process_erasure_request_snowflake(
 @pytest.mark.integration_snowflake
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_access_request_snowflake_with_namespace_meta(
     snowflake_resources_with_namespace_meta,
@@ -205,7 +205,7 @@ def test_create_and_process_access_request_snowflake_with_namespace_meta(
 @pytest.mark.integration_snowflake
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_snowflake_with_namespace_meta(
     snowflake_resources_with_namespace_meta,

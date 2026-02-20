@@ -12,7 +12,7 @@ from ...conftest import access_runner_tester, erasure_runner_tester
 @pytest.mark.integration_bigquery
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 @pytest.mark.asyncio
 async def test_bigquery_nested_field_update(
@@ -103,7 +103,7 @@ async def test_bigquery_nested_field_update(
 @pytest.mark.integration_bigquery
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 @pytest.mark.asyncio
 async def test_bigquery_deeply_nested_field_update(

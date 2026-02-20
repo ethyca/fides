@@ -19,7 +19,6 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import RequestTask
 from fides.api.service.connectors import get_connector
 from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import get_cached_data_for_erasures
 
 from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import assert_rows_match, erasure_policy, field
@@ -36,7 +35,7 @@ empty_policy = Policy()
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_combined_erasure_task(
     db,
@@ -137,7 +136,7 @@ async def test_combined_erasure_task(
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
 
@@ -269,7 +268,7 @@ async def test_combined_erasure_task(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_mongo_erasure_task(
     db,
@@ -310,7 +309,7 @@ async def test_mongo_erasure_task(
         graph,
         [integration_mongodb_config],
         {"email": seed_email},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
     assert v == {
@@ -326,7 +325,7 @@ async def test_mongo_erasure_task(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_access_mongo_task(
     db,
@@ -447,7 +446,7 @@ async def test_composite_key_erasure(
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
 
@@ -548,7 +547,7 @@ async def test_access_erasure_type_conversion(
         DatasetGraph(dataset),
         [integration_mongodb_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
 
@@ -559,7 +558,7 @@ async def test_access_erasure_type_conversion(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_object_querying_mongo(
     db,
@@ -686,53 +685,6 @@ async def test_object_querying_mongo(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_get_cached_data_for_erasures(
-    integration_postgres_config,
-    integration_mongodb_config,
-    policy,
-    db,
-    use_dsr_2_0,
-    privacy_request,
-) -> None:
-    mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-        integration_postgres_config, integration_mongodb_config
-    )
-    graph = DatasetGraph(mongo_dataset, postgres_dataset)
-
-    access_request_results = access_runner_tester(
-        privacy_request,
-        policy,
-        graph,
-        [integration_mongodb_config, integration_postgres_config],
-        {"email": "customer-1@example.com"},
-        db,
-    )
-    cached_data_for_erasures = get_cached_data_for_erasures(privacy_request.id)
-
-    # Cached raw results preserve the indices
-    assert cached_data_for_erasures["mongo_test:conversations"][0]["thread"] == [
-        {
-            "comment": "com_0001",
-            "message": "hello, testing in-flight chat feature",
-            "chat_name": "John C",
-            "ccn": "123456789",
-        },
-        "FIDESOPS_DO_NOT_MASK",
-    ]
-
-    # The access request results are filtered on array data, because it was an entrypoint into the node.
-    assert access_request_results["mongo_test:conversations"][0]["thread"] == [
-        {
-            "comment": "com_0001",
-            "message": "hello, testing in-flight chat feature",
-            "chat_name": "John C",
-            "ccn": "123456789",
-        }
-    ]
-
-
-@pytest.mark.integration
-@pytest.mark.asyncio
 async def test_get_saved_data_for_erasures_3_0(
     integration_postgres_config,
     integration_mongodb_config,
@@ -786,7 +738,7 @@ async def test_get_saved_data_for_erasures_3_0(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_return_all_elements_config_access_request(
     db,
@@ -847,7 +799,7 @@ async def test_return_all_elements_config_access_request(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_return_all_elements_config_erasure(
     db,
@@ -902,7 +854,7 @@ async def test_return_all_elements_config_erasure(
         graph,
         [integration_mongodb_config, integration_postgres_config],
         {"email": seed_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        {},
         db,
     )
 
@@ -934,7 +886,7 @@ async def test_return_all_elements_config_erasure(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_array_querying_mongo(
     db,

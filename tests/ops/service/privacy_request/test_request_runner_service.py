@@ -88,11 +88,6 @@ class TestManualFinalization:
                 "enable_erasure_request_finalization_required",
                 "privacy_request_erasure_pending",
             ),
-            (
-                "use_dsr_2_0",
-                "enable_erasure_request_finalization_required",
-                "privacy_request_erasure_pending",
-            ),
         ],
     )
     def test_mark_as_requires_manual_finalization_if_config_true(
@@ -124,11 +119,6 @@ class TestManualFinalization:
                 "disable_erasure_request_finalization_required",
                 "privacy_request_erasure_pending",
             ),
-            (
-                "use_dsr_2_0",
-                "disable_erasure_request_finalization_required",
-                "privacy_request_erasure_pending",
-            ),
         ],
     )
     def test_no_manual_finalization_if_config_false(
@@ -155,11 +145,6 @@ class TestManualFinalization:
         [
             (
                 "use_dsr_3_0",
-                "enable_erasure_request_finalization_required",
-                "privacy_request_requires_manual_finalization",
-            ),
-            (
-                "use_dsr_2_0",
                 "enable_erasure_request_finalization_required",
                 "privacy_request_requires_manual_finalization",
             ),
@@ -210,17 +195,7 @@ def privacy_request_complete_email_notification_enabled(db):
             MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
         ),
         (
-            "use_dsr_2_0",
-            "privacy_request_status_pending",
-            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS,
-        ),
-        (
             "use_dsr_3_0",
-            "privacy_request_with_consent_policy",
-            MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
-        ),
-        (
-            "use_dsr_2_0",
             "privacy_request_with_consent_policy",
             MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT,
         ),
@@ -252,7 +227,7 @@ def test_completion_email_sent_for_request(
 @mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_consent_completion_skips_email_when_no_email(
     mock_email_dispatch: Mock,
@@ -303,7 +278,7 @@ def test_consent_completion_skips_email_when_no_email(
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_start_processing_sets_started_processing_at(
     upload_mock: Mock,
@@ -335,7 +310,7 @@ def test_start_processing_sets_started_processing_at(
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_start_processing_doesnt_overwrite_started_processing_at(
     upload_mock: Mock,
@@ -370,7 +345,7 @@ def test_start_processing_doesnt_overwrite_started_processing_at(
 )
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_halts_proceeding_if_cancelled(
     upload_access_results_mock,
@@ -407,7 +382,7 @@ def test_halts_proceeding_if_cancelled(
 @mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_from_graph_resume_does_not_run_pre_webhooks(
     run_erasure,
@@ -783,7 +758,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.dispatch_message"
@@ -831,7 +806,7 @@ class TestPrivacyRequestsEmailNotifications:
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_email_complete_send_access(
         self,
@@ -874,7 +849,7 @@ class TestPrivacyRequestsEmailNotifications:
     @pytest.mark.integration
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.dispatch_message"
@@ -950,7 +925,7 @@ class TestPrivacyRequestsEmailNotifications:
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_email_complete_send_access_no_messaging_config(
         self,
@@ -998,7 +973,7 @@ class TestPrivacyRequestsEmailNotifications:
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_email_complete_send_access_no_email_identity(
         self,
@@ -1045,7 +1020,7 @@ class TestPrivacyRequestsManualWebhooks:
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_privacy_request_needs_manual_input_key_in_cache(
         self,
@@ -1082,7 +1057,7 @@ class TestPrivacyRequestsManualWebhooks:
     )
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_manual_input_required_for_erasure_only_policies(
         self,
@@ -1118,7 +1093,7 @@ class TestPrivacyRequestsManualWebhooks:
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_pass_on_manually_added_input(
         self,
@@ -1155,7 +1130,7 @@ class TestPrivacyRequestsManualWebhooks:
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_pass_on_partial_manually_added_input(
         self,
@@ -1196,7 +1171,7 @@ class TestPrivacyRequestsManualWebhooks:
 
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     def test_pass_on_empty_confirmed_input(
@@ -1239,7 +1214,7 @@ class TestPrivacyRequestsManualWebhooks:
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_multiple_manual_webhooks(
         self,
@@ -1322,7 +1297,7 @@ class TestPrivacyRequestsManualWebhooks:
 )
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 class TestPrivacyRequestAttachments:
     """Tests for attachments associated with privacy requests)"""
@@ -1965,7 +1940,7 @@ class TestConsentManualTaskIntegration:
 class TestConsentEmailStep:
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_privacy_request_completes_if_no_consent_email_send_needed(
         self,
@@ -2000,7 +1975,7 @@ class TestConsentEmailStep:
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_privacy_request_is_put_in_awaiting_email_send_status_old_workflow(
         self,
@@ -2035,7 +2010,7 @@ class TestConsentEmailStep:
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_privacy_request_is_put_in_awaiting_email_new_workflow(
         self,
@@ -2171,7 +2146,7 @@ class TestConsentEmailStep:
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_skipped_batch_email_send_updates_privacy_preferences_with_system_status(
         self,
@@ -2215,7 +2190,7 @@ class TestConsentEmailStep:
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_needs_batch_email_send_new_workflow(
         self,
@@ -2308,7 +2283,7 @@ class TestAsyncCallbacks:
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_async_callback_access_request(
         self,
@@ -2335,55 +2310,46 @@ class TestAsyncCallbacks:
         )
         db.refresh(pr)
 
-        if dsr_version == "use_dsr_2_0":
-            # Async Access Requests not supported for DSR 2.0 - the given
-            # node cannot be paused
-            assert pr.status == PrivacyRequestStatus.complete
-            return
+        assert pr.status == PrivacyRequestStatus.in_processing
 
-        if dsr_version == "use_dsr_3_0":
-            assert pr.status == PrivacyRequestStatus.in_processing
+        request_tasks = pr.access_tasks
+        assert request_tasks[0].status == ExecutionLogStatus.complete
 
-            request_tasks = pr.access_tasks
-            assert request_tasks[0].status == ExecutionLogStatus.complete
+        # SaaS Request was marked as needing async results, so the Request
+        # Task was put in a paused state
+        assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
+        assert request_tasks[1].collection_address == "saas_async_callback_config:user"
 
-            # SaaS Request was marked as needing async results, so the Request
-            # Task was put in a paused state
-            assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
-            assert (
-                request_tasks[1].collection_address == "saas_async_callback_config:user"
-            )
+        # Terminator task is downstream so it is still in a pending state
+        assert request_tasks[2].status == ExecutionLogStatus.pending
 
-            # Terminator task is downstream so it is still in a pending state
-            assert request_tasks[2].status == ExecutionLogStatus.pending
-
-            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
-            auth_header = {"Authorization": "Bearer " + jwe_token}
-            # Post to callback URL to supply access results async
-            # This requeues task and proceeds downstream
-            api_client.post(
-                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
-                headers=auth_header,
-                json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
-            )
-            db.refresh(pr)
-            assert pr.status == PrivacyRequestStatus.complete
-            assert pr.get_raw_access_results() == {
-                "saas_async_callback_config:user": [
-                    {"id": 1, "user_id": "abcde", "state": "VA"}
-                ]
+        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+        auth_header = {"Authorization": "Bearer " + jwe_token}
+        # Post to callback URL to supply access results async
+        # This requeues task and proceeds downstream
+        api_client.post(
+            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+            headers=auth_header,
+            json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+        )
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
+        assert pr.get_raw_access_results() == {
+            "saas_async_callback_config:user": [
+                {"id": 1, "user_id": "abcde", "state": "VA"}
+            ]
+        }
+        # User data supplied async was filtered before being returned to the end user
+        assert pr.get_filtered_final_upload() == {
+            "access_request_rule": {
+                "saas_async_callback_config:user": [{"state": "VA", "id": 1}]
             }
-            # User data supplied async was filtered before being returned to the end user
-            assert pr.get_filtered_final_upload() == {
-                "access_request_rule": {
-                    "saas_async_callback_config:user": [{"state": "VA", "id": 1}]
-                }
-            }
+        }
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_async_callback_erasure_request(
         self,
@@ -2410,25 +2376,24 @@ class TestAsyncCallbacks:
             task_timeout=120,
         )
 
-        if dsr_version == "use_dsr_3_0":
-            # Erasure task is also expected async results and is now paused
-            assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
-            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
-            auth_header = {"Authorization": "Bearer " + jwe_token}
-            # Post to callback URL to supply erasure results async
-            # This requeues task and proceeds downstream to complete privacy request
-            response = api_client.post(
-                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
-                headers=auth_header,
-                json={"rows_masked": 2},
-            )
-            assert response.status_code == 200
+        # Erasure task is also expected async results and is now paused
+        assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
+        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+        auth_header = {"Authorization": "Bearer " + jwe_token}
+        # Post to callback URL to supply erasure results async
+        # This requeues task and proceeds downstream to complete privacy request
+        response = api_client.post(
+            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+            headers=auth_header,
+            json={"rows_masked": 2},
+        )
+        assert response.status_code == 200
 
-            db.refresh(pr)
-            assert pr.status == PrivacyRequestStatus.complete
+        db.refresh(pr)
+        assert pr.status == PrivacyRequestStatus.complete
 
-            assert pr.erasure_tasks[1].rows_masked == 2
-            assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
+        assert pr.erasure_tasks[1].rows_masked == 2
+        assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
 
 
 class TestDatasetReferenceValidation:
@@ -2438,7 +2403,7 @@ class TestDatasetReferenceValidation:
     )
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_dataset_reference_validation_success(
         self,
@@ -2482,7 +2447,7 @@ class TestDatasetReferenceValidation:
     )
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_dataset_reference_validation_error(
         self,
@@ -2535,7 +2500,7 @@ class TestDatasetReferenceValidation:
 class TestSkipCollectionsWithOptionalIdentities:
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_skip_collections_with_optional_identities(
         self,

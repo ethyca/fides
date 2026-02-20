@@ -3,7 +3,6 @@ import pytest
 from fides.api.graph.graph import DatasetGraph
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_task import get_cached_data_for_erasures
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
@@ -17,7 +16,7 @@ def test_mailchimp_connection_test(mailchimp_connection_config) -> None:
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_mailchimp_access_request_task(
     db,
@@ -99,7 +98,7 @@ async def test_mailchimp_access_request_task(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_mailchimp_erasure_request_task(
     db,
@@ -140,7 +139,7 @@ async def test_mailchimp_erasure_request_task(
         graph,
         [mailchimp_connection_config],
         {"email": mailchimp_identity_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        {},
         db,
     )
 

@@ -15,7 +15,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @pytest.mark.serial
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_2_0", "use_dsr_3_0"],
+    ["use_dsr_3_0"],
 )
 @pytest.mark.parametrize(
     "bigquery_fixtures",
@@ -101,7 +101,7 @@ def test_create_and_process_access_request_bigquery(
 @pytest.mark.serial
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_2_0", "use_dsr_3_0"],
+    ["use_dsr_3_0"],
 )
 @pytest.mark.parametrize(
     "bigquery_fixtures",
@@ -205,7 +205,7 @@ def test_create_and_process_erasure_request_bigquery(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
-@pytest.mark.parametrize("dsr_version", ["use_dsr_2_0", "use_dsr_3_0"])
+@pytest.mark.parametrize("dsr_version", ["use_dsr_3_0"])
 @pytest.mark.parametrize(
     "scenario,expected_status",
     [
@@ -283,7 +283,7 @@ def test_bigquery_missing_tables_handling(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
-@pytest.mark.parametrize("dsr_version", ["use_dsr_2_0", "use_dsr_3_0"])
+@pytest.mark.parametrize("dsr_version", ["use_dsr_3_0"])
 @pytest.mark.xfail(reason="BigQuery integration test failures")
 def test_bigquery_missing_tables_handling_erasure_leaf_collection(
     db,
@@ -352,7 +352,7 @@ def test_bigquery_missing_tables_handling_erasure_leaf_collection(
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.serial
-@pytest.mark.parametrize("dsr_version", ["use_dsr_2_0", "use_dsr_3_0"])
+@pytest.mark.parametrize("dsr_version", ["use_dsr_3_0"])
 @pytest.mark.xfail(reason="BigQuery integration test failures")
 def test_bigquery_missing_tables_handling_erasure_dependency_collection(
     db,

@@ -222,7 +222,7 @@ def test_limiter_times_out_when_bucket_full() -> None:
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_rate_limiter_full_integration(
     db,

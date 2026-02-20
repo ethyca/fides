@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
-from fides.api.task.graph_task import get_cached_data_for_erasures
 
 from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import assert_rows_match, erasure_policy
@@ -17,7 +16,7 @@ from ..task.traversal_data import integration_scylladb_graph
 class TestScyllaDSRs:
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_scylladb_access_request_task_no_keyspace_dsr2(
         self,
@@ -87,7 +86,7 @@ class TestScyllaDSRs:
 
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_2_0", "use_dsr_3_0"],
+        ["use_dsr_3_0"],
     )
     async def test_scylladb_access_request_task(
         self,
@@ -143,7 +142,7 @@ class TestScyllaDSRs:
 
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_2_0", "use_dsr_3_0"],
+        ["use_dsr_3_0"],
     )
     async def test_scylladb_erasure_task(
         self,
@@ -180,7 +179,7 @@ class TestScyllaDSRs:
             graph,
             [integration_scylladb_config_with_keyspace],
             {"email": seed_email},
-            get_cached_data_for_erasures(privacy_request.id),
+            {},
             db,
         )
         assert results == {

@@ -67,7 +67,7 @@ def redshift_resources(
 @pytest.mark.integration_redshift
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_access_request_redshift(
     redshift_resources,
@@ -115,7 +115,7 @@ def test_create_and_process_access_request_redshift(
 @pytest.mark.integration_redshift
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_redshift(
     redshift_example_test_dataset_config,

@@ -4123,42 +4123,10 @@ def served_notice_history(
     pref_1.delete(db)
 
 
-# TODO: remove this fixture when we get rid of DSR 2.0
 @pytest.fixture(scope="function")
 def use_dsr_3_0():
-    """DSR 3.0 is now the default - this fixture is kept for test compatibility."""
-    # DSR 3.0 is now always used for new requests
+    """No-op fixture kept for backward compatibility with fidesplus tests."""
     yield CONFIG
-
-
-@pytest.fixture(scope="function")
-def use_dsr_2_0():
-    """Force DSR 2.0 behavior by mocking the scheduler function."""
-
-    # Patch where the function is actually used in production code AND in test modules
-    with (
-        mock.patch(
-            "fides.api.task.graph_runners.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-        mock.patch(
-            "fides.api.task.graph_task.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-        mock.patch(
-            "tests.test_dsr_3_0_default.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-        mock.patch(
-            "tests.ops.integration_tests.saas.connector_runner.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-        mock.patch(
-            "tests.ops.task.test_execute_request_tasks.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-    ):
-        yield CONFIG
 
 
 @pytest.fixture()

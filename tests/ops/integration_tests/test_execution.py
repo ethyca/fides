@@ -20,7 +20,6 @@ from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.policy import CurrentStep
 from fides.api.schemas.privacy_request import CheckpointActionRequired
-from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
 
@@ -76,7 +75,7 @@ class TestDeleteCollection:
     )
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_delete_collection_before_new_request(
         self,
@@ -127,7 +126,7 @@ class TestDeleteCollection:
     @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     @pytest.mark.asyncio
     async def test_delete_collection_while_in_progress(
@@ -242,63 +241,32 @@ class TestDeleteCollection:
         integration_mongodb_config.secrets = {}
         integration_mongodb_config.save(db)
 
-        if "use_dsr_2_0" == dsr_version:
-            with pytest.raises(ValidationError):
-                access_runner_tester(
-                    privacy_request,
-                    policy,
-                    mongo_postgres_dataset_graph,
-                    [integration_postgres_config, integration_mongodb_config],
-                    {"email": "customer-4@example.com"},
-                    db,
-                )
-
-            execution_logs = get_sorted_execution_logs(db, privacy_request)
-            assert execution_logs == [
-                ("Dataset traversal", "complete"),
-                ("postgres_example_test_dataset:customer", "in_processing"),
-                ("postgres_example_test_dataset:customer", "complete"),
-                ("postgres_example_test_dataset:payment_card", "in_processing"),
-                ("postgres_example_test_dataset:payment_card", "complete"),
-                ("postgres_example_test_dataset:orders", "in_processing"),
-                ("postgres_example_test_dataset:orders", "complete"),
-                ("postgres_example_test_dataset:order_item", "in_processing"),
-                ("postgres_example_test_dataset:order_item", "complete"),
-                ("postgres_example_test_dataset:product", "in_processing"),
-                ("postgres_example_test_dataset:product", "complete"),
-                ("mongo_test:customer_details", "in_processing"),
-                ("mongo_test:customer_details", "error"),
-            ], "Execution failed at first mongo collection"
-
-            integration_mongodb_config.delete(db)
-
-        else:
-            access_runner_tester(
-                privacy_request,
-                policy,
-                mongo_postgres_dataset_graph,
-                [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-4@example.com"},
-                db,
-            )
-            customer_detail_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id,
-                dataset_name="mongo_test",
-                collection_name="customer_details",
-            )
-            assert ["in_processing", "error"] == [
-                log.status.value
-                for log in customer_detail_logs.order_by(ExecutionLog.created_at)
-            ]
-            customer_feedback_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id,
-                dataset_name="mongo_test",
-                collection_name="customer_feedback",
-            )
-            assert ["in_processing", "error"] == [
-                log.status.value
-                for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
-            ]
+        access_runner_tester(
+            privacy_request,
+            policy,
+            mongo_postgres_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-4@example.com"},
+            db,
+        )
+        customer_detail_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_details",
+        )
+        assert ["in_processing", "error"] == [
+            log.status.value
+            for log in customer_detail_logs.order_by(ExecutionLog.created_at)
+        ]
+        customer_feedback_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_feedback",
+        )
+        assert ["in_processing", "error"] == [
+            log.status.value
+            for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
+        ]
 
         # Just rebuilding a graph without the deleted config.
         dataset_postgres = Dataset(**example_datasets[0])
@@ -316,69 +284,33 @@ class TestDeleteCollection:
             db,
         )
 
-        if "use_dsr_2_0" == dsr_version:
-            execution_logs = get_sorted_execution_logs(db, privacy_request)
-            assert execution_logs == [
-                ("Dataset traversal", "complete"),
-                ("postgres_example_test_dataset:customer", "in_processing"),
-                ("postgres_example_test_dataset:customer", "complete"),
-                ("postgres_example_test_dataset:payment_card", "in_processing"),
-                ("postgres_example_test_dataset:payment_card", "complete"),
-                ("postgres_example_test_dataset:orders", "in_processing"),
-                ("postgres_example_test_dataset:orders", "complete"),
-                ("postgres_example_test_dataset:order_item", "in_processing"),
-                ("postgres_example_test_dataset:order_item", "complete"),
-                ("postgres_example_test_dataset:product", "in_processing"),
-                ("postgres_example_test_dataset:product", "complete"),
-                ("mongo_test:customer_details", "in_processing"),
-                ("mongo_test:customer_details", "error"),
-                ("Dataset traversal", "complete"),
-                ("postgres_example_test_dataset:employee", "in_processing"),
-                ("postgres_example_test_dataset:employee", "complete"),
-                ("postgres_example_test_dataset:service_request", "in_processing"),
-                ("postgres_example_test_dataset:service_request", "complete"),
-                ("postgres_example_test_dataset:report", "in_processing"),
-                ("postgres_example_test_dataset:report", "complete"),
-                ("postgres_example_test_dataset:visit", "in_processing"),
-                ("postgres_example_test_dataset:visit", "complete"),
-                ("postgres_example_test_dataset:address", "in_processing"),
-                ("postgres_example_test_dataset:address", "complete"),
-                ("postgres_example_test_dataset:login", "in_processing"),
-                ("postgres_example_test_dataset:login", "complete"),
-            ], "No mongo collections run"
-
-            assert all(
-                [dataset.startswith("postgres_example") for dataset in results]
-            ), "No mongo results"
-
-        else:
-            # For DSR 3.0 we don't rebuild the graph - we try to run the original graph that we saved
-            # to the database initially. These nodes try to run again and error.
-            customer_detail_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id,
-                dataset_name="mongo_test",
-                collection_name="customer_details",
-            )
-            assert ["in_processing", "error", "in_processing", "error"] == [
-                log.status.value
-                for log in customer_detail_logs.order_by(ExecutionLog.created_at)
-            ]
-            customer_feedback_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id,
-                dataset_name="mongo_test",
-                collection_name="customer_feedback",
-            )
-            assert ["in_processing", "error", "in_processing", "error"] == [
-                log.status.value
-                for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
-            ]
+        # For DSR 3.0 we don't rebuild the graph - we try to run the original graph that we saved
+        # to the database initially. These nodes try to run again and error.
+        customer_detail_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_details",
+        )
+        assert ["in_processing", "error", "in_processing", "error"] == [
+            log.status.value
+            for log in customer_detail_logs.order_by(ExecutionLog.created_at)
+        ]
+        customer_feedback_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_feedback",
+        )
+        assert ["in_processing", "error", "in_processing", "error"] == [
+            log.status.value
+            for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
+        ]
 
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_delete_connection_config_on_completed_request(
         self,
@@ -427,7 +359,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_skip_collection_new_request(
         self,
@@ -474,7 +406,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         assert mongo_logs.filter_by(status="skipped").count() == 9
 
     @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
-    @pytest.mark.usefixtures("use_dsr_2_0")
+    @pytest.mark.usefixtures("use_dsr_3_0")
     @pytest.mark.asyncio
     async def test_run_disabled_collections_in_progress(
         self,
@@ -589,64 +521,35 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         integration_mongodb_config.secrets = {}
         integration_mongodb_config.save(db)
 
-        if dsr_version == "use_dsr_2_0":
-            with pytest.raises(ValidationError):
-                access_runner_tester(
-                    privacy_request,
-                    policy,
-                    mongo_postgres_dataset_graph,
-                    [integration_postgres_config, integration_mongodb_config],
-                    {"email": "customer-4@example.com"},
-                    db,
-                )
+        access_runner_tester(
+            privacy_request,
+            policy,
+            mongo_postgres_dataset_graph,
+            [integration_postgres_config, integration_mongodb_config],
+            {"email": "customer-4@example.com"},
+            db,
+        )
 
-            execution_logs = get_sorted_execution_logs(db, privacy_request)
-            assert execution_logs == [
-                ("Dataset traversal", "complete"),
-                ("postgres_example_test_dataset:customer", "in_processing"),
-                ("postgres_example_test_dataset:customer", "complete"),
-                ("postgres_example_test_dataset:payment_card", "in_processing"),
-                ("postgres_example_test_dataset:payment_card", "complete"),
-                ("postgres_example_test_dataset:orders", "in_processing"),
-                ("postgres_example_test_dataset:orders", "complete"),
-                ("postgres_example_test_dataset:order_item", "in_processing"),
-                ("postgres_example_test_dataset:order_item", "complete"),
-                ("postgres_example_test_dataset:product", "in_processing"),
-                ("postgres_example_test_dataset:product", "complete"),
-                ("mongo_test:customer_details", "in_processing"),
-                ("mongo_test:customer_details", "error"),
-            ], "Execution failed at first mongo collection"
-
-        else:
-            access_runner_tester(
-                privacy_request,
-                policy,
-                mongo_postgres_dataset_graph,
-                [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-4@example.com"},
-                db,
-            )
-
-            # DSR 3.0 can run multiple nodes in parallel - two mongo nodes were able to attempt to run
-            # before failing and blocking downstream nodes
-            customer_detail_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id,
-                dataset_name="mongo_test",
-                collection_name="customer_details",
-            )
-            assert ["in_processing", "error"] == [
-                log.status.value
-                for log in customer_detail_logs.order_by(ExecutionLog.created_at)
-            ]
-            customer_feedback_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id,
-                dataset_name="mongo_test",
-                collection_name="customer_feedback",
-            )
-            assert ["in_processing", "error"] == [
-                log.status.value
-                for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
-            ]
+        # Multiple nodes can run in parallel - two mongo nodes were able to attempt to run
+        # before failing and blocking downstream nodes
+        customer_detail_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_details",
+        )
+        assert ["in_processing", "error"] == [
+            log.status.value
+            for log in customer_detail_logs.order_by(ExecutionLog.created_at)
+        ]
+        customer_feedback_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_feedback",
+        )
+        assert ["in_processing", "error"] == [
+            log.status.value
+            for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
+        ]
 
         integration_mongodb_config.disabled = True
         integration_mongodb_config.save(db)
@@ -660,77 +563,32 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             db,
         )
 
-        if dsr_version == "use_dsr_2_0":
-            execution_logs = get_sorted_execution_logs(db, privacy_request)
-            assert execution_logs == [
-                ("Dataset traversal", "complete"),
-                ("postgres_example_test_dataset:customer", "in_processing"),
-                ("postgres_example_test_dataset:customer", "complete"),
-                ("postgres_example_test_dataset:payment_card", "in_processing"),
-                ("postgres_example_test_dataset:payment_card", "complete"),
-                ("postgres_example_test_dataset:orders", "in_processing"),
-                ("postgres_example_test_dataset:orders", "complete"),
-                ("postgres_example_test_dataset:order_item", "in_processing"),
-                ("postgres_example_test_dataset:order_item", "complete"),
-                ("postgres_example_test_dataset:product", "in_processing"),
-                ("postgres_example_test_dataset:product", "complete"),
-                ("mongo_test:customer_details", "in_processing"),
-                ("mongo_test:customer_details", "error"),
-                ("Dataset traversal", "complete"),
-                ("postgres_example_test_dataset:employee", "in_processing"),
-                ("postgres_example_test_dataset:employee", "complete"),
-                ("postgres_example_test_dataset:service_request", "in_processing"),
-                ("postgres_example_test_dataset:service_request", "complete"),
-                ("mongo_test:customer_feedback", "skipped"),
-                ("mongo_test:internal_customer_profile", "skipped"),
-                ("mongo_test:rewards", "skipped"),
-                ("postgres_example_test_dataset:report", "in_processing"),
-                ("postgres_example_test_dataset:report", "complete"),
-                ("postgres_example_test_dataset:visit", "in_processing"),
-                ("postgres_example_test_dataset:visit", "complete"),
-                ("postgres_example_test_dataset:address", "in_processing"),
-                ("postgres_example_test_dataset:address", "complete"),
-                ("mongo_test:customer_details", "skipped"),
-                ("mongo_test:flights", "skipped"),
-                ("mongo_test:employee", "skipped"),
-                ("mongo_test:aircraft", "skipped"),
-                ("mongo_test:conversations", "skipped"),
-                ("mongo_test:payment_card", "skipped"),
-                ("postgres_example_test_dataset:login", "in_processing"),
-                ("postgres_example_test_dataset:login", "complete"),
-            ], "Rerun skips disabled collections"
-
-            assert all(
-                [dataset.startswith("postgres_example") for dataset in results]
-            ), "No mongo results"
-
-        else:
-            # Rerun also skips disabled collections for DSR 3.0
-            customer_detail_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id,
-                dataset_name="mongo_test",
-                collection_name="customer_details",
-            )
-            assert ["in_processing", "error", "skipped"] == [
-                log.status.value
-                for log in customer_detail_logs.order_by(ExecutionLog.created_at)
-            ]
-            customer_feedback_logs = db.query(ExecutionLog).filter_by(
-                privacy_request_id=privacy_request.id,
-                dataset_name="mongo_test",
-                collection_name="customer_feedback",
-            )
-            assert ["in_processing", "error", "skipped"] == [
-                log.status.value
-                for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
-            ]
+        # Rerun also skips disabled collections for DSR 3.0
+        customer_detail_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_details",
+        )
+        assert ["in_processing", "error", "skipped"] == [
+            log.status.value
+            for log in customer_detail_logs.order_by(ExecutionLog.created_at)
+        ]
+        customer_feedback_logs = db.query(ExecutionLog).filter_by(
+            privacy_request_id=privacy_request.id,
+            dataset_name="mongo_test",
+            collection_name="customer_feedback",
+        )
+        assert ["in_processing", "error", "skipped"] == [
+            log.status.value
+            for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
+        ]
 
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     def test_disable_connection_config_on_completed_request(
         self,
@@ -802,7 +660,7 @@ class TestSkipMarkedCollections:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_no_collections_marked_as_skipped(
         self,
@@ -836,7 +694,7 @@ class TestSkipMarkedCollections:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_collection_marked_as_skipped_with_nothing_downstream(
         self,
@@ -872,7 +730,7 @@ class TestSkipMarkedCollections:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_collection_marked_as_skipped_with_dependencies(
         self,
@@ -909,7 +767,7 @@ class TestSkipMarkedCollections:
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_restart_graph_from_failure(
     db,
@@ -930,69 +788,34 @@ async def test_restart_graph_from_failure(
     integration_mongodb_config.secrets = {}
     integration_mongodb_config.save(db)
 
-    # Attempt to run the graph; execution will stop when we reach one of the mongo nodes for DSR 2.0
-    if dsr_version == "use_dsr_2_0":
-        with pytest.raises(Exception) as exc:
-            access_runner_tester(
-                privacy_request,
-                policy,
-                mongo_postgres_dataset_graph,
-                [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-4@example.com"},
-                db,
-            )
-
-        assert exc.value.__class__ == ValidationError
-        assert (
-            "MongoDBSchema must be supplied all of: ['host', 'username', 'password', 'defaultauthdb']"
-            in str(exc.value)
-        )
-
-        execution_logs = get_sorted_execution_logs(db, privacy_request)
-        # Assert execution logs failed at mongo node
-        assert execution_logs == [
-            ("Dataset traversal", "complete"),
-            ("postgres_example_test_dataset:customer", "in_processing"),
-            ("postgres_example_test_dataset:customer", "complete"),
-            ("postgres_example_test_dataset:payment_card", "in_processing"),
-            ("postgres_example_test_dataset:payment_card", "complete"),
-            ("postgres_example_test_dataset:orders", "in_processing"),
-            ("postgres_example_test_dataset:orders", "complete"),
-            ("postgres_example_test_dataset:order_item", "in_processing"),
-            ("postgres_example_test_dataset:order_item", "complete"),
-            ("postgres_example_test_dataset:product", "in_processing"),
-            ("postgres_example_test_dataset:product", "complete"),
-            ("mongo_test:customer_details", "in_processing"),
-            ("mongo_test:customer_details", "error"),
-        ]
-    else:
-        access_runner_tester(
-            privacy_request,
-            policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-4@example.com"},
-            db,
-        )
-        # Multiple mongo level nodes attempted to run in DSR 3.0 before failing and blocking downstream nodes
-        customer_detail_logs = db.query(ExecutionLog).filter_by(
-            privacy_request_id=privacy_request.id,
-            dataset_name="mongo_test",
-            collection_name="customer_details",
-        )
-        assert ["in_processing", "error"] == [
-            log.status.value
-            for log in customer_detail_logs.order_by(ExecutionLog.created_at)
-        ]
-        customer_feedback_logs = db.query(ExecutionLog).filter_by(
-            privacy_request_id=privacy_request.id,
-            dataset_name="mongo_test",
-            collection_name="customer_feedback",
-        )
-        assert ["in_processing", "error"] == [
-            log.status.value
-            for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
-        ]
+    # Attempt to run the graph; execution will stop when we reach one of the mongo nodes
+    access_runner_tester(
+        privacy_request,
+        policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-4@example.com"},
+        db,
+    )
+    # Multiple mongo level nodes attempted to run in DSR 3.0 before failing and blocking downstream nodes
+    customer_detail_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id,
+        dataset_name="mongo_test",
+        collection_name="customer_details",
+    )
+    assert ["in_processing", "error"] == [
+        log.status.value
+        for log in customer_detail_logs.order_by(ExecutionLog.created_at)
+    ]
+    customer_feedback_logs = db.query(ExecutionLog).filter_by(
+        privacy_request_id=privacy_request.id,
+        dataset_name="mongo_test",
+        collection_name="customer_feedback",
+    )
+    assert ["in_processing", "error"] == [
+        log.status.value
+        for log in customer_feedback_logs.order_by(ExecutionLog.created_at)
+    ]
 
     assert privacy_request.get_failed_checkpoint_details() == CheckpointActionRequired(
         step=CurrentStep.access,
@@ -1054,7 +877,7 @@ async def test_restart_graph_from_failure(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_restart_graph_from_failure_on_different_scheduler(
     db,
@@ -1067,10 +890,7 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     dsr_version,
     request,
 ) -> None:
-    """Run a failed privacy request and restart from failure testing DSR 2.0 -> 3.0 transition.
-
-    Note: DSR 3.0 -> 2.0 transitions are no longer supported. Only DSR 2.0 -> 3.0 is allowed.
-    """
+    """Run a failed privacy request and restart from failure."""
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     # Temporarily remove the secrets from the mongo connection to prevent execution from occurring
@@ -1078,26 +898,15 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     integration_mongodb_config.secrets = {}
     integration_mongodb_config.save(db)
 
-    # Attempt to run the graph; execution will stop when we reach one of the mongo nodes for DSR 2.0
-    if dsr_version == "use_dsr_2_0":
-        with pytest.raises(Exception):
-            access_runner_tester(
-                privacy_request,
-                policy,
-                mongo_postgres_dataset_graph,
-                [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-4@example.com"},
-                db,
-            )
-    else:
-        access_runner_tester(
-            privacy_request,
-            policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-4@example.com"},
-            db,
-        )
+    # Attempt to run the graph; execution will stop when we reach one of the mongo nodes
+    access_runner_tester(
+        privacy_request,
+        policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-4@example.com"},
+        db,
+    )
 
     assert privacy_request.get_failed_checkpoint_details() == CheckpointActionRequired(
         step=CurrentStep.access,
@@ -1121,20 +930,8 @@ async def test_restart_graph_from_failure_on_different_scheduler(
 
     db.refresh(privacy_request)
 
-    # Check that access_tasks exist for DSR 3.0 requests
-    # DSR 2.0 requests that continue with DSR 2.0 won't have access_tasks
-    # DSR 3.0 requests continue with DSR 3.0 and have access_tasks
-    if dsr_version == "use_dsr_3_0":
-        assert privacy_request.access_tasks.count() > 0
-    # For DSR 2.0, we don't assert about access_tasks since it depends on scheduler decision
+    assert privacy_request.access_tasks.count() > 0
 
-    # This test verifies DSR version behavior during restart-from-failure:
-    # - When dsr_version="use_dsr_3_0": starts with DSR 3.0 -> continues with DSR 3.0 for restart
-    # - When dsr_version="use_dsr_2_0": starts with DSR 2.0 -> may continue with DSR 2.0 or switch to DSR 3.0
-    #
-    # Both DSR 2.0 and DSR 3.0 restart-from-failure mechanisms avoid re-running successfully completed tasks.
-    # DSR 2.0 uses cached results, DSR 3.0 uses RequestTask status tracking.
-    #
     # Expected executions: 2 (initial run + restart of failed task only)
     expected_customer_executions = 2
     assert (
@@ -1230,44 +1027,27 @@ async def test_restart_graph_from_failure_during_erasure(
     db.commit()
 
     # Attempt to run the erasure graph; execution will stop when we reach one of the postgres nodes
-    if dsr_version == "use_dsr_2_0":
-        with pytest.raises(Exception) as exc:
-            erasure_runner_tester(
-                privacy_request_with_erasure_policy,
-                erasure_policy,
-                mongo_postgres_dataset_graph,
-                [integration_postgres_config, integration_mongodb_config],
-                {"email": "customer-4@example.com"},
-                get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
-                db,
-            )
-            assert exc.value.__class__ == ValidationError
-            assert (
-                exc.value.errors()[0]["msg"]
-                == "PostgreSQLSchema must be supplied a 'url' or all of: ['host']."
-            )
-    else:
-        # DSR 3.0 does not fail the entire privacy request as a whole by raising an exception.
-        # An AP Scheduler will come along and mark it as failed later
-        erasure_runner_tester(
-            privacy_request_with_erasure_policy,
-            erasure_policy,
-            mongo_postgres_dataset_graph,
-            [integration_postgres_config, integration_mongodb_config],
-            {"email": "customer-4@example.com"},
-            get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
-            db,
+    # DSR 3.0 does not fail the entire privacy request as a whole by raising an exception.
+    # An AP Scheduler will come along and mark it as failed later
+    erasure_runner_tester(
+        privacy_request_with_erasure_policy,
+        erasure_policy,
+        mongo_postgres_dataset_graph,
+        [integration_postgres_config, integration_mongodb_config],
+        {"email": "customer-4@example.com"},
+        {},
+        db,
+    )
+    assert ["in_processing", "complete", "in_processing", "error"] == [
+        c.status.value
+        for c in db.query(ExecutionLog)
+        .filter_by(
+            privacy_request_id=privacy_request_with_erasure_policy.id,
+            collection_name="address",
         )
-        assert ["in_processing", "complete", "in_processing", "error"] == [
-            c.status.value
-            for c in db.query(ExecutionLog)
-            .filter_by(
-                privacy_request_id=privacy_request_with_erasure_policy.id,
-                collection_name="address",
-            )
-            .order_by(ExecutionLog.created_at)
-            .all()
-        ]
+        .order_by(ExecutionLog.created_at)
+        .all()
+    ]
 
     for config in db.query(ConnectionConfig).filter(
         ConnectionConfig.connection_type == ConnectionType.postgres
@@ -1281,7 +1061,7 @@ async def test_restart_graph_from_failure_during_erasure(
         mongo_postgres_dataset_graph,
         [integration_postgres_config, integration_mongodb_config],
         {"email": "customer-4@example.com"},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
 

@@ -22,7 +22,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_upload_access_results_has_data_category_field_mapping(
     upload_mock: Mock,
@@ -95,7 +95,7 @@ def test_upload_access_results_has_data_category_field_mapping(
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_upload_access_results_has_data_use_map(
     upload_mock: Mock,
@@ -157,7 +157,7 @@ def test_upload_access_results_has_data_use_map(
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 @pytest.mark.parametrize(
     "dataset_config",
@@ -241,7 +241,7 @@ def test_create_and_process_access_request_postgres(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_with_custom_identities_postgres(
@@ -332,7 +332,7 @@ def test_create_and_process_access_request_with_custom_identities_postgres(
 )
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_access_request_with_valid_skipped_collection(
     db,
@@ -384,7 +384,7 @@ def test_create_and_process_access_request_with_valid_skipped_collection(
 )
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_access_request_with_invalid_skipped_collection(
     db,
@@ -421,7 +421,7 @@ def test_create_and_process_access_request_with_invalid_skipped_collection(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_2_0", "use_dsr_3_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_access_request_postgres_with_disabled_integration(
     postgres_integration_db,
@@ -507,7 +507,7 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_specific_category_postgres(
     postgres_integration_db,
@@ -624,7 +624,7 @@ def test_create_and_process_erasure_request_generic_category(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_aes_generic_category(
     postgres_integration_db,
@@ -689,7 +689,7 @@ def test_create_and_process_erasure_request_aes_generic_category(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_with_table_joins(
     postgres_integration_db,
@@ -749,7 +749,7 @@ def test_create_and_process_erasure_request_with_table_joins(
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 @pytest.mark.parametrize(
     "dataset_config",

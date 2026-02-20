@@ -13,7 +13,7 @@ class TestStripeConnector:
 
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_stripe_access_request_task_with_email(
         self,
@@ -94,7 +94,7 @@ class TestStripeConnector:
 
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_stripe_access_request_task_with_phone_number(
         self,
@@ -134,7 +134,7 @@ class TestStripeConnector:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     async def test_stripe_erasure_request_with_email(
         self,

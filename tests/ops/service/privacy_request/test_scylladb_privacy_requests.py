@@ -13,7 +13,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_access_request_scylladb(
     trigger_webhook_mock,

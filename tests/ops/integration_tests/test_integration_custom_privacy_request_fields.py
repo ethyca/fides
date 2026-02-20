@@ -84,7 +84,7 @@ class TestCustomPrivacyRequestFields:
     )
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_access(
@@ -147,7 +147,7 @@ class TestCustomPrivacyRequestFields:
     )
     @pytest.mark.parametrize(
         "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
+        ["use_dsr_3_0"],
     )
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_custom_privacy_request_fields_erasure(

@@ -12,7 +12,7 @@ from ..task.traversal_data import integration_db_graph
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 async def test_mariadb_access_request_task(
     db,

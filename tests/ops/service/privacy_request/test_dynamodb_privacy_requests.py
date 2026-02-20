@@ -112,7 +112,7 @@ def dynamodb_resources(
 @pytest.mark.integration_dynamodb
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_empty_access_request_dynamodb(
     db,
@@ -147,7 +147,7 @@ def test_create_and_process_empty_access_request_dynamodb(
 @pytest.mark.integration_dynamodb
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_access_request_dynamodb(
     dynamodb_resources,
@@ -196,7 +196,7 @@ def test_create_and_process_access_request_dynamodb(
 @pytest.mark.integration_dynamodb
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 def test_create_and_process_erasure_request_dynamodb(
     dynamodb_example_test_dataset_config,

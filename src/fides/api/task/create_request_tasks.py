@@ -29,15 +29,53 @@ from fides.api.models.privacy_request import (
     RequestTask,
     TraversalDetails,
 )
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
     get_connection_configs_with_manual_tasks,
 )
 from fides.api.util.logger_context_utils import log_context
+
+
+def format_data_use_map_for_caching(
+    connection_key_mapping: Dict[CollectionAddress, str],
+    connection_configs: List[ConnectionConfig],
+) -> Dict[str, Set[str]]:
+    """
+    Create a map of `Collection`s mapped to their associated `DataUse`s
+    to be stored in the cache. This is done before request execution, so that we
+    maintain the _original_ state of the graph as it's used for request execution.
+    The graph is subject to change "from underneath" the request execution runtime,
+    but we want to avoid picking up those changes in our data use map.
+
+    `DataUse`s are associated with a `Collection` by means of the `System`
+    that's linked to a `Collection`'s `Connection` definition.
+
+    Example:
+    {
+       <collection1>: {"data_use_1", "data_use_2"},
+       <collection2>: {"data_use_1"},
+    }
+    """
+    resp: Dict[str, Set[str]] = {}
+    connection_config_mapping: Dict[str, ConnectionConfig] = {
+        connection_config.key: connection_config
+        for connection_config in connection_configs
+    }
+    for collection_addr, connection_key in connection_key_mapping.items():
+        connection_config = connection_config_mapping.get(connection_key, None)
+        if not connection_config or not connection_config.system:
+            resp[collection_addr.value] = set()
+            continue
+        data_uses: Set[str] = System.get_data_uses(
+            [connection_config.system], include_parents=False
+        )
+        resp[collection_addr.value] = data_uses
+
+    return resp
 
 
 def _add_edge_if_no_nodes(
