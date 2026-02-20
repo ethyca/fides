@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.common.api.scope_registry import CTL_DATASET_READ
+from fides.api.scope_registry import CTL_DATASET_READ
 
 INVALID_FIELD_COLLECTIONS = [
     {

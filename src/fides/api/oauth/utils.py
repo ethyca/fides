@@ -42,7 +42,7 @@ from fides.api.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
-from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
+from fides.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig
 
 JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM

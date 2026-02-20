@@ -5,7 +5,7 @@ tests/conftest.py file.
 import pytest
 import requests
 
-from fides.core import api
+from fides.cli.core import api
 
 orig_requests_get = requests.get
 orig_requests_post = requests.post

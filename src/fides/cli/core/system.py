@@ -7,12 +7,12 @@ from fideslang import manifests
 from fideslang.models import Organization, System
 from fideslang.validation import AnyHttpUrlString
 
+from fides.cli.connectors.models import AWSConfig, OktaConfig
+from fides.cli.core import api
+from fides.cli.core.api_helpers import get_server_resource, get_server_resources
+from fides.cli.core.filters import filter_aws_systems
+from fides.cli.core.parse import parse
 from fides.common.utils import echo_green, echo_red, handle_cli_response
-from fides.connectors.models import AWSConfig, OktaConfig
-from fides.core import api
-from fides.core.api_helpers import get_server_resource, get_server_resources
-from fides.core.filters import filter_aws_systems
-from fides.core.parse import parse
 
 
 def generate_redshift_systems(
@@ -21,7 +21,7 @@ def generate_redshift_systems(
     """
     Fetches Redshift clusters from AWS and returns the transformed System representations.
     """
-    import fides.connectors.aws as aws_connector
+    import fides.cli.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(service="redshift", aws_config=aws_config)
     describe_clusters = aws_connector.describe_redshift_clusters(client=client)
@@ -37,7 +37,7 @@ def generate_rds_systems(
     """
     Fetches RDS clusters and instances from AWS and returns the transformed System representations.
     """
-    import fides.connectors.aws as aws_connector
+    import fides.cli.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(service="rds", aws_config=aws_config)
     describe_clusters = aws_connector.describe_rds_clusters(client=client)
@@ -56,7 +56,7 @@ def generate_resource_tagging_systems(
     """
     Fetches AWS Resources from the resource tagging api and returns the transformed System representations.
     """
-    import fides.connectors.aws as aws_connector
+    import fides.cli.connectors.aws as aws_connector
 
     client = aws_connector.get_aws_client(
         service="resourcegroupstaggingapi", aws_config=aws_config
@@ -185,7 +185,7 @@ def generate_okta_systems(
 
     Uses OAuth2 authentication via OktaHttpClient.
     """
-    import fides.connectors.okta as okta_connector
+    import fides.cli.connectors.okta as okta_connector
 
     okta_client = okta_connector.get_okta_client(okta_config)
     okta_applications = okta_connector.list_okta_applications(okta_client=okta_client)

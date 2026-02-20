@@ -14,13 +14,13 @@ from fides.api.schemas.connection_configuration.connection_type_system_map impor
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.policy import ActionType
+from fides.api.scope_registry import CONNECTION_TYPE_READ
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_type import (
     get_connection_type_secret_schema,
     get_connection_types,
 )
-from fides.common.api.scope_registry import CONNECTION_TYPE_READ
-from fides.common.api.v1.urn_registry import (
+from fides.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     V1_URL_PREFIX,

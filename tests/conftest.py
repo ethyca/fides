@@ -59,12 +59,12 @@ from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.tasks import celery_app, celery_healthcheck
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
-from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
@@ -2123,7 +2123,7 @@ def monkeysession():
 @pytest.fixture(scope="session")
 def monkeypatch_requests(test_client, monkeysession) -> None:
     """
-    Some places within the application, for example `fides.core.api`, use the `requests`
+    Some places within the application, for example `fides.cli.core.api`, use the `requests`
     library to interact with the webserver. This fixture patches those `requests` calls
     so that all of those tests instead interact with the test instance.
 

@@ -11,7 +11,7 @@ from fides.api.oauth.utils import (
     verify_oauth_client,
     verify_oauth_client_prod,
 )
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config.security_settings import SecuritySettings
 
 

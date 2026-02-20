@@ -66,20 +66,7 @@ from fides.api.schemas.redis_cache import (
     Identity,
     LabeledIdentity,
 )
-from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
-from fides.api.util.cache import get_encryption_cache_key
-from fides.api.util.data_category import get_user_data_categories
-from fides.api.util.encryption.secrets_util import SecretsUtil
-from fides.api.util.fuzzy_search_utils import (
-    get_should_refresh_automaton,
-    manually_reset_automaton,
-    remove_refresh_automaton_signal,
-)
-from fides.api.v1.endpoints.privacy_request_endpoints import (
-    EMBEDDED_EXECUTION_LOG_LIMIT,
-    validate_manual_input,
-)
-from fides.common.api.scope_registry import (
+from fides.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_TEST,
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -95,7 +82,20 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
+from fides.api.util.cache import get_encryption_cache_key
+from fides.api.util.data_category import get_user_data_categories
+from fides.api.util.encryption.secrets_util import SecretsUtil
+from fides.api.util.fuzzy_search_utils import (
+    get_should_refresh_automaton,
+    manually_reset_automaton,
+    remove_refresh_automaton_signal,
+)
+from fides.api.v1.endpoints.privacy_request_endpoints import (
+    EMBEDDED_EXECUTION_LOG_LIMIT,
+    validate_manual_input,
+)
+from fides.api.v1.urn_registry import (
     CONNECTION_DATASETS,
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,

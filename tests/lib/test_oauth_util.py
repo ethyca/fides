@@ -35,7 +35,7 @@ from fides.api.oauth.utils import (
     verify_oauth_client,
     verify_oauth_client_async,
 )
-from fides.common.api.scope_registry import (
+from fides.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_REVIEW,

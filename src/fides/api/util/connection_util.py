@@ -35,7 +35,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.common.api.v1.urn_registry import SAAS_CONFIG
+from fides.api.v1.urn_registry import SAAS_CONFIG
 from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,

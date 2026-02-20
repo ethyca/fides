@@ -71,7 +71,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
     save_access_results,
 )
-from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
+from fides.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
