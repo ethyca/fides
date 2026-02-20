@@ -73,6 +73,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
+from fides.service.attachment_service import AttachmentService
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
@@ -1314,14 +1315,13 @@ class TestPrivacyRequestAttachments:
         attachment_type: AttachmentType = AttachmentType.include_with_access_package,
     ) -> Attachment:
         """Helper function to create a test attachment"""
-        return Attachment.create_and_upload(
-            db=db,
+        return AttachmentService(db).create_and_upload(
             data={
                 "file_name": file_name,
                 "attachment_type": attachment_type,
                 "storage_key": storage_config.key,
             },
-            attachment_file=BytesIO(content),
+            file_data=BytesIO(content),
         )
 
     def create_attachment_reference(

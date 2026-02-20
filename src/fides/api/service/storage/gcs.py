@@ -1,13 +1,35 @@
+"""
+GCS (Google Cloud Storage) operations.
+
+DEPRECATION NOTICE:
+    The functions in this module are being deprecated in favor of the
+    StorageProvider interface. For new code, use:
+
+        from fides.api.service.storage.providers import StorageProviderFactory
+
+        provider = StorageProviderFactory.create(storage_config)
+        provider.upload(bucket, key, data)
+        provider.download(bucket, key)
+        provider.delete(bucket, key)
+
+    These legacy functions are maintained for backward compatibility with
+    existing code that depends on them.
+"""
+
 from typing import Optional
 
 from google.cloud.storage import Blob, Client  # type: ignore
 from google.oauth2 import service_account
 from loguru import logger
+from typing_extensions import deprecated
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import GCSAuthMethod
 
 
+@deprecated(
+    "Use StorageProviderFactory.create(config) to get a StorageProvider instance instead."
+)
 def get_gcs_client(
     auth_method: str,
     storage_secrets: Optional[dict],
@@ -38,6 +60,9 @@ def get_gcs_client(
     return storage_client
 
 
+@deprecated(
+    "Use StorageProviderFactory.create(config) to get a StorageProvider instance instead."
+)
 def get_gcs_blob(
     auth_method: str, storage_secrets: Optional[dict], bucket_name: str, file_key: str
 ) -> Blob:

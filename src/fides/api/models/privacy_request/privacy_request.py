@@ -125,6 +125,7 @@ from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.config import CONFIG
+from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.consent import (  # type: ignore[attr-defined]
@@ -494,8 +495,8 @@ class PrivacyRequest(
         """
         self.clear_cached_values()
         self.cleanup_external_storage()
-        Attachment.delete_attachments_for_reference_and_type(
-            db, self.id, AttachmentReferenceType.privacy_request
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.privacy_request
         )
         Comment.delete_comments_for_reference_and_type(
             db, self.id, CommentReferenceType.privacy_request
@@ -1342,7 +1343,7 @@ class PrivacyRequest(
         """Delete the attachment associated with the privacy request"""
         attachment = self.get_attachment_by_id(db, attachment_id)
         if attachment:
-            attachment.delete(db)
+            AttachmentService(db).delete(attachment)
 
     def _get_manual_webhook_attachments(
         self, db: Session, manual_webhook_id: str, reference_type: str
