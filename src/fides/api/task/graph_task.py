@@ -10,7 +10,6 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncProcessing,
@@ -21,6 +20,7 @@ from fides.api.common_exceptions import (
     SkippingConsentPropagation,
     TableNotFound,
 )
+from fides.api.deps import get_autoclose_db_session as get_db
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,

@@ -493,7 +493,7 @@ class TestCallback:
         }
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state(
         self,
@@ -520,7 +520,7 @@ class TestCallback:
         authentication_request.delete(db)
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state_with_token_error(
         self,
@@ -548,9 +548,9 @@ class TestCallback:
 
         authentication_request.delete(db)
 
-    @mock.patch("fides.api.api.v1.endpoints.oauth_endpoints.connection_status")
+    @mock.patch("fides.api.v1.endpoints.oauth_endpoints.connection_status")
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_successful_callback_with_referer(
         self,
@@ -586,9 +586,9 @@ class TestCallback:
 
         authentication_request.delete(db)
 
-    @mock.patch("fides.api.api.v1.endpoints.oauth_endpoints.connection_status")
+    @mock.patch("fides.api.v1.endpoints.oauth_endpoints.connection_status")
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_failed_callback_with_referer(
         self,
@@ -625,7 +625,7 @@ class TestCallback:
         authentication_request.delete(db)
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_without_referer(
         self,

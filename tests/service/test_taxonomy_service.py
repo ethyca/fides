@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
+from fides.api.deps import get_taxonomy_service
 from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataCategory,
@@ -10,7 +11,6 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataUse,
 )
 from fides.api.models.taxonomy import LEGACY_TAXONOMY_KEYS, Taxonomy, TaxonomyUsage
-from fides.api.service.deps import get_taxonomy_service
 from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
 from fides.service.event_audit_service import EventAuditService
 from fides.service.taxonomy.handlers.legacy_handler import LegacyTaxonomyHandler

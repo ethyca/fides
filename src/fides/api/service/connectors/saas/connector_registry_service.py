@@ -8,9 +8,9 @@ from fideslang.models import Dataset
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_api_session
 from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
+from fides.api.deps import get_api_session
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.saas_template_dataset import SaasTemplateDataset

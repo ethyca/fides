@@ -82,7 +82,7 @@ class TestUploadData:
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
-    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.upload")
+    @mock.patch("fides.api.v1.endpoints.storage_endpoints.upload")
     def test_post_upload_data(
         self,
         mock_post_upload_data: Mock,
@@ -401,7 +401,7 @@ class TestPutStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fides.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_config_secrets_and_verify(
         self,
         mock_valid: Mock,
@@ -1165,7 +1165,7 @@ class TestPutDefaultStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fides.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_default_config_secrets_and_verify(
         self,
         mock_valid: Mock,

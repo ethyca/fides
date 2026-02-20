@@ -8,7 +8,7 @@ from pydantic import Field, ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.api import deps
+from fides.api import deps
 from fides.api.common_exceptions import (
     ConnectionNotFoundException,
     KeyOrNameAlreadyExists,

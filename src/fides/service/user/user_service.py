@@ -5,7 +5,6 @@ from typing import Optional, Tuple
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.api.v1.endpoints.messaging_endpoints import user_email_invite_status
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -16,6 +15,7 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.v1.endpoints.messaging_endpoints import user_email_invite_status
 from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
 

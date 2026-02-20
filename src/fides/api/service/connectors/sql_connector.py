@@ -71,7 +71,7 @@ class SQLConnector(BaseConnector[Engine]):
         Returns:
             bool: True if the current mode matches the mode to check
         """
-        from fides.api.api.deps import get_autoclose_db_session as get_db
+        from fides.api.deps import get_autoclose_db_session as get_db
 
         with get_db() as db:
             config_proxy = ConfigProxy(db)

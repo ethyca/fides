@@ -3,7 +3,7 @@ from typing import Any, Optional, Type
 
 from loguru import logger
 
-from fides.api.api.deps import get_autoclose_db_session
+from fides.api.deps import get_autoclose_db_session
 from fides.api.schemas.external_storage import ExternalStorageMetadata
 from fides.api.service.external_data_storage import (
     ExternalDataStorageError,

@@ -2,8 +2,8 @@ from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_autoclose_db_session
 from fides.api.db.base_class import FidesBase
+from fides.api.deps import get_autoclose_db_session
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.migrations.hash_migration_tracker import HashMigrationTracker
 from fides.api.models.privacy_preference import (
