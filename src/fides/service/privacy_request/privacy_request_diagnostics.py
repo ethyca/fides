@@ -376,19 +376,14 @@ class AttachmentReferenceSnapshot(BaseModel):
 
 
 def get_attachment_references(
-    privacy_request_id: str, db: Session
+    attachment_ids: List[str], db: Session
 ) -> List[AttachmentReferenceSnapshot]:
     """
-    Fetch attachment references for attachments associated with this privacy request.
+    Fetch attachment references for the given attachment IDs.
 
     This includes references beyond the privacy request itself (e.g. comment, manual_task_submission)
     so you can see *where* an attachment came from.
     """
-
-    attachment_ids: List[str] = [
-        a.id
-        for a in get_attachments(privacy_request_id, db)  # type: ignore[attr-defined]
-    ]
     if not attachment_ids:
         return []
 
@@ -474,16 +469,14 @@ class CommentReferenceSnapshot(BaseModel):
 
 
 def get_comment_references(
-    privacy_request_id: str, db: Session
+    comment_ids: List[str], db: Session
 ) -> List[CommentReferenceSnapshot]:
     """
-    Fetch comment references for comments associated with this privacy request.
+    Fetch comment references for the given comment IDs.
 
     This includes references beyond the privacy request itself (e.g. manual_task_submission)
     so you can see *where* comments were attached.
     """
-
-    comment_ids: List[str] = [c.id for c in get_comments(privacy_request_id, db)]
     if not comment_ids:
         return []
 
@@ -785,10 +778,11 @@ class CtlDatasetSnapshot(BaseModel):
     name: Optional[str] = None
 
 
-def get_ctl_datasets(privacy_request_id: str, db: Session) -> List[CtlDatasetSnapshot]:
-    """Fetch CTL datasets referenced by relevant DatasetConfigs."""
+def get_ctl_datasets(
+    dataset_configs: List[DatasetConfigSnapshot], db: Session
+) -> List[CtlDatasetSnapshot]:
+    """Fetch CTL datasets referenced by the already-fetched DatasetConfigs."""
 
-    dataset_configs = get_dataset_configs(privacy_request_id, db)
     ctl_ids = [dc.ctl_dataset_id for dc in dataset_configs]
     if not ctl_ids:
         return []
@@ -1033,18 +1027,16 @@ class ManualTaskConfigFieldSnapshot(BaseModel):
 
 
 def get_manual_task_config_fields(
-    privacy_request_id: str, db: Session
+    manual_task_config_ids: List[str], db: Session
 ) -> List[ManualTaskConfigFieldSnapshot]:
-    """Fetch manual task config fields relevant to this privacy request (via configs)."""
+    """Fetch manual task config fields for the given config IDs."""
 
-    configs = get_manual_task_configs(privacy_request_id, db)
-    config_ids = [c.id for c in configs]
-    if not config_ids:
+    if not manual_task_config_ids:
         return []
 
     fields = (
         db.query(ManualTaskConfigField)
-        .filter(ManualTaskConfigField.config_id.in_(config_ids))
+        .filter(ManualTaskConfigField.config_id.in_(manual_task_config_ids))
         .order_by(ManualTaskConfigField.created_at.asc())
         .all()
     )
@@ -1088,18 +1080,16 @@ class ManualTaskReferenceSnapshot(BaseModel):
 
 
 def get_manual_task_references(
-    privacy_request_id: str, db: Session
+    manual_task_ids: List[str], db: Session
 ) -> List[ManualTaskReferenceSnapshot]:
-    """Fetch manual task references for tasks relevant to this privacy request."""
+    """Fetch manual task references for the given manual task IDs."""
 
-    tasks = get_manual_tasks(privacy_request_id, db)
-    task_ids = [t.id for t in tasks]
-    if not task_ids:
+    if not manual_task_ids:
         return []
 
     refs = (
         db.query(ManualTaskReference)
-        .filter(ManualTaskReference.task_id.in_(task_ids))
+        .filter(ManualTaskReference.task_id.in_(manual_task_ids))
         .order_by(ManualTaskReference.created_at.asc())
         .all()
     )
@@ -1199,18 +1189,16 @@ class ManualTaskConditionalDependencySnapshot(BaseModel):
 
 
 def get_manual_task_conditional_dependencies(
-    privacy_request_id: str, db: Session
+    manual_task_ids: List[str], db: Session
 ) -> List[ManualTaskConditionalDependencySnapshot]:
-    """Fetch manual task conditional dependency rows for tasks relevant to this privacy request."""
+    """Fetch manual task conditional dependency rows for the given manual task IDs."""
 
-    tasks = get_manual_tasks(privacy_request_id, db)
-    task_ids = [t.id for t in tasks]
-    if not task_ids:
+    if not manual_task_ids:
         return []
 
     deps = (
         db.query(ManualTaskConditionalDependency)
-        .filter(ManualTaskConditionalDependency.manual_task_id.in_(task_ids))
+        .filter(ManualTaskConditionalDependency.manual_task_id.in_(manual_task_ids))
         .order_by(ManualTaskConditionalDependency.id.asc())
         .all()
     )
@@ -1260,6 +1248,17 @@ def get_privacy_request_diagnostics(
 ) -> PrivacyRequestDiagnostics:
     """Create a `PrivacyRequestDiagnostics` object for the given privacy request id."""
 
+    dataset_configs = get_dataset_configs(privacy_request_id, db)
+    manual_tasks = get_manual_tasks(privacy_request_id, db)
+    manual_task_configs = get_manual_task_configs(privacy_request_id, db)
+    attachments = get_attachments(privacy_request_id, db)
+    comments = get_comments(privacy_request_id, db)
+
+    manual_task_ids = [t.id for t in manual_tasks]
+    manual_task_config_ids = [c.id for c in manual_task_configs]
+    attachment_ids = [a.id for a in attachments]
+    comment_ids = [c.id for c in comments]
+
     return PrivacyRequestDiagnostics(
         privacy_request=get_privacy_request_snapshot(privacy_request_id, db),
         privacy_request_error=get_privacy_request_error(privacy_request_id, db),
@@ -1271,21 +1270,23 @@ def get_privacy_request_diagnostics(
         audit_logs=get_audit_logs(privacy_request_id, db),
         request_tasks=get_request_tasks(privacy_request_id, db),
         request_task_sub_requests=get_request_task_sub_requests(privacy_request_id, db),
-        dataset_configs=get_dataset_configs(privacy_request_id, db),
-        ctl_datasets=get_ctl_datasets(privacy_request_id, db),
+        dataset_configs=dataset_configs,
+        ctl_datasets=get_ctl_datasets(dataset_configs, db),
         storage_configs=get_storage_configs(privacy_request_id, db),
         messaging_config=get_messaging_config(db),
-        manual_tasks=get_manual_tasks(privacy_request_id, db),
+        manual_tasks=manual_tasks,
         manual_task_instances=get_manual_task_instances(privacy_request_id, db),
-        manual_task_references=get_manual_task_references(privacy_request_id, db),
-        manual_task_configs=get_manual_task_configs(privacy_request_id, db),
-        manual_task_config_fields=get_manual_task_config_fields(privacy_request_id, db),
+        manual_task_references=get_manual_task_references(manual_task_ids, db),
+        manual_task_configs=manual_task_configs,
+        manual_task_config_fields=get_manual_task_config_fields(
+            manual_task_config_ids, db
+        ),
         manual_task_submissions=get_manual_task_submissions(privacy_request_id, db),
         manual_task_conditional_dependencies=get_manual_task_conditional_dependencies(
-            privacy_request_id, db
+            manual_task_ids, db
         ),
-        attachments=get_attachments(privacy_request_id, db),
-        attachment_references=get_attachment_references(privacy_request_id, db),
-        comments=get_comments(privacy_request_id, db),
-        comment_references=get_comment_references(privacy_request_id, db),
+        attachments=attachments,
+        attachment_references=get_attachment_references(attachment_ids, db),
+        comments=comments,
+        comment_references=get_comment_references(comment_ids, db),
     )
