@@ -9,7 +9,10 @@ This module provides the database schema for:
 - Answer versions (immutable history of all answer changes)
 """
 
+from __future__ import annotations
+
 from enum import Enum as EnumType
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import (
     ARRAY,
@@ -24,9 +27,12 @@ from sqlalchemy import (
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import RelationshipProperty, relationship
 
 from fides.api.db.base_class import Base
+
+if TYPE_CHECKING:
+    from fides.api.models.questionnaire import Questionnaire
 
 
 class AssessmentStatus(str, EnumType):
@@ -201,6 +207,16 @@ class PrivacyAssessment(Base):
         back_populates="assessment",
         cascade="all, delete-orphan",
         passive_deletes=True,
+    )
+    # uselist=False returns the most recently loaded questionnaire row.
+    # Multiple attempts may exist (see Questionnaire model docstring);
+    # for explicit "latest" semantics, query with order_by(created_at.desc()).
+    questionnaire: RelationshipProperty[Optional["Questionnaire"]] = relationship(
+        "Questionnaire",
+        back_populates="assessment",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        uselist=False,
     )
 
 

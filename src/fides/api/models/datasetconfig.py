@@ -143,6 +143,7 @@ class DatasetConfig(Base):
         dataset_graph = convert_dataset_to_graph(
             Dataset.model_validate(self.ctl_dataset),
             self.connection_config.key,  # type: ignore
+            property_ids=self.property_ids or [],
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
@@ -299,7 +300,9 @@ def to_graph_field(
 
 
 def convert_dataset_to_graph(
-    dataset: Dataset, connection_key: FidesKey
+    dataset: Dataset,
+    connection_key: FidesKey,
+    property_ids: Optional[list[str]] = None,
 ) -> GraphDataset:
     """
     Converts the given Fides dataset into the concrete graph
@@ -375,6 +378,7 @@ def convert_dataset_to_graph(
         collections=graph_collections,
         connection_key=connection_key,
         after=after,
+        property_ids=property_ids or [],
     )
 
 
