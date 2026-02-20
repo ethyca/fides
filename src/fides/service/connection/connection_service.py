@@ -4,6 +4,7 @@ import yaml
 from fideslang.models import System
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -54,6 +55,8 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
+    CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
 )
 from fides.api.util.event_audit_util import (
     generate_connection_audit_event_details,
@@ -395,6 +398,17 @@ class ConnectionService:
         )
         return connection_config, dataset_config
 
+    # Connection types that are limited to a single instance per deployment.
+    _singleton_connection_types: Set[str] = {
+        ConnectionType.jira_ticket.value,
+    }
+
+    # Connection types that auto-create a ManualTask on first save.
+    _auto_task_type_mapping: dict[str, ManualTaskType] = {
+        ConnectionType.manual_task.value: ManualTaskType.privacy_request,
+        ConnectionType.jira_ticket.value: ManualTaskType.jira_ticket,
+    }
+
     def create_or_update_connection_config(
         self,
         config: CreateConnectionConfigurationWithSecrets,
@@ -411,6 +425,22 @@ class ConnectionService:
             existing_connection_config = ConnectionConfig.get_by(
                 self.db, field="key", value=config.key
             )
+
+        # Enforce singleton constraint for certain connection types
+        if (
+            config.connection_type in self._singleton_connection_types
+            and not existing_connection_config
+        ):
+            existing_of_type = ConnectionConfig.get_by(
+                self.db,
+                field="connection_type",
+                value=str(config.connection_type),
+            )
+            if existing_of_type:
+                raise ValidationError(
+                    f"Only one {config.connection_type} connection is allowed. "
+                    f"A connection with key '{existing_of_type.key}' already exists."
+                )
 
         # Handle SaaS connections with special template-based creation
         if config.connection_type == "saas" and config.secrets:
@@ -558,16 +588,14 @@ class ConnectionService:
                 connection_config.secrets,  # type: ignore[arg-type]
             )
 
-        # Automatically create a ManualTask if this is a manual_task connection
-        # and it doesn't already have one
-        if (
-            connection_config.connection_type == ConnectionType.manual_task
-            and not connection_config.manual_task
-        ):
+        auto_task_type = self._auto_task_type_mapping.get(
+            connection_config.connection_type.value  # type: ignore
+        )
+        if auto_task_type and not connection_config.manual_task:
             ManualTask.create(
                 db=self.db,
                 data={
-                    "task_type": ManualTaskType.privacy_request,
+                    "task_type": auto_task_type,
                     "parent_entity_id": connection_config.id,
                     "parent_entity_type": ManualTaskParentEntityType.connection_config,
                 },
@@ -692,6 +720,24 @@ class ConnectionService:
             else None
         )
 
+        # Get endpoint resources and preserve monitored collections in the dataset
+        # This runs regardless of whether there's an existing customer dataset
+        monitored_endpoints = get_endpoint_resources(self.db, connection_config)
+        if monitored_endpoints:
+            # Get monitor config IDs for this connection
+            monitor_configs = MonitorConfig.filter(
+                db=self.db,
+                conditions=(MonitorConfig.connection_config_id == connection_config.id),
+            ).all()
+            monitor_config_ids = [mc.key for mc in monitor_configs]
+
+            upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
+                monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
+            )
+            normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
+            if normalized_upcoming is not None:
+                upcoming_dataset = normalized_upcoming
+
         final_dataset = upcoming_dataset
         if customer_dataset_config and customer_dataset_config.ctl_dataset:
             # Get the existing dataset structure
@@ -705,25 +751,6 @@ class ConnectionService:
                 "collections": ctl_dataset.collections,
                 "fides_meta": ctl_dataset.fides_meta,
             }
-
-            # Get endpoint resources and preserve collections from customer dataset
-            monitored_endpoints = get_endpoint_resources(self.db, connection_config)
-            if monitored_endpoints:
-                # Get monitor config IDs for this connection
-                monitor_configs = MonitorConfig.filter(
-                    db=self.db,
-                    conditions=(
-                        MonitorConfig.connection_config_id == connection_config.id
-                    ),
-                ).all()
-                monitor_config_ids = [mc.key for mc in monitor_configs]
-
-                upcoming_dataset = preserve_monitored_collections_in_dataset_merge(
-                    monitored_endpoints, upcoming_dataset, self.db, monitor_config_ids
-                )
-                normalized_upcoming = normalize_dataset(upcoming_dataset, "upcoming")
-                if normalized_upcoming is not None:
-                    upcoming_dataset = normalized_upcoming
 
             if stored_dataset_template and isinstance(
                 stored_dataset_template.dataset_json, dict
@@ -763,3 +790,85 @@ class ConnectionService:
         }
         dataset_config = DatasetConfig.create_or_update(self.db, data=data)
         return dataset_config
+
+    def update_existing_connection_configs_for_connector_type(
+        self, connector_type: str, template: ConnectorTemplate
+    ) -> None:
+        """
+        Updates all existing connection configs that use the specified connector type
+        with the provided template.
+        """
+        connection_configs: list[ConnectionConfig] = ConnectionConfig.filter(
+            db=self.db,
+            conditions=(
+                sa_func.lower(ConnectionConfig.saas_config["type"].astext)
+                == connector_type.lower()
+            ),
+        ).all()
+
+        logger.info(
+            "Found {} existing connection config(s) for connector type '{}'",
+            len(connection_configs),
+            connector_type,
+        )
+
+        for connection_config in connection_configs:
+            saas_config_instance = SaaSConfig.model_validate(
+                connection_config.saas_config
+            )
+            try:
+                self.update_saas_instance(
+                    connection_config,
+                    template,
+                    saas_config_instance,
+                )
+                logger.info(
+                    "Updated SaaS config instance '{}' of type '{}'",
+                    saas_config_instance.fides_key,
+                    connector_type,
+                )
+            except Exception:
+                logger.exception(
+                    "Encountered error attempting to update SaaS config instance {}",
+                    saas_config_instance.fides_key,
+                )
+
+    def delete_custom_connector_template(self, connector_type: str) -> None:
+        """
+        Deletes a custom connector template and updates all connection configs
+        to use the Fides-provided file template.
+
+        Args:
+            connector_type: The connector type identifier
+
+        Raises:
+            ConnectorTemplateNotFound: If the Fides-provided template is not found
+        """
+        # Verify the file template exists
+        if not FileConnectorTemplateLoader.get_connector_templates().get(
+            connector_type
+        ):
+            raise ConnectorTemplateNotFound(
+                f"Fides-provided template with type '{connector_type}' not found."
+            )
+
+        # Delete the custom template from the database and invalidate cache.
+        # The delete_template method bumps the Redis version counter so every
+        # server detects the change on its next get_connector_templates() call.
+        CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
+
+        # Get the file template directly from the file loader rather than
+        # going through ConnectorRegistry, which would trigger a cache reload
+        # on CustomConnectorTemplateLoader before the DB transaction commits.
+        file_connector_template = (
+            FileConnectorTemplateLoader.get_connector_templates().get(connector_type)
+        )
+        if not file_connector_template:
+            raise ConnectorTemplateNotFound(
+                f"Fides-provided template with type '{connector_type}' not found in the registry."
+            )
+
+        # Update existing connection configs to use the file template.
+        self.update_existing_connection_configs_for_connector_type(
+            connector_type, file_connector_template
+        )

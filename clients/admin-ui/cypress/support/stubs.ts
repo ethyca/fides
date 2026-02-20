@@ -1,5 +1,10 @@
 import { PrivacyRequestResponse } from "~/features/privacy-requests/types";
-import { HealthCheck, PrivacyRequestStatus, Schema } from "~/types/api";
+import {
+  HealthCheck,
+  PolicyResponse,
+  PrivacyRequestStatus,
+  Schema,
+} from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
@@ -400,6 +405,16 @@ export const stubPrivacyRequests = (
           },
         },
       ).as("getPrivacyRequestManager");
+      cy.intercept("GET", "/api/v1/policy*", {
+        fixture: "policies/list.json",
+      }).as("getPolicies");
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/connection/*/manual-task/dependency-conditions/privacy-request-fields",
+        {
+          fixture: "integration-management/privacy-request-fields.json",
+        },
+      ).as("getPrivacyRequestFields");
     },
   );
 
@@ -598,6 +613,9 @@ export const stubProperties = () => {
 };
 
 export const stubExperienceConfig = () => {
+  cy.intercept("GET", "/api/v1/privacy-notice*", {
+    fixture: "privacy-experiences/notices.json",
+  }).as("getExperienceNotices");
   cy.intercept("GET", "/api/v1/experience-config*", {
     fixture: "privacy-experiences/list.json",
   }).as("getExperiences");
@@ -1086,15 +1104,24 @@ export const stubInfrastructureSystems = (options?: {
   fixture?: string;
   patchStatus?: number;
   patchResponse?: Partial<Schema> | { detail: string };
+  dynamicResponse?: (req: any) => any;
 }) => {
   const fixture =
     options?.fixture ||
     "detection-discovery/results/infrastructure-systems-with-data-uses.json";
 
   // GET - Identity Provider Monitor Results
-  cy.intercept("GET", "/api/v1/plus/identity-provider-monitors/*/results*", {
-    fixture,
-  }).as("getInfrastructureSystems");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/identity-provider-monitors/*/results*",
+    (req) => {
+      if (options?.dynamicResponse) {
+        req.reply(options.dynamicResponse(req));
+      } else {
+        req.reply({ fixture });
+      }
+    },
+  ).as("getInfrastructureSystems");
 
   // PATCH - Update infrastructure system data uses
   cy.intercept("PATCH", "/api/v1/plus/identity-provider-monitors/*/results/*", {
@@ -1104,4 +1131,100 @@ export const stubInfrastructureSystems = (options?: {
       user_assigned_data_uses: [],
     },
   }).as("updateInfrastructureSystemDataUses");
+};
+
+export const stubInfrastructureSystemsFilters = (monitorId: string) => {
+  cy.intercept(
+    "GET",
+    `/api/v1/plus/filters/idp_monitor_resources?monitor_config_id=${monitorId}*`,
+    {
+      fixture:
+        "detection-discovery/results/infrastructure-systems-filters.json",
+    },
+  ).as("getInfrastructureSystemsFilters");
+};
+
+export const stubInfrastructureSystemsBulkActions = (
+  monitorId: string,
+  options?: {
+    promoteStatus?: number;
+    promoteResponse?: any;
+    muteStatus?: number;
+    muteResponse?: any;
+    unmuteStatus?: number;
+    unmuteResponse?: any;
+  },
+) => {
+  cy.intercept(
+    "POST",
+    `/api/v1/plus/identity-provider-monitors/${monitorId}/results/bulk-promote`,
+    {
+      statusCode: options?.promoteStatus ?? 200,
+      body: options?.promoteResponse ?? {
+        summary: {
+          successful: 2,
+          failed: 0,
+          total_requested: 2,
+        },
+      },
+    },
+  ).as("bulkPromoteInfrastructureSystems");
+
+  cy.intercept(
+    "POST",
+    `/api/v1/plus/identity-provider-monitors/${monitorId}/results/bulk-mute`,
+    {
+      statusCode: options?.muteStatus ?? 200,
+      body: options?.muteResponse ?? {
+        summary: {
+          successful: 2,
+          failed: 0,
+          total_requested: 2,
+        },
+      },
+    },
+  ).as("bulkMuteInfrastructureSystems");
+
+  cy.intercept(
+    "POST",
+    `/api/v1/plus/identity-provider-monitors/${monitorId}/results/bulk-unmute`,
+    {
+      statusCode: options?.unmuteStatus ?? 200,
+      body: options?.unmuteResponse ?? {
+        summary: {
+          successful: 2,
+          failed: 0,
+          total_requested: 2,
+        },
+      },
+    },
+  ).as("bulkUnmuteInfrastructureSystems");
+};
+
+export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
+  stubFeatureFlags();
+  cy.intercept("GET", "/api/v1/dsr/policy", {
+    fixture: options?.isEmpty
+      ? "policies/empty-list.json"
+      : "policies/list.json",
+  }).as("getDSRPolicies");
+  cy.intercept("GET", "/api/v1/dsr/policy/*", {
+    body: {
+      name: "Default Erasure Policy",
+      key: "default_erasure_policy",
+      drp_action: "deletion",
+      execution_timeframe: 45,
+      rules: [
+        {
+          name: "Default Erasure Rule",
+          key: "default_erasure_policy_rule",
+          action_type: "erasure",
+          storage_destination: null,
+          masking_strategy: {
+            strategy: "hmac",
+          },
+        },
+      ],
+    },
+  }).as("getDSRPolicy");
 };

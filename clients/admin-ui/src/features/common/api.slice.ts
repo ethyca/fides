@@ -18,6 +18,7 @@ export const baseApi = createApi({
   }),
   tagTypes: [
     "Allow List",
+    "Asset Reporting",
     "Auth",
     "Catalog Systems",
     "Catalog Projects",
@@ -92,6 +93,9 @@ export const baseApi = createApi({
     "Allowed Conditions Fields",
     "Identity Provider Monitor Results",
     "Identity Provider Monitor Filters",
+    "Privacy Assessment",
+    "Privacy Assessment Questionnaire",
+    "Privacy Assessment Evidence",
     "User Monitors",
   ],
   endpoints: () => ({}),

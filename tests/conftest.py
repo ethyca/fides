@@ -60,7 +60,7 @@ from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPRO
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
-from fides.api.tasks import celery_app
+from fides.api.tasks import celery_app, celery_healthcheck
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
@@ -758,14 +758,40 @@ def integration_config():
 
 
 @pytest.fixture(scope="session")
-def celery_config():
-    return {"task_always_eager": False}
+def celery_config(request):
+    """
+    Configure celery for testing.
+
+    Uses a unique healthcheck port per xdist worker to prevent port conflicts
+    when running tests in parallel.
+    """
+    # Calculate unique port based on xdist worker_id
+    # This works at session scope by accessing request.config
+    if hasattr(request.config, "workerinput"):
+        # In a worker process (e.g., 'gw0', 'gw1', 'gw2')
+        worker_id = request.config.workerinput["workerid"]
+        worker_num = int(worker_id.replace("gw", ""))
+        healthcheck_port = 9000 + worker_num + 1
+    else:
+        # In the master process (or not using xdist)
+        healthcheck_port = 9000
+
+    return {
+        "task_always_eager": False,
+        "healthcheck_port": healthcheck_port,
+    }
 
 
 @pytest.fixture(scope="session")
 def celery_enable_logging():
     """Turns on celery output logs."""
     return True
+
+
+@pytest.fixture(scope="session")
+def celery_session_app(celery_session_app):
+    celery_healthcheck.register(celery_session_app)
+    return celery_session_app
 
 
 # This is here because the test suite occasionally fails to teardown the
@@ -792,6 +818,7 @@ def celery_session_worker(
         with worker.start_worker(
             celery_session_app,
             pool=celery_worker_pool,
+            shutdown_timeout=2.0,
             **celery_worker_parameters,
         ) as w:
             try:
@@ -801,17 +828,6 @@ def celery_session_worker(
                 logger.warning("Failed to dispose of the celery worker.")
     except RuntimeError as re:
         logger.warning("Failed to stop the celery worker: " + str(re))
-
-
-@pytest.fixture(scope="session")
-def celery_worker_parameters():
-    """Configure celery worker parameters for testing.
-
-    Increase shutdown_timeout to avoid flaky test failures when the worker
-    takes longer to shut down, especially during parallel test runs with pytest-xdist.
-    The CI environment can be slow, so we use a generous timeout.
-    """
-    return {"shutdown_timeout": 20.0}
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -918,7 +934,8 @@ def access_runner_tester(
             connection_configs,
             identity,
             session,
-            privacy_request_proceed=False,  # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
+            privacy_request_proceed=False,
+            # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
@@ -976,7 +993,8 @@ def consent_runner_tester(
             connection_configs,
             identity,
             session,
-            privacy_request_proceed=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
+            privacy_request_proceed=False,
+            # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
@@ -2418,6 +2436,18 @@ def mock_gcs_client(
             blobs[blob_name] = self
             return None
 
+        def mock_upload_from_string(
+            self,
+            data,
+            content_type=None,
+            num_retries=None,
+            client=None,
+            **kwargs,
+        ):
+            """Simulates uploading string/bytes data to the blob, storing it in the blobs dictionary."""
+            blobs[blob_name] = self
+            return None
+
         def mock_generate_signed_url(self, version, expiration, method, **kwargs):
             """Generates a signed URL for the blob, raising NotFound if the blob doesn't exist."""
             if blob_name not in blobs:
@@ -2440,6 +2470,12 @@ def mock_gcs_client(
         mock_blob.upload_from_file = types.MethodType(
             create_autospec(
                 storage.Blob.upload_from_file, side_effect=mock_upload_from_file
+            ),
+            mock_blob,
+        )
+        mock_blob.upload_from_string = types.MethodType(
+            create_autospec(
+                storage.Blob.upload_from_string, side_effect=mock_upload_from_string
             ),
             mock_blob,
         )

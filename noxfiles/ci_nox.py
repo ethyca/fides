@@ -74,6 +74,7 @@ def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
         ruff_arguments = session.posargs
 
     format_command = ("ruff", "format", *ruff_arguments)
+    format_check_command = ("ruff", "format", "--check", *ruff_arguments)
     check_command = ("ruff", "check", *ruff_arguments)
     sort_imports_command = ("ruff", "check", "--select", "I", "--fix", *ruff_arguments)
 
@@ -83,6 +84,8 @@ def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
         session.run(*sort_imports_command)
 
     elif mode == RuffMode.CHECK:
+        # Verify formatting (fail if files would be reformatted)
+        session.run(*format_check_command)
         # Lint code
         session.run(*check_command)
 
@@ -112,7 +115,6 @@ def xenon(session: nox.Session) -> None:
         "--max-modules=B",
         "--max-average=A",
         "--ignore=data,docs",
-        "--exclude=src/fides/_version.py",
     )
     session.run(*command, success_codes=[0, 1])
     session.warn(
@@ -133,7 +135,9 @@ def check_install(session: nox.Session) -> None:
 
     This is also a good sanity check for correct syntax.
     """
-    session.install(".")
+    # Build deps must be in env when using --no-build-isolation (hatchling is build-backend).
+    session.install("hatchling", "hatch-vcs", "setuptools==80.10.2", "wheel")
+    session.install("--no-build-isolation", ".")
 
     REQUIRED_ENV_VARS = {
         "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
@@ -262,25 +266,6 @@ def minimal_config_startup(session: nox.Session) -> None:
         IMAGE_NAME,
     )
     session.run(*start_command, external=True)
-
-
-#################
-## Performance ##
-#################
-@nox.session()
-def performance_tests(session: nox.Session) -> None:
-    """Compose the various performance checks into a single uber-test."""
-    session.notify("teardown")
-    perf_env = {
-        "FIDES__SECURITY__AUTH_RATE_LIMIT": "1000000/minute",
-        **session.env,
-    }
-    session.run(*START_APP, external=True, silent=True, env=perf_env)
-    samples = 2
-    for i in range(samples):
-        session.log(f"Sample {i + 1} of {samples}")
-        load_tests(session)
-        docker_stats(session)
 
 
 @nox.session()
@@ -451,13 +436,8 @@ def pytest(session: nox.Session, test_group: str) -> None:
 )
 def python_build(session: nox.Session, dist: str) -> None:
     "Build the Python distribution."
-    session.run(
-        *RUN_NO_DEPS,
-        "python",
-        "setup.py",
-        dist,
-        external=True,
-    )
+    build_arg = "--sdist" if dist == "sdist" else "--wheel"
+    session.run(*RUN_NO_DEPS, "uv", "build", build_arg, external=True)
 
 
 @nox_session()
@@ -465,6 +445,11 @@ def check_worker_startup(session: Session) -> None:
     """
     Check that the main 'worker-dsr' service can start up successfully using docker compose --wait.
     Relies on the healthcheck defined in docker-compose.yml.
+
+    Uses image ethyca/fides:local. To match CI (prod image), build it first:
+      uv run nox -s "build(test)"
+    then run:
+      uv run nox -s check_worker_startup
     """
     worker_service = "worker-dsr"
     session.log(f"Attempting to start and wait for service: {worker_service}")

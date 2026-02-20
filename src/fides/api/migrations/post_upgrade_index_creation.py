@@ -163,6 +163,16 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_descendant ON stagedresourceancestor (descendant_urn)",
             "type": "index",
         },
+        {
+            "name": "ix_staged_resource_ancestor_desc_anc_dist",
+            "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_desc_anc_dist ON stagedresourceancestor (descendant_urn, ancestor_urn, distance)",
+            "type": "index",
+        },
+        {
+            "name": "ix_staged_resource_ancestor_anc_dist_desc",
+            "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_anc_dist_desc ON stagedresourceancestor (ancestor_urn, distance, descendant_urn)",
+            "type": "index",
+        },
     ],
     "stagedresource": [
         {
@@ -183,6 +193,16 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
         {
             "name": "idx_stagedresource_classifications_gin",
             "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_classifications_gin ON stagedresource USING GIN (classifications)",
+            "type": "index",
+        },
+        {
+            "name": "ix_stagedresource_monitor_leaf_status_urn",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_leaf_status_urn ON stagedresource (monitor_config_id, is_leaf, diff_status, urn) WHERE is_leaf IS NOT NULL",
+            "type": "index",
+        },
+        {
+            "name": "ix_stagedresource_leaf_true_monitor_status_urn",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_leaf_true_monitor_status_urn ON stagedresource (monitor_config_id, diff_status, urn) WHERE is_leaf IS TRUE",
             "type": "index",
         },
     ],

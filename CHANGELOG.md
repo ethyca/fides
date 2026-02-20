@@ -19,7 +19,71 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.78.1..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.79.0..main)
+
+## [2.79.0](https://github.com/ethyca/fides/compare/2.78.2..2.79.0)
+
+### Added
+- Added endpoint to delete custom connector templates and fall back to Fides-provided template [#7320](https://github.com/ethyca/fides/pull/7320)
+- Added asset reporting table with CSV export for cross-system asset aggregation. [#7246](https://github.com/ethyca/fides/pull/7246)
+- Added is_leaf column to StagedResource with post-upgrade backfill infrastructure [#7263](https://github.com/ethyca/fides/pull/7263) https://github.com/ethyca/fides/labels/db-migration
+- Added custom integration UI indicators and deletion support [#7321](https://github.com/ethyca/fides/pull/7321)
+- Celery workers now have an HTTP healthcheck endpoint that can be used to check if the workers are running for environments that do not support running a command to check if the workers are running. [#7091](https://github.com/ethyca/fides/pull/7091)
+- Added distance column to StagedResourceAncestor table [#7326](https://github.com/ethyca/fides/pull/7326) https://github.com/ethyca/fides/labels/db-migration
+- Added database schema for privacy assessment answer history tracking [#7330](https://github.com/ethyca/fides/pull/7330) https://github.com/ethyca/fides/labels/db-migration
+- Additional SSO configuration options [#7351](https://github.com/ethyca/fides/pull/7351) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Migrated consent reporting tables to Ant Design [#7295](https://github.com/ethyca/fides/pull/7295)
+- Added deletion impact details to discovery monitor delete confirmation modal [#7343](https://github.com/ethyca/fides/pull/7343)
+- Refactored system inventory data stewards column to display cells and filters using the correct format [#7352](https://github.com/ethyca/fides/pull/7352)
+- Filtered unavailable condition fields for consent manual tasks [#7313](https://github.com/ethyca/fides/pull/7313)
+- Changed request received date to show MM/dd/yy format instead of relative time [#7298](https://github.com/ethyca/fides/pull/7298)
+- Replaced infrastructure scanner error page with shared ErrorPage component [#7338](https://github.com/ethyca/fides/pull/7338)
+- Removed beta flag for Okta monitor features [#7360](https://github.com/ethyca/fides/pull/7360)
+- Optimized graph traversal algorithms for improved performance with large dataset graphs [#7244](https://github.com/ethyca/fides/pull/7244)
+- Input password flow to require clicking an edit button [#7357](https://github.com/ethyca/fides/pull/7357)
+- Removed replaceable flag from custom connector template and added custom and file_template_available flags [#7319](https://github.com/ethyca/fides/pull/7319)
+
+### Developer Experience
+- Added unit tests for RequestTableActions component [#7166](https://github.com/ethyca/fides/pull/7166)
+- Migrated test datasets page to Ant Design components [#7304](https://github.com/ethyca/fides/pull/7304)
+- Added TypeScript types and API slice for Privacy Assessments feature [#7303](https://github.com/ethyca/fides/pull/7303)
+
+### Fixed
+- Disabled adding uncategorized assets from web monitor results [#7359](https://github.com/ethyca/fides/pull/7359)
+- Allow 5 minute grace period on scheduled jobs to mitigate job misfires [#7346](https://github.com/ethyca/fides/pull/7346)
+- Fixed boolean fields not showing pre-selected values in integration forms [#7349](https://github.com/ethyca/fides/pull/7349)
+- Improved error messages to log specific unresolved param values in SaaS requests [#7335](https://github.com/ethyca/fides/pull/7335)
+- Fixed useless "Save" button showing in core taxonomy edit drawer [#7318](https://github.com/ethyca/fides/pull/7318)
+- Filtered GPP notices from TCF experience privacy notice options [#7274](https://github.com/ethyca/fides/pull/7274)
+- Fixed duplicate action type tags in privacy request dashboard [#7358](https://github.com/ethyca/fides/pull/7358)
+- Encode database password when reused for readonly connection [#7375](https://github.com/ethyca/fides/pull/7375)
+
+## [2.78.2](https://github.com/ethyca/fides/compare/2.78.1..2.78.2)
+
+### Added
+- Default data steward filter in action center is dependant on assigned monitors [#7309](https://github.com/ethyca/fides/pull/7309)
+- Support for stewarded monitors specified on user clients [#7299](https://github.com/ethyca/fides/pull/7299)
+- Added support for chat provider configurations [#7297](https://github.com/ethyca/fides/pull/7297) https://github.com/ethyca/fides/labels/db-migration
+- More descriptive error message for unauthorized actions in action center [#7314](https://github.com/ethyca/fides/pull/7314)
+- Added UI support for selecting all items across pages in Okta monitor results [#7307](https://github.com/ethyca/fides/pull/7307)
+- Added a Policy Condition Evaluator. [#7253](https://github.com/ethyca/fides/pull/7253)
+- Support Google Service Account authentication [#7257](https://github.com/ethyca/fides/pull/7257)
+- Added ability to modify data uses for Okta monitor results in infrastructure systems [#7280](https://github.com/ethyca/fides/pull/7280)
+- Added Transcend cookie migration support to fides.js [#7272](https://github.com/ethyca/fides/pull/7272)
+
+### Changed
+- Customers field deletion are now preserved when merging datasets. [#7277](https://github.com/ethyca/fides/pull/7277)
+- Updated Okta monitor infrastructure systems filter functionality [#7289](https://github.com/ethyca/fides/pull/7289)
+- Refactored activity tab to use monitor_config_key filter when scoped to a monitor [#7273](https://github.com/ethyca/fides/pull/7273)
+- Updated Okta monitor form to use the standard monitor endpoints [#7276](https://github.com/ethyca/fides/pull/7276)
+
+### Developer Experience
+- Added tests for fidesString overriding existing cookie values [#7290](https://github.com/ethyca/fides/pull/7290)
+
+### Fixed
+- Fixed "ignore" option showing up on already-ignored items in Okta monitor results [#7312](https://github.com/ethyca/fides/pull/7312)
 
 ## [2.78.1](https://github.com/ethyca/fides/compare/2.78.0..2.78.1)
 

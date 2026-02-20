@@ -53,29 +53,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Action center",
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresAnyFlag: ["webMonitor", "heliosV2"],
         requiresPlus: true,
-      },
-      {
-        title: "Activity",
-        path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidesIfFlag: "heliosV2",
-      },
-      {
-        title: "Data detection",
-        path: routes.DATA_DETECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidesIfFlag: "heliosV2",
-      },
-      {
-        title: "Data discovery",
-        path: routes.DATA_DISCOVERY_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidesIfFlag: "heliosV2",
       },
       {
         title: "Data catalog",
@@ -115,8 +93,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Reporting",
+        title: "Data map report",
         path: routes.REPORTING_DATAMAP_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+      },
+      {
+        title: "Asset report",
+        path: routes.REPORTING_ASSETS_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
@@ -126,6 +110,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Privacy requests",
     icon: <Icons.MessageQueue />,
     routes: [
+      {
+        title: "Policies",
+        path: routes.POLICIES_ROUTE,
+        scopes: [ScopeRegistryEnum.POLICY_READ],
+      },
       {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
@@ -166,7 +155,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
       },
       {
-        title: "Consent reporting",
+        title: "Consent report",
         path: routes.CONSENT_REPORTING_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],

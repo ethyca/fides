@@ -189,7 +189,9 @@ from fides.service.privacy_request.privacy_request_diagnostics import (
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
-EMBEDDED_EXECUTION_LOG_LIMIT = 50
+# Heavely increasing the limit so the proper status of the request task is reflected
+# for long running requests like polling requests.
+EMBEDDED_EXECUTION_LOG_LIMIT = 1000
 
 
 def get_privacy_request_or_error(

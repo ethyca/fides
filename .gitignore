@@ -8,6 +8,7 @@ cc-test-reporter
 ## generic files to ignore
 *~
 *.lock
+!uv.lock
 *.DS_Store
 *.swp
 *.out
@@ -259,4 +260,7 @@ saas_config.toml
 multilang_migration_backup_*
 
 # Cursor
-.cursor/implementation-plans
+.cursor/*
+
+# Claude Code
+.claude/*

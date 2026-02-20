@@ -1,8 +1,7 @@
-import { Input, Select } from "fidesui";
+import { Input, PageSpinner, Select } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import getIntegrationTypeInfo, {
   INTEGRATION_TYPE_LIST,
@@ -32,7 +31,7 @@ const SelectIntegrationType = ({
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { oktaMonitor, newIntegrationManagement },
+    flags: { newIntegrationManagement, webMonitor },
   } = useFlags();
 
   // Fetch connection types for SAAS integration generation
@@ -87,8 +86,7 @@ const SelectIntegrationType = ({
     const allCategories: IntegrationCategoryFilter[] = [
       "ALL",
       ...Object.values(ConnectionCategory).filter(
-        (category) =>
-          category !== ConnectionCategory.IDENTITY_PROVIDER || oktaMonitor,
+        (category) => !!webMonitor || category !== ConnectionCategory.WEBSITE,
       ),
     ];
 
@@ -108,7 +106,7 @@ const SelectIntegrationType = ({
     }
 
     return allCategories;
-  }, [oktaMonitor, newIntegrationManagement, allIntegrationTypes]);
+  }, [newIntegrationManagement, webMonitor, allIntegrationTypes]);
 
   // Filter integrations based on search and category
   const filteredTypes = useMemo(() => {
@@ -119,6 +117,13 @@ const SelectIntegrationType = ({
       filtered = filtered.filter((i) => i.category === selectedCategory);
     }
 
+    // Filter out websites when disabled
+    if (!webMonitor) {
+      filtered = filtered.filter(
+        (i) => i.category !== ConnectionCategory.WEBSITE,
+      );
+    }
+
     // Filter by search term (name only)
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
@@ -127,21 +132,13 @@ const SelectIntegrationType = ({
       );
     }
 
-    // Apply flag-based filtering
-    filtered = filtered.filter((i) => {
-      if (!oktaMonitor && i.placeholder.connection_type === "okta") {
-        return false;
-      }
-      return true;
-    });
-
     // Sort integrations alphabetically by display name
     return filtered.sort((a, b) => {
       const nameA = a.placeholder.name || "";
       const nameB = b.placeholder.name || "";
       return nameA.localeCompare(nameB);
     });
-  }, [searchTerm, selectedCategory, oktaMonitor, allIntegrationTypes]);
+  }, [searchTerm, selectedCategory, webMonitor, allIntegrationTypes]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);
@@ -192,7 +189,7 @@ const SelectIntegrationType = ({
       </div>
 
       {isFiltering ? (
-        <FidesSpinner />
+        <PageSpinner />
       ) : (
         <div className="grid grid-cols-3 gap-6">
           {filteredTypes.map((i) => (

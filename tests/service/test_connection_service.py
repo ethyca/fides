@@ -15,6 +15,11 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery.core import (
+    MonitorConfig,
+    StagedResource,
+    StagedResourceAncestor,
+)
 from fides.api.models.event_audit import EventAuditType
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -920,6 +925,213 @@ class TestConnectionService:
         # Clean up
         connection_config.delete(db)
 
+    def test_upsert_dataset_preserves_monitored_endpoints_without_customer_dataset(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+    ):
+        """
+        Test that monitored endpoints are preserved in upsert_dataset_config_from_template
+        even when there is no existing customer dataset (DatasetConfig).
+
+        This tests the code path where:
+        1. Monitored endpoints exist for a connection
+        2. No existing DatasetConfig exists for the connection
+        3. The monitored collections should still be preserved in the final dataset
+        """
+        # Create connection config with SaaS config
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_monitored_connection",
+                "name": "Test Monitored Connection",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "saas_config": {
+                    "fides_key": "test_monitored_instance",
+                    "name": "Test Connector",
+                    "type": "test_monitored_connector",
+                    "description": "Test connector",
+                    "version": "0.1.0",
+                    "connector_params": [],
+                    "client_config": {"protocol": "https", "host": "api.example.com"},
+                    "test_request": {"method": "GET", "path": "/test"},
+                    "endpoints": [],
+                },
+            },
+        )
+
+        # Create MonitorConfig for this connection
+        monitor_config = MonitorConfig.create(
+            db=db,
+            data={
+                "key": "test_monitor_config",
+                "name": "Test Monitor Config",
+                "connection_config_id": connection_config.id,
+            },
+        )
+
+        # Create endpoint StagedResource for a monitored collection
+        endpoint = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_monitored_connector:monitored_collection",
+                "name": "monitored_collection",
+                "resource_type": "Endpoint",
+                "monitor_config_id": monitor_config.key,
+                "description": "Monitored collection from discovery",
+            },
+        )
+
+        # Create monitored field StagedResources
+        email_field = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_monitored_connector:monitored_collection:email",
+                "name": "email",
+                "resource_type": "Field",
+                "monitor_config_id": monitor_config.key,
+                "diff_status": "monitored",
+                "description": "User email address",
+                "user_assigned_data_categories": ["user.contact.email"],
+            },
+        )
+
+        name_field = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_monitored_connector:monitored_collection:name",
+                "name": "name",
+                "resource_type": "Field",
+                "monitor_config_id": monitor_config.key,
+                "diff_status": "monitored",
+                "user_assigned_data_categories": ["user.name"],
+            },
+        )
+
+        # Create ancestor relationships (endpoint -> fields)
+        StagedResourceAncestor.create(
+            db=db,
+            data={
+                "ancestor_urn": endpoint.urn,
+                "descendant_urn": email_field.urn,
+            },
+        )
+        StagedResourceAncestor.create(
+            db=db,
+            data={
+                "ancestor_urn": endpoint.urn,
+                "descendant_urn": name_field.urn,
+            },
+        )
+
+        # Create a template with a different collection (not the monitored one)
+        template_dataset_yaml = dedent(
+            """
+            dataset:
+              - fides_key: <instance_fides_key>
+                name: Test Dataset
+                description: Template dataset
+                collections:
+                  - name: users
+                    fields:
+                      - name: id
+                        data_categories: [user.unique_id]
+                        fides_meta:
+                          data_type: string
+                          primary_key: true
+                      - name: email
+                        data_categories: [user.contact.email]
+                        fides_meta:
+                          data_type: string
+            """
+        ).strip()
+
+        connector_template = ConnectorTemplate(
+            config=dedent(
+                """
+                saas_config:
+                  fides_key: <instance_fides_key>
+                  name: Test Connector
+                  type: test_monitored_connector
+                  description: Test connector
+                  version: 1.0.0
+                  connector_params: []
+                  client_config:
+                    protocol: https
+                    host: api.example.com
+                  test_request:
+                    method: GET
+                    path: /test
+                  endpoints: []
+            """
+            ).strip(),
+            dataset=template_dataset_yaml,
+            human_readable="Test Connector",
+            authorization_required=False,
+            supported_actions=[ActionType.access, ActionType.erasure],
+            category=ConnectionCategory.ANALYTICS,
+        )
+
+        # Verify no existing DatasetConfig exists
+        existing_dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "test_monitored_instance"),
+        ).first()
+        assert existing_dataset_config is None
+
+        # Execute upsert_dataset_config_from_template
+        result_dataset_config = connection_service.upsert_dataset_config_from_template(
+            connection_config=connection_config,
+            template=connector_template,
+            template_values=SaasConnectionTemplateValues(
+                secrets={}, instance_key="test_monitored_instance"
+            ),
+        )
+
+        # Verify the result
+        assert result_dataset_config is not None
+        ctl_dataset = result_dataset_config.ctl_dataset
+        assert ctl_dataset is not None
+        assert ctl_dataset.fides_key == "test_monitored_instance"
+
+        # Verify collections include both the template collection and the monitored collection
+        collection_names = {col["name"] for col in ctl_dataset.collections}
+        assert "users" in collection_names, (
+            "Template collection 'users' should be present"
+        )
+        assert "monitored_collection" in collection_names, (
+            "Monitored collection should be preserved even without customer dataset"
+        )
+
+        # Verify the monitored collection has the correct fields
+        monitored_collection = next(
+            col
+            for col in ctl_dataset.collections
+            if col["name"] == "monitored_collection"
+        )
+        field_names = {field["name"] for field in monitored_collection["fields"]}
+        assert field_names == {"email", "name"}
+
+        # Verify field data categories from monitored fields
+        email_field_dict = next(
+            field
+            for field in monitored_collection["fields"]
+            if field["name"] == "email"
+        )
+        assert "user.contact.email" in email_field_dict["data_categories"]
+
+        name_field_dict = next(
+            field for field in monitored_collection["fields"] if field["name"] == "name"
+        )
+        assert "user.name" in name_field_dict["data_categories"]
+
+        # Clean up
+        result_dataset_config.delete(db)
+        if result_dataset_config.ctl_dataset:
+            result_dataset_config.ctl_dataset.delete(db=db)
+        connection_config.delete(db)
+
     def _create_custom_field(self, name: str = "custom_attribute") -> Dict[str, Any]:
         """Helper method to create a custom field for testing."""
         return {
@@ -1358,3 +1570,109 @@ class TestConnectionService:
         }
         assert "email" in products_fields
         assert "orders_id" in orders_fields
+
+    def test_update_existing_connection_configs_case_insensitive(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+    ):
+        """
+                Test that update_existing_connection_configs_for_connector_type matches
+                connection configs regardless of the case of the 'type' field stored
+                in the saas_config JSONB column.
+        .
+        """
+        # Create a connection config with UPPERCASE type in saas_config
+        # (simulates what happens when the raw YAML dict is stored directly)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_case_connection",
+                "name": "Test Case Connection",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "saas_config": {
+                    "fides_key": "test_case_instance",
+                    "name": "Test Connector",
+                    "type": "TEST_CASE_CONNECTOR",  # uppercase, as stored from raw YAML
+                    "description": "Test connector",
+                    "version": "0.1.0",
+                    "connector_params": [],
+                    "client_config": {
+                        "protocol": "https",
+                        "host": "api.example.com",
+                    },
+                    "test_request": {"method": "GET", "path": "/test"},
+                    "endpoints": [],
+                },
+            },
+        )
+
+        # Reuse the stored_dataset fixture as the customer's existing dataset
+        customer_dataset = copy.deepcopy(stored_dataset)
+        customer_dataset["fides_key"] = "test_case_instance"
+
+        DatasetConfig.create_or_update(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_case_instance",
+                "dataset": customer_dataset,
+            },
+        )
+
+        # Store the baseline template dataset (as SaasTemplateDataset)
+        SaasTemplateDataset.get_or_create(
+            db=db,
+            connector_type="test_case_connector",
+            dataset_json=stored_dataset,
+        )
+
+        # Create a connector template with LOWERCASE type (as normalized by SaaSConfig)
+        # using the same template YAML helper used by other tests
+        connector_template = ConnectorTemplate(
+            config=dedent(
+                """
+                saas_config:
+                  fides_key: <instance_fides_key>
+                  name: Test Connector
+                  type: test_case_connector
+                  description: Test connector
+                  version: 1.0.0
+                  connector_params: []
+                  client_config:
+                    protocol: https
+                    host: api.example.com
+                  test_request:
+                    method: GET
+                    path: /test
+                  endpoints: []
+            """
+            ).strip(),
+            dataset=self._get_template_yaml(),
+            human_readable="Test Connector",
+            authorization_required=False,
+            supported_actions=[ActionType.access, ActionType.erasure],
+            category=ConnectionCategory.ANALYTICS,
+        )
+
+        # Call with LOWERCASE connector_type (as save_template would)
+        connection_service.update_existing_connection_configs_for_connector_type(
+            "test_case_connector",  # lowercase, from SaaSConfig.type
+            connector_template,
+        )
+
+        # Verify the dataset was updated — the merge should produce
+        # the template's "products" collection
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "test_case_instance"),
+        ).first()
+
+        assert dataset_config is not None
+        ctl_dataset = dataset_config.ctl_dataset
+        assert ctl_dataset is not None
+
+        collection_names = {c["name"] for c in ctl_dataset.collections}
+        assert "products" in collection_names

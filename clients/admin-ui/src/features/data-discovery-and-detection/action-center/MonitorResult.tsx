@@ -17,7 +17,6 @@ import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useState } from "react";
 
-import { useFeatures } from "~/features/common/features";
 import {
   formatDate,
   formatUser,
@@ -54,8 +53,6 @@ export const MonitorResult = ({
   href,
   ...props
 }: MonitorResultProps) => {
-  const { flags } = useFeatures();
-  const { heliosV2: heliosV2Enabled } = flags;
   const {
     name,
     consent_status: consentStatus,
@@ -114,7 +111,6 @@ export const MonitorResult = ({
       {...props}
       className={`flex-wrap gap-x-4 lg:gap-x-8 ${styles["monitor-result"]}`}
       extra={
-        heliosV2Enabled &&
         showConfidenceRow &&
         confidenceCounts && (
           <ExpandCollapse
@@ -132,7 +128,7 @@ export const MonitorResult = ({
         )
       }
       actions={[
-        ...(heliosV2Enabled && showConfidenceRow
+        ...(showConfidenceRow
           ? [
               <Button
                 key="findings"
@@ -231,15 +227,12 @@ export const MonitorResult = ({
       )}
       {!!lastMonitoredDistance && (
         <Tooltip title={formattedLastMonitored}>
-          <Text
-            className="!hidden flex-[6rem] !grow-0 text-center md:!flex lg:flex-[10rem]"
-            type="secondary"
-            data-testid="monitor-date"
-            ellipsis
-          >
-            <span className="hidden lg:contents">Last scan: </span>
-            {lastMonitoredDistance}
-          </Text>
+          <div className="!hidden flex-[6rem] !grow-0 overflow-hidden text-center md:!flex lg:flex-[10rem]">
+            <Text type="secondary" data-testid="monitor-date" ellipsis>
+              <span className="hidden lg:contents">Last scan: </span>
+              {lastMonitoredDistance}
+            </Text>
+          </div>
         </Tooltip>
       )}
     </List.Item>
