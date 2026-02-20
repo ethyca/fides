@@ -10,6 +10,7 @@ import {
 import {
   Avatar,
   Button,
+  Checkbox,
   Collapse,
   CUSTOM_TAG_COLOR,
   Drawer,
@@ -298,6 +299,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [createReminder, { isLoading: isSendingReminder }] =
     useCreateQuestionnaireReminderMutation();
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isExternalExport, setIsExternalExport] = useState(false);
   const authToken = useSelector((state: RootState) => state.auth.token);
 
   // Get question groups from assessment
@@ -1013,7 +1015,10 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           </Flex>
         }
         open={isReportModalOpen}
-        onCancel={() => setIsReportModalOpen(false)}
+        onCancel={() => {
+          setIsReportModalOpen(false);
+          setIsExternalExport(false);
+        }}
         footer={null}
         width={600}
       >
@@ -1140,6 +1145,52 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             </Space>
           </div>
 
+          <div
+            style={{
+              paddingBottom: 24,
+              borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+            }}
+          >
+            <Title
+              level={5}
+              style={{
+                marginBottom: 16,
+                textTransform: "uppercase",
+                fontSize: 11,
+                letterSpacing: 1,
+                fontWeight: 600,
+                color: palette.FIDESUI_NEUTRAL_700,
+              }}
+            >
+              Export Options
+            </Title>
+            <Tooltip
+              title={
+                !isComplete
+                  ? "Assessment must be 100% complete to export for external signing"
+                  : undefined
+              }
+            >
+              <Checkbox
+                checked={isExternalExport}
+                disabled={!isComplete}
+                onChange={(e) => setIsExternalExport(e.target.checked)}
+              >
+                <Text style={{ fontSize: 14 }}>
+                  Export for external signing
+                </Text>
+              </Checkbox>
+            </Tooltip>
+            <Text
+              type="secondary"
+              style={{ display: "block", marginTop: 8, fontSize: 12 }}
+            >
+              {isExternalExport
+                ? "Final document format: includes only questions and answers, without status, risk assessment, or evidence details."
+                : "Internal format: includes full details including status, risk assessment, and supporting evidence."}
+            </Text>
+          </div>
+
           <Flex
             gap="small"
             style={{
@@ -1158,8 +1209,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 setIsDownloadingPdf(true);
                 try {
                   const baseUrl = process.env.NEXT_PUBLIC_FIDESCTL_API;
+                  const exportMode = isExternalExport ? "external" : "internal";
                   const response = await fetch(
-                    `${baseUrl}/plus/privacy-assessments/${assessment.id}/pdf`,
+                    `${baseUrl}/plus/privacy-assessments/${assessment.id}/pdf?export_mode=${exportMode}`,
                     {
                       headers: {
                         Authorization: `Bearer ${authToken}`,
@@ -1198,6 +1250,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
                   message.success("PDF downloaded successfully");
                   setIsReportModalOpen(false);
+                  setIsExternalExport(false);
                 } catch {
                   message.error("Failed to download PDF. Please try again.");
                 } finally {
