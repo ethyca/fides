@@ -1,11 +1,11 @@
 import { ChakraFlex as Flex } from "fidesui";
-import * as React from "react";
+
 import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 
+import { ChartsPlayground } from "./components";
 import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
-import { ChartsPlayground } from "./components";
 
 const HomeContainer = () => {
   const {
@@ -19,7 +19,7 @@ const HomeContainer = () => {
         {alphaDashboardCharts && <ChartsPlayground />}
       </Flex>
     </Layout>
-  )
+  );
 };
 
 export default HomeContainer;
