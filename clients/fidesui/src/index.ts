@@ -387,7 +387,6 @@ export { extendTheme, theme } from "./FidesUITheme";
  * Ant Design Theme System
  */
 export {
-  createDarkAntTheme,
   createDefaultAntTheme,
   darkAntTheme,
   defaultAntTheme,

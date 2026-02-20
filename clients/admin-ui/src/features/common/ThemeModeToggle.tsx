@@ -1,5 +1,5 @@
 import type { ThemeMode } from "fidesui";
-import { Button, Icons, Segmented, useThemeMode } from "fidesui";
+import { Icons, Segmented, useThemeMode } from "fidesui";
 
 // NOTE: This button is temporary, only for testing in dev.
 

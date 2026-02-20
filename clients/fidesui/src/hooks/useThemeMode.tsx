@@ -6,7 +6,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -103,10 +102,7 @@ export const ThemeModeProvider = ({
   );
 
   return (
-    <div
-      {...{ [attribute]: effectiveMode }}
-      style={wrapperStyle}
-    >
+    <div {...{ [attribute]: effectiveMode }} style={wrapperStyle}>
       {contextProvider}
     </div>
   );
