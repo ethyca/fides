@@ -21,7 +21,11 @@ import { MONITOR_TYPES } from "~/features/data-discovery-and-detection/action-ce
 import { useGetUserMonitorsQuery } from "~/features/user-management";
 
 import MonitorListSearchForm from "./forms/MonitorListSearchForm";
-import { SearchFormQueryState } from "./MonitorList.const";
+import {
+  MonitorSearchForm,
+  MonitorSearchFormQuerySchema,
+  SearchFormQueryState,
+} from "./MonitorList.const";
 
 const MonitorList = () => {
   const toast = useToast();
@@ -49,22 +53,19 @@ const MonitorList = () => {
 
   const defaultStewardFilter =
     (userMonitors ?? []).length > 0 ? currentUser?.id : undefined;
-  const { requestData, ...formProps } = useSearchForm({
+
+  const { requestData, ...formProps } = useSearchForm<any, MonitorSearchForm>({
+    schema: MonitorSearchFormQuerySchema([...availableMonitorTypes]),
     queryState: SearchFormQueryState(
       [...availableMonitorTypes],
       defaultStewardFilter,
     ),
     initialValues: {
-      steward_key: defaultStewardFilter,
+      search: null,
+      monitor_type: null,
+      steward_key: defaultStewardFilter ?? null,
     },
-    translate: ({
-      steward_key,
-      search,
-      monitor_type,
-    }): Omit<
-      Parameters<typeof useGetAggregateMonitorResultsQuery>[0],
-      "page" | "size"
-    > => {
+    translate: ({ search, monitor_type, steward_key }) => {
       return {
         search: search || undefined,
         monitor_type: monitor_type
@@ -103,9 +104,9 @@ const MonitorList = () => {
     <Flex className="h-[calc(100%-48px)] overflow-hidden" gap="middle" vertical>
       <MonitorListSearchForm
         {...formProps}
-        onFieldsChange={(...args) => {
+        onFinish={(values) => {
+          formProps.onFinish(values);
           resetPagination();
-          formProps.onFieldsChange(...args);
         }}
         availableMonitorTypes={availableMonitorTypes}
       />

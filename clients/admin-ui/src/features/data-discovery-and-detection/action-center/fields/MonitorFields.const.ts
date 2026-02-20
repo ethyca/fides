@@ -17,15 +17,15 @@ export const FIELD_PAGE_SIZE = 25;
 
 export const RESOURCE_STATUS = [
   "Unlabeled",
-  "Classifying...",
+  "Classifying",
   "Classified",
   "Reviewed",
-  "Approving...",
+  "Approving",
   "Approved",
   "Removed",
   "Ignored",
   "Error",
-  "Removing...",
+  "Removing",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
@@ -34,16 +34,16 @@ export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
 export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
   "Approved",
   "Ignored",
-  "Approving...",
-  "Removing...",
+  "Approving",
+  "Removing",
 ];
 
 export const DEFAULT_FILTER_STATUSES: Exclude<
   ResourceStatusLabel,
-  "Approved" | "Ignored" | "Approving..." | "Removing..."
+  "Approved" | "Ignored" | "Approving" | "Removing"
 >[] = [
   "Unlabeled",
-  "Classifying...",
+  "Classifying",
   "Classified",
   "Reviewed",
   "Removed",
@@ -56,15 +56,15 @@ export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
     reviewed: "Reviewed",
     classification_addition: "Classified",
     classification_error: "Error",
-    classification_queued: "Classifying...",
+    classification_queued: "Classifying",
     classification_update: "Classified",
-    classifying: "Classifying...",
+    classifying: "Classifying",
     monitored: "Approved",
     muted: "Ignored",
-    promoting: "Approving...",
+    promoting: "Approving",
     promotion_error: "Error",
     removal: "Removed",
-    removing: "Removing...",
+    removing: "Removing",
     removal_promotion_error: "Error",
   } as const;
 
@@ -86,23 +86,23 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
     color: CUSTOM_TAG_COLOR.ERROR,
   },
   classification_queued: {
-    label: "Classifying...",
+    label: "Classifying",
     color: CUSTOM_TAG_COLOR.INFO,
   },
   classification_update: {
     label: "Classified",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
-  classifying: { label: "Classifying...", color: CUSTOM_TAG_COLOR.INFO },
+  classifying: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
   monitored: { label: "Approved", color: CUSTOM_TAG_COLOR.SUCCESS },
   muted: { label: "Ignored", color: CUSTOM_TAG_COLOR.DEFAULT },
-  promoting: { label: "Approving...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  promoting: { label: "Approving", color: CUSTOM_TAG_COLOR.DEFAULT },
   promotion_error: {
     label: "Error",
     color: CUSTOM_TAG_COLOR.ERROR,
   },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
-  removing: { label: "Removing...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  removing: { label: "Removing", color: CUSTOM_TAG_COLOR.DEFAULT },
   removal_promotion_error: {
     label: "Error",
     color: CUSTOM_TAG_COLOR.ERROR,
@@ -117,12 +117,6 @@ export const MAP_DATASTORE_RESOURCE_TYPE_TO_ICON: Partial<
   [StagedResourceTypeValue.FIELD]: Icons.Column,
   [StagedResourceTypeValue.SCHEMA]: Icons.Db2Database,
   [StagedResourceTypeValue.TABLE]: Icons.Table,
-} as const;
-
-export const FIELDS_FILTER_SECTION_KEYS = {
-  STATUS: "status-section",
-  DATA_CATEGORY: "data-category-section",
-  CONFIDENCE: "confidence-section",
 } as const;
 
 // Map tree resource change indicator to status info
