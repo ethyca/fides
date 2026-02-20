@@ -1,5 +1,9 @@
 import { baseApi } from "~/features/common/api.slice";
-import type { Page_PolicyResponse_, PolicyResponse } from "~/types/api";
+import type {
+  MaskingStrategyDescription,
+  Page_PolicyResponse_,
+  PolicyResponse,
+} from "~/types/api";
 
 // Policy API
 const policyApi = baseApi.injectEndpoints({
@@ -15,7 +19,15 @@ const policyApi = baseApi.injectEndpoints({
         { type: "Policies", id: policyKey },
       ],
     }),
+
+    getMaskingStrategies: build.query<MaskingStrategyDescription[], void>({
+      query: () => ({ url: `/masking/strategy` }),
+    }),
   }),
 });
 
-export const { useGetPoliciesQuery, useGetPolicyQuery } = policyApi;
+export const {
+  useGetPoliciesQuery,
+  useGetPolicyQuery,
+  useGetMaskingStrategiesQuery,
+} = policyApi;

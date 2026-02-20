@@ -10,7 +10,7 @@ import {
 import { ChangeEvent } from "react";
 
 import { useGetLocationsRegulationsQuery } from "~/features/locations/locations.slice";
-import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
+import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 
 import { CustomFieldMetadata } from "../types";
 import { FieldType, getFieldTypeWithMetadata } from "../utils";

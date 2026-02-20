@@ -1227,4 +1227,19 @@ export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
       ],
     },
   }).as("getDSRPolicy");
+  cy.intercept("GET", "/api/v1/masking/strategy", {
+    body: [
+      {
+        name: "hmac",
+        description:
+          "Masks the input value by computing a hash using the HMAC algorithm",
+        configurations: [],
+      },
+      {
+        name: "null_rewrite",
+        description: "Masks the input value by replacing it with a null value",
+        configurations: [],
+      },
+    ],
+  }).as("getMaskingStrategies");
 };
