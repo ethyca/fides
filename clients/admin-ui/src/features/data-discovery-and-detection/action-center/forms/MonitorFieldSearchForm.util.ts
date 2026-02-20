@@ -35,6 +35,10 @@ export const MonitorFieldSearchFormQueryState = {
   data_category: parseAsArrayOf(parseAsString),
 } satisfies UseQueryStatesKeysMap;
 
+/**
+ ** This type returns the resulting type from the valibot schema defined above if it's type signature matches the output of the state defined by nuqs.
+ ** If they types do not match, it returns never, causing an error
+ * */
 export type MonitorFieldSearchForm =
   v.InferOutput<typeof MonitorFieldSearchFormQuerySchema> extends Values<
     typeof MonitorFieldSearchFormQueryState
