@@ -71,7 +71,7 @@ class TestGetMemoryWatchdogEnabled:
 
     def test_exception_handling_returns_false(self):
         """Test that exceptions in config access return False (default)."""
-        with patch("fides.api.api.deps.get_autoclose_db_session") as mock_get_db:
+        with patch("fides.api.deps.get_autoclose_db_session") as mock_get_db:
             mock_get_db.side_effect = Exception("Database error")
 
             result = get_memory_watchdog_enabled()

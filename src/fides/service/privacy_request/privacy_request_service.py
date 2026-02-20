@@ -903,7 +903,7 @@ def _handle_scheduling_failure(
     Creates an ExecutionLog entry for visibility in the activity timeline and
     marks the privacy request as errored with the detailed error message.
     """
-    from fides.api.api.deps import (  # pylint: disable=cyclic-import
+    from fides.api.deps import (  # pylint: disable=cyclic-import
         get_autoclose_db_session as get_db,
     )
 
@@ -933,7 +933,7 @@ def _clear_scheduling_failure_if_exists(privacy_request_id: str) -> None:
 
     This clears the error styling in the UI activity timeline when a retry succeeds.
     """
-    from fides.api.api.deps import (  # pylint: disable=cyclic-import
+    from fides.api.deps import (  # pylint: disable=cyclic-import
         get_autoclose_db_session as get_db,
     )
 

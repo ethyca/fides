@@ -2137,7 +2137,7 @@ class TestTestMessage:
         "info",
         [{"phone_number": "+19198675309"}, {"email": "some@email.com"}],
     )
-    @patch("fides.api.api.v1.endpoints.messaging_endpoints.dispatch_message")
+    @patch("fides.api.v1.endpoints.messaging_endpoints.dispatch_message")
     def test_test_message(
         self, mock_dispatch_message, info, generate_auth_header, url, api_client
     ):
@@ -2167,7 +2167,7 @@ class TestTestMessage:
         assert response.status_code == 400
 
     @patch(
-        "fides.api.api.v1.endpoints.messaging_endpoints.dispatch_message",
+        "fides.api.v1.endpoints.messaging_endpoints.dispatch_message",
         side_effect=MessageDispatchException("No service"),
     )
     def test_test_message_dispatch_error(

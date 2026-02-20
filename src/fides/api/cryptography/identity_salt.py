@@ -3,7 +3,7 @@ from functools import cache
 
 from loguru import logger
 
-from fides.api.api.deps import get_autoclose_db_session
+from fides.api.deps import get_autoclose_db_session
 from fides.api.models.identity_salt import IdentitySalt
 
 

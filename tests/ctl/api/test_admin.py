@@ -142,11 +142,11 @@ class TestBackfillEndpoints:
 
         with (
             patch(
-                "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+                "fides.api.v1.endpoints.admin.acquire_backfill_lock",
                 return_value=mock_lock,
             ),
             patch(
-                "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+                "fides.api.v1.endpoints.admin.run_backfill_manually",
             ),
         ):
             response = test_client.post(
@@ -169,7 +169,7 @@ class TestBackfillEndpoints:
     ) -> None:
         """Test that backfill endpoint returns 409 when backfill already running."""
         with patch(
-            "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+            "fides.api.v1.endpoints.admin.acquire_backfill_lock",
             return_value=None,
         ):
             response = test_client.post(
@@ -208,11 +208,11 @@ class TestBackfillEndpoints:
 
         with (
             patch(
-                "fides.api.api.v1.endpoints.admin.acquire_backfill_lock",
+                "fides.api.v1.endpoints.admin.acquire_backfill_lock",
                 return_value=mock_lock,
             ),
             patch(
-                "fides.api.api.v1.endpoints.admin.run_backfill_manually",
+                "fides.api.v1.endpoints.admin.run_backfill_manually",
             ),
         ):
             response = test_client.post(
@@ -253,15 +253,15 @@ class TestBackfillEndpoints:
         """Test that GET backfill returns correct status."""
         with (
             patch(
-                "fides.api.api.v1.endpoints.admin.is_backfill_running",
+                "fides.api.v1.endpoints.admin.is_backfill_running",
                 return_value=is_running,
             ),
             patch(
-                "fides.api.api.v1.endpoints.admin.get_pending_is_leaf_count",
+                "fides.api.v1.endpoints.admin.get_pending_is_leaf_count",
                 return_value=pending_count_is_leaf,
             ),
             patch(
-                "fides.api.api.v1.endpoints.admin.get_pending_distance_count",
+                "fides.api.v1.endpoints.admin.get_pending_distance_count",
                 return_value=pending_count_distance,
             ),
         ):

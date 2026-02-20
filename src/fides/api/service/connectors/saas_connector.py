@@ -10,7 +10,6 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
-from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
@@ -18,6 +17,7 @@ from fides.api.common_exceptions import (
     PostProcessingException,
     SkippingConsentPropagation,
 )
+from fides.api.deps import get_autoclose_db_session as get_db
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy

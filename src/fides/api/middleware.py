@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.types import Message
 
-from fides.api.api import deps
+from fides.api import deps
 from fides.api.models.sql_models import AuditLogResource  # type: ignore[attr-defined]
 from fides.api.oauth.utils import extract_token_and_load_client
 
