@@ -1,5 +1,8 @@
 import pytest
-from starlette.status import HTTP_200_OK
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_409_CONFLICT,
+)
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.schemas.saas.async_polling_configuration import (
@@ -134,5 +137,115 @@ class TestPollingRequestHandler:
         param_values = {
             "request_id": "req_12345",
         }
+        with pytest.raises(PrivacyRequestError):
+            polling_request_handler.get_result_response(client, param_values)
+
+    def test_get_status_response_ignore_errors_returns_response(self):
+        """When ignore_errors includes the status code, the handler returns
+        the errored response instead of raising."""
+        client = MockAuthenticatedClient()
+        client.add_response(
+            "GET",
+            "/api/status/req_12345",
+            {"error": "conflict"},
+            status_code=409,
+        )
+        polling_request_handler = PollingRequestHandler(
+            status_request=PollingStatusRequest(
+                method=HTTPMethod.GET,
+                path="/api/status/<request_id>",
+                status_path="status",
+                status_completed_value="completed",
+                ignore_errors=[409],
+            ),
+            result_request=PollingResultRequest(
+                method=HTTPMethod.GET,
+                path="/api/result/<request_id>",
+            ),
+        )
+        param_values = {"request_id": "req_12345"}
+        response = polling_request_handler.get_status_response(client, param_values)
+        assert response.status_code == HTTP_409_CONFLICT
+        assert not response.ok
+
+    def test_get_status_response_ignore_errors_still_raises_for_unlisted_code(self):
+        """When ignore_errors is configured but the status code is NOT in the list,
+        the handler still raises PrivacyRequestError."""
+        client = MockAuthenticatedClient()
+        client.add_response(
+            "GET",
+            "/api/status/req_12345",
+            {"error": "server error"},
+            status_code=500,
+        )
+        polling_request_handler = PollingRequestHandler(
+            status_request=PollingStatusRequest(
+                method=HTTPMethod.GET,
+                path="/api/status/<request_id>",
+                status_path="status",
+                status_completed_value="completed",
+                ignore_errors=[409],
+            ),
+            result_request=PollingResultRequest(
+                method=HTTPMethod.GET,
+                path="/api/result/<request_id>",
+            ),
+        )
+        param_values = {"request_id": "req_12345"}
+        with pytest.raises(PrivacyRequestError):
+            polling_request_handler.get_status_response(client, param_values)
+
+    def test_get_result_response_ignore_errors_returns_response(self):
+        """When ignore_errors includes the status code, the handler returns
+        the errored response instead of raising."""
+        client = MockAuthenticatedClient()
+        client.add_response(
+            "GET",
+            "/api/result/req_12345",
+            {"error": "conflict"},
+            status_code=409,
+        )
+        polling_request_handler = PollingRequestHandler(
+            status_request=PollingStatusRequest(
+                method=HTTPMethod.GET,
+                path="/api/status/<request_id>",
+                status_path="status",
+                status_completed_value="completed",
+            ),
+            result_request=PollingResultRequest(
+                method=HTTPMethod.GET,
+                path="/api/result/<request_id>",
+                ignore_errors=[409],
+            ),
+        )
+        param_values = {"request_id": "req_12345"}
+        response = polling_request_handler.get_result_response(client, param_values)
+        assert response.status_code == HTTP_409_CONFLICT
+        assert not response.ok
+
+    def test_get_result_response_ignore_errors_still_raises_for_unlisted_code(self):
+        """When ignore_errors is configured but the status code is NOT in the list,
+        the handler still raises PrivacyRequestError."""
+        client = MockAuthenticatedClient()
+        client.add_response(
+            "GET",
+            "/api/result/req_12345",
+            {"error": "server error"},
+            status_code=500,
+        )
+        polling_request_handler = PollingRequestHandler(
+            status_request=PollingStatusRequest(
+                method=HTTPMethod.GET,
+                path="/api/status/<request_id>",
+                status_path="status",
+                status_completed_value="completed",
+            ),
+            result_request=PollingResultRequest(
+                method=HTTPMethod.GET,
+                path="/api/result/<request_id>",
+                ignore_errors=[409],
+            ),
+        )
+        param_values = {"request_id": "req_12345"}
         with pytest.raises(PrivacyRequestError):
             polling_request_handler.get_result_response(client, param_values)

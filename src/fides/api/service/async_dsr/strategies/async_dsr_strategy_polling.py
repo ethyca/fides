@@ -168,9 +168,13 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             )
 
         self.session.refresh(request_task)
-        raise AwaitingAsyncProcessing(
-            f"Waiting for next scheduled check of {request_task.dataset_name} access results."
-        )
+        if request_task.sub_requests:
+            raise AwaitingAsyncProcessing(
+                f"Waiting for next scheduled check of {request_task.dataset_name} access results."
+            )
+        # If no sub-requests were created (e.g. all initial requests returned
+        # ignored errors like 409), the task is already complete with no data.
+        return []
 
     def _initial_request_erasure(
         self,
@@ -310,12 +314,15 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         logger.info(f"Prepared requests: {len(prepared_requests)}")
 
         for next_request, param_value_map in prepared_requests:
-            response = client.send(next_request, read_request.ignore_errors)
-
+            response = PollingRequestHandler._send_and_handle_errors(
+                client,
+                next_request,
+                read_request.ignore_errors,
+                "Initial async polling request",
+                exception_cls=FidesopsException,
+            )
             if not response.ok:
-                raise FidesopsException(
-                    f"Initial async request failed with status code {response.status_code}: {response.text}"
-                )
+                continue
 
             try:
                 response_data = response.json()
@@ -363,12 +370,15 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 prepared_request = query_config.generate_update_stmt(
                     row, policy, privacy_request
                 )
-                response = client.send(prepared_request, request.ignore_errors)
-
+                response = PollingRequestHandler._send_and_handle_errors(
+                    client,
+                    prepared_request,
+                    request.ignore_errors,
+                    "Initial async polling erasure request",
+                    exception_cls=FidesopsException,
+                )
                 if not response.ok:
-                    raise FidesopsException(
-                        f"Initial erasure request failed with status code {response.status_code}: {response.text}"
-                    )
+                    continue
 
                 # Extract correlation ID from response (required, like access requests)
                 try:
