@@ -14,6 +14,10 @@ from fides.config.schemas.credentials import (
     ConnectorFailureException,
     OktaConfig,
 )
+from fides.connectors.okta.okta_http_client import (
+    OktaApplication,
+    OktaHttpClient,
+)
 
 
 def get_okta_client(okta_config: Optional[OktaConfig]) -> OktaHttpClient:

@@ -5,21 +5,21 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.privacy_request.email_batch_service import (
+from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.config import get_config
+from fides.service.privacy_request.email_batch_service import (
     BATCH_EMAIL_SEND,
     initiate_scheduled_batch_email_send,
 )
-from fides.api.service.privacy_request.request_runner_service import (
+from fides.service.privacy_request.request_runner_service import (
     initiate_paused_privacy_request_followup,
 )
-from fides.api.service.privacy_request.request_service import (
+from fides.service.privacy_request.request_service import (
     DSR_DATA_REMOVAL,
     PRIVACY_REQUEST_STATUS_CHANGE_POLL,
     initiate_poll_for_exited_privacy_request_tasks,
     initiate_scheduled_dsr_data_removal,
 )
-from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.config import get_config
 
 CONFIG = get_config()
 

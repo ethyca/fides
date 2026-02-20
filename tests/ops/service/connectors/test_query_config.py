@@ -14,12 +14,14 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
-from fides.api.service.connectors.query_configs.query_config import (
+from fides.api.util.data_category import DataCategory
+from fides.connectors.query_config import (
     QueryConfig,
     SQLQueryConfig,
 )
-from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
-from fides.api.util.data_category import DataCategory
+from fides.service.privacy_request.masking.strategy.masking_strategy_hash import (
+    HashMaskingStrategy,
+)
 from tests.fixtures.application_fixtures import load_dataset
 from tests.ops.test_helpers.dataset_utils import remove_primary_keys
 

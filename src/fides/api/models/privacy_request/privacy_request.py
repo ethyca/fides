@@ -125,7 +125,7 @@ from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.config import CONFIG
-from fides.service.attachment_service import AttachmentService
+from fides.service.attachment.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.consent import (  # type: ignore[attr-defined]
@@ -1067,7 +1067,7 @@ class PrivacyRequest(
         To respond, the service should send a request to one of the reply-to URLs with the reply-to-token.
         """
         # temp fix for circular dependency
-        from fides.api.service.connectors import HTTPSConnector, get_connector
+        from fides.connectors import HTTPSConnector, get_connector
 
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(
@@ -1109,7 +1109,7 @@ class PrivacyRequest(
         to halt.  To resume, they use send a request to the reply-to URL with the reply-to-token.
         """
         # temp fix for circular dependency
-        from fides.api.service.connectors import HTTPSConnector, get_connector
+        from fides.connectors import HTTPSConnector, get_connector
 
         https_connector: HTTPSConnector = get_connector(webhook.connection_config)  # type: ignore
         request_body = SecondPartyRequestFormat(

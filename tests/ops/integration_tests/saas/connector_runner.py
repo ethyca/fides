@@ -33,10 +33,6 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.service.connectors import get_connector
-from fides.api.service.privacy_request.request_runner_service import (
-    build_consent_dataset_graph,
-)
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     persist_initial_erasure_request_tasks,
@@ -49,6 +45,10 @@ from fides.api.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.config import get_config
+from fides.connectors import get_connector
+from fides.service.privacy_request.request_runner_service import (
+    build_consent_dataset_graph,
+)
 
 CONFIG = get_config()
 

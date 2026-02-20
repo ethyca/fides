@@ -39,20 +39,6 @@ from fides.api.migrations.post_upgrade_index_creation import (
     initiate_post_upgrade_index_creation,
 )
 from fides.api.schemas.analytics import Event
-
-# pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.service.privacy_request.email_batch_service import (
-    initiate_scheduled_batch_email_send,
-)
-from fides.api.service.privacy_request.request_service import (
-    initiate_interrupted_task_requeue_poll,
-    initiate_poll_for_exited_privacy_request_tasks,
-    initiate_polling_task_requeue,
-    initiate_scheduled_dsr_data_removal,
-)
-
-# pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.ui import (
     get_admin_index_as_response,
@@ -65,6 +51,20 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.rate_limit import safe_rate_limit_key
 from fides.common.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
+
+# pylint: disable=wildcard-import, unused-wildcard-import
+from fides.service.privacy_request.email_batch_service import (
+    initiate_scheduled_batch_email_send,
+)
+from fides.service.privacy_request.request_service import (
+    initiate_interrupted_task_requeue_poll,
+    initiate_poll_for_exited_privacy_request_tasks,
+    initiate_polling_task_requeue,
+    initiate_scheduled_dsr_data_removal,
+)
+
+# pylint: disable=wildcard-import, unused-wildcard-import
+from fides.service.privacy_request.saas_request.override_implementations import *
 
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
 

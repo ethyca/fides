@@ -12,8 +12,11 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.connectors.fides.fides_client import poll_server_for_completion
-from fides.api.service.privacy_request.request_service import (
+from fides.api.util.cache import cache_task_tracking_key
+from fides.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
+from fides.config import CONFIG
+from fides.connectors.fides.fides_client import poll_server_for_completion
+from fides.service.privacy_request.request_service import (
     _handle_privacy_request_requeue,
     build_required_privacy_request_kwargs,
     get_cached_task_id,
@@ -511,12 +514,12 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
         request_task.delete(db)
         privacy_request.delete(db)
 
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     def test_cancel_interrupted_tasks_and_error_privacy_request_success(
         self, mock_logger, db, privacy_request_with_tasks
     ):
         """Test successful cancellation and error state setting."""
-        from fides.api.service.privacy_request.request_service import (
+        from fides.service.privacy_request.request_service import (
             _cancel_interrupted_tasks_and_error_privacy_request,
         )
 
@@ -537,12 +540,12 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
                 mock_logger.error.assert_called_once()
                 mock_logger.info.assert_called_once()
 
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     def test_cancel_interrupted_tasks_and_error_privacy_request_error_processing_fails(
         self, mock_logger, db, privacy_request_with_tasks
     ):
         """Test handling when error_processing fails."""
-        from fides.api.service.privacy_request.request_service import (
+        from fides.service.privacy_request.request_service import (
             _cancel_interrupted_tasks_and_error_privacy_request,
         )
 
@@ -590,8 +593,8 @@ class TestGetCachedTaskId:
         result = get_cached_task_id(privacy_request.id)
         assert result is None
 
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cache")
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.get_cache")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     def test_get_cached_task_id_cache_exception(
         self, mock_logger, mock_get_cache, privacy_request
     ):
@@ -616,15 +619,15 @@ class TestHandlePrivacyRequestRequeue:
     """Test the _handle_privacy_request_requeue function."""
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.get_privacy_request_retry_count"
+        "fides.service.privacy_request.request_service.get_privacy_request_retry_count"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.increment_privacy_request_retry_count"
+        "fides.service.privacy_request.request_service.increment_privacy_request_retry_count"
     )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     def test_requeue_within_retry_limit_success(
         self,
         mock_logger,
@@ -652,16 +655,16 @@ class TestHandlePrivacyRequestRequeue:
         assert "attempt 3/3" in log_message
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.get_privacy_request_retry_count"
+        "fides.service.privacy_request.request_service.get_privacy_request_retry_count"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.increment_privacy_request_retry_count"
+        "fides.service.privacy_request.request_service.increment_privacy_request_retry_count"
     )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     def test_requeue_failure_causes_cancellation(
         self,
@@ -689,13 +692,13 @@ class TestHandlePrivacyRequestRequeue:
         mock_cancel.assert_called_once_with(db, privacy_request, "Requeue failed")
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.get_privacy_request_retry_count"
+        "fides.service.privacy_request.request_service.get_privacy_request_retry_count"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.reset_privacy_request_retry_count"
+        "fides.service.privacy_request.request_service.reset_privacy_request_retry_count"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     def test_retry_limit_exceeded_causes_cancellation(
         self, mock_cancel, mock_reset, mock_get_count, db, privacy_request
@@ -716,10 +719,10 @@ class TestHandlePrivacyRequestRequeue:
         mock_reset.assert_called_once_with(privacy_request.id)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.get_privacy_request_retry_count"
+        "fides.service.privacy_request.request_service.get_privacy_request_retry_count"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     def test_cache_exception_causes_cancellation(
         self, mock_cancel, mock_get_count, db, privacy_request
@@ -742,7 +745,7 @@ class TestHandlePrivacyRequestRequeue:
 class TestRequeueInterruptedTasksAdditionalCoverage:
     """Test additional coverage paths for requeue_interrupted_tasks function."""
 
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
+    @mock.patch("fides.service.privacy_request.request_service.redis_lock")
     def test_lock_not_acquired_returns_early(self, mock_redis_lock):
         """Test that function returns early when lock cannot be acquired."""
         # Mock lock context manager to return False (lock not acquired)
@@ -752,8 +755,8 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         result = requeue_interrupted_tasks.apply().get()
         assert result is None
 
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.redis_lock")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     def test_no_in_progress_requests_logs_and_returns(
         self, mock_logger, mock_redis_lock, db
     ):
@@ -775,11 +778,11 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
             "No in-progress privacy requests to check" in call for call in debug_calls
         )
 
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
+    @mock.patch("fides.service.privacy_request.request_service.redis_lock")
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     def test_queue_exception_logs_and_returns(
         self, mock_logger, mock_get_queue_tasks, mock_redis_lock, db, privacy_request
     ):
@@ -807,13 +810,13 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         assert "Failed to get task IDs from queue" in warning_message
         assert "Queue error" in warning_message
 
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
+    @mock.patch("fides.service.privacy_request.request_service.redis_lock")
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
+    @mock.patch("fides.service.privacy_request.request_service.get_cached_task_id")
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     def test_cache_exception_when_getting_main_task_id(
         self,
@@ -850,15 +853,13 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         assert cancel_call_args[1] == privacy_request
         assert "Cache failure when getting task ID" in cancel_call_args[2]
 
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
+    @mock.patch("fides.service.privacy_request.request_service.redis_lock")
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
-    )
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.get_cached_task_id")
+    @mock.patch("fides.service.privacy_request.request_service.celery_tasks_in_flight")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     def test_no_request_tasks_triggers_requeue(
         self,
         mock_logger,
@@ -885,7 +886,7 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         ) as mock_session:
             mock_session.return_value.__enter__.return_value = db
             with mock.patch(
-                "fides.api.service.privacy_request.request_service._handle_privacy_request_requeue"
+                "fides.service.privacy_request.request_service._handle_privacy_request_requeue"
             ) as mock_handle_requeue:
                 requeue_interrupted_tasks.apply().get()
 
@@ -899,19 +900,17 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
                 )
                 mock_handle_requeue.assert_called_once_with(db, privacy_request)
 
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
+    @mock.patch("fides.service.privacy_request.request_service.redis_lock")
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
+    @mock.patch("fides.service.privacy_request.request_service.get_cached_task_id")
+    @mock.patch("fides.service.privacy_request.request_service.celery_tasks_in_flight")
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_request_task_ids_in_progress"
+        "fides.service.privacy_request.request_service._get_request_task_ids_in_progress"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+        "fides.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     def test_request_task_cache_exception_causes_cancellation(
         self,
@@ -953,18 +952,16 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         cancel_call_args = mock_cancel.call_args[0]
         assert "Cache failure when getting subtask ID" in cancel_call_args[2]
 
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
+    @mock.patch("fides.service.privacy_request.request_service.redis_lock")
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
+        "fides.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
+    @mock.patch("fides.service.privacy_request.request_service.get_cached_task_id")
+    @mock.patch("fides.service.privacy_request.request_service.celery_tasks_in_flight")
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
+        "fides.service.privacy_request.request_service._get_request_task_ids_in_progress"
     )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_request_task_ids_in_progress"
-    )
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    @mock.patch("fides.service.privacy_request.request_service.logger")
     def test_interrupted_request_task_triggers_requeue(
         self,
         mock_logger,
@@ -993,7 +990,7 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         ) as mock_session:
             mock_session.return_value.__enter__.return_value = db
             with mock.patch(
-                "fides.api.service.privacy_request.request_service._handle_privacy_request_requeue"
+                "fides.service.privacy_request.request_service._handle_privacy_request_requeue"
             ) as mock_handle_requeue:
                 requeue_interrupted_tasks.apply().get()
 

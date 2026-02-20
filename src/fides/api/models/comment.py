@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.attachment import AttachmentReferenceType
-from fides.service.attachment_service import AttachmentService
+from fides.service.attachment.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment, AttachmentReference

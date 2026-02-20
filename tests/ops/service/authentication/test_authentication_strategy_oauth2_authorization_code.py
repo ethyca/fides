@@ -8,10 +8,10 @@ from requests import PreparedRequest, Request
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException, OAuth2TokenException
-from fides.api.service.authentication.authentication_strategy import (
+from fides.connectors.saas.strategies.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
+from fides.connectors.saas.strategies.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
 
@@ -112,7 +112,7 @@ class TestAddAuthentication:
 
     # access token expired, call refresh request
     @mock.patch("fides.api.models.connectionconfig.ConnectionConfig.update")
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_oauth2_authentication_successful_refresh(
         self,
         mock_send: Mock,
@@ -176,7 +176,7 @@ class TestAddAuthentication:
         )
 
     # access token expired, unable to refresh
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_oauth2_authentication_failed_refresh(
         self,
         mock_send: Mock,
@@ -207,7 +207,7 @@ class TestAddAuthentication:
 
 class TestAuthorizationUrl:
     @mock.patch(
-        "fides.api.service.authentication.authentication_strategy_oauth2_authorization_code.OAuth2AuthorizationCodeAuthenticationStrategy._generate_state"
+        "fides.connectors.saas.strategies.authentication.authentication_strategy_oauth2_authorization_code.OAuth2AuthorizationCodeAuthenticationStrategy._generate_state"
     )
     @mock.patch(
         "fides.api.models.authentication_request.AuthenticationRequest.create_or_update"
@@ -267,7 +267,7 @@ class TestAuthorizationUrl:
         )
 
     @mock.patch(
-        "fides.api.service.authentication.authentication_strategy_oauth2_authorization_code.OAuth2AuthorizationCodeAuthenticationStrategy._generate_state"
+        "fides.connectors.saas.strategies.authentication.authentication_strategy_oauth2_authorization_code.OAuth2AuthorizationCodeAuthenticationStrategy._generate_state"
     )
     @mock.patch(
         "fides.api.models.authentication_request.AuthenticationRequest.create_or_update"
@@ -304,7 +304,7 @@ class TestAuthorizationUrl:
         )
 
     @mock.patch(
-        "fides.api.service.authentication.authentication_strategy_oauth2_authorization_code.OAuth2AuthorizationCodeAuthenticationStrategy._generate_state"
+        "fides.connectors.saas.strategies.authentication.authentication_strategy_oauth2_authorization_code.OAuth2AuthorizationCodeAuthenticationStrategy._generate_state"
     )
     @mock.patch(
         "fides.api.models.authentication_request.AuthenticationRequest.create_or_update"
@@ -342,7 +342,7 @@ class TestAuthorizationUrl:
 
 class TestAccessTokenRequest:
     @mock.patch("fides.api.models.connectionconfig.ConnectionConfig.update")
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_get_access_token(
         self,
         mock_send: Mock,
@@ -393,7 +393,7 @@ class TestAccessTokenRequest:
         )
 
     @mock.patch("fides.api.models.connectionconfig.ConnectionConfig.update")
-    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @mock.patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_get_access_token_no_expires_in(
         self,
         mock_send: Mock,

@@ -1,10 +1,12 @@
 from fideslang.models import DatasetField
 
 from fides.api.common_exceptions import ValidationError
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.service.dataset.dataset_validator import (
     DatasetValidationContext,
     DatasetValidationStep,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy import (
+    MaskingStrategy,
 )
 
 

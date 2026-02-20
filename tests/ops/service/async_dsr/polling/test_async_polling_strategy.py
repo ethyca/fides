@@ -21,16 +21,16 @@ from fides.api.schemas.saas.async_polling_configuration import (
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest
 from fides.api.schemas.saas.shared_schemas import PollingStatusResult
-from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
-    get_strategy,
-)
-from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
-    AsyncPollingStrategy,
-)
-from fides.api.service.connectors.saas.authenticated_client import (
+from fides.config import CONFIG
+from fides.connectors.saas.authenticated_client import (
     RequestFailureResponseException,
 )
-from fides.config import CONFIG
+from fides.service.privacy_request.async_dsr.strategies.async_dsr_strategy_factory import (
+    get_strategy,
+)
+from fides.service.privacy_request.async_dsr.strategies.async_dsr_strategy_polling import (
+    AsyncPollingStrategy,
+)
 from tests.ops.graph.graph_test_util import erasure_policy
 
 
@@ -496,7 +496,7 @@ class TestAsyncPollingStrategy:
                 MagicMock(request_override="test_override"),
             ):
                 with patch(
-                    "fides.api.service.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
+                    "fides.service.privacy_request.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
                     return_value=mock_override,
                 ):
                     result = async_polling_strategy._check_sub_request_status(
@@ -528,7 +528,7 @@ class TestAsyncPollingStrategy:
                 MagicMock(request_override="test_override"),
             ):
                 with patch(
-                    "fides.api.service.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
+                    "fides.service.privacy_request.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
                     return_value=mock_override,
                 ):
                     result = async_polling_strategy._check_sub_request_status(
@@ -562,7 +562,7 @@ class TestAsyncPollingStrategy:
                 MagicMock(request_override="test_override"),
             ):
                 with patch(
-                    "fides.api.service.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
+                    "fides.service.privacy_request.async_dsr.strategies.async_dsr_strategy_polling.SaaSRequestOverrideFactory.get_override",
                     return_value=mock_override,
                 ):
                     result = async_polling_strategy._check_sub_request_status(

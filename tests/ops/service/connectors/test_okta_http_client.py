@@ -7,7 +7,7 @@ import requests
 from requests.adapters import HTTPAdapter
 
 from fides.api.common_exceptions import ConnectionException
-from fides.api.service.connectors.okta_http_client import (
+from fides.connectors.okta.okta_http_client import (
     DEFAULT_API_LIMIT,
     DEFAULT_MAX_PAGES,
     DEFAULT_OKTA_SCOPES,
@@ -84,9 +84,9 @@ class TestOktaHttpClientInit:
         assert client.scopes == tuple(scopes)
 
     @patch(
-        "fides.api.service.connectors.okta_http_client.OktaHttpClient._determine_alg_from_jwk"
+        "fides.connectors.okta.okta_http_client.OktaHttpClient._determine_alg_from_jwk"
     )
-    @patch("fides.api.service.connectors.okta_http_client.OktaHttpClient._parse_jwk")
+    @patch("fides.connectors.okta.okta_http_client.OktaHttpClient._parse_jwk")
     @patch("requests_oauth2client.PrivateKeyJwt")
     @patch("requests_oauth2client.OAuth2Client")
     @patch("requests_oauth2client.OAuth2ClientCredentialsAuth")
@@ -168,7 +168,7 @@ class TestOktaHttpClientMethods:
     @pytest.fixture
     def mock_rate_limiter(self):
         """Mock rate limiter to avoid Redis dependency in tests."""
-        with patch("fides.api.service.connectors.okta_http_client.RateLimiter") as mock:
+        with patch("fides.connectors.okta.okta_http_client.RateLimiter") as mock:
             mock.return_value.limit.return_value = None
             yield mock
 
@@ -301,7 +301,7 @@ class TestRateLimiting:
         mock_session.get.return_value = mock_response
 
         with patch(
-            "fides.api.service.connectors.okta_http_client.RateLimiter"
+            "fides.connectors.okta.okta_http_client.RateLimiter"
         ) as mock_limiter_class:
             mock_limiter = MagicMock()
             mock_limiter_class.return_value = mock_limiter
@@ -331,7 +331,7 @@ class TestRateLimiting:
         mock_session.get.return_value = mock_response
 
         with patch(
-            "fides.api.service.connectors.okta_http_client.RateLimiter"
+            "fides.connectors.okta.okta_http_client.RateLimiter"
         ) as mock_limiter_class:
             client.list_applications()
 

@@ -4,12 +4,12 @@ from typing import Any, Optional, Type
 from loguru import logger
 
 from fides.api.schemas.external_storage import ExternalStorageMetadata
-from fides.api.service.external_data_storage import (
+from fides.api.util.data_size import LARGE_DATA_THRESHOLD_BYTES, calculate_data_size
+from fides.common.session import get_autoclose_db_session
+from fides.service.storage.external_data_storage import (
     ExternalDataStorageError,
     ExternalDataStorageService,
 )
-from fides.api.util.data_size import LARGE_DATA_THRESHOLD_BYTES, calculate_data_size
-from fides.common.session import get_autoclose_db_session
 
 
 class EncryptedLargeDataDescriptor:

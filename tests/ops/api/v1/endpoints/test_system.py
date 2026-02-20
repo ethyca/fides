@@ -37,7 +37,7 @@ from fides.common.scope_registry import (
 )
 from fides.common.urn_registry import V1_URL_PREFIX
 from fides.service.connection.connection_service import ConnectionService
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 

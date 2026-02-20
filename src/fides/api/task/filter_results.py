@@ -6,9 +6,9 @@ from loguru import logger
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.graph.graph import DatasetGraph
-from fides.api.service.storage.util import is_attachment_field
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row
+from fides.service.storage.util import is_attachment_field
 
 
 def should_skip_data_category_filtering(

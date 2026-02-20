@@ -6,7 +6,7 @@ import requests_mock
 from requests import Request
 
 from fides.api.common_exceptions import ClientUnsuccessfulException
-from fides.api.service.connectors import HTTPSConnector
+from fides.connectors import HTTPSConnector
 
 
 class TestHttpOAuth2ConnectorMethods:

@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from fides.api.service.storage.streaming.retry import (
+from fides.service.storage.streaming.retry import (
     PermanentError,
     RetryConfig,
     TransientError,
@@ -184,13 +184,13 @@ class TestRetryIntegration:
     def test_retry_config_from_settings(self):
         """Test creating retry config from application settings."""
         with patch(
-            "fides.api.service.storage.streaming.retry.CONFIG.execution"
+            "fides.service.storage.streaming.retry.CONFIG.execution"
         ) as mock_execution:
             mock_execution.task_retry_count = 5
             mock_execution.task_retry_delay = 2
             mock_execution.task_retry_backoff = 3
 
-            from fides.api.service.storage.streaming.retry import (
+            from fides.service.storage.streaming.retry import (
                 create_retry_config_from_settings,
             )
 

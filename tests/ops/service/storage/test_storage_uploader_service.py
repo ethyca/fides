@@ -23,7 +23,6 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.service.storage.storage_uploader_service import get_extension, upload
 from fides.api.tasks.storage import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     encrypt_access_request_results,
@@ -33,10 +32,11 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     decrypt_combined_nonce_and_message,
 )
 from fides.config import CONFIG
+from fides.service.storage.storage_uploader_service import get_extension, upload
 
 
 class TestS3Uploader:
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
+    @mock.patch("fides.service.storage.storage_uploader_service.upload_to_s3")
     def test_uploader_s3_success_secrets_auth(
         self,
         mock_upload_to_s3: Mock,
@@ -87,7 +87,7 @@ class TestS3Uploader:
 
         storage_config.delete(db)
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
+    @mock.patch("fides.service.storage.storage_uploader_service.upload_to_s3")
     def test_uploader_s3_success_automatic_auth(
         self,
         mock_upload_to_s3: Mock,
@@ -134,7 +134,7 @@ class TestS3Uploader:
 
         storage_config.delete(db)
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
+    @mock.patch("fides.service.storage.storage_uploader_service.upload_to_s3")
     def test_uploader_s3_invalid_file_naming(
         self,
         mock_upload_to_s3: Mock,
@@ -170,7 +170,7 @@ class TestS3Uploader:
         mock_upload_to_s3.assert_not_called()
         sc.delete(db)
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
+    @mock.patch("fides.service.storage.storage_uploader_service.upload_to_s3")
     def test_uploader_no_config(
         self,
         mock_upload_to_s3: Mock,
@@ -192,7 +192,7 @@ class TestS3Uploader:
         mock_upload_to_s3.assert_not_called()
 
 
-@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3_streaming")
+@mock.patch("fides.service.storage.storage_uploader_service.upload_to_s3_streaming")
 def test_uploader_s3_streaming_success(
     mock_upload_to_s3_streaming: Mock,
     db: Session,
@@ -246,7 +246,7 @@ def test_uploader_s3_streaming_success(
 
 
 @mock.patch(
-    "fides.api.service.storage.storage_uploader_service.upload_to_gcs", autospec=True
+    "fides.service.storage.storage_uploader_service.upload_to_gcs", autospec=True
 )
 class TestGCSUploader:
     """Test suite for Google Cloud Storage upload functionality."""

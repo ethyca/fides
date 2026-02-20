@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 from pytest import param
 
-from fides.api.service.storage.util import (
+from fides.service.storage.util import (
     AllowedFileType,
     get_allowed_file_type_or_raise,
     get_local_filename,
@@ -59,7 +59,7 @@ class TestGetLocalFilename:
         """Test that a valid filename returns the correct path"""
         with pytest.MonkeyPatch.context() as m:
             m.setattr(
-                "fides.api.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
+                "fides.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
                 str(tmp_path),
             )
             result = get_local_filename("test.txt")
@@ -76,7 +76,7 @@ class TestGetLocalFilename:
         """Test that absolute paths are blocked"""
         with pytest.MonkeyPatch.context() as m:
             m.setattr(
-                "fides.api.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
+                "fides.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
                 str(tmp_path),
             )
             with pytest.raises(ValueError) as excinfo:
@@ -135,7 +135,7 @@ class TestGetLocalFilename:
         """Test various path traversal attempts are blocked or allowed appropriately"""
         with pytest.MonkeyPatch.context() as m:
             m.setattr(
-                "fides.api.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
+                "fides.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
                 str(tmp_path),
             )
             if should_fail:
@@ -155,7 +155,7 @@ class TestGetLocalFilename:
         """Test that path separators are normalized correctly"""
         with pytest.MonkeyPatch.context() as m:
             m.setattr(
-                "fides.api.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
+                "fides.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
                 str(tmp_path),
             )
             result = get_local_filename("test\\subdir\\file.txt")
@@ -165,7 +165,7 @@ class TestGetLocalFilename:
         """Test that nested directories are created as needed"""
         with pytest.MonkeyPatch.context() as m:
             m.setattr(
-                "fides.api.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
+                "fides.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
                 str(tmp_path),
             )
             result = get_local_filename("subdir/nested/file.txt")
@@ -176,7 +176,7 @@ class TestGetLocalFilename:
         """Test that unicode filenames are handled correctly"""
         with pytest.MonkeyPatch.context() as m:
             m.setattr(
-                "fides.api.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
+                "fides.service.storage.util.LOCAL_FIDES_UPLOAD_DIRECTORY",
                 str(tmp_path),
             )
             result = get_local_filename("test_文件.txt")
@@ -249,7 +249,7 @@ class TestGenerateAttachmentUrlFromStoragePath:
 
     def test_generate_attachment_url_streaming_mode_same_directory(self):
         """Test URL generation in streaming mode for same directory."""
-        from fides.api.service.storage.util import (
+        from fides.service.storage.util import (
             generate_attachment_url_from_storage_path,
         )
 
@@ -266,7 +266,7 @@ class TestGenerateAttachmentUrlFromStoragePath:
 
     def test_generate_attachment_url_streaming_mode_data_directory(self):
         """Test URL generation in streaming mode for data directory."""
-        from fides.api.service.storage.util import (
+        from fides.service.storage.util import (
             generate_attachment_url_from_storage_path,
         )
 
@@ -283,7 +283,7 @@ class TestGenerateAttachmentUrlFromStoragePath:
 
     def test_generate_attachment_url_streaming_mode_other_cases(self):
         """Test URL generation in streaming mode for other cases."""
-        from fides.api.service.storage.util import (
+        from fides.service.storage.util import (
             generate_attachment_url_from_storage_path,
         )
 
@@ -300,7 +300,7 @@ class TestGenerateAttachmentUrlFromStoragePath:
 
     def test_generate_attachment_url_non_streaming_mode(self):
         """Test URL generation in non-streaming mode."""
-        from fides.api.service.storage.util import (
+        from fides.service.storage.util import (
             generate_attachment_url_from_storage_path,
         )
 
@@ -317,7 +317,7 @@ class TestGenerateAttachmentUrlFromStoragePath:
 
     def test_generate_attachment_url_special_characters(self):
         """Test URL generation with various special characters."""
-        from fides.api.service.storage.util import (
+        from fides.service.storage.util import (
             generate_attachment_url_from_storage_path,
         )
 

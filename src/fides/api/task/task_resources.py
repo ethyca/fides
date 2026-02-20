@@ -8,7 +8,9 @@ from fides.api.common_exceptions import ConnectorNotFoundException
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.service.connectors import (
+from fides.api.util.cache import get_cache
+from fides.api.util.collection_util import Row, extract_key_for_address
+from fides.connectors import (
     BaseConnector,
     BigQueryConnector,
     DynamoDBConnector,
@@ -28,8 +30,8 @@ from fides.api.service.connectors import (
     SnowflakeConnector,
     TimescaleConnector,
 )
-from fides.api.service.connectors.base_email_connector import BaseEmailConnector
-from fides.api.service.connectors.s3_connector import S3Connector
+from fides.connectors.base_email_connector import BaseEmailConnector
+from fides.connectors.s3.s3_connector import S3Connector
 
 
 class Connections:

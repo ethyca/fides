@@ -20,7 +20,7 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.schemas.saas.saas_config import ClientConfig
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.connectors.saas.authenticated_client import AuthenticatedClient
 
 
 class ZipFileHTTPHandler(BaseHTTPRequestHandler):

@@ -10,12 +10,12 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestCreate, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.privacy_request.duplication_detection import (
-    DuplicateDetectionService,
-)
 from fides.api.task.conditional_dependencies.schemas import ConditionGroup
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 from fides.service.messaging.messaging_service import MessagingService
+from fides.service.privacy_request.duplication_detection import (
+    DuplicateDetectionService,
+)
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
@@ -36,7 +36,7 @@ def get_detection_config(
 def mock_config_proxy():
     """Mock config proxy with privacy center URL"""
     with mock.patch(
-        "fides.api.service.privacy_request.duplication_detection.ConfigProxy"
+        "fides.service.privacy_request.duplication_detection.ConfigProxy"
     ) as mock_proxy:
         mock_config = mock.MagicMock()
         mock_config.privacy_request_duplicate_detection = get_detection_config()
@@ -545,7 +545,7 @@ class TestDuplicateRequestFunctionality:
     ):
         """Test that the duplicate request group returns None if the request is not a duplicate."""
         with mock.patch(
-            "fides.api.service.privacy_request.duplication_detection.DuplicateGroup.get_or_create"
+            "fides.service.privacy_request.duplication_detection.DuplicateGroup.get_or_create"
         ) as mock_get_or_create:
             mock_get_or_create.return_value = None, None
             is_duplicate = duplicate_detection_service.is_duplicate_request(

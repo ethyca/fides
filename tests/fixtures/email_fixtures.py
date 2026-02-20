@@ -11,17 +11,17 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset, Organization
-from fides.api.service.connectors.consent_email_connector import (
+from fides.connectors.email.attentive_connector import AttentiveConnector
+from fides.connectors.email.consent_email_connector import (
     GenericConsentEmailConnector,
 )
-from fides.api.service.connectors.dynamic_erasure_email_connector import (
+from fides.connectors.email.dynamic_erasure_email_connector import (
     DynamicErasureEmailConnector,
 )
-from fides.api.service.connectors.email.attentive_connector import AttentiveConnector
-from fides.api.service.connectors.email.sovrn_connector import SovrnConnector
-from fides.api.service.connectors.erasure_email_connector import (
+from fides.connectors.email.erasure_email_connector import (
     GenericErasureEmailConnector,
 )
+from fides.connectors.email.sovrn_connector import SovrnConnector
 
 
 # generic consent email

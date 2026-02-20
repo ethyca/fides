@@ -21,21 +21,21 @@ from fides.api.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
     OAuth2ClientCredentialsConfiguration,
 )
-from fides.api.service.masking.strategy.masking_strategy_nullify import (
-    NullMaskingStrategy,
-)
-from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite import (
-    RandomStringRewriteMaskingStrategy,
-)
-from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
-    StringRewriteMaskingStrategy,
-)
 from fides.api.util.data_category import DataCategory
 from fides.api.util.saas_util import (
     encode_file_contents,
     load_as_string,
     load_config,
     load_yaml_as_string,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_nullify import (
+    NullMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_random_string_rewrite import (
+    RandomStringRewriteMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_string_rewrite import (
+    StringRewriteMaskingStrategy,
 )
 from tests.fixtures.application_fixtures import load_dataset
 

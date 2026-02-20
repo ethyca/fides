@@ -125,9 +125,7 @@ def mock_s3_client(s3_client, monkeypatch):
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
 
-    monkeypatch.setattr(
-        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
-    )
+    monkeypatch.setattr("fides.service.storage.s3.get_s3_client", mock_get_s3_client)
     return s3_client
 
 
@@ -847,7 +845,7 @@ def run_privacy_request_task(celery_session_app):
     registered to the `celery_app` fixture which uses the virtualised `celery_worker`
     """
     yield celery_session_app.tasks[
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request"
     ]
 
 

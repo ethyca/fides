@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.service.connectors.postgres_connector import PostgreSQLConnector
+from fides.connectors.postgres.postgres_connector import PostgreSQLConnector
 
 
 @pytest.mark.integration

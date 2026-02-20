@@ -35,9 +35,6 @@ from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_request_body_cli,
 )
 from fides.api.oauth.utils import get_root_client, verify_oauth_client_prod
-
-# pylint: disable=wildcard-import, unused-wildcard-import
-from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_startup
@@ -59,6 +56,9 @@ from fides.api.v1.exception_handlers import ExceptionHandlers
 from fides.common.session import get_api_session, get_autoclose_db_session
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+
+# pylint: disable=wildcard-import, unused-wildcard-import
+from fides.service.privacy_request.saas_request.override_implementations import *
 
 VERSION = fides.__version__
 

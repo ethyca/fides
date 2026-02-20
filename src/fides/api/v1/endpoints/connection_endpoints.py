@@ -64,7 +64,7 @@ from fides.common.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.service.connection.connection_service import ConnectionService
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 

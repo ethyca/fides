@@ -56,18 +56,6 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.messaging.shared_schemas import PossibleMessagingSecrets
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
-from fides.api.service.messaging.messaging_crud_service import (
-    create_or_update_basic_templates,
-    create_or_update_messaging_config,
-    delete_messaging_config,
-    delete_template_by_id,
-    get_all_basic_messaging_templates,
-    get_default_template_by_type,
-    get_messaging_config_by_key,
-    get_template_by_id,
-    update_messaging_config,
-)
 from fides.api.util.api_router import APIRouter
 from fides.common.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
@@ -93,6 +81,18 @@ from fides.common.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.message_dispatch_service import dispatch_message
+from fides.service.messaging.messaging_crud_service import (
+    create_or_update_basic_templates,
+    create_or_update_messaging_config,
+    delete_messaging_config,
+    delete_template_by_id,
+    get_all_basic_messaging_templates,
+    get_default_template_by_type,
+    get_messaging_config_by_key,
+    get_template_by_id,
+    update_messaging_config,
+)
 from fides.service.messaging.messaging_service import MessagingService
 
 router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)

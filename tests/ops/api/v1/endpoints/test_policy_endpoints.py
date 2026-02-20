@@ -7,9 +7,6 @@ from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
-from fides.api.service.masking.strategy.masking_strategy_nullify import (
-    NullMaskingStrategy,
-)
 from fides.api.util.data_category import DataCategory, generate_fides_data_categories
 from fides.common import scope_registry as scopes
 from fides.common.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI

@@ -14,13 +14,17 @@ from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
 from fides.api.models.policy.policy import _is_ancestor_of_contained_categories
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
-from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_nullify import (
-    NullMaskingStrategy,
-)
 from fides.api.util.data_category import DataCategory
 from fides.api.util.text import to_snake_case
+from fides.service.privacy_request.masking.strategy.masking_strategy_hash import (
+    HashMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_hmac import (
+    HmacMaskingStrategy,
+)
+from fides.service.privacy_request.masking.strategy.masking_strategy_nullify import (
+    NullMaskingStrategy,
+)
 
 
 def test_policy_sets_slug(

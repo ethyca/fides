@@ -1,7 +1,7 @@
 import pytest
 
 from fides.api.models.privacy_request import RequestTask
-from fides.api.service.connectors.scylla_connector import ScyllaConnector
+from fides.connectors.scylla.scylla_connector import ScyllaConnector
 
 
 @pytest.mark.integration

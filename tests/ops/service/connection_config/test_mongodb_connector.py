@@ -9,7 +9,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.connection_configuration.connection_secrets_mongodb import (
     MongoDBSchema,
 )
-from fides.api.service.connectors.mongodb_connector import MongoDBConnector
+from fides.connectors.mongodb.mongodb_connector import MongoDBConnector
 
 
 @pytest.mark.unit
@@ -171,7 +171,7 @@ class TestMongoDBConnector:
         )
         assert connector._determine_ssl_enabled(config) is False
 
-    @patch("fides.api.service.connectors.mongodb_connector.MongoClient")
+    @patch("fides.connectors.mongodb.mongodb_connector.MongoClient")
     def test_create_client_value_error_exception(
         self, mock_mongo_client, mongo_connection_config: ConnectionConfig
     ):
@@ -188,7 +188,7 @@ class TestMongoDBConnector:
             exc_info.value
         )
 
-    @patch("fides.api.service.connectors.mongodb_connector.MongoClient")
+    @patch("fides.connectors.mongodb.mongodb_connector.MongoClient")
     def test_create_client_generic_exception(
         self, mock_mongo_client, mongo_connection_config: ConnectionConfig
     ):

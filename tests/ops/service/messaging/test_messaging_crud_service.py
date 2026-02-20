@@ -17,7 +17,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingTemplateDefault,
     MessagingTemplateWithPropertiesBodyParams,
 )
-from fides.api.service.messaging.messaging_crud_service import (
+from fides.service.messaging.messaging_crud_service import (
     create_or_update_basic_templates,
     create_property_specific_template_by_type,
     delete_template_by_id,
