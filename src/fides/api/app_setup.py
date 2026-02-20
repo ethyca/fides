@@ -38,7 +38,6 @@ from fides.api.db import seed
 from fides.api.db.database import configure_db, seed_db
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.application_config import ApplicationConfig
-from fides.api.models.v3.privacy_preferences import PrivacyPreferences
 from fides.api.oauth.system_manager_oauth_util import (
     get_system_fides_key,
     get_system_schema,
@@ -265,8 +264,6 @@ async def run_database_startup(app: FastAPI) -> None:
         # Avoiding loading consent out-of-the-box resources to avoid interfering with unit tests
         load_tcf_purpose_overrides()
 
-    check_consent_encryption_consistency()
-
     db.close()
 
 
@@ -280,25 +277,6 @@ def check_redis() -> None:
         return
 
     logger.debug("Connection to cache succeeded")
-
-
-def check_consent_encryption_consistency() -> None:
-    """
-    Verify that all privacy_preferences rows have an is_encrypted value
-    consistent with the current consent_v3_encryption_enabled setting.
-    """
-    db = get_api_session()
-    try:
-        if PrivacyPreferences.has_encryption_mismatch(db):
-            expected = CONFIG.consent.consent_v3_encryption_enabled
-            logger.error(
-                f"privacy_preferences table contains rows where is_encrypted is {not expected}, "
-                f"which is not consistent the current setting consent_v3_encryption_enabled={expected}. ",
-            )
-    except Exception as e:
-        logger.error("Failed to check consent encryption consistency: {}", str(e))
-    finally:
-        db.close()
 
 
 def load_tcf_purpose_overrides() -> None:

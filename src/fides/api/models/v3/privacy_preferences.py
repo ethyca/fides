@@ -77,25 +77,6 @@ class PrivacyPreferences(Base):
     updated_at = Column(DateTime(timezone=True), nullable=True)
 
     @classmethod
-    def has_encryption_mismatch(cls, db: Session) -> bool:
-        """
-        Check whether any rows have an is_encrypted value that doesn't match
-        the current consent_v3_encryption_enabled setting.
-        """
-        expected = CONFIG.consent.consent_v3_encryption_enabled
-        return (
-            db.execute(
-                text(
-                    "SELECT 1 FROM privacy_preferences "
-                    "WHERE is_encrypted = :mismatched "
-                    "LIMIT 1"
-                ),
-                {"mismatched": not expected},
-            ).scalar()
-            is not None
-        )
-
-    @classmethod
     def hash_value(
         cls,
         value: MultiValue,
