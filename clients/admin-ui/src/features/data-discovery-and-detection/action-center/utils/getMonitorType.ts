@@ -14,7 +14,10 @@ export const getMonitorType = (connectionType: ConnectionType) => {
   ) {
     return MONITOR_TYPES.WEBSITE;
   }
-  if (connectionType === ConnectionType.OKTA) {
+  if (
+    connectionType === ConnectionType.OKTA ||
+    connectionType === ConnectionType.ENTRA
+  ) {
     return MONITOR_TYPES.INFRASTRUCTURE;
   }
   return MONITOR_TYPES.DATASTORE;
