@@ -19,4 +19,6 @@ export enum PrivacyRequestStatus {
   CANCELED = "canceled",
   ERROR = "error",
   DUPLICATE = "duplicate",
+  AWAITING_PRE_APPROVAL = "awaiting_pre_approval",
+  PRE_APPROVAL_NOT_ELIGIBLE = "pre_approval_not_eligible",
 }

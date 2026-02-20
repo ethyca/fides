@@ -54,7 +54,7 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
-from fides.api.models.audit_log import AuditLog
+from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -342,8 +342,18 @@ def execution_and_audit_logs_by_dataset_name(
 
     combined: Query = execution_log_query.union_all(audit_log_query)
 
+    audit_log_display_names = {
+        "approved": "Request approved",
+        "denied": "Request denied",
+        "pre_approval_webhook_triggered": "Triggered pre-approval webhooks",
+        "pre_approval_eligible": "Request auto-approved by pre-approval webhooks",
+        "pre_approval_not_eligible": "Request flagged for manual review by pre-approval webhooks",
+    }
+
     for log in combined.order_by(ExecutionLog.updated_at.asc()):
-        dataset_name: str = log.dataset_name or f"Request {log.status}"
+        dataset_name: str = log.dataset_name or audit_log_display_names.get(
+            log.status, f"Request {log.status}"
+        )
 
         if len(all_logs[dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
             continue
@@ -1180,7 +1190,7 @@ def cancel_privacy_request(
     )
 
 
-def _validate_privacy_request_pending_or_error(
+def _validate_privacy_request_awaiting_pre_approval_or_error(
     db: Session, privacy_request_id: str
 ) -> None:
     privacy_request = (
@@ -1194,10 +1204,13 @@ def _validate_privacy_request_pending_or_error(
             detail=f"No privacy request found with id: '{privacy_request_id}'.",
         )
 
-    if privacy_request.status != PrivacyRequestStatus.pending:
+    if privacy_request.status not in (
+        PrivacyRequestStatus.pending,
+        PrivacyRequestStatus.awaiting_pre_approval,
+    ):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Privacy request with id '{privacy_request_id}' is not in pending status.",
+            detail=f"Privacy request with id '{privacy_request_id}' is not in pending or awaiting pre-approval status.",
         )
 
 
@@ -1220,7 +1233,7 @@ def mark_privacy_request_pre_approve_eligible(
     Marks privacy request as eligible for automatic approval.
     If all webhook responses have been received and all are affirmative, proceed to queue privacy request
     """
-    _validate_privacy_request_pending_or_error(db, privacy_request_id)
+    _validate_privacy_request_awaiting_pre_approval_or_error(db, privacy_request_id)
     logger.info(
         "Marking privacy request '{}' as eligible for automatic approval via webhook '{}' for connection config '{}'.",
         privacy_request_id,
@@ -1242,6 +1255,15 @@ def mark_privacy_request_pre_approve_eligible(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Failed to mark privacy request {privacy_request_id} as eligible due to: {str(exc)}",
         )
+
+    AuditLog.create(
+        db=db,
+        data={
+            "privacy_request_id": privacy_request_id,
+            "action": AuditLogAction.pre_approval_eligible,
+            "message": f"Pre-approval webhook '{webhook.name}' responded: eligible",
+        },
+    )
 
     all_webhooks = PreApprovalWebhook.all(db)
 
@@ -1306,13 +1328,14 @@ def mark_privacy_request_pre_approve_not_eligible(
     ),
 ) -> None:
     """Marks privacy request as not eligible for automatic approval, regardless of what other webhook responses we receive"""
-    _validate_privacy_request_pending_or_error(db, privacy_request_id)
+    _validate_privacy_request_awaiting_pre_approval_or_error(db, privacy_request_id)
     logger.info(
         "Marking privacy request '{}' as not eligible for automatic approval via webhook '{}' for connection config '{}'.",
         privacy_request_id,
         webhook.key,
         webhook.connection_config.key,
     )
+
     try:
         PreApprovalWebhookReply.create(
             db=db,
@@ -1327,6 +1350,25 @@ def mark_privacy_request_pre_approve_not_eligible(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Failed to mark privacy request {privacy_request_id} as not eligible due to: {str(exc)}",
         )
+
+    AuditLog.create(
+        db=db,
+        data={
+            "privacy_request_id": privacy_request_id,
+            "action": AuditLogAction.pre_approval_not_eligible,
+            "message": f"Request flagged for manual review by pre-approval webhooks. Webhook '{webhook.name}' responded: not eligible",
+        },
+    )
+
+    # Transition the privacy request status to pre_approval_not_eligible
+    privacy_request = (
+        PrivacyRequest.query_without_large_columns(db)
+        .filter(PrivacyRequest.id == privacy_request_id)
+        .first()
+    )
+    if privacy_request:
+        privacy_request.status = PrivacyRequestStatus.pre_approval_not_eligible
+        privacy_request.save(db)
 
 
 def _handle_manual_webhook_input(

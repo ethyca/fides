@@ -75,6 +75,7 @@ export const DOMAIN_RECORDS_ROUTE = "/settings/domain-records";
 export const DOMAIN_MANAGEMENT_ROUTE = "/settings/domains";
 export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
 export const PRIVACY_REQUESTS_SETTINGS_ROUTE = "/settings/privacy-requests";
+export const PRE_APPROVAL_WEBHOOKS_ROUTE = "/pre-approval-webhooks";
 
 // Notifications group (messaging templates and digests)
 export const NOTIFICATIONS_ROUTE = "/notifications";

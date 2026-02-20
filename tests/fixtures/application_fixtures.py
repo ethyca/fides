@@ -2215,6 +2215,32 @@ def privacy_request_status_pending(db: Session, policy: Policy) -> PrivacyReques
 
 
 @pytest.fixture(scope="function")
+def privacy_request_status_awaiting_pre_approval(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.awaiting_pre_approval,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
+def privacy_request_status_pre_approval_not_eligible(
+    db: Session, policy: Policy
+) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.pre_approval_not_eligible,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_status_canceled(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,

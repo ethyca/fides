@@ -23,6 +23,16 @@ import React from "react";
 
 import { ActionType } from "~/types/api";
 
+const AUDIT_STATUSES_WITH_DETAILS: ExecutionLogStatus[] = [
+  ExecutionLogStatus.DENIED,
+  ExecutionLogStatus.PRE_APPROVAL_WEBHOOK_TRIGGERED,
+  ExecutionLogStatus.PRE_APPROVAL_ELIGIBLE,
+  ExecutionLogStatus.PRE_APPROVAL_NOT_ELIGIBLE,
+];
+
+const isAuditStatusWithDetails = (status: ExecutionLogStatus): boolean =>
+  AUDIT_STATUSES_WITH_DETAILS.includes(status);
+
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
   allEventLogs?: ExecutionLog[]; // All event logs from all groups for total calculation
@@ -190,7 +200,8 @@ const EventLog = ({
         detail.status === ExecutionLogStatus.ERROR ||
         (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
         detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
-        detail.status === ExecutionLogStatus.POLLING
+        detail.status === ExecutionLogStatus.POLLING ||
+        (isAuditStatusWithDetails(detail.status) && detail.message)
           ? palette.FIDESUI_NEUTRAL_50
           : "unset"
       }
@@ -199,13 +210,21 @@ const EventLog = ({
           detail.status === ExecutionLogStatus.ERROR ||
           (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
           detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
-          detail.status === ExecutionLogStatus.POLLING
+          detail.status === ExecutionLogStatus.POLLING ||
+          (isAuditStatusWithDetails(detail.status) && detail.message)
         ) {
           onDetailPanel(detail.message, detail.status);
         }
       }}
       style={{
-        cursor: detail.message ? "pointer" : "unset",
+        cursor:
+          detail.status === ExecutionLogStatus.ERROR ||
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
+          detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
+          detail.status === ExecutionLogStatus.POLLING ||
+          (isAuditStatusWithDetails(detail.status) && detail.message)
+            ? "pointer"
+            : "unset",
       }}
       _hover={{ backgroundColor: palette.FIDESUI_NEUTRAL_50 }}
     >

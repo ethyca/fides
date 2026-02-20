@@ -14,6 +14,9 @@ class AuditLogAction(str, EnumType):
     email_sent = "email_sent"
     finished = "finished"
     policy_evaluated = "policy_evaluated"
+    pre_approval_webhook_triggered = "pre_approval_webhook_triggered"
+    pre_approval_eligible = "pre_approval_eligible"
+    pre_approval_not_eligible = "pre_approval_not_eligible"
 
 
 class AuditLog(Base):

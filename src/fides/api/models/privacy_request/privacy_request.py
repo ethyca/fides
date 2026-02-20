@@ -1081,8 +1081,13 @@ class PrivacyRequest(
             timestamp=datetime.utcnow(),
         )
         headers = {
+            # New headers (recommended)
+            "reply-to-eligible": f"/privacy-request/{self.id}/pre-approve/eligible",
+            "reply-to-not-eligible": f"/privacy-request/{self.id}/pre-approve/not-eligible",
+            # Deprecated: use reply-to-eligible / reply-to-not-eligible instead
             "reply-to-approve": f"/privacy-request/{self.id}/pre-approve/eligible",
             "reply-to-deny": f"/privacy-request/{self.id}/pre-approve/not-eligible",
+            # Auth token (unchanged)
             "reply-to-token": generate_request_callback_pre_approval_jwe(webhook),  # type: ignore[arg-type]
         }
 

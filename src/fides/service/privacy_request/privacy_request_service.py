@@ -625,6 +625,8 @@ class PrivacyRequestService:
                 if privacy_request.status not in [
                     PrivacyRequestStatus.pending,
                     PrivacyRequestStatus.duplicate,
+                    PrivacyRequestStatus.awaiting_pre_approval,
+                    PrivacyRequestStatus.pre_approval_not_eligible,
                 ]:
                     failed.append(
                         BulkUpdateFailed(
@@ -657,6 +659,9 @@ class PrivacyRequestService:
                             "action": AuditLogAction.approved,
                             "user_id": reviewed_by,
                             "webhook_id": webhook_id,  # the last webhook reply received is what approves the entire request
+                            "message": "Request auto-approved by pre-approval webhooks"
+                            if webhook_id
+                            else "",
                         },
                     )
 
@@ -712,6 +717,8 @@ class PrivacyRequestService:
                 if privacy_request.status not in [
                     PrivacyRequestStatus.pending,
                     PrivacyRequestStatus.duplicate,
+                    PrivacyRequestStatus.awaiting_pre_approval,
+                    PrivacyRequestStatus.pre_approval_not_eligible,
                 ]:
                     failed.append(
                         BulkUpdateFailed(
@@ -1075,11 +1082,24 @@ def _trigger_pre_approval_webhooks(
     Shared method to trigger all configured pre-approval webhooks for a given privacy request.
     """
     pre_approval_webhooks = db.query(PreApprovalWebhook).all()
+    if not pre_approval_webhooks:
+        return
+
     for webhook in pre_approval_webhooks:
         privacy_request.trigger_pre_approval_webhook(
             webhook=webhook,
             policy_action=privacy_request.policy.get_action_type(),
         )
+
+    webhook_names = ", ".join(w.name or w.key for w in pre_approval_webhooks)
+    AuditLog.create(
+        db=db,
+        data={
+            "privacy_request_id": privacy_request.id,
+            "action": AuditLogAction.pre_approval_webhook_triggered,
+            "message": f"Triggered pre-approval webhooks: {webhook_names}",
+        },
+    )
 
 
 def _requeue_privacy_request(
@@ -1197,6 +1217,10 @@ def handle_approval(
     if privacy_request.status == PrivacyRequestStatus.duplicate:
         return
     if _manual_approval_required(config_proxy, privacy_request):
+        pre_approval_webhooks = db.query(PreApprovalWebhook).all()
+        if pre_approval_webhooks:
+            privacy_request.status = PrivacyRequestStatus.awaiting_pre_approval
+            privacy_request.save(db)
         _trigger_pre_approval_webhooks(db, privacy_request)
     else:
         AuditLog.create(

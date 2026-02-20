@@ -126,9 +126,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Connection manager",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
+        title: "Pre-approval webhooks",
+        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.WEBHOOK_READ,
+          ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
+        ],
       },
     ],
   },
