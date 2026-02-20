@@ -6,13 +6,13 @@ from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
 from fides.api.models.sql_models import DataUse
-from fides.common.api.scope_registry import (
+from fides.api.scope_registry import (
     DATA_USE,
     DATA_USE_CREATE,
     DATA_USE_UPDATE,
     STORAGE_READ,
 )
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.v1.urn_registry import V1_URL_PREFIX
 
 
 class TestCreateDataUse:

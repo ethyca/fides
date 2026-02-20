@@ -9,8 +9,7 @@ from toml import dump, load
 
 from fides.config import FidesConfig
 from fides.config.cli_settings import CLISettings
-from fides.config.helpers import update_config_file
-from fides.config.utils import replace_config_value
+from fides.config.utils import replace_config_value, update_config_file
 
 
 @pytest.fixture

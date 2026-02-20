@@ -4,9 +4,10 @@ from unittest import mock
 import pytest
 from requests import Response
 
+from fides.api.common_exceptions import ClientUnsuccessfulException
+from fides.api.scope_registry import PRIVACY_REQUEST_CREATE
 from fides.api.util.logger_context_utils import ErrorGroup
-from fides.common.api.scope_registry import PRIVACY_REQUEST_CREATE
-from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
+from fides.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
 

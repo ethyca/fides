@@ -4,7 +4,7 @@
 import os
 from typing import Dict, Optional
 
-from fides.connectors.models import (
+from fides.cli.connectors.models import (
     AWSConfig,
     BigQueryConfig,
     DatabaseConfig,

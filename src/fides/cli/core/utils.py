@@ -1,21 +1,22 @@
 import glob
-import re
-from hashlib import sha1
 from os import getenv
 from os.path import isfile
 from pathlib import Path
-from typing import Any, Dict, Iterator, List
+from typing import Dict, List
 
-import sqlalchemy
 import toml
-from fideslang.models import DatasetField, FidesModel
+from fideslang.models import FidesModel
 from loguru import logger
 from pydantic import BaseModel, ValidationError
-from sqlalchemy.engine import Engine
-from sqlalchemy.exc import SQLAlchemyError
 
 from fides.common.utils import echo_red
-from fides.connectors.models import ConnectorAuthFailureException
+from fides.common.utils import (
+    generate_unique_fides_key as generate_unique_fides_key,
+)
+from fides.common.utils import get_all_level_fields as get_all_level_fields
+from fides.common.utils import get_db_engine as get_db_engine
+from fides.common.utils import sanitize_fides_key as sanitize_fides_key
+from fides.common.utils import validate_db_engine as validate_db_engine
 
 logger.bind(name="server_api")
 
@@ -28,65 +29,6 @@ class Credentials(BaseModel):
     username: str
     user_id: str
     access_token: str
-
-
-def get_db_engine(connection_string: str) -> Engine:
-    """
-    Use SQLAlchemy to create a DB engine.
-    """
-
-    # Pymssql doesn't support this arg
-    connect_args: Dict[str, Any] = (
-        {"connect_timeout": 10} if "pymssql" not in connection_string else {}
-    )
-    if "redshift" in connection_string:
-        connect_args["sslmode"] = "prefer"
-        connect_args["connect_timeout"] = 60
-    try:
-        engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
-    except Exception as err:
-        raise Exception("Failed to create engine!") from err
-
-    try:
-        with engine.begin() as connection:
-            connection.execute("SELECT 1")
-    except Exception as err:
-        raise Exception(f"Database connection failed with engine:\n{engine}!") from err
-    return engine
-
-
-def validate_db_engine(connection_string: str) -> None:
-    """
-    Use SQLAlchemy to create a DB engine.
-    """
-    # Pymssql doesn't support this arg
-    connect_args: Dict[str, Any] = (
-        {"connect_timeout": 10} if "pymssql" not in connection_string else {}
-    )
-    if "redshift" in connection_string:
-        connect_args["sslmode"] = "prefer"
-        connect_args["connect_timeout"] = 60
-    try:
-        engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
-        with engine.begin() as connection:
-            connection.execute("SELECT 1")
-    except SQLAlchemyError as error:
-        raise ConnectorAuthFailureException(error)
-
-
-def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
-    """
-    Traverses all levels of fields that exist in a dataset
-    returning them for individual evaluation.
-    """
-    for field in fields:
-        yield field
-        if isinstance(field, dict):
-            if field["fields"]:
-                yield from get_all_level_fields(field["fields"])
-        else:
-            if field.fields:
-                yield from get_all_level_fields(field.fields)
 
 
 def get_manifest_list(manifests_dir: str) -> List[str]:
@@ -114,28 +56,6 @@ def check_fides_key(proposed_fides_key: str) -> str:
     except ValidationError as error:
         echo_red(error)
         return sanitize_fides_key(proposed_fides_key)
-
-
-def sanitize_fides_key(proposed_fides_key: str) -> str:
-    """
-    Attempts to manually sanitize a fides key if restricted
-    characters are discovered.
-    """
-    sanitized_fides_key = re.sub(r"[^a-zA-Z0-9_.-]", "_", proposed_fides_key)
-    return sanitized_fides_key
-
-
-def generate_unique_fides_key(
-    proposed_fides_key: str, database_host: str, database_name: str
-) -> str:
-    """
-    Uses host and name to generate a UUID to be
-    appended to the fides_key of a dataset
-    """
-    fides_key_uuid = sha1(
-        "-".join([database_host, database_name, proposed_fides_key]).encode()
-    )
-    return f"{proposed_fides_key}_{fides_key_uuid.hexdigest()[:10]}"
 
 
 def git_is_dirty(dir_to_check: str = ".") -> bool:

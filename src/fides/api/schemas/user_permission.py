@@ -4,7 +4,7 @@ from pydantic import ConfigDict, field_validator
 
 from fides.api.oauth.roles import RoleRegistryEnum
 from fides.api.schemas.base_class import FidesSchema
-from fides.common.api.scope_registry import SCOPE_REGISTRY, ScopeRegistryEnum
+from fides.api.scope_registry import SCOPE_REGISTRY, ScopeRegistryEnum
 
 
 class UserPermissionsCreate(FidesSchema):

@@ -2,6 +2,7 @@ import pytest
 from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
+from fides.api import scope_registry as scopes
 from fides.api.models.privacy_request_redaction_pattern import (
     PrivacyRequestRedactionPattern,
 )
@@ -12,8 +13,7 @@ from fides.api.oauth.roles import (
     VIEWER,
     VIEWER_AND_APPROVER,
 )
-from fides.common.api import scope_registry as scopes
-from fides.common.api.v1.urn_registry import (
+from fides.api.v1.urn_registry import (
     PRIVACY_REQUEST_REDACTION_PATTERNS,
     V1_URL_PREFIX,
 )

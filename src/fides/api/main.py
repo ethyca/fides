@@ -63,7 +63,7 @@ from fides.api.ui import (
 )
 from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.rate_limit import safe_rate_limit_key
-from fides.cli.utils import FIDES_ASCII_ART
+from fides.common.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments

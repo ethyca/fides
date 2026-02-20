@@ -2,10 +2,10 @@
 
 import rich_click as click
 
+from fides.cli.core import api as _api
 from fides.cli.options import yes_flag
 from fides.cli.utils import with_analytics, with_server_health_check
 from fides.common.utils import echo_red, handle_cli_response
-from fides.core import api as _api
 
 
 @click.group(name="db")

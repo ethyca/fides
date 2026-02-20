@@ -24,7 +24,14 @@ from fideslog.sdk.python.utils import (
 from requests import get, put
 
 import fides
-from fides.common.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
+from fides.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
+from fides.cli.connectors.models import (
+    AWSConfig,
+    BigQueryConfig,
+    DatabaseConfig,
+    OktaConfig,
+)
+from fides.cli.core import api as _api
 from fides.common.utils import check_response, echo_green, echo_red
 from fides.config import FidesConfig
 from fides.config.credentials_settings import (
@@ -33,27 +40,11 @@ from fides.config.credentials_settings import (
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.config.helpers import get_config_from_file
-from fides.config.utils import get_dev_mode
-from fides.connectors.models import (
-    AWSConfig,
-    BigQueryConfig,
-    DatabaseConfig,
-    OktaConfig,
-)
-from fides.core import api as _api
+from fides.config.utils import get_config_from_file, get_dev_mode
 
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
-FIDES_ASCII_ART = """
-
-███████╗██╗██████╗ ███████╗███████╗
-██╔════╝██║██╔══██╗██╔════╝██╔════╝
-█████╗  ██║██║  ██║█████╗  ███████╗
-██╔══╝  ██║██║  ██║██╔══╝  ╚════██║
-██║     ██║██████╔╝███████╗███████║
-╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝
-"""
+from fides.common.utils import FIDES_ASCII_ART as FIDES_ASCII_ART
 
 
 def check_server_health(server_url: str, verbose: bool = True) -> requests.Response:

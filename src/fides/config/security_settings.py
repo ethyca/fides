@@ -13,7 +13,7 @@ from fides.api.cryptography.cryptographic_util import (
 )
 from fides.api.custom_types import URLOriginString
 from fides.api.oauth.roles import OWNER
-from fides.common.api.scope_registry import SCOPE_REGISTRY
+from fides.api.scope_registry import SCOPE_REGISTRY
 
 from .fides_settings import FidesSettings
 

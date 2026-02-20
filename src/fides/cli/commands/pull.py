@@ -3,14 +3,14 @@ from typing import Optional
 import rich_click as click
 from click_default_group import DefaultGroup
 
+from fides.cli.core import parse as _parse
+from fides.cli.core import pull as _pull
+from fides.cli.core.api_helpers import list_server_resources
+from fides.cli.core.pull import remove_nulls, write_manifest_file
+from fides.cli.core.utils import git_is_dirty
 from fides.cli.options import fides_key_argument, manifests_dir_argument
 from fides.cli.utils import with_analytics, with_server_health_check
 from fides.common.utils import echo_green, echo_red
-from fides.core import parse as _parse
-from fides.core import pull as _pull
-from fides.core.api_helpers import list_server_resources
-from fides.core.pull import remove_nulls, write_manifest_file
-from fides.core.utils import git_is_dirty
 
 
 @click.group(cls=DefaultGroup, default="all", default_if_no_args=True)  # type: ignore

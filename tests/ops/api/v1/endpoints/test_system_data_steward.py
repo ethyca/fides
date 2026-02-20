@@ -3,8 +3,8 @@ from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
 
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.common.api.scope_registry import SYSTEM_UPDATE
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.api.scope_registry import SYSTEM_UPDATE
+from fides.api.v1.urn_registry import V1_URL_PREFIX
 
 
 class TestAssignDataSteward:

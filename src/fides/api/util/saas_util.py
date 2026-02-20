@@ -19,7 +19,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.config import CONFIG
-from fides.config.helpers import load_file
+from fides.config.utils import load_file
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 PRIVACY_REQUEST_ID = "privacy_request_id"

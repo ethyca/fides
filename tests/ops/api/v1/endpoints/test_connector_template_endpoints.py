@@ -9,18 +9,18 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-    CustomConnectorTemplateLoader,
-    FileConnectorTemplateLoader,
-)
-from fides.common.api.scope_registry import (
+from fides.api.scope_registry import (
     CLIENT_READ,
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.api.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+    CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
+)
+from fides.api.v1.urn_registry import (
     CONNECTOR_TEMPLATES_CONFIG,
     CONNECTOR_TEMPLATES_DATASET,
     CONNECTOR_TEMPLATES_REGISTER,

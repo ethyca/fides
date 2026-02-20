@@ -12,16 +12,16 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import ActionType
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-)
-from fides.common.api.scope_registry import (
+from fides.api.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     CONNECTOR_TEMPLATE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.api.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+)
+from fides.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     CONNECTOR_TEMPLATES,
