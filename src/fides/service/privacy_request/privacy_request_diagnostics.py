@@ -45,9 +45,7 @@ from fides.api.models.privacy_request.request_task import (
     RequestTask,
     RequestTaskSubRequest,
 )
-from fides.api.models.sql_models import (
-    Dataset as CtlDataset,  # type: ignore[attr-defined]
-)
+from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore[attr-defined]
 from fides.api.models.storage import StorageConfig
 
 
