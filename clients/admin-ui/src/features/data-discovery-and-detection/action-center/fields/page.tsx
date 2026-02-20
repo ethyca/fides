@@ -36,6 +36,7 @@ import {
 } from "../forms/MonitorFieldSearchForm.util";
 import MonitorFieldsSearchForm from "../forms/MonitorFieldsSearchForm";
 import useSearchForm from "../hooks/useSearchForm";
+import { DatastorePageSettings } from "../types";
 import {
   ACTION_ALLOWED_STATUSES,
   ACTIONS_DISABLED_MESSAGE,
@@ -51,11 +52,11 @@ import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import { useLazyGetAllowedActionsQuery } from "./monitor-fields.slice";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
+  DEFAULT_FILTER_STATUSES,
   DIFF_TO_RESOURCE_STATUS,
   EXCLUDED_FILTER_STATUSES,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
-  ResourceStatusLabel,
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
@@ -65,16 +66,13 @@ import { useBulkListSelect } from "./useBulkListSelect";
 import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
 import useNormalizedResources from "./useNormalizedResources";
+import { intoDiffStatus } from "./utils";
 
-const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
-  Object.values(DiffStatus).flatMap((status) =>
-    MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[status].label ===
-    resourceStatusLabel
-      ? [status]
-      : [],
-  );
-
-const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
+const ActionCenterFields = ({
+  monitorId,
+  showApproved,
+  showIgnored,
+}: DatastorePageSettings & { monitorId: string }) => {
   const router = useRouter();
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
@@ -106,7 +104,13 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
       query: {
         confidence_bucket: query.confidence_bucket ?? undefined,
         data_category: query.data_category ?? undefined,
-        diff_status: query.resource_status.flatMap(intoDiffStatus) ?? undefined,
+        diff_status: [
+          ...(showIgnored ? intoDiffStatus("Ignored") : []),
+          ...(showApproved ? intoDiffStatus("Approved") : []),
+          ...(query?.resource_status?.flatMap(intoDiffStatus)
+            ? query.resource_status.flatMap(intoDiffStatus)
+            : DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus)),
+        ],
         search: query.search ?? undefined,
         staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
       },
@@ -266,6 +270,8 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
           style={{ paddingRight: "var(--ant-padding-md)" }}
         >
           <MonitorTree
+            showIgnored={showIgnored}
+            showApproved={showApproved}
             ref={monitorTreeRef}
             setSelectedNodeKeys={setSelectedNodeKeys}
             selectedNodeKeys={selectedNodeKeys}

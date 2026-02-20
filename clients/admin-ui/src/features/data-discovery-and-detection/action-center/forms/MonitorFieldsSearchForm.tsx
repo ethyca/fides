@@ -86,10 +86,19 @@ const MonitorFieldsSearchForm = ({
       </Flex>
       <Form.Item name="resource_status" className="!me-0 self-end">
         <Select
-          options={RESOURCE_STATUS.map((resourceStatus) => ({
-            value: resourceStatus,
-            label: resourceStatus,
-          }))}
+          options={RESOURCE_STATUS.flatMap((resourceStatus) =>
+            resourceStatus !== "Ignored" &&
+            resourceStatus !== "Approved" &&
+            resourceStatus !== "Approving" &&
+            resourceStatus !== "Removing"
+              ? [
+                  {
+                    value: resourceStatus,
+                    label: resourceStatus,
+                  },
+                ]
+              : [],
+          )}
           className="!w-[200px]"
           placeholder="Status"
           allowClear
