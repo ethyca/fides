@@ -345,8 +345,10 @@ def loguru_caplog(caplog):
 
 
 def create_citext_extension(engine: Engine) -> None:
+    from sqlalchemy import text as sa_text
+
     with engine.connect() as con:
-        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+        con.execute(sa_text("CREATE EXTENSION IF NOT EXISTS citext;"))
 
 
 @pytest.fixture
@@ -2090,30 +2092,43 @@ async def clear_db_tables(db, async_session):
     """Clear data from tables between tests.
 
     Uses a single TRUNCATE ... CASCADE statement instead of per-table DELETE
-    to dramatically reduce teardown time (~136 tables).
-    Falls back to iterative DELETE if TRUNCATE fails (e.g. permission issues).
+    to dramatically reduce teardown time (~136 tables → 1 statement).
+    Falls back to iterative DELETE only if TRUNCATE fails.
     """
     yield
 
     db.commit()
     await async_session.commit()
 
+    from sqlalchemy import text
+
     table_names = ", ".join(
         f'"{t.name}"' for t in reversed(Base.metadata.sorted_tables)
     )
     try:
-        db.execute(f"TRUNCATE {table_names} CASCADE")
+        db.execute(text(f"TRUNCATE {table_names} CASCADE"))
         db.commit()
     except Exception:
         db.rollback()
-        for table in reversed(Base.metadata.sorted_tables):
+        _delete_all_tables_iteratively(db)
+
+
+def _delete_all_tables_iteratively(db):
+    """Fallback: delete from all tables handling FK ordering via retry."""
+    remaining = list(reversed(Base.metadata.sorted_tables))
+    max_passes = 5
+    for _ in range(max_passes):
+        retry = []
+        for table in remaining:
             try:
                 db.execute(table.delete())
                 db.commit()
-            except IntegrityError:
-                db.rollback()
             except Exception:
                 db.rollback()
+                retry.append(table)
+        if not retry:
+            return
+        remaining = retry
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -2166,21 +2181,26 @@ def worker_id(request) -> str:
 
 @pytest.hookimpl(optionalhook=True)
 def pytest_configure_node(node):
-    """Pytest hook automatically called for each xdist worker node configuration."""
+    """Pytest hook automatically called for each xdist worker node configuration.
+
+    Creates a per-worker test database and configures the worker to use it.
+    """
     if hasattr(node, "workerinput") and node.workerinput:
         worker_id = node.workerinput["workerid"]
+        test_db_name = f"fides_test_{worker_id}"
         print(
-            f"[Configure Node] Configuring database and config for worker {worker_id}..."
+            f"[Configure Node] Configuring database {test_db_name} for worker {worker_id}..."
         )
 
-        os.environ["FIDES__DATABASE__TEST_DB"] = f"fides_test_{worker_id}"
+        _ensure_worker_database_exists(test_db_name)
+
+        os.environ["FIDES__DATABASE__TEST_DB"] = test_db_name
 
         get_config.cache_clear()
         fides_config = get_config()
         sync_db_uri = fides_config.database.sqlalchemy_test_database_uri
         async_db_uri = fides_config.database.async_database_uri
 
-        # Log connection strings
         print(
             f"[Configure Node] Sync DB URI: {sync_db_uri} Async DB URI: {async_db_uri}"
         )
@@ -2188,6 +2208,30 @@ def pytest_configure_node(node):
         print(
             "[Configure Node] Skipping DB setup/config update on single node or non-xdist run."
         )
+
+
+def _ensure_worker_database_exists(db_name: str) -> None:
+    """Create a per-worker test database if it doesn't already exist."""
+    from sqlalchemy import create_engine
+    from sqlalchemy import text as sa_text
+
+    fides_config = get_config()
+    admin_uri = fides_config.database.sqlalchemy_database_uri
+    engine = create_engine(admin_uri, isolation_level="AUTOCOMMIT")
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                sa_text(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}'")
+            )
+            if not result.fetchone():
+                conn.execute(sa_text(f'CREATE DATABASE "{db_name}"'))
+                print(f"[Configure Node] Created database {db_name}")
+            else:
+                print(f"[Configure Node] Database {db_name} already exists")
+    except Exception as e:
+        print(f"[Configure Node] Warning: could not create database {db_name}: {e}")
+    finally:
+        engine.dispose()
 
 
 @pytest.fixture

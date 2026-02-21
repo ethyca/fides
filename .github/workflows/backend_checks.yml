@@ -300,6 +300,7 @@ jobs:
       FIDES__REDIS__HOST: localhost
       FIDES__REDIS__PORT: "6379"
       FIDES__REDIS__PASSWORD: ""
+      FIDES__REDIS__SSL: "false"
       FIDES__SECURITY__APP_ENCRYPTION_KEY: OLMkv91j8DHiDAULnK5Lxx3kSCov30b3
       FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: fidesadmin
       FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: fidesadminsecret
@@ -316,8 +317,12 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache-key-suffix: native-tests
 
-      - name: Create test database
-        run: PGPASSWORD=fides psql -h localhost -U postgres -c "CREATE DATABASE fides_test;" || true
+      - name: Create test databases
+        run: |
+          PGPASSWORD=fides psql -h localhost -U postgres -c "CREATE DATABASE fides_test;" || true
+          for i in $(seq 0 7); do
+            PGPASSWORD=fides psql -h localhost -U postgres -c "CREATE DATABASE fides_test_gw${i};" || true
+          done
 
       - name: Run native tests (no Docker)
         run: uv run nox -s "pytest_native(not-external)"
