@@ -10,7 +10,7 @@ import { baseApi } from "~/features/common/api.slice";
 
 import {
   AssessmentEvidenceResponse,
-  AssessmentTemplateResponse,
+  AssessmentTemplatePage,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
   CreatePrivacyAssessmentRequest,
@@ -19,9 +19,8 @@ import {
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
   GetPrivacyAssessmentsParams,
-  Page_AssessmentTemplateResponse_,
-  Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentDetailResponse,
+  PrivacyAssessmentPage,
   PrivacyAssessmentResponse,
   QuestionnaireResponse,
   QuestionnaireStatusResponse,
@@ -45,7 +44,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
      * GET /plus/privacy-assessments
      */
     getPrivacyAssessments: build.query<
-      Page_PrivacyAssessmentResponse_,
+      PrivacyAssessmentPage,
       GetPrivacyAssessmentsParams | void
     >({
       query: (params) => ({
@@ -60,7 +59,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
      * GET /plus/privacy-assessments/templates
      */
     getPrivacyAssessmentTemplates: build.query<
-      Page_AssessmentTemplateResponse_,
+      AssessmentTemplatePage,
       { active_only?: boolean } | void
     >({
       query: (params) => ({

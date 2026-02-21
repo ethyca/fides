@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { FileTextOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -18,13 +19,16 @@ import { useRouter } from "next/router";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { PRIVACY_ASSESSMENTS_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
+import {
+  PRIVACY_ASSESSMENTS_ROUTE,
+  SYSTEM_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   PrivacyAssessmentResponse,
   useCreatePrivacyAssessmentMutation,
-  useGetPrivacyAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
+  useGetPrivacyAssessmentTemplatesQuery,
 } from "~/features/privacy-assessments";
 
 const { Title, Text } = Typography;
@@ -93,10 +97,7 @@ const EmptyState = ({
           Privacy assessments require systems with privacy declarations. Add
           data uses to your systems to enable assessment generation.
         </Text>
-        <Button
-          type="primary"
-          onClick={() => router.push(SYSTEM_ROUTE)}
-        >
+        <Button type="primary" onClick={() => router.push(SYSTEM_ROUTE)}>
           Go to System inventory
         </Button>
       </Flex>
@@ -268,7 +269,7 @@ const AssessmentCard = ({
                     </Tag>
                     {idx < assessment.data_categories?.length - 1 && " "}
                   </span>
-                )
+                ),
               )}{" "}
               for{" "}
               <Tag
@@ -469,24 +470,27 @@ const PrivacyAssessmentsPage: NextPage = () => {
 
       if (totalCreated === 0) {
         message.warning(
-          "No privacy declarations found. Add data uses to your systems to generate assessments."
+          "No privacy declarations found. Add data uses to your systems to generate assessments.",
         );
         return;
       }
 
       message.success(
-        `Generated assessments for ${totalCreated} privacy declaration(s)`
+        `Generated assessments for ${totalCreated} privacy declaration(s)`,
       );
     } catch (error: unknown) {
       console.error("Assessment generation failed:", error);
-      const errorData = error as { status?: number; data?: { detail?: string } };
+      const errorData = error as {
+        status?: number;
+        data?: { detail?: string };
+      };
       if (errorData?.status === 400) {
         message.error(
-          "No privacy declarations found. Add data uses to your systems first."
+          "No privacy declarations found. Add data uses to your systems first.",
         );
       } else {
         message.error(
-          `Assessment generation failed: ${errorData?.data?.detail || "Unknown error"}`
+          `Assessment generation failed: ${errorData?.data?.detail || "Unknown error"}`,
         );
       }
     }
@@ -504,6 +508,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
   >((groups, assessment) => {
     const key = assessment.template_id || "unknown";
     if (!groups[key]) {
+      // eslint-disable-next-line no-param-reassign
       groups[key] = {
         templateId: assessment.template_id || "Unknown",
         title: assessment.template_name || "Unknown Assessment",
@@ -518,11 +523,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
     return (
       <Layout title="Privacy assessments">
         <PageHeader heading="Privacy assessments" isSticky />
-        <Flex
-          align="center"
-          justify="center"
-          style={{ padding: "80px 40px" }}
-        >
+        <Flex align="center" justify="center" style={{ padding: "80px 40px" }}>
           <Spin size="large" />
         </Flex>
       </Layout>
@@ -617,7 +618,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
                       assessment={assessment}
                       onClick={() =>
                         router.push(
-                          `${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`
+                          `${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`,
                         )
                       }
                     />

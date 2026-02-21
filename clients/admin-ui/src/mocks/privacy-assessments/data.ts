@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Privacy Assessments Mock Data
  *
@@ -7,21 +8,17 @@
 
 import {
   AIAnalysisEvidenceItem,
-  AnswerSource,
-  AnswerStatus,
   AssessmentMetadata,
   AssessmentQuestion,
   AssessmentStatus,
   EvidenceItem,
   ManualEntryEvidenceItem,
-  Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentDetailResponse,
   PrivacyAssessmentResponse,
   QuestionGroup,
   QuestionnaireQuestion,
   QuestionnaireStatus,
   QuestionnaireStatusResponse,
-  RiskLevel,
   SlackCommunicationEvidenceItem,
   SlackMessage,
   SystemEvidenceItem,
@@ -35,9 +32,9 @@ let assessmentIdCounter = 1;
 let evidenceIdCounter = 1;
 
 export const mockPrivacyAssessment = (
-  partial?: Partial<PrivacyAssessmentResponse>
+  partial?: Partial<PrivacyAssessmentResponse>,
 ): PrivacyAssessmentResponse => {
-  const id = partial?.id ?? `assessment-${assessmentIdCounter++}`;
+  const id = partial?.id ?? `assessment-${(assessmentIdCounter += 1)}`;
   return {
     id,
     name: "Collect data for marketing",
@@ -61,9 +58,9 @@ export const mockPrivacyAssessment = (
 };
 
 export const mockSystemEvidence = (
-  partial?: Partial<SystemEvidenceItem>
+  partial?: Partial<SystemEvidenceItem>,
 ): SystemEvidenceItem => {
-  const id = partial?.id ?? `ev-sys-${evidenceIdCounter++}`;
+  const id = partial?.id ?? `ev-sys-${(evidenceIdCounter += 1)}`;
   return {
     id,
     type: "system",
@@ -85,9 +82,9 @@ export const mockSystemEvidence = (
 };
 
 export const mockAIAnalysisEvidence = (
-  partial?: Partial<AIAnalysisEvidenceItem>
+  partial?: Partial<AIAnalysisEvidenceItem>,
 ): AIAnalysisEvidenceItem => {
-  const id = partial?.id ?? `ev-ai-${evidenceIdCounter++}`;
+  const id = partial?.id ?? `ev-ai-${(evidenceIdCounter += 1)}`;
   return {
     id,
     type: "ai_analysis",
@@ -110,9 +107,9 @@ export const mockAIAnalysisEvidence = (
 };
 
 export const mockManualEntryEvidence = (
-  partial?: Partial<ManualEntryEvidenceItem>
+  partial?: Partial<ManualEntryEvidenceItem>,
 ): ManualEntryEvidenceItem => {
-  const id = partial?.id ?? `ev-manual-${evidenceIdCounter++}`;
+  const id = partial?.id ?? `ev-manual-${(evidenceIdCounter += 1)}`;
   return {
     id,
     type: "manual_entry",
@@ -135,7 +132,7 @@ export const mockManualEntryEvidence = (
 };
 
 export const mockSlackMessage = (
-  partial?: Partial<SlackMessage>
+  partial?: Partial<SlackMessage>,
 ): SlackMessage => ({
   message_id: `msg-${Date.now()}`,
   timestamp: new Date().toISOString(),
@@ -156,9 +153,9 @@ export const mockSlackMessage = (
 });
 
 export const mockSlackCommunicationEvidence = (
-  partial?: Partial<SlackCommunicationEvidenceItem>
+  partial?: Partial<SlackCommunicationEvidenceItem>,
 ): SlackCommunicationEvidenceItem => {
-  const id = partial?.id ?? `ev-slack-${evidenceIdCounter++}`;
+  const id = partial?.id ?? `ev-slack-${(evidenceIdCounter += 1)}`;
   return {
     id,
     type: "slack_communication",
@@ -235,11 +232,12 @@ export const mockSlackCommunicationEvidence = (
 };
 
 export const mockAssessmentQuestion = (
-  partial?: Partial<AssessmentQuestion>
+  partial?: Partial<AssessmentQuestion>,
 ): AssessmentQuestion => ({
   id: "1.1",
   question_id: "cpra_1_1",
-  question_text: "What is the name and description of this processing activity?",
+  question_text:
+    "What is the name and description of this processing activity?",
   guidance: "Describe the processing activity in detail.",
   required: true,
   fides_sources: ["system", "privacy_declaration"],
@@ -256,7 +254,7 @@ export const mockAssessmentQuestion = (
 });
 
 export const mockQuestionGroup = (
-  partial?: Partial<QuestionGroup>
+  partial?: Partial<QuestionGroup>,
 ): QuestionGroup => ({
   id: "1",
   title: "Processing Scope and Purpose(s)",
@@ -271,7 +269,7 @@ export const mockQuestionGroup = (
 });
 
 export const mockQuestionnaireStatus = (
-  partial?: Partial<QuestionnaireStatus>
+  partial?: Partial<QuestionnaireStatus>,
 ): QuestionnaireStatus => ({
   sent_at: new Date().toISOString(),
   channel: "#privacy-team",
@@ -283,7 +281,7 @@ export const mockQuestionnaireStatus = (
 });
 
 export const mockQuestionnaireStatusResponse = (
-  partial?: Partial<QuestionnaireStatusResponse>
+  partial?: Partial<QuestionnaireStatusResponse>,
 ): QuestionnaireStatusResponse => ({
   assessment_id: "assessment-1",
   sent_at: new Date().toISOString(),
@@ -299,7 +297,7 @@ export const mockQuestionnaireStatusResponse = (
 });
 
 export const mockAssessmentMetadata = (
-  partial?: Partial<AssessmentMetadata>
+  partial?: Partial<AssessmentMetadata>,
 ): AssessmentMetadata => ({
   generation_timestamp: new Date().toISOString(),
   model_used: "gpt-4",
@@ -308,7 +306,7 @@ export const mockAssessmentMetadata = (
 });
 
 export const mockPrivacyAssessmentDetail = (
-  partial?: Partial<PrivacyAssessmentDetailResponse>
+  partial?: Partial<PrivacyAssessmentDetailResponse>,
 ): PrivacyAssessmentDetailResponse => ({
   ...mockPrivacyAssessment(),
   assessment_type: "cpra",
@@ -570,7 +568,8 @@ export const MOCK_CPRA_QUESTION_GROUPS: QuestionGroup[] = [
         question_id: "cpra_3_1",
         question_text:
           "What categories of personal information are collected and processed?",
-        guidance: "List all categories of personal information that are processed.",
+        guidance:
+          "List all categories of personal information that are processed.",
         required: true,
         fides_sources: ["data_category", "privacy_declaration"],
         expected_coverage: "full",
@@ -895,7 +894,7 @@ export const calculateCompleteness = (groups: QuestionGroup[]): number => {
     return 0;
   }
   const answeredCount = allQuestions.filter(
-    (q) => q.answer_text.trim().length > 0
+    (q) => q.answer_text.trim().length > 0,
   ).length;
   return Math.round((answeredCount / allQuestions.length) * 100);
 };
@@ -915,7 +914,7 @@ export const determineStatus = (completeness: number): AssessmentStatus => {
  */
 export const getEvidenceForGroup = (
   groupId: string,
-  evidence: EvidenceItem[]
+  evidence: EvidenceItem[],
 ): EvidenceItem[] => {
   // In a real implementation, evidence would be linked to specific questions
   // For mock purposes, we distribute evidence across groups

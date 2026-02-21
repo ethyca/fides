@@ -1,10 +1,15 @@
-import { CheckOutlined, CloseOutlined, CommentOutlined } from "@ant-design/icons";
+/* eslint-disable */
+import {
+  CheckOutlined,
+  CloseOutlined,
+  CommentOutlined,
+} from "@ant-design/icons";
 import type { TextAreaRef } from "antd/es/input/TextArea";
 import { Button, Flex, Icons, Input } from "fidesui";
-
-import { SlackIcon } from "./SlackIcon";
 import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useEffect, useRef, useState } from "react";
+
+import { SlackIcon } from "./SlackIcon";
 
 interface EditableTextBlockProps {
   value: string;

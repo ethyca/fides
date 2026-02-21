@@ -9,7 +9,7 @@
 // Pagination
 // =============================================================================
 
-export interface Page_PrivacyAssessmentResponse_ {
+export interface PrivacyAssessmentPage {
   items: PrivacyAssessmentResponse[];
   total: number;
   page: number;
@@ -17,7 +17,7 @@ export interface Page_PrivacyAssessmentResponse_ {
   pages: number;
 }
 
-export interface Page_AssessmentTemplateResponse_ {
+export interface AssessmentTemplatePage {
   items: AssessmentTemplateResponse[];
   total: number;
   page: number;

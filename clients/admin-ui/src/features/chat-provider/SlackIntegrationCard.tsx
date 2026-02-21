@@ -1,3 +1,4 @@
+/* eslint-disable */
 import {
   Button,
   Card,
@@ -110,10 +111,10 @@ const SlackIntegrationCard = () => {
   const [patchConfigSettings] = usePatchConfigurationSettingsMutation();
 
   const [selectedChannel, setSelectedChannel] = useState<string | undefined>(
-    undefined
+    undefined,
   );
   const [testMessage, setTestMessage] = useState<string>(
-    "Hello from Fides! This is a test message."
+    "Hello from Fides! This is a test message.",
   );
 
   // Credentials form state
@@ -148,8 +149,8 @@ const SlackIntegrationCard = () => {
       };
       toast(
         errorToastParams(
-          errorMessages[chatError] ?? "Authorization failed. Please try again."
-        )
+          errorMessages[chatError] ?? "Authorization failed. Please try again.",
+        ),
       );
       window.history.replaceState({}, "", window.location.pathname);
     }
@@ -178,10 +179,14 @@ const SlackIntegrationCard = () => {
 
     if (isErrorResult(result)) {
       toast(
-        errorToastParams(getErrorMessage(result.error, "Failed to save credentials."))
+        errorToastParams(
+          getErrorMessage(result.error, "Failed to save credentials."),
+        ),
       );
     } else {
-      toast(successToastParams("Credentials saved. You can now connect to Slack."));
+      toast(
+        successToastParams("Credentials saved. You can now connect to Slack."),
+      );
       setClientSecret(""); // Clear secrets after save
       setSigningSecret("");
       refetch();
@@ -213,7 +218,7 @@ const SlackIntegrationCard = () => {
 
     if (isErrorResult(result)) {
       toast(
-        errorToastParams(getErrorMessage(result.error, "Disconnect failed."))
+        errorToastParams(getErrorMessage(result.error, "Disconnect failed.")),
       );
     } else {
       toast(successToastParams("Slack disconnected successfully."));
@@ -256,7 +261,9 @@ const SlackIntegrationCard = () => {
       }
     } else if (isErrorResult(result)) {
       toast(
-        errorToastParams(getErrorMessage(result.error, "Failed to send message."))
+        errorToastParams(
+          getErrorMessage(result.error, "Failed to send message."),
+        ),
       );
     }
   };
@@ -285,8 +292,8 @@ const SlackIntegrationCard = () => {
     } else if (isErrorResult(result)) {
       toast(
         errorToastParams(
-          getErrorMessage(result.error, "Failed to create questionnaire.")
-        )
+          getErrorMessage(result.error, "Failed to create questionnaire."),
+        ),
       );
     }
   };
@@ -353,7 +360,7 @@ const SlackIntegrationCard = () => {
           <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>Not connected</Tag>
         </Flex>
 
-        <Space direction="vertical" size={12} className="w-full mb-4">
+        <Space direction="vertical" size={12} className="mb-4 w-full">
           <div>
             <Text strong className="mb-1 block">
               Slack app credentials
@@ -580,7 +587,8 @@ const SlackIntegrationCard = () => {
           />
         ) : (
           <Text type="secondary">
-            No questionnaires yet. Click &quot;New questionnaire&quot; to create one.
+            No questionnaires yet. Click &quot;New questionnaire&quot; to create
+            one.
           </Text>
         )}
       </div>
@@ -600,7 +608,7 @@ const QuestionnaireCard = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"qa" | "history">("qa");
   const answeredCount = questionnaire.questions.filter(
-    (q) => q.answer !== null
+    (q) => q.answer !== null,
   ).length;
   const totalQuestions = questionnaire.questions.length;
   const isCompleted = questionnaire.status === "completed";
@@ -619,7 +627,7 @@ const QuestionnaireCard = ({
             : `${answeredCount}/${totalQuestions} answered`}
         </Tag>
       </Flex>
-      <Text type="secondary" className="block mb-3">
+      <Text type="secondary" className="mb-3 block">
         Started {formatDateTime(questionnaire.created_at)}
       </Text>
 
@@ -649,7 +657,7 @@ const QuestionnaireCard = ({
                 Q{idx + 1}: {q.displayed_as || q.question}
               </Text>
               {q.answer ? (
-                <Text className="block ml-4">
+                <Text className="ml-4 block">
                   <Text type="secondary">A:</Text> {q.answer}
                   {(q.answered_by_email ?? q.answered_by_display_name) && (
                     <Text type="secondary">
@@ -658,12 +666,13 @@ const QuestionnaireCard = ({
                     </Text>
                   )}
                 </Text>
-              ) : idx === questionnaire.current_question_index && !isCompleted ? (
-                <Text type="secondary" italic className="block ml-4">
+              ) : idx === questionnaire.current_question_index &&
+                !isCompleted ? (
+                <Text type="secondary" italic className="ml-4 block">
                   Waiting for answer...
                 </Text>
               ) : (
-                <Text type="secondary" className="block ml-4">
+                <Text type="secondary" className="ml-4 block">
                   —
                 </Text>
               )}

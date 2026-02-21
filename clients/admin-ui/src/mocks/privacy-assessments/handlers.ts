@@ -15,9 +15,8 @@ import {
   CreatePrivacyAssessmentRequest,
   CreatePrivacyAssessmentResponse,
   CreateQuestionnaireRequest,
-  CreateReminderRequest,
-  Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentDetailResponse,
+  PrivacyAssessmentPage,
   PrivacyAssessmentResponse,
   QuestionnaireResponse,
   QuestionnaireStatusResponse,
@@ -31,12 +30,12 @@ import {
   calculateCompleteness,
   determineStatus,
   getEvidenceForGroup,
-  mockAssessmentMetadata,
-  mockPrivacyAssessment,
   MOCK_ASSESSMENTS,
   MOCK_CPRA_QUESTION_GROUPS,
   MOCK_EVIDENCE_ITEMS,
   MOCK_QUESTIONNAIRE_QUESTIONS,
+  mockAssessmentMetadata,
+  mockPrivacyAssessment,
 } from "./data";
 
 /**
@@ -47,8 +46,10 @@ export const privacyAssessmentHandlers = () => {
 
   // In-memory store for mock state
   let mockAssessments = [...MOCK_ASSESSMENTS];
-  let mockQuestionGroups = JSON.parse(JSON.stringify(MOCK_CPRA_QUESTION_GROUPS));
-  let mockQuestionnaires: Record<string, QuestionnaireStatusResponse> = {};
+  let mockQuestionGroups = JSON.parse(
+    JSON.stringify(MOCK_CPRA_QUESTION_GROUPS),
+  );
+  const mockQuestionnaires: Record<string, QuestionnaireStatusResponse> = {};
 
   return [
     // =========================================================================
@@ -63,7 +64,7 @@ export const privacyAssessmentHandlers = () => {
       let filteredAssessments = [...mockAssessments];
       if (statusFilter) {
         filteredAssessments = filteredAssessments.filter(
-          (a) => a.status === statusFilter
+          (a) => a.status === statusFilter,
         );
       }
 
@@ -73,7 +74,7 @@ export const privacyAssessmentHandlers = () => {
       const paginatedItems = filteredAssessments.slice(startIndex, endIndex);
       const totalPages = Math.ceil(filteredAssessments.length / size);
 
-      const response: Page_PrivacyAssessmentResponse_ = {
+      const response: PrivacyAssessmentPage = {
         items: paginatedItems,
         total: filteredAssessments.length,
         page,
@@ -94,19 +95,19 @@ export const privacyAssessmentHandlers = () => {
       if (!assessment) {
         return res(
           ctx.status(404),
-          ctx.json({ detail: "Assessment not found" })
+          ctx.json({ detail: "Assessment not found" }),
         );
       }
 
       // Add evidence to question groups
       const questionGroupsWithEvidence = mockQuestionGroups.map(
-        (group: typeof MOCK_CPRA_QUESTION_GROUPS[0]) => ({
+        (group: (typeof MOCK_CPRA_QUESTION_GROUPS)[0]) => ({
           ...group,
           questions: group.questions.map((q: AssessmentQuestion) => ({
             ...q,
             evidence: getEvidenceForGroup(group.id, MOCK_EVIDENCE_ITEMS),
           })),
-        })
+        }),
       );
 
       // Get questionnaire status if exists
@@ -135,35 +136,32 @@ export const privacyAssessmentHandlers = () => {
     // =========================================================================
     // POST /plus/privacy-assessments - Create new assessments
     // =========================================================================
-    rest.post(
-      `${apiBase}/plus/privacy-assessments`,
-      async (req, res, ctx) => {
-        const body = (await req.json()) as CreatePrivacyAssessmentRequest;
+    rest.post(`${apiBase}/plus/privacy-assessments`, async (req, res, ctx) => {
+      const body = (await req.json()) as CreatePrivacyAssessmentRequest;
 
-        // Create new assessments based on request
-        const newAssessments: PrivacyAssessmentResponse[] = [];
+      // Create new assessments based on request
+      const newAssessments: PrivacyAssessmentResponse[] = [];
 
-        // For now, create a sample assessment
-        const newAssessment = mockPrivacyAssessment({
-          id: `assessment-${Date.now()}`,
-          name: "New Privacy Assessment",
-          status: "in_progress",
-          completeness: 0,
-        });
+      // For now, create a sample assessment
+      const newAssessment = mockPrivacyAssessment({
+        id: `assessment-${Date.now()}`,
+        name: "New Privacy Assessment",
+        status: "in_progress",
+        completeness: 0,
+      });
 
-        newAssessments.push(newAssessment);
-        mockAssessments = [...mockAssessments, ...newAssessments];
+      newAssessments.push(newAssessment);
+      mockAssessments = [...mockAssessments, ...newAssessments];
 
-        const response: CreatePrivacyAssessmentResponse = {
-          assessments: newAssessments,
-          assessment_type: body.assessment_type || "cpra",
-          assessment_name: "CPRA Risk Assessment",
-          total_created: newAssessments.length,
-        };
+      const response: CreatePrivacyAssessmentResponse = {
+        assessments: newAssessments,
+        assessment_type: body.assessment_type || "cpra",
+        assessment_name: "CPRA Risk Assessment",
+        total_created: newAssessments.length,
+      };
 
-        return res(ctx.status(201), ctx.json(response));
-      }
-    ),
+      return res(ctx.status(201), ctx.json(response));
+    }),
 
     // =========================================================================
     // PUT /plus/privacy-assessments/:id - Update assessment metadata
@@ -178,7 +176,7 @@ export const privacyAssessmentHandlers = () => {
         if (assessmentIndex === -1) {
           return res(
             ctx.status(404),
-            ctx.json({ detail: "Assessment not found" })
+            ctx.json({ detail: "Assessment not found" }),
           );
         }
 
@@ -193,7 +191,7 @@ export const privacyAssessmentHandlers = () => {
         };
 
         return res(ctx.status(200), ctx.json(mockAssessments[assessmentIndex]));
-      }
+      },
     ),
 
     // =========================================================================
@@ -206,7 +204,7 @@ export const privacyAssessmentHandlers = () => {
       if (assessmentIndex === -1) {
         return res(
           ctx.status(404),
-          ctx.json({ detail: "Assessment not found" })
+          ctx.json({ detail: "Assessment not found" }),
         );
       }
 
@@ -232,7 +230,7 @@ export const privacyAssessmentHandlers = () => {
         if (!assessment) {
           return res(
             ctx.status(404),
-            ctx.json({ detail: "Assessment not found" })
+            ctx.json({ detail: "Assessment not found" }),
           );
         }
 
@@ -240,27 +238,29 @@ export const privacyAssessmentHandlers = () => {
         let updatedQuestion: AssessmentQuestion | null = null;
 
         mockQuestionGroups = mockQuestionGroups.map(
-          (group: typeof MOCK_CPRA_QUESTION_GROUPS[0]) => ({
+          (group: (typeof MOCK_CPRA_QUESTION_GROUPS)[0]) => ({
             ...group,
             questions: group.questions.map((q: AssessmentQuestion) => {
               if (q.question_id === questionId || q.id === questionId) {
                 updatedQuestion = {
                   ...q,
                   answer_text: body.answer_text,
-                  answer_status: body.answer_text.trim() ? "complete" : "needs_input",
+                  answer_status: body.answer_text.trim()
+                    ? "complete"
+                    : "needs_input",
                   answer_source: "user_input",
                 };
                 return updatedQuestion;
               }
               return q;
             }),
-          })
+          }),
         );
 
         if (!updatedQuestion) {
           return res(
             ctx.status(404),
-            ctx.json({ detail: "Question not found" })
+            ctx.json({ detail: "Question not found" }),
           );
         }
 
@@ -284,7 +284,7 @@ export const privacyAssessmentHandlers = () => {
         };
 
         return res(ctx.status(200), ctx.json(response));
-      }
+      },
     ),
 
     // =========================================================================
@@ -294,13 +294,15 @@ export const privacyAssessmentHandlers = () => {
       `${apiBase}/plus/privacy-assessments/:id/answers`,
       async (req, res, ctx) => {
         const { id } = req.params;
-        const body = (await req.json()) as { answers: Array<{ question_id: string; answer_text: string }> };
+        const body = (await req.json()) as {
+          answers: Array<{ question_id: string; answer_text: string }>;
+        };
 
         const assessment = mockAssessments.find((a) => a.id === id);
         if (!assessment) {
           return res(
             ctx.status(404),
-            ctx.json({ detail: "Assessment not found" })
+            ctx.json({ detail: "Assessment not found" }),
           );
         }
 
@@ -309,14 +311,16 @@ export const privacyAssessmentHandlers = () => {
         // Update each answer
         body.answers.forEach(({ question_id, answer_text }) => {
           mockQuestionGroups = mockQuestionGroups.map(
-            (group: typeof MOCK_CPRA_QUESTION_GROUPS[0]) => ({
+            (group: (typeof MOCK_CPRA_QUESTION_GROUPS)[0]) => ({
               ...group,
               questions: group.questions.map((q: AssessmentQuestion) => {
                 if (q.question_id === question_id || q.id === question_id) {
                   const updated = {
                     ...q,
                     answer_text,
-                    answer_status: answer_text.trim() ? "complete" : "needs_input",
+                    answer_status: answer_text.trim()
+                      ? "complete"
+                      : "needs_input",
                     answer_source: "user_input",
                   } as AssessmentQuestion;
                   updatedQuestions.push(updated);
@@ -324,7 +328,7 @@ export const privacyAssessmentHandlers = () => {
                 }
                 return q;
               }),
-            })
+            }),
           );
         });
 
@@ -349,7 +353,7 @@ export const privacyAssessmentHandlers = () => {
         };
 
         return res(ctx.status(200), ctx.json(response));
-      }
+      },
     ),
 
     // =========================================================================
@@ -359,7 +363,8 @@ export const privacyAssessmentHandlers = () => {
       `${apiBase}/plus/privacy-assessments/:id/evidence`,
       (req, res, ctx) => {
         const { id } = req.params;
-        const questionId = req.url.searchParams.get("question_id");
+        // TODO: Filter by question_id when implemented
+        // const questionId = req.url.searchParams.get("question_id");
         const typeFilter = req.url.searchParams.get("type");
         const groupBy = req.url.searchParams.get("group_by");
 
@@ -367,7 +372,7 @@ export const privacyAssessmentHandlers = () => {
         if (!assessment) {
           return res(
             ctx.status(404),
-            ctx.json({ detail: "Assessment not found" })
+            ctx.json({ detail: "Assessment not found" }),
           );
         }
 
@@ -387,29 +392,35 @@ export const privacyAssessmentHandlers = () => {
         if (groupBy === "type") {
           response.by_type = {
             system: evidence.filter((e) => e.type === "system") as any[],
-            ai_analysis: evidence.filter((e) => e.type === "ai_analysis") as any[],
-            manual_entry: evidence.filter((e) => e.type === "manual_entry") as any[],
+            ai_analysis: evidence.filter(
+              (e) => e.type === "ai_analysis",
+            ) as any[],
+            manual_entry: evidence.filter(
+              (e) => e.type === "manual_entry",
+            ) as any[],
             slack_communication: evidence.filter(
-              (e) => e.type === "slack_communication"
+              (e) => e.type === "slack_communication",
             ) as any[],
           };
         } else if (groupBy === "question") {
           response.by_question = {};
-          mockQuestionGroups.forEach((group: typeof MOCK_CPRA_QUESTION_GROUPS[0]) => {
-            group.questions.forEach((q: AssessmentQuestion) => {
-              response.by_question![q.question_id] = {
-                question_id: q.question_id,
-                question_text: q.question_text,
-                evidence: getEvidenceForGroup(group.id, evidence),
-              };
-            });
-          });
+          mockQuestionGroups.forEach(
+            (group: (typeof MOCK_CPRA_QUESTION_GROUPS)[0]) => {
+              group.questions.forEach((q: AssessmentQuestion) => {
+                response.by_question![q.question_id] = {
+                  question_id: q.question_id,
+                  question_text: q.question_text,
+                  evidence: getEvidenceForGroup(group.id, evidence),
+                };
+              });
+            },
+          );
         } else {
           response.items = evidence;
         }
 
         return res(ctx.status(200), ctx.json(response));
-      }
+      },
     ),
 
     // =========================================================================
@@ -425,7 +436,7 @@ export const privacyAssessmentHandlers = () => {
         if (!assessment) {
           return res(
             ctx.status(404),
-            ctx.json({ detail: "Assessment not found" })
+            ctx.json({ detail: "Assessment not found" }),
           );
         }
 
@@ -438,16 +449,16 @@ export const privacyAssessmentHandlers = () => {
           channel: body.channel,
           total_questions: MOCK_QUESTIONNAIRE_QUESTIONS.length,
           answered_questions: MOCK_QUESTIONNAIRE_QUESTIONS.filter(
-            (q) => q.status === "answered"
+            (q) => q.status === "answered",
           ).length,
           pending_questions: MOCK_QUESTIONNAIRE_QUESTIONS.filter(
-            (q) => q.status === "pending"
+            (q) => q.status === "pending",
           ).length,
           progress_percentage: Math.round(
             (MOCK_QUESTIONNAIRE_QUESTIONS.filter((q) => q.status === "answered")
               .length /
               MOCK_QUESTIONNAIRE_QUESTIONS.length) *
-              100
+              100,
           ),
           questions: MOCK_QUESTIONNAIRE_QUESTIONS,
           last_reminder_at: null,
@@ -462,7 +473,7 @@ export const privacyAssessmentHandlers = () => {
         };
 
         return res(ctx.status(201), ctx.json(response));
-      }
+      },
     ),
 
     // =========================================================================
@@ -477,12 +488,12 @@ export const privacyAssessmentHandlers = () => {
         if (!questionnaire) {
           return res(
             ctx.status(404),
-            ctx.json({ detail: "Questionnaire not found" })
+            ctx.json({ detail: "Questionnaire not found" }),
           );
         }
 
         return res(ctx.status(200), ctx.json(questionnaire));
-      }
+      },
     ),
 
     // =========================================================================
@@ -492,13 +503,14 @@ export const privacyAssessmentHandlers = () => {
       `${apiBase}/plus/privacy-assessments/:id/questionnaire/reminders`,
       async (req, res, ctx) => {
         const { id } = req.params;
-        const body = ((await req.json()) as CreateReminderRequest) || {};
+        // TODO: Use custom message from body when implemented
+        // const body = ((await req.json()) as CreateReminderRequest) || {};
 
         const questionnaire = mockQuestionnaires[id as string];
         if (!questionnaire) {
           return res(
             ctx.status(404),
-            ctx.json({ detail: "Questionnaire not found" })
+            ctx.json({ detail: "Questionnaire not found" }),
           );
         }
 
@@ -519,7 +531,7 @@ export const privacyAssessmentHandlers = () => {
         };
 
         return res(ctx.status(201), ctx.json(response));
-      }
+      },
     ),
   ];
 };
