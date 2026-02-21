@@ -19,6 +19,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
+from run_infrastructure import API_TEST_DIR, OPS_TEST_DIR
 from setup_tests_nox import (
     CoverageConfig,
     PytestConfig,
@@ -432,54 +433,67 @@ def pytest(session: nox.Session, test_group: str) -> None:
     TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)
 
 
-NATIVE_TEST_GROUPS = [
-    nox.param("unit", id="unit"),
-    nox.param("not-external", id="not-external"),
+SAFE_NATIVE_GROUPS = [
+    nox.param("ctl-not-external", id="ctl-not-external"),
+    nox.param("ops-unit-api", id="ops-unit-api"),
+    nox.param("ops-unit-non-api", id="ops-unit-non-api"),
+    nox.param("ops-integration", id="ops-integration"),
+    nox.param("api", id="api"),
+    nox.param("lib", id="lib"),
+    nox.param("misc-unit", id="misc-unit"),
+    nox.param("misc-integration", id="misc-integration"),
 ]
 
-NATIVE_TEST_PATHS = {
-    "unit": {
-        "paths": [
-            "tests/ops/",
-            "tests/api/",
-            "tests/ctl/",
-            "tests/lib/",
-            "tests/service/",
-            "tests/task/",
-            "tests/util/",
-        ],
-        "markers": "not integration and not integration_external and not integration_saas and not external",
+SAFE_NATIVE_CONFIG: Dict[str, dict] = {
+    "ctl-not-external": {
+        "paths": ["tests/ctl/"],
+        "markers": "not external",
     },
-    "not-external": {
-        "paths": [
-            "tests/ops/",
-            "tests/api/",
-            "tests/ctl/",
-            "tests/lib/",
-            "tests/service/",
-            "tests/task/",
-            "tests/util/",
-            "tests/integration/",
-        ],
-        "markers": "not integration_external and not integration_saas and not external and not integration_bigquery and not integration_snowflake and not integration_redshift and not integration_dynamodb and not integration_google_cloud_sql_mysql and not integration_google_cloud_sql_postgres and not integration_rds_mysql and not integration_rds_postgres and not integration_mongodb_atlas and not integration_scylladb and not integration_mariadb and not integration_mssql",
+    "ops-unit-api": {
+        "paths": [f"{OPS_TEST_DIR}api/"],
+        "markers": "not integration and not integration_external and not integration_saas",
+    },
+    "ops-unit-non-api": {
+        "paths": [OPS_TEST_DIR],
+        "ignore": [f"{OPS_TEST_DIR}api/"],
+        "markers": "not integration and not integration_external and not integration_saas",
+    },
+    "ops-integration": {
+        "paths": [OPS_TEST_DIR, "tests/integration/"],
+        "markers": "integration",
+    },
+    "api": {
+        "paths": [API_TEST_DIR],
+        "markers": "not integration and not integration_external and not integration_saas",
+    },
+    "lib": {
+        "paths": ["tests/lib/"],
+        "markers": None,
+    },
+    "misc-unit": {
+        "paths": ["tests/service/", "tests/task/", "tests/util/"],
+        "markers": "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
+    },
+    "misc-integration": {
+        "paths": ["tests/qa/", "tests/service/", "tests/task/", "tests/util/"],
+        "markers": "integration_bigquery or integration_snowflake or integration_postgres or integration",
     },
 }
 
 
 @nox.session()
-@nox.parametrize("test_group", NATIVE_TEST_GROUPS)
+@nox.parametrize("test_group", SAFE_NATIVE_GROUPS)
 def pytest_native(session: nox.Session, test_group: str) -> None:
     """
     Run tests natively (no Docker) with xdist parallelism.
 
     Requires Postgres and Redis to be available (e.g. via GHA services or local).
     Skips Docker image build/load/compose entirely for maximum speed.
+    Each group mirrors the existing Safe-Tests matrix entries.
     """
     install_requirements(session, include_optional=True)
 
-    fail_fast = "--fail-fast" in session.posargs
-
-    config = NATIVE_TEST_PATHS[test_group]
+    config = SAFE_NATIVE_CONFIG[test_group]
     pytest_args = [
         "pytest",
         "-n",
@@ -490,11 +504,17 @@ def pytest_native(session: nox.Session, test_group: str) -> None:
         "--no-header",
         "-q",
         "--junitxml=test_report.xml",
-        "-m",
-        config["markers"],
+        "--cov=fides",
+        "--cov-report=xml",
+        "--cov-branch",
+        "--no-cov-on-fail",
     ]
-    if fail_fast:
-        pytest_args.append("-x")
+
+    if config.get("markers"):
+        pytest_args.extend(["-m", config["markers"]])
+
+    for path in config.get("ignore", []):
+        pytest_args.append(f"--ignore={path}")
 
     pytest_args.extend(config["paths"])
 
