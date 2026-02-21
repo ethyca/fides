@@ -40,7 +40,6 @@ jobs:
         if: steps.filter.outputs.cli == 'true'
         run: echo "${{ steps.filter.outputs.cli_files }}"
 
-  # Basic smoke test of a local install of the fides Python CLI
   Fides-Install:
     needs: Check-CLI-Changes
     if: needs.Check-CLI-Changes.outputs.has_cli_changes == 'true'
@@ -50,21 +49,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup backend
+        uses: ./.github/actions/setup-backend
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Install fides
-        run: |
-          uv venv
-          uv pip install setuptools==80.10.2 wheel
-          uv sync
+          cache-key-suffix: cli-install
 
       - name: Run `fides --version`
         run: uv run fides --version
@@ -79,16 +68,14 @@ jobs:
         run: |
           echo "Fides-Install: ${{ needs.Fides-Install.result }}"
 
-          # Fail only if jobs failed (not if skipped)
           if [ "${{ needs.Fides-Install.result }}" == "failure" ]; then
-            echo "❌ One or more required jobs failed"
+            echo "One or more required jobs failed"
             exit 1
           fi
 
-          # Check for cancelled jobs (treat as failure)
           if [ "${{ needs.Fides-Install.result }}" == "cancelled" ]; then
-            echo "❌ One or more required jobs were cancelled"
+            echo "One or more required jobs were cancelled"
             exit 1
           fi
 
-          echo "✅ All required CLI checks passed or were skipped"
+          echo "All required CLI checks passed or were skipped"

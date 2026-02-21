@@ -1,0 +1,36 @@
+name: "Setup Backend Environment"
+description: "Reusable setup for Python, uv, dependencies, and nox cache. Requires checkout to have already happened."
+
+inputs:
+  python-version:
+    description: "Python version to install"
+    required: true
+  cache-key-suffix:
+    description: "Extra suffix appended to the nox cache key for job-level isolation"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set Up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install dependencies
+      shell: bash
+      run: uv venv && uv pip install setuptools==80.10.2 wheel && uv sync
+
+    - name: Cache Nox virtual environment
+      uses: actions/cache@v4
+      with:
+        path: .nox/
+        key: ${{ runner.os }}-nox-${{ inputs.python-version }}-${{ inputs.cache-key-suffix }}-${{ hashFiles('pyproject.toml', 'noxfile.py', 'noxfiles/**.py') }}
+        restore-keys: |
+          ${{ runner.os }}-nox-${{ inputs.python-version }}-${{ inputs.cache-key-suffix }}-

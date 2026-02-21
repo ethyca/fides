@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Improved test speed and developer experience with reusable CI setup action, optimized pytest configuration, refactored conftest.py fixture loading, and added Makefile shortcuts for fast local testing
+pr: 7449
+labels: []
