@@ -294,6 +294,19 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      postgres-example:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres_example
+        ports:
+          - 6432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       redis:
         image: redis:8.0-alpine
         ports:
@@ -320,6 +333,8 @@ jobs:
       FIDES__SECURITY__DRP_JWT_SECRET: secret
       FIDES__TEST_MODE: "true"
       FIDES__DEV_MODE: "true"
+      POSTGRES_EXAMPLE_HOST: localhost
+      POSTGRES_EXAMPLE_PORT: "6432"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
