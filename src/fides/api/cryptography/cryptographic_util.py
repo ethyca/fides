@@ -6,7 +6,9 @@ from os import getenv
 
 import bcrypt
 
-BCRYPT_SALT_ROUNDS = 4 if getenv("FIDES__TEST_MODE", "").lower() == "true" else 12
+
+def _bcrypt_salt_rounds() -> int:
+    return 4 if getenv("FIDES__TEST_MODE", "").lower() == "true" else 12
 
 
 def decode_password(password: str) -> str:
@@ -52,7 +54,7 @@ def generate_salt(encoding: str = "UTF-8") -> str:
 
     Uses fewer rounds in test mode to speed up test execution.
     """
-    return bcrypt.gensalt(rounds=BCRYPT_SALT_ROUNDS).decode(encoding)
+    return bcrypt.gensalt(rounds=_bcrypt_salt_rounds()).decode(encoding)
 
 
 def bytes_to_b64_str(bytestring: bytes, encoding: str = "UTF-8") -> str:
