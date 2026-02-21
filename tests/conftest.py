@@ -160,7 +160,6 @@ def mock_s3_client(s3_client, monkeypatch):
 @pytest.fixture(scope="session")
 def db(api_client, config):
     """Return a connection to the test DB"""
-    # Create the test DB engine
     assert config.test_mode
     assert requests.post != api_client.post
     engine = get_db_engine(
@@ -168,6 +167,7 @@ def db(api_client, config):
     )
 
     create_citext_extension(engine)
+    Base.metadata.create_all(engine)
 
     if not scheduler.running:
         scheduler.start()
@@ -176,10 +176,8 @@ def db(api_client, config):
 
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
-    # Setup above...
 
     yield the_session
-    # Teardown below...
     the_session.close()
     engine.dispose()
 
@@ -2091,16 +2089,17 @@ def default_taxonomy(db: Session):
 async def clear_db_tables(db, async_session):
     """Clear data from tables between tests.
 
-    Uses a single TRUNCATE ... CASCADE statement instead of per-table DELETE
-    to dramatically reduce teardown time (~136 tables → 1 statement).
-    Falls back to iterative DELETE only if TRUNCATE fails.
+    Uses a single TRUNCATE ... CASCADE statement to wipe all tables in one
+    round-trip. This replaces the previous approach of ~136 individual DELETE
+    statements (with recursive FK-retry), which was the single largest
+    per-test overhead.
     """
     yield
 
+    from sqlalchemy import text
+
     db.commit()
     await async_session.commit()
-
-    from sqlalchemy import text
 
     table_names = ", ".join(
         f'"{t.name}"' for t in reversed(Base.metadata.sorted_tables)
@@ -2110,25 +2109,6 @@ async def clear_db_tables(db, async_session):
         db.commit()
     except Exception:
         db.rollback()
-        _delete_all_tables_iteratively(db)
-
-
-def _delete_all_tables_iteratively(db):
-    """Fallback: delete from all tables handling FK ordering via retry."""
-    remaining = list(reversed(Base.metadata.sorted_tables))
-    max_passes = 5
-    for _ in range(max_passes):
-        retry = []
-        for table in remaining:
-            try:
-                db.execute(table.delete())
-                db.commit()
-            except Exception:
-                db.rollback()
-                retry.append(table)
-        if not retry:
-            return
-        remaining = retry
 
 
 @pytest.fixture(autouse=True, scope="session")
