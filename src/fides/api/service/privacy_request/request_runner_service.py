@@ -656,7 +656,7 @@ def run_privacy_request(
                         identity=identity_data,
                         access_request_data={},
                         session=session,
-                        privacy_request_proceed=True,
+                        privacy_request_proceed=True,  # Should always be True unless we're testing
                     )
 
                 # Finalize Erasure CHECKPOINT
