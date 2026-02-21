@@ -434,8 +434,10 @@ def pytest(session: nox.Session, test_group: str) -> None:
 
 
 SAFE_NATIVE_GROUPS = [
+    nox.param("ctl-not-external", id="ctl-not-external"),
     nox.param("ops-unit-api", id="ops-unit-api"),
     nox.param("ops-unit-non-api", id="ops-unit-non-api"),
+    nox.param("ops-integration", id="ops-integration"),
     nox.param("api", id="api"),
     nox.param("lib", id="lib"),
     nox.param("misc-unit", id="misc-unit"),
@@ -443,6 +445,11 @@ SAFE_NATIVE_GROUPS = [
 ]
 
 SAFE_NATIVE_CONFIG: Dict[str, dict] = {
+    "ctl-not-external": {
+        "paths": ["tests/ctl/"],
+        "markers": "not external",
+        "xdist": False,
+    },
     "ops-unit-api": {
         "paths": [f"{OPS_TEST_DIR}api/"],
         "markers": "not integration and not integration_external and not integration_saas",
@@ -455,6 +462,16 @@ SAFE_NATIVE_CONFIG: Dict[str, dict] = {
             f"{OPS_TEST_DIR}service/connectors/test_fides_connector.py",
         ],
         "markers": "not integration and not integration_external and not integration_saas",
+    },
+    "ops-integration": {
+        "paths": [OPS_TEST_DIR, "tests/integration/"],
+        "ignore": [
+            f"{OPS_TEST_DIR}service/connectors/fides/",
+            f"{OPS_TEST_DIR}service/connectors/test_fides_connector.py",
+        ],
+        "markers": "integration",
+        "xdist": False,
+        "seed_postgres": True,
     },
     "api": {
         "paths": [API_TEST_DIR],
@@ -488,6 +505,13 @@ def pytest_native(session: nox.Session, test_group: str) -> None:
     install_requirements(session, include_optional=True)
 
     config = SAFE_NATIVE_CONFIG[test_group]
+
+    if config.get("seed_postgres"):
+        setup_script = (
+            f"{OPS_TEST_DIR}integration_tests/setup_scripts/postgres_setup.py"
+        )
+        session.run("python", setup_script)
+
     use_xdist = config.get("xdist", True)
     pytest_args = [
         "pytest",

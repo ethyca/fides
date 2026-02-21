@@ -269,8 +269,10 @@ jobs:
       fail-fast: false
       matrix:
         test_selection:
+          - "ctl-not-external"
           - "ops-unit-api"
           - "ops-unit-non-api"
+          - "ops-integration"
           - "api"
           - "lib"
           - "misc-unit"
@@ -351,59 +353,6 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
-
-  ########################################
-  ## Docker-Based Tests (need server)   ##
-  ########################################
-  Docker-Tests:
-    needs: [Check-Backend-Changes, Check-Container-Startup]
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
-    strategy:
-      fail-fast: false
-      matrix:
-        test_selection:
-          - "ctl-not-external"
-          - "ops-integration"
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Pull Docker images in background
-        run: |
-          docker pull postgres:16 > /dev/null 2>&1 &
-          docker pull redis:8.0-alpine > /dev/null 2>&1 &
-
-      - name: Download container
-        uses: actions/download-artifact@v4
-        with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup backend
-        uses: ./.github/actions/setup-backend
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache-key-suffix: docker-${{ matrix.test_selection }}
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ env.DOCKER_USER }}
-          password: ${{ env.DOCKER_RO_TOKEN }}
-
-      - name: Run test suite
-        run: uv run nox -s "pytest(${{ matrix.test_selection }})"
-
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v5
-        if: success() || failure()
-        with:
-          report_paths: "**/test_report.xml"
 
   ##################
   ## Unsafe Tests ##
@@ -610,7 +559,6 @@ jobs:
       - Migration-Checks
       - Misc-Tests
       - Safe-Tests
-      - Docker-Tests
     steps:
       - name: Check job results
         run: |
@@ -620,15 +568,13 @@ jobs:
           echo "Migration-Checks: ${{ needs.Migration-Checks.result }}"
           echo "Misc-Tests: ${{ needs.Misc-Tests.result }}"
           echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
-          echo "Docker-Tests: ${{ needs.Docker-Tests.result }}"
 
           if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
              [ "${{ needs.Build.result }}" == "failure" ] || \
              [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
              [ "${{ needs.Migration-Checks.result }}" == "failure" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
-             [ "${{ needs.Safe-Tests.result }}" == "failure" ] || \
-             [ "${{ needs.Docker-Tests.result }}" == "failure" ]; then
+             [ "${{ needs.Safe-Tests.result }}" == "failure" ]; then
             echo "One or more required jobs failed"
             exit 1
           fi
@@ -638,8 +584,7 @@ jobs:
              [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
              [ "${{ needs.Migration-Checks.result }}" == "cancelled" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \
-             [ "${{ needs.Safe-Tests.result }}" == "cancelled" ] || \
-             [ "${{ needs.Docker-Tests.result }}" == "cancelled" ]; then
+             [ "${{ needs.Safe-Tests.result }}" == "cancelled" ]; then
             echo "One or more required jobs were cancelled"
             exit 1
           fi
