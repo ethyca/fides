@@ -21,6 +21,7 @@ import {
   Result,
   Space,
   Spin,
+  Switch,
   Tag,
   Tooltip,
   Typography,
@@ -51,8 +52,8 @@ import {
   useUpdateAssessmentAnswerMutation,
 } from "~/features/privacy-assessments";
 
-import { EditableTextBlock } from "./components/EditableTextBlock";
-import { SlackIcon } from "./components/SlackIcon";
+import { EditableTextBlock } from "~/features/privacy-assessments/components/EditableTextBlock";
+import { SlackIcon } from "~/features/privacy-assessments/components/SlackIcon";
 
 const { Title, Text } = Typography;
 
@@ -298,6 +299,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [createReminder, { isLoading: isSendingReminder }] =
     useCreateQuestionnaireReminderMutation();
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isExternalExport, setIsExternalExport] = useState(false);
   const authToken = useSelector((state: RootState) => state.auth.token);
 
   // Get question groups from assessment
@@ -603,7 +605,10 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
               <Button
                 type="primary"
                 disabled={false /* TEMP: removed !isComplete for testing */}
-                onClick={() => setIsReportModalOpen(true)}
+                onClick={() => {
+                  setIsExternalExport(isComplete);
+                  setIsReportModalOpen(true);
+                }}
               >
                 Generate report
               </Button>
@@ -1013,7 +1018,10 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           </Flex>
         }
         open={isReportModalOpen}
-        onCancel={() => setIsReportModalOpen(false)}
+        onCancel={() => {
+          setIsReportModalOpen(false);
+          setIsExternalExport(false);
+        }}
         footer={null}
         width={600}
       >
@@ -1140,6 +1148,55 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
             </Space>
           </div>
 
+          <div
+            style={{
+              paddingBottom: 24,
+              borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+            }}
+          >
+            <Title
+              level={5}
+              style={{
+                marginBottom: 16,
+                textTransform: "uppercase",
+                fontSize: 11,
+                letterSpacing: 1,
+                fontWeight: 600,
+                color: palette.FIDESUI_NEUTRAL_700,
+              }}
+            >
+              Export Format
+            </Title>
+            <Flex align="center" gap="middle">
+              <Tooltip
+                title={
+                  !isComplete
+                    ? "Assessment must be 100% complete to enable Compliance Documentation Format"
+                    : undefined
+                }
+              >
+                <Switch
+                  checked={isExternalExport}
+                  disabled={!isComplete}
+                  onChange={(checked) => setIsExternalExport(checked)}
+                />
+              </Tooltip>
+              <Tooltip
+                title={
+                  isExternalExport
+                    ? "Excludes executive summary, risk assessment, and supporting evidence"
+                    : "Includes executive summary, risk assessment, and supporting evidence"
+                }
+              >
+                <Text style={{ fontSize: 14, cursor: "help" }}>
+                  {isExternalExport
+                    ? "Compliance Documentation Format"
+                    : "Internal Format"}
+                </Text>
+              </Tooltip>
+            </Flex>
+          </div>
+
           <Flex
             gap="small"
             style={{
@@ -1158,8 +1215,9 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                 setIsDownloadingPdf(true);
                 try {
                   const baseUrl = process.env.NEXT_PUBLIC_FIDESCTL_API;
+                  const exportMode = isExternalExport ? "external" : "internal";
                   const response = await fetch(
-                    `${baseUrl}/plus/privacy-assessments/${assessment.id}/pdf`,
+                    `${baseUrl}/plus/privacy-assessments/${assessment.id}/pdf?export_mode=${exportMode}`,
                     {
                       headers: {
                         Authorization: `Bearer ${authToken}`,
@@ -1198,6 +1256,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
                   message.success("PDF downloaded successfully");
                   setIsReportModalOpen(false);
+                  setIsExternalExport(false);
                 } catch {
                   message.error("Failed to download PDF. Please try again.");
                 } finally {
