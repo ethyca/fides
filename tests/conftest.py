@@ -803,7 +803,7 @@ def celery_config(request):
         healthcheck_port = 9000
 
     return {
-        "task_always_eager": True,
+        "task_always_eager": False,
         "healthcheck_port": healthcheck_port,
     }
 
@@ -856,13 +856,11 @@ def celery_session_worker(
         logger.warning("Failed to stop the celery worker: " + str(re))
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(autouse=True, scope="session")
 def celery_use_virtual_worker(celery_session_worker):
     """
-    Provides a virtual celery worker for tests that need async task execution.
-    Tests that need this should request it explicitly (or via run_privacy_request_task).
-    With task_always_eager=True (default), most tests execute tasks synchronously
-    without needing a real worker.
+    Forces all tests to use a virtual celery worker if a registered
+    task is executed within the scope of the test.
     """
     yield celery_session_worker
 

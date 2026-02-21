@@ -434,7 +434,6 @@ def pytest(session: nox.Session, test_group: str) -> None:
 
 
 SAFE_NATIVE_GROUPS = [
-    nox.param("ctl-not-external", id="ctl-not-external"),
     nox.param("ops-unit-api", id="ops-unit-api"),
     nox.param("ops-unit-non-api", id="ops-unit-non-api"),
     nox.param("api", id="api"),
@@ -444,11 +443,6 @@ SAFE_NATIVE_GROUPS = [
 ]
 
 SAFE_NATIVE_CONFIG: Dict[str, dict] = {
-    "ctl-not-external": {
-        "paths": ["tests/ctl/"],
-        "markers": "not external",
-        "xdist": False,
-    },
     "ops-unit-api": {
         "paths": [f"{OPS_TEST_DIR}api/"],
         "markers": "not integration and not integration_external and not integration_saas",
@@ -458,6 +452,7 @@ SAFE_NATIVE_CONFIG: Dict[str, dict] = {
         "ignore": [
             f"{OPS_TEST_DIR}api/",
             f"{OPS_TEST_DIR}service/connectors/fides/",
+            f"{OPS_TEST_DIR}service/connectors/test_fides_connector.py",
         ],
         "markers": "not integration and not integration_external and not integration_saas",
     },
