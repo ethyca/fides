@@ -24,16 +24,14 @@ import {
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import { Node } from "~/features/common/hooks/useNodeMap";
-import { PaginationState } from "~/features/common/pagination";
+import { CursorPaginationState } from "~/features/common/pagination";
 import { pluralize } from "~/features/common/utils";
 import {
   useLazyGetMonitorTreeAncestorsStatusesQuery,
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import {
-  Page_DatastoreStagedResourceTreeAPIResponse_,
-  StagedResourceTypeValue,
-} from "~/types/api";
+import { StagedResourceTypeValue } from "~/types/api";
+import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
 
 import {
   MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
@@ -55,7 +53,7 @@ import {
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
 
 const mapResponseToTreeData = (
-  data: Page_DatastoreStagedResourceTreeAPIResponse_,
+  data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
 ): CustomTreeDataNode[] => {
   const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => {
@@ -102,13 +100,15 @@ const mapResponseToTreeData = (
     };
   });
 
-  return (dataItems?.length ?? 0) < TREE_PAGE_SIZE
+  return !data.next_page
     ? dataItems
     : [
         ...dataItems,
         {
           title: TREE_NODE_LOAD_MORE_TEXT,
-          key: `${TREE_NODE_LOAD_MORE_KEY_PREFIX}-${data.page}-${key}`,
+          key: `${TREE_NODE_LOAD_MORE_KEY_PREFIX}-${data.current_page}-${key}`,
+          /* eslint-disable react/jsx-no-useless-fragment */
+          icon: <></>,
           selectable: false,
           isLeaf: true,
         },
@@ -255,7 +255,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
     const [triggerAncestorsStatuses] =
       useLazyGetMonitorTreeAncestorsStatusesQuery();
     const [nodePagination, setNodePaginationState] = useState<
-      Record<string, PaginationState>
+      Record<string, CursorPaginationState>
     >({});
     const [treeData, setTreeData] = useState<CustomTreeDataNode[]>([]);
     const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
@@ -280,13 +280,13 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           monitor_config_id: string;
           staged_resource_urn?: string;
           size: number;
-          page?: number;
+          cursor?: string;
         };
         fastUpdateFn: (
-          data: Page_DatastoreStagedResourceTreeAPIResponse_,
+          data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
         ) => void;
         detailedUpdateFn?: (
-          data: Page_DatastoreStagedResourceTreeAPIResponse_,
+          data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
         ) => void;
       }) => {
         // Increment sequence for this node to track this request
@@ -361,7 +361,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               );
               setNodePaginationState((prevState) => ({
                 ...prevState,
-                [nodeKey]: { pageSize: TREE_PAGE_SIZE, pageIndex: 1 },
+                [nodeKey]: {
+                  pageSize: TREE_PAGE_SIZE,
+                  cursor_start: data.current_page ?? undefined,
+                  cursor_end: data.next_page ?? undefined,
+                },
               }));
             },
           });
@@ -396,7 +400,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
               monitor_config_id: monitorId,
               staged_resource_urn: key,
               size: TREE_PAGE_SIZE,
-              page: currentNodePagination.pageIndex + 1,
+              cursor: currentNodePagination.cursor_end,
             },
             fastUpdateFn: (data) => {
               // Fast query: append the new nodes
@@ -422,7 +426,8 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
                 ...prevState,
                 [key]: {
                   pageSize: TREE_PAGE_SIZE,
-                  pageIndex: (prevState[key]?.pageIndex ?? 0) + 1,
+                  cursor_start: data?.current_page ?? undefined,
+                  cursor_end: data?.next_page ?? undefined,
                 },
               }));
             },
