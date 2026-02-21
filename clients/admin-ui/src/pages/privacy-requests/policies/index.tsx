@@ -4,8 +4,10 @@ import type { NextPage } from "next";
 import { useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
+import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import SearchInput from "~/features/common/SearchInput";
+import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
 import { PolicyResponse } from "~/types/api";
 
@@ -73,7 +75,14 @@ const PoliciesPage: NextPage = () => {
                   <List.Item.Meta
                     title={
                       <Flex align="center" gap={8}>
-                        <Text strong>{policy.name}</Text>
+                        <LinkCell
+                          href={{
+                            pathname: POLICY_DETAIL_ROUTE,
+                            query: { key: policy.key },
+                          }}
+                        >
+                          {policy.name}
+                        </LinkCell>
                         {uniqueRules.map((rule) => (
                           <Tag key={rule.action_type} className="capitalize">
                             {rule.action_type}

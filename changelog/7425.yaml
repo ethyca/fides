@@ -1,0 +1,4 @@
+type: Changed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Updated the monitor tree to use cursor pagination
+pr: 7425 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]

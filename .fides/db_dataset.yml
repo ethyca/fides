@@ -3653,3 +3653,53 @@ dataset:
         data_categories: [system.operations]
       - name: monitor_config_id
         data_categories: [system.operations]
+  - name: questionnaire
+    description: 'SME questionnaire sessions linked to privacy assessments'
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: assessment_id
+        data_categories: [system.operations]
+      - name: title
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: current_question_index
+        data_categories: [system.operations]
+      - name: provider_context
+        data_categories: [system.operations]
+      - name: completed_at
+        data_categories: [system.operations]
+      - name: last_reminder_at
+        data_categories: [system.operations]
+      - name: reminder_count
+        data_categories: [system.operations]
+  - name: chat_message
+    description: 'Conversation messages within questionnaire sessions'
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: questionnaire_id
+        data_categories: [system.operations]
+      - name: message_id
+        data_categories: [system.operations]
+      - name: timestamp
+        data_categories: [system.operations]
+      - name: sender_email
+        data_categories: [user.contact.email]
+      - name: sender_display_name
+        data_categories: [user.name]
+      - name: text
+        data_categories: [system.operations]
+      - name: is_bot_message
+        data_categories: [system.operations]
+      - name: question_index
+        data_categories: [system.operations]
