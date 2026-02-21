@@ -387,7 +387,7 @@ def collect_tests(session: nox.Session) -> None:
     """
     session.install(".")
     (install_requirements(session, True))
-    command = ("pytest", "--collect-only", "tests/")
+    command = ("pytest", "--collect-only", "-q", "tests/")
     session.run(
         *command,
         env={"PYTHONDONTWRITEBYTECODE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
@@ -405,10 +405,15 @@ def pytest(session: nox.Session, test_group: str) -> None:
     Runs Pytests.
 
     As new TEST_GROUPS are added, the TEST_MATRIX must also be updated.
+
+    Pass --fail-fast to stop on first failure (useful for local development).
     """
     session.notify("teardown")
 
     validate_test_matrix(session)
+
+    fail_fast = "--fail-fast" in session.posargs
+
     pytest_config = PytestConfig(
         xdist_config=XdistConfig(parallel_runners="auto"),
         coverage_config=CoverageConfig(
@@ -421,6 +426,7 @@ def pytest(session: nox.Session, test_group: str) -> None:
             report_format="xml",
             report_file="test_report.xml",
         ),
+        fail_fast=fail_fast,
     )
 
     TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)

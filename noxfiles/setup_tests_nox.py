@@ -81,17 +81,25 @@ class PytestConfig:
     report_config: Optional[ReportConfig] = None
     suppress_stdout: bool = True
     suppress_warnings: bool = True
+    fail_fast: bool = False
 
     @property
     def args(self) -> list[str]:
-        return [
-            *self.xdist_config.args,
-            *self.coverage_config.args,
-            *self.report_config.args,
-            "-x",
-            "-s" if self.suppress_stdout else "",
-            "-W ignore" if self.suppress_warnings else "",
-        ]
+        result = []
+        if self.xdist_config:
+            result.extend(self.xdist_config.args)
+        if self.coverage_config:
+            result.extend(self.coverage_config.args)
+        if self.report_config:
+            result.extend(self.report_config.args)
+        if self.fail_fast:
+            result.append("-x")
+        if self.suppress_stdout:
+            result.append("-s")
+        if self.suppress_warnings:
+            result.append("-W")
+            result.append("ignore")
+        return [arg for arg in result if arg]
 
 
 def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
