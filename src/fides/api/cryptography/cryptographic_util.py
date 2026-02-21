@@ -2,12 +2,11 @@ import hashlib
 import secrets
 from base64 import b64decode, b64encode
 from binascii import Error
+from os import getenv
 
 import bcrypt
 
-from fides.config.utils import get_test_mode
-
-BCRYPT_SALT_ROUNDS = 4 if get_test_mode() else 12
+BCRYPT_SALT_ROUNDS = 4 if getenv("FIDES__TEST_MODE", "").lower() == "true" else 12
 
 
 def decode_password(password: str) -> str:
