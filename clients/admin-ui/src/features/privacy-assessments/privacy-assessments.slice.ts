@@ -1,7 +1,16 @@
+/**
+ * Privacy Assessments API Slice
+ *
+ * RTK Query API slice for privacy assessment endpoints.
+ * Provides hooks for fetching, creating, updating, and deleting assessments,
+ * as well as managing questionnaires and evidence.
+ */
+
 import { baseApi } from "~/features/common/api.slice";
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentTemplatePage,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
   CreatePrivacyAssessmentRequest,
@@ -10,8 +19,8 @@ import {
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
   GetPrivacyAssessmentsParams,
-  Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentDetailResponse,
+  PrivacyAssessmentPage,
   PrivacyAssessmentResponse,
   QuestionnaireResponse,
   QuestionnaireStatusResponse,
@@ -21,29 +30,62 @@ import {
   UpdatePrivacyAssessmentRequest,
 } from "./types";
 
+// Tag types for cache invalidation (must match baseApi tagTypes)
+const PRIVACY_ASSESSMENT_TAG = "Privacy Assessment" as const;
+const PRIVACY_ASSESSMENT_TEMPLATE_TAG = "Privacy Assessment Template" as const;
+const QUESTIONNAIRE_TAG = "Privacy Assessment Questionnaire" as const;
+const EVIDENCE_TAG = "Privacy Assessment Evidence" as const;
+
 const privacyAssessmentsApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
+    /**
+     * List all privacy assessments with pagination
+     * GET /plus/privacy-assessments
+     */
     getPrivacyAssessments: build.query<
-      Page_PrivacyAssessmentResponse_,
+      PrivacyAssessmentPage,
       GetPrivacyAssessmentsParams | void
     >({
       query: (params) => ({
         url: "plus/privacy-assessments",
         params: params ?? undefined,
       }),
-      providesTags: ["Privacy Assessment"],
+      providesTags: [PRIVACY_ASSESSMENT_TAG],
     }),
 
+    /**
+     * List all assessment templates
+     * GET /plus/privacy-assessments/templates
+     */
+    getPrivacyAssessmentTemplates: build.query<
+      AssessmentTemplatePage,
+      { active_only?: boolean } | void
+    >({
+      query: (params) => ({
+        url: "plus/privacy-assessments/templates",
+        params: params ?? { active_only: true },
+      }),
+      providesTags: [PRIVACY_ASSESSMENT_TEMPLATE_TAG],
+    }),
+
+    /**
+     * Get a single privacy assessment with full question groups and answers
+     * GET /plus/privacy-assessments/{id}
+     */
     getPrivacyAssessment: build.query<PrivacyAssessmentDetailResponse, string>({
       query: (id) => ({
         url: `plus/privacy-assessments/${id}`,
       }),
       providesTags: (_result, _error, id) => [
-        { type: "Privacy Assessment", id },
+        { type: PRIVACY_ASSESSMENT_TAG, id },
       ],
     }),
 
+    /**
+     * Create new privacy assessments by triggering generation
+     * POST /plus/privacy-assessments
+     */
     createPrivacyAssessment: build.mutation<
       CreatePrivacyAssessmentResponse,
       CreatePrivacyAssessmentRequest
@@ -53,9 +95,13 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Privacy Assessment"],
+      invalidatesTags: [PRIVACY_ASSESSMENT_TAG],
     }),
 
+    /**
+     * Update assessment metadata
+     * PUT /plus/privacy-assessments/{id}
+     */
     updatePrivacyAssessment: build.mutation<
       PrivacyAssessmentResponse,
       { id: string; body: UpdatePrivacyAssessmentRequest }
@@ -66,19 +112,27 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: (_result, _error, { id }) => [
-        { type: "Privacy Assessment", id },
-        "Privacy Assessment",
+        { type: PRIVACY_ASSESSMENT_TAG, id },
+        PRIVACY_ASSESSMENT_TAG,
       ],
     }),
 
+    /**
+     * Delete an assessment
+     * DELETE /plus/privacy-assessments/{id}
+     */
     deletePrivacyAssessment: build.mutation<void, string>({
       query: (id) => ({
         url: `plus/privacy-assessments/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Privacy Assessment"],
+      invalidatesTags: [PRIVACY_ASSESSMENT_TAG],
     }),
 
+    /**
+     * Update a single question's answer
+     * PUT /plus/privacy-assessments/{id}/answers/{questionId}
+     */
     updateAssessmentAnswer: build.mutation<
       UpdateAnswerResponse,
       { id: string; questionId: string; body: UpdateAnswerRequest }
@@ -89,12 +143,16 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: (_result, _error, { id }) => [
-        { type: "Privacy Assessment", id },
-        "Privacy Assessment",
-        { type: "Privacy Assessment Evidence", id },
+        { type: PRIVACY_ASSESSMENT_TAG, id },
+        PRIVACY_ASSESSMENT_TAG,
+        { type: EVIDENCE_TAG, id },
       ],
     }),
 
+    /**
+     * Bulk update multiple answers
+     * PUT /plus/privacy-assessments/{id}/answers
+     */
     bulkUpdateAssessmentAnswers: build.mutation<
       BulkUpdateAnswersResponse,
       { id: string; body: BulkUpdateAnswersRequest }
@@ -105,12 +163,16 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: (_result, _error, { id }) => [
-        { type: "Privacy Assessment", id },
-        "Privacy Assessment",
-        { type: "Privacy Assessment Evidence", id },
+        { type: PRIVACY_ASSESSMENT_TAG, id },
+        PRIVACY_ASSESSMENT_TAG,
+        { type: EVIDENCE_TAG, id },
       ],
     }),
 
+    /**
+     * Get all evidence for an assessment
+     * GET /plus/privacy-assessments/{id}/evidence
+     */
     getAssessmentEvidence: build.query<
       AssessmentEvidenceResponse,
       GetAssessmentEvidenceParams
@@ -119,11 +181,13 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         url: `plus/privacy-assessments/${id}/evidence`,
         params,
       }),
-      providesTags: (_result, _error, { id }) => [
-        { type: "Privacy Assessment Evidence", id },
-      ],
+      providesTags: (_result, _error, { id }) => [{ type: EVIDENCE_TAG, id }],
     }),
 
+    /**
+     * Create/send a questionnaire to the team
+     * POST /plus/privacy-assessments/{id}/questionnaire
+     */
     createQuestionnaire: build.mutation<
       QuestionnaireResponse,
       { id: string; body: CreateQuestionnaireRequest }
@@ -134,20 +198,26 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: (_result, _error, { id }) => [
-        { type: "Privacy Assessment Questionnaire", id },
-        { type: "Privacy Assessment", id },
+        { type: QUESTIONNAIRE_TAG, id },
+        { type: PRIVACY_ASSESSMENT_TAG, id },
       ],
     }),
 
+    /**
+     * Get questionnaire status and progress
+     * GET /plus/privacy-assessments/{id}/questionnaire
+     */
     getQuestionnaireStatus: build.query<QuestionnaireStatusResponse, string>({
       query: (id) => ({
         url: `plus/privacy-assessments/${id}/questionnaire`,
       }),
-      providesTags: (_result, _error, id) => [
-        { type: "Privacy Assessment Questionnaire", id },
-      ],
+      providesTags: (_result, _error, id) => [{ type: QUESTIONNAIRE_TAG, id }],
     }),
 
+    /**
+     * Create a reminder for the questionnaire
+     * POST /plus/privacy-assessments/{id}/questionnaire/reminders
+     */
     createQuestionnaireReminder: build.mutation<
       ReminderResponse,
       { id: string; body?: CreateReminderRequest }
@@ -158,14 +228,16 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         body: body ?? {},
       }),
       invalidatesTags: (_result, _error, { id }) => [
-        { type: "Privacy Assessment Questionnaire", id },
+        { type: QUESTIONNAIRE_TAG, id },
       ],
     }),
   }),
 });
 
+// Export hooks for use in components
 export const {
   useGetPrivacyAssessmentsQuery,
+  useGetPrivacyAssessmentTemplatesQuery,
   useGetPrivacyAssessmentQuery,
   useCreatePrivacyAssessmentMutation,
   useUpdatePrivacyAssessmentMutation,
@@ -178,4 +250,5 @@ export const {
   useCreateQuestionnaireReminderMutation,
 } = privacyAssessmentsApi;
 
+// Export the API for use in tests or other advanced scenarios
 export { privacyAssessmentsApi };

@@ -64,6 +64,8 @@ export const USER_PROFILE_ROUTE = "/user-management/profile/[id]";
 export const USER_DETAIL_ROUTE = "/user-management/profile/[id]";
 export const INTEGRATION_MANAGEMENT_ROUTE = "/integrations";
 export const INTEGRATION_DETAIL_ROUTE = "/integrations/[id]";
+export const NOTIFICATION_INTEGRATIONS_ROUTE =
+  "/settings/notification-integrations";
 export const ORGANIZATION_MANAGEMENT_ROUTE = "/settings/organization";
 export const LOCATIONS_ROUTE = "/settings/locations";
 export const REGULATIONS_ROUTE = "/settings/regulations";
@@ -108,3 +110,9 @@ export const FIDES_JS_DOCS = "/fides-js-docs";
 
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
+
+// Privacy Assessments routes
+export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
+export const PRIVACY_ASSESSMENTS_ONBOARDING_ROUTE =
+  "/privacy-assessments/onboarding";
+export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";

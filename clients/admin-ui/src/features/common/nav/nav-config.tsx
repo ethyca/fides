@@ -133,6 +133,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    title: "Privacy assessments",
+    icon: <Icons.Document />,
+    routes: [
+      {
+        title: "Assessments",
+        path: routes.PRIVACY_ASSESSMENTS_ROUTE,
+        scopes: [],
+        requiresFlag: "alphaDataProtectionAssessments",
+      },
+    ],
+  },
+  {
     title: "Consent",
     icon: <Icons.SettingsAdjust />,
     routes: [
@@ -213,6 +225,15 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.CONNECTION_INSTANTIATE,
           ScopeRegistryEnum.CONNECTION_READ,
           ScopeRegistryEnum.CONNECTION_TYPE_READ,
+        ],
+      },
+      {
+        title: "Notification integrations",
+        path: routes.NOTIFICATION_INTEGRATIONS_ROUTE,
+        requiresPlus: true,
+        scopes: [
+          ScopeRegistryEnum.ORGANIZATION_READ,
+          ScopeRegistryEnum.ORGANIZATION_UPDATE,
         ],
       },
       {

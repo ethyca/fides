@@ -9,13 +9,37 @@
 // Pagination
 // =============================================================================
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export interface Page_PrivacyAssessmentResponse_ {
+export interface PrivacyAssessmentPage {
   items: PrivacyAssessmentResponse[];
   total: number;
   page: number;
   size: number;
   pages: number;
+}
+
+export interface AssessmentTemplatePage {
+  items: AssessmentTemplateResponse[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+}
+
+// =============================================================================
+// Template Response Types
+// =============================================================================
+
+export interface AssessmentTemplateResponse {
+  id: string;
+  key: string;
+  version: string;
+  name: string;
+  assessment_type: string | null;
+  region: string | null;
+  authority: string | null;
+  legal_reference: string | null;
+  description: string | null;
+  is_active: boolean;
 }
 
 // =============================================================================
@@ -323,7 +347,7 @@ export interface ReminderResponse {
 // =============================================================================
 
 export interface CreatePrivacyAssessmentRequest {
-  assessment_type: "cpra"; // Extensible for future types (GDPR DPIA, etc.)
+  assessment_type: string; // e.g., "cpra", "dpia", etc.
   system_fides_key?: string; // Optional: generate for specific system
   declaration_id?: string; // Optional: generate for specific declaration
   use_llm?: boolean; // Whether to use LLM for AI-assisted answers
