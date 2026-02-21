@@ -331,6 +331,11 @@ $color-deny: #ef4444;
   font-size: 16px;
 }
 
+.constraintIconDataFlow::before {
+  content: "⇄";
+  font-size: 16px;
+}
+
 .constraintBadge {
   display: inline-flex;
   align-items: center;

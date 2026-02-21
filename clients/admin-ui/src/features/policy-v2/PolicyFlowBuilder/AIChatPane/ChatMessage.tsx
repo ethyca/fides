@@ -1,4 +1,5 @@
 import React from "react";
+import Markdown from "react-markdown";
 
 import styles from "./AIChatPane.module.scss";
 
@@ -31,7 +32,13 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
   return (
     <div className={`${styles.message} ${isUser ? styles.user : styles.assistant}`}>
       <div className={styles.messageBubble}>
-        {displayContent}
+        {isUser ? (
+          displayContent
+        ) : (
+          <div className={styles.markdownContent}>
+            <Markdown>{displayContent}</Markdown>
+          </div>
+        )}
         <div className={styles.messageTime}>
           {message.timestamp.toLocaleTimeString([], {
             hour: "2-digit",

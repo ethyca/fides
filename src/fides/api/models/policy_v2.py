@@ -50,6 +50,7 @@ class PolicyV2ConstraintType(StrEnum):
 
     PRIVACY = "privacy"  # Consent-based constraints
     CONTEXT = "context"  # Environmental constraints (geo, etc.)
+    DATA_FLOW = "data_flow"  # Source/destination system constraints
 
 
 class PolicyV2(Base):

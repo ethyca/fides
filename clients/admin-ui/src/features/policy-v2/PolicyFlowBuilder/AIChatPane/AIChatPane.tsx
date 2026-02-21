@@ -21,6 +21,7 @@ const SUGGESTED_PROMPTS = [
   "Create a policy that requires opt-in consent for marketing",
   "Block advertising data collection in California",
   "Create a DENY rule for third-party sharing without consent",
+  "Block data use if sourced from a third-party data broker",
   "Help me create a policy for sensitive health data",
 ];
 
@@ -40,7 +41,7 @@ export const AIChatPane = ({
   const toast = useToast();
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [inputMessage, setInputMessage] = useState("");
-  const [selectedModel, setSelectedModel] = useState("gemini/gemini-2.5-flash");
+  const [selectedModel, setSelectedModel] = useState("gemini/gemini-3-flash-preview");
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);

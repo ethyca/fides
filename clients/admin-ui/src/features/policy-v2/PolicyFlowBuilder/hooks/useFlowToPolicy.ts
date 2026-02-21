@@ -188,6 +188,15 @@ export const useFlowToPolicy = ({
               message: "Context constraint has no values",
             });
           }
+        } else if (constraint.constraint_type === "data_flow") {
+          const config = constraint.configuration as any;
+          if (!config.systems || config.systems.length === 0) {
+            errors.push({
+              ruleId,
+              ruleName,
+              message: "Data flow constraint has no systems specified",
+            });
+          }
         }
 
         // Remove the id field if present (it's managed by the backend)

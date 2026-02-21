@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Badge,
   Collapse,
@@ -10,7 +11,13 @@ import {
   Typography,
 } from "fidesui";
 
-import { EvaluateResponse, SystemEvaluationResult } from "./types";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+
+import {
+  EvaluateDecision,
+  EvaluateResponse,
+  PolicyViolation,
+} from "./types";
 
 const { Text, Title } = Typography;
 
@@ -26,6 +33,18 @@ interface StatCardProps {
   title: string;
   value: string | number;
   color?: string;
+}
+
+interface DataUseGroup {
+  dataUse: string;
+  decision: EvaluateDecision;
+  violations: PolicyViolation[];
+  systems: Array<{
+    systemName: string;
+    systemKey: string;
+    declarationName: string;
+    decision: EvaluateDecision;
+  }>;
 }
 
 const StatCard = ({ title, value, color }: StatCardProps) => (
@@ -48,19 +67,59 @@ const StatCard = ({ title, value, color }: StatCardProps) => (
   </Flex>
 );
 
-const SystemResultPanel = ({ system }: { system: SystemEvaluationResult }) => {
+const groupByDataUse = (results: EvaluateResponse): DataUseGroup[] => {
+  const groupMap = new Map<string, DataUseGroup>();
+
+  results.systems.forEach((system) => {
+    system.declarations_evaluated.forEach((decl) => {
+      let group = groupMap.get(decl.data_use);
+      if (!group) {
+        group = {
+          dataUse: decl.data_use,
+          decision: "ALLOW",
+          violations: [],
+          systems: [],
+        };
+        groupMap.set(decl.data_use, group);
+      }
+
+      group.systems.push({
+        systemName: system.system_name,
+        systemKey: system.system_fides_key,
+        declarationName: decl.declaration_name || "Unnamed",
+        decision: decl.decision,
+      });
+
+      if (decl.decision === "DENY") {
+        group.decision = "DENY";
+      }
+    });
+
+    // Collect violations matching each data use
+    system.violations.forEach((v) => {
+      if (v.data_use) {
+        const group = groupMap.get(v.data_use);
+        if (group) {
+          group.violations.push(v);
+        }
+      }
+    });
+  });
+
+  return Array.from(groupMap.values());
+};
+
+const DataUseResultPanel = ({ group }: { group: DataUseGroup }) => {
   const columns = [
     {
-      title: "Declaration",
-      dataIndex: "declaration_name",
-      key: "declaration_name",
-      render: (name: string | undefined) => name || "Unnamed",
+      title: "System",
+      dataIndex: "systemName",
+      key: "systemName",
     },
     {
-      title: "Data Use",
-      dataIndex: "data_use",
-      key: "data_use",
-      render: (dataUse: string) => <Tag color="default">{dataUse}</Tag>,
+      title: "Declaration",
+      dataIndex: "declarationName",
+      key: "declarationName",
     },
     {
       title: "Decision",
@@ -74,13 +133,13 @@ const SystemResultPanel = ({ system }: { system: SystemEvaluationResult }) => {
 
   return (
     <div>
-      {system.violations.length > 0 && (
+      {group.violations.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <Text strong style={{ color: "#cf1322" }}>
             Violations:
           </Text>
           <ul style={{ margin: "8px 0", paddingLeft: 20 }}>
-            {system.violations.map((v, i) => (
+            {group.violations.map((v, i) => (
               <li key={i} style={{ marginBottom: 4 }}>
                 <Text type="danger">
                   {v.message} ({v.declaration_name || v.data_use})
@@ -91,9 +150,9 @@ const SystemResultPanel = ({ system }: { system: SystemEvaluationResult }) => {
         </div>
       )}
       <Table
-        dataSource={system.declarations_evaluated}
+        dataSource={group.systems}
         columns={columns}
-        rowKey={(record) => `${record.declaration_name}-${record.data_use}`}
+        rowKey={(record) => `${record.systemKey}-${record.declarationName}`}
         size="small"
         pagination={false}
       />
@@ -108,47 +167,55 @@ export const EvaluateResultsModal = ({
   results,
   policyName,
 }: EvaluateResultsModalProps) => {
+  const { getDataUseDisplayName } = useTaxonomies();
+
+  const dataUseGroups = useMemo(
+    () => (results ? groupByDataUse(results) : []),
+    [results],
+  );
+
   if (!isOpen) return null;
 
   const title = policyName
     ? `Evaluation Results: ${policyName}`
     : "Evaluation Results: All Policies";
 
-  // Build collapse items for systems with violations first, then others
-  const systemsWithViolations =
-    results?.systems.filter((s) => s.violations.length > 0) || [];
-  const systemsWithoutViolations =
-    results?.systems.filter((s) => s.violations.length === 0) || [];
+  const groupsWithViolations = dataUseGroups.filter(
+    (g) => g.violations.length > 0,
+  );
+  const groupsWithoutViolations = dataUseGroups.filter(
+    (g) => g.violations.length === 0,
+  );
 
   const collapseItems: CollapseProps["items"] = [
-    ...systemsWithViolations.map((system) => ({
-      key: system.system_fides_key,
+    ...groupsWithViolations.map((group) => ({
+      key: group.dataUse,
       label: (
         <Flex justify="space-between" align="center" style={{ width: "100%" }}>
-          <span>
+          <Flex align="center" gap={8}>
             <Badge status="error" />
-            {system.system_name}
-          </span>
+            {getDataUseDisplayName(group.dataUse)}
+          </Flex>
           <Tag color="error">
-            {system.violations.length} violation
-            {system.violations.length > 1 ? "s" : ""}
+            {group.violations.length} violation
+            {group.violations.length > 1 ? "s" : ""}
           </Tag>
         </Flex>
       ),
-      children: <SystemResultPanel system={system} />,
+      children: <DataUseResultPanel group={group} />,
     })),
-    ...systemsWithoutViolations.map((system) => ({
-      key: system.system_fides_key,
+    ...groupsWithoutViolations.map((group) => ({
+      key: group.dataUse,
       label: (
         <Flex justify="space-between" align="center" style={{ width: "100%" }}>
-          <span>
+          <Flex align="center" gap={8}>
             <Badge status="success" />
-            {system.system_name}
-          </span>
+            {getDataUseDisplayName(group.dataUse)}
+          </Flex>
           <Tag color="success">No violations</Tag>
         </Flex>
       ),
-      children: <SystemResultPanel system={system} />,
+      children: <DataUseResultPanel group={group} />,
     })),
   ];
 
@@ -170,8 +237,12 @@ export const EvaluateResultsModal = ({
           {/* Summary statistics */}
           <Flex gap="large" justify="space-around">
             <StatCard
-              title="Overall Decision"
-              value={results.overall_decision}
+              title="Overall Status"
+              value={
+                results.overall_decision === "ALLOW"
+                  ? "Compliant"
+                  : "Non-Compliant"
+              }
               color={
                 results.overall_decision === "ALLOW" ? "#3f8600" : "#cf1322"
               }
@@ -184,6 +255,10 @@ export const EvaluateResultsModal = ({
               title="Total Violations"
               value={results.total_violations}
               color={results.total_violations > 0 ? "#cf1322" : "#3f8600"}
+            />
+            <StatCard
+              title="Data Uses Evaluated"
+              value={dataUseGroups.length}
             />
           </Flex>
 
@@ -201,13 +276,11 @@ export const EvaluateResultsModal = ({
             </div>
           )}
 
-          {/* Systems accordion */}
+          {/* Data Uses accordion */}
           {collapseItems.length > 0 ? (
             <Collapse
               items={collapseItems}
-              defaultActiveKey={systemsWithViolations.map(
-                (s) => s.system_fides_key
-              )}
+              defaultActiveKey={groupsWithViolations.map((g) => g.dataUse)}
               size="small"
             />
           ) : (

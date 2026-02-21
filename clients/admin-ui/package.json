@@ -72,6 +72,7 @@
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
     "react-hotkeys-hook": "^5.2.1",
+    "react-markdown": "^10.1.0",
     "react-redux": "^9.1.2",
     "redux-persist": "^6.0.0",
     "swagger-ui-react": "^5.19.0",

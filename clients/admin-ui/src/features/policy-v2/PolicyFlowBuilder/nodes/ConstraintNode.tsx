@@ -4,6 +4,7 @@ import { ConstraintNodeData } from "../types";
 import {
   PrivacyConstraintConfig,
   ContextConstraintConfig,
+  DataFlowConstraintConfig,
 } from "../../types";
 import styles from "./nodeStyles.module.scss";
 
@@ -12,6 +13,19 @@ export type ConstraintNodeType = Node<ConstraintNodeData, "constraint">;
 const ConstraintNode = ({ data, selected }: NodeProps<ConstraintNodeType>) => {
   const { constraint } = data;
   const isPrivacy = constraint.constraint_type === "privacy";
+  const isDataFlow = constraint.constraint_type === "data_flow";
+
+  const getIconClass = () => {
+    if (isPrivacy) return styles.constraintIconPrivacy;
+    if (isDataFlow) return styles.constraintIconDataFlow;
+    return styles.constraintIconContext;
+  };
+
+  const getTitle = () => {
+    if (isPrivacy) return "Privacy Constraint";
+    if (isDataFlow) return "Data Flow Constraint";
+    return "Context Constraint";
+  };
 
   const renderDetails = () => {
     if (isPrivacy) {
@@ -27,6 +41,29 @@ const ConstraintNode = ({ data, selected }: NodeProps<ConstraintNodeType>) => {
           <span className={styles.constraintBadge}>
             {config.requirement === "opt_in" ? "Requires Opt-In" : "Not Opted Out"}
           </span>
+        </>
+      );
+    }
+
+    if (isDataFlow) {
+      const config = constraint.configuration as DataFlowConstraintConfig;
+      const directionLabel = config.direction === "ingress" ? "Source" : "Destination";
+      const operatorLabel = config.operator === "any_of" ? "Any Of" : "None Of";
+      const systemsText = config.systems.slice(0, 2).join(", ");
+      const hasMore = config.systems.length > 2;
+
+      return (
+        <>
+          <div className={styles.nodeDetailRow}>
+            <span className={styles.nodeDetailKey}>Direction:</span>
+            <span className={styles.nodeDetailValue}>{directionLabel}</span>
+          </div>
+          <div className={styles.nodeDetailRow}>
+            <span className={styles.nodeDetailKey}>{operatorLabel}:</span>
+            <span className={`${styles.nodeDetailValue} ${styles.textMono}`}>
+              {systemsText || "—"}{hasMore && ` +${config.systems.length - 2}`}
+            </span>
+          </div>
         </>
       );
     }
@@ -66,14 +103,10 @@ const ConstraintNode = ({ data, selected }: NodeProps<ConstraintNodeType>) => {
 
       <div className={styles.nodeInner}>
         <div
-          className={`${styles.constraintIcon} ${
-            isPrivacy ? styles.constraintIconPrivacy : styles.constraintIconContext
-          }`}
+          className={`${styles.constraintIcon} ${getIconClass()}`}
         />
         <div className={styles.nodeBody}>
-          <p className={styles.nodeTitle}>
-            {isPrivacy ? "Privacy" : "Context"} Constraint
-          </p>
+          <p className={styles.nodeTitle}>{getTitle()}</p>
           <div className={styles.nodeDetails}>{renderDetails()}</div>
         </div>
       </div>

@@ -13,6 +13,9 @@ import {
   Alert,
   useChakraToast as useToast,
 } from "fidesui";
+import Markdown from "react-markdown";
+
+import modalStyles from "./PolicyV2ChatModal.module.scss";
 
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
@@ -74,14 +77,20 @@ const ChatMessageBubble: React.FC<ChatMessageBubbleProps> = ({ message }) => {
           color: isUser ? "white" : "black",
         }}
       >
-        <Text
-          style={{
-            color: isUser ? "white" : "inherit",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {message.content}
-        </Text>
+        {isUser ? (
+          <Text
+            style={{
+              color: "white",
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {message.content}
+          </Text>
+        ) : (
+          <div className={modalStyles.markdownContent}>
+            <Markdown>{message.content}</Markdown>
+          </div>
+        )}
         <div
           style={{
             marginTop: "4px",
@@ -106,7 +115,7 @@ export const PolicyV2ChatModal: React.FC<PolicyV2ChatModalProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [selectedModel, setSelectedModel] = useState(
-    "gemini/gemini-2.5-flash"
+    "gemini/gemini-3-flash-preview"
   );
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [generatedPolicy, setGeneratedPolicy] =

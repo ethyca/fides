@@ -19,6 +19,7 @@ import {
   PolicyV2RuleMatch,
   PrivacyConstraintConfig,
   ContextConstraintConfig,
+  DataFlowConstraintConfig,
 } from "../types";
 import {
   FlowNode,
@@ -60,6 +61,7 @@ const OPERATOR_OPTIONS = [
 const CONSTRAINT_TYPE_OPTIONS = [
   { value: "privacy", label: "Privacy Constraint" },
   { value: "context", label: "Context Constraint" },
+  { value: "data_flow", label: "Data Flow Constraint" },
 ];
 
 const CONSENT_REQUIREMENT_OPTIONS = [
@@ -233,6 +235,16 @@ const GateNodePanel = ({ data }: { data: GateNodeData }) => (
   </Stack>
 );
 
+const DATA_FLOW_DIRECTION_OPTIONS = [
+  { value: "ingress", label: "Source Systems (Ingress)" },
+  { value: "egress", label: "Destination Systems (Egress)" },
+];
+
+const DATA_FLOW_OPERATOR_OPTIONS = [
+  { value: "any_of", label: "Any Of" },
+  { value: "none_of", label: "None Of" },
+];
+
 const ConstraintNodePanel = ({
   data,
   onUpdate,
@@ -240,6 +252,8 @@ const ConstraintNodePanel = ({
   data: ConstraintNodeData;
   onUpdate: (data: ConstraintNodeData) => void;
 }) => {
+  const [newSystem, setNewSystem] = useState("");
+
   const handleConstraintChange = (
     updates: Partial<PolicyV2RuleConstraint>,
   ) => {
@@ -252,35 +266,13 @@ const ConstraintNodePanel = ({
     });
   };
 
-  const isPrivacyConstraint = data.constraint.constraint_type === "privacy";
-  const config = data.constraint.configuration as
-    | PrivacyConstraintConfig
-    | ContextConstraintConfig;
+  const constraintType = data.constraint.constraint_type;
+  const config = data.constraint.configuration;
 
-  return (
-    <Stack spacing={4}>
-      <div>
-        <Text fontSize="sm" color="gray.600" mb={1}>
-          Constraint Type
-        </Text>
-        <Select
-          value={data.constraint.constraint_type}
-          onChange={(value) => {
-            const newConfig =
-              value === "privacy"
-                ? { privacy_notice_key: "", requirement: "not_opt_out" as const }
-                : { field: "", operator: "equals", values: [] };
-            handleConstraintChange({
-              constraint_type: value as "privacy" | "context",
-              configuration: newConfig,
-            });
-          }}
-          options={CONSTRAINT_TYPE_OPTIONS}
-          style={{ width: "100%" }}
-        />
-      </div>
-
-      {isPrivacyConstraint ? (
+  const renderConfigFields = () => {
+    if (constraintType === "privacy") {
+      const privacyConfig = config as PrivacyConstraintConfig;
+      return (
         <>
           <div>
             <Text fontSize="sm" color="gray.600" mb={1}>
@@ -288,11 +280,11 @@ const ConstraintNodePanel = ({
             </Text>
             <Input
               placeholder="Enter privacy notice key"
-              value={(config as PrivacyConstraintConfig).privacy_notice_key || ""}
+              value={privacyConfig.privacy_notice_key || ""}
               onChange={(e) =>
                 handleConstraintChange({
                   configuration: {
-                    ...config,
+                    ...privacyConfig,
                     privacy_notice_key: e.target.value,
                   },
                 })
@@ -305,11 +297,11 @@ const ConstraintNodePanel = ({
               Requirement
             </Text>
             <Select
-              value={(config as PrivacyConstraintConfig).requirement || "not_opt_out"}
+              value={privacyConfig.requirement || "not_opt_out"}
               onChange={(value) =>
                 handleConstraintChange({
                   configuration: {
-                    ...config,
+                    ...privacyConfig,
                     requirement: value as "opt_in" | "not_opt_out",
                   },
                 })
@@ -319,23 +311,49 @@ const ConstraintNodePanel = ({
             />
           </div>
         </>
-      ) : (
+      );
+    }
+
+    if (constraintType === "data_flow") {
+      const flowConfig = config as DataFlowConstraintConfig;
+      const handleAddSystem = () => {
+        if (newSystem.trim()) {
+          handleConstraintChange({
+            configuration: {
+              ...flowConfig,
+              systems: [...(flowConfig.systems || []), newSystem.trim()],
+            },
+          });
+          setNewSystem("");
+        }
+      };
+      const handleRemoveSystem = (index: number) => {
+        handleConstraintChange({
+          configuration: {
+            ...flowConfig,
+            systems: (flowConfig.systems || []).filter((_, i) => i !== index),
+          },
+        });
+      };
+
+      return (
         <>
           <div>
             <Text fontSize="sm" color="gray.600" mb={1}>
-              Context Field
+              Direction
             </Text>
-            <Input
-              placeholder="Enter context field (e.g., geo_location)"
-              value={(config as ContextConstraintConfig).field || ""}
-              onChange={(e) =>
+            <Select
+              value={flowConfig.direction || "ingress"}
+              onChange={(value) =>
                 handleConstraintChange({
                   configuration: {
-                    ...config,
-                    field: e.target.value,
+                    ...flowConfig,
+                    direction: value as "ingress" | "egress",
                   },
                 })
               }
+              options={DATA_FLOW_DIRECTION_OPTIONS}
+              style={{ width: "100%" }}
             />
           </div>
 
@@ -343,46 +361,150 @@ const ConstraintNodePanel = ({
             <Text fontSize="sm" color="gray.600" mb={1}>
               Operator
             </Text>
-            <Input
-              placeholder="Enter operator (e.g., equals, contains)"
-              value={(config as ContextConstraintConfig).operator || ""}
-              onChange={(e) =>
+            <Select
+              value={flowConfig.operator || "any_of"}
+              onChange={(value) =>
                 handleConstraintChange({
                   configuration: {
-                    ...config,
-                    operator: e.target.value,
+                    ...flowConfig,
+                    operator: value as "any_of" | "none_of",
                   },
                 })
               }
+              options={DATA_FLOW_OPERATOR_OPTIONS}
+              style={{ width: "100%" }}
             />
           </div>
 
           <div>
             <Text fontSize="sm" color="gray.600" mb={1}>
-              Values
+              Systems
             </Text>
-            <Input
-              placeholder="Comma-separated values"
-              value={
-                (config as ContextConstraintConfig).values
-                  ? (config as ContextConstraintConfig).values.join(", ")
-                  : ""
-              }
-              onChange={(e) =>
-                handleConstraintChange({
-                  configuration: {
-                    ...config,
-                    values: e.target.value
-                      .split(",")
-                      .map((v) => v.trim())
-                      .filter((v) => v),
-                  },
-                })
-              }
-            />
+            <Space wrap size={4} style={{ marginBottom: 8 }}>
+              {(flowConfig.systems || []).map((system, index) => (
+                <Tag
+                  key={index}
+                  closable
+                  onClose={() => handleRemoveSystem(index)}
+                  style={{ marginBottom: 4 }}
+                >
+                  {system}
+                </Tag>
+              ))}
+            </Space>
+            <Flex gap={8}>
+              <Input
+                placeholder="Add system fides_key"
+                value={newSystem}
+                onChange={(e) => setNewSystem(e.target.value)}
+                onPressEnter={handleAddSystem}
+                size="small"
+              />
+              <Button onClick={handleAddSystem} size="small">
+                Add
+              </Button>
+            </Flex>
           </div>
         </>
-      )}
+      );
+    }
+
+    // Context constraint (default)
+    const contextConfig = config as ContextConstraintConfig;
+    return (
+      <>
+        <div>
+          <Text fontSize="sm" color="gray.600" mb={1}>
+            Context Field
+          </Text>
+          <Input
+            placeholder="Enter context field (e.g., geo_location)"
+            value={contextConfig.field || ""}
+            onChange={(e) =>
+              handleConstraintChange({
+                configuration: {
+                  ...contextConfig,
+                  field: e.target.value,
+                },
+              })
+            }
+          />
+        </div>
+
+        <div>
+          <Text fontSize="sm" color="gray.600" mb={1}>
+            Operator
+          </Text>
+          <Input
+            placeholder="Enter operator (e.g., equals, contains)"
+            value={contextConfig.operator || ""}
+            onChange={(e) =>
+              handleConstraintChange({
+                configuration: {
+                  ...contextConfig,
+                  operator: e.target.value,
+                },
+              })
+            }
+          />
+        </div>
+
+        <div>
+          <Text fontSize="sm" color="gray.600" mb={1}>
+            Values
+          </Text>
+          <Input
+            placeholder="Comma-separated values"
+            value={
+              contextConfig.values
+                ? contextConfig.values.join(", ")
+                : ""
+            }
+            onChange={(e) =>
+              handleConstraintChange({
+                configuration: {
+                  ...contextConfig,
+                  values: e.target.value
+                    .split(",")
+                    .map((v) => v.trim())
+                    .filter((v) => v),
+                },
+              })
+            }
+          />
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <Stack spacing={4}>
+      <div>
+        <Text fontSize="sm" color="gray.600" mb={1}>
+          Constraint Type
+        </Text>
+        <Select
+          value={constraintType}
+          onChange={(value) => {
+            let newConfig;
+            if (value === "privacy") {
+              newConfig = { privacy_notice_key: "", requirement: "not_opt_out" as const };
+            } else if (value === "data_flow") {
+              newConfig = { direction: "ingress" as const, operator: "any_of" as const, systems: [] };
+            } else {
+              newConfig = { field: "", operator: "equals", values: [] };
+            }
+            handleConstraintChange({
+              constraint_type: value as "privacy" | "context" | "data_flow",
+              configuration: newConfig,
+            });
+          }}
+          options={CONSTRAINT_TYPE_OPTIONS}
+          style={{ width: "100%" }}
+        />
+      </div>
+
+      {renderConfigFields()}
     </Stack>
   );
 };

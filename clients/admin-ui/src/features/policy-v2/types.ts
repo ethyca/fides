@@ -5,7 +5,7 @@
 export type PolicyV2Action = "ALLOW" | "DENY";
 export type PolicyV2MatchType = "key" | "taxonomy";
 export type PolicyV2MatchOperator = "any" | "all";
-export type PolicyV2ConstraintType = "privacy" | "context";
+export type PolicyV2ConstraintType = "privacy" | "context" | "data_flow";
 export type ConsentRequirement = "opt_in" | "not_opt_out";
 export type EvaluateDecision = "ALLOW" | "DENY";
 
@@ -33,10 +33,16 @@ export interface ContextConstraintConfig {
   values: string[];
 }
 
+export interface DataFlowConstraintConfig {
+  direction: "ingress" | "egress";
+  operator: "any_of" | "none_of";
+  systems: string[];
+}
+
 export interface PolicyV2RuleConstraint {
   id?: string;
   constraint_type: PolicyV2ConstraintType;
-  configuration: PrivacyConstraintConfig | ContextConstraintConfig | Record<string, unknown>;
+  configuration: PrivacyConstraintConfig | ContextConstraintConfig | DataFlowConstraintConfig | Record<string, unknown>;
 }
 
 export interface PolicyV2Rule {
