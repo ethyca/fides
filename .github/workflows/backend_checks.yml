@@ -335,20 +335,7 @@ jobs:
 
       - name: Run test suite (native, no Docker)
         env:
-          FIDES__DATABASE__SERVER: localhost
-          FIDES__DATABASE__USER: postgres
-          FIDES__DATABASE__PASSWORD: fides
-          FIDES__DATABASE__PORT: "5432"
-          FIDES__DATABASE__DB: fides
-          FIDES__DATABASE__TEST_DB: fides_test
-          FIDES__REDIS__HOST: localhost
-          FIDES__REDIS__PORT: "6379"
-          FIDES__REDIS__PASSWORD: ""
-          FIDES__REDIS__SSL: "false"
-          FIDES__SECURITY__APP_ENCRYPTION_KEY: OLMkv91j8DHiDAULnK5Lxx3kSCov30b3
-          FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: fidesadmin
-          FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: fidesadminsecret
-          FIDES__SECURITY__DRP_JWT_SECRET: secret
+          FIDES__CONFIG_PATH: tests/ci_native_test_config.toml
           FIDES__TEST_MODE: "true"
           FIDES__DEV_MODE: "true"
           POSTGRES_EXAMPLE_HOST: localhost
