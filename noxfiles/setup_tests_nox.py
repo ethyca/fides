@@ -13,6 +13,7 @@ from constants_nox import (
     INTEGRATION_COMPOSE_FILE,
     LOGIN,
     START_APP,
+    START_APP_TEST,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
 from run_infrastructure import (
@@ -209,7 +210,7 @@ def pytest_ops(
     """Runs fidesops tests."""
     session.notify("teardown")
     if mark == "unit":
-        session.run(*START_APP, external=True)
+        session.run(*START_APP_TEST, external=True)
         if subset_dir == "api":
             run_command = (
                 *EXEC_UV,

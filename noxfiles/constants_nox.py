@@ -117,6 +117,18 @@ RUN_NO_DEPS = (
     IMAGE_NAME,
 )
 START_APP = ("docker", "compose", "up", "--wait", COMPOSE_SERVICE_NAME)
+TEST_COMPOSE_FILE = "docker-compose.test.yml"
+START_APP_TEST = (
+    "docker",
+    "compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    TEST_COMPOSE_FILE,
+    "up",
+    "--wait",
+    COMPOSE_SERVICE_NAME,
+)
 START_APP_EXTERNAL = (
     "docker",
     "compose",
