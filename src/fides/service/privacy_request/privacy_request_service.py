@@ -1097,7 +1097,7 @@ def _requeue_privacy_request(
             f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
 
-    # Both DSR 2.0 and 3.0 cache checkpoint details
+    # Checkpoint details are cached in Redis
     checkpoint_details: Optional[CheckpointActionRequired] = (
         privacy_request.get_failed_checkpoint_details()
     )

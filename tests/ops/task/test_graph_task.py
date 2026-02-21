@@ -31,11 +31,7 @@ from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.task.deprecated_graph_task import (
-    _evaluate_erasure_dependencies,
-    format_data_use_map_for_caching,
-    update_erasure_mapping_from_cache,
-)
+from fides.api.task.create_request_tasks import format_data_use_map_for_caching
 from fides.api.task.graph_task import (
     EMPTY_REQUEST,
     EMPTY_REQUEST_TASK,
@@ -621,97 +617,6 @@ class TestBuildAffectedFieldLogs:
         ]
 
 
-class TestUpdateErasureMappingFromCache:
-    @pytest.fixture(scope="function")
-    def task_resource(self, privacy_request, policy, db, connection_config):
-        tr = TaskResources(privacy_request, policy, [], EMPTY_REQUEST_TASK, db)
-        tr.get_connector = lambda x: Connections.build_connector(connection_config)
-        return tr
-
-    @pytest.fixture(scope="function")
-    def collect_tasks_fn(self, task_resource):
-        def collect_tasks_fn(
-            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
-        ) -> None:
-            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-            if not tn.is_root_node():
-                task_resource.privacy_request_task = tn.to_mock_request_task()
-                data[tn.address] = GraphTask(task_resource)
-
-        return collect_tasks_fn
-
-    @pytest.fixture(scope="function")
-    def dsk(self, collect_tasks_fn) -> Dict[str, Any]:
-        """
-        Creates a Dask graph representing a dataset containing three collections (ds_1, ds_2, ds_3)
-        where the erasure order is ds_3 -> ds_2 -> ds_1
-        """
-        t = [
-            GraphDataset(
-                name="dr_1",
-                collections=[
-                    Collection(name=f"ds_{i}", fields=generate_field_list(1))
-                    for i in range(1, 4)
-                ],
-                connection_key="mock_connection_config_key",
-            )
-        ]
-
-        # the collections are not dependent on each other for access
-        field(t, "dr_1", "ds_1", "f1").identity = "email"
-        field(t, "dr_1", "ds_2", "f1").identity = "email"
-        field(t, "dr_1", "ds_3", "f1").identity = "email"
-        collection(t, CollectionAddress("dr_1", "ds_2")).erase_after = [
-            CollectionAddress("dr_1", "ds_1")
-        ]
-        collection(t, CollectionAddress("dr_1", "ds_3")).erase_after = [
-            CollectionAddress("dr_1", "ds_2")
-        ]
-        graph: DatasetGraph = DatasetGraph(*t)
-        traversal: Traversal = Traversal(graph, {"email": {"test_user@example.com"}})
-        env: Dict[CollectionAddress, Any] = {}
-        traversal.traverse(env, collect_tasks_fn)
-        erasure_end_nodes = list(graph.nodes.keys())
-
-        # Python 3.13 compatibility: Use string keys instead of CollectionAddress objects
-        # the [] and [[]] values don't matter for this test, we just need to verify that they are not modified
-        dsk: Dict[str, Any] = {
-            k.value: (
-                t.erasure_request,
-                [],
-                [[]],
-                *[
-                    dep.value
-                    for dep in _evaluate_erasure_dependencies(t, erasure_end_nodes)
-                ],
-            )
-            for k, t in env.items()
-        }
-        dsk[TERMINATOR_ADDRESS.value] = (
-            lambda x: x,
-            *[node.value for node in erasure_end_nodes],
-        )
-        dsk[ROOT_COLLECTION_ADDRESS.value] = 0
-        return dsk
-
-    def test_update_erasure_mapping_from_cache_without_data(self, dsk, task_resource):
-        task_resource.get_all_cached_erasures = lambda: {}  # represents an empty cache
-        update_erasure_mapping_from_cache(dsk, task_resource)
-        (task, retrieved_data, input_list, *erasure_prereqs) = dsk["dr_1:ds_1"]
-        assert callable(task)
-        assert task.__name__ == "erasure_request"
-        assert retrieved_data == []
-        assert input_list == [[]]
-        assert erasure_prereqs == [ROOT_COLLECTION_ADDRESS.value]
-
-    def test_update_erasure_mapping_from_cache_with_data(self, dsk, task_resource):
-        task_resource.get_all_cached_erasures = lambda: {
-            "dr_1:ds_1": 1
-        }  # a cache with the results of the ds_1 collection erasure
-        update_erasure_mapping_from_cache(dsk, task_resource)
-        assert dsk["dr_1:ds_1"] == 1
-
-
 class TestFormatDataUseMapForCaching:
     def create_dataset(self, db, fides_key, connection_config):
         """
@@ -1033,11 +938,8 @@ class TestGraphTaskAffectedConsentSystems:
             relevant_preferences=[privacy_preference_history_us_ca_provide],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
-        with pytest.raises(BaseException) as exc:
-            ret = mock_graph_task.consent_request({"email": "customer-1@example.com"})
-            assert ret is False
-
-        assert str(exc.value) == "Request failed"
+        ret = mock_graph_task.consent_request({"email": "customer-1@example.com"})
+        assert ret is False
 
         db.refresh(privacy_preference_history)
         db.refresh(privacy_preference_history_us_ca_provide)

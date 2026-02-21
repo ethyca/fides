@@ -2,8 +2,13 @@ import hashlib
 import secrets
 from base64 import b64decode, b64encode
 from binascii import Error
+from os import getenv
 
 import bcrypt
+
+
+def _bcrypt_salt_rounds() -> int:
+    return 4 if getenv("FIDES__TEST_MODE", "").lower() == "true" else 12
 
 
 def decode_password(password: str) -> str:
@@ -45,9 +50,11 @@ def generate_secure_random_string(length: int) -> str:
 
 def generate_salt(encoding: str = "UTF-8") -> str:
     """Generates a salt using bcrypt and returns a string using the configured
-    default encoding
+    default encoding.
+
+    Uses fewer rounds in test mode to speed up test execution.
     """
-    return bcrypt.gensalt().decode(encoding)
+    return bcrypt.gensalt(rounds=_bcrypt_salt_rounds()).decode(encoding)
 
 
 def bytes_to_b64_str(bytestring: bytes, encoding: str = "UTF-8") -> str:

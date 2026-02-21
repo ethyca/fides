@@ -5,10 +5,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ActionType
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.task.graph_task import (
-    filter_by_enabled_actions,
-    get_cached_data_for_erasures,
-)
+from fides.api.task.graph_task import filter_by_enabled_actions
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.integration_tests.saas.connector_runner import dataset_config
 from tests.ops.service.privacy_request.test_request_runner_service import (
@@ -97,7 +94,7 @@ class TestEnabledActions:
             dataset_graph,
             [integration_postgres_config],
             {"email": "customer-1@example.com"},
-            get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+            {},
             db,
         )
 
@@ -105,14 +102,9 @@ class TestEnabledActions:
         assert erasure_results == {}
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_access_disabled_for_manual_webhook_integrations(
         self,
         db,
-        dsr_version,
         request,
         policy,
         integration_postgres_config,
@@ -120,8 +112,6 @@ class TestEnabledActions:
         access_manual_webhook,
         run_privacy_request_task,
     ) -> None:
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         pr = get_privacy_request_results(
             db,
             policy,
@@ -156,14 +146,9 @@ class TestEnabledActions:
         assert pr.status == PrivacyRequestStatus.complete
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_erasure_disabled_for_manual_webhook_integrations(
         self,
         db,
-        dsr_version,
         request,
         policy,
         erasure_policy,
@@ -172,8 +157,6 @@ class TestEnabledActions:
         access_manual_webhook,
         run_privacy_request_task,
     ) -> None:
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         pr = get_privacy_request_results(
             db,
             erasure_policy,

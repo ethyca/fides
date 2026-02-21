@@ -13,6 +13,7 @@ from constants_nox import (
     INTEGRATION_COMPOSE_FILE,
     LOGIN,
     START_APP,
+    START_APP_TEST,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
 from run_infrastructure import (
@@ -209,7 +210,7 @@ def pytest_ops(
     """Runs fidesops tests."""
     session.notify("teardown")
     if mark == "unit":
-        session.run(*START_APP, external=True)
+        session.run(*START_APP_TEST, external=True)
         if subset_dir == "api":
             run_command = (
                 *EXEC_UV,
@@ -222,6 +223,8 @@ def pytest_ops(
                 *OPS_API_TEST_DIRS,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
+                "-n",
+                "4",
             )
         elif subset_dir == "non-api":
             ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]
@@ -237,6 +240,8 @@ def pytest_ops(
                 *ignore_args,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
+                "-n",
+                "4",
             )
         else:
             run_command = (
@@ -250,6 +255,8 @@ def pytest_ops(
                 OPS_TEST_DIR,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
+                "-n",
+                "4",
             )
         session.run(*run_command, external=True)
     elif mark == "integration":
