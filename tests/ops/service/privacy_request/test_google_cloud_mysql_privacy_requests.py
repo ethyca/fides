@@ -13,10 +13,6 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @pytest.mark.integration_external
 @pytest.mark.integration_google_cloud_sql_mysql
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_access_request_google_cloud_sql_mysql(
     trigger_webhook_mock,
     google_cloud_sql_mysql_example_test_dataset_config,
@@ -24,14 +20,10 @@ def test_create_and_process_access_request_google_cloud_sql_mysql(
     db: Session,
     cache,
     policy,
-    dsr_version,
-    request,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -67,23 +59,15 @@ def test_create_and_process_access_request_google_cloud_sql_mysql(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_google_cloud_sql_mysql
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_erasure_request_google_cloud_sql_mysql(
     google_cloud_sql_mysql_integration_db,
     google_cloud_sql_mysql_example_test_dataset_config,
     cache,
     db,
-    dsr_version,
-    request,
     generate_auth_header,
     erasure_policy,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = "customer-1@example.com"
     customer_id = 1
     data = {

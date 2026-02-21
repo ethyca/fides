@@ -751,7 +751,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def erasure_request(
         self,
         retrieved_data: List[Row],
-        *erasure_prereqs: int,
         inputs: Optional[List[List[Row]]] = None,
     ) -> int:
         """Run erasure request"""

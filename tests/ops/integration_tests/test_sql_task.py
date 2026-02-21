@@ -33,20 +33,12 @@ from ..task.traversal_data import integration_db_graph, postgres_db_graph_datase
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_sql_erasure_does_not_ignore_collections_without_pk(
     db,
     postgres_inserts,
     integration_postgres_config,
     privacy_request,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     seed_email = postgres_inserts["customer"][0]["email"]
     policy = erasure_policy(
         db, "user.contact", "system.operations"
@@ -119,20 +111,13 @@ async def test_sql_erasure_does_not_ignore_collections_without_pk(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_composite_key_erasure(
     db,
     integration_postgres_config: ConnectionConfig,
-    dsr_version,
     request,
     privacy_request,
     privacy_request_with_erasure_policy,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     policy = erasure_policy(db, "user")
     privacy_request_with_erasure_policy.policy_id = policy.id
     privacy_request_with_erasure_policy.save(db)
@@ -234,20 +219,12 @@ async def test_composite_key_erasure(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_sql_erasure_task(
     db,
     postgres_inserts,
     integration_postgres_config,
     privacy_request,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     seed_email = postgres_inserts["customer"][0]["email"]
 
     policy = erasure_policy(db, "user.name", "system")
@@ -301,21 +278,13 @@ async def test_sql_erasure_task(
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.timeout(5)
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_postgres_access_request_task(
     db,
     policy,
     integration_postgres_config,
     postgres_integration_db,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     v = access_runner_tester(
         privacy_request,
         policy,
@@ -395,22 +364,15 @@ async def test_postgres_access_request_task(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_postgres_privacy_requests_against_non_default_schema(
     db,
     postgres_connection_config_with_schema,
     postgres_integration_db,
     erasure_policy,
     request,
-    dsr_version,
     privacy_request_with_erasure_policy,
 ) -> None:
     """Assert that the postgres connector can make access and erasure requests against the non-default (public) schema"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     database_name = "postgres_backup"
     customer_email = "customer-500@example.com"
 
@@ -487,21 +449,14 @@ async def test_postgres_privacy_requests_against_non_default_schema(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_filter_on_data_categories(
     db,
     privacy_request,
     connection_config,
     example_datasets,
     policy,
-    dsr_version,
-    request,
     integration_postgres_config,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     postgres_config = copy.copy(integration_postgres_config)
 
     rule = Rule.create(
@@ -635,21 +590,14 @@ async def test_filter_on_data_categories(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_access_erasure_type_conversion(
     db,
     integration_postgres_config: ConnectionConfig,
     privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
 ) -> None:
     """Retrieve data from the type_link table. This requires retrieving data from
     the employee id field, which is an int, and converting it into a string to query
     against the type_link_test.id field."""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     policy = erasure_policy(db, "user.name")
     privacy_request_with_erasure_policy.policy_id = policy.id
     privacy_request_with_erasure_policy.save(db)
@@ -840,10 +788,6 @@ class TestRetrievingData:
 class TestRetryIntegration:
     @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.retrieve_data")
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_retry_access_request(
         self,
         mock_retrieve,
@@ -852,11 +796,8 @@ class TestRetryIntegration:
         connection_config,
         example_datasets,
         integration_postgres_config,
-        dsr_version,
         request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         sample_postgres_configuration_policy = erasure_policy(
             db,
             "system.operations",
@@ -943,10 +884,6 @@ class TestRetryIntegration:
         ]
 
     @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.mask_data")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     @pytest.mark.asyncio
     async def test_retry_erasure(
         self,
@@ -957,11 +894,8 @@ class TestRetryIntegration:
         example_datasets,
         policy,
         integration_postgres_config,
-        dsr_version,
         request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         sample_postgres_configuration_policy = erasure_policy(
             db,
             "system.operations",

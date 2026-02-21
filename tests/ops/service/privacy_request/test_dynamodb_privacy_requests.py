@@ -110,20 +110,12 @@ def dynamodb_resources(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_dynamodb
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_empty_access_request_dynamodb(
     db,
     cache,
     policy,
-    dsr_version,
-    request,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": policy.key,
@@ -145,21 +137,13 @@ def test_create_and_process_empty_access_request_dynamodb(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_dynamodb
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_access_request_dynamodb(
     dynamodb_resources,
     db,
     cache,
     policy,
     run_privacy_request_task,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = dynamodb_resources["email"]
     customer_name = dynamodb_resources["name"]
     customer_id = dynamodb_resources["customer_id"]
@@ -194,10 +178,6 @@ def test_create_and_process_access_request_dynamodb(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_dynamodb
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_erasure_request_dynamodb(
     dynamodb_example_test_dataset_config,
     dynamodb_resources,
@@ -205,12 +185,8 @@ def test_create_and_process_erasure_request_dynamodb(
     db,
     cache,
     erasure_policy,
-    dsr_version,
-    request,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = dynamodb_resources["email"]
     dynamodb_client = dynamodb_resources["client"]
     customer_id = dynamodb_resources["customer_id"]

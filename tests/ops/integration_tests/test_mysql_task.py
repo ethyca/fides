@@ -10,21 +10,13 @@ from ..task.traversal_data import integration_db_graph
 @pytest.mark.integration
 @pytest.mark.integration_mysql
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_mysql_access_request_task(
     db,
     policy,
     connection_config_mysql,
     mysql_integration_db,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     v = access_runner_tester(
         privacy_request,
         policy,

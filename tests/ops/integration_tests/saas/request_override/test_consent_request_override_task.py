@@ -46,10 +46,10 @@ def opt_out_request_override(
 
 class TestConsentRequestOverride:
     @pytest.mark.parametrize(
-        "dsr_version, opt_in, expected_override_function_name, expected_saas_request_type",
+        "opt_in, expected_override_function_name, expected_saas_request_type",
         [
-            ("use_dsr_3_0", False, "opt_out_request_override", SaaSRequestType.OPT_OUT),
-            ("use_dsr_3_0", True, "opt_in_request_override", SaaSRequestType.OPT_IN),
+            (False, "opt_out_request_override", SaaSRequestType.OPT_OUT),
+            (True, "opt_in_request_override", SaaSRequestType.OPT_IN),
         ],
     )
     def test_old_consent_request(
@@ -59,15 +59,11 @@ class TestConsentRequestOverride:
         saas_consent_request_override_connection_config,
         saas_consent_request_override_dataset_config,
         privacy_request,
-        dsr_version,
-        request,
         mocker,
         opt_in,
         expected_override_function_name,
         expected_saas_request_type,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED for DSR 3.0
-
         saas_config = saas_consent_request_override_connection_config.get_saas_config()
         dataset_name = saas_config.fides_key
 
@@ -92,10 +88,10 @@ class TestConsentRequestOverride:
         )
 
     @pytest.mark.parametrize(
-        "dsr_version, opt_in, expected_override_function_name, expected_saas_request_type",
+        "opt_in, expected_override_function_name, expected_saas_request_type",
         [
-            ("use_dsr_3_0", False, "opt_out_request_override", SaaSRequestType.OPT_OUT),
-            ("use_dsr_3_0", True, "opt_in_request_override", SaaSRequestType.OPT_IN),
+            (False, "opt_out_request_override", SaaSRequestType.OPT_OUT),
+            (True, "opt_in_request_override", SaaSRequestType.OPT_IN),
         ],
     )
     async def test_new_consent_request(
@@ -104,15 +100,11 @@ class TestConsentRequestOverride:
         consent_policy,
         saas_consent_request_override_connection_config,
         saas_consent_request_override_dataset_config,
-        dsr_version,
-        request,
         mocker,
         opt_in,
         expected_override_function_name,
         expected_saas_request_type,
     ) -> None:
-        request.getfixturevalue(dsr_version)  # REQUIRED for DSR 3.0
-
         saas_config = saas_consent_request_override_connection_config.get_saas_config()
         dataset_name = saas_config.fides_key
 

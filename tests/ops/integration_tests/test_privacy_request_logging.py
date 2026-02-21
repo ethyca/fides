@@ -35,13 +35,8 @@ class TestPrivacyRequestLogging:
             yield mock_send
 
     @pytest.mark.usefixtures("zendesk_runner")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     def test_access_error_logs(
         self,
-        dsr_version,
         request,
         mock_send,
         api_client,
@@ -51,8 +46,6 @@ class TestPrivacyRequestLogging:
         loguru_caplog,
         provided_identity_value,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         response = api_client.post(
             url,
             headers=generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE]),
@@ -84,13 +77,8 @@ class TestPrivacyRequestLogging:
         )
 
     @pytest.mark.usefixtures("typeform_runner")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_erasure_error_logs(
         self,
-        dsr_version,
         request,
         mock_send,
         api_client,
@@ -101,8 +89,6 @@ class TestPrivacyRequestLogging:
         typeform_secrets,
         provided_identity_value,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         response = api_client.post(
             url,
             headers=generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE]),
@@ -134,13 +120,8 @@ class TestPrivacyRequestLogging:
         )
 
     @pytest.mark.usefixtures("klaviyo_runner")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_consent_error_logs(
         self,
-        dsr_version,
         request,
         mock_send,
         klaviyo_runner,
@@ -148,8 +129,6 @@ class TestPrivacyRequestLogging:
         loguru_caplog,
         provided_identity_value,
     ):
-        request.getfixturevalue(dsr_version)
-
         await klaviyo_runner.new_consent_request(
             consent_policy,
             {"email": provided_identity_value},

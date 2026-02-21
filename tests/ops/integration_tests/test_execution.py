@@ -73,15 +73,9 @@ class TestDeleteCollection:
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     def test_delete_collection_before_new_request(
         self,
         db,
-        dsr_version,
-        request,
         policy,
         read_connection_config,
         run_privacy_request_task,
@@ -89,8 +83,6 @@ class TestDeleteCollection:
         """Delete the connection config before execution starts which also
         deletes its dataset config. The graph is built with nothing in it, and no results are returned.
         """
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -104,11 +96,7 @@ class TestDeleteCollection:
             run_privacy_request_task,
             data,
         )
-        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
-        if dsr_version == "use_dsr_3_0":
-            assert pr.get_raw_access_results() != {}
-        else:
-            assert pr.get_results() != {}
+        assert pr.get_raw_access_results() != {}
 
         read_connection_config.delete(db)
         pr = get_privacy_request_results(
@@ -117,17 +105,9 @@ class TestDeleteCollection:
             run_privacy_request_task,
             data,
         )
-        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
-        if dsr_version == "use_dsr_3_0":
-            assert pr.get_raw_access_results() == {}
-        else:
-            assert pr.get_results() == {}
+        assert pr.get_raw_access_results() == {}
 
     @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     @pytest.mark.asyncio
     async def test_delete_collection_while_in_progress(
         self,
@@ -137,14 +117,10 @@ class TestDeleteCollection:
         integration_postgres_config,
         example_datasets,
         privacy_request,
-        dsr_version,
-        request,
     ) -> None:
         """Assert that deleting a collection while the privacy request is in progress doesn't affect the current execution plan.
         We still proceed to visit the deleted collections, because we rely on the ConnectionConfigs already in memory.
         """
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         # Create a new ConnectionConfig instead of using the fixture because I need to be able to access this
         # outside of the current session.
         mongo_connection_config = ConnectionConfig(
@@ -218,10 +194,6 @@ class TestDeleteCollection:
         db.delete(mongo_connection_config)
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_collection_omitted_on_restart_from_failure(
         self,
         db,
@@ -231,13 +203,9 @@ class TestDeleteCollection:
         mongo_postgres_dataset_graph,
         example_datasets,
         privacy_request,
-        dsr_version,
-        request,
     ) -> None:
         """Remove secrets to make privacy request fail, then delete the connection config. Build a graph
         that does not contain the deleted dataset config and re-run."""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         integration_mongodb_config.secrets = {}
         integration_mongodb_config.save(db)
 
@@ -308,22 +276,14 @@ class TestDeleteCollection:
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     def test_delete_connection_config_on_completed_request(
         self,
         db,
-        dsr_version,
-        request,
         policy,
         read_connection_config,
         run_privacy_request_task,
     ) -> None:
         """Delete the connection config on a completed request leaves execution logs untouched"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -338,29 +298,18 @@ class TestDeleteCollection:
             data,
         )
 
-        # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
-        expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
-
-        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
-        if dsr_version == "use_dsr_3_0":
-            assert pr.get_raw_access_results() != {}
-        else:
-            assert pr.get_results() != {}
+        assert pr.get_raw_access_results() != {}
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == expected_log_count
+        assert len(logs) == 26
 
         read_connection_config.delete(db)
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == expected_log_count
+        assert len(logs) == 26
 
 
 @pytest.mark.integration
 class TestSkipCollectionDueToDisabledConnectionConfig:
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_skip_collection_new_request(
         self,
         db,
@@ -368,14 +317,10 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         integration_postgres_config,
         integration_mongodb_config,
         mongo_postgres_dataset_graph,
-        dsr_version,
-        request,
         privacy_request,
     ) -> None:
         """Mark Mongo ConnectionConfig as disabled, run access request,
         and then assert that all mongo collections are skipped"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         integration_mongodb_config.disabled = True
         integration_mongodb_config.save(db)
 
@@ -406,10 +351,6 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         assert mongo_logs.filter_by(status="skipped").count() == 9
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_skip_collection_on_restart(
         self,
         db,
@@ -418,13 +359,9 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         integration_mongodb_config,
         mongo_postgres_dataset_graph,
         privacy_request,
-        dsr_version,
-        request,
     ) -> None:
         """Remove secrets to make privacy request fail, then disable connection config
         and confirm that datastores are skipped on re-run"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         integration_mongodb_config.secrets = {}
         integration_mongodb_config.save(db)
 
@@ -493,22 +430,14 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
     @pytest.mark.usefixtures(
         "postgres_integration_db", "postgres_example_test_dataset_config_read_access"
     )
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     def test_disable_connection_config_on_completed_request(
         self,
         db,
         policy,
         read_connection_config,
         run_privacy_request_task,
-        dsr_version,
-        request,
     ) -> None:
         """Disabling the connection config on a completed request leaves execution logs untouched"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         customer_email = "customer-4@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
@@ -523,21 +452,14 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             data,
         )
 
-        # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
-        expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
-
-        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
-        if dsr_version == "use_dsr_3_0":
-            assert pr.get_raw_access_results() != {}
-        else:
-            assert pr.get_results() != {}
+        assert pr.get_raw_access_results() != {}
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == expected_log_count
+        assert len(logs) == 26
 
         read_connection_config.disabled = True
         read_connection_config.save(db)
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == expected_log_count
+        assert len(logs) == 26
 
 
 @pytest.mark.integration
@@ -565,23 +487,15 @@ class TestSkipMarkedCollections:
         return dataset_graph
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_no_collections_marked_as_skipped(
         self,
         db,
         policy,
         example_datasets,
-        dsr_version,
-        request,
         integration_postgres_config,
         privacy_request,
     ) -> None:
         """Sanity check - nothing marked as skipped. All collections expected in results."""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
             example_datasets, integration_postgres_config, skipped_collection_name=None
         )
@@ -599,23 +513,15 @@ class TestSkipMarkedCollections:
         assert "login" not in results
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_collection_marked_as_skipped_with_nothing_downstream(
         self,
         db,
         policy,
         example_datasets,
         privacy_request,
-        dsr_version,
-        request,
         integration_postgres_config,
     ) -> None:
         """Mark the login collection as skipped.  This collection has no downstream dependencies, so skipping is fine!"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
             example_datasets,
             integration_postgres_config,
@@ -635,24 +541,16 @@ class TestSkipMarkedCollections:
         assert "login" not in results
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
     async def test_collection_marked_as_skipped_with_dependencies(
         self,
         db,
         policy,
         privacy_request,
         example_datasets,
-        dsr_version,
-        request,
         integration_postgres_config,
     ) -> None:
         """Mark the address collection as skipped.  Many collections are marked as relying on this collection so this fails
         early when building the DatasetGraph"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         with pytest.raises(common_exceptions.ValidationError):
             postgres_graph = self._build_postgres_dataset_graph_with_skipped_collection(
                 example_datasets,
@@ -672,10 +570,6 @@ class TestSkipMarkedCollections:
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_restart_graph_from_failure(
     db,
     policy,
@@ -684,12 +578,8 @@ async def test_restart_graph_from_failure(
     integration_mongodb_config,
     mongo_postgres_dataset_graph,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
     """Run a failed privacy request and restart from failure"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     # Temporarily remove the secrets from the mongo connection to prevent execution from occurring
     saved_secrets = integration_mongodb_config.secrets
     integration_mongodb_config.secrets = {}
@@ -782,10 +672,6 @@ async def test_restart_graph_from_failure(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_restart_graph_from_failure_on_different_scheduler(
     db,
     policy,
@@ -794,12 +680,8 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     integration_mongodb_config,
     mongo_postgres_dataset_graph,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
     """Run a failed privacy request and restart from failure."""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     # Temporarily remove the secrets from the mongo connection to prevent execution from occurring
     saved_secrets = integration_mongodb_config.secrets
     integration_mongodb_config.secrets = {}
@@ -850,7 +732,7 @@ async def test_restart_graph_from_failure_on_different_scheduler(
         )
         .count()
         == expected_customer_executions
-    ), f"Postgres customer collection execution count mismatch for {dsr_version}"
+    ), "Postgres customer collection execution count mismatch"
 
     assert db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id,
@@ -882,17 +764,12 @@ async def test_restart_graph_from_failure_on_different_scheduler(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_restart_graph_from_failure_during_erasure(
     db,
     erasure_policy,
     integration_postgres_config,
     integration_mongodb_config,
     mongo_postgres_dataset_graph,
-    dsr_version,
     request,
     privacy_request_with_erasure_policy,
 ) -> None:
@@ -901,8 +778,6 @@ async def test_restart_graph_from_failure_during_erasure(
     An erasure request first runs an access and then an erasure request.
     If the erasure portion fails, and we reprocess, we don't re-run the access portion currently.
     """
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     # Run access portion like normal
     access_runner_tester(
         privacy_request_with_erasure_policy,

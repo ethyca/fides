@@ -4124,12 +4124,6 @@ def served_notice_history(
     pref_1.delete(db)
 
 
-@pytest.fixture(scope="function")
-def use_dsr_3_0():
-    """No-op fixture kept for backward compatibility with fidesplus tests."""
-    yield CONFIG
-
-
 @pytest.fixture()
 def postgres_dataset_graph(example_datasets, connection_config):
     dataset_postgres = Dataset(**example_datasets[0])

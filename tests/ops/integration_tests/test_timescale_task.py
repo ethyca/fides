@@ -19,22 +19,14 @@ from ..task.traversal_data import (
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_timescale_access_request_task(
     db,
     policy,
     timescale_connection_config,
     timescale_integration_db,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
     database_name = "my_timescale_db_1"
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     v = access_runner_tester(
         privacy_request,
         policy,
@@ -118,21 +110,13 @@ async def test_timescale_access_request_task(
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_timescale_erasure_request_task(
     db,
     erasure_policy,
     timescale_connection_config,
     timescale_integration_db,
     privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     rule = erasure_policy.rules[0]
     target = rule.targets[0]
     target.data_category = "user"
@@ -205,21 +189,13 @@ async def test_timescale_erasure_request_task(
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_timescale_query_and_mask_hypertable(
     db,
     erasure_policy,
     timescale_connection_config,
     timescale_integration_db,
     privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     database_name = "my_timescale_db_1"
 
     dataset = postgres_db_graph_dataset(database_name, timescale_connection_config.key)

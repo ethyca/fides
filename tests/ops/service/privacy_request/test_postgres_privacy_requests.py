@@ -20,17 +20,12 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_upload_access_results_has_data_category_field_mapping(
     upload_mock: Mock,
     postgres_example_test_dataset_config_read_access,
     postgres_integration_db,
     db,
     policy,
-    dsr_version,
     request,
     run_privacy_request_task,
 ):
@@ -39,8 +34,6 @@ def test_upload_access_results_has_data_category_field_mapping(
     that publishes the access request output.
     """
     upload_mock.return_value = "http://www.data-download-url"
-
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     customer_email = "customer-1@example.com"
     data = {
@@ -93,17 +86,12 @@ def test_upload_access_results_has_data_category_field_mapping(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_upload_access_results_has_data_use_map(
     upload_mock: Mock,
     postgres_example_test_dataset_config_read_access,
     postgres_integration_db,
     db,
     policy,
-    dsr_version,
     request,
     run_privacy_request_task,
 ):
@@ -112,8 +100,6 @@ def test_upload_access_results_has_data_use_map(
     that publishes the access request output.
     """
     upload_mock.return_value = "http://www.data-download-url"
-
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     customer_email = "customer-1@example.com"
     data = {
@@ -156,10 +142,6 @@ def test_upload_access_results_has_data_use_map(
 @pytest.mark.integration
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
-@pytest.mark.parametrize(
     "dataset_config",
     [
         "postgres_example_test_dataset_config_read_access",
@@ -172,14 +154,12 @@ def test_create_and_process_access_request_postgres(
     postgres_integration_db,
     db,
     cache,
-    dsr_version,
-    request,
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
+    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     request.getfixturevalue(dataset_config)
 
     customer_email = "customer-1@example.com"
@@ -239,10 +219,6 @@ def test_create_and_process_access_request_postgres(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_create_and_process_access_request_with_custom_identities_postgres(
     trigger_webhook_mock,
@@ -252,14 +228,10 @@ def test_create_and_process_access_request_with_custom_identities_postgres(
     db,
     cache,
     policy,
-    dsr_version,
-    request,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = "customer-1@example.com"
     loyalty_id = "CH-1"
     data = {
@@ -330,19 +302,11 @@ def test_create_and_process_access_request_with_custom_identities_postgres(
     "postgres_integration_db",
     "cache",
 )
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_access_request_with_valid_skipped_collection(
     db,
     policy,
     run_privacy_request_task,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -382,19 +346,11 @@ def test_create_and_process_access_request_with_valid_skipped_collection(
     "postgres_integration_db",
     "cache",
 )
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_access_request_with_invalid_skipped_collection(
     db,
     policy,
-    dsr_version,
-    request,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -419,22 +375,14 @@ def test_create_and_process_access_request_with_invalid_skipped_collection(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_access_request_postgres_with_disabled_integration(
     postgres_integration_db,
     postgres_example_test_dataset_config,
     connection_config,
     db,
-    dsr_version,
-    request,
     policy,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
         "policy_key": policy.key,
@@ -488,27 +436,16 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
 
     logs = get_sorted_execution_logs(db, pr)
 
-    if dsr_version == "use_dsr_3_0":
-        assert logs == [
-            ("Dataset reference validation", "complete"),
-            ("Dataset traversal", "complete"),
-            ("Dataset reference validation", "complete"),
-            ("Access package upload", "complete"),
-        ]
-    else:
-        assert logs == [
-            ("Dataset reference validation", "complete"),
-            ("Dataset traversal", "complete"),
-            ("Access package upload", "complete"),
-        ]
+    assert logs == [
+        ("Dataset reference validation", "complete"),
+        ("Dataset traversal", "complete"),
+        ("Dataset reference validation", "complete"),
+        ("Access package upload", "complete"),
+    ]
 
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_erasure_request_specific_category_postgres(
     postgres_integration_db,
     postgres_example_test_dataset_config,
@@ -516,13 +453,9 @@ def test_create_and_process_erasure_request_specific_category_postgres(
     db,
     generate_auth_header,
     erasure_policy,
-    dsr_version,
-    request,
     read_connection_config,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = "customer-1@example.com"
     customer_id = 1
     data = {
@@ -559,23 +492,15 @@ def test_create_and_process_erasure_request_specific_category_postgres(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_erasure_request_generic_category(
     postgres_integration_db,
     postgres_example_test_dataset_config,
     cache,
     db,
-    dsr_version,
-    request,
     generate_auth_header,
     erasure_policy,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
     target = erasure_policy.rules[0].targets[0]
@@ -622,23 +547,16 @@ def test_create_and_process_erasure_request_generic_category(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_erasure_request_aes_generic_category(
     postgres_integration_db,
     postgres_example_test_dataset_config,
     cache,
     db,
-    dsr_version,
     request,
     generate_auth_header,
     erasure_policy_aes,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
     target = erasure_policy_aes.rules[0].targets[0]
@@ -687,22 +605,14 @@ def test_create_and_process_erasure_request_aes_generic_category(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_erasure_request_with_table_joins(
     postgres_integration_db,
     postgres_example_test_dataset_config,
     db,
     cache,
-    dsr_version,
-    request,
     erasure_policy,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     # It's safe to change this here since the `erasure_policy` fixture is scoped
     # at function level
     target = erasure_policy.rules[0].targets[0]
@@ -748,10 +658,6 @@ def test_create_and_process_erasure_request_with_table_joins(
 @pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
-@pytest.mark.parametrize(
     "dataset_config",
     [
         "postgres_example_test_dataset_config_read_access",
@@ -764,11 +670,9 @@ def test_create_and_process_erasure_request_read_access(
     db,
     cache,
     erasure_policy,
-    dsr_version,
-    request,
     run_privacy_request_task,
+    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     request.getfixturevalue(dataset_config)
 
     customer_email = "customer-2@example.com"

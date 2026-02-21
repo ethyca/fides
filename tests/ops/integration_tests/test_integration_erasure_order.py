@@ -61,10 +61,6 @@ def delete_no_op(
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @mock.patch("fides.api.service.connectors.saas_connector.SaaSConnector.mask_data")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_saas_erasure_order_request_task_resume_from_error(
     mock_mask_data,
     db,
@@ -73,11 +69,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
     saas_erasure_order_connection_config,
     saas_erasure_order_dataset_config,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     # Policy needs to actually be set correctly on the privacy request for 3.0 testing
     privacy_request.policy_id = erasure_policy_complete_mask.id
     privacy_request.save(db)

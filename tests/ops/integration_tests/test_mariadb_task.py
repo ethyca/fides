@@ -10,21 +10,13 @@ from ..task.traversal_data import integration_db_graph
 @pytest.mark.integration_mariadb
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 async def test_mariadb_access_request_task(
     db,
     policy,
     connection_config_mariadb,
     mariadb_integration_db,
-    dsr_version,
-    request,
     privacy_request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     v = access_runner_tester(
         privacy_request,
         policy,
