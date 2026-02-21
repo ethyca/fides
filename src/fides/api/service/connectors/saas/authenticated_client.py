@@ -26,7 +26,11 @@ from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-from fides.api.util.saas_util import deny_unsafe_hosts
+from fides.api.util.saas_util import (
+    deny_unsafe_hosts,
+    is_domain_validation_disabled,
+    validate_domain_against_allowed_list,
+)
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -55,6 +59,27 @@ class AuthenticatedClient:
         self.configuration = configuration
         self.client_config = client_config
         self.rate_limit_config = rate_limit_config
+
+    def _validate_request_domain(self, host: str) -> None:
+        """Defense-in-depth: validate the resolved host against allowed_domains
+        from the connector's SaaS config."""
+        if is_domain_validation_disabled():
+            return
+
+        saas_config = self.configuration.get_saas_config()
+        if not saas_config:
+            return
+
+        host_without_port = host.split(":")[0] if ":" in host else host
+
+        all_allowed: List[str] = [
+            d
+            for cp in saas_config.connector_params
+            if cp.allowed_domains
+            for d in cp.allowed_domains
+        ]
+        if all_allowed:
+            validate_domain_against_allowed_list(host_without_port, all_allowed, "host")
 
     def get_authenticated_request(
         self, request_params: SaaSRequestParams
@@ -218,7 +243,11 @@ class AuthenticatedClient:
             raise ValueError("The URL for the prepared request is missing.")
 
         # extract the hostname from the complete URL and verify its safety
-        deny_unsafe_hosts(urlparse(prepared_request.url).netloc)
+        request_host = urlparse(prepared_request.url).netloc
+        deny_unsafe_hosts(request_host)
+
+        # Defense-in-depth: validate the resolved host against allowed_domains
+        self._validate_request_domain(request_host)
 
         # utf-8 encode the body before sending
         if isinstance(prepared_request.body, str):
