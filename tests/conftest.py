@@ -65,37 +65,54 @@ from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
+from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.graph.graph import DatasetGraph
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.policy import ActionType, Policy
+from fides.api.models.sql_models import Dataset as CtlDataset, System
+from fides.api.oauth.roles import VIEWER
+from fides.api.schemas.storage.storage import StorageDetails
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
-from tests.fixtures.application_fixtures import *
-from tests.fixtures.async_fixtures import *
-from tests.fixtures.bigquery_fixtures import *
-from tests.fixtures.datahub_fixtures import *
-from tests.fixtures.detection_discovery_fixtures import *
-from tests.fixtures.dynamodb_fixtures import *
-from tests.fixtures.email_fixtures import *
-from tests.fixtures.fides_connector_example_fixtures import *
-from tests.fixtures.google_cloud_sql_mysql_fixtures import *
-from tests.fixtures.google_cloud_sql_postgres_fixtures import *
-from tests.fixtures.integration_fixtures import *
-from tests.fixtures.manual_fixtures import *
-from tests.fixtures.manual_webhook_fixtures import *
-from tests.fixtures.mariadb_fixtures import *
-from tests.fixtures.messaging_fixtures import *
-from tests.fixtures.mongodb_fixtures import *
-from tests.fixtures.mssql_fixtures import *
-from tests.fixtures.mysql_fixtures import *
-from tests.fixtures.okta_fixtures import *
-from tests.fixtures.postgres_fixtures import *
-from tests.fixtures.rds_mysql_fixtures import *
-from tests.fixtures.rds_postgres_fixtures import *
-from tests.fixtures.redshift_fixtures import *
-from tests.fixtures.saas import *
-from tests.fixtures.saas_erasure_order_fixtures import *
-from tests.fixtures.saas_example_fixtures import *
-from tests.fixtures.scylladb_fixtures import *
-from tests.fixtures.snowflake_fixtures import *
-from tests.fixtures.timescale_fixtures import *
+from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
+from toml import load as load_toml
+
+pytest_plugins = [
+    "tests.fixtures.application_fixtures",
+    "tests.fixtures.async_fixtures",
+    "tests.fixtures.bigquery_fixtures",
+    "tests.fixtures.datahub_fixtures",
+    "tests.fixtures.detection_discovery_fixtures",
+    "tests.fixtures.dynamodb_fixtures",
+    "tests.fixtures.email_fixtures",
+    "tests.fixtures.fides_connector_example_fixtures",
+    "tests.fixtures.google_cloud_sql_mysql_fixtures",
+    "tests.fixtures.google_cloud_sql_postgres_fixtures",
+    "tests.fixtures.integration_fixtures",
+    "tests.fixtures.manual_fixtures",
+    "tests.fixtures.manual_webhook_fixtures",
+    "tests.fixtures.mariadb_fixtures",
+    "tests.fixtures.messaging_fixtures",
+    "tests.fixtures.mongodb_fixtures",
+    "tests.fixtures.mssql_fixtures",
+    "tests.fixtures.mysql_fixtures",
+    "tests.fixtures.okta_fixtures",
+    "tests.fixtures.postgres_fixtures",
+    "tests.fixtures.rds_mysql_fixtures",
+    "tests.fixtures.rds_postgres_fixtures",
+    "tests.fixtures.redshift_fixtures",
+    "tests.fixtures.saas",
+    "tests.fixtures.saas_erasure_order_fixtures",
+    "tests.fixtures.saas_example_fixtures",
+    "tests.fixtures.scylladb_fixtures",
+    "tests.fixtures.snowflake_fixtures",
+    "tests.fixtures.timescale_fixtures",
+]
 
 ROOT_PATH = Path().absolute()
 CONFIG = get_config()
