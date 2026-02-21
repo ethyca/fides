@@ -437,7 +437,6 @@ SAFE_NATIVE_GROUPS = [
     nox.param("ctl-not-external", id="ctl-not-external"),
     nox.param("ops-unit-api", id="ops-unit-api"),
     nox.param("ops-unit-non-api", id="ops-unit-non-api"),
-    nox.param("ops-integration", id="ops-integration"),
     nox.param("api", id="api"),
     nox.param("lib", id="lib"),
     nox.param("misc-unit", id="misc-unit"),
@@ -448,6 +447,7 @@ SAFE_NATIVE_CONFIG: Dict[str, dict] = {
     "ctl-not-external": {
         "paths": ["tests/ctl/"],
         "markers": "not external",
+        "xdist": False,
     },
     "ops-unit-api": {
         "paths": [f"{OPS_TEST_DIR}api/"],
@@ -455,12 +455,11 @@ SAFE_NATIVE_CONFIG: Dict[str, dict] = {
     },
     "ops-unit-non-api": {
         "paths": [OPS_TEST_DIR],
-        "ignore": [f"{OPS_TEST_DIR}api/"],
+        "ignore": [
+            f"{OPS_TEST_DIR}api/",
+            f"{OPS_TEST_DIR}service/connectors/fides/",
+        ],
         "markers": "not integration and not integration_external and not integration_saas",
-    },
-    "ops-integration": {
-        "paths": [OPS_TEST_DIR, "tests/integration/"],
-        "markers": "integration",
     },
     "api": {
         "paths": [API_TEST_DIR],
@@ -494,12 +493,9 @@ def pytest_native(session: nox.Session, test_group: str) -> None:
     install_requirements(session, include_optional=True)
 
     config = SAFE_NATIVE_CONFIG[test_group]
+    use_xdist = config.get("xdist", True)
     pytest_args = [
         "pytest",
-        "-n",
-        "auto",
-        "--dist",
-        "worksteal",
         "--tb=short",
         "--no-header",
         "-q",
@@ -509,6 +505,8 @@ def pytest_native(session: nox.Session, test_group: str) -> None:
         "--cov-branch",
         "--no-cov-on-fail",
     ]
+    if use_xdist:
+        pytest_args.extend(["-n", "auto", "--dist", "worksteal"])
 
     if config.get("markers"):
         pytest_args.extend(["-m", config["markers"]])
