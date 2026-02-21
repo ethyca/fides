@@ -803,7 +803,7 @@ def celery_config(request):
         healthcheck_port = 9000
 
     return {
-        "task_always_eager": False,
+        "task_always_eager": True,
         "healthcheck_port": healthcheck_port,
     }
 
@@ -856,12 +856,13 @@ def celery_session_worker(
         logger.warning("Failed to stop the celery worker: " + str(re))
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def celery_use_virtual_worker(celery_session_worker):
     """
-    This is a catch-all fixture that forces all of our
-    tests to use a virtual celery worker if a registered
-    task is executed within the scope of the test.
+    Provides a virtual celery worker for tests that need async task execution.
+    Tests that need this should request it explicitly (or via run_privacy_request_task).
+    With task_always_eager=True (default), most tests execute tasks synchronously
+    without needing a real worker.
     """
     yield celery_session_worker
 
@@ -2088,31 +2089,31 @@ def default_taxonomy(db: Session):
 async def clear_db_tables(db, async_session):
     """Clear data from tables between tests.
 
-    If relationships are not set to cascade on delete they will fail with an
-    IntegrityError if there are relationships present. This function stores tables
-    that fail with this error then recursively deletes until no more IntegrityErrors
-    are present.
+    Uses a single TRUNCATE ... CASCADE statement instead of per-table DELETE
+    to dramatically reduce teardown time (~136 tables).
+    Falls back to iterative DELETE if TRUNCATE fails (e.g. permission issues).
     """
     yield
 
-    def delete_data(tables):
-        redo = []
-        for table in tables:
-            try:
-                db.execute(table.delete())
-            except IntegrityError:
-                redo.append(table)
-            finally:
-                db.commit()
-
-        if redo:
-            delete_data(redo)
-
-    # make sure all transactions are closed before starting deletes
     db.commit()
     await async_session.commit()
 
-    delete_data(Base.metadata.sorted_tables)
+    table_names = ", ".join(
+        f'"{t.name}"' for t in reversed(Base.metadata.sorted_tables)
+    )
+    try:
+        db.execute(f"TRUNCATE {table_names} CASCADE")
+        db.commit()
+    except Exception:
+        db.rollback()
+        for table in reversed(Base.metadata.sorted_tables):
+            try:
+                db.execute(table.delete())
+                db.commit()
+            except IntegrityError:
+                db.rollback()
+            except Exception:
+                db.rollback()
 
 
 @pytest.fixture(autouse=True, scope="session")

@@ -259,6 +259,81 @@ jobs:
         with:
           report_paths: "**/test_report.xml"
 
+  ##############################
+  ## Native Tests (Fast Path) ##
+  ##############################
+  Native-Tests:
+    needs: Check-Backend-Changes
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: fides
+          POSTGRES_DB: fides
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:8.0-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      FIDES__DATABASE__SERVER: localhost
+      FIDES__DATABASE__USER: postgres
+      FIDES__DATABASE__PASSWORD: fides
+      FIDES__DATABASE__PORT: "5432"
+      FIDES__DATABASE__DB: fides
+      FIDES__DATABASE__TEST_DB: fides_test
+      FIDES__REDIS__HOST: localhost
+      FIDES__REDIS__PORT: "6379"
+      FIDES__REDIS__PASSWORD: ""
+      FIDES__SECURITY__APP_ENCRYPTION_KEY: OLMkv91j8DHiDAULnK5Lxx3kSCov30b3
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_ID: fidesadmin
+      FIDES__SECURITY__OAUTH_ROOT_CLIENT_SECRET: fidesadminsecret
+      FIDES__SECURITY__DRP_JWT_SECRET: secret
+      FIDES__TEST_MODE: "true"
+      FIDES__DEV_MODE: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup backend
+        uses: ./.github/actions/setup-backend
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache-key-suffix: native-tests
+
+      - name: Create test database
+        run: PGPASSWORD=fides psql -h localhost -U postgres -c "CREATE DATABASE fides_test;" || true
+
+      - name: Run native tests (no Docker)
+        run: uv run nox -s "pytest_native(not-external)"
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure()
+        with:
+          report_paths: "**/test_report.xml"
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
   ################
   ## Safe Tests ##
   ################
@@ -529,6 +604,7 @@ jobs:
       - Check-Container-Startup
       - Migration-Checks
       - Misc-Tests
+      - Native-Tests
       - Safe-Tests
     steps:
       - name: Check job results
@@ -538,6 +614,7 @@ jobs:
           echo "Check-Container-Startup: ${{ needs.Check-Container-Startup.result }}"
           echo "Migration-Checks: ${{ needs.Migration-Checks.result }}"
           echo "Misc-Tests: ${{ needs.Misc-Tests.result }}"
+          echo "Native-Tests: ${{ needs.Native-Tests.result }}"
           echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
 
           if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
@@ -545,6 +622,7 @@ jobs:
              [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
              [ "${{ needs.Migration-Checks.result }}" == "failure" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
+             [ "${{ needs.Native-Tests.result }}" == "failure" ] || \
              [ "${{ needs.Safe-Tests.result }}" == "failure" ]; then
             echo "One or more required jobs failed"
             exit 1
@@ -555,6 +633,7 @@ jobs:
              [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
              [ "${{ needs.Migration-Checks.result }}" == "cancelled" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \
+             [ "${{ needs.Native-Tests.result }}" == "cancelled" ] || \
              [ "${{ needs.Safe-Tests.result }}" == "cancelled" ]; then
             echo "One or more required jobs were cancelled"
             exit 1

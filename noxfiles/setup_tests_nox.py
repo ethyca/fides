@@ -46,13 +46,14 @@ class CoverageConfig:
 @dataclass
 class XdistConfig:
     parallel_runners: str = "auto"
+    dist_mode: str = "worksteal"
 
     def __str__(self):
         return " ".join(self.args)
 
     @property
     def args(self) -> list[str]:
-        return ["-n", self.parallel_runners]
+        return ["-n", self.parallel_runners, "--dist", self.dist_mode]
 
 
 @dataclass

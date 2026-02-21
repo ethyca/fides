@@ -432,6 +432,75 @@ def pytest(session: nox.Session, test_group: str) -> None:
     TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)
 
 
+NATIVE_TEST_GROUPS = [
+    nox.param("unit", id="unit"),
+    nox.param("not-external", id="not-external"),
+]
+
+NATIVE_TEST_PATHS = {
+    "unit": {
+        "paths": [
+            "tests/ops/",
+            "tests/api/",
+            "tests/ctl/",
+            "tests/lib/",
+            "tests/service/",
+            "tests/task/",
+            "tests/util/",
+        ],
+        "markers": "not integration and not integration_external and not integration_saas and not external",
+    },
+    "not-external": {
+        "paths": [
+            "tests/ops/",
+            "tests/api/",
+            "tests/ctl/",
+            "tests/lib/",
+            "tests/service/",
+            "tests/task/",
+            "tests/util/",
+            "tests/integration/",
+        ],
+        "markers": "not integration_external and not integration_saas and not external and not integration_bigquery and not integration_snowflake and not integration_redshift and not integration_dynamodb and not integration_google_cloud_sql_mysql and not integration_google_cloud_sql_postgres and not integration_rds_mysql and not integration_rds_postgres and not integration_mongodb_atlas and not integration_scylladb and not integration_mariadb and not integration_mssql",
+    },
+}
+
+
+@nox.session()
+@nox.parametrize("test_group", NATIVE_TEST_GROUPS)
+def pytest_native(session: nox.Session, test_group: str) -> None:
+    """
+    Run tests natively (no Docker) with xdist parallelism.
+
+    Requires Postgres and Redis to be available (e.g. via GHA services or local).
+    Skips Docker image build/load/compose entirely for maximum speed.
+    """
+    install_requirements(session, include_optional=True)
+
+    fail_fast = "--fail-fast" in session.posargs
+
+    config = NATIVE_TEST_PATHS[test_group]
+    pytest_args = [
+        "pytest",
+        "-n",
+        "auto",
+        "--dist",
+        "worksteal",
+        "--tb=short",
+        "--no-header",
+        "-q",
+        "--junitxml=test_report.xml",
+        "-m",
+        config["markers"],
+    ]
+    if fail_fast:
+        pytest_args.append("-x")
+
+    pytest_args.extend(config["paths"])
+
+    session.run(*pytest_args)
+
+
 @nox.session()
 @nox.parametrize(
     "dist",
