@@ -5,6 +5,10 @@ from binascii import Error
 
 import bcrypt
 
+from fides.config.utils import get_test_mode
+
+BCRYPT_SALT_ROUNDS = 4 if get_test_mode() else 12
+
 
 def decode_password(password: str) -> str:
     """Tries to decode the string as base64 encoded.
@@ -45,9 +49,11 @@ def generate_secure_random_string(length: int) -> str:
 
 def generate_salt(encoding: str = "UTF-8") -> str:
     """Generates a salt using bcrypt and returns a string using the configured
-    default encoding
+    default encoding.
+
+    Uses fewer rounds in test mode to speed up test execution.
     """
-    return bcrypt.gensalt().decode(encoding)
+    return bcrypt.gensalt(rounds=BCRYPT_SALT_ROUNDS).decode(encoding)
 
 
 def bytes_to_b64_str(bytestring: bytes, encoding: str = "UTF-8") -> str:
