@@ -52,8 +52,8 @@ import {
   useUpdateAssessmentAnswerMutation,
 } from "~/features/privacy-assessments";
 
-import { EditableTextBlock } from "./components/EditableTextBlock";
-import { SlackIcon } from "./components/SlackIcon";
+import { EditableTextBlock } from "~/features/privacy-assessments/components/EditableTextBlock";
+import { SlackIcon } from "~/features/privacy-assessments/components/SlackIcon";
 
 const { Title, Text } = Typography;
 
