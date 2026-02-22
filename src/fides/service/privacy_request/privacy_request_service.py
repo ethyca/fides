@@ -59,6 +59,7 @@ from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.common.session import get_autoclose_db_session
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (
     MessagingService,
@@ -903,11 +904,8 @@ def _handle_scheduling_failure(
     Creates an ExecutionLog entry for visibility in the activity timeline and
     marks the privacy request as errored with the detailed error message.
     """
-    from fides.api.deps import (  # pylint: disable=cyclic-import
-        get_autoclose_db_session as get_db,
-    )
 
-    with get_db() as db:
+    with get_autoclose_db_session() as db:
         privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
         if privacy_request:
             # Add execution log for activity timeline visibility
@@ -933,11 +931,8 @@ def _clear_scheduling_failure_if_exists(privacy_request_id: str) -> None:
 
     This clears the error styling in the UI activity timeline when a retry succeeds.
     """
-    from fides.api.deps import (  # pylint: disable=cyclic-import
-        get_autoclose_db_session as get_db,
-    )
 
-    with get_db() as db:
+    with get_autoclose_db_session() as db:
         # Check if the most recent scheduling log is an error
         latest_scheduling_log = (
             db.query(ExecutionLog)

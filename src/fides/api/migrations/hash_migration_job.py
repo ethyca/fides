@@ -3,7 +3,6 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from fides.api.db.base_class import FidesBase
-from fides.api.deps import get_autoclose_db_session
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.migrations.hash_migration_tracker import HashMigrationTracker
 from fides.api.models.privacy_preference import (
@@ -13,6 +12,7 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import CustomPrivacyRequestField, ProvidedIdentity
 from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.common.session import get_autoclose_db_session
 from fides.config import CONFIG
 
 HASH_MIGRATION = "hash_migration"

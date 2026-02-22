@@ -7,17 +7,53 @@ commits on success, and closes it. When a session is provided, the decorator
 uses it and flushes (but does not commit), leaving commit control to the caller.
 """
 
-from contextlib import AsyncExitStack, ExitStack
+from contextlib import AsyncExitStack, ExitStack, contextmanager
 from functools import wraps
-from typing import Any, Callable, Coroutine, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Generator, Optional, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.db.ctl_session import async_session
-from fides.api.deps import get_autoclose_db_session
+from fides.api.db.session import get_db_engine, get_db_session
+from fides.config import CONFIG
 
 T = TypeVar("T")
+
+_engine = None
+
+
+def get_api_session() -> Session:
+    """Create a database session using a module-level engine singleton."""
+    global _engine  # pylint: disable=W0603
+    if not _engine:
+        _engine = get_db_engine(
+            config=CONFIG,
+            pool_size=CONFIG.database.api_engine_pool_size,
+            max_overflow=CONFIG.database.api_engine_max_overflow,
+            keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
+            keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
+            keepalives_count=CONFIG.database.api_engine_keepalives_count,
+            pool_pre_ping=CONFIG.database.api_engine_pool_pre_ping,
+        )
+    SessionLocal = get_db_session(CONFIG, engine=_engine)
+    return SessionLocal()
+
+
+@contextmanager
+def get_autoclose_db_session() -> Generator[Session, None, None]:
+    """
+    Return a database session as a context manager that automatically closes
+    when the context exits.
+
+    Use this when you need manual control over the session lifecycle
+    outside of API endpoints.
+    """
+    try:
+        db = get_api_session()
+        yield db
+    finally:
+        db.close()
 
 
 def with_optional_async_session(

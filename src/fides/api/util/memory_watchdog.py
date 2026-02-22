@@ -37,7 +37,7 @@ def get_memory_watchdog_enabled() -> bool:
         bool: True if memory_watchdog_enabled is enabled, False otherwise (defaults to False)
     """
     try:
-        from fides.api.deps import get_autoclose_db_session as get_db
+        from fides.common.session import get_autoclose_db_session as get_db
         from fides.config.config_proxy import ConfigProxy
 
         with get_db() as db:
