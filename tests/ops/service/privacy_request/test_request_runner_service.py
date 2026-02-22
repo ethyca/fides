@@ -63,7 +63,7 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.storage.storage import StorageType
-from fides.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
+from fides.common.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 from fides.service.attachment.attachment_service import AttachmentService
 from fides.service.privacy_request.masking.strategy.masking_strategy import (
@@ -76,9 +76,6 @@ from fides.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
     save_access_results,
 )
-from fides.common.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
-from fides.config import CONFIG
-from fides.service.attachment_service import AttachmentService
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return

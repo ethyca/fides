@@ -94,7 +94,7 @@ REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
 PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
 PRIVACY_REQUEST_RESUBMIT = "/privacy-request/{privacy_request_id}/resubmit"
-from fides.common.constants import REQUEST_TASK_CALLBACK as REQUEST_TASK_CALLBACK
+REQUEST_TASK_CALLBACK = "/request-task/callback"
 
 PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-results"
 PRIVACY_REQUEST_FILTERED_RESULTS = (
@@ -154,13 +154,13 @@ WEBHOOK_PRE_APPROVAL = "/dsr/webhook/pre_approval"
 WEBHOOK_PRE_APPROVAL_DETAIL = "/dsr/webhook/pre_approval/{webhook_key}"
 
 # Connection Type URLs
-from fides.common.constants import CONNECTION_TYPES as CONNECTION_TYPES
+CONNECTION_TYPES = "/connection_type"
 
 CONNECTION_TYPE_SECRETS = "/connection_type/{connection_type}/secret"
 
 # Connection Configurations URLs
 CONNECTIONS = "/connection"
-from fides.common.constants import CONNECTION_BY_KEY as CONNECTION_BY_KEY
+CONNECTION_BY_KEY = "/connection/{connection_key}"
 
 CONNECTION_SECRETS = "/connection/{connection_key}/secret"
 CONNECTION_OAUTH = "/connection/{connection_key}/oauth"
@@ -193,7 +193,7 @@ YAML_DATASETS = YAML + CONNECTION_DATASETS
 
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
-from fides.common.constants import SAAS_CONFIG as SAAS_CONFIG
+SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{connector_template_type}"
 

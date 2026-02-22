@@ -33,6 +33,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.logger import Pii
+from fides.api.v1.endpoints.drp.utils import DrpFidesopsMapper
 from fides.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )

@@ -56,6 +56,12 @@ from fides.common.urn_registry import (
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
+from fides.connectors.saas.strategies.authentication.authentication_strategy import (
+    AuthenticationStrategy,
+)
+from fides.connectors.saas.strategies.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
+)
 from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,

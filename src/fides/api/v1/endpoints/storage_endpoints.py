@@ -70,6 +70,8 @@ from fides.common.urn_registry import (
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
 )
+from fides.service.storage.storage_authenticator_service import secrets_are_valid
+from fides.service.storage.storage_uploader_service import upload
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)
 

@@ -6,8 +6,8 @@ import pytest
 from fideslang.models import System, SystemMetadata
 
 import fides.cli.connectors.okta as okta_connector
-from fides.api.service.connectors.okta_http_client import OktaApplication
 from fides.config.schemas.credentials import OktaConfig
+from fides.connectors.okta.okta_http_client import OktaApplication
 
 
 @pytest.fixture()
