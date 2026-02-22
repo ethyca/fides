@@ -573,9 +573,16 @@ def pytest_unit_no_db(session: Session, pytest_config: PytestConfig) -> None:
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
-        *EXEC_UV,
+        "docker",
+        "exec",
+        "-e",
+        "ANALYTICS_OPT_OUT",
+        "-e",
+        "FIDES__CLI__ANALYTICS_ID",
         "-e",
         "FIDES_TEST_NO_EXTERNAL_DEPS=true",
+        CI_ARGS_EXEC,
+        CONTAINER_NAME,
         "uv",
         "run",
         "--python",

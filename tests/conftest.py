@@ -2065,7 +2065,7 @@ def default_taxonomy(db: Session):
 
 
 @pytest.fixture(scope="function", autouse=True)
-async def clear_db_tables(request):
+def clear_db_tables(request):
     """Clear data from tables between tests.
 
     Only performs cleanup when the test (or its fixtures) actually uses a
@@ -2099,11 +2099,15 @@ async def clear_db_tables(request):
             delete_data(redo, db_session)
 
     db = request.getfixturevalue("db")
-    async_session = request.getfixturevalue("async_session")
+
+    if has_async:
+        async_session = request.getfixturevalue("async_session")
+        # Commit pending async transactions via the underlying sync session
+        # to avoid event-loop conflicts in sync test teardown.
+        async_session.sync_session.commit()
 
     # make sure all transactions are closed before starting deletes
     db.commit()
-    await async_session.commit()
 
     delete_data(Base.metadata.sorted_tables, db)
 
