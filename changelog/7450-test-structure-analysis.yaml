@@ -1,4 +1,4 @@
 type: Developer Experience
-description: Added test structure analysis document with recommendations for running tests without a database
+description: Made autouse test fixtures (clear_db_tables, celery_use_virtual_worker) conditional so tests that don't need a database or Celery skip that overhead. Added a new 'unit-no-db' CI test group for pure unit tests.
 pr: 7450
 labels: []

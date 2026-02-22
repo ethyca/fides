@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 
 from nox import Session
 
@@ -21,6 +21,27 @@ from run_infrastructure import (
     OPS_TEST_DIR,
     run_infrastructure,
 )
+
+UNIT_NO_DB_TEST_DIRS: List[str] = [
+    "tests/ops/schemas/",
+    "tests/ops/util/",
+    "tests/ops/graph/",
+    "tests/ops/task/",
+    "tests/ops/service/masking/",
+    "tests/ops/service/pagination/",
+    "tests/ops/service/processors/",
+    "tests/ops/service/storage/streaming/",
+    "tests/ops/service/authentication/",
+    "tests/ops/service/saas_request/",
+    "tests/ops/service/async_dsr/",
+    "tests/ops/email_templates/",
+    "tests/ops/test_helpers/",
+    "tests/api/task/conditional_dependencies/",
+    "tests/api/middleware/",
+    "tests/api/util/",
+    "tests/api/schemas/",
+    "tests/ctl/core/config/",
+]
 
 
 @dataclass
@@ -536,3 +557,33 @@ def pytest_misc_integration(
             datastores=["postgres", "bigquery", "snowflake"],
             pytest_path="tests/qa/ tests/service/ tests/task/ tests/util/",
         )
+
+
+def pytest_unit_no_db(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs unit tests that do not require a database or external services.
+
+    These tests exercise pure logic: schema validation, graph algorithms,
+    utility functions, masking strategies, pagination, etc.  They are
+    selected by directory (UNIT_NO_DB_TEST_DIRS) and further filtered to
+    exclude any tests marked as integration tests.
+
+    The FIDES_TEST_NO_EXTERNAL_DEPS env var disables the autouse Celery
+    worker fixture so no Redis broker is needed.
+    """
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC_UV,
+        "-e",
+        "FIDES_TEST_NO_EXTERNAL_DEPS=true",
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        *pytest_config.args,
+        *UNIT_NO_DB_TEST_DIRS,
+        "-m",
+        "not integration and not integration_external and not integration_saas and not integration_bigquery and not integration_snowflake and not integration_postgres",
+    )
+    session.run(*run_command, external=True)
