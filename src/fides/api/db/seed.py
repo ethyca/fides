@@ -55,6 +55,7 @@ from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
 from fides.config import CONFIG
 from fides.service.dataset.dataset_config_service import DatasetConfigService
+from fides.service.system_integration_link.models import SystemConnectionConfigLink
 
 from .crud import upsert_resources
 from .samples import (
@@ -480,19 +481,11 @@ async def load_samples(async_session: AsyncSession) -> None:
                         )
                         continue
 
-                    linked_connection_config = ConnectionConfig.create_or_update(
+                    SystemConnectionConfigLink.create_or_update_link(
                         db=db_session,
-                        data={
-                            **connection_config.__dict__,
-                            **{"system_id": system.id},
-                        },
-                        check_name=False,
+                        system_id=system.id,
+                        connection_config_id=connection_config.id,
                     )
-                    if not linked_connection_config:
-                        log.debug(
-                            f"Failed to link sample connection '{connection.key}' to system '{system_key}'"
-                        )
-                        continue
 
     except QueryError:  # pragma: no cover
         pass  # The upsert_resources function will log any error

@@ -12,7 +12,6 @@ from fides.service.system_integration_link.exceptions import (
     SystemNotFoundError,
     TooManyLinksError,
 )
-from fides.service.system_integration_link.models import SystemConnectionLinkType
 from fides.service.system_integration_link.repository import (
     SystemIntegrationLinkRepository,
 )
@@ -25,7 +24,6 @@ NOW = datetime(2026, 2, 18, 12, 0, 0, tzinfo=timezone.utc)
 
 def _make_entity(
     system_fides_key: str = "test_system",
-    link_type: SystemConnectionLinkType = SystemConnectionLinkType.monitoring,
     system_id: str = "sys-id-1",
     connection_config_id: str = "cc-id-1",
 ) -> SystemIntegrationLinkEntity:
@@ -33,7 +31,6 @@ def _make_entity(
         id="link-id-1",
         system_id=system_id,
         connection_config_id=connection_config_id,
-        link_type=link_type,
         created_at=NOW,
         updated_at=NOW,
         system_fides_key=system_fides_key,
@@ -112,7 +109,7 @@ class TestSetLinks:
 
         result = service.set_links(
             "my_connection",
-            [{"system_fides_key": "test_system", "link_type": "monitoring"}],
+            [{"system_fides_key": "test_system"}],
             session=mock_session,
         )
 
@@ -123,14 +120,13 @@ class TestSetLinks:
         mock_repo.upsert_link.assert_called_once_with(
             connection_config_id=cc.id,
             system_id=sys.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=mock_session,
         )
 
     def test_idempotent_replace_with_preexisting_links(
         self, service, mock_repo, mock_session
     ):
-        """The exact bug: set_links with 1 link should succeed even when
+        """set_links with 1 link should succeed even when
         there are already links in the DB (old code counted existing + new)."""
         cc = _make_connection_config()
         sys = _make_system(fides_key="new_system", id_="sys-id-2")
@@ -142,7 +138,7 @@ class TestSetLinks:
 
         result = service.set_links(
             "my_connection",
-            [{"system_fides_key": "new_system", "link_type": "monitoring"}],
+            [{"system_fides_key": "new_system"}],
             session=mock_session,
         )
 
@@ -167,8 +163,8 @@ class TestSetLinks:
             service.set_links(
                 "my_connection",
                 [
-                    {"system_fides_key": "sys_a", "link_type": "monitoring"},
-                    {"system_fides_key": "sys_b", "link_type": "dsr"},
+                    {"system_fides_key": "sys_a"},
+                    {"system_fides_key": "sys_b"},
                 ],
                 session=mock_session,
             )
@@ -183,7 +179,7 @@ class TestSetLinks:
         with pytest.raises(ConnectionConfigNotFoundError):
             service.set_links(
                 "missing_conn",
-                [{"system_fides_key": "test_system", "link_type": "monitoring"}],
+                [{"system_fides_key": "test_system"}],
                 session=mock_session,
             )
 
@@ -194,7 +190,7 @@ class TestSetLinks:
         with pytest.raises(SystemNotFoundError) as exc_info:
             service.set_links(
                 "my_connection",
-                [{"system_fides_key": "ghost_system", "link_type": "monitoring"}],
+                [{"system_fides_key": "ghost_system"}],
                 session=mock_session,
             )
 
@@ -214,28 +210,6 @@ class TestDeleteLink:
         mock_repo.delete_links.assert_called_once_with(
             connection_config_id=cc.id,
             system_id=sys.id,
-            link_type=None,
-            session=mock_session,
-        )
-
-    def test_deletes_with_specific_link_type(self, service, mock_repo, mock_session):
-        cc = _make_connection_config()
-        sys = _make_system()
-        mock_repo.resolve_connection_config.return_value = cc
-        mock_repo.resolve_system.return_value = sys
-        mock_repo.delete_links.return_value = 1
-
-        service.delete_link(
-            "my_connection",
-            "test_system",
-            link_type=SystemConnectionLinkType.monitoring,
-            session=mock_session,
-        )
-
-        mock_repo.delete_links.assert_called_once_with(
-            connection_config_id=cc.id,
-            system_id=sys.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=mock_session,
         )
 

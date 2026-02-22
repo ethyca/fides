@@ -22,11 +22,6 @@ def upgrade():
         sa.Column("system_id", sa.String(), nullable=False),
         sa.Column("connection_config_id", sa.String(), nullable=False),
         sa.Column(
-            "link_type",
-            sa.Enum("dsr", "monitoring", name="systemconnectionlinktype"),
-            nullable=False,
-        ),
-        sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.func.now(),
@@ -52,8 +47,7 @@ def upgrade():
         sa.UniqueConstraint(
             "system_id",
             "connection_config_id",
-            "link_type",
-            name="uq_system_connconfig_link_type",
+            name="uq_system_connconfig_link",
         ),
     )
     op.create_index(
@@ -66,13 +60,7 @@ def upgrade():
         "system_connection_config_link",
         ["connection_config_id"],
     )
-    op.create_index(
-        "ix_system_connection_config_link_link_type",
-        "system_connection_config_link",
-        ["link_type"],
-    )
 
 
 def downgrade():
     op.drop_table("system_connection_config_link")
-    op.execute("drop type if exists systemconnectionlinktype")

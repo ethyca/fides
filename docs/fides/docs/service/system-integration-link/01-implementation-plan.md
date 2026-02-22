@@ -13,31 +13,34 @@
 
 ### Task 1.1 -- Alembic migration for the join table (Fides OSS, BE) [M] ✅
 
-- Create a new `system_connection_config_link` table with columns: `id`, `system_id` (FK to `ctl_systems`), `connection_config_id` (FK to `connectionconfig`), `link_type` (enum: `dsr`, `monitoring`), `created_at`, `updated_at`, plus a unique constraint on `(system_id, connection_config_id, link_type)`.
-- Write a data migration that populates the new join table from existing `ConnectionConfig.system_id` values, defaulting `link_type` to `dsr`. Also create a `monitoring` row for any ConnectionConfig that has associated monitors.
-- Keep `ConnectionConfig.system_id` in place (do not remove it) to preserve backward compatibility during the transition period.
+- Created `system_connection_config_link` table with columns: `id`, `system_id` (FK to `ctl_systems`), `connection_config_id` (FK to `connectionconfig`), `created_at`, `updated_at`, plus a unique constraint on `(system_id, connection_config_id)`.
+- A second migration (`xx_2026_02_20_migrate_system_id_fk_to_link_table.py`) copies existing `ConnectionConfig.system_id` values into the join table, then drops the `system_id` column, its index, and its FK constraint from `connectionconfig`.
 
-**Status:** Migration created at `src/fides/api/alembic/migrations/versions/xx_2026_02_18_1700_create_system_connection_config_link.py`. Data backfill migration is not yet written (table is created empty).
+**Note:** The `link_type` concept was removed to simplify the initial migration. The unique constraint is on `(system_id, connection_config_id)` only.
+
+**Status:** Complete.
 
 ### Task 1.2 -- SQLAlchemy model for the join table (Fides OSS, BE) [S] ✅
 
-- New model `SystemConnectionConfigLink` and enum `SystemConnectionLinkType` colocated in `src/fides/service/system_integration_link/models.py`.
+- New model `SystemConnectionConfigLink` colocated in `src/fides/service/system_integration_link/models.py`.
+- Model includes a `create_or_update_link(db, system_id, connection_config_id)` classmethod for centralized link management.
 - Model registered in `src/fides/api/db/base.py`.
 
 **Status:** Complete.
 
-### Task 1.3 -- Update System.connection_configs to uselist=True (Fides OSS, BE) [M]
+### Task 1.3 -- Migrate relationships to use join table (Fides OSS, BE) [M] ✅
 
-- Change `uselist=False` to `uselist=True` on `System.connection_configs` and on `ConnectionConfig.system`.
-- Audit and update all call sites that assume `system.connection_configs` is a scalar.
+- Both `ConnectionConfig.system` and `System.connection_configs` relationships now use `secondary="system_connection_config_link"` with `uselist=False, viewonly=True`.
+- All write paths that set `connection_config.system_id` migrated to use `SystemConnectionConfigLink.create_or_update_link()`.
+- All read paths that queried `ConnectionConfig.system_id` migrated to join through `SystemConnectionConfigLink`.
+- All test files updated to use the new pattern.
+- Old `ConnectionConfig.system_id` column removed.
 
-**Status:** Not started. Deferred -- not needed for the initial POC since the new link management APIs operate through the join table, not the FK relationship.
+**Status:** Complete.
 
 ### Task 1.4 -- Backward-compat: keep system_id FK in sync with join table (Fides OSS, BE) [S]
 
-- When a row is inserted/deleted in the join table with `link_type=dsr`, update `ConnectionConfig.system_id` accordingly.
-
-**Status:** Not started.
+**Status:** No longer needed. The FK has been fully removed; `ConnectionConfig.system` reads transparently through the join table via SQLAlchemy `secondary=`.
 
 ## Slice 2: System-Integration Link Management APIs
 
@@ -60,7 +63,7 @@ All code lives in a self-contained service package at `src/fides/service/system_
 
 | Module | Purpose |
 |--------|---------|
-| `models.py` | SQLAlchemy model + `SystemConnectionLinkType` enum |
+| `models.py` | SQLAlchemy model + `create_or_update_link` helper |
 | `routes.py` | FastAPI route definitions (GET, PUT, DELETE) |
 | `schemas.py` | Pydantic request/response schemas |
 | `service.py` | Business logic, validation |
@@ -87,7 +90,7 @@ Session management uses the shared `@with_optional_sync_session` decorator from 
 
 ### Task 2.4 -- Tests for link management (Fides OSS, BE) [M] ✅
 
-- 14 unit tests for the service layer (mock-based) in `tests/service/system_integration_link/test_service.py`.
+- 13 unit tests for the service layer (mock-based) in `tests/service/system_integration_link/test_service.py`.
 - 13 integration tests for the repository (real DB) in `tests/service/system_integration_link/test_repository.py`.
 
 **Status:** Core test coverage complete.
@@ -148,8 +151,7 @@ Session management uses the shared `@with_optional_sync_session` decorator from 
 ```mermaid
 graph LR
     T1_1["1.1 Migration ✅"] --> T1_2["1.2 Model ✅"]
-    T1_2 --> T1_3["1.3 uselist=True"]
-    T1_2 --> T1_4["1.4 FK sync"]
+    T1_2 --> T1_3["1.3 Join table migration ✅"]
     T1_2 --> T2_2["2.2 Link APIs ✅"]
     T2_1["2.1 Scopes ✅"] --> T2_2
     T2_2 --> T2_3["2.3 GET response"]

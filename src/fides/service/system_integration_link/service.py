@@ -13,7 +13,6 @@ from fides.service.system_integration_link.exceptions import (
     SystemNotFoundError,
     TooManyLinksError,
 )
-from fides.service.system_integration_link.models import SystemConnectionLinkType
 from fides.service.system_integration_link.repository import (
     SystemIntegrationLinkRepository,
 )
@@ -80,8 +79,7 @@ class SystemIntegrationLinkService:
             )
             entity = self._repo.upsert_link(
                 connection_config_id=connection_config.id,
-                system_id=system.id,
-                link_type=SystemConnectionLinkType(link_spec["link_type"]),
+                system_id=system.id,  # type: ignore[union-attr]
                 session=session,
             )
             results.append(entity)
@@ -98,7 +96,6 @@ class SystemIntegrationLinkService:
         self,
         connection_key: str,
         system_fides_key: str,
-        link_type: Optional[SystemConnectionLinkType] = None,
         *,
         session: Session,
     ) -> None:
@@ -115,15 +112,13 @@ class SystemIntegrationLinkService:
         count = self._repo.delete_links(
             connection_config_id=connection_config.id,
             system_id=system.id,
-            link_type=link_type,
             session=session,
         )
         if count == 0:
             raise SystemIntegrationLinkNotFoundError(connection_key, system_fides_key)
 
         logger.info(
-            "Deleted {} link(s) between connection '{}' and system '{}'",
-            count,
+            "Deleted link between connection '{}' and system '{}'",
             connection_key,
             system_fides_key,
         )

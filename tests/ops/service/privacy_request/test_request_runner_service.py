@@ -73,6 +73,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
+from fides.service.system_integration_link.models import SystemConnectionConfigLink
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
@@ -2155,8 +2156,9 @@ class TestConsentEmailStep:
         privacy_preference_history_us_ca_provide,
         sovrn_email_connection_config,
     ):
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, sovrn_email_connection_config.id
+        )
 
         privacy_preference_history_us_ca_provide.privacy_request_id = (
             privacy_request_with_consent_policy.id
@@ -2186,8 +2188,9 @@ class TestConsentEmailStep:
     ):
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, sovrn_email_connection_config.id
+        )
 
         privacy_preference_history_us_ca_provide.privacy_request_id = (
             privacy_request_with_consent_policy.id

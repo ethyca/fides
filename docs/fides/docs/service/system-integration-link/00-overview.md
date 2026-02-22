@@ -40,7 +40,7 @@ The short-term goal is to unblock the steward workflow with the minimum set of c
 
 2. **First-class system-integration link management.** New, dedicated APIs for creating, reading, and deleting associations between systems and integrations. These APIs are guarded by a new scope (`system_integration_link:create_or_update`, `system_integration_link:delete`) that can be granted independently of full connection management permissions.
 
-3. **Data model evolution.** Move the System:ConnectionConfig relationship from 1:1 toward 1:many, with the option to qualify the purpose of each link (monitoring vs. DSR). This is achieved via a new join table -- see [technical design](./02-technical-design.md) for the full analysis.
+3. **Data model evolution.** Move the System:ConnectionConfig relationship from 1:1 toward 1:many via a new join table (`system_connection_config_link`). The old `ConnectionConfig.system_id` FK has been fully migrated to the join table and removed. See [technical design](./02-technical-design.md) for the full analysis.
 
 4. **Data Steward role.** A new role (or extension of Viewer) that grants the system-integration link management scopes plus monitor steward read access, allowing data stewards to perform their duties without requiring full Contributor/Owner privileges.
 
@@ -51,7 +51,7 @@ The short-term goal is to unblock the steward workflow with the minimum set of c
 - **Many:many system-integration relationships** if use cases emerge (e.g., a single integration shared across multiple systems). The join-table approach in the short-term design is forward-compatible with this.
 - **Flexible RBAC.** Allow customers to define custom roles with arbitrary scope combinations, eliminating the need for bespoke roles like "Data Steward."
 - **Holistic Dataset:System cleanup.** Converge the two Dataset-System relationship paths into a single, consistent mechanism. Likely deprecate `System.dataset_references` in favor of the ConnectionConfig -> DatasetConfig path (or a dedicated join table).
-- **Qualified integration links beyond monitoring.** Extend the link-type qualifier to cover additional use cases as they arise (consent automation, asset scanning, etc.).
+- **Qualified integration links.** A `link_type` concept (monitoring vs. DSR) was considered but deferred to simplify the initial migration. The join table can be extended with a type qualifier when a concrete technical need arises.
 
 ## Current State Reference
 
@@ -59,7 +59,7 @@ For context, here is a summary of the current data model relationships:
 
 ```
 System (ctl_systems)
-+-- connection_configs (1:1, uselist=False) -> ConnectionConfig
++-- connection_configs (via system_connection_config_link, uselist=False, viewonly=True) -> ConnectionConfig
 |   +-- datasets (1:N) -> DatasetConfig -> Dataset (ctl_datasets)
 |   +-- monitors (1:N) -> MonitorConfig
 |       +-- stewards (M:N via monitorsteward) -> FidesUser
@@ -68,6 +68,8 @@ System (ctl_systems)
 +-- system_groups (M:N via system_group_member) -> SystemGroup
 +-- dataset_references (soft reference array) -> Dataset fides_keys
 ```
+
+Note: The System:ConnectionConfig relationship was migrated from a direct FK (`ConnectionConfig.system_id`) to the `system_connection_config_link` join table. The old FK has been removed. Both sides of the relationship use `uselist=False` and `viewonly=True` for backward compatibility; writes go through `SystemConnectionConfigLink.create_or_update_link()`.
 
 Key files:
 - System model: `src/fides/api/models/sql_models.py`
@@ -86,7 +88,7 @@ New files (added as part of this effort):
 ```
 src/fides/service/system_integration_link/   # Self-contained feature package
     __init__.py
-    models.py        # SQLAlchemy model (SystemConnectionConfigLink) + enum
+    models.py        # SQLAlchemy model (SystemConnectionConfigLink) + create_or_update_link helper
     routes.py        # FastAPI route definitions (GET, PUT, DELETE)
     service.py       # Business logic + session management
     repository.py    # Data access layer (SQLAlchemy queries)
@@ -98,9 +100,10 @@ src/fides/core/repository/
     session_management.py   # Shared session decorators (with_optional_sync_session, with_optional_async_session)
 
 src/fides/api/alembic/migrations/versions/
-    xx_2026_02_18_1700_create_system_connection_config_link.py
+    xx_2026_02_18_1700_create_system_connection_config_link.py   # Creates the join table
+    xx_2026_02_20_migrate_system_id_fk_to_link_table.py         # Migrates data, drops ConnectionConfig.system_id
 
 tests/service/system_integration_link/
-    test_service.py      # 14 unit tests (mock-based)
+    test_service.py      # 13 unit tests (mock-based)
     test_repository.py   # 13 integration tests (real DB)
 ```

@@ -5,7 +5,6 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System
 from fides.service.system_integration_link.models import (
     SystemConnectionConfigLink,
-    SystemConnectionLinkType,
 )
 from fides.service.system_integration_link.repository import (
     SystemIntegrationLinkRepository,
@@ -80,14 +79,12 @@ class TestUpsertLink:
         entity = repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         db.commit()
 
         assert entity.system_id == system_a.id
         assert entity.connection_config_id == connection_config.id
-        assert entity.link_type == SystemConnectionLinkType.monitoring
         assert entity.system_fides_key == "link_test_system_a"
         assert entity.system_name == "Link Test System A"
 
@@ -97,7 +94,6 @@ class TestUpsertLink:
         first = repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         db.commit()
@@ -105,7 +101,6 @@ class TestUpsertLink:
         second = repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         db.commit()
@@ -120,7 +115,6 @@ class TestGetLinksForConnection:
         repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         db.commit()
@@ -129,7 +123,6 @@ class TestGetLinksForConnection:
 
         assert len(links) == 1
         assert links[0].system_fides_key == "link_test_system_a"
-        assert links[0].link_type == SystemConnectionLinkType.monitoring
 
     def test_returns_empty_for_no_links(self, repo, db, connection_config):
         links = repo.get_links_for_connection(connection_config.id, session=db)
@@ -141,13 +134,11 @@ class TestDeleteAllLinksForConnection:
         repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_b.id,
-            link_type=SystemConnectionLinkType.dsr,
             session=db,
         )
         db.commit()
@@ -166,7 +157,6 @@ class TestDeleteAllLinksForConnection:
         repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         db.flush()
@@ -177,7 +167,6 @@ class TestDeleteAllLinksForConnection:
         entity = repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_b.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         db.commit()
@@ -200,13 +189,11 @@ class TestDeleteLinks:
         repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_b.id,
-            link_type=SystemConnectionLinkType.monitoring,
             session=db,
         )
         db.commit()
@@ -222,34 +209,6 @@ class TestDeleteLinks:
         remaining = repo.get_links_for_connection(connection_config.id, session=db)
         assert len(remaining) == 1
         assert remaining[0].system_fides_key == "link_test_system_b"
-
-    def test_deletes_by_link_type(self, repo, db, connection_config, system_a):
-        repo.upsert_link(
-            connection_config_id=connection_config.id,
-            system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
-            session=db,
-        )
-        repo.upsert_link(
-            connection_config_id=connection_config.id,
-            system_id=system_a.id,
-            link_type=SystemConnectionLinkType.dsr,
-            session=db,
-        )
-        db.commit()
-
-        count = repo.delete_links(
-            connection_config_id=connection_config.id,
-            system_id=system_a.id,
-            link_type=SystemConnectionLinkType.monitoring,
-            session=db,
-        )
-        db.commit()
-
-        assert count == 1
-        remaining = repo.get_links_for_connection(connection_config.id, session=db)
-        assert len(remaining) == 1
-        assert remaining[0].link_type == SystemConnectionLinkType.dsr
 
 
 class TestResolveHelpers:

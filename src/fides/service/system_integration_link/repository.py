@@ -3,14 +3,13 @@ from typing import Optional
 from sqlalchemy.orm import Session, joinedload
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.sql_models import System
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.core.repository.session_management import with_optional_sync_session
 from fides.service.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
 )
 from fides.service.system_integration_link.models import (
     SystemConnectionConfigLink,
-    SystemConnectionLinkType,
 )
 
 
@@ -37,21 +36,18 @@ class SystemIntegrationLinkRepository:
         self,
         connection_config_id: str,
         system_id: str,
-        link_type: Optional[SystemConnectionLinkType] = None,
         *,
         session: Session,
     ) -> Optional[SystemIntegrationLinkEntity]:
-        query = (
+        link = (
             session.query(SystemConnectionConfigLink)
             .options(joinedload(SystemConnectionConfigLink.system))
             .filter(
                 SystemConnectionConfigLink.connection_config_id == connection_config_id,
                 SystemConnectionConfigLink.system_id == system_id,
             )
+            .first()
         )
-        if link_type is not None:
-            query = query.filter(SystemConnectionConfigLink.link_type == link_type)
-        link = query.first()
         return SystemIntegrationLinkEntity.from_orm(link) if link else None
 
     @with_optional_sync_session
@@ -59,16 +55,14 @@ class SystemIntegrationLinkRepository:
         self,
         connection_config_id: str,
         system_id: str,
-        link_type: SystemConnectionLinkType,
         *,
         session: Session,
     ) -> SystemIntegrationLinkEntity:
-        """Create or return an existing link for the given triple."""
+        """Create or return an existing link for the given pair."""
         existing = (
             session.query(SystemConnectionConfigLink)
             .filter(
                 SystemConnectionConfigLink.connection_config_id == connection_config_id,
-                SystemConnectionConfigLink.link_type == link_type,
                 SystemConnectionConfigLink.system_id == system_id,
             )
             .first()
@@ -80,7 +74,6 @@ class SystemIntegrationLinkRepository:
         link = SystemConnectionConfigLink(
             connection_config_id=connection_config_id,
             system_id=system_id,
-            link_type=link_type,
         )
         session.add(link)
         session.flush()
@@ -92,18 +85,18 @@ class SystemIntegrationLinkRepository:
         self,
         connection_config_id: str,
         system_id: str,
-        link_type: Optional[SystemConnectionLinkType] = None,
         *,
         session: Session,
     ) -> int:
-        """Delete link(s) for a specific system. Returns the number of rows deleted."""
-        query = session.query(SystemConnectionConfigLink).filter(
-            SystemConnectionConfigLink.connection_config_id == connection_config_id,
-            SystemConnectionConfigLink.system_id == system_id,
+        """Delete the link for a specific system. Returns the number of rows deleted."""
+        count = (
+            session.query(SystemConnectionConfigLink)
+            .filter(
+                SystemConnectionConfigLink.connection_config_id == connection_config_id,
+                SystemConnectionConfigLink.system_id == system_id,
+            )
+            .delete(synchronize_session="evaluate")
         )
-        if link_type is not None:
-            query = query.filter(SystemConnectionConfigLink.link_type == link_type)
-        count = query.delete(synchronize_session="evaluate")
         session.flush()
         return count
 

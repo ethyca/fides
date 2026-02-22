@@ -60,6 +60,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import FidesConfig, get_config
 from fides.core import api as _api
+from fides.service.system_integration_link.models import SystemConnectionConfigLink
 
 CONFIG = get_config()
 
@@ -2936,10 +2937,9 @@ class TestSystemDelete:
         auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
 
         connection_config = dataset_config.connection_config
-        connection_config.system_id = (
-            system.id
-        )  # tie the connectionconfig to the system we will delete
-        connection_config.save(db)
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, connection_config.id
+        )
         # the keys are cached before the delete
         connection_config_key = connection_config.key
         dataset_config_key = dataset_config.fides_key

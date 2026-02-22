@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import Depends, HTTPException, Security
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
@@ -16,7 +14,6 @@ from fides.service.system_integration_link.exceptions import (
     SystemNotFoundError,
     TooManyLinksError,
 )
-from fides.service.system_integration_link.models import SystemConnectionLinkType
 from fides.service.system_integration_link.schemas import (
     SetSystemLinksRequest,
     SystemLinkResponse,
@@ -47,17 +44,16 @@ def get_system_links(
 ) -> list[SystemLinkResponse]:
     try:
         entities = service.get_links_for_connection(connection_key)
-    except ConnectionConfigNotFoundError:
+    except ConnectionConfigNotFoundError as exc:
         raise HTTPException(
             status_code=404,
             detail=f"Connection '{connection_key}' not found",
-        )
+        ) from exc
 
     return [
         SystemLinkResponse(
             system_fides_key=e.system_fides_key,
             system_name=e.system_name,
-            link_type=e.link_type,
             created_at=e.created_at,
         )
         for e in entities
@@ -85,24 +81,23 @@ def set_system_links(
             connection_key,
             [link.dict() for link in payload.links],
         )
-    except ConnectionConfigNotFoundError:
+    except ConnectionConfigNotFoundError as exc:
         raise HTTPException(
             status_code=404,
             detail=f"Connection '{connection_key}' not found",
-        )
+        ) from exc
     except SystemNotFoundError as exc:
         raise HTTPException(
             status_code=404,
             detail=f"System '{exc.system_fides_key}' not found",
-        )
+        ) from exc
     except TooManyLinksError as exc:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc))
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return [
         SystemLinkResponse(
             system_fides_key=e.system_fides_key,
             system_name=e.system_name,
-            link_type=e.link_type,
             created_at=e.created_at,
         )
         for e in entities
@@ -122,27 +117,25 @@ def set_system_links(
 def delete_system_link(
     connection_key: str,
     system_fides_key: str,
-    link_type: Optional[SystemConnectionLinkType] = None,
     service: SystemIntegrationLinkService = Depends(_get_service),
 ) -> None:
     try:
         service.delete_link(
             connection_key,
             system_fides_key,
-            link_type=link_type,
         )
-    except ConnectionConfigNotFoundError:
+    except ConnectionConfigNotFoundError as exc:
         raise HTTPException(
             status_code=404,
             detail=f"Connection '{connection_key}' not found",
-        )
+        ) from exc
     except SystemNotFoundError as exc:
         raise HTTPException(
             status_code=404,
             detail=f"System '{exc.system_fides_key}' not found",
-        )
-    except SystemIntegrationLinkNotFoundError:
+        ) from exc
+    except SystemIntegrationLinkNotFoundError as exc:
         raise HTTPException(
             status_code=404,
             detail=f"No link found between '{connection_key}' and '{system_fides_key}'",
-        )
+        ) from exc

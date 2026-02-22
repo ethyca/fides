@@ -4,14 +4,9 @@
 
 ### Option A: New Join Table (Recommended)
 
-A new `system_connection_config_link` table that explicitly models the relationship between systems and integrations with a qualified type:
+A new `system_connection_config_link` table that explicitly models the relationship between systems and integrations:
 
 ```python
-class SystemConnectionLinkType(str, enum.Enum):
-    dsr = "dsr"
-    monitoring = "monitoring"
-
-
 class SystemConnectionConfigLink(Base):
     __tablename__ = "system_connection_config_link"
 
@@ -24,11 +19,6 @@ class SystemConnectionConfigLink(Base):
     connection_config_id = Column(
         String,
         ForeignKey("connectionconfig.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    link_type = Column(
-        Enum(SystemConnectionLinkType),
         nullable=False,
         index=True,
     )
@@ -51,15 +41,16 @@ class SystemConnectionConfigLink(Base):
         UniqueConstraint(
             "system_id",
             "connection_config_id",
-            "link_type",
-            name="uq_system_connconfig_link_type",
+            name="uq_system_connconfig_link",
         ),
     )
 ```
 
 **Implemented in:** `src/fides/service/system_integration_link/models.py`
 
-**Data migration:** For every `ConnectionConfig` row where `system_id IS NOT NULL`, insert a row into `system_connection_config_link` with `link_type='dsr'`. If the ConnectionConfig also has associated monitors, insert an additional row with `link_type='monitoring'`.
+**Note:** A `link_type` concept (DSR vs. monitoring) was initially considered but removed to simplify the data migration and initial implementation. The join table can be extended with a type qualifier in the future if a concrete technical need arises.
+
+**Data migration:** A migration (`xx_2026_02_20_migrate_system_id_fk_to_link_table.py`) copies every `ConnectionConfig` row where `system_id IS NOT NULL` into the join table, then drops the `system_id` column, its index, and its FK constraint from `connectionconfig`.
 
 **Pros:**
 - Forward-compatible with many:many if ever needed.
@@ -69,8 +60,9 @@ class SystemConnectionConfigLink(Base):
 
 **Cons:**
 - New table, new migration, new model code.
-- Dual-write period while `ConnectionConfig.system_id` is still in use.
 - Slightly more complex queries (join through the link table).
+
+**Current state:** The migration is complete. `ConnectionConfig.system_id` has been removed. All reads and writes go through the join table.
 
 ### Option B: Extend Existing FK with link_type Column
 
@@ -84,11 +76,14 @@ Add a `link_type` column to `ConnectionConfig` alongside the existing `system_id
 
 **Option A (join table)** is recommended.
 
-### Transition Strategy
+### Transition Strategy (Completed)
 
-1. The join table is the source of truth for new link management APIs.
-2. `ConnectionConfig.system_id` is maintained via a SQLAlchemy event listener on the link table (for `link_type='dsr'` only), keeping backward compat.
-3. Once all consumers are migrated to read from the join table, `ConnectionConfig.system_id` can be deprecated.
+1. The join table was created alongside the existing FK.
+2. A data migration copied all `ConnectionConfig.system_id` values to the join table.
+3. SQLAlchemy relationships on `ConnectionConfig.system` and `System.connection_configs` were updated to use `secondary="system_connection_config_link"` with `uselist=False, viewonly=True`.
+4. All write paths were migrated to use `SystemConnectionConfigLink.create_or_update_link()`.
+5. All read paths (queries filtering on `ConnectionConfig.system_id`) were migrated to join through `SystemConnectionConfigLink`.
+6. The `system_id` column, index, and FK constraint were dropped from `connectionconfig`.
 
 ## 2. API Contracts
 
@@ -99,7 +94,7 @@ All link management code lives in a single self-contained package:
 ```
 src/fides/service/system_integration_link/
     __init__.py
-    models.py        # SQLAlchemy model + enum
+    models.py        # SQLAlchemy model + create_or_update_link helper
     routes.py        # FastAPI route definitions (GET, PUT, DELETE)
     service.py       # Business logic
     repository.py    # Data access layer
@@ -148,8 +143,7 @@ PUT /api/v1/connection/{connection_key}/system-links
 {
   "links": [
     {
-      "system_fides_key": "my_system",
-      "link_type": "monitoring"
+      "system_fides_key": "my_system"
     }
   ]
 }
@@ -162,7 +156,6 @@ PUT /api/v1/connection/{connection_key}/system-links
   {
     "system_fides_key": "my_system",
     "system_name": "My System",
-    "link_type": "monitoring",
     "created_at": "2026-02-18T12:00:00Z"
   }
 ]
@@ -180,7 +173,6 @@ PUT /api/v1/connection/{connection_key}/system-links
 - **Idempotent replace.** The provided list becomes the complete set of links for this connection. Any existing links not in the new list are deleted. Submitting the same payload twice produces the same result.
 - Validates that all referenced systems exist before making any mutations (fail-fast).
 - An empty `links` list clears all links for the connection.
-- If `link_type` is `dsr`, also updates `ConnectionConfig.system_id` for backward compat (not yet implemented in POC).
 
 ### 2.2 Remove a System Link
 
@@ -189,8 +181,6 @@ DELETE /api/v1/connection/{connection_key}/system-links/{system_fides_key}
 ```
 
 **Scope:** `system_integration_link:delete`
-
-**Query parameter:** `link_type` (optional; if omitted, removes all link types for that system)
 
 **Response:** 204 No Content
 
@@ -217,7 +207,6 @@ GET /api/v1/connection/{connection_key}/system-links
   {
     "system_fides_key": "my_system",
     "system_name": "My System",
-    "link_type": "monitoring",
     "created_at": "2026-02-18T12:00:00Z"
   }
 ]
@@ -225,14 +214,13 @@ GET /api/v1/connection/{connection_key}/system-links
 
 ### 2.4 Extended GET /connection List Response
 
-**Status:** Not yet implemented. Will add a `linked_systems` field alongside the existing `system_key`.
+**Status:** Not yet implemented. Will add a `linked_systems` field alongside the existing `system_key`. The existing `system_key` continues to work via the `ConnectionConfig.system` relationship (which reads through the join table transparently).
 
 ### Schemas
 
 ```python
 class SystemLinkRequest(BaseModel):
     system_fides_key: str
-    link_type: SystemConnectionLinkType
 
 
 class SetSystemLinksRequest(BaseModel):
@@ -242,7 +230,6 @@ class SetSystemLinksRequest(BaseModel):
 class SystemLinkResponse(BaseModel):
     system_fides_key: Optional[str] = None
     system_name: Optional[str] = None
-    link_type: SystemConnectionLinkType
     created_at: datetime
 ```
 
@@ -276,19 +263,21 @@ SYSTEM_INTEGRATION_LINK_DELETE = f"{SYSTEM_INTEGRATION_LINK}:{DELETE}"
 
 ## 4. Backward Compatibility
 
-| Existing API | Current behavior | After changes |
+| Existing API | Previous behavior | Current behavior |
 |---|---|---|
-| `PATCH /system/{key}/connection` | Creates ConnectionConfig with `system_id` set | Unchanged; also creates a `dsr` link in join table |
-| `DELETE /system/{key}/connection` | Deletes the single ConnectionConfig | Unchanged; also removes link table rows |
-| `GET /connection/{key}` | Returns `system_key` field | Adds `linked_systems` field; `system_key` still works |
+| `PATCH /system/{key}/connection` | Created ConnectionConfig with `system_id` set | Creates ConnectionConfig, then creates link row via `SystemConnectionConfigLink.create_or_update_link()` |
+| `DELETE /system/{key}/connection` | Deleted the ConnectionConfig (cascaded via FK) | Deletes the ConnectionConfig; link rows cascade-deleted via FK on the join table |
+| `GET /connection/{key}` | Returns `system_key` from `ConnectionConfig.system` | Unchanged -- `system_key` property reads through the `secondary=` relationship transparently |
+| `GET /connection?orphaned_from_system=true` | Filtered on `ConnectionConfig.system_id IS NULL` | Uses `EXISTS` subquery on `SystemConnectionConfigLink` |
+| `GET /system/{key}/connection` | Filtered on `ConnectionConfig.system_id` | Joins through `SystemConnectionConfigLink.system_id` |
 
-**Status:** Backward-compat sync (join table <-> `system_id` FK) is not yet implemented.
+**Status:** Migration complete. All read and write paths updated.
 
 ## 5. Steward Inference Design
 
 ### Option A: Compute on the Fly (Recommended for Short-Term)
 
-When `GET /{monitor_config_key}/stewards` is called, compute effective stewards by traversing: MonitorConfig -> ConnectionConfig -> join table (`link_type=monitoring`) -> System -> `data_stewards`.
+When `GET /{monitor_config_key}/stewards` is called, compute effective stewards by traversing: MonitorConfig -> ConnectionConfig -> `system_connection_config_link` -> System -> `data_stewards`.
 
 **Pros:** No sync complexity, immediate consistency.
 **Cons:** Additional queries on every steward read.
@@ -325,11 +314,11 @@ Show combined explicit + inferred stewards on monitor detail pages.
 
 ### Service Layer (Unit Tests)
 
-14 tests in `tests/service/system_integration_link/test_service.py` covering:
+13 tests in `tests/service/system_integration_link/test_service.py` covering:
 
 - `TestGetLinksForConnection` (3 tests): happy path, empty result, connection not found
 - `TestSetLinks` (6 tests): single link, idempotent replace with pre-existing links, clear with empty list, reject >1 link, connection not found, system not found
-- `TestDeleteLink` (5 tests): happy path, with specific link_type, connection/system/link not found
+- `TestDeleteLink` (4 tests): happy path, connection/system/link not found
 
 Tests mock the repository and inject it via the service constructor.
 
@@ -340,19 +329,27 @@ Tests mock the repository and inject it via the service constructor.
 - `TestUpsertLink` (2 tests): creates new link, returns existing on duplicate
 - `TestGetLinksForConnection` (2 tests): returns links with system info, empty result
 - `TestDeleteAllLinksForConnection` (3 tests): deletes all, delete-then-create in same session, zero when none exist
-- `TestDeleteLinks` (2 tests): deletes specific system link, deletes by link_type
+- `TestDeleteLinks` (1 test): deletes specific system link
 - `TestResolveHelpers` (4 tests): resolve connection config found/not found, resolve system found/not found
 
 These run against the real test database and verify SQLAlchemy queries and session behavior.
 
 ## 8. Open Questions for Discussion
 
-1. **Migration of existing links to "monitoring" type:** When we populate the join table from existing `system_id` values, should we create both `dsr` and `monitoring` link rows, or only `dsr`? Recommendation: create both.
+1. **Should the Data Steward role also get `MONITOR_STEWARD_UPDATE`?** Product decision.
 
-2. **Should the Data Steward role also get `MONITOR_STEWARD_UPDATE`?** Product decision.
+2. **Staged resource filtering by inferred stewards:** The compute-on-the-fly approach doesn't automatically extend the existing steward filter query. Defer to a follow-up task if needed.
 
-3. **Staged resource filtering by inferred stewards:** The compute-on-the-fly approach doesn't automatically extend the existing steward filter query. Defer to a follow-up task if needed.
+3. **Raising the per-connection link limit:** The current limit of 1 is a product constraint, not technical. The API and data model already support multiple links.
 
-4. **Link type enum extensibility:** Keep it closed for now; new values can be added via a migration.
+4. **Adding link_type in the future:** If a concrete need arises to differentiate DSR vs. monitoring links, a new migration can add a `link_type` column to the join table. The unique constraint would need to be updated to include the new column.
 
-5. **Raising the per-connection link limit:** The current limit of 1 is a product constraint, not technical. The API and data model already support multiple links.
+## 9. Resolved Decisions
+
+1. **link_type deferred:** The `link_type` concept (DSR vs. monitoring) was removed from the initial implementation to simplify the data migration. A single unqualified link between a system and a connection is sufficient for current needs.
+
+2. **Data migration approach:** Existing `ConnectionConfig.system_id` values were copied to the join table via a SQL `INSERT ... SELECT` migration, then the old column was dropped. The migration is reversible.
+
+3. **Relationship configuration:** Both `ConnectionConfig.system` and `System.connection_configs` use `secondary="system_connection_config_link"` with `uselist=False, viewonly=True`. This provides transparent reads while ensuring all writes go through the explicit `SystemConnectionConfigLink.create_or_update_link()` method.
+
+4. **Write path centralization:** A `create_or_update_link` classmethod on `SystemConnectionConfigLink` ensures exactly one link per connection config. It replaces any existing link for the same connection config before creating the new one.

@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, List, Optional, Type
 
 from loguru import logger
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
+from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
@@ -214,9 +214,8 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
 
-    system_id = Column(
-        String, ForeignKey(System.id_field_path), nullable=True, index=True
-    )
+    # system_id FK has been migrated to the system_connection_config_link join table.
+    # The 'system' relationship below uses that table via secondary=.
 
     datasets = relationship(  # type: ignore[misc]
         "DatasetConfig",
@@ -253,7 +252,12 @@ class ConnectionConfig(Base):
         cascade="delete",
     )
 
-    system = relationship(System, back_populates="connection_configs", uselist=False)
+    system = relationship(
+        System,
+        secondary="system_connection_config_link",
+        uselist=False,
+        viewonly=True,
+    )
 
     consent_automation: RelationshipProperty[Optional[ConsentAutomation]] = (
         relationship(ConsentAutomation, uselist=False, cascade="all, delete-orphan")

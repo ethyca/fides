@@ -27,6 +27,7 @@ from fides.api.service.connectors.consent_email_connector import (
 from fides.api.service.privacy_request.request_runner_service import (
     get_consent_email_connection_configs,
 )
+from fides.service.system_integration_link.models import SystemConnectionConfigLink
 
 
 class TestConsentEmailConnectorMethods:
@@ -387,8 +388,9 @@ class TestConsentEmailConnectorMethods:
         privacy_preference_history,
         system,
     ):
-        test_sovrn_consent_email_connector.configuration.system_id = system.id
-        test_sovrn_consent_email_connector.configuration.save(db)
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, test_sovrn_consent_email_connector.configuration.id
+        )
 
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
@@ -471,8 +473,9 @@ class TestConsentEmailConnectorMethods:
         privacy_preference_history_us_ca_provide,
         system,
     ):
-        test_sovrn_consent_email_connector.configuration.system_id = system.id
-        test_sovrn_consent_email_connector.configuration.save(db)
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, test_sovrn_consent_email_connector.configuration.id
+        )
 
         privacy_preference_history_us_ca_provide.privacy_request_id = (
             privacy_request_with_consent_policy.id

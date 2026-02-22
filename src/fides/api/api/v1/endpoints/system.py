@@ -81,6 +81,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.system.system_service import SystemService
+from fides.service.system_integration_link.models import SystemConnectionConfigLink
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(
@@ -109,8 +110,14 @@ def get_system_connections(
     Return all the connection configs related to a system.
     """
     system = get_system(db, fides_key)
-    query = ConnectionConfig.query(db)
-    query = query.filter(ConnectionConfig.system_id == system.id)
+    query = (
+        ConnectionConfig.query(db)
+        .join(
+            SystemConnectionConfigLink,
+            SystemConnectionConfigLink.connection_config_id == ConnectionConfig.id,
+        )
+        .filter(SystemConnectionConfigLink.system_id == system.id)
+    )
     return paginate(query.order_by(ConnectionConfig.name.asc()), params=params)
 
 
