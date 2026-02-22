@@ -20,7 +20,6 @@ from fides.api.common_exceptions import (
     SkippingConsentPropagation,
     TableNotFound,
 )
-from fides.api.deps import get_autoclose_db_session as get_db
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
@@ -64,6 +63,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
+from fides.common.session import get_autoclose_db_session as get_db
 from fides.config import CONFIG
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]

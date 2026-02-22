@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager, contextmanager
-from typing import TYPE_CHECKING, AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,24 +9,20 @@ from fides.api.common_exceptions import RedisNotConfigured
 from fides.api.db.ctl_session import async_session, get_async_db
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.util.cache import get_cache as get_redis_connection
+from fides.common.session import get_api_session, get_autoclose_db_session
 from fides.config import CONFIG, FidesConfig
 from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
+from fides.service.connection.connection_service import ConnectionService
+from fides.service.dataset.dataset_config_service import DatasetConfigService
+from fides.service.dataset.dataset_service import DatasetService
+from fides.service.event_audit_service import EventAuditService
+from fides.service.messaging.messaging_service import MessagingService
+from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.system.system_service import SystemService
+from fides.service.taxonomy.taxonomy_service import TaxonomyService
+from fides.service.user.user_service import UserService
 
-if TYPE_CHECKING:
-    from fides.service.connection.connection_service import ConnectionService
-    from fides.service.dataset.dataset_config_service import DatasetConfigService
-    from fides.service.dataset.dataset_service import DatasetService
-    from fides.service.event_audit_service import EventAuditService
-    from fides.service.messaging.messaging_service import MessagingService
-    from fides.service.privacy_request.privacy_request_service import (
-        PrivacyRequestService,
-    )
-    from fides.service.system.system_service import SystemService
-    from fides.service.taxonomy.taxonomy_service import TaxonomyService
-    from fides.service.user.user_service import UserService
-
-_engine = None
 _readonly_engine = None
 
 
@@ -54,22 +50,6 @@ def get_readonly_db() -> Generator:
 
 
 @contextmanager
-def get_autoclose_db_session() -> Generator[Session, None, None]:
-    """
-    Return a database session as a context manager that automatically closes when the context exits.
-
-    Unlike get_api_session which is managed by FastAPI's dependency injection,
-    this context manager explicitly closes the session when exiting the context.
-    Use this when you need manual control over the session lifecycle outside of API endpoints.
-    """
-    try:
-        db = get_api_session()
-        yield db
-    finally:
-        db.close()
-
-
-@contextmanager
 def get_readonly_autoclose_db_session() -> Generator[Session, None, None]:
     """
     Return a read-only database session as a context manager that automatically closes.
@@ -87,24 +67,6 @@ def get_readonly_autoclose_db_session() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-
-
-def get_api_session() -> Session:
-    """Gets the shared database session to use for API functionality"""
-    global _engine  # pylint: disable=W0603
-    if not _engine:
-        _engine = get_db_engine(
-            config=CONFIG,
-            pool_size=CONFIG.database.api_engine_pool_size,
-            max_overflow=CONFIG.database.api_engine_max_overflow,
-            keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
-            keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
-            keepalives_count=CONFIG.database.api_engine_keepalives_count,
-            pool_pre_ping=CONFIG.database.api_engine_pool_pre_ping,
-        )
-    SessionLocal = get_db_session(CONFIG, engine=_engine)
-    db = SessionLocal()
-    return db
 
 
 def get_readonly_api_session() -> Session:
@@ -157,8 +119,6 @@ async def get_async_autoclose_db_session() -> AsyncGenerator[AsyncSession, None]
 
 # ---------------------------------------------------------------------------
 # Service factory functions for FastAPI dependency injection.
-# Imports are deferred to function bodies to avoid circular dependencies
-# (service modules import from this file for get_db, get_config, etc.).
 # ---------------------------------------------------------------------------
 
 
@@ -166,37 +126,27 @@ def get_messaging_service(
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
-) -> "MessagingService":
-    from fides.service.messaging.messaging_service import MessagingService
-
+) -> MessagingService:
     return MessagingService(db, config, config_proxy)
 
 
 def get_privacy_request_service(
     db: Session = Depends(get_db),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
-    messaging_service: "MessagingService" = Depends(get_messaging_service),
-) -> "PrivacyRequestService":
-    from fides.service.privacy_request.privacy_request_service import (
-        PrivacyRequestService,
-    )
-
+    messaging_service: MessagingService = Depends(get_messaging_service),
+) -> PrivacyRequestService:
     return PrivacyRequestService(db, config_proxy, messaging_service)
 
 
 def get_dataset_service(
     db: Session = Depends(get_db),
-) -> "DatasetService":
-    from fides.service.dataset.dataset_service import DatasetService
-
+) -> DatasetService:
     return DatasetService(db)
 
 
 def get_dataset_config_service(
     db: Session = Depends(get_db),
-) -> "DatasetConfigService":
-    from fides.service.dataset.dataset_config_service import DatasetConfigService
-
+) -> DatasetConfigService:
     return DatasetConfigService(db)
 
 
@@ -204,41 +154,31 @@ def get_user_service(
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
-) -> "UserService":
-    from fides.service.user.user_service import UserService
-
+) -> UserService:
     return UserService(db, config, config_proxy)
 
 
 def get_event_audit_service(
     db: Session = Depends(get_db),
-) -> "EventAuditService":
-    from fides.service.event_audit_service import EventAuditService
-
+) -> EventAuditService:
     return EventAuditService(db)
 
 
 def get_taxonomy_service(
     db: Session = Depends(get_db),
-    event_audit_service: "EventAuditService" = Depends(get_event_audit_service),
-) -> "TaxonomyService":
-    from fides.service.taxonomy.taxonomy_service import TaxonomyService
-
+    event_audit_service: EventAuditService = Depends(get_event_audit_service),
+) -> TaxonomyService:
     return TaxonomyService(db, event_audit_service)
 
 
 def get_connection_service(
     db: Session = Depends(get_db),
-    event_audit_service: "EventAuditService" = Depends(get_event_audit_service),
-) -> "ConnectionService":
-    from fides.service.connection.connection_service import ConnectionService
-
+    event_audit_service: EventAuditService = Depends(get_event_audit_service),
+) -> ConnectionService:
     return ConnectionService(db, event_audit_service)
 
 
 def get_system_service(
     db: AsyncSession = Depends(get_async_db),
-) -> "SystemService":
-    from fides.service.system.system_service import SystemService
-
+) -> SystemService:
     return SystemService(db)
