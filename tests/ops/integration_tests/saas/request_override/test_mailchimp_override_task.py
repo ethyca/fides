@@ -10,7 +10,6 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.collection_util import Row
 from fides.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.service.privacy_request.saas_request.saas_request_override_factory import (
