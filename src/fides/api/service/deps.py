@@ -34,7 +34,16 @@ def get_privacy_request_service(
 
 
 def get_dataset_service(db: Session = Depends(get_db)) -> DatasetService:
-    return DatasetService(db)
+    from fides.service.dataset.repositories import (
+        SqlAlchemyDatasetConfigRepository,
+        SqlAlchemyDatasetRepository,
+    )
+
+    return DatasetService(
+        dataset_repo=SqlAlchemyDatasetRepository(db),
+        dataset_config_repo=SqlAlchemyDatasetConfigRepository(db),
+        db=db,
+    )
 
 
 def get_dataset_config_service(db: Session = Depends(get_db)) -> DatasetConfigService:

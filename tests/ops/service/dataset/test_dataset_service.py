@@ -10,11 +10,19 @@ from fides.service.dataset.dataset_service import (
     DatasetService,
     LinkedDatasetException,
 )
+from fides.service.dataset.repositories import (
+    SqlAlchemyDatasetConfigRepository,
+    SqlAlchemyDatasetRepository,
+)
 
 
 @pytest.fixture
 def dataset_service(db: Session) -> DatasetService:
-    return DatasetService(db)
+    return DatasetService(
+        dataset_repo=SqlAlchemyDatasetRepository(db),
+        dataset_config_repo=SqlAlchemyDatasetConfigRepository(db),
+        db=db,
+    )
 
 
 class TestDatasetServiceDeleteDataset:

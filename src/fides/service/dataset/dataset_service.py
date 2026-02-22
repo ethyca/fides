@@ -3,12 +3,14 @@ from typing import List, Tuple
 
 from fideslang.models import Dataset as FideslangDataset
 from loguru import logger
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from fides.api.models.datasetconfig import DatasetConfig  # type: ignore[attr-defined]
 from fides.api.schemas.dataset import ValidateDatasetResponse
 from fides.service.dataset.dataset_validator import DatasetValidator
+from fides.service.dataset.repository_interfaces import (
+    DatasetConfigRepository,
+    DatasetRepository,
+)
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -32,8 +34,17 @@ class LinkedDatasetException(DatasetError):
 
 
 class DatasetService:
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(
+        self,
+        dataset_repo: DatasetRepository,
+        dataset_config_repo: DatasetConfigRepository,
+        db: Session,
+    ):
+        self._datasets = dataset_repo
+        self._dataset_configs = dataset_config_repo
+        # db is retained for DatasetValidator and clean_datasets which
+        # still require a raw Session. These can be migrated in a follow-up.
+        self._db = db
 
     def validate_dataset(
         self,
@@ -43,43 +54,34 @@ class DatasetService:
         Validates a standalone dataset for create/update operations, performing all necessary validations.
         """
 
-        return DatasetValidator(self.db, dataset).validate()
+        return DatasetValidator(self._db, dataset).validate()
 
     def create_dataset(self, dataset: FideslangDataset) -> CtlDataset:
         """Create a new dataset with validation"""
         self.validate_dataset(dataset)
         data_dict = dataset.model_dump(mode="json")
-        return CtlDataset.create(self.db, data=data_dict)
+        return self._datasets.create(data=data_dict)
 
     def update_dataset(self, dataset: FideslangDataset) -> CtlDataset:
         """Update an existing dataset with validation"""
 
         self.validate_dataset(dataset)
-        existing = _get_ctl_dataset(self.db, dataset.fides_key)
-        if not existing:
-            raise DatasetNotFoundException(f"Dataset {dataset.fides_key} not found")
+        existing = self._get_dataset_or_raise(dataset.fides_key)
 
         # Update the dataset
         data_dict = dataset.model_dump(mode="json")
-        return existing.update(self.db, data=data_dict)
+        return self._datasets.update(existing, data=data_dict)
 
     def get_dataset(self, fides_key: str) -> CtlDataset:
         """Get a single dataset by fides key"""
-        dataset = _get_ctl_dataset(self.db, fides_key)
-        if not dataset:
-            raise DatasetNotFoundException(f"Dataset {fides_key} not found")
-        return dataset
+        return self._get_dataset_or_raise(fides_key)
 
     def delete_dataset(self, fides_key: str) -> CtlDataset:
         """Delete a dataset by fides key"""
-        dataset = self.get_dataset(fides_key)
+        dataset = self._get_dataset_or_raise(fides_key)
 
         # Check if dataset is associated with any DatasetConfigs
-        associated_configs = (
-            self.db.query(DatasetConfig)
-            .filter(DatasetConfig.ctl_dataset_id == dataset.id)
-            .all()
-        )
+        associated_configs = self._dataset_configs.get_configs_for_dataset(dataset.id)
 
         if associated_configs:
             # Create detailed error message
@@ -107,7 +109,7 @@ class DatasetService:
 
             raise LinkedDatasetException(message)
 
-        dataset.delete(self.db)
+        self._datasets.delete(dataset)
         return dataset
 
     def upsert_datasets(self, datasets: List[FideslangDataset]) -> Tuple[int, int]:
@@ -122,16 +124,12 @@ class DatasetService:
 
         for dataset in datasets:
             try:
-                existing = (
-                    self.db.query(CtlDataset)
-                    .filter(CtlDataset.fides_key == dataset.fides_key)
-                    .first()
-                )
+                existing = self._datasets.get_by_fides_key(dataset.fides_key)
 
                 if existing:
                     self.validate_dataset(dataset)
                     data_dict = dataset.model_dump(mode="json")
-                    existing.update(self.db, data=data_dict)
+                    self._datasets.update(existing, data=data_dict)
                     updated += 1
                 else:
                     self.create_dataset(dataset)
@@ -143,12 +141,25 @@ class DatasetService:
         return inserted, updated
 
     def clean_datasets(self) -> Tuple[List[str], List[str]]:
-        datasets = self.db.execute(select([CtlDataset])).scalars().all()
-        return _run_clean_datasets(self.db, datasets)
+        datasets = self._datasets.get_all()
+        return _run_clean_datasets(self._db, datasets)
+
+    def _get_dataset_or_raise(self, fides_key: str) -> CtlDataset:
+        """Look up a dataset by fides_key, raising if not found."""
+        dataset = self._datasets.get_by_fides_key(fides_key)
+        if not dataset:
+            raise DatasetNotFoundException(
+                f"No CTL dataset found with fides_key '{fides_key}'"
+            )
+        return dataset
 
 
 def _get_ctl_dataset(db: Session, fides_key: str) -> CtlDataset:
-    """Helper to get CTL dataset by fides_key"""
+    """Helper to get CTL dataset by fides_key.
+
+    Note: DatasetService now uses self._get_dataset_or_raise() internally,
+    but this function is retained for use by DatasetConfigService.
+    """
     ctl_dataset = db.query(CtlDataset).filter(CtlDataset.fides_key == fides_key).first()
     if not ctl_dataset:
         raise DatasetNotFoundException(
