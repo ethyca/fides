@@ -2089,26 +2089,31 @@ def default_taxonomy(db: Session):
 async def clear_db_tables(db, async_session):
     """Clear data from tables between tests.
 
-    Uses a single TRUNCATE ... CASCADE statement to wipe all tables in one
-    round-trip. This replaces the previous approach of ~136 individual DELETE
-    statements (with recursive FK-retry), which was the single largest
-    per-test overhead.
+    If relationships are not set to cascade on delete they will fail with an
+    IntegrityError if there are relationships present. This function stores tables
+    that fail with this error then recursively deletes until no more IntegrityErrors
+    are present.
     """
     yield
 
-    from sqlalchemy import text
+    def delete_data(tables):
+        redo = []
+        for table in tables:
+            try:
+                db.execute(table.delete())
+            except IntegrityError:
+                redo.append(table)
+            finally:
+                db.commit()
 
+        if redo:
+            delete_data(redo)
+
+    # make sure all transactions are closed before starting deletes
     db.commit()
     await async_session.commit()
 
-    table_names = ", ".join(
-        f'"{t.name}"' for t in reversed(Base.metadata.sorted_tables)
-    )
-    try:
-        db.execute(text(f"TRUNCATE {table_names} CASCADE"))
-        db.commit()
-    except Exception:
-        db.rollback()
+    delete_data(Base.metadata.sorted_tables)
 
 
 @pytest.fixture(autouse=True, scope="session")
