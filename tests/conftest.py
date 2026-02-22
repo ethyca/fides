@@ -177,6 +177,8 @@ def db(api_client, config):
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
 
+    seed_db(the_session)
+
     yield the_session
     the_session.close()
     engine.dispose()
