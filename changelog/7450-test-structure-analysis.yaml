@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Added test structure analysis document with recommendations for running tests without a database
+pr: 7450
+labels: []
