@@ -10,8 +10,10 @@ from fides.api.db.ctl_session import async_session, get_async_db
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.util.cache import get_cache as get_redis_connection
 from fides.common.session import (
-    get_api_session,
-    get_autoclose_db_session,
+    get_api_session as get_api_session,
+)
+from fides.common.session import (
+    get_autoclose_db_session as get_autoclose_db_session,
 )
 from fides.common.session import (
     get_db as get_db,
