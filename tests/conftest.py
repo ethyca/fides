@@ -2065,7 +2065,7 @@ def default_taxonomy(db: Session):
 
 
 @pytest.fixture(scope="function", autouse=True)
-def clear_db_tables(request):
+async def clear_db_tables(request):
     """Clear data from tables between tests.
 
     Only performs cleanup when the test (or its fixtures) actually uses a
@@ -2077,10 +2077,6 @@ def clear_db_tables(request):
     IntegrityError if there are relationships present. This function stores tables
     that fail with this error then recursively deletes until no more IntegrityErrors
     are present.
-
-    Declared before ``_flush_async_session`` so that in pytest's reverse-
-    teardown order the async commit runs first, then this fixture deletes
-    all table data.
     """
     yield
 
@@ -2106,29 +2102,11 @@ def clear_db_tables(request):
 
     # make sure all transactions are closed before starting deletes
     db.commit()
+    if has_async:
+        async_session = request.getfixturevalue("async_session")
+        await async_session.commit()
 
     delete_data(Base.metadata.sorted_tables, db)
-
-
-@pytest.fixture(scope="function", autouse=True)
-async def _flush_async_session(request):
-    """Commit any pending async_session transaction after each test.
-
-    Only runs the commit when the test actually uses async_session.
-    Must be async so that ``await async_session.commit()`` has a proper
-    event-loop / greenlet context (required by asyncpg).
-
-    Declared after ``clear_db_tables`` so that in pytest's reverse-
-    teardown order this fixture tears down first (commits the async
-    session) before ``clear_db_tables`` deletes all table data.
-    """
-    yield
-
-    if "async_session" not in request.fixturenames:
-        return
-
-    async_session = request.getfixturevalue("async_session")
-    await async_session.commit()
 
 
 @pytest.fixture(autouse=True, scope="session")
