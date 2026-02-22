@@ -30,12 +30,12 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.v1.urn_registry import CONNECTIONS, V1_URL_PREFIX
 from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
     STORAGE_READ,
 )
+from fides.common.urn_registry import CONNECTIONS, V1_URL_PREFIX
 
 
 @pytest.mark.integration_postgres

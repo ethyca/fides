@@ -5,15 +5,15 @@ import pytest
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
-from fides.api.v1.urn_registry import (
-    V1_URL_PREFIX,
-    WEBHOOK_PRE_APPROVAL,
-    WEBHOOK_PRE_APPROVAL_DETAIL,
-)
 from fides.common.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
+)
+from fides.common.urn_registry import (
+    V1_URL_PREFIX,
+    WEBHOOK_PRE_APPROVAL,
+    WEBHOOK_PRE_APPROVAL_DETAIL,
 )
 from tests.ops.api.v1.endpoints.privacy_request.test_privacy_request_endpoints import (
     stringify_date,

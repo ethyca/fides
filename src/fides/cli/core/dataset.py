@@ -17,7 +17,6 @@ from fides.cli.connectors.aws import (
     get_dynamo_tables,
 )
 from fides.cli.connectors.bigquery import get_bigquery_engine
-from fides.cli.connectors.models import AWSConfig, BigQueryConfig
 from fides.cli.core.api_helpers import list_server_resources
 from fides.cli.core.parse import parse
 from fides.cli.core.utils import (
@@ -26,6 +25,7 @@ from fides.cli.core.utils import (
     get_db_engine,
 )
 from fides.common.utils import echo_green, echo_red
+from fides.config.schemas.credentials import AWSConfig, BigQueryConfig
 
 SCHEMA_EXCLUSION = {
     "postgresql": ["information_schema"],

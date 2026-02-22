@@ -1,16 +1,19 @@
+from __future__ import annotations
+
 import os
 from os import environ, getenv
 from pathlib import Path
 from re import compile as regex
 from textwrap import wrap
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
+
+if TYPE_CHECKING:
+    from fides.config import FidesConfig
 
 import toml
 from click import echo
 from pydantic_settings import BaseSettings
 from toml import dump, load
-
-from fides.config import FidesConfig
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 DEFAULT_CONFIG_PATH_ENV_VAR = "FIDES__CONFIG_PATH"

@@ -12,16 +12,16 @@ from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
 from fides.api.util.data_category import DataCategory, generate_fides_data_categories
-from fides.api.v1.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
-from fides.api.v1.urn_registry import POLICY_LIST as POLICY_CREATE_URI
-from fides.api.v1.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
-from fides.api.v1.urn_registry import RULE_LIST as RULE_CREATE_URI
-from fides.api.v1.urn_registry import (
+from fides.common import scope_registry as scopes
+from fides.common.urn_registry import POLICY_DETAIL as POLICY_DETAIL_URI
+from fides.common.urn_registry import POLICY_LIST as POLICY_CREATE_URI
+from fides.common.urn_registry import RULE_DETAIL as RULE_DETAIL_URI
+from fides.common.urn_registry import RULE_LIST as RULE_CREATE_URI
+from fides.common.urn_registry import (
     RULE_TARGET_DETAIL,
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
-from fides.common import scope_registry as scopes
 
 
 class TestGetPolicies:

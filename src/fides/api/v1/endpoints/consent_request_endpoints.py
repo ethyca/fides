@@ -56,14 +56,14 @@ from fides.api.util.consent_util import (
 )
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.logger import Pii
-from fides.api.v1.urn_registry import (
+from fides.common.scope_registry import CONSENT_READ
+from fides.common.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
-from fides.common.scope_registry import CONSENT_READ
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService

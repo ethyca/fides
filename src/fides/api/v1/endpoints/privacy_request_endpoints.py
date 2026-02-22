@@ -121,7 +121,21 @@ from fides.api.v1.endpoints.dataset_config_endpoints import _get_connection_conf
 from fides.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
-from fides.api.v1.urn_registry import (
+from fides.common.scope_registry import (
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_READ,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
+    PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_TRANSFER,
+    PRIVACY_REQUEST_UPLOAD_DATA,
+    PRIVACY_REQUEST_VIEW_DATA,
+)
+from fides.common.urn_registry import (
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
@@ -154,20 +168,6 @@ from fides.api.v1.urn_registry import (
     REQUEST_TASK_CALLBACK,
     REQUEST_TASKS,
     V1_URL_PREFIX,
-)
-from fides.common.scope_registry import (
-    PRIVACY_REQUEST_CALLBACK_RESUME,
-    PRIVACY_REQUEST_CREATE,
-    PRIVACY_REQUEST_DELETE,
-    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
-    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_NOTIFICATIONS_READ,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
-    PRIVACY_REQUEST_REVIEW,
-    PRIVACY_REQUEST_TRANSFER,
-    PRIVACY_REQUEST_UPLOAD_DATA,
-    PRIVACY_REQUEST_VIEW_DATA,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy

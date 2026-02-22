@@ -42,6 +42,15 @@ def get_api_session() -> Session:
     return SessionLocal()
 
 
+def get_db() -> Generator[Session, None, None]:
+    """Return a database session as a FastAPI-compatible dependency generator."""
+    try:
+        db = get_api_session()
+        yield db
+    finally:
+        db.close()
+
+
 @contextmanager
 def get_autoclose_db_session() -> Generator[Session, None, None]:
     """

@@ -39,16 +39,6 @@ from fides.api.util.rate_limit import fides_limiter
 from fides.api.v1.endpoints.saas_config_endpoints import (
     verify_oauth_connection_config,
 )
-from fides.api.v1.urn_registry import (
-    CLIENT,
-    CLIENT_BY_ID,
-    CLIENT_SCOPE,
-    OAUTH_CALLBACK,
-    ROLE,
-    SCOPE,
-    TOKEN,
-    V1_URL_PREFIX,
-)
 from fides.common.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -57,6 +47,16 @@ from fides.common.scope_registry import (
     SCOPE_READ,
     SCOPE_REGISTRY,
     ScopeRegistryEnum,
+)
+from fides.common.urn_registry import (
+    CLIENT,
+    CLIENT_BY_ID,
+    CLIENT_SCOPE,
+    OAUTH_CALLBACK,
+    ROLE,
+    SCOPE,
+    TOKEN,
+    V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 

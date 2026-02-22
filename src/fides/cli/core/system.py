@@ -7,12 +7,12 @@ from fideslang import manifests
 from fideslang.models import Organization, System
 from fideslang.validation import AnyHttpUrlString
 
-from fides.cli.connectors.models import AWSConfig, OktaConfig
 from fides.cli.core import api
 from fides.cli.core.api_helpers import get_server_resource, get_server_resources
 from fides.cli.core.filters import filter_aws_systems
 from fides.cli.core.parse import parse
 from fides.common.utils import echo_green, echo_red, handle_cli_response
+from fides.config.schemas.credentials import AWSConfig, OktaConfig
 
 
 def generate_redshift_systems(

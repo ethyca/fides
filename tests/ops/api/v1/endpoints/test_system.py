@@ -24,7 +24,6 @@ from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.sql_models import Dataset, System
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.v1.urn_registry import V1_URL_PREFIX
 from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -36,6 +35,7 @@ from fides.common.scope_registry import (
     SYSTEM_READ,
     SYSTEM_UPDATE,
 )
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository

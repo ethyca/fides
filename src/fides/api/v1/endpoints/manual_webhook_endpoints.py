@@ -25,15 +25,15 @@ from fides.api.schemas.manual_webhook_schemas import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
 from fides.api.v1.endpoints.dataset_config_endpoints import _get_connection_config
-from fides.api.v1.urn_registry import (
-    ACCESS_MANUAL_WEBHOOK,
-    ACCESS_MANUAL_WEBHOOKS,
-    V1_URL_PREFIX,
-)
 from fides.common.scope_registry import (
     WEBHOOK_CREATE_OR_UPDATE,
     WEBHOOK_DELETE,
     WEBHOOK_READ,
+)
+from fides.common.urn_registry import (
+    ACCESS_MANUAL_WEBHOOK,
+    ACCESS_MANUAL_WEBHOOKS,
+    V1_URL_PREFIX,
 )
 
 router = APIRouter(tags=["Manual Webhooks"], prefix=V1_URL_PREFIX)

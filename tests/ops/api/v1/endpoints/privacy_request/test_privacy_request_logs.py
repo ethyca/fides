@@ -14,11 +14,11 @@ from starlette.testclient import TestClient
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
-from fides.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.common.scope_registry import (
     PRIVACY_REQUEST_READ_ACCESS_RESULTS,
     STORAGE_CREATE_OR_UPDATE,
 )
+from fides.common.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
 class TestGetTestPrivacyRequestLogs:

@@ -15,7 +15,13 @@ from fides.api.schemas.connection_configuration.enums.system_type import SystemT
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.api.v1.urn_registry import (
+from fides.common.scope_registry import (
+    CONNECTION_READ,
+    CONNECTION_TYPE_READ,
+    CONNECTOR_TEMPLATE_READ,
+    SAAS_CONNECTION_INSTANTIATE,
+)
+from fides.common.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     CONNECTOR_TEMPLATES,
@@ -23,12 +29,6 @@ from fides.api.v1.urn_registry import (
     CONNECTOR_TEMPLATES_DATASET,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
-)
-from fides.common.scope_registry import (
-    CONNECTION_READ,
-    CONNECTION_TYPE_READ,
-    CONNECTOR_TEMPLATE_READ,
-    SAAS_CONNECTION_INSTANTIATE,
 )
 
 

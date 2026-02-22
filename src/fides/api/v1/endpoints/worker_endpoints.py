@@ -8,8 +8,8 @@ from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.worker import QueueInfo, TaskDetails, WorkerInfo, WorkerStats
 from fides.api.tasks import celery_app
 from fides.api.util.cache import get_queue_counts
-from fides.api.v1.urn_registry import V1_URL_PREFIX
 from fides.common.scope_registry import WORKER_STATS_READ
+from fides.common.urn_registry import V1_URL_PREFIX
 
 router = APIRouter(tags=["Worker Stats"], prefix=V1_URL_PREFIX)
 
