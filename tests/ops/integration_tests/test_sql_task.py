@@ -883,7 +883,7 @@ class TestRetryIntegration:
             "error",
         ]
 
-    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.mask_data")
+    @mock.patch("fides.connectors.sql_connector.SQLConnector.mask_data")
     @pytest.mark.asyncio
     async def test_retry_erasure(
         self,
