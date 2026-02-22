@@ -22,6 +22,9 @@ from fides.common.urn_registry import (
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
+from fides.service.privacy_request.masking.strategy.masking_strategy_nullify import (
+    NullMaskingStrategy,
+)
 
 
 class TestGetPolicies:

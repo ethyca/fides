@@ -52,6 +52,7 @@ from fides.api.util.saas_util import (
     get_identities,
 )
 from fides.common.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
+from fides.connectors.query_config import QueryConfig
 
 T = TypeVar("T")
 

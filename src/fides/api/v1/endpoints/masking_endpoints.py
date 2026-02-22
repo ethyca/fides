@@ -16,6 +16,9 @@ from fides.common.scope_registry import MASKING_EXEC, MASKING_READ
 from fides.common.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 
 router = APIRouter(tags=["Masking"], prefix=V1_URL_PREFIX)
+from fides.service.privacy_request.masking.strategy.masking_strategy import (
+    MaskingStrategy,
+)
 
 
 @router.put(
