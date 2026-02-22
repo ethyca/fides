@@ -11,14 +11,14 @@ from pydantic import BaseModel
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import API_PREFIX
-from fides.cli.connectors.models import (
+from fides.common import scope_registry
+from fides.config.schemas.credentials import (
     AWSConfig,
     BigQueryConfig,
     ConnectorAuthFailureException,
     ConnectorFailureException,
     OktaConfig,
 )
-from fides.common import scope_registry
 
 
 class ValidationTarget(StrEnum):

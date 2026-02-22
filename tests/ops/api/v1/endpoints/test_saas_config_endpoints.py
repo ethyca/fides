@@ -12,18 +12,18 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.v1.urn_registry import (
-    AUTHORIZE,
-    SAAS_CONFIG,
-    SAAS_CONFIG_VALIDATE,
-    V1_URL_PREFIX,
-)
 from fides.common.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
+)
+from fides.common.urn_registry import (
+    AUTHORIZE,
+    SAAS_CONFIG,
+    SAAS_CONFIG_VALIDATE,
+    V1_URL_PREFIX,
 )
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import _reject_key
 

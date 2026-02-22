@@ -9,7 +9,13 @@ from fides.api.common_exceptions import RedisNotConfigured
 from fides.api.db.ctl_session import async_session, get_async_db
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.util.cache import get_cache as get_redis_connection
-from fides.common.session import get_api_session, get_autoclose_db_session
+from fides.common.session import (
+    get_api_session,
+    get_autoclose_db_session,
+)
+from fides.common.session import (
+    get_db as get_db,
+)
 from fides.config import CONFIG, FidesConfig
 from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
@@ -29,15 +35,6 @@ _readonly_engine = None
 def get_config() -> FidesConfig:
     """Returns the config for use in dependency injection."""
     return get_app_config()
-
-
-def get_db() -> Generator:
-    """Return our database session"""
-    try:
-        db = get_api_session()
-        yield db
-    finally:
-        db.close()
 
 
 def get_readonly_db() -> Generator:

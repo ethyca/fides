@@ -68,7 +68,7 @@ from fides.api.util.saas_util import (
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
-from fides.api.v1.urn_registry import CONNECTION_TYPES
+from fides.common.urn_registry import CONNECTION_TYPES
 from fides.service.connection.merge_configs_util import (
     get_endpoint_resources,
     get_saas_config_referenced_fields,

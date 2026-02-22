@@ -38,11 +38,11 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.logger import Pii
-from fides.api.v1 import urn_registry as urls
 from fides.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
 from fides.common import scope_registry as scopes
+from fides.common import urn_registry as urls
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (

@@ -7,8 +7,8 @@ from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
 
 from fides.api.models.sql_models import System
-from fides.api.v1.urn_registry import V1_URL_PREFIX
 from fides.common.scope_registry import SYSTEM_READ
+from fides.common.urn_registry import V1_URL_PREFIX
 
 
 class TestSystemEndpointSorting:

@@ -36,8 +36,8 @@ from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
-from fides.api.v1 import urn_registry as urls
 from fides.common import scope_registry
+from fides.common import urn_registry as urls
 
 router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 

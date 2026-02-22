@@ -8,7 +8,7 @@ from fideslang.validation import FidesKey
 from pydantic import EmailStr
 
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
-from fides.cli.core.utils import (
+from fides.common.credentials import (
     Credentials,
     get_auth_header,
     get_credentials_path,

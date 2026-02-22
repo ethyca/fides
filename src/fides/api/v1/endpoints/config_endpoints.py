@@ -13,8 +13,8 @@ from fides.api.schemas.application_config import (
     ApplicationConfig as ApplicationConfigSchema,
 )
 from fides.api.util.api_router import APIRouter
-from fides.api.v1 import urn_registry as urls
 from fides.common import scope_registry as scopes
+from fides.common import urn_registry as urls
 from fides.config import censor_config
 from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy

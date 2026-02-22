@@ -7,7 +7,7 @@ from fideslang.models import System, SystemMetadata
 
 import fides.cli.connectors.okta as okta_connector
 from fides.api.service.connectors.okta_http_client import OktaApplication
-from fides.cli.connectors.models import OktaConfig
+from fides.config.schemas.credentials import OktaConfig
 
 
 @pytest.fixture()

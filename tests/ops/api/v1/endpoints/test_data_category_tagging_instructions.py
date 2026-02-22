@@ -8,7 +8,6 @@ from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
 from fides.api.models.sql_models import DataCategory
-from fides.api.v1.urn_registry import V1_URL_PREFIX
 from fides.common.scope_registry import (
     DATA_CATEGORY,
     DATA_CATEGORY_CREATE,
@@ -16,6 +15,7 @@ from fides.common.scope_registry import (
     DATA_CATEGORY_UPDATE,
     STORAGE_READ,
 )
+from fides.common.urn_registry import V1_URL_PREFIX
 
 
 class TestDataCategoryTaggingInstructionsSchema:

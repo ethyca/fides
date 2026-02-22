@@ -19,8 +19,13 @@ from fides.api.schemas.user import UserLogin
 from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
 from fides.api.util.wrappers import sync
-from fides.api.v1 import urn_registry as urls
-from fides.api.v1.urn_registry import PRIVACY_REQUESTS
+from fides.common.urn_registry import (
+    LOGIN,
+    PRIVACY_REQUEST_AUTHENTICATED,
+    PRIVACY_REQUEST_TRANSFER_TO_PARENT,
+    PRIVACY_REQUESTS,
+    V1_URL_PREFIX,
+)
 
 COMPLETION_STATUSES = [
     PrivacyRequestStatus.complete,
@@ -50,7 +55,9 @@ async def poll_server_for_completion(
     denied, or error. By default the polling will time out if not completed in 30
     minutes, time can be overridden by setting the timeout_seconds.
     """
-    url = f"{server_url}{urls.V1_URL_PREFIX}{PRIVACY_REQUESTS}?request_id={privacy_request_id}"
+    url = (
+        f"{server_url}{V1_URL_PREFIX}{PRIVACY_REQUESTS}?request_id={privacy_request_id}"
+    )
     start_time = datetime.now()
     elapsed_time = 0.0
     while elapsed_time < timeout_seconds:
@@ -119,7 +126,7 @@ class FidesClient:
         )
         try:
             response = httpx.post(
-                f"{self.uri}{urls.V1_URL_PREFIX}{urls.LOGIN}",
+                f"{self.uri}{V1_URL_PREFIX}{LOGIN}",
                 json=ul.model_dump(mode="json"),
             )
         except RequestError as e:
@@ -182,7 +189,7 @@ class FidesClient:
         )
         request: Request = self.authenticated_request(
             method="POST",
-            path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUEST_AUTHENTICATED,
+            path=V1_URL_PREFIX + PRIVACY_REQUEST_AUTHENTICATED,
             json=[pr.model_dump(mode="json")],
         )
         response = self.session.send(request)
@@ -282,7 +289,7 @@ class FidesClient:
 
         request: Request = self.authenticated_request(
             method="GET",
-            path=urls.V1_URL_PREFIX + urls.PRIVACY_REQUESTS,
+            path=V1_URL_PREFIX + PRIVACY_REQUESTS,
             query_params=(
                 {"request_id": privacy_request_id} if privacy_request_id else None
             ),
@@ -328,7 +335,7 @@ class FidesClient:
             )
             request = self.authenticated_request(
                 method="get",
-                path=f"{urls.V1_URL_PREFIX}{urls.PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
+                path=f"{V1_URL_PREFIX}{PRIVACY_REQUEST_TRANSFER_TO_PARENT.format(privacy_request_id=privacy_request_id, rule_key=rule_key)}",
                 headers={"Authorization": f"Bearer {self.token}"},
             )
             response = self.session.send(request)

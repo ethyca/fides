@@ -25,9 +25,9 @@ from fides.api.schemas import policy_webhooks as schemas
 from fides.api.schemas.policy_webhooks import PolicyWebhookDeleteResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import get_connection_config_or_error
-from fides.api.v1 import urn_registry as urls
 from fides.api.v1.endpoints.policy_endpoints import get_policy_or_error
 from fides.common import scope_registry as scopes
+from fides.common import urn_registry as urls
 
 router = APIRouter(tags=["DSR Policy Webhooks"], prefix=urls.V1_URL_PREFIX)
 

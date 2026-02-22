@@ -12,11 +12,11 @@ from fides.api.oauth.roles import (
     VIEWER,
     VIEWER_AND_APPROVER,
 )
-from fides.api.v1.urn_registry import (
+from fides.common import scope_registry as scopes
+from fides.common.urn_registry import (
     PRIVACY_REQUEST_REDACTION_PATTERNS,
     V1_URL_PREFIX,
 )
-from fides.common import scope_registry as scopes
 
 
 class TestGetPrivacyRequestRedactionPatternsEndpoints:

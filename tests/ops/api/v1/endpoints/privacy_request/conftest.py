@@ -1,6 +1,6 @@
 import pytest
 
-from fides.api.v1.urn_registry import PRIVACY_REQUEST_APPROVE, V1_URL_PREFIX
+from fides.common.urn_registry import PRIVACY_REQUEST_APPROVE, V1_URL_PREFIX
 
 
 @pytest.fixture(scope="function")

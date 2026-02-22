@@ -23,7 +23,7 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageSecrets,
 )
-from fides.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
+from fides.common.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 
 
 @mock_aws

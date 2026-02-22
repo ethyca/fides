@@ -1,6 +1,7 @@
 from fides.common.session.session_management import (
     get_api_session,
     get_autoclose_db_session,
+    get_db,
     with_optional_async_session,
     with_optional_sync_session,
 )
@@ -8,6 +9,7 @@ from fides.common.session.session_management import (
 __all__ = [
     "get_api_session",
     "get_autoclose_db_session",
+    "get_db",
     "with_optional_async_session",
     "with_optional_sync_session",
 ]

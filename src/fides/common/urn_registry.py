@@ -1,4 +1,4 @@
-from fides.common.constants import V1_URL_PREFIX as V1_URL_PREFIX
+V1_URL_PREFIX = "/api/v1"
 
 YAML = "/yml"
 

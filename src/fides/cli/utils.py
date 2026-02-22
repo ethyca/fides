@@ -24,14 +24,8 @@ from fideslog.sdk.python.utils import (
 from requests import get, put
 
 import fides
-from fides.cli.connectors.models import (
-    AWSConfig,
-    BigQueryConfig,
-    DatabaseConfig,
-    OktaConfig,
-)
 from fides.cli.core import api as _api
-from fides.common.constants import V1_URL_PREFIX
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.common.utils import check_response, echo_green, echo_red
 from fides.config import FidesConfig
 from fides.config.credentials_settings import (
@@ -39,6 +33,12 @@ from fides.config.credentials_settings import (
     get_config_bigquery_credentials,
     get_config_database_credentials,
     get_config_okta_credentials,
+)
+from fides.config.schemas.credentials import (
+    AWSConfig,
+    BigQueryConfig,
+    DatabaseConfig,
+    OktaConfig,
 )
 from fides.config.utils import get_config_from_file, get_dev_mode
 

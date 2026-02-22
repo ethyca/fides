@@ -9,7 +9,7 @@ from fides.api.service.connectors.okta_http_client import (
     OktaApplication,
     OktaHttpClient,
 )
-from fides.cli.connectors.models import (
+from fides.config.schemas.credentials import (
     ConnectorAuthFailureException,
     ConnectorFailureException,
     OktaConfig,

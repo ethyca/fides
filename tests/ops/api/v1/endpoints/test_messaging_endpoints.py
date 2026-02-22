@@ -22,7 +22,13 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
     MessagingTemplateDefault,
 )
-from fides.api.v1.urn_registry import (
+from fides.common.scope_registry import (
+    MESSAGING_CREATE_OR_UPDATE,
+    MESSAGING_DELETE,
+    MESSAGING_READ,
+    MESSAGING_TEMPLATE_UPDATE,
+)
+from fides.common.urn_registry import (
     BASIC_MESSAGING_TEMPLATES,
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
@@ -36,12 +42,6 @@ from fides.api.v1.urn_registry import (
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
     MESSAGING_TEST_DEPRECATED,
     V1_URL_PREFIX,
-)
-from fides.common.scope_registry import (
-    MESSAGING_CREATE_OR_UPDATE,
-    MESSAGING_DELETE,
-    MESSAGING_READ,
-    MESSAGING_TEMPLATE_UPDATE,
 )
 from fides.config import get_config
 
