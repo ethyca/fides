@@ -1,8 +1,3 @@
----
-description:
-globs:
-alwaysApply: true
----
 # 🔒 CRITICAL: Public Repository Security - Zero Tolerance for Sensitive Information
 
 This is a **PUBLIC OSS repository**. Any customer or internal sensitive information committed here is immediately visible to the entire world and permanently recorded in git history.

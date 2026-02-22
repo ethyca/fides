@@ -54,6 +54,7 @@ class ConnectionType(enum.Enum):
     manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
     manual_task = "manual_task"  # Manual task integration
+    jira_ticket = "jira_ticket"  # Jira ticket integration for DSR workflow
     mariadb = "mariadb"
     mongodb = "mongodb"
     mssql = "mssql"
@@ -93,6 +94,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual_webhook.value: "Manual Process",
             ConnectionType.manual_task.value: "Manual Task",
+            ConnectionType.jira_ticket.value: "Jira Ticket",
             ConnectionType.manual.value: "Manual Connector",
             ConnectionType.mariadb.value: "MariaDB",
             ConnectionType.mongodb.value: "MongoDB",
@@ -140,6 +142,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.https.value: SystemType.manual,
             ConnectionType.manual_webhook.value: SystemType.manual,
             ConnectionType.manual_task.value: SystemType.manual,
+            ConnectionType.jira_ticket.value: SystemType.manual,
             ConnectionType.manual.value: SystemType.manual,
             ConnectionType.mariadb.value: SystemType.database,
             ConnectionType.mongodb.value: SystemType.database,

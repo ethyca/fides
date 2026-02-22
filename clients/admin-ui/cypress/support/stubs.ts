@@ -1,5 +1,10 @@
 import { PrivacyRequestResponse } from "~/features/privacy-requests/types";
-import { HealthCheck, PrivacyRequestStatus, Schema } from "~/types/api";
+import {
+  HealthCheck,
+  PolicyResponse,
+  PrivacyRequestStatus,
+  Schema,
+} from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
@@ -1194,4 +1199,32 @@ export const stubInfrastructureSystemsBulkActions = (
       },
     },
   ).as("bulkUnmuteInfrastructureSystems");
+};
+
+export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
+  stubFeatureFlags();
+  cy.intercept("GET", "/api/v1/dsr/policy", {
+    fixture: options?.isEmpty
+      ? "policies/empty-list.json"
+      : "policies/list.json",
+  }).as("getDSRPolicies");
+  cy.intercept("GET", "/api/v1/dsr/policy/*", {
+    body: {
+      name: "Default Erasure Policy",
+      key: "default_erasure_policy",
+      drp_action: "deletion",
+      execution_timeframe: 45,
+      rules: [
+        {
+          name: "Default Erasure Rule",
+          key: "default_erasure_policy_rule",
+          action_type: "erasure",
+          storage_destination: null,
+          masking_strategy: {
+            strategy: "hmac",
+          },
+        },
+      ],
+    },
+  }).as("getDSRPolicy");
 };

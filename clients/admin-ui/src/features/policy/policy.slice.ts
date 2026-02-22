@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { Page_PolicyResponse_ } from "~/types/api";
+import type { Page_PolicyResponse_, PolicyResponse } from "~/types/api";
 
 // Policy API
 const policyApi = baseApi.injectEndpoints({
@@ -8,7 +8,14 @@ const policyApi = baseApi.injectEndpoints({
       query: () => ({ url: `/dsr/policy` }),
       providesTags: () => ["Policies"],
     }),
+
+    getPolicy: build.query<PolicyResponse, string>({
+      query: (policyKey) => ({ url: `/dsr/policy/${policyKey}` }),
+      providesTags: (_result, _error, policyKey) => [
+        { type: "Policies", id: policyKey },
+      ],
+    }),
   }),
 });
 
-export const { useGetPoliciesQuery } = policyApi;
+export const { useGetPoliciesQuery, useGetPolicyQuery } = policyApi;

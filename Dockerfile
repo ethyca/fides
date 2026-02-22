@@ -6,7 +6,7 @@ ARG PYTHON_VERSION="3.13.11"
 FROM python:${PYTHON_VERSION}-bookworm AS compile_image
 
 
-# Install auxiliary software
+# Install auxiliary software and FreeTDS (used for PyMSSQL)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
@@ -14,13 +14,6 @@ RUN apt-get update && \
     git \
     gnupg \
     gcc \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-
-# Install FreeTDS (used for PyMSSQL)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
     libssl-dev \
     libffi-dev \
     libkrb5-dev \
@@ -39,7 +32,8 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     mv /root/.local/bin/uv /bin/uv
 COPY pyproject.toml uv.lock README.md ./
 # Ensure setuptools is available so deps that use pkg_resources at build time (e.g. in setup.py) can be built
-RUN uv venv && uv pip install setuptools==80.10.2 wheel && uv sync --no-install-project --no-dev --extra all --locked
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv venv && uv pip install setuptools==80.10.2 wheel && uv sync --no-install-project --no-dev --extra all --locked
 
 ##################
 ## Backend Base ##
@@ -125,7 +119,8 @@ COPY clients/fides-js/package.json ./fides-js/package.json
 COPY clients/admin-ui/package.json ./admin-ui/package.json
 COPY clients/privacy-center/package.json ./privacy-center/package.json
 
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 COPY clients/ .
 
@@ -142,9 +137,13 @@ ENV IS_TEST=$IS_TEST
 COPY --from=backend /fides/version.json ./version.json
 
 # Builds and exports admin-ui
-RUN npm run export-admin-ui
+RUN --mount=type=cache,target=/fides/clients/node_modules/.cache \
+    --mount=type=cache,target=/fides/clients/admin-ui/.next/cache \
+    npm run export-admin-ui
 # Builds privacy-center
-RUN npm run build-privacy-center
+RUN --mount=type=cache,target=/fides/clients/node_modules/.cache \
+    --mount=type=cache,target=/fides/clients/privacy-center/.next/cache \
+    npm run build-privacy-center
 
 ###############################
 ## Production Privacy Center ##
