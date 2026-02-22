@@ -30,18 +30,18 @@ The Fides backend has **430 test files** containing approximately **6,160 test f
 
 ### 1. API Endpoints Without Tests
 
-Six endpoint modules have **zero** corresponding test files:
+Three endpoint modules have **zero** corresponding test files. (Note: `connection_endpoints.py`, `connection_type_endpoints.py`, and `manual_webhook_endpoints.py` were initially flagged but actually have tests under different names — `test_connection_config_endpoints.py`, `test_connection_template_endpoints.py`, and `test_manual_webhooks.py` respectively.)
 
 | File | Lines | Impact |
 |---|---|---|
-| `api/v1/endpoints/connection_endpoints.py` | 464 | Connection CRUD — high traffic endpoint |
-| `api/v1/endpoints/connection_type_endpoints.py` | 99 | Lists available connector types |
-| `api/v1/endpoints/manual_webhook_endpoints.py` | 201 | Manual webhook data access/erasure |
+| `api/v1/endpoints/health.py` | ~50 | Health check endpoints (`/health`, `/health/database`, `/health/workers`) — critical for monitoring |
 | `api/v1/endpoints/worker_endpoints.py` | 82 | Celery worker task management |
-| `api/v1/endpoints/view.py` | 62 | UI view serving |
+| `api/v1/endpoints/view.py` | 62 | UI evaluation view serving |
 | `api/v1/endpoints/router_factory.py` | N/A | Dynamic router creation for generic CRUD |
 
-**`connection_endpoints.py` (464 lines)** is the highest-risk gap. It handles creating, updating, listing, and deleting connection configurations — a core workflow for data mapping. Any regression here directly impacts users setting up integrations.
+The **health check endpoints** are the most notable gap — these are infrastructure-critical endpoints used for monitoring and load balancer health probes but have zero test coverage. The existing `test_healthcheck_server.py` tests Celery worker health, not these API-level health endpoints.
+
+Overall, API endpoint coverage is strong at **~94%** (30 of 32 endpoint files have tests).
 
 ### 2. Service Layer — Untested Core Services
 
@@ -176,11 +176,7 @@ Only **144/430 (33%)** test files use mocking. In `tests/ops/` (the largest suit
 
 ### P0 — High Impact, High Risk
 
-1. **Add unit tests for `connection_endpoints.py`** (464 lines, zero tests)
-   - Test connection CRUD operations, authorization checks, input validation
-   - Estimated scope: 15-20 test functions
-
-2. **Add unit tests for `request_runner_service.py`** (1,314 lines)
+1. **Add unit tests for `request_runner_service.py`** (1,314 lines)
    - Test error handling, retry logic, partial failure scenarios
    - Mock connector dependencies to test orchestration logic in isolation
    - Estimated scope: 25-30 test functions
@@ -193,21 +189,25 @@ Only **144/430 (33%)** test files use mocking. In `tests/ops/` (the largest suit
    - Compliance-sensitive code — consent processing bugs have legal risk
    - Estimated scope: 10-15 test functions
 
+5. **Add tests for `health.py` API endpoints** (3 endpoints, zero tests)
+   - `/health`, `/health/database`, `/health/workers` — infrastructure-critical for monitoring
+   - Estimated scope: 5-10 test functions
+
 ### P1 — Important Business Logic
 
-5. **Add tests for `system_service.py` and `user_service.py`**
+6. **Add tests for `system_service.py` and `user_service.py`**
    - Core CRUD operations for two fundamental entities
    - Estimated scope: 10-15 test functions each
 
-6. **Add tests for `messaging_service.py`** (317 lines)
+7. **Add tests for `messaging_service.py`** (317 lines)
    - Email orchestration logic — messaging failures cause user-facing issues
    - Estimated scope: 10-15 test functions
 
-7. **Add tests for `privacy_request_query_utils.py`** (308 lines)
+8. **Add tests for `privacy_request_query_utils.py`** (308 lines)
    - Complex query building is highly testable with unit tests
    - Estimated scope: 15-20 test functions
 
-8. **Add schema validation tests for `connection_secrets_*.py`**
+9. **Add schema validation tests for `connection_secrets_*.py`**
    - 30+ schema files with zero tests
    - Test required fields, secret masking, validation errors
    - Could be templated/parameterized since schemas share a common pattern
@@ -215,25 +215,25 @@ Only **144/430 (33%)** test files use mocking. In `tests/ops/` (the largest suit
 
 ### P2 — Structural Improvements
 
-9. **Add `@pytest.mark.unit` / `@pytest.mark.integration` markers to all test files**
-   - Enables running unit tests separately in CI (faster feedback loop)
-   - 304 files currently lack markers
+10. **Add `@pytest.mark.unit` / `@pytest.mark.integration` markers to all test files**
+    - Enables running unit tests separately in CI (faster feedback loop)
+    - 304 files currently lack markers
 
-10. **Increase mocking in existing integration tests**
+11. **Increase mocking in existing integration tests**
     - Extract testable business logic and add isolated unit tests
     - Focus on `tests/ops/service/` where only 24% of files use mocks
 
-11. **Add unit tests for query config modules**
+12. **Add unit tests for query config modules**
     - `bigquery_query_config.py`, `postgres_query_config.py`, etc.
     - Query building logic is pure/functional and highly unit-testable
 
-12. **Consolidate test directory structure**
+13. **Consolidate test directory structure**
     - Service tests are split between `tests/service/`, `tests/ops/service/`, and `tests/api/`
     - Consider a consistent mapping: `src/fides/X/ → tests/X/`
 
 ### P3 — Nice to Have
 
-13. **Add tests for utility modules** (`connection_util.py`, `fuzzy_search_utils.py`, `aws_util.py`, etc.)
-14. **Add model-level tests** for `privacy_assessment.py`, `messaging_template.py`, `worker_task.py`
-15. **Add coverage enforcement thresholds** in CI to prevent regression
-16. **Set up coverage reporting** — the `[tool.coverage.run]` config exists but there's no evidence of coverage thresholds or CI enforcement
+14. **Add tests for utility modules** (`connection_util.py`, `fuzzy_search_utils.py`, `aws_util.py`, etc.)
+15. **Add model-level tests** for `privacy_assessment.py`, `messaging_template.py`, `worker_task.py`
+16. **Add coverage enforcement thresholds** in CI to prevent regression
+17. **Set up coverage reporting** — the `[tool.coverage.run]` config exists but there's no evidence of coverage thresholds or CI enforcement
