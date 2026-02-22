@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from fides.api.oauth.roles import OWNER
 from fides.api.schemas.user_permission import UserPermissionsCreate
-from fides.api.scope_registry import USER_DELETE, USER_PERMISSION_CREATE
+from fides.common.scope_registry import USER_DELETE, USER_PERMISSION_CREATE
 
 
 class TestUserPermissionsCreate:

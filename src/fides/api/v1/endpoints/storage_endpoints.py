@@ -50,11 +50,6 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
-from fides.api.scope_registry import (
-    STORAGE_CREATE_OR_UPDATE,
-    STORAGE_DELETE,
-    STORAGE_READ,
-)
 from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.util.api_router import APIRouter
@@ -71,6 +66,11 @@ from fides.api.v1.urn_registry import (
     STORAGE_STATUS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    STORAGE_CREATE_OR_UPDATE,
+    STORAGE_DELETE,
+    STORAGE_READ,
 )
 
 router = APIRouter(tags=["Storage"], prefix=V1_URL_PREFIX)

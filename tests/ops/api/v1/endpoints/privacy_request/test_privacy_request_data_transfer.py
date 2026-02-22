@@ -2,11 +2,11 @@ from starlette.testclient import TestClient
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.scope_registry import PRIVACY_REQUEST_TRANSFER
 from fides.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
 )
+from fides.common.scope_registry import PRIVACY_REQUEST_TRANSFER
 
 
 class TestPrivacyRequestDataTransfer:

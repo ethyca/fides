@@ -9,7 +9,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fides.api.scope_registry import SCOPE_REGISTRY as SCOPES
+from fides.common.scope_registry import SCOPE_REGISTRY as SCOPES
 
 
 class FidesopsException(Exception):

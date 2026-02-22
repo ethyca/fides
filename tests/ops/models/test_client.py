@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.cryptography.cryptographic_util import hash_credential_with_salt
 from fides.api.models.client import ClientDetail
-from fides.api.scope_registry import SCOPE_REGISTRY
+from fides.common.scope_registry import SCOPE_REGISTRY
 from fides.config import CONFIG
 
 

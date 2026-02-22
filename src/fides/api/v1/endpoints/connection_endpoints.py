@@ -42,11 +42,6 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.connection_configuration.enums.test_status import TestStatus
-from fides.api.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_DELETE,
-    CONNECTION_READ,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     connection_status,
@@ -62,6 +57,11 @@ from fides.api.v1.urn_registry import (
     CONNECTION_TEST,
     CONNECTIONS,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
+    CONNECTION_READ,
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService

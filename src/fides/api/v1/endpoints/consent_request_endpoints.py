@@ -50,7 +50,6 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.schemas.redis_cache import Identity
-from fides.api.scope_registry import CONSENT_READ
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -64,6 +63,7 @@ from fides.api.v1.urn_registry import (
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
+from fides.common.scope_registry import CONSENT_READ
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService

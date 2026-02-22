@@ -6,18 +6,18 @@ import pytest
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
-from fides.api.scope_registry import (
-    POLICY_READ,
-    WEBHOOK_CREATE_OR_UPDATE,
-    WEBHOOK_DELETE,
-    WEBHOOK_READ,
-)
 from fides.api.v1.urn_registry import (
     POLICY_POST_WEBHOOK_DETAIL,
     POLICY_PRE_WEBHOOK_DETAIL,
     POLICY_WEBHOOKS_POST,
     POLICY_WEBHOOKS_PRE,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    POLICY_READ,
+    WEBHOOK_CREATE_OR_UPDATE,
+    WEBHOOK_DELETE,
+    WEBHOOK_READ,
 )
 from tests.ops.api.v1.endpoints.privacy_request.test_privacy_request_endpoints import (
     stringify_date,

@@ -19,10 +19,6 @@ from fides.api.schemas.saas.connector_template import (
     ConnectorTemplate,
     ConnectorTemplateListResponse,
 )
-from fides.api.scope_registry import (
-    CONNECTOR_TEMPLATE_READ,
-    CONNECTOR_TEMPLATE_REGISTER,
-)
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
@@ -37,6 +33,10 @@ from fides.api.v1.urn_registry import (
     DELETE_CUSTOM_TEMPLATE,
     REGISTER_CONNECTOR_TEMPLATE,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    CONNECTOR_TEMPLATE_READ,
+    CONNECTOR_TEMPLATE_REGISTER,
 )
 from fides.service.connection.connection_service import (
     ConnectionService,

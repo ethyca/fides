@@ -10,6 +10,8 @@ from click import echo
 from pydantic_settings import BaseSettings
 from toml import dump, load
 
+from fides.config import FidesConfig
+
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
 DEFAULT_CONFIG_PATH_ENV_VAR = "FIDES__CONFIG_PATH"
 
@@ -223,7 +225,7 @@ CONFIG_KEY_ALLOWLIST = {
 # ---------------------------------------------------------------------------
 
 
-def get_nested_settings(config: "FidesConfig") -> Dict[str, BaseSettings]:
+def get_nested_settings(config: FidesConfig) -> Dict[str, BaseSettings]:
     """
     Get the list of fields from the full configuration settings that refer to
     other settings objects.
@@ -377,7 +379,7 @@ def validate_generated_config(config_docs: str) -> None:
 
 
 def generate_config_docs(
-    config: "FidesConfig", outfile_path: str = ".fides/fides.toml"
+    config: FidesConfig, outfile_path: str = ".fides/fides.toml"
 ) -> None:
     """
     Autogenerate the schema for the configuration file

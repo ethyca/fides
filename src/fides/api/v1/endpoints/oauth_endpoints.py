@@ -27,15 +27,6 @@ from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
 from fides.api.schemas.client import ClientCreatedResponse
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
-from fides.api.scope_registry import (
-    CLIENT_CREATE,
-    CLIENT_DELETE,
-    CLIENT_READ,
-    CLIENT_UPDATE,
-    SCOPE_READ,
-    SCOPE_REGISTRY,
-    ScopeRegistryEnum,
-)
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
@@ -57,6 +48,15 @@ from fides.api.v1.urn_registry import (
     SCOPE,
     TOKEN,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    CLIENT_CREATE,
+    CLIENT_DELETE,
+    CLIENT_READ,
+    CLIENT_UPDATE,
+    SCOPE_READ,
+    SCOPE_REGISTRY,
+    ScopeRegistryEnum,
 )
 from fides.config import CONFIG
 

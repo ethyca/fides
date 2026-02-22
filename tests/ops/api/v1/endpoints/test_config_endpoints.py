@@ -7,7 +7,6 @@ import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from fides.api import scope_registry as scopes
 from fides.api.main import app
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.roles import CONTRIBUTOR, OWNER, VIEWER
@@ -17,6 +16,7 @@ from fides.api.util.cors_middleware_utils import (
     update_cors_middleware,
 )
 from fides.api.v1 import urn_registry as urls
+from fides.common import scope_registry as scopes
 from fides.config import CONFIG
 
 

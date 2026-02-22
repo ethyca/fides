@@ -9,12 +9,6 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
-from fides.api.scope_registry import (
-    CLIENT_READ,
-    CONNECTOR_TEMPLATE_READ,
-    CONNECTOR_TEMPLATE_REGISTER,
-    SAAS_CONNECTION_INSTANTIATE,
-)
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
@@ -27,6 +21,12 @@ from fides.api.v1.urn_registry import (
     DELETE_CUSTOM_TEMPLATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    CLIENT_READ,
+    CONNECTOR_TEMPLATE_READ,
+    CONNECTOR_TEMPLATE_REGISTER,
+    SAAS_CONNECTION_INSTANTIATE,
 )
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 

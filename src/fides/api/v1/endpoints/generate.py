@@ -12,7 +12,6 @@ from pydantic import BaseModel, model_validator
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fides.api import scope_registry
 from fides.api.db.crud import get_resource
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import sql_model_map  # type: ignore[attr-defined]
@@ -33,6 +32,7 @@ from fides.cli.core.dataset import (
     generate_dynamo_db_datasets,
 )
 from fides.cli.core.system import generate_aws_systems, generate_okta_systems
+from fides.common import scope_registry
 from fides.common.utils import validate_db_engine
 
 GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")

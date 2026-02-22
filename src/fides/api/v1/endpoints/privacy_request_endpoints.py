@@ -104,20 +104,6 @@ from fides.api.schemas.privacy_request import (
     RequestTaskCallbackRequest,
     VerificationCode,
 )
-from fides.api.scope_registry import (
-    PRIVACY_REQUEST_CALLBACK_RESUME,
-    PRIVACY_REQUEST_CREATE,
-    PRIVACY_REQUEST_DELETE,
-    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
-    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
-    PRIVACY_REQUEST_NOTIFICATIONS_READ,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
-    PRIVACY_REQUEST_REVIEW,
-    PRIVACY_REQUEST_TRANSFER,
-    PRIVACY_REQUEST_UPLOAD_DATA,
-    PRIVACY_REQUEST_VIEW_DATA,
-)
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.api.service.privacy_request.email_batch_service import send_email_batch
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
@@ -166,6 +152,20 @@ from fides.api.v1.urn_registry import (
     REQUEST_TASK_CALLBACK,
     REQUEST_TASKS,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_CREATE,
+    PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
+    PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_NOTIFICATIONS_READ,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
+    PRIVACY_REQUEST_REVIEW,
+    PRIVACY_REQUEST_TRANSFER,
+    PRIVACY_REQUEST_UPLOAD_DATA,
+    PRIVACY_REQUEST_VIEW_DATA,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy

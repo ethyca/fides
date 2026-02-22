@@ -8,7 +8,6 @@ from typing import Callable, Dict, Union
 from fastapi import Response, Security, status
 from pydantic import BaseModel
 
-from fides.api import scope_registry
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import API_PREFIX
@@ -19,6 +18,7 @@ from fides.cli.connectors.models import (
     ConnectorFailureException,
     OktaConfig,
 )
+from fides.common import scope_registry
 
 
 class ValidationTarget(StrEnum):

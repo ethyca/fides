@@ -17,7 +17,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api import deps, scope_registry
+from fides.api import deps
 from fides.api.common_exceptions import (
     DataCategoryNotSupported,
     DrpActionValidationError,
@@ -37,6 +37,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.util.api_router import APIRouter
 from fides.api.util.logger import Pii
 from fides.api.v1 import urn_registry as urls
+from fides.common import scope_registry
 
 router = APIRouter(tags=["DSR Policy"], prefix=urls.V1_URL_PREFIX)
 

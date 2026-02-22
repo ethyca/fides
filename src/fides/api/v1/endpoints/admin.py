@@ -5,7 +5,6 @@ from fastapi import BackgroundTasks, Depends, HTTPException, Security, status
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api import scope_registry
 from fides.api.db.database import configure_db, migrate_db, reset_db
 from fides.api.deps import get_db
 from fides.api.migrations.backfill_scripts.backfill_stagedresource_is_leaf import (
@@ -21,13 +20,14 @@ from fides.api.migrations.post_upgrade_backfill import (
 )
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.schemas.admin import BackfillRequest, BackfillStatusResponse
-from fides.api.scope_registry import BACKFILL_EXEC, HEAP_DUMP_EXEC
 from fides.api.util.api_router import APIRouter
 from fides.api.util.memory_watchdog import (
     _capture_heap_dump,
     get_memory_watchdog_enabled,
 )
 from fides.api.v1.endpoints import API_PREFIX
+from fides.common import scope_registry
+from fides.common.scope_registry import BACKFILL_EXEC, HEAP_DUMP_EXEC
 from fides.config import CONFIG
 
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])

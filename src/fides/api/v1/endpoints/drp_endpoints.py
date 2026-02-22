@@ -14,7 +14,6 @@ from starlette.status import (
 )
 
 from fides.api import common_exceptions, deps
-from fides.api import scope_registry as scopes
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.oauth.utils import verify_oauth_client
@@ -43,6 +42,7 @@ from fides.api.v1 import urn_registry as urls
 from fides.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
+from fides.common import scope_registry as scopes
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (

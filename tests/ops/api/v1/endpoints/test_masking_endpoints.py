@@ -6,7 +6,6 @@ from fides.api.schemas.masking.masking_api import MaskingAPIResponse
 from fides.api.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
-from fides.api.scope_registry import MASKING_EXEC, MASKING_READ
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
@@ -23,6 +22,7 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
 from fides.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
+from fides.common.scope_registry import MASKING_EXEC, MASKING_READ
 
 
 class TestGetMaskingStrategies:

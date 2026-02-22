@@ -12,7 +12,6 @@ from fides.api.schemas.encryption_request import (
     AesEncryptionRequest,
     AesEncryptionResponse,
 )
-from fides.api.scope_registry import ENCRYPTION_EXEC
 from fides.api.util.api_router import APIRouter
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     decrypt as aes_gcm_decrypt,
@@ -26,6 +25,7 @@ from fides.api.v1.urn_registry import (
     ENCRYPTION_KEY,
     V1_URL_PREFIX,
 )
+from fides.common.scope_registry import ENCRYPTION_EXEC
 from fides.config import CONFIG
 
 router = APIRouter(tags=["Encryption"], prefix=V1_URL_PREFIX)

@@ -12,12 +12,12 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW
 from fides.api.v1.urn_registry import (
     PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_FINALIZE,
     V1_URL_PREFIX,
 )
+from fides.common.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW
 from fides.config import CONFIG
 
 

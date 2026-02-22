@@ -56,12 +56,6 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.messaging.shared_schemas import PossibleMessagingSecrets
 from fides.api.schemas.redis_cache import Identity
-from fides.api.scope_registry import (
-    MESSAGING_CREATE_OR_UPDATE,
-    MESSAGING_DELETE,
-    MESSAGING_READ,
-    MESSAGING_TEMPLATE_UPDATE,
-)
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.api.service.messaging.messaging_crud_service import (
     create_or_update_basic_templates,
@@ -91,6 +85,12 @@ from fides.api.v1.urn_registry import (
     MESSAGING_TEST,
     MESSAGING_TEST_DEPRECATED,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    MESSAGING_CREATE_OR_UPDATE,
+    MESSAGING_DELETE,
+    MESSAGING_READ,
+    MESSAGING_TEMPLATE_UPDATE,
 )
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService

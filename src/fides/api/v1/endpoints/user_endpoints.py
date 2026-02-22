@@ -56,7 +56,12 @@ from fides.api.schemas.user import (
     UserResponse,
     UserUpdate,
 )
-from fides.api.scope_registry import (
+from fides.api.util.api_router import APIRouter
+from fides.api.util.rate_limit import fides_limiter
+from fides.api.v1 import urn_registry as urls
+from fides.api.v1.endpoints.user_permission_endpoints import validate_user_id
+from fides.api.v1.urn_registry import V1_URL_PREFIX
+from fides.common.scope_registry import (
     SCOPE_REGISTRY,
     SYSTEM_MANAGER_DELETE,
     SYSTEM_MANAGER_READ,
@@ -68,11 +73,6 @@ from fides.api.scope_registry import (
     USER_READ_OWN,
     USER_UPDATE,
 )
-from fides.api.util.api_router import APIRouter
-from fides.api.util.rate_limit import fides_limiter
-from fides.api.v1 import urn_registry as urls
-from fides.api.v1.endpoints.user_permission_endpoints import validate_user_id
-from fides.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig, get_config
 from fides.config.config_proxy import ConfigProxy
 from fides.service.user.user_service import UserService
