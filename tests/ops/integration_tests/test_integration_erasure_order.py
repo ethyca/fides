@@ -60,7 +60,7 @@ def delete_no_op(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@mock.patch("fides.api.service.connectors.saas_connector.SaaSConnector.mask_data")
+@mock.patch("fides.connectors.saas.saas_connector.SaaSConnector.mask_data")
 async def test_saas_erasure_order_request_task_resume_from_error(
     mock_mask_data,
     db,
