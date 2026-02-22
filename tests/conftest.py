@@ -2100,12 +2100,6 @@ def clear_db_tables(request):
 
     db = request.getfixturevalue("db")
 
-    if has_async:
-        async_session = request.getfixturevalue("async_session")
-        # Commit pending async transactions via the underlying sync session
-        # to avoid event-loop conflicts in sync test teardown.
-        async_session.sync_session.commit()
-
     # make sure all transactions are closed before starting deletes
     db.commit()
 
