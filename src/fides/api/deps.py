@@ -154,8 +154,9 @@ def get_user_service(
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
+    messaging_service: MessagingService = Depends(get_messaging_service),
 ) -> UserService:
-    return UserService(db, config, config_proxy)
+    return UserService(db, config, config_proxy, messaging_service)
 
 
 def get_event_audit_service(

@@ -19,19 +19,18 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fides.api import deps
 from fides.api.common_exceptions import (
     EmailTemplateNotFoundException,
     MessageDispatchException,
     MessagingConfigNotFoundException,
     MessagingTemplateValidationException,
 )
+from fides.api.deps import get_config_proxy, get_db, get_messaging_service
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import (
     MessagingConfig,
     default_messaging_config_key,
     default_messaging_config_name,
-    get_messaging_method,
     get_schema_for_secrets,
 )
 from fides.api.models.messaging_template import DEFAULT_MESSAGING_TEMPLATES
@@ -45,7 +44,6 @@ from fides.api.schemas.messaging.messaging import (
     MessagingConfigRequest,
     MessagingConfigRequestBase,
     MessagingConfigResponse,
-    MessagingConfigStatus,
     MessagingConfigStatusMessage,
     MessagingConnectionTestStatus,
     MessagingMethod,
@@ -71,7 +69,6 @@ from fides.api.service.messaging.messaging_crud_service import (
     update_messaging_config,
 )
 from fides.api.util.api_router import APIRouter
-from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
@@ -95,10 +92,8 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_TEST_DEPRECATED,
     V1_URL_PREFIX,
 )
-from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
-
-CONFIG = get_config()
+from fides.service.messaging.messaging_service import MessagingService
 
 router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)
 
@@ -111,7 +106,7 @@ router = APIRouter(tags=["Messaging"], prefix=V1_URL_PREFIX)
 )
 def post_config(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     messaging_config_request: MessagingConfigRequest,
 ) -> MessagingConfigResponse:
     """
@@ -190,7 +185,7 @@ def post_config(
 def patch_config_by_key(
     config_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     messaging_config_request: MessagingConfigRequest,
 ) -> Optional[MessagingConfigResponse]:
     """
@@ -233,7 +228,7 @@ def patch_config_by_key(
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_READ])],
     response_model=MessagingConfigResponse,
 )
-def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> MessagingConfig:
+def get_active_default_config(*, db: Session = Depends(get_db)) -> MessagingConfig:
     """
     Retrieves the active default messaging config.
     """
@@ -274,70 +269,14 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
 )
 def get_messaging_status(
     *,
-    db: Session = Depends(deps.get_db),
+    messaging_service: MessagingService = Depends(get_messaging_service),
     messaging_method: Optional[MessagingMethod] = None,
 ) -> MessagingConfigStatusMessage:
     """
     Determines the status of the active default messaging config
     """
-    logger.info("Determining active default messaging config status")
-
-    # confirm an active default messaging config is present
-    messaging_config = MessagingConfig.get_active_default(db)
-
-    if not messaging_config or (
-        messaging_method
-        and get_messaging_method(messaging_config.service_type.value)  # type: ignore
-        != messaging_method
-    ):
-        detail = "No active default messaging configuration found"
-        if messaging_method:
-            detail += f" for {messaging_method}"
-
-        return MessagingConfigStatusMessage(
-            config_status=MessagingConfigStatus.not_configured,
-            detail=detail,
-        )
-
-    try:
-        details = messaging_config.details
-        MessagingConfigRequestBase.validate_details_schema(
-            messaging_config.service_type, details
-        )
-    except Exception as e:
-        logger.error(
-            f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
-        )
-        return MessagingConfigStatusMessage(
-            config_status=MessagingConfigStatus.not_configured,
-            detail=f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration",  # type: ignore
-        )
-
-    # confirm secrets are present and pass validation
-    secrets = messaging_config.secrets
-    if not secrets:
-        return MessagingConfigStatusMessage(
-            config_status=MessagingConfigStatus.not_configured,
-            detail=f"No secrets found for {messaging_config.service_type.value} messaging configuration",  # type: ignore
-        )
-    try:
-        get_schema_for_secrets(
-            service_type=messaging_config.service_type,  # type: ignore
-            secrets=secrets,
-        )
-    except (ValidationError, ValueError, KeyError) as e:
-        if isinstance(e, (ValueError, KeyError)):
-            logger.error(
-                f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
-            )
-        return MessagingConfigStatusMessage(
-            config_status=MessagingConfigStatus.not_configured,
-            detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
-        )
-
-    return MessagingConfigStatusMessage(
-        config_status=MessagingConfigStatus.configured,
-        detail=f"Active default messaging service of type {messaging_config.service_type.value} is fully configured",  # type: ignore
+    return messaging_service.get_messaging_config_status(
+        messaging_method=messaging_method
     )
 
 
@@ -348,7 +287,7 @@ def get_messaging_status(
 )
 def put_default_config(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     messaging_config_request: MessagingConfigRequestBase,
 ) -> Optional[MessagingConfigResponse]:
     """
@@ -396,7 +335,7 @@ def put_default_config(
 def put_default_config_secrets(
     service_type: MessagingServiceType,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     unvalidated_messaging_secrets: PossibleMessagingSecrets,
 ) -> TestMessagingStatusMessage:
     messaging_config = MessagingConfig.get_by_type(db, service_type=service_type)
@@ -417,7 +356,7 @@ def put_default_config_secrets(
 def put_config_secrets(
     config_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     unvalidated_messaging_secrets: PossibleMessagingSecrets,
 ) -> TestMessagingStatusMessage:
     """
@@ -484,7 +423,7 @@ def update_config_secrets(
     response_model=Page[MessagingConfigResponse],
 )
 def get_configs(
-    *, db: Session = Depends(deps.get_db), params: Params = Depends()
+    *, db: Session = Depends(get_db), params: Params = Depends()
 ) -> AbstractPage[MessagingConfig]:
     """
     Retrieves configs for messaging.
@@ -504,7 +443,7 @@ def get_configs(
     response_model=MessagingConfigResponse,
 )
 def get_config_by_key(
-    config_key: FidesKey, *, db: Session = Depends(deps.get_db)
+    config_key: FidesKey, *, db: Session = Depends(get_db)
 ) -> MessagingConfigResponse:
     """
     Retrieves configs for messaging service by key.
@@ -526,7 +465,7 @@ def get_config_by_key(
     response_model=MessagingConfigResponse,
 )
 def get_default_config_by_type(
-    service_type: MessagingServiceType, *, db: Session = Depends(deps.get_db)
+    service_type: MessagingServiceType, *, db: Session = Depends(get_db)
 ) -> MessagingConfig:
     """
     Retrieves default config for messaging service by type.
@@ -548,7 +487,7 @@ def get_default_config_by_type(
     dependencies=[Security(verify_oauth_client, scopes=[MESSAGING_DELETE])],
 )
 def delete_config_by_key(
-    config_key: FidesKey, *, db: Session = Depends(deps.get_db)
+    config_key: FidesKey, *, db: Session = Depends(get_db)
 ) -> None:
     """
     Deletes messaging configs by key.
@@ -582,7 +521,7 @@ def delete_config_by_key(
 def send_test_message(
     service_type: MessagingServiceType,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     params: MessagingTestBodyParams,
 ) -> Dict[str, str]:
     """
@@ -638,8 +577,8 @@ def send_test_message(
 )
 def send_test_message_deprecated(
     message_info: Identity,
-    db: Session = Depends(deps.get_db),
-    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+    db: Session = Depends(get_db),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
 ) -> Dict[str, Any]:
     """
     This endpoint is deprecated. Please use the `POST /messaging/test/{service_type}`
@@ -670,7 +609,7 @@ def send_test_message_deprecated(
     response_model=List[BasicMessagingTemplateResponse],
 )
 def get_basic_messaging_templates(
-    *, db: Session = Depends(deps.get_db)
+    *, db: Session = Depends(get_db)
 ) -> List[BasicMessagingTemplateResponse]:
     """Returns the available messaging templates, augments the models with labels to be used in the UI."""
     return [
@@ -690,7 +629,7 @@ def get_basic_messaging_templates(
 def update_basic_messaging_templates(
     templates: List[BasicMessagingTemplateRequest],
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
 ) -> BulkPutBasicMessagingTemplateResponse:
     """Updates the messaging templates and reverts empty subject or body values to the default values."""
 
@@ -773,7 +712,7 @@ def get_default_messaging_template(
 def get_messaging_template_by_id(
     template_id: str,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
 ) -> MessagingTemplateWithPropertiesDetail:
     """
     Retrieves messaging template by template tid.
@@ -805,7 +744,7 @@ def get_messaging_template_by_id(
 def delete_messaging_template_by_id(
     template_id: str,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
 ) -> None:
     """
     Deletes messaging template by template id.
@@ -824,17 +763,7 @@ def delete_messaging_template_by_id(
 
 @router.get(MESSAGING_EMAIL_INVITE_STATUS)
 def user_email_invite_status(
-    db: Session = Depends(deps.get_db),
-    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+    messaging_service: MessagingService = Depends(get_messaging_service),
 ) -> UserEmailInviteStatus:
     """Returns whether or not all the necessary configurations are in place to be able to invite a user via email."""
-
-    messaging_status = get_messaging_status(
-        db=db, messaging_method=MessagingMethod.EMAIL
-    )
-    return UserEmailInviteStatus(
-        enabled=(
-            messaging_status.config_status == MessagingConfigStatus.configured
-            and config_proxy.admin_ui.url is not None
-        )
-    )
+    return UserEmailInviteStatus(enabled=messaging_service.is_email_invite_enabled())
