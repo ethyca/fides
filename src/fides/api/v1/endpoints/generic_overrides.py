@@ -38,7 +38,10 @@ from fides.api.schemas.taxonomy_extensions import (
     DataUse,
     DataUseCreateOrUpdate,
 )
-from fides.api.scope_registry import (
+from fides.api.util.api_router import APIRouter
+from fides.api.util.filter_utils import apply_filters_to_query
+from fides.api.v1.urn_registry import DATASETS_CLEAN, V1_URL_PREFIX
+from fides.common.scope_registry import (
     CTL_DATASET_CREATE,
     CTL_DATASET_DELETE,
     CTL_DATASET_READ,
@@ -49,9 +52,6 @@ from fides.api.scope_registry import (
     DATA_USE_CREATE,
     DATA_USE_UPDATE,
 )
-from fides.api.util.api_router import APIRouter
-from fides.api.util.filter_utils import apply_filters_to_query
-from fides.api.v1.urn_registry import DATASETS_CLEAN, V1_URL_PREFIX
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     DatasetService,

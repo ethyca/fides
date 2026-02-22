@@ -4,12 +4,12 @@ import pytest
 from starlette.testclient import TestClient
 
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.scope_registry import PRIVACY_REQUEST_READ
 from fides.api.v1.urn_registry import (
     PRIVACY_REQUEST_SEARCH,
     PRIVACY_REQUESTS,
     V1_URL_PREFIX,
 )
+from fides.common.scope_registry import PRIVACY_REQUEST_READ
 
 
 class TestPrivacyRequestLocationFiltering:

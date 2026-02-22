@@ -17,16 +17,16 @@ from fides.api.schemas.privacy_request import (
     CustomPrivacyRequestField,
     PrivacyRequestStatus,
 )
-from fides.api.scope_registry import (
-    PRIVACY_REQUEST_DELETE,
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
-)
 from fides.api.v1.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_SEARCH,
     PRIVACY_REQUESTS,
+)
+from fides.common.scope_registry import (
+    PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_REVIEW,
 )
 
 

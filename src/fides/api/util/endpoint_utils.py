@@ -10,7 +10,8 @@ from starlette.status import HTTP_400_BAD_REQUEST
 
 from fides.api.db.base import Base  # type: ignore
 from fides.api.db.crud import get_resource, list_resource
-from fides.api.scope_registry import (
+from fides.api.util import errors
+from fides.common.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
     DATA_CATEGORY,
@@ -20,7 +21,6 @@ from fides.api.scope_registry import (
     ORGANIZATION,
     SYSTEM,
 )
-from fides.api.util import errors
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     ModelWithDefaultField,

@@ -14,7 +14,6 @@ from fides.api.schemas.connection_configuration.connection_type_system_map impor
 )
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.policy import ActionType
-from fides.api.scope_registry import CONNECTION_TYPE_READ
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_type import (
     get_connection_type_secret_schema,
@@ -25,6 +24,7 @@ from fides.api.v1.urn_registry import (
     CONNECTION_TYPES,
     V1_URL_PREFIX,
 )
+from fides.common.scope_registry import CONNECTION_TYPE_READ
 
 # FastAPI is saying that because cassandra is installed, we should use fastapi_pagination.ext.cassandra here,
 # which is not relevant

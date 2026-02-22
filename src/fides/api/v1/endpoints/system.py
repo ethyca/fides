@@ -57,16 +57,6 @@ from fides.api.schemas.system import (
     BasicSystemResponse,
     SystemResponse,
 )
-from fides.api.scope_registry import (
-    CONNECTION_CREATE_OR_UPDATE,
-    CONNECTION_DELETE,
-    CONNECTION_READ,
-    SAAS_CONNECTION_INSTANTIATE,
-    SYSTEM_CREATE,
-    SYSTEM_DELETE,
-    SYSTEM_READ,
-    SYSTEM_UPDATE,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
     delete_connection_config,
@@ -78,6 +68,16 @@ from fides.api.v1.urn_registry import (
     INSTANTIATE_SYSTEM_CONNECTION,
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    CONNECTION_CREATE_OR_UPDATE,
+    CONNECTION_DELETE,
+    CONNECTION_READ,
+    SAAS_CONNECTION_INSTANTIATE,
+    SYSTEM_CREATE,
+    SYSTEM_DELETE,
+    SYSTEM_READ,
+    SYSTEM_UPDATE,
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.system.system_service import SystemService

@@ -39,13 +39,6 @@ from fides.api.schemas.saas.saas_config import (
     SaaSConfigValidationDetails,
     ValidateSaaSConfigResponse,
 )
-from fides.api.scope_registry import (
-    CONNECTION_AUTHORIZE,
-    SAAS_CONFIG_CREATE_OR_UPDATE,
-    SAAS_CONFIG_DELETE,
-    SAAS_CONFIG_READ,
-    SAAS_CONNECTION_INSTANTIATE,
-)
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
@@ -61,6 +54,13 @@ from fides.api.v1.urn_registry import (
     SAAS_CONFIG_VALIDATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    CONNECTION_AUTHORIZE,
+    SAAS_CONFIG_CREATE_OR_UPDATE,
+    SAAS_CONFIG_DELETE,
+    SAAS_CONFIG_READ,
+    SAAS_CONNECTION_INSTANTIATE,
 )
 from fides.service.connection.connection_service import (
     ConnectionService,

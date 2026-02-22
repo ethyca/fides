@@ -1,5 +1,5 @@
-# Prefixes
-V1_URL_PREFIX = "/api/v1"
+from fides.common.constants import V1_URL_PREFIX as V1_URL_PREFIX
+
 YAML = "/yml"
 
 # User Permission URLs

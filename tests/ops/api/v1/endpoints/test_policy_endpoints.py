@@ -5,7 +5,6 @@ from uuid import uuid4
 import pytest
 from starlette.testclient import TestClient
 
-from fides.api import scope_registry as scopes
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import PrivacyRequest
@@ -22,6 +21,7 @@ from fides.api.v1.urn_registry import (
     RULE_TARGET_LIST,
     V1_URL_PREFIX,
 )
+from fides.common import scope_registry as scopes
 
 
 class TestGetPolicies:

@@ -23,11 +23,6 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.api.scope_registry import (
-    STORAGE_CREATE_OR_UPDATE,
-    STORAGE_DELETE,
-    STORAGE_READ,
-)
 from fides.api.v1.urn_registry import (
     STORAGE_ACTIVE_DEFAULT,
     STORAGE_BY_KEY,
@@ -39,6 +34,11 @@ from fides.api.v1.urn_registry import (
     STORAGE_STATUS,
     STORAGE_UPLOAD,
     V1_URL_PREFIX,
+)
+from fides.common.scope_registry import (
+    STORAGE_CREATE_OR_UPDATE,
+    STORAGE_DELETE,
+    STORAGE_READ,
 )
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy

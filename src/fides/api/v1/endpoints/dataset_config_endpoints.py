@@ -39,12 +39,6 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import TestPrivacyRequest
 from fides.api.schemas.redis_cache import DatasetTestRequest
-from fides.api.scope_registry import (
-    DATASET_CREATE_OR_UPDATE,
-    DATASET_DELETE,
-    DATASET_READ,
-    DATASET_TEST,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.v1.urn_registry import (
     CONNECTION_DATASETS,
@@ -58,6 +52,12 @@ from fides.api.v1.urn_registry import (
     TEST_DATASET,
     V1_URL_PREFIX,
     YAML_DATASETS,
+)
+from fides.common.scope_registry import (
+    DATASET_CREATE_OR_UPDATE,
+    DATASET_DELETE,
+    DATASET_READ,
+    DATASET_TEST,
 )
 from fides.config import CONFIG
 from fides.service.dataset.dataset_config_service import DatasetConfigService
