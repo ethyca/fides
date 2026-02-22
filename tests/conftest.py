@@ -831,13 +831,19 @@ def celery_session_worker(
 
 
 @pytest.fixture(autouse=True, scope="session")
-def celery_use_virtual_worker(celery_session_worker):
+def celery_use_virtual_worker(request):
     """
     This is a catch-all fixture that forces all of our
     tests to use a virtual celery worker if a registered
     task is executed within the scope of the test.
+
+    When FIDES_TEST_NO_EXTERNAL_DEPS is set, the celery worker is not
+    started, allowing tests to run without Redis or other infrastructure.
     """
-    yield celery_session_worker
+    if os.environ.get("FIDES_TEST_NO_EXTERNAL_DEPS", "").lower() == "true":
+        yield None
+        return
+    yield request.getfixturevalue("celery_session_worker")
 
 
 @pytest.fixture(scope="session")
@@ -2059,8 +2065,13 @@ def default_taxonomy(db: Session):
 
 
 @pytest.fixture(scope="function", autouse=True)
-async def clear_db_tables(db, async_session):
+async def clear_db_tables(request):
     """Clear data from tables between tests.
+
+    Only performs cleanup when the test (or its fixtures) actually uses a
+    database session.  Tests that never touch the DB skip cleanup entirely,
+    which removes the implicit dependency on a live database for pure unit
+    tests.
 
     If relationships are not set to cascade on delete they will fail with an
     IntegrityError if there are relationships present. This function stores tables
@@ -2069,24 +2080,32 @@ async def clear_db_tables(db, async_session):
     """
     yield
 
-    def delete_data(tables):
+    has_db = "db" in request.fixturenames
+    has_async = "async_session" in request.fixturenames
+    if not has_db and not has_async:
+        return
+
+    def delete_data(tables, db_session):
         redo = []
         for table in tables:
             try:
-                db.execute(table.delete())
+                db_session.execute(table.delete())
             except IntegrityError:
                 redo.append(table)
             finally:
-                db.commit()
+                db_session.commit()
 
         if redo:
-            delete_data(redo)
+            delete_data(redo, db_session)
+
+    db = request.getfixturevalue("db")
+    async_session = request.getfixturevalue("async_session")
 
     # make sure all transactions are closed before starting deletes
     db.commit()
     await async_session.commit()
 
-    delete_data(Base.metadata.sorted_tables)
+    delete_data(Base.metadata.sorted_tables, db)
 
 
 @pytest.fixture(autouse=True, scope="session")
