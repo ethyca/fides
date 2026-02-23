@@ -19,10 +19,7 @@ from typing import List, Optional, Union
 from redis import Redis
 
 from fides.common.cache.key_mapping import KeyMapper
-from fides.common.cache.manager import RedisCacheManager
-
-# Value types supported by Redis
-RedisValue = Union[bytes, float, int, str]
+from fides.common.cache.manager import RedisCacheManager, RedisValue
 
 # Key format: dsr:{dsr_id}:{part} (re-export for callers; KeyMapper builds these)
 DSR_KEY_PREFIX = "dsr:"
