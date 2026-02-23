@@ -4,7 +4,10 @@ from sqlalchemy.orm import Session, joinedload
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.core.repository.session_management import with_optional_sync_session
+from fides.core.repository.session_management import (
+    with_optional_sync_readonly_session,
+    with_optional_sync_session,
+)
 from fides.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
 )
@@ -16,7 +19,7 @@ from fides.system_integration_link.models import (
 class SystemIntegrationLinkRepository:
     """Data access layer for system-integration links."""
 
-    @with_optional_sync_session
+    @with_optional_sync_readonly_session
     def get_links_for_connection(
         self, connection_config_id: str, *, session: Session
     ) -> list[SystemIntegrationLinkEntity]:
@@ -31,7 +34,7 @@ class SystemIntegrationLinkRepository:
         )
         return [SystemIntegrationLinkEntity.from_orm(link) for link in links]
 
-    @with_optional_sync_session
+    @with_optional_sync_readonly_session
     def get_link(
         self,
         connection_config_id: str,
@@ -118,7 +121,7 @@ class SystemIntegrationLinkRepository:
         session.flush()
         return count
 
-    @with_optional_sync_session
+    @with_optional_sync_readonly_session
     def resolve_connection_config(
         self, connection_key: str, *, session: Session
     ) -> Optional[ConnectionConfig]:
@@ -128,7 +131,7 @@ class SystemIntegrationLinkRepository:
             .first()
         )
 
-    @with_optional_sync_session
+    @with_optional_sync_readonly_session
     def resolve_system(
         self, system_fides_key: str, *, session: Session
     ) -> Optional[System]:

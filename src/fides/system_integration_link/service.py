@@ -3,7 +3,10 @@ from typing import Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.core.repository.session_management import with_optional_sync_session
+from fides.core.repository.session_management import (
+    with_optional_sync_readonly_session,
+    with_optional_sync_session,
+)
 from fides.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
 )
@@ -26,7 +29,7 @@ class SystemIntegrationLinkService:
     def __init__(self, repo: Optional[SystemIntegrationLinkRepository] = None) -> None:
         self._repo = repo or SystemIntegrationLinkRepository()
 
-    @with_optional_sync_session
+    @with_optional_sync_readonly_session
     def get_links_for_connection(
         self, connection_key: str, *, session: Session
     ) -> list[SystemIntegrationLinkEntity]:

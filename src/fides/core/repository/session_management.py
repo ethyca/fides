@@ -19,7 +19,10 @@ from typing import Any, Callable, Coroutine, Optional, TypeVar
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_autoclose_db_session
+from fides.api.api.deps import (
+    get_autoclose_db_session,
+    get_readonly_autoclose_db_session,
+)
 from fides.api.db.ctl_session import async_session
 
 T = TypeVar("T")
@@ -95,5 +98,37 @@ def with_optional_sync_session(decorated_func: Callable[..., T]) -> Callable[...
                 db_session.flush()
 
         return result
+
+    return wrapper
+
+
+def with_optional_sync_readonly_session(
+    decorated_func: Callable[..., T],
+) -> Callable[..., T]:
+    """
+    Read-only variant of ``with_optional_sync_session``.
+
+    When the decorated function is called without a session, a read-only
+    session (backed by the reader DB engine when configured) is created and
+    closed automatically.  No commit or flush is performed because the
+    caller should not be mutating data.
+
+    When a session is provided (e.g. the method is called from a write
+    context that already holds a session), that session is used as-is.
+    """
+
+    @wraps(decorated_func)
+    def wrapper(
+        self: Any, *args: Any, session: Optional[Session] = None, **kwargs: Any
+    ) -> T:
+        with ExitStack() as stack:
+            if not session:
+                db_session: Session = stack.enter_context(
+                    get_readonly_autoclose_db_session()
+                )
+            else:
+                db_session = session
+
+            return decorated_func(self, *args, session=db_session, **kwargs)
 
     return wrapper
