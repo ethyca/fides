@@ -140,7 +140,7 @@ export const useFeatureBasedTabs = ({
     }
 
     tabItems.push({
-      label: "Linked systems",
+      label: "Linked system",
       key: "linked-systems",
       children: <IntegrationLinkedSystems connection={connection!} />,
     });

@@ -5,15 +5,15 @@ import {
   PageSpinner,
   Tag,
   Typography,
-  useChakraDisclosure as useDisclosure,
   useMessage,
+  useModal,
   WarningIcon,
 } from "fidesui";
 import NextLink from "next/link";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { getErrorMessage } from "~/features/common/helpers";
 import { EDIT_SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import {
   useDeleteSystemLinkMutation,
@@ -25,6 +25,7 @@ import {
   SystemConnectionLinkType,
   SystemLink,
 } from "~/mocks/system-links/data";
+import { isErrorResult } from "~/types/errors";
 
 const { Paragraph, Text, Link: LinkText } = Typography;
 
@@ -34,18 +35,8 @@ const IntegrationLinkedSystems = ({
   connection: MockConnection;
 }) => {
   const messageApi = useMessage();
+  const modalApi = useModal();
   const [isLinking, setIsLinking] = useState(false);
-  const [linkToDelete, setLinkToDelete] = useState<{
-    systemFidesKey: string;
-    linkType: SystemConnectionLinkType;
-    systemName: string;
-  } | null>(null);
-
-  const {
-    isOpen: isDeleteOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
 
   const { data: systemLinksData, isLoading } = useGetSystemLinksQuery(
     connection.key,
@@ -55,69 +46,70 @@ const IntegrationLinkedSystems = ({
   );
 
   const [setSystemLinks] = useSetSystemLinksMutation();
-  const [deleteSystemLink, { isLoading: isDeletingLink }] =
-    useDeleteSystemLinkMutation();
+  const [deleteSystemLink] = useDeleteSystemLinkMutation();
 
   const linkedSystems = systemLinksData || [];
 
-  const handleUnlink = useCallback(
-    (
-      systemFidesKey: string,
-      linkType: SystemConnectionLinkType,
-      systemName: string,
-    ) => {
-      setLinkToDelete({ systemFidesKey, linkType, systemName });
-      onDeleteOpen();
-    },
-    [onDeleteOpen],
-  );
-
-  const handleConfirmUnlink = useCallback(async () => {
-    if (!linkToDelete || !connection.key) {
-      return;
-    }
-
-    try {
-      await deleteSystemLink({
-        connectionKey: connection.key,
-        systemFidesKey: linkToDelete.systemFidesKey,
-        linkType: linkToDelete.linkType,
-      }).unwrap();
+  const handleConfirmUnlink = async (
+    systemFidesKey: string,
+    linkType: SystemConnectionLinkType,
+  ) => {
+    const result = await deleteSystemLink({
+      connectionKey: connection.key,
+      systemFidesKey,
+      linkType,
+    });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+    } else {
       messageApi.success("System unlinked successfully");
-      setLinkToDelete(null);
-    } catch (unlinkError) {
-      messageApi.error("Failed to unlink system");
     }
-    onDeleteClose();
-  }, [
-    linkToDelete,
-    connection.key,
-    deleteSystemLink,
-    messageApi,
-    onDeleteClose,
-  ]);
+  };
+
+  const handleUnlinkClicked = (
+    systemFidesKey: string,
+    linkType: SystemConnectionLinkType,
+    systemName: string,
+  ) => {
+    modalApi.confirm({
+      title: "Unlink system",
+      icon: <WarningIcon />,
+      content: (
+        <div data-testid="unlink-system-modal">
+          <Text type="secondary">
+            Are you sure you want to unlink &ldquo;{systemName}&rdquo; from this
+            integration? This action cannot be undone.
+          </Text>
+        </div>
+      ),
+      okText: "Unlink",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () => handleConfirmUnlink(systemFidesKey, linkType),
+    });
+  };
 
   const handleLinkSystem = async (systemKey: string) => {
     if (!systemKey || !connection.key) {
       return;
     }
 
-    try {
-      await setSystemLinks({
-        connectionKey: connection.key,
-        body: {
-          links: [
-            {
-              system_fides_key: systemKey,
-              link_type: "monitoring" as SystemConnectionLinkType,
-            },
-          ],
-        },
-      }).unwrap();
+    const result = await setSystemLinks({
+      connectionKey: connection.key,
+      body: {
+        links: [
+          {
+            system_fides_key: systemKey,
+            link_type: "monitoring" as SystemConnectionLinkType,
+          },
+        ],
+      },
+    });
+    if (isErrorResult(result)) {
+      messageApi.error(getErrorMessage(result.error));
+    } else {
       messageApi.success("System linked successfully");
       setIsLinking(false);
-    } catch (linkError) {
-      messageApi.error("Failed to link system");
     }
   };
 
@@ -141,7 +133,8 @@ const IntegrationLinkedSystems = ({
 
       <div className="mb-4 flex items-center justify-end gap-2">
         {isLinking ? (
-          <Flex gap="middle" align="flex-start" style={{ flex: 1 }}>
+          <Flex gap="middle" align="flex-start" className="flex-1">
+            {/* put this in a modal */}
             <SystemSelect
               onSelect={(value) => handleLinkSystem(value)}
               style={{ flex: 1 }}
@@ -159,6 +152,7 @@ const IntegrationLinkedSystems = ({
             type="primary"
             onClick={() => setIsLinking(true)}
             data-testid="link-system-button"
+            disabled={linkedSystems.length > 0}
           >
             Link system
           </Button>
@@ -187,16 +181,15 @@ const IntegrationLinkedSystems = ({
                 key="unlink"
                 type="link"
                 onClick={() =>
-                  handleUnlink(
+                  handleUnlinkClicked(
                     link.system_fides_key,
                     link.link_type,
                     link.system_name || link.system_fides_key,
                   )
                 }
-                data-testid={`unlink-${link.system_fides_key}-${link.link_type}`}
                 className="px-1"
+                data-testid={`unlink-${link.system_fides_key}-${link.link_type}`}
                 aria-label={`Unlink ${link.system_name || link.system_fides_key}`}
-                loading={isDeletingLink}
               >
                 Unlink
               </Button>,
@@ -232,8 +225,8 @@ const IntegrationLinkedSystems = ({
                   </div>
                   <Tag>
                     {link.link_type === SystemConnectionLinkType.DSR
-                      ? "DSR"
-                      : "Monitoring"}
+                      ? "Discovery"
+                      : "Detection"}
                   </Tag>
                 </Flex>
               }
@@ -241,27 +234,6 @@ const IntegrationLinkedSystems = ({
           </List.Item>
         )}
         className="mb-4"
-      />
-
-      <ConfirmationModal
-        isOpen={isDeleteOpen}
-        onClose={() => {
-          setLinkToDelete(null);
-          onDeleteClose();
-        }}
-        onConfirm={handleConfirmUnlink}
-        title="Unlink system"
-        data-testid="unlink-system-modal"
-        message={
-          <Text className="text-gray-500">
-            Are you sure you want to unlink &ldquo;
-            {linkToDelete?.systemName}&rdquo;? This action cannot be undone.
-          </Text>
-        }
-        continueButtonText="Unlink"
-        isCentered
-        icon={<WarningIcon />}
-        isLoading={isDeletingLink}
       />
     </div>
   );
