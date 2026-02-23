@@ -116,7 +116,6 @@ from fides.api.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
 )
-from fides.common.cache import get_dsr_cache_store
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
@@ -124,6 +123,7 @@ from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomat
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
+from fides.common.cache import get_dsr_cache_store
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
 
