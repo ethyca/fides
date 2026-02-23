@@ -6,7 +6,7 @@ using Redis KEYS or SCAN. Each index is stored as a Redis SET at
 __idx:{index_prefix}; members are the actual cache key names.
 """
 
-from typing import Any, List, Optional, Union
+from typing import List, Optional, Union
 
 from redis import Redis
 
