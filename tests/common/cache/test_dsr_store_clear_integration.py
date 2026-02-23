@@ -28,10 +28,13 @@ class MockRedis:
         return self._data.get(key)
 
     def delete(self, *keys):
-        return sum(1 for k in keys if self._data.pop(k, None) or self._sets.pop(k, None))
+        return sum(
+            1 for k in keys if self._data.pop(k, None) or self._sets.pop(k, None)
+        )
 
     def keys(self, pattern):
         import fnmatch
+
         return [k for k in self._data if fnmatch.fnmatch(k, pattern)]
 
     def scan_iter(self, match="*", count=None):
@@ -76,7 +79,7 @@ class TestPrivacyRequestClearCachedValues:
         with patch("fides.api.util.cache.get_cache", return_value=mock_redis):
             # Import here to avoid app initialization
             from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-            
+
             PrivacyRequest.clear_cached_values(pr)
 
         # Verify all keys deleted
@@ -86,7 +89,7 @@ class TestPrivacyRequestClearCachedValues:
         """clear_cached_values removes new-format cache keys."""
         mock_redis = MockRedis()
         pr_id = f"test-pr-{uuid.uuid4()}"
-        
+
         # Simulate new cached data via store
         manager = RedisCacheManager(mock_redis)
         store = DSRCacheStore(manager)
@@ -98,7 +101,7 @@ class TestPrivacyRequestClearCachedValues:
 
         with patch("fides.api.util.cache.get_cache", return_value=mock_redis):
             from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-            
+
             PrivacyRequest.clear_cached_values(pr)
 
         assert len(mock_redis.keys(f"*{pr_id}*")) == 0
@@ -111,7 +114,7 @@ class TestPrivacyRequestClearCachedValues:
         # Mixed: legacy identity, new encryption
         mock_redis.set(f"id-{pr_id}-identity-email", "legacy@example.com")
         mock_redis.set(f"id-{pr_id}-custom-privacy-request-field-dept", "Engineering")
-        
+
         manager = RedisCacheManager(mock_redis)
         store = DSRCacheStore(manager)
         store.write_encryption(pr_id, "key", "new-encryption-key")
@@ -122,7 +125,7 @@ class TestPrivacyRequestClearCachedValues:
 
         with patch("fides.api.util.cache.get_cache", return_value=mock_redis):
             from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-            
+
             PrivacyRequest.clear_cached_values(pr)
 
         assert len(mock_redis.keys(f"*{pr_id}*")) == 0
@@ -135,7 +138,7 @@ class TestPrivacyRequestClearCachedValues:
         manager = RedisCacheManager(mock_redis)
         store = DSRCacheStore(manager)
         store.write_identity(pr_id, "email", "test@example.com")
-        
+
         # Verify index exists
         assert len(mock_redis.smembers(f"__idx:dsr:{pr_id}")) > 0
 
@@ -144,9 +147,8 @@ class TestPrivacyRequestClearCachedValues:
 
         with patch("fides.api.util.cache.get_cache", return_value=mock_redis):
             from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-            
+
             PrivacyRequest.clear_cached_values(pr)
 
         # Index should be deleted
         assert len(mock_redis.smembers(f"__idx:dsr:{pr_id}")) == 0
-
