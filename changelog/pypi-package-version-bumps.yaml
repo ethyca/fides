@@ -1,0 +1,4 @@
+type: Changed
+description: Bumped Jinja2, pg8000, urllib3, cryptography, and PyNaCl versions
+pr: 0
+labels: []
