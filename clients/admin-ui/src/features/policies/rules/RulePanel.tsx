@@ -2,11 +2,13 @@ import { Flex, Form, Input, Select, Typography } from "fidesui";
 import { useMemo } from "react";
 
 import { InfoPopover } from "~/features/common/InfoPopover";
+import { snakeCaseToTitleCase } from "~/features/common/utils";
 import { useGetMaskingStrategiesQuery } from "~/features/policies/policy.slice";
-import { formatMaskingStrategyName } from "~/features/policies/utils/formatMaskingStrategyName";
 import { ActionType, RuleResponse } from "~/types/api";
 
 const { Text } = Typography;
+
+const MASKING_ACRONYMS = ["aes", "hmac", "nlp"];
 
 const actionTypeOptions = [
   { value: ActionType.ACCESS, label: "Access" },
@@ -31,7 +33,7 @@ export const RulePanel = ({ rule }: RulePanelProps) => {
     () =>
       (strategies ?? []).map((s) => ({
         value: s.name,
-        label: formatMaskingStrategyName(s.name),
+        label: snakeCaseToTitleCase(s.name, MASKING_ACRONYMS),
       })),
     [strategies],
   );
@@ -90,7 +92,7 @@ export const RulePanel = ({ rule }: RulePanelProps) => {
                         <div key={s.name} className="py-1">
                           <dt className="inline">
                             <Text strong size="sm">
-                              {formatMaskingStrategyName(s.name)}
+                              {snakeCaseToTitleCase(s.name, MASKING_ACRONYMS)}
                             </Text>
                           </dt>
                           {": "}
