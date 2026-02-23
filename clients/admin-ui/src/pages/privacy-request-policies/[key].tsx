@@ -41,7 +41,12 @@ const PolicyDetailPage: NextPage = () => {
       {
         key: TAB_KEYS.CONDITIONS,
         label: `Conditions (${extractLeafConditions(policy?.conditions).length})`,
-        children: <PolicyConditionsTab conditions={policy?.conditions} />,
+        children: (
+          <PolicyConditionsTab
+            conditions={policy?.conditions}
+            policyKey={policyKey}
+          />
+        ),
       },
     ],
     [policy?.rules, policy?.conditions],
