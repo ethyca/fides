@@ -45,11 +45,6 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint(
-            "system_id",
-            "connection_config_id",
-            name="uq_system_connconfig_link",
-        ),
-        sa.UniqueConstraint(
             "connection_config_id",
             name="uq_one_system_per_connconfig",
         ),

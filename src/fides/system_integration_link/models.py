@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 
@@ -56,13 +56,7 @@ class SystemConnectionConfigLink(Base):
     system = relationship("System")  # type: ignore[misc]
     connection_config = relationship("ConnectionConfig")  # type: ignore[misc]
 
-    __table_args__ = (
-        UniqueConstraint(
-            "system_id",
-            "connection_config_id",
-            name="uq_system_connconfig_link",
-        ),
-    )
+    __table_args__: tuple = ()
 
     @classmethod
     def create_or_update_link(
