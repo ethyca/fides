@@ -68,9 +68,15 @@ class RedisCacheManager:
         Use this instead of KEYS/SCAN when you have been maintaining an index.
         """
         keys = self.get_keys_by_index(index_prefix)
+        idx_key = self._index_key(index_prefix)
         if keys:
-            self._redis.delete(*keys)
-        self.delete_index(index_prefix)
+            pipe = self._redis.pipeline()
+            for k in keys:
+                pipe.delete(k)
+            pipe.delete(idx_key)
+            pipe.execute()
+        else:
+            self._redis.delete(idx_key)
 
     def set_with_index(
         self,
@@ -84,12 +90,14 @@ class RedisCacheManager:
         If expire_seconds is set, the key will expire after that many seconds.
         Returns the result of SET (e.g. True).
         """
+        pipe = self._redis.pipeline()
         if expire_seconds is not None:
-            result = self._redis.set(key, value, ex=expire_seconds)
+            pipe.set(key, value, ex=expire_seconds)
         else:
-            result = self._redis.set(key, value)
-        self.add_key_to_index(index_prefix, key)
-        return result
+            pipe.set(key, value)
+        pipe.sadd(self._index_key(index_prefix), key)
+        results = pipe.execute()
+        return results[0]
 
     def delete_key_and_remove_from_index(
         self,
@@ -97,8 +105,10 @@ class RedisCacheManager:
         index_prefix: str,
     ) -> None:
         """Delete a key and remove it from its index."""
-        self._redis.delete(key)
-        self.remove_key_from_index(index_prefix, key)
+        pipe = self._redis.pipeline()
+        pipe.delete(key)
+        pipe.srem(self._index_key(index_prefix), key)
+        pipe.execute()
 
     @property
     def redis(self) -> Redis:
