@@ -2943,26 +2943,28 @@ class TestSystemDelete:
             db, system.id, connection_config.id
         )
         db.commit()
+        system_fides_key = system.fides_key
+        connection_config_id = connection_config.id
         connection_config_key = connection_config.key
         dataset_config_key = dataset_config.fides_key
 
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type="system",
-            resource_id=system.fides_key,
+            resource_id=system_fides_key,
             headers=auth_header,
         )
         assert result.status_code == HTTP_200_OK
 
         db.expire_all()
 
-        assert db.query(System).filter_by(fides_key=system.fides_key).first() is None
+        assert db.query(System).filter_by(fides_key=system_fides_key).first() is None
 
         # Link row is cascade-deleted, but ConnectionConfig and
         # DatasetConfig are preserved (orphaned).
         assert (
             db.query(SystemConnectionConfigLink)
-            .filter_by(connection_config_id=connection_config.id)
+            .filter_by(connection_config_id=connection_config_id)
             .first()
             is None
         )
