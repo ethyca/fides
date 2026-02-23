@@ -133,6 +133,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
+    title: "Privacy assessments",
+    icon: <Icons.Document />,
+    routes: [
+      {
+        title: "Assessments",
+        path: routes.PRIVACY_ASSESSMENTS_ROUTE,
+        scopes: [],
+        requiresFlag: "alphaDataProtectionAssessments",
+      },
+    ],
+  },
+  {
     title: "Consent",
     icon: <Icons.SettingsAdjust />,
     routes: [
