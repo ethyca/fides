@@ -254,7 +254,6 @@ const PolicyConditionsTab = ({ policyKey }: PolicyConditionsTabProps) => {
         onClose={handleCloseModal}
         onConditionSaved={handleConditionSaved}
         editingCondition={editingCondition}
-        policyKey={policyKey}
       />
 
       <Modal
