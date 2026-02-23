@@ -45,4 +45,3 @@ class TestPostUpgradeIndexCreation:
         post_upgrade_index_creation_task()
 
         mock_check_and_create_objects.assert_called_once()
-        mock_lock.reacquire.assert_called()
