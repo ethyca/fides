@@ -1,7 +1,7 @@
 """Add is_encrypted column to privacy_preferences
 
 Revision ID: d3f08ca31314
-Revises: cc9a5690f9e7
+Revises: 29acbb0689de
 Create Date: 2026-02-18 18:14:26.751743
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "d3f08ca31314"
-down_revision = "cc9a5690f9e7"
+down_revision = "29acbb0689de"
 branch_labels = None
 depends_on = None
 
