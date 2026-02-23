@@ -38,6 +38,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
+from fides.service.system_integration_link.models import SystemConnectionConfigLink
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -145,16 +146,22 @@ class TestPatchSystemConnections:
     def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, oauth2_authorization_code_connection_config, db: Session
     ):
-        system.connection_configs = oauth2_authorization_code_connection_config
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, oauth2_authorization_code_connection_config.id
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     @pytest.fixture(scope="function")
     def system_linked_with_oauth2_client_credentials_connection_config(
         self, system: System, oauth2_client_credentials_connection_config, db: Session
     ):
-        system.connection_configs = oauth2_client_credentials_connection_config
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, oauth2_client_credentials_connection_config.id
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     def test_patch_connections_valid_system(
@@ -500,8 +507,11 @@ class TestDeleteSystemConnectionConfig:
     def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, connection_config, db: Session
     ):
-        system.connection_configs = connection_config
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, connection_config.id
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     def test_delete_connection_config_not_authenticated(
@@ -557,7 +567,9 @@ class TestDeleteSystemConnectionConfig:
         """Assert both the connection config and its webhook are deleted"""
         access_manual_webhook_id = access_manual_webhook.id
         integration_manual_webhook_config_id = integration_manual_webhook_config.id
-        system.connection_configs = integration_manual_webhook_config
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, integration_manual_webhook_config.id
+        )
         db.commit()
         assert (
             db.query(AccessManualWebhook).filter_by(id=access_manual_webhook_id).first()

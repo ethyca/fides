@@ -49,6 +49,7 @@ from fides.api.task.task_resources import Connections
 from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )
+from fides.service.system_integration_link.models import SystemConnectionConfigLink
 
 from ..graph.graph_test_util import (
     MockMongoTask,
@@ -784,9 +785,12 @@ class TestFormatDataUseMapForCaching:
                 "connection_type": ConnectionType.timescale,
                 "access": AccessLevel.write,
                 "disabled": False,
-                "system_id": system.id,
             },
         )
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system.id, connection_config.id
+        )
+        db.commit()
 
         ctl_dataset, dataset_config = self.create_dataset(
             db, "postgres_example_subscriptions_dataset", connection_config
@@ -811,9 +815,12 @@ class TestFormatDataUseMapForCaching:
                 "connection_type": ConnectionType.timescale,
                 "access": AccessLevel.write,
                 "disabled": False,
-                "system_id": system_multiple_decs.id,
             },
         )
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system_multiple_decs.id, connection_config.id
+        )
+        db.commit()
 
         ctl_dataset, dataset_config = self.create_dataset(
             db,
