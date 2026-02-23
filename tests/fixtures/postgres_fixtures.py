@@ -21,8 +21,8 @@ from fides.api.models.sql_models import System
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.config import CONFIG
 from fides.connectors import PostgreSQLConnector
-from tests.ops.test_helpers.dataset_utils import remove_primary_keys
-from tests.ops.test_helpers.db_utils import seed_postgres_data
+from tests.helpers.dataset_utils import remove_primary_keys
+from tests.helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets
 

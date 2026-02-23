@@ -104,7 +104,7 @@ def init_saas_connector(session: nox.Session) -> None:
     # render tests file
     test_template = environment.get_template("test_new_task.jinja")
     filename = (
-        f"tests/ops/integration_tests/saas/test_{variable_map['connector_id']}_task.py"
+        f"tests/connectors/integration/saas/test_{variable_map['connector_id']}_task.py"
     )
     contents = test_template.render(variable_map)
     try:

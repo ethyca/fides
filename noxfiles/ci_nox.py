@@ -25,12 +25,18 @@ from setup_tests_nox import (
     ReportConfig,
     XdistConfig,
     pytest_api,
+    pytest_cli,
+    pytest_common,
+    pytest_config,
+    pytest_connectors,
     pytest_ctl,
     pytest_lib,
+    pytest_migration,
     pytest_misc_integration,
     pytest_misc_unit,
     pytest_nox,
     pytest_ops,
+    pytest_performance,
 )
 from utils_nox import db, install_requirements
 
@@ -303,6 +309,7 @@ def load_tests(session: nox.Session) -> None:
 ## Pytest ##
 ############
 TEST_GROUPS = [
+    # Legacy groups (will be retired as tests migrate)
     nox.param("ctl-unit", id="ctl-unit"),
     nox.param("ctl-not-external", id="ctl-not-external"),
     nox.param("ctl-integration", id="ctl-integration"),
@@ -319,9 +326,19 @@ TEST_GROUPS = [
     nox.param("misc-integration-external", id="misc-integration-external"),
     nox.param("misc-integration", id="misc-integration"),
     nox.param("nox", id="nox"),
+    # New domain-aligned groups
+    nox.param("cli", id="cli"),
+    nox.param("common", id="common"),
+    nox.param("config", id="config"),
+    nox.param("connectors", id="connectors"),
+    nox.param("connectors-external", id="connectors-external"),
+    nox.param("connectors-saas", id="connectors-saas"),
+    nox.param("migration", id="migration"),
+    nox.param("performance", id="performance"),
 ]
 
 TEST_MATRIX: Dict[str, Callable] = {
+    # Legacy groups (will be retired as tests migrate)
     "ctl-unit": partial(pytest_ctl, mark="unit"),
     "ctl-not-external": partial(pytest_ctl, mark="not external"),
     "ctl-integration": partial(pytest_ctl, mark="integration"),
@@ -341,28 +358,52 @@ TEST_MATRIX: Dict[str, Callable] = {
         mark="integration_bigquery or integration_snowflake or integration_postgres or integration",
     ),
     "nox": pytest_nox,
+    # New domain-aligned groups
+    "cli": pytest_cli,
+    "common": pytest_common,
+    "config": pytest_config,
+    "connectors": partial(pytest_connectors, mark="not external"),
+    "connectors-external": partial(pytest_connectors, mark="integration_external"),
+    "connectors-saas": partial(pytest_connectors, mark="integration_saas"),
+    "migration": pytest_migration,
+    "performance": pytest_performance,
 }
 
 # Define the mapping of test directories to test groups
 # This maps actual test directories to the test groups that cover them
 TEST_DIRECTORY_COVERAGE = {
-    "tests/api/": ["api"],
-    "tests/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
-    "tests/lib/": ["lib"],
-    "tests/ops/": [
-        "ops-unit",
-        "ops-unit-api",
-        "ops-unit-non-api",
-        "ops-integration",
+    "tests/api/": ["api", "ops-unit-api", "ops-unit-non-api"],
+    "tests/cli/": [
+        "cli",
+        "ctl-unit",
+        "ctl-not-external",
+        "ctl-integration",
+        "ctl-external",
+    ],
+    "tests/common/": ["common", "lib", "ops-unit", "ops-unit-non-api"],
+    "tests/config/": ["config"],
+    "tests/connectors/": [
+        "connectors",
+        "connectors-external",
+        "connectors-saas",
         "ops-external-datastores",
         "ops-saas",
+        "ops-integration",
     ],
-    "tests/service/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/integration/": ["ops-integration"],  # Workflow integration tests
-    "tests/fixtures/": [],  # fixtures are not test files, just test data
+    "tests/integration/": ["ops-integration"],
+    "tests/migration/": ["migration"],
+    "tests/performance/": ["performance"],
+    "tests/service/": [
+        "misc-unit",
+        "misc-integration",
+        "misc-integration-external",
+        "ops-unit",
+        "ops-unit-non-api",
+    ],
+    # Support directories (no test runners)
+    "tests/factories/": [],
+    "tests/fixtures/": [],
+    "tests/helpers/": [],
 }
 
 
@@ -504,14 +545,10 @@ def _check_test_directory_coverage(
 
     if test_dir not in TEST_DIRECTORY_COVERAGE:
         uncovered_dirs.append(f"{test_dir} - No coverage mapping defined")
-    elif test_dir == "tests/fixtures/":
-        # Directory is explicitly marked as not needing coverage (like fixtures)
-        excluded_dirs.append(
-            f"{test_dir} - Explicitly excluded from coverage (fixtures/data)"
-        )
     elif not TEST_DIRECTORY_COVERAGE[test_dir]:
-        # Directory is marked as not covered by any test group
-        uncovered_dirs.append(f"{test_dir} - No test group covers this directory")
+        excluded_dirs.append(
+            f"{test_dir} - Explicitly excluded from coverage (support directory)"
+        )
     else:
         # Check that all required test groups exist in TEST_MATRIX
         required_groups = TEST_DIRECTORY_COVERAGE[test_dir]

@@ -344,6 +344,7 @@ jobs:
       fail-fast: false
       matrix:
         test_selection:
+          # Legacy groups
           - "ctl-not-external"
           - "ops-unit-api"
           - "ops-unit-non-api"
@@ -352,6 +353,12 @@ jobs:
           - "lib"
           - "misc-unit"
           - "misc-integration"
+          # New domain-aligned groups
+          - "cli"
+          - "common"
+          - "config"
+          - "connectors"
+          - "migration"
 
     runs-on: ubuntu-latest
     timeout-minutes: 45

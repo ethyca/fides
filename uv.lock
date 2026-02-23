@@ -1020,6 +1020,7 @@ mssql = [
 [package.dev-dependencies]
 dev = [
     { name = "debugpy" },
+    { name = "factory-boy" },
     { name = "faker" },
     { name = "freezegun" },
     { name = "gitpython" },
@@ -1176,6 +1177,7 @@ provides-extras = ["all", "mssql"]
 [package.metadata.requires-dev]
 dev = [
     { name = "debugpy", specifier = "~=1.8.0" },
+    { name = "factory-boy", specifier = ">=3.3.0" },
     { name = "faker", specifier = "==14.1.0" },
     { name = "freezegun", specifier = "==1.5.5" },
     { name = "gitpython", specifier = "==3.1.41" },
@@ -1226,6 +1228,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ad/85/41c70ce5525a41f6bbdca3c5882d285acbea896ca9f776d8378cd452d505/expandvars-0.9.0.tar.gz", hash = "sha256:6a0e7821e55ff1ab44f8ca08b50d2b2d01c076a9bc979da940467cb7f105c565", size = 6473, upload-time = "2022-03-08T11:02:45.878Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/58/d3/f4ee9508ebc8b9eabbdccf2aabb0f2b4cfc5f2332ecd721a6b9d0baf2c17/expandvars-0.9.0-py3-none-any.whl", hash = "sha256:ae90b9c6167e876a0d67892ae18cf2c1ea2e336b2b5542113239d33bf9267497", size = 6649, upload-time = "2022-03-08T11:02:43.397Z" },
+]
+
+[[package]]
+name = "factory-boy"
+version = "3.3.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "faker" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ba/98/75cacae9945f67cfe323829fc2ac451f64517a8a330b572a06a323997065/factory_boy-3.3.3.tar.gz", hash = "sha256:866862d226128dfac7f2b4160287e899daf54f2612778327dd03d0e2cb1e3d03", size = 164146, upload-time = "2025-02-03T09:49:04.433Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/8d/2bc5f5546ff2ccb3f7de06742853483ab75bf74f36a92254702f8baecc79/factory_boy-3.3.3-py2.py3-none-any.whl", hash = "sha256:1c39e3289f7e667c4285433f305f8d506efc2fe9c73aaea4151ebd5cdea394fc", size = 37036, upload-time = "2025-02-03T09:49:01.659Z" },
 ]
 
 [[package]]

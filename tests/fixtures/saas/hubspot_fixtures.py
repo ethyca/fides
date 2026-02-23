@@ -17,12 +17,12 @@ from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from tests.ops.integration_tests.saas.connector_runner import (
+from tests.connectors.integration.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
 )
-from tests.ops.test_helpers.onepassword_client import get_secrets
-from tests.ops.test_helpers.saas_test_utils import poll_for_existence
+from tests.helpers.onepassword_client import get_secrets
+from tests.helpers.saas_test_utils import poll_for_existence
 
 secrets = get_secrets("hubspot")
 

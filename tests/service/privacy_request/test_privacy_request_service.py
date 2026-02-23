@@ -29,7 +29,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
-from tests.conftest import wait_for_tasks_to_complete
+from tests.helpers.privacy_request import wait_for_tasks_to_complete
 
 
 @pytest.mark.integration

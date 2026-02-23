@@ -6,8 +6,8 @@ import yaml
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
-from tests.conftest import wait_for_privacy_request_status
-from tests.ops.test_helpers.saas_test_utils import MockAuthenticatedClient
+from tests.helpers.privacy_request import wait_for_privacy_request_status
+from tests.helpers.saas_test_utils import MockAuthenticatedClient
 
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.connectionconfig import (

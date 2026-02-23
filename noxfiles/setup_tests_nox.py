@@ -18,7 +18,6 @@ from constants_nox import (
 from run_infrastructure import (
     API_TEST_DIR,
     OPS_API_TEST_DIRS,
-    OPS_TEST_DIR,
     run_infrastructure,
 )
 
@@ -94,8 +93,32 @@ class PytestConfig:
         ]
 
 
-def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
-    """Runs lib tests."""
+def pytest_cli(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs CLI tests under tests/cli/."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    session.run(*LOGIN, external=True)
+    import copy
+
+    local_pytest_config = copy.copy(pytest_config)
+    local_pytest_config.xdist_config.parallel_runners = "0"
+    run_command = (
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        *local_pytest_config.args,
+        "tests/cli/",
+        "-m",
+        "not external",
+    )
+    session.run(*run_command, external=True)
+
+
+def pytest_common(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs common utility tests under tests/common/."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -106,7 +129,103 @@ def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
         "/opt/fides/bin/python",
         "pytest",
         *pytest_config.args,
-        "tests/lib/",
+        "tests/common/",
+        "-m",
+        "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
+    )
+    session.run(*run_command, external=True)
+
+
+def pytest_config(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs config tests under tests/config/."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    import copy
+
+    local_pytest_config = copy.copy(pytest_config)
+    local_pytest_config.xdist_config.parallel_runners = "0"
+    run_command = (
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        *local_pytest_config.args,
+        "tests/config/",
+        "-m",
+        "unit",
+        "--full-trace",
+    )
+    session.run(*run_command, external=True)
+
+
+def pytest_connectors(session: Session, mark: str, pytest_config: PytestConfig) -> None:
+    """Runs connector tests under tests/connectors/."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        *pytest_config.args,
+        "tests/connectors/",
+        "-m",
+        mark,
+    )
+    session.run(*run_command, external=True)
+
+
+def pytest_migration(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs database migration tests under tests/migration/."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        *pytest_config.args,
+        "tests/migration/",
+    )
+    session.run(*run_command, external=True)
+
+
+def pytest_performance(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs performance benchmark tests under tests/performance/."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        *pytest_config.args,
+        "tests/performance/",
+    )
+    session.run(*run_command, external=True)
+
+
+def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs lib tests (now merged into tests/common/)."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC_UV,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        *pytest_config.args,
+        "tests/common/",
     )
     session.run(*run_command, external=True)
 
@@ -171,7 +290,7 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
             *pytest_config.report_config.args,
             "-m",
             "external",
-            "tests/ctl",
+            "tests/cli",
             "--tb=no",
         )
         session.run(*run_command, external=True)
@@ -192,7 +311,7 @@ def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None
             "/opt/fides/bin/python",
             "pytest",
             *local_pytest_config.args,
-            "tests/ctl/",
+            "tests/cli/",
             "-m",
             mark,
             "--full-trace",
@@ -233,7 +352,8 @@ def pytest_ops(
                 "/opt/fides/bin/python",
                 "pytest",
                 *pytest_config.args,
-                OPS_TEST_DIR,
+                "tests/common/",
+                "tests/service/",
                 *ignore_args,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
@@ -247,7 +367,8 @@ def pytest_ops(
                 "/opt/fides/bin/python",
                 "pytest",
                 *pytest_config.args,
-                OPS_TEST_DIR,
+                "tests/common/",
+                "tests/service/",
                 "-m",
                 "not integration and not integration_external and not integration_saas",
             )
@@ -258,7 +379,7 @@ def pytest_ops(
             run_tests=True,
             analytics_opt_out=True,
             datastores=[],
-            pytest_path=f"{OPS_TEST_DIR} tests/integration/",
+            pytest_path="tests/integration/ tests/connectors/integration/",
         )
     elif mark == "external_datastores":
         session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
@@ -381,7 +502,7 @@ def pytest_ops(
             # Don't use xdist for these
             *pytest_config.coverage_config.args,
             *pytest_config.report_config.args,
-            OPS_TEST_DIR,
+            "tests/connectors/integration/",
             "-m",
             "integration_external",
         )
@@ -419,7 +540,7 @@ def pytest_ops(
             # Don't use xdist for these
             *pytest_config.coverage_config.args,
             *pytest_config.report_config.args,
-            OPS_TEST_DIR,
+            "tests/connectors/integration/",
             "-m",
             "integration_saas",
             "--tb=no",
@@ -459,8 +580,6 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "pytest",
         *pytest_config.args,
         "tests/service/",
-        "tests/task/",
-        "tests/util/",
         "-m",
         "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
     )
@@ -519,10 +638,7 @@ def pytest_misc_integration(
             "/opt/fides/bin/python",
             "pytest",
             *pytest_config.args,
-            "tests/qa/",
             "tests/service/",
-            "tests/task/",
-            "tests/util/",
             "-m",
             mark,
         )
@@ -534,5 +650,5 @@ def pytest_misc_integration(
             run_tests=True,
             analytics_opt_out=True,
             datastores=["postgres", "bigquery", "snowflake"],
-            pytest_path="tests/qa/ tests/service/ tests/task/ tests/util/",
+            pytest_path="tests/service/",
         )
