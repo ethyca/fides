@@ -44,10 +44,6 @@ def upgrade():
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint(
-            "connection_config_id",
-            name="uq_one_system_per_connconfig",
-        ),
     )
     op.create_index(
         "ix_system_connection_config_link_id",
@@ -63,6 +59,7 @@ def upgrade():
         "ix_system_connection_config_link_connection_config_id",
         "system_connection_config_link",
         ["connection_config_id"],
+        unique=True,
     )
 
 
