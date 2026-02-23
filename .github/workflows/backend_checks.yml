@@ -346,8 +346,11 @@ jobs:
         test_selection:
           - "ctl-not-external"
           - "ops-unit-api"
-          - "ops-unit-non-api"
-          - "ops-integration"
+          - "ops-unit-api-privacy"
+          - "ops-unit-service"
+          - "ops-unit-other"
+          - "ops-integration-service"
+          - "ops-integration-other"
           - "api"
           - "lib"
           - "misc-unit"
