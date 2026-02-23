@@ -19,7 +19,6 @@ interface PolicyConditionModalProps {
   onClose: () => void;
   onConditionSaved: (condition: ConditionLeaf) => Promise<void>;
   editingCondition?: ConditionLeaf | null;
-  policyKey: string;
 }
 
 const PolicyConditionModal = ({
@@ -27,7 +26,6 @@ const PolicyConditionModal = ({
   onClose,
   onConditionSaved,
   editingCondition,
-  policyKey,
 }: PolicyConditionModalProps) => {
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,7 +74,6 @@ const PolicyConditionModal = ({
               onCancel={handleCancel}
               editingCondition={editingCondition}
               isSubmitting={isSubmitting}
-              policyKey={policyKey}
             />
           </VStack>
         </ModalBody>
