@@ -1036,7 +1036,7 @@ dev = [
     { name = "pytest-loguru" },
     { name = "pytest-mock" },
     { name = "pytest-rerunfailures" },
-    { name = "pytest-shard" },
+    { name = "pytest-split" },
     { name = "pytest-xdist" },
     { name = "pyyaml" },
     { name = "requests-mock" },
@@ -1194,7 +1194,7 @@ dev = [
     { name = "pytest-loguru", specifier = "==0.4.0" },
     { name = "pytest-mock", specifier = "==3.14.0" },
     { name = "pytest-rerunfailures", specifier = "==14.0" },
-    { name = "pytest-shard", specifier = ">=0.1.2" },
+    { name = "pytest-split", specifier = ">=0.11.0" },
     { name = "pytest-xdist", specifier = "==3.8.0" },
     { name = "pyyaml", specifier = "~=6.0.1" },
     { name = "requests-mock", specifier = "==1.10.0" },
@@ -3536,15 +3536,15 @@ wheels = [
 ]
 
 [[package]]
-name = "pytest-shard"
-version = "0.1.2"
+name = "pytest-split"
+version = "0.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pytest" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/ca/3efa6f3b84dab83220db45997e785be726684c2c2c4267bffb7d80101c7f/pytest-shard-0.1.2.tar.gz", hash = "sha256:b86a967fbfd1c8e50295095ccda031b7e890862ee06531d5142844f4c1d1cd67", size = 3579, upload-time = "2020-12-11T19:52:55.083Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/16/8af4c5f2ceb3640bb1f78dfdf5c184556b10dfe9369feaaad7ff1c13f329/pytest_split-0.11.0.tar.gz", hash = "sha256:8ebdb29cc72cc962e8eb1ec07db1eeb98ab25e215ed8e3216f6b9fc7ce0ec2b5", size = 13421, upload-time = "2026-02-03T09:14:31.469Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/65/7a/dbeb4c54e9fc3b59622f410091365f354a69cda1af10c3b83ac0ca6e6f4f/pytest_shard-0.1.2-py3-none-any.whl", hash = "sha256:407a1df385cebe1feb9b4d2e7eeee8b044f8a24f0919421233159a17c59be2b9", size = 4608, upload-time = "2020-12-11T19:52:54.226Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/a1/d4423657caaa8be9b31e491592b49cebdcfd434d3e74512ce71f6ec39905/pytest_split-0.11.0-py3-none-any.whl", hash = "sha256:899d7c0f5730da91e2daf283860eb73b503259cb416851a65599368849c7f382", size = 11911, upload-time = "2026-02-03T09:14:33.708Z" },
 ]
 
 [[package]]

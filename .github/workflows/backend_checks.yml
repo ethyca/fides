@@ -331,76 +331,61 @@ jobs:
         with:
           report_paths: "**/test_report.xml"
 
-  ################
-  ## Safe Tests ##
-  ################
-  Safe-Tests:
+  ###########
+  ## Tests ##
+  ###########
+  Fides-Tests:
     needs: [Check-Backend-Changes, Check-Container-Startup]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
     strategy:
       fail-fast: false
       matrix:
         include:
-          # api - 8 shards
+          # api - 8 splits
           - test_selection: "api"
-            shard_id: 0
-            num_shards: 8
+            split_group: 1
           - test_selection: "api"
-            shard_id: 1
-            num_shards: 8
+            split_group: 2
           - test_selection: "api"
-            shard_id: 2
-            num_shards: 8
+            split_group: 3
           - test_selection: "api"
-            shard_id: 3
-            num_shards: 8
+            split_group: 4
           - test_selection: "api"
-            shard_id: 4
-            num_shards: 8
+            split_group: 5
           - test_selection: "api"
-            shard_id: 5
-            num_shards: 8
+            split_group: 6
           - test_selection: "api"
-            shard_id: 6
-            num_shards: 8
+            split_group: 7
           - test_selection: "api"
-            shard_id: 7
-            num_shards: 8
-          # cli - 1 shard
+            split_group: 8
+          # Non-sharded groups
           - test_selection: "cli"
-          # common - 1 shard
+            split_group: null
           - test_selection: "common"
-          # config - 1 shard
+            split_group: null
           - test_selection: "config"
-          # connectors - 1 shard
+            split_group: null
           - test_selection: "connectors"
-          # migration - 1 shard
+            split_group: null
           - test_selection: "migration"
-          # service - 8 shards
+            split_group: null
+          # service - 8 splits
           - test_selection: "service"
-            shard_id: 0
-            num_shards: 8
+            split_group: 1
           - test_selection: "service"
-            shard_id: 1
-            num_shards: 8
+            split_group: 2
           - test_selection: "service"
-            shard_id: 2
-            num_shards: 8
+            split_group: 3
           - test_selection: "service"
-            shard_id: 3
-            num_shards: 8
+            split_group: 4
           - test_selection: "service"
-            shard_id: 4
-            num_shards: 8
+            split_group: 5
           - test_selection: "service"
-            shard_id: 5
-            num_shards: 8
+            split_group: 6
           - test_selection: "service"
-            shard_id: 6
-            num_shards: 8
+            split_group: 7
           - test_selection: "service"
-            shard_id: 7
-            num_shards: 8
+            split_group: 8
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -444,9 +429,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .nox/
-          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ matrix.shard_id }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
+          key: ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ matrix.split_group }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
-            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ matrix.shard_id }}
+            ${{ runner.os }}-uv-nox-${{ github.job }}-${{ env.DEFAULT_PYTHON_VERSION }}-${{ matrix.test_selection }}-${{ matrix.split_group }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -456,11 +441,11 @@ jobs:
 
       - name: Run test suite
         run: |
-          SHARD_ARGS=""
-          if [ -n "${{ matrix.shard_id }}" ]; then
-            SHARD_ARGS="-- --shard-id=${{ matrix.shard_id }} --num-shards=${{ matrix.num_shards }}"
+          if [ "${{ matrix.split_group }}" != "" ] && [ "${{ matrix.split_group }}" != "null" ]; then
+            export TOTAL_SPLITS=8
+            export SPLIT_GROUP=${{ matrix.split_group }}
           fi
-          uv run nox -s "pytest(${{ matrix.test_selection }})" $SHARD_ARGS
+          uv run nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
@@ -484,8 +469,7 @@ jobs:
       - Check-Container-Startup
       - Migration-Checks
       - Misc-Tests
-      - Safe-Tests
-      # Unsafe tests are optional, so we don't include them in the summary
+      - Fides-Tests
     steps:
       - name: Check job results
         run: |
@@ -494,7 +478,7 @@ jobs:
           echo "Check-Container-Startup: ${{ needs.Check-Container-Startup.result }}"
           echo "Migration-Checks: ${{ needs.Migration-Checks.result }}"
           echo "Misc-Tests: ${{ needs.Misc-Tests.result }}"
-          echo "Safe-Tests: ${{ needs.Safe-Tests.result }}"
+          echo "Fides-Tests: ${{ needs.Fides-Tests.result }}"
 
           # Fail only if jobs failed (not if skipped)
           if [ "${{ needs.Collect-Tests.result }}" == "failure" ] || \
@@ -502,7 +486,7 @@ jobs:
              [ "${{ needs.Check-Container-Startup.result }}" == "failure" ] || \
              [ "${{ needs.Migration-Checks.result }}" == "failure" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "failure" ] || \
-             [ "${{ needs.Safe-Tests.result }}" == "failure" ]; then
+             [ "${{ needs.Fides-Tests.result }}" == "failure" ]; then
             echo "❌ One or more required jobs failed"
             exit 1
           fi
@@ -513,7 +497,7 @@ jobs:
              [ "${{ needs.Check-Container-Startup.result }}" == "cancelled" ] || \
              [ "${{ needs.Migration-Checks.result }}" == "cancelled" ] || \
              [ "${{ needs.Misc-Tests.result }}" == "cancelled" ] || \
-             [ "${{ needs.Safe-Tests.result }}" == "cancelled" ]; then
+             [ "${{ needs.Fides-Tests.result }}" == "cancelled" ]; then
             echo "❌ One or more required jobs were cancelled"
             exit 1
           fi

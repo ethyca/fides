@@ -396,11 +396,7 @@ def pytest(session: nox.Session, test_group: str) -> None:
         ),
     )
 
-    TEST_MATRIX[test_group](
-        session=session,
-        pytest_config=pytest_config,
-        extra_args=tuple(session.posargs),
-    )
+    TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)
 
 
 @nox.session()

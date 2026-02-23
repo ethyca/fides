@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from typing import Optional
 
@@ -8,6 +9,9 @@ from constants_nox import (
     LOGIN,
     START_APP,
 )
+
+TOTAL_SPLITS = os.environ.get("TOTAL_SPLITS")
+SPLIT_GROUP = os.environ.get("SPLIT_GROUP")
 
 
 @dataclass
@@ -81,6 +85,19 @@ class PytestConfig:
         ]
 
 
+def _split_args() -> tuple:
+    """Return pytest-split CLI args if TOTAL_SPLITS and SPLIT_GROUP are set."""
+    if TOTAL_SPLITS and SPLIT_GROUP:
+        return (
+            "--splits",
+            TOTAL_SPLITS,
+            "--group",
+            SPLIT_GROUP,
+            "--splitting-algorithm=least_duration",
+        )
+    return ()
+
+
 def _run_pytest(
     session: Session,
     pytest_config: PytestConfig,
@@ -99,21 +116,18 @@ def _run_pytest(
         "pytest",
         *pytest_config.args,
         test_dir,
+        *_split_args(),
         *extra_args,
     )
     session.run(*run_command, external=True)
 
 
-def pytest_api(
-    session: Session, pytest_config: PytestConfig, extra_args: tuple = ()
-) -> None:
+def pytest_api(session: Session, pytest_config: PytestConfig) -> None:
     """Runs tests under tests/api/."""
-    _run_pytest(session, pytest_config, "tests/api/", extra_args)
+    _run_pytest(session, pytest_config, "tests/api/")
 
 
-def pytest_cli(
-    session: Session, pytest_config: PytestConfig, extra_args: tuple = ()
-) -> None:
+def pytest_cli(session: Session, pytest_config: PytestConfig) -> None:
     """Runs CLI tests under tests/cli/."""
     import copy
 
@@ -131,21 +145,17 @@ def pytest_cli(
         "pytest",
         *local_pytest_config.args,
         "tests/cli/",
-        *extra_args,
+        *_split_args(),
     )
     session.run(*run_command, external=True)
 
 
-def pytest_common(
-    session: Session, pytest_config: PytestConfig, extra_args: tuple = ()
-) -> None:
+def pytest_common(session: Session, pytest_config: PytestConfig) -> None:
     """Runs common utility tests under tests/common/."""
-    _run_pytest(session, pytest_config, "tests/common/", extra_args)
+    _run_pytest(session, pytest_config, "tests/common/")
 
 
-def pytest_config(
-    session: Session, pytest_config: PytestConfig, extra_args: tuple = ()
-) -> None:
+def pytest_config(session: Session, pytest_config: PytestConfig) -> None:
     """Runs config tests under tests/config/."""
     import copy
 
@@ -165,32 +175,26 @@ def pytest_config(
         "-m",
         "unit",
         "--full-trace",
-        *extra_args,
+        *_split_args(),
     )
     session.run(*run_command, external=True)
 
 
-def pytest_connectors(
-    session: Session, pytest_config: PytestConfig, extra_args: tuple = ()
-) -> None:
+def pytest_connectors(session: Session, pytest_config: PytestConfig) -> None:
     """Runs connector tests under tests/connectors/."""
     _run_pytest(
         session,
         pytest_config,
         "tests/connectors/",
-        ("-m", "not external", *extra_args),
+        ("-m", "not external"),
     )
 
 
-def pytest_migration(
-    session: Session, pytest_config: PytestConfig, extra_args: tuple = ()
-) -> None:
+def pytest_migration(session: Session, pytest_config: PytestConfig) -> None:
     """Runs database migration tests under tests/migration/."""
-    _run_pytest(session, pytest_config, "tests/migration/", extra_args)
+    _run_pytest(session, pytest_config, "tests/migration/")
 
 
-def pytest_service(
-    session: Session, pytest_config: PytestConfig, extra_args: tuple = ()
-) -> None:
+def pytest_service(session: Session, pytest_config: PytestConfig) -> None:
     """Runs service tests under tests/service/."""
-    _run_pytest(session, pytest_config, "tests/service/", extra_args)
+    _run_pytest(session, pytest_config, "tests/service/")
