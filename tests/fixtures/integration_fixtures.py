@@ -17,7 +17,7 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.connectors import MongoDBConnector, ScyllaConnector
-from tests.ops.task.traversal_data import mongo_dataset_dict, postgres_dataset_dict
+from tests.helpers.traversal_data import mongo_dataset_dict, postgres_dataset_dict
 
 from .application_fixtures import faker, integration_secrets
 

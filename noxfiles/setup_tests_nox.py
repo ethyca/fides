@@ -1,26 +1,17 @@
+import os
 from dataclasses import dataclass
 from typing import Optional
 
 from nox import Session
 
 from constants_nox import (
-    CI_ARGS_EXEC,
-    COMPOSE_FILE,
-    CONTAINER_NAME,
-    EXEC,
     EXEC_UV,
-    IMAGE_NAME,
-    INTEGRATION_COMPOSE_FILE,
     LOGIN,
     START_APP,
-    START_APP_WITH_EXTERNAL_POSTGRES,
 )
-from run_infrastructure import (
-    API_TEST_DIR,
-    OPS_API_TEST_DIRS,
-    OPS_TEST_DIR,
-    run_infrastructure,
-)
+
+TOTAL_SPLITS = os.environ.get("TOTAL_SPLITS")
+SPLIT_GROUP = os.environ.get("SPLIT_GROUP")
 
 
 @dataclass
@@ -94,8 +85,26 @@ class PytestConfig:
         ]
 
 
-def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
-    """Runs lib tests."""
+def _split_args() -> tuple:
+    """Return pytest-split CLI args if TOTAL_SPLITS and SPLIT_GROUP are set."""
+    if TOTAL_SPLITS and SPLIT_GROUP:
+        return (
+            "--splits",
+            TOTAL_SPLITS,
+            "--group",
+            SPLIT_GROUP,
+            "--splitting-algorithm=least_duration",
+        )
+    return ()
+
+
+def _run_pytest(
+    session: Session,
+    pytest_config: PytestConfig,
+    test_dir: str,
+    extra_args: tuple = (),
+) -> None:
+    """Run pytest inside the Docker container."""
     session.notify("teardown")
     session.run(*START_APP, external=True)
     run_command = (
@@ -106,331 +115,27 @@ def pytest_lib(session: Session, pytest_config: PytestConfig) -> None:
         "/opt/fides/bin/python",
         "pytest",
         *pytest_config.args,
-        "tests/lib/",
+        test_dir,
+        *_split_args(),
+        *extra_args,
     )
     session.run(*run_command, external=True)
-
-
-def pytest_nox(session: Session, pytest_config: PytestConfig) -> None:
-    """Runs any tests of nox commands themselves."""
-    # the nox tests don't run with coverage or xdist so just add the reporting config here
-    run_command = ("pytest", *pytest_config.report_config.args, "noxfiles/")
-    session.run(*run_command, external=True)
-
-
-def pytest_ctl(session: Session, mark: str, pytest_config: PytestConfig) -> None:
-    """Runs ctl tests."""
-    session.notify("teardown")
-    if mark == "external":
-        start_command = (
-            "docker",
-            "compose",
-            "-f",
-            COMPOSE_FILE,
-            "-f",
-            INTEGRATION_COMPOSE_FILE,
-            "up",
-            "--wait",
-            IMAGE_NAME,
-        )
-        session.run(*start_command, external=True)
-        session.run(*LOGIN, external=True)
-        run_command = (
-            "docker",
-            "exec",
-            "-e",
-            "SNOWFLAKE_FIDESCTL_PASSWORD",
-            "-e",
-            "REDSHIFT_FIDESCTL_PASSWORD",
-            "-e",
-            "AWS_ACCESS_KEY_ID",
-            "-e",
-            "AWS_SECRET_ACCESS_KEY",
-            "-e",
-            "AWS_DEFAULT_REGION",
-            "-e",
-            "OKTA_CLIENT_ID",
-            "-e",
-            "OKTA_PRIVATE_KEY",
-            "-e",
-            "BIGQUERY_CONFIG",
-            "-e",
-            "DYNAMODB_REGION",
-            "-e",
-            "DYNAMODB_ACCESS_KEY_ID",
-            "-e",
-            "DYNAMODB_ACCESS_KEY",
-            CI_ARGS_EXEC,
-            CONTAINER_NAME,
-            "uv",
-            "run",
-            "--python",
-            "/opt/fides/bin/python",
-            "pytest",
-            *pytest_config.coverage_config.args,
-            *pytest_config.report_config.args,
-            "-m",
-            "external",
-            "tests/ctl",
-            "--tb=no",
-        )
-        session.run(*run_command, external=True)
-    else:
-        import copy
-
-        # Don't use xdist for this one
-        local_pytest_config = copy.copy(pytest_config)
-        local_pytest_config.xdist_config.parallel_runners = "0"
-
-        session.run(*START_APP, external=True)
-        session.run(*LOGIN, external=True)
-        run_command = (
-            *EXEC_UV,
-            "uv",
-            "run",
-            "--python",
-            "/opt/fides/bin/python",
-            "pytest",
-            *local_pytest_config.args,
-            "tests/ctl/",
-            "-m",
-            mark,
-            "--full-trace",
-        )
-        session.run(*run_command, external=True)
-
-
-def pytest_ops(
-    session: Session,
-    mark: str,
-    pytest_config: PytestConfig,
-    subset_dir: Optional[str] = None,
-) -> None:
-    """Runs fidesops tests."""
-    session.notify("teardown")
-    if mark == "unit":
-        session.run(*START_APP, external=True)
-        if subset_dir == "api":
-            run_command = (
-                *EXEC_UV,
-                "uv",
-                "run",
-                "--python",
-                "/opt/fides/bin/python",
-                "pytest",
-                *pytest_config.args,
-                *OPS_API_TEST_DIRS,
-                "-m",
-                "not integration and not integration_external and not integration_saas",
-            )
-        elif subset_dir == "non-api":
-            ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]
-            run_command = (
-                *EXEC_UV,
-                "uv",
-                "run",
-                "--python",
-                "/opt/fides/bin/python",
-                "pytest",
-                *pytest_config.args,
-                OPS_TEST_DIR,
-                *ignore_args,
-                "-m",
-                "not integration and not integration_external and not integration_saas",
-            )
-        else:
-            run_command = (
-                *EXEC_UV,
-                "uv",
-                "run",
-                "--python",
-                "/opt/fides/bin/python",
-                "pytest",
-                *pytest_config.args,
-                OPS_TEST_DIR,
-                "-m",
-                "not integration and not integration_external and not integration_saas",
-            )
-        session.run(*run_command, external=True)
-    elif mark == "integration":
-        # The coverage_arg is hardcoded in 'run_infrastructure.py'
-        run_infrastructure(
-            run_tests=True,
-            analytics_opt_out=True,
-            datastores=[],
-            pytest_path=f"{OPS_TEST_DIR} tests/integration/",
-        )
-    elif mark == "external_datastores":
-        session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
-        run_command = (
-            "docker",
-            "exec",
-            "-e",
-            "ANALYTICS_OPT_OUT",
-            "-e",
-            "REDSHIFT_TEST_HOST",
-            "-e",
-            "REDSHIFT_TEST_PORT",
-            "-e",
-            "REDSHIFT_TEST_USER",
-            "-e",
-            "REDSHIFT_TEST_PASSWORD",
-            "-e",
-            "REDSHIFT_TEST_DATABASE",
-            "-e",
-            "REDSHIFT_TEST_DB_SCHEMA",
-            "-e",
-            "SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER",
-            "-e",
-            "SNOWFLAKE_TEST_USER_LOGIN_NAME",
-            "-e",
-            "SNOWFLAKE_TEST_PASSWORD",
-            "-e",
-            "SNOWFLAKE_TEST_PRIVATE_KEY",
-            "-e",
-            "SNOWFLAKE_TEST_PRIVATE_KEY_PASSPHRASE",
-            "-e",
-            "SNOWFLAKE_TEST_WAREHOUSE_NAME",
-            "-e",
-            "SNOWFLAKE_TEST_DATABASE_NAME",
-            "-e",
-            "SNOWFLAKE_TEST_SCHEMA_NAME",
-            "-e",
-            "BIGQUERY_KEYFILE_CREDS",
-            "-e",
-            "BIGQUERY_DATASET",
-            "-e",
-            "BIGQUERY_ENTERPRISE_KEYFILE_CREDS",
-            "-e",
-            "BIGQUERY_ENTERPRISE_DATASET",
-            "-e",
-            "GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER",
-            "-e",
-            "GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME",
-            "-e",
-            "GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME",
-            "-e",
-            "GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS",
-            "-e",
-            "GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER",
-            "-e",
-            "GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME",
-            "-e",
-            "GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME",
-            "-e",
-            "GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_SCHEMA_NAME",
-            "-e",
-            "GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS",
-            "-e",
-            "OKTA_ORG_URL",
-            "-e",
-            "OKTA_CLIENT_ID",
-            "-e",
-            "OKTA_PRIVATE_KEY",
-            "-e",
-            "RDS_MYSQL_AWS_ACCESS_KEY_ID",
-            "-e",
-            "RDS_MYSQL_AWS_SECRET_ACCESS_KEY",
-            "-e",
-            "RDS_MYSQL_DB_USERNAME",
-            "-e",
-            "RDS_MYSQL_DB_INSTANCE",
-            "-e",
-            "RDS_MYSQL_DB_NAME",
-            "-e",
-            "RDS_MYSQL_REGION",
-            "-e",
-            "RDS_POSTGRES_AWS_ACCESS_KEY_ID",
-            "-e",
-            "RDS_POSTGRES_AWS_SECRET_ACCESS_KEY",
-            "-e",
-            "RDS_POSTGRES_DB_USERNAME",
-            "-e",
-            "RDS_POSTGRES_REGION",
-            "-e",
-            "DYNAMODB_REGION",
-            "-e",
-            "DYNAMODB_ACCESS_KEY_ID",
-            "-e",
-            "DYNAMODB_ACCESS_KEY",
-            "-e",
-            "DYNAMODB_ASSUME_ROLE_ARN",
-            "-e",
-            "S3_AWS_ACCESS_KEY_ID",
-            "-e",
-            "S3_AWS_SECRET_ACCESS_KEY",
-            "-e",
-            "MONGODB_ATLAS_HOST",
-            "-e",
-            "MONGODB_ATLAS_DEFAULT_AUTH_DB",
-            "-e",
-            "MONGODB_ATLAS_USERNAME",
-            "-e",
-            "MONGODB_ATLAS_PASSWORD",
-            "-e",
-            "MONGODB_ATLAS_USE_SRV",
-            "-e",
-            "MONGODB_ATLAS_SSL_ENABLED",
-            CI_ARGS_EXEC,
-            CONTAINER_NAME,
-            "uv",
-            "run",
-            "--python",
-            "/opt/fides/bin/python",
-            "pytest",
-            # Don't use xdist for these
-            *pytest_config.coverage_config.args,
-            *pytest_config.report_config.args,
-            OPS_TEST_DIR,
-            "-m",
-            "integration_external",
-        )
-        session.run(*run_command, external=True)
-    elif mark == "saas":
-        # This test runs an additional integration Postgres database.
-        # Some connectors cannot be traversed with the standard email
-        # identity and require another dataset to provide a starting value.
-        #
-        #         ┌────────┐                 ┌────────┐
-        # email──►│postgres├──►delivery_id──►│doordash│
-        #         └────────┘                 └────────┘
-        #
-        session.run(*START_APP_WITH_EXTERNAL_POSTGRES, external=True)
-        run_command = (
-            "docker",
-            "exec",
-            "-e",
-            "ANALYTICS_OPT_OUT",
-            "-e",
-            "SAAS_OP_SERVICE_ACCOUNT_TOKEN",
-            "-e",
-            "SAAS_SECRETS_OP_VAULT_ID",
-            "-e",
-            "FIDES__DEV_MODE=false",
-            CI_ARGS_EXEC,
-            CONTAINER_NAME,
-            "uv",
-            "run",
-            "--python",
-            "/opt/fides/bin/python",
-            "pytest",
-            "--reruns",
-            "3",
-            # Don't use xdist for these
-            *pytest_config.coverage_config.args,
-            *pytest_config.report_config.args,
-            OPS_TEST_DIR,
-            "-m",
-            "integration_saas",
-            "--tb=no",
-        )
-        session.run(*run_command, external=True)
 
 
 def pytest_api(session: Session, pytest_config: PytestConfig) -> None:
-    """Runs tests under /tests/api/"""
+    """Runs tests under tests/api/."""
+    _run_pytest(session, pytest_config, "tests/api/")
+
+
+def pytest_cli(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs CLI tests under tests/cli/."""
+    import copy
+
     session.notify("teardown")
     session.run(*START_APP, external=True)
+    session.run(*LOGIN, external=True)
+    local_pytest_config = copy.copy(pytest_config)
+    local_pytest_config.xdist_config.parallel_runners = "0"
     run_command = (
         *EXEC_UV,
         "uv",
@@ -438,18 +143,26 @@ def pytest_api(session: Session, pytest_config: PytestConfig) -> None:
         "--python",
         "/opt/fides/bin/python",
         "pytest",
-        *pytest_config.args,
-        API_TEST_DIR,
-        "-m",
-        "not integration and not integration_external and not integration_saas",
+        *local_pytest_config.args,
+        "tests/cli/",
+        *_split_args(),
     )
     session.run(*run_command, external=True)
 
 
-def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
-    """Runs unit tests from smaller test directories."""
+def pytest_common(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs common utility tests under tests/common/."""
+    _run_pytest(session, pytest_config, "tests/common/")
+
+
+def pytest_config(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs config tests under tests/config/."""
+    import copy
+
     session.notify("teardown")
     session.run(*START_APP, external=True)
+    local_pytest_config = copy.copy(pytest_config)
+    local_pytest_config.xdist_config.parallel_runners = "0"
     run_command = (
         *EXEC_UV,
         "uv",
@@ -457,82 +170,31 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "--python",
         "/opt/fides/bin/python",
         "pytest",
-        *pytest_config.args,
-        "tests/service/",
-        "tests/task/",
-        "tests/util/",
+        *local_pytest_config.args,
+        "tests/config/",
         "-m",
-        "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
+        "unit",
+        "--full-trace",
+        *_split_args(),
     )
     session.run(*run_command, external=True)
 
 
-def pytest_misc_integration(
-    session: Session, mark: str, pytest_config: PytestConfig
-) -> None:
-    """Runs integration tests from smaller test directories."""
-    session.notify("teardown")
-    if mark == "external":
-        session.run(*START_APP, external=True)
-        # Use the integration infrastructure to run all tests from multiple directories
-        # Need PostgreSQL for service integration tests, BigQuery for QA tests, and Snowflake for service tests
-        run_command = (
-            "docker",
-            "exec",
-            "-e",
-            "SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER",
-            "-e",
-            "SNOWFLAKE_TEST_USER_LOGIN_NAME",
-            "-e",
-            "SNOWFLAKE_TEST_PASSWORD",
-            "-e",
-            "SNOWFLAKE_TEST_PRIVATE_KEY",
-            "-e",
-            "SNOWFLAKE_TEST_PRIVATE_KEY_PASSPHRASE",
-            "-e",
-            "SNOWFLAKE_TEST_WAREHOUSE_NAME",
-            "-e",
-            "SNOWFLAKE_TEST_DATABASE_NAME",
-            "-e",
-            "SNOWFLAKE_TEST_SCHEMA_NAME",
-            "-e",
-            "BIGQUERY_KEYFILE_CREDS",
-            "-e",
-            "BIGQUERY_DATASET",
-            "-e",
-            "BIGQUERY_ENTERPRISE_KEYFILE_CREDS",
-            "-e",
-            "BIGQUERY_ENTERPRISE_DATASET",
-            "-e",
-            "MONGODB_ATLAS_HOST",
-            "-e",
-            "MONGODB_ATLAS_USERNAME",
-            "-e",
-            "MONGODB_ATLAS_PASSWORD",
-            "-e",
-            "MONGODB_ATLAS_DEFAULT_AUTH_DB",
-            CI_ARGS_EXEC,
-            CONTAINER_NAME,
-            "uv",
-            "run",
-            "--python",
-            "/opt/fides/bin/python",
-            "pytest",
-            *pytest_config.args,
-            "tests/qa/",
-            "tests/service/",
-            "tests/task/",
-            "tests/util/",
-            "-m",
-            mark,
-        )
-        session.run(*run_command, external=True)
-    else:
-        # Use the mark parameter for non-external integration tests
-        session.run(*START_APP, external=True)
-        run_infrastructure(
-            run_tests=True,
-            analytics_opt_out=True,
-            datastores=["postgres", "bigquery", "snowflake"],
-            pytest_path="tests/qa/ tests/service/ tests/task/ tests/util/",
-        )
+def pytest_connectors(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs connector tests under tests/connectors/."""
+    _run_pytest(
+        session,
+        pytest_config,
+        "tests/connectors/",
+        ("-m", "not external"),
+    )
+
+
+def pytest_migration(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs database migration tests under tests/migration/."""
+    _run_pytest(session, pytest_config, "tests/migration/")
+
+
+def pytest_service(session: Session, pytest_config: PytestConfig) -> None:
+    """Runs service tests under tests/service/."""
+    _run_pytest(session, pytest_config, "tests/service/")

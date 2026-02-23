@@ -1,9 +1,8 @@
 """Contains the nox sessions used during CI checks."""
 
 from enum import StrEnum
-from functools import partial
 from pathlib import Path
-from typing import Callable, Dict
+from typing import Callable
 
 import nox
 from nox import Session
@@ -25,12 +24,12 @@ from setup_tests_nox import (
     ReportConfig,
     XdistConfig,
     pytest_api,
-    pytest_ctl,
-    pytest_lib,
-    pytest_misc_integration,
-    pytest_misc_unit,
-    pytest_nox,
-    pytest_ops,
+    pytest_cli,
+    pytest_common,
+    pytest_config,
+    pytest_connectors,
+    pytest_migration,
+    pytest_service,
 )
 from utils_nox import db, install_requirements
 
@@ -303,66 +302,40 @@ def load_tests(session: nox.Session) -> None:
 ## Pytest ##
 ############
 TEST_GROUPS = [
-    nox.param("ctl-unit", id="ctl-unit"),
-    nox.param("ctl-not-external", id="ctl-not-external"),
-    nox.param("ctl-integration", id="ctl-integration"),
-    nox.param("ctl-external", id="ctl-external"),
-    nox.param("ops-unit", id="ops-unit"),
-    nox.param("ops-unit-api", id="ops-unit-api"),
-    nox.param("ops-unit-non-api", id="ops-unit-non-api"),
-    nox.param("ops-integration", id="ops-integration"),
-    nox.param("ops-external-datastores", id="ops-external-datastores"),
-    nox.param("ops-saas", id="ops-saas"),
     nox.param("api", id="api"),
-    nox.param("lib", id="lib"),
-    nox.param("misc-unit", id="misc-unit"),
-    nox.param("misc-integration-external", id="misc-integration-external"),
-    nox.param("misc-integration", id="misc-integration"),
-    nox.param("nox", id="nox"),
+    nox.param("cli", id="cli"),
+    nox.param("common", id="common"),
+    nox.param("config", id="config"),
+    nox.param("connectors", id="connectors"),
+    nox.param("migration", id="migration"),
+    nox.param("service", id="service"),
 ]
 
-TEST_MATRIX: Dict[str, Callable] = {
-    "ctl-unit": partial(pytest_ctl, mark="unit"),
-    "ctl-not-external": partial(pytest_ctl, mark="not external"),
-    "ctl-integration": partial(pytest_ctl, mark="integration"),
-    "ctl-external": partial(pytest_ctl, mark="external"),
-    "ops-unit": partial(pytest_ops, mark="unit"),
-    "ops-unit-api": partial(pytest_ops, mark="unit", subset_dir="api"),
-    "ops-unit-non-api": partial(pytest_ops, mark="unit", subset_dir="non-api"),
-    "ops-integration": partial(pytest_ops, mark="integration"),
-    "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
-    "ops-saas": partial(pytest_ops, mark="saas"),
+TEST_MATRIX: dict[str, Callable] = {
     "api": pytest_api,
-    "lib": pytest_lib,
-    "misc-unit": pytest_misc_unit,
-    "misc-integration-external": partial(pytest_misc_integration, mark="external"),
-    "misc-integration": partial(
-        pytest_misc_integration,
-        mark="integration_bigquery or integration_snowflake or integration_postgres or integration",
-    ),
-    "nox": pytest_nox,
+    "cli": pytest_cli,
+    "common": pytest_common,
+    "config": pytest_config,
+    "connectors": pytest_connectors,
+    "migration": pytest_migration,
+    "service": pytest_service,
 }
 
-# Define the mapping of test directories to test groups
-# This maps actual test directories to the test groups that cover them
-TEST_DIRECTORY_COVERAGE = {
+TEST_DIRECTORY_COVERAGE: dict[str, list[str]] = {
     "tests/api/": ["api"],
-    "tests/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
-    "tests/lib/": ["lib"],
-    "tests/ops/": [
-        "ops-unit",
-        "ops-unit-api",
-        "ops-unit-non-api",
-        "ops-integration",
-        "ops-external-datastores",
-        "ops-saas",
-    ],
-    "tests/service/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
-    "tests/integration/": ["ops-integration"],  # Workflow integration tests
-    "tests/fixtures/": [],  # fixtures are not test files, just test data
+    "tests/cli/": ["cli"],
+    "tests/common/": ["common"],
+    "tests/config/": ["config"],
+    "tests/connectors/": ["connectors"],
+    "tests/migration/": ["migration"],
+    "tests/service/": ["service"],
+    # Stub directories (no active tests)
+    "tests/integration/": [],
+    "tests/performance/": [],
+    # Support directories (no test runners)
+    "tests/factories/": [],
+    "tests/fixtures/": [],
+    "tests/helpers/": [],
 }
 
 
@@ -504,14 +477,10 @@ def _check_test_directory_coverage(
 
     if test_dir not in TEST_DIRECTORY_COVERAGE:
         uncovered_dirs.append(f"{test_dir} - No coverage mapping defined")
-    elif test_dir == "tests/fixtures/":
-        # Directory is explicitly marked as not needing coverage (like fixtures)
-        excluded_dirs.append(
-            f"{test_dir} - Explicitly excluded from coverage (fixtures/data)"
-        )
     elif not TEST_DIRECTORY_COVERAGE[test_dir]:
-        # Directory is marked as not covered by any test group
-        uncovered_dirs.append(f"{test_dir} - No test group covers this directory")
+        excluded_dirs.append(
+            f"{test_dir} - Explicitly excluded from coverage (support directory)"
+        )
     else:
         # Check that all required test groups exist in TEST_MATRIX
         required_groups = TEST_DIRECTORY_COVERAGE[test_dir]

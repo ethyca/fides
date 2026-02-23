@@ -8,11 +8,11 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 from starlette.testclient import TestClient
-from tests.conftest import generate_role_header_for_user
 
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.common.scope_registry import CTL_DATASET_CREATE, CTL_DATASET_READ
 from fides.common.urn_registry import DATASETS, V1_URL_PREFIX
+from tests.helpers.auth import generate_role_header_for_user
 
 
 class TestCreateDataset:

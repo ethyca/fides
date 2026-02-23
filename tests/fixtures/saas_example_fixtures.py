@@ -37,7 +37,7 @@ from fides.service.privacy_request.masking.strategy.masking_strategy_random_stri
 from fides.service.privacy_request.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from tests.fixtures.application_fixtures import load_dataset
+from tests.fixtures.dataset_fixtures import load_dataset
 
 
 @pytest.fixture(scope="function")

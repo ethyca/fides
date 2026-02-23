@@ -143,6 +143,7 @@ all = ["pymssql==2.3.7"]
 dev = [
     "ruff>=0.14.11",
     "debugpy~=1.8.0",
+    "factory-boy>=3.3.0",
     "Faker==14.1.0",
     "freezegun==1.5.5",
     "GitPython==3.1.41",
@@ -174,6 +175,7 @@ dev = [
     "watchfiles==0.19.0",
     "werkzeug==3.0.6",
     "xenon==0.9.0",
+    "pytest-split>=0.11.0",
 ]
 
 [project.scripts]

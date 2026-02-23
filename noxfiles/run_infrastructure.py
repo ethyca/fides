@@ -82,10 +82,10 @@ EXTERNAL_DATASTORE_CONFIG = {
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 ALL_DATASTORES = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
 OPS_TEST_DIR = "tests/ops/"
-OPS_API_TEST_DIRS = [
-    f"{OPS_TEST_DIR}api/",
-]
 API_TEST_DIR = "tests/api/"
+OPS_API_TEST_DIRS = [
+    API_TEST_DIR,
+]
 
 
 def run_infrastructure(
@@ -172,7 +172,7 @@ def seed_initial_data(
     for datastore in datastores:
         if datastore in DOCKERFILE_DATASTORES:
             setup_path = (
-                f"{OPS_TEST_DIR}integration_tests/setup_scripts/{datastore}_setup.py"
+                f"tests/connectors/integration/setup_scripts/{datastore}_setup.py"
             )
             _run_cmd_or_err(
                 f'echo "Attempting to create schema and seed initial data for {datastore} from {setup_path}..."'
