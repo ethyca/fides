@@ -267,6 +267,7 @@ SYSTEM_INTEGRATION_LINK_DELETE = f"{SYSTEM_INTEGRATION_LINK}:{DELETE}"
 |---|---|---|
 | `PATCH /system/{key}/connection` | Created ConnectionConfig with `system_id` set | Creates ConnectionConfig, then creates link row via `SystemConnectionConfigLink.create_or_update_link()` |
 | `DELETE /system/{key}/connection` | Deleted the ConnectionConfig (cascaded via FK) | Deletes the ConnectionConfig; link rows cascade-deleted via FK on the join table |
+| `DELETE /system/{fides_key}` (system deletion) | Cascade-deleted the linked ConnectionConfig (and its DatasetConfig) via the direct `system_id` FK on `connectionconfig` | Cascade-deletes only the **link rows** in `system_connection_config_link`. The ConnectionConfig and DatasetConfig are **preserved** and become orphaned. |
 | `GET /connection/{key}` | Returns `system_key` from `ConnectionConfig.system` | Unchanged -- `system_key` property reads through the `secondary=` relationship transparently |
 | `GET /connection?orphaned_from_system=true` | Filtered on `ConnectionConfig.system_id IS NULL` | Uses `EXISTS` subquery on `SystemConnectionConfigLink` |
 | `GET /system/{key}/connection` | Filtered on `ConnectionConfig.system_id` | Joins through `SystemConnectionConfigLink.system_id` |
@@ -353,3 +354,5 @@ These run against the real test database and verify SQLAlchemy queries and sessi
 3. **Relationship configuration:** Both `ConnectionConfig.system` and `System.connection_configs` use `secondary="system_connection_config_link"` with `uselist=False, viewonly=True`. This provides transparent reads while ensuring all writes go through the explicit `SystemConnectionConfigLink.create_or_update_link()` method.
 
 4. **Write path centralization:** A `create_or_update_link` classmethod on `SystemConnectionConfigLink` ensures exactly one link per connection config. It replaces any existing link for the same connection config before creating the new one.
+
+5. **System deletion no longer cascades to ConnectionConfig.** With the old direct FK (`ConnectionConfig.system_id`), deleting a system would cascade-delete all associated ConnectionConfig rows (and by extension their DatasetConfig rows). With the join table, the CASCADE on `system_connection_config_link.system_id` only deletes the **link rows**. The ConnectionConfig and DatasetConfig are preserved and become "orphaned from system." This is intentional: the join table decouples the lifecycle of systems and integrations, and orphaned connections can be re-linked or cleaned up independently.

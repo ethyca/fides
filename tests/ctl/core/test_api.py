@@ -2922,7 +2922,7 @@ class TestSystemDelete:
         )
         assert result.status_code == HTTP_403_FORBIDDEN
 
-    def test_delete_system_deletes_connection_config_and_dataset(
+    def test_delete_system_unlinks_connection_config(
         self,
         test_config,
         db,
@@ -2931,8 +2931,10 @@ class TestSystemDelete:
         dataset_config: DatasetConfig,
     ) -> None:
         """
-        Ensure that deleting the system also deletes any associated
-        ConnectionConfig and DatasetConfig records
+        Deleting a system cascade-deletes the join-table link but
+        preserves the ConnectionConfig and DatasetConfig (they become
+        orphaned).  This changed when system_id moved from a direct FK
+        on ConnectionConfig to the system_connection_config_link table.
         """
         auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
 
@@ -2941,11 +2943,9 @@ class TestSystemDelete:
             db, system.id, connection_config.id
         )
         db.commit()
-        # the keys are cached before the delete
         connection_config_key = connection_config.key
         dataset_config_key = dataset_config.fides_key
 
-        # delete the system via API
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type="system",
@@ -2954,17 +2954,25 @@ class TestSystemDelete:
         )
         assert result.status_code == HTTP_200_OK
 
-        # ensure our system itself was deleted
+        db.expire_all()
+
         assert db.query(System).filter_by(fides_key=system.fides_key).first() is None
-        # ensure our associated ConnectionConfig was deleted
+
+        # Link row is cascade-deleted, but ConnectionConfig and
+        # DatasetConfig are preserved (orphaned).
         assert (
-            db.query(ConnectionConfig).filter_by(key=connection_config_key).first()
+            db.query(SystemConnectionConfigLink)
+            .filter_by(connection_config_id=connection_config.id)
+            .first()
             is None
         )
-        # and ensure our associated DatasetConfig was deleted
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config_key).first()
+            is not None
+        )
         assert (
             db.query(DatasetConfig).filter_by(fides_key=dataset_config_key).first()
-            is None
+            is not None
         )
 
     def test_owner_role_gets_404_if_system_not_found(

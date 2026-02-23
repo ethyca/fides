@@ -71,6 +71,8 @@ System (ctl_systems)
 
 Note: The System:ConnectionConfig relationship was migrated from a direct FK (`ConnectionConfig.system_id`) to the `system_connection_config_link` join table. The old FK has been removed. Both sides of the relationship use `uselist=False` and `viewonly=True` for backward compatibility; writes go through `SystemConnectionConfigLink.create_or_update_link()`.
 
+**Cascade behavior change:** Deleting a system previously cascade-deleted its linked ConnectionConfig (and DatasetConfig) via the direct FK. With the join table, system deletion only cascade-deletes the link rows -- the ConnectionConfig and DatasetConfig are preserved as orphans. This decouples system and integration lifecycles.
+
 Key files:
 - System model: `src/fides/api/models/sql_models.py`
 - ConnectionConfig model: `src/fides/api/models/connectionconfig.py`
