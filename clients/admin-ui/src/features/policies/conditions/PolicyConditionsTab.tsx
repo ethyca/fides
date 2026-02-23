@@ -103,5 +103,3 @@ export const PolicyConditionsTab = ({
     </div>
   );
 };
-
-export default PolicyConditionsTab;
