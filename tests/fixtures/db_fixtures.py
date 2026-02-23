@@ -5,6 +5,7 @@ import httpx
 import pytest
 import requests
 from fastapi.testclient import TestClient
+from fideslang import DEFAULT_TAXONOMY
 from httpx import AsyncClient
 from moto import mock_aws
 from pytest import MonkeyPatch
@@ -50,9 +51,14 @@ def mock_s3_client(s3_client, monkeypatch):
 
 
 @pytest.fixture(scope="session")
+def fideslang_data_categories():
+    """Provides access to the default taxonomy data categories."""
+    return DEFAULT_TAXONOMY.data_category
+
+
+@pytest.fixture(scope="session")
 def db(api_client, config):
     """Return a connection to the test DB"""
-    # Create the test DB engine
     assert config.test_mode
     assert requests.post != api_client.post
     engine = get_db_engine(
@@ -68,10 +74,8 @@ def db(api_client, config):
 
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
-    # Setup above...
 
     yield the_session
-    # Teardown below...
     the_session.close()
     engine.dispose()
 
