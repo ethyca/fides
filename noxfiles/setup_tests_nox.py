@@ -459,6 +459,7 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "pytest",
         *pytest_config.args,
         "tests/service/",
+        "tests/system_integration_link/",
         "tests/task/",
         "tests/util/",
         "-m",
@@ -521,6 +522,7 @@ def pytest_misc_integration(
             *pytest_config.args,
             "tests/qa/",
             "tests/service/",
+            "tests/system_integration_link/",
             "tests/task/",
             "tests/util/",
             "-m",
@@ -534,5 +536,5 @@ def pytest_misc_integration(
             run_tests=True,
             analytics_opt_out=True,
             datastores=["postgres", "bigquery", "snowflake"],
-            pytest_path="tests/qa/ tests/service/ tests/task/ tests/util/",
+            pytest_path="tests/qa/ tests/service/ tests/system_integration_link/ tests/task/ tests/util/",
         )
