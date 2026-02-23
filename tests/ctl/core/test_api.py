@@ -2940,6 +2940,7 @@ class TestSystemDelete:
         SystemConnectionConfigLink.create_or_update_link(
             db, system.id, connection_config.id
         )
+        db.commit()
         # the keys are cached before the delete
         connection_config_key = connection_config.key
         dataset_config_key = dataset_config.fides_key
