@@ -306,6 +306,9 @@ class TestDeletePolicy:
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == 204
 
+        # Expire cached objects so the session re-queries the database
+        db.expire_all()
+
         # Verify policy, rule, and target are all deleted
         assert Policy.get(db=db, object_id=test_policy.id) is None
         assert Rule.get(db=db, object_id=rule_id) is None
