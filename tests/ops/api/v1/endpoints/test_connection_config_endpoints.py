@@ -953,6 +953,7 @@ class TestGetConnections:
             "description",
             "authorized",
             "enabled_actions",
+            "linked_systems",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -964,6 +965,42 @@ class TestGetConnections:
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    def test_get_connections_linked_systems_empty(
+        self, api_client: TestClient, generate_auth_header, connection_config, url
+    ) -> None:
+        """Connection config without a linked system returns an empty list."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        connection = resp.json()["items"][0]
+        assert connection["linked_systems"] == []
+
+    def test_get_connections_linked_systems_populated(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        connection_config,
+        system_with_cleanup,
+        url,
+    ) -> None:
+        """Connection config linked to a system returns the system in linked_systems."""
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system_with_cleanup.id, connection_config.id
+        )
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        connection = resp.json()["items"][0]
+        assert connection["linked_systems"] == [
+            {
+                "fides_key": system_with_cleanup.fides_key,
+                "name": system_with_cleanup.name,
+            }
+        ]
 
     def test_filter_connections_disabled_and_type(
         self,

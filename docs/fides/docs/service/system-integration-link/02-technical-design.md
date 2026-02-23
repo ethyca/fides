@@ -214,7 +214,38 @@ GET /api/v1/connection/{connection_key}/system-links
 
 ### 2.4 Extended GET /connection List Response
 
-**Status:** Not yet implemented. Will add a `linked_systems` field alongside the existing `system_key`. The existing `system_key` continues to work via the `ConnectionConfig.system` relationship (which reads through the join table transparently).
+**Status:** Implemented.
+
+The `GET /api/v1/connection` list response now includes a `linked_systems` field on each connection config. This is a list of `LinkedSystemInfo` objects, each containing `fides_key` and `name`. Currently the list will contain at most one entry (due to the 1:1 constraint), but the list shape is forward-compatible with many-to-many.
+
+The `ConnectionConfig.system` relationship uses `lazy="selectin"` to avoid N+1 queries when paginating the list.
+
+**Response example:**
+
+```json
+{
+  "items": [
+    {
+      "key": "my_postgres",
+      "name": "My Postgres",
+      "connection_type": "postgres",
+      "linked_systems": [
+        {
+          "fides_key": "my_system",
+          "name": "My System"
+        }
+      ],
+      ...
+    }
+  ]
+}
+```
+
+The implementation is scoped to the list endpoint and response schema -- no changes to the core `ConnectionConfig` model. The route adds `selectinload(ConnectionConfig.system)` to eagerly load the relationship for this query only. A `@model_validator(mode='wrap')` on `ConnectionConfigurationResponse` reads the ORM `.system` relationship and populates `linked_systems` during serialization.
+
+**Implemented in:**
+- Schema & validator: `ConnectionConfigurationResponse` in `src/fides/api/schemas/connection_configuration/connection_config.py`
+- Eager loading: `get_connections` in `src/fides/api/api/v1/endpoints/connection_endpoints.py`
 
 ### Schemas
 

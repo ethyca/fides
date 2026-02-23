@@ -12,7 +12,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy import null, or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
@@ -170,7 +170,9 @@ def get_connections(
             )
 
     return paginate(
-        query.order_by(ConnectionConfig.name.asc()),
+        query.order_by(ConnectionConfig.name.asc()).options(
+            selectinload(ConnectionConfig.system)
+        ),
         params=params,
     )
 
