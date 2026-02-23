@@ -81,3 +81,118 @@ describe("Policy detail page", () => {
       });
   });
 });
+
+describe("Policy conditions list", () => {
+  it("shows the empty state when there are no conditions", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "default_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getAntTabPanel("conditions").within(() => {
+      cy.getByTestId("conditions-list").should("be.visible");
+      cy.contains(
+        "No conditions configured. This policy will apply to all matching requests.",
+      ).should("be.visible");
+    });
+  });
+
+  it("shows a single condition leaf", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.intercept("GET", "/api/v1/dsr/policy/*", {
+      body: {
+        name: "GDPR Erasure Policy",
+        key: "gdpr_erasure_policy",
+        drp_action: null,
+        execution_timeframe: 30,
+        conditions: {
+          field_address: "privacy_request.location_regulations",
+          operator: "list_contains",
+          value: "gdpr",
+        },
+        rules: [
+          {
+            name: "Erasure Rule",
+            key: "erasure_rule",
+            action_type: "erasure",
+          },
+        ],
+      },
+    }).as("getDSRPolicy");
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "gdpr_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getAntTabPanel("conditions").within(() => {
+      cy.getByTestId("conditions-list").should("be.visible");
+      cy.getByTestId("condition-row-0").should("be.visible");
+      cy.getByTestId("condition-row-0").within(() => {
+        cy.contains("Location regulations").should("be.visible");
+        cy.contains("list contains").should("be.visible");
+        cy.contains("gdpr").should("be.visible");
+      });
+    });
+  });
+
+  it("shows multiple conditions from a group", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.intercept("GET", "/api/v1/dsr/policy/*", {
+      body: {
+        name: "EU Data Access Request",
+        key: "eu_data_access_request",
+        drp_action: null,
+        execution_timeframe: 30,
+        conditions: {
+          logical_operator: "or",
+          conditions: [
+            {
+              field_address: "privacy_request.location_country",
+              operator: "eq",
+              value: "FR",
+            },
+            {
+              field_address: "privacy_request.location_country",
+              operator: "eq",
+              value: "DE",
+            },
+            {
+              field_address: "privacy_request.location_country",
+              operator: "eq",
+              value: "IT",
+            },
+          ],
+        },
+        rules: [
+          {
+            name: "EU Access",
+            key: "eu_access",
+            action_type: "access",
+          },
+        ],
+      },
+    }).as("getDSRPolicy");
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "eu_data_access_request"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getAntTabPanel("conditions").within(() => {
+      cy.getByTestId("conditions-list").should("be.visible");
+      cy.getByTestId("condition-row-0").should("be.visible");
+      cy.getByTestId("condition-row-1").should("be.visible");
+      cy.getByTestId("condition-row-2").should("be.visible");
+
+      cy.getByTestId("condition-row-0").within(() => {
+        cy.contains("Location country").should("be.visible");
+        cy.contains("equals").should("be.visible");
+        cy.contains("FR").should("be.visible");
+      });
+
+      cy.getByTestId("condition-row-2").within(() => {
+        cy.contains("IT").should("be.visible");
+      });
+    });
+  });
+});
