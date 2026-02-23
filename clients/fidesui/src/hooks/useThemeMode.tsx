@@ -51,7 +51,7 @@ export const ThemeModeProvider = ({
   defaultMode = "light",
   attribute = "data-theme",
   wrapperStyle = { height: "100%" },
-  locked = false,
+  locked = true,
 }: ThemeModeProviderProps) => {
   const [mode, setModeState] = useState<ThemeMode>(() => {
     if (locked) {
