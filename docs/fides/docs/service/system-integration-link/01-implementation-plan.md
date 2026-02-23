@@ -90,8 +90,8 @@ Session management uses the shared `@with_optional_sync_session` decorator from 
 
 ### Task 2.4 -- Tests for link management (Fides OSS, BE) [M] ✅
 
-- 13 unit tests for the service layer (mock-based) in `tests/service/system_integration_link/test_service.py`.
-- 13 integration tests for the repository (real DB) in `tests/service/system_integration_link/test_repository.py`.
+- 13 unit tests for the service layer (mock-based) in `tests/system_integration_link/test_service.py`.
+- 13 integration tests for the repository (real DB) in `tests/system_integration_link/test_repository.py`.
 
 **Status:** Core test coverage complete.
 

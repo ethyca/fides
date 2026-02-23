@@ -105,7 +105,7 @@ src/fides/api/alembic/migrations/versions/
     xx_2026_02_18_1700_create_system_connection_config_link.py   # Creates the join table
     xx_2026_02_20_migrate_system_id_fk_to_link_table.py         # Migrates data, drops ConnectionConfig.system_id
 
-tests/service/system_integration_link/
+tests/system_integration_link/
     test_service.py      # 13 unit tests (mock-based)
     test_repository.py   # 13 integration tests (real DB)
 ```

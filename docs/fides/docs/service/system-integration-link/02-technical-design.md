@@ -315,7 +315,7 @@ Show combined explicit + inferred stewards on monitor detail pages.
 
 ### Service Layer (Unit Tests)
 
-13 tests in `tests/service/system_integration_link/test_service.py` covering:
+13 tests in `tests/system_integration_link/test_service.py` covering:
 
 - `TestGetLinksForConnection` (3 tests): happy path, empty result, connection not found
 - `TestSetLinks` (6 tests): single link, idempotent replace with pre-existing links, clear with empty list, reject >1 link, connection not found, system not found
@@ -325,7 +325,7 @@ Tests mock the repository and inject it via the service constructor.
 
 ### Repository Layer (Integration Tests)
 
-13 tests in `tests/service/system_integration_link/test_repository.py` covering:
+13 tests in `tests/system_integration_link/test_repository.py` covering:
 
 - `TestUpsertLink` (2 tests): creates new link, returns existing on duplicate
 - `TestGetLinksForConnection` (2 tests): returns links with system info, empty result
