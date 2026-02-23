@@ -49,7 +49,7 @@ const PolicyDetailPage: NextPage = () => {
         ),
       },
     ],
-    [policy?.rules, policy?.conditions],
+    [policy?.rules, policy?.conditions, policyKey],
   );
 
   const { activeTab, onTabChange } = useURLHashedTabs({

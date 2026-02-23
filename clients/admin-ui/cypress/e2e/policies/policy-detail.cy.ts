@@ -253,7 +253,7 @@ describe("Policy condition builder", () => {
   it("can add a location country condition", () => {
     cy.login();
     stubDSRPolicies();
-    cy.intercept("PUT", "/api/v1/dsr/policy/*/conditions", {
+    cy.intercept("PUT", "/api/v1/plus/dsr/policy/*/conditions", {
       statusCode: 200,
       body: {
         condition: {
@@ -313,7 +313,7 @@ describe("Policy condition builder", () => {
         ],
       },
     }).as("getDSRPolicy");
-    cy.intercept("PUT", "/api/v1/dsr/policy/*/conditions", {
+    cy.intercept("PUT", "/api/v1/plus/dsr/policy/*/conditions", {
       statusCode: 200,
       body: { condition: null },
     }).as("updateConditions");
