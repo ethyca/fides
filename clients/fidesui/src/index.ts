@@ -242,6 +242,7 @@ export {
   Checkbox,
   Col,
   Collapse,
+  ConfigProvider,
   DatePicker,
   Descriptions,
   Divider,
@@ -387,7 +388,11 @@ export { extendTheme, theme } from "./FidesUITheme";
 /**
  * Ant Design Theme System
  */
-export { createDefaultAntTheme, defaultAntTheme } from "./ant-theme";
+export {
+  createDefaultAntTheme,
+  darkAntTheme,
+  defaultAntTheme,
+} from "./ant-theme";
 export { theme as antTheme } from "antd";
 
 /**
@@ -406,5 +411,9 @@ export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-
 /**
  * Custom Hooks
  */
-export type { UseFormModalOptions } from "./hooks";
-export { useFormModal } from "./hooks";
+export type {
+  ThemeMode,
+  ThemeModeProviderProps,
+  UseFormModalOptions,
+} from "./hooks";
+export { ThemeModeProvider, useFormModal, useThemeMode } from "./hooks";
