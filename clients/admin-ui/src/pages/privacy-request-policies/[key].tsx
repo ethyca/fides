@@ -1,16 +1,20 @@
-import { Flex, PageSpinner, Tabs } from "fidesui";
+import { Flex, PageSpinner, Tabs, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
-import PolicyConditionsTab from "~/features/policies/conditions/PolicyConditionsTab";
-import { useGetPolicyQuery } from "~/features/policies/policy.slice";
-import PolicyBox from "~/features/policies/PolicyBox";
+import PolicyConditionsTab from "~/features/policies/conditions/ConditionsTab";
+import {
+  useDeletePolicyMutation,
+  useGetPolicyQuery,
+} from "~/features/policies/policy.slice";
+import { PolicyBox } from "~/features/policies/PolicyBox";
+import { PolicyFormModal } from "~/features/policies/PolicyFormModal";
 import { RulesTab } from "~/features/policies/rules/RulesTab";
 
 const TAB_KEYS = {
@@ -20,7 +24,9 @@ const TAB_KEYS = {
 
 const PolicyDetailPage: NextPage = () => {
   const router = useRouter();
+  const message = useMessage();
   const policyKey = router.query.key as string;
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const {
     data: policy,
@@ -29,6 +35,21 @@ const PolicyDetailPage: NextPage = () => {
   } = useGetPolicyQuery(policyKey, {
     skip: !policyKey,
   });
+
+  const [deletePolicy, { isLoading: isDeleting }] = useDeletePolicyMutation();
+
+  const handleDelete = async () => {
+    if (!policyKey) {
+      return;
+    }
+    try {
+      await deletePolicy(policyKey).unwrap();
+      message.success("Policy deleted successfully");
+      router.push(POLICIES_ROUTE);
+    } catch {
+      message.error("Failed to delete policy");
+    }
+  };
 
   const tabs = useMemo(
     () => [
@@ -84,10 +105,21 @@ const PolicyDetailPage: NextPage = () => {
 
       {policy && (
         <Flex vertical gap="large">
-          <PolicyBox policy={policy} />
+          <PolicyBox
+            policy={policy}
+            onEdit={() => setIsEditModalOpen(true)}
+            onDelete={handleDelete}
+            isDeleting={isDeleting}
+          />
           <Tabs items={tabs} activeKey={activeTab} onChange={onTabChange} />
         </Flex>
       )}
+
+      <PolicyFormModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        policyKey={policyKey}
+      />
     </Layout>
   );
 };
