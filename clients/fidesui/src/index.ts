@@ -327,6 +327,8 @@ export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
 export { TagList } from "./components/data-display/TagList";
+export type { SparklineProps } from "./components/charts/Sparkline";
+export { default as Sparkline } from "./components/charts/Sparkline";
 
 // Export animation components
 export type {
