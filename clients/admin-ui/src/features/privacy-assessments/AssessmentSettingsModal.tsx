@@ -31,6 +31,7 @@ const FREQUENCY_OPTIONS = [
   { label: "Daily", value: "daily", cron: "0 9 * * *" },
   { label: "Weekly (Mondays)", value: "weekly", cron: "0 9 * * 1" },
   { label: "Monthly (1st)", value: "monthly", cron: "0 9 1 * *" },
+  { label: "Yearly (Jan 1st)", value: "yearly", cron: "0 9 1 1 *" },
 ];
 
 interface AssessmentSettingsModalProps {
