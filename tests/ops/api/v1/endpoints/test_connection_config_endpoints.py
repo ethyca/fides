@@ -1293,6 +1293,7 @@ class TestGetConnections:
                 db, system.id, connection.id
             )
             configs.append(connection)
+        db.commit()
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
 
         resp = api_client.get(url, headers=auth_header)

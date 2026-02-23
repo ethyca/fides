@@ -390,6 +390,7 @@ def oauth2_authorization_code_connection_config(
     SystemConnectionConfigLink.create_or_update_link(
         db, system.id, connection_config.id
     )
+    db.commit()
     yield connection_config
     connection_config.delete(db)
 

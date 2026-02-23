@@ -1582,6 +1582,7 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
     SystemConnectionConfigLink.create_or_update_link(
         db, system.id, connection_config.id
     )
+    db.commit()
 
     db.refresh(system)
     yield system

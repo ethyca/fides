@@ -26,6 +26,7 @@ def integration_manual_webhook_config(db, system) -> ConnectionConfig:
     SystemConnectionConfigLink.create_or_update_link(
         db, system.id, connection_config.id
     )
+    db.commit()
     yield connection_config
     try:
         connection_config.delete(db)
@@ -49,6 +50,7 @@ def integration_manual_webhook_config_with_system2(
     SystemConnectionConfigLink.create_or_update_link(
         db, system_with_dataset_references.id, connection_config.id
     )
+    db.commit()
     yield connection_config
     try:
         connection_config.delete(db)
