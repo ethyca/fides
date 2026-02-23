@@ -413,3 +413,64 @@ export interface GetAssessmentEvidenceParams {
   type?: EvidenceItem["type"];
   group_by?: "question" | "type";
 }
+
+// =============================================================================
+// Assessment Configuration Types
+// =============================================================================
+
+export interface PrivacyAssessmentConfigResponse {
+  id: string;
+
+  // LLM Configuration
+  assessment_model_override: string | null;
+  chat_model_override: string | null;
+
+  // Computed effective models (what will actually be used)
+  effective_assessment_model: string;
+  effective_chat_model: string;
+
+  // Re-assessment Scheduling
+  reassessment_enabled: boolean;
+  reassessment_cron: string;
+  reassessment_timezone: string;
+
+  // Slack Configuration
+  slack_channel_id: string | null;
+  slack_channel_name: string | null;
+
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PrivacyAssessmentConfigUpdate {
+  // LLM Configuration
+  assessment_model_override?: string | null;
+  chat_model_override?: string | null;
+
+  // Re-assessment Scheduling
+  reassessment_enabled?: boolean;
+  reassessment_cron?: string;
+  reassessment_timezone?: string;
+
+  // Slack Configuration
+  slack_channel_id?: string | null;
+  slack_channel_name?: string | null;
+}
+
+export interface PrivacyAssessmentConfigDefaults {
+  default_assessment_model: string;
+  default_chat_model: string;
+  default_reassessment_cron: string;
+  default_reassessment_timezone: string;
+}
+
+export interface SlackTestRequest {
+  channel_id: string;
+}
+
+export interface SlackTestResponse {
+  success: boolean;
+  message: string;
+  channel_name: string | null;
+}

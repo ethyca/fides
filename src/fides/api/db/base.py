@@ -59,6 +59,7 @@ from fides.api.models.privacy_assessment import (
     AssessmentTemplate,
     PrivacyAssessment,
 )
+from fides.api.models.privacy_assessment_config import PrivacyAssessmentConfig
 from fides.api.models.privacy_center_config import PrivacyCenterConfig
 from fides.api.models.privacy_experience import (
     ExperienceConfigTemplate,

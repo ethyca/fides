@@ -6,6 +6,7 @@
 
 export * from "./AssessmentCard";
 export * from "./AssessmentGroup";
+export { default as AssessmentSettingsModal } from "./AssessmentSettingsModal";
 export * from "./constants";
 export * from "./EmptyState";
 export * from "./privacy-assessments.slice";
