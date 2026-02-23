@@ -291,10 +291,9 @@ class DSRCacheStore:
         
         index_prefix = _dsr_index_prefix(dsr_id)
         
-        # Delete all found keys
-        for key in all_keys_via_scan:
-            self._redis.delete(key)
-            self._manager.remove_key_from_index(index_prefix, key)
+        # Delete all found keys in batch
+        if all_keys_via_scan:
+            self._redis.delete(*all_keys_via_scan)
         
         # Delete the index itself
         self._manager.delete_index(index_prefix)
