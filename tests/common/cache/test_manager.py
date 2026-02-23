@@ -11,7 +11,6 @@ import pytest
 
 from fides.common.cache.manager import RedisCacheManager
 
-
 # --- Inline MockRedis (replace with MockClient import when available) ---
 
 
