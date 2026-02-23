@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { theme } from "antd";
+import { useCallback, useId, useRef, useState } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -7,15 +8,22 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import palette from "../../palette/palette.module.scss";
-
 export interface RadarChartDataPoint {
   subject: string;
   value: number;
 }
 
+const EMPTY_PLACEHOLDER_DATA: RadarChartDataPoint[] = [
+  { subject: "", value: 10 },
+  { subject: "", value: 10 },
+  { subject: "", value: 10 },
+  { subject: "", value: 10 },
+  { subject: "", value: 10 },
+  { subject: "", value: 10 },
+];
+
 export interface RadarChartProps {
-  data: RadarChartDataPoint[];
+  data?: RadarChartDataPoint[] | null;
   color?: string;
   animationDuration?: number;
 }
@@ -26,7 +34,7 @@ interface CustomTickProps {
   payload: { value: string; index: number };
   activeIndex: number | null;
   color: string;
-  filterId: string;
+  className: string;
 }
 
 const CustomTick = ({
@@ -35,7 +43,7 @@ const CustomTick = ({
   payload,
   activeIndex,
   color,
-  filterId,
+  className,
 }: CustomTickProps) => {
   const isActive = activeIndex === payload.index;
 
@@ -47,12 +55,9 @@ const CustomTick = ({
       dominantBaseline="central"
       fontSize={11}
       fontWeight={isActive ? 600 : 400}
-      fill={isActive ? color : palette.FIDESUI_NEUTRAL_500}
-      filter={isActive ? `url(#${filterId})` : undefined}
-      style={{
-        transition: "fill 0.2s ease, font-weight 0.2s ease",
-        pointerEvents: "none",
-      }}
+      fill={color}
+      fillOpacity={isActive ? 1 : 0.45}
+      className={className}
     >
       {payload.value}
     </text>
@@ -74,106 +79,44 @@ const getClosestIndex = (
     angle += 2 * Math.PI;
   }
   const sliceAngle = (2 * Math.PI) / dataLength;
-  const index = Math.round(angle / sliceAngle) % dataLength;
-  return index;
+  return Math.round(angle / sliceAngle) % dataLength;
 };
-
-/** Linear interpolation */
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 const RadarChart = ({
   data,
-  color = palette.FIDESUI_NEUTRAL_900,
+  color,
   animationDuration = 1500,
 }: RadarChartProps) => {
-  const [animationKey, setAnimationKey] = useState(0);
+  const { token } = theme.useToken();
+  const empty = !data?.length;
+  const chartColor = color ?? token.colorText;
+
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Animated focal point state
-  const [focalPoint, setFocalPoint] = useState({ fx: 50, fy: 50 });
-  const targetFocal = useRef({ fx: 50, fy: 50 });
-  const currentFocal = useRef({ fx: 50, fy: 50 });
-  const rafId = useRef<number | null>(null);
-
-  const gradientId = useMemo(
-    () => `radar-gradient-${Math.random().toString(36).slice(2, 9)}`,
-    [],
-  );
-
-  const filterId = useMemo(
-    () => `radar-glow-${Math.random().toString(36).slice(2, 9)}`,
-    [],
-  );
-
-  const handleClick = useCallback(() => {
-    setAnimationKey((prev) => prev + 1);
-  }, []);
-
-  // Compute target focal point when activeIndex changes
-  useEffect(() => {
-    if (activeIndex === null) {
-      targetFocal.current = { fx: 50, fy: 50 };
-    } else {
-      // Recharts radar starts from top (90° in standard math = -π/2),
-      // and goes clockwise. Each point is spaced evenly.
-      const angle =
-        ((2 * Math.PI) / data.length) * activeIndex - Math.PI / 2;
-      const offset = 0.3;
-      const fx = 50 + Math.cos(angle) * offset * 100;
-      const fy = 50 + Math.sin(angle) * offset * 100;
-      targetFocal.current = { fx, fy };
-    }
-  }, [activeIndex, data.length]);
-
-  // RAF loop for smooth interpolation
-  useEffect(() => {
-    const animate = () => {
-      const speed = 0.12;
-      const nextFx = lerp(
-        currentFocal.current.fx,
-        targetFocal.current.fx,
-        speed,
-      );
-      const nextFy = lerp(
-        currentFocal.current.fy,
-        targetFocal.current.fy,
-        speed,
-      );
-
-      currentFocal.current = { fx: nextFx, fy: nextFy };
-
-      rafId.current = requestAnimationFrame(animate);
-    };
-
-    rafId.current = requestAnimationFrame(animate);
-    return () => {
-      if (rafId.current !== null) {
-        cancelAnimationFrame(rafId.current);
-      }
-    };
-  }, []);
+  const uid = useId().replace(/:/g, "");
+  const gradientId = `radar-gradient-${uid}`;
+  const textClass = `radar-text-${uid}`;
+  const dotClass = `radar-dot-${uid}`;
+  const stopClass = `radar-stop-${uid}`;
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      const container = containerRef.current;
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
+      if (!data?.length || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const dx = e.clientX - cx;
       const dy = e.clientY - cy;
 
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 8) {
+      if (Math.sqrt(dx * dx + dy * dy) < 8) {
         setActiveIndex(null);
         return;
       }
 
-      const index = getClosestIndex(dx, dy, data.length);
-      setActiveIndex(index);
+      setActiveIndex(getClosestIndex(dx, dy, data.length));
     },
-    [data.length],
+    [data],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -183,73 +126,64 @@ const RadarChart = ({
   return (
     <div
       ref={containerRef}
-      role="button"
-      tabIndex={0}
-      onClick={handleClick}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ width: "100%", height: "100%", cursor: "pointer" }}
+      className="h-full w-full"
+      onMouseMove={empty ? undefined : handleMouseMove}
+      onMouseLeave={empty ? undefined : handleMouseLeave}
     >
       <ResponsiveContainer width="100%" height="100%">
         <RechartsRadarChart
-          key={animationKey}
-          data={data}
+          data={empty ? EMPTY_PLACEHOLDER_DATA : data}
           cx="50%"
           cy="50%"
           outerRadius="70%"
         >
           <defs>
-            <radialGradient
-              id={gradientId}
-              cx="50%"
-              cy="50%"
-              r="50%"
-              fx={`${focalPoint.fx}%`}
-              fy={`${focalPoint.fy}%`}
-            >
-              <stop offset="0%" stopColor={color} stopOpacity={0.02} />
+            <style>{`
+              .${textClass} {
+                transition: fill 0.2s ease, fill-opacity 0.2s ease, font-weight 0.2s ease;
+                pointer-events: none;
+              }
+              .${dotClass} {
+                transition: r 0.2s ease, opacity 0.2s ease;
+              }
+              .${stopClass} {
+                transition: stop-opacity 0.3s ease;
+              }
+            `}</style>
+            <radialGradient id={gradientId} cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor={chartColor} stopOpacity={0.02} />
               <stop
                 offset="100%"
-                stopColor={color}
+                stopColor={chartColor}
                 stopOpacity={activeIndex !== null ? 0.35 : 0.2}
+                className={stopClass}
               />
             </radialGradient>
-            <filter
-              id={filterId}
-              x="-50%"
-              y="-50%"
-              width="200%"
-              height="200%"
-            >
-              <feGaussianBlur
-                in="SourceGraphic"
-                stdDeviation="2"
-                result="blur"
-              />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
           </defs>
           <PolarGrid
-            stroke={palette.FIDESUI_NEUTRAL_200}
+            stroke={chartColor}
             strokeWidth={0.5}
+            strokeOpacity={0.15}
           />
-          <PolarAngleAxis
-            dataKey="subject"
-            tick={(props: Record<string, unknown>) => (
-              <CustomTick
-                {...(props as Omit<
-                  CustomTickProps,
-                  "activeIndex" | "color" | "filterId"
-                >)}
-                activeIndex={activeIndex}
-                color={color}
-                filterId={filterId}
-              />
-            )}
-          />
+          {!empty && (
+            <PolarAngleAxis
+              dataKey="subject"
+              tick={(props: Record<string, unknown>) => (
+                <CustomTick
+                  {...(props as Omit<
+                    CustomTickProps,
+                    "activeIndex" | "color" | "className"
+                  >)}
+                  activeIndex={activeIndex}
+                  color={chartColor}
+                  className={textClass}
+                />
+              )}
+            />
+          )}
           <Radar
             dataKey="value"
-            stroke={color}
+            stroke={chartColor}
             strokeWidth={1.5}
             strokeOpacity={0.8}
             strokeLinecap="round"
@@ -268,17 +202,15 @@ const RadarChart = ({
                   cx={dotCx}
                   cy={dotCy}
                   r={isActive ? 3.5 : 0}
-                  fill={color}
+                  fill={chartColor}
                   stroke="none"
-                  style={{
-                    transition: "r 0.2s ease, opacity 0.2s ease",
-                    opacity: isActive ? 1 : 0,
-                  }}
+                  opacity={isActive ? 1 : 0}
+                  className={dotClass}
                 />
               );
             }}
             activeDot={false}
-            isAnimationActive
+            isAnimationActive={!empty}
             animationDuration={animationDuration}
             animationEasing="ease-in-out"
           />
