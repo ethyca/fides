@@ -1,7 +1,7 @@
 """create system_connection_config_link table
 
 Revision ID: 454edc298288
-Revises: 29acbb0689de
+Revises: d3f08ca31314
 Create Date: 2026-02-18 17:00:00.000000
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "454edc298288"
-down_revision = "29acbb0689de"
+down_revision = "d3f08ca31314"
 branch_labels = None
 depends_on = None
 
