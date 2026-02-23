@@ -111,11 +111,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     icon: <Icons.MessageQueue />,
     routes: [
       {
-        title: "Policies",
-        path: routes.POLICIES_ROUTE,
-        scopes: [ScopeRegistryEnum.POLICY_READ],
-      },
-      {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
         scopes: [
@@ -129,6 +124,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Connection manager",
         path: routes.DATASTORE_CONNECTION_ROUTE,
         scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
+      },
+      {
+        title: "Policies",
+        path: routes.POLICIES_ROUTE,
+        requiresFlag: "policies",
+        scopes: [ScopeRegistryEnum.POLICY_READ],
       },
     ],
   },
