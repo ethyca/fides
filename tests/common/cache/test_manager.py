@@ -1,17 +1,8 @@
-"""
-Unit tests for RedisCacheManager pipeline operations.
-
-MockRedis and MockPipeline are inline for easy updates when MockClient
-lands upstream - replace with an import.
-"""
-
 import fnmatch
 
 import pytest
 
 from fides.common.cache.manager import RedisCacheManager
-
-# --- Inline MockRedis (replace with MockClient import when available) ---
 
 
 class MockPipeline:
