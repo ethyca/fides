@@ -49,6 +49,10 @@ def upgrade():
             "connection_config_id",
             name="uq_system_connconfig_link",
         ),
+        sa.UniqueConstraint(
+            "connection_config_id",
+            name="uq_one_system_per_connconfig",
+        ),
     )
     op.create_index(
         "ix_system_connection_config_link_id",
