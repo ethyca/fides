@@ -11,7 +11,5 @@ export const extractLeafConditions = (
     return [conditions];
   }
 
-  return conditions.conditions.filter(
-    (c): c is ConditionLeaf => "field_address" in c && "operator" in c,
-  );
+  return conditions.conditions.flatMap((child) => extractLeafConditions(child));
 };
