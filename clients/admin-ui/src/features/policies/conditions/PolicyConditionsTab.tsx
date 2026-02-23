@@ -6,6 +6,7 @@ import {
   formatConditionValue,
   formatFieldDisplay,
 } from "~/features/integrations/configure-tasks/utils";
+import { extractLeafConditions } from "~/features/policies/utils/extractLeafConditions";
 import type { ConditionGroup, ConditionLeaf } from "~/types/api";
 
 const { Title, Paragraph, Text } = Typography;
@@ -13,22 +14,6 @@ const { Title, Paragraph, Text } = Typography;
 interface PolicyConditionsTabProps {
   conditions?: ConditionGroup | ConditionLeaf | null;
 }
-
-const extractLeafConditions = (
-  conditions: ConditionGroup | ConditionLeaf | null | undefined,
-): ConditionLeaf[] => {
-  if (!conditions) {
-    return [];
-  }
-
-  if ("field_address" in conditions) {
-    return [conditions];
-  }
-
-  return conditions.conditions.filter(
-    (c): c is ConditionLeaf => "field_address" in c && "operator" in c,
-  );
-};
 
 export const PolicyConditionsTab = ({
   conditions,

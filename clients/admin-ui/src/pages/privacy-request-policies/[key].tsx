@@ -12,6 +12,7 @@ import { PolicyConditionsTab } from "~/features/policies/conditions/PolicyCondit
 import { useGetPolicyQuery } from "~/features/policies/policy.slice";
 import PolicyBox from "~/features/policies/PolicyBox";
 import { RulesTab } from "~/features/policies/rules/RulesTab";
+import { extractLeafConditions } from "~/features/policies/utils/extractLeafConditions";
 
 const TAB_KEYS = {
   RULES: "rules",
@@ -39,7 +40,7 @@ const PolicyDetailPage: NextPage = () => {
       },
       {
         key: TAB_KEYS.CONDITIONS,
-        label: "Conditions",
+        label: `Conditions (${extractLeafConditions(policy?.conditions).length})`,
         children: <PolicyConditionsTab conditions={policy?.conditions} />,
       },
     ],
