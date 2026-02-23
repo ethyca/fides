@@ -1,22 +1,43 @@
-import { Empty, Flex, List, Skeleton, Tag, Typography } from "fidesui";
+import {
+  Button,
+  Empty,
+  Flex,
+  List,
+  Modal,
+  Skeleton,
+  Tag,
+  Typography,
+  useMessage,
+} from "fidesui";
 import { uniqBy } from "lodash";
 import type { NextPage } from "next";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import SearchInput from "~/features/common/SearchInput";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
+import {
+  useDeletePolicyMutation,
+  useGetPoliciesQuery,
+} from "~/features/policies/policy.slice";
+import { PolicyFormModal } from "~/features/policies/PolicyFormModal";
 import { PolicyResponse } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
 
 const PoliciesPage: NextPage = () => {
+  const message = useMessage();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [policyToEdit, setPolicyToEdit] = useState<PolicyResponse | null>(null);
+  const [policyToDelete, setPolicyToDelete] = useState<PolicyResponse | null>(
+    null,
+  );
 
   const { data: policiesData, isLoading } = useGetPoliciesQuery();
+  const [deletePolicy] = useDeletePolicyMutation();
 
   const allPolicies = useMemo(() => policiesData?.items ?? [], [policiesData]);
 
@@ -33,11 +54,37 @@ const PoliciesPage: NextPage = () => {
     );
   }, [allPolicies, searchQuery]);
 
+  const handleEdit = useCallback((policy: PolicyResponse) => {
+    setPolicyToEdit(policy);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!policyToDelete?.key) {
+      return;
+    }
+    try {
+      await deletePolicy(policyToDelete.key).unwrap();
+      message.success("Policy deleted successfully");
+    } catch {
+      message.error("Failed to delete policy");
+    }
+    setPolicyToDelete(null);
+  }, [policyToDelete, deletePolicy, message]);
+
   return (
     <Layout title="Policies">
       <PageHeader
         heading="DSR policies"
         breadcrumbItems={[{ title: "All policies" }]}
+        rightContent={
+          <Button
+            type="primary"
+            onClick={() => setIsCreateModalOpen(true)}
+            data-testid="create-policy-btn"
+          >
+            Create policy
+          </Button>
+        }
       >
         <Paragraph className="max-w-screen-md">
           DSR policies define how privacy requests are processed. Each policy
@@ -71,7 +118,27 @@ const PoliciesPage: NextPage = () => {
               const uniqueRules = uniqBy(policy.rules ?? [], "action_type");
 
               return (
-                <List.Item key={policy.key ?? policy.name}>
+                <List.Item
+                  key={policy.key ?? policy.name}
+                  actions={[
+                    <Button
+                      key="edit"
+                      type="link"
+                      onClick={() => handleEdit(policy)}
+                      data-testid={`edit-policy-${policy.key}-btn`}
+                    >
+                      Edit
+                    </Button>,
+                    <Button
+                      key="delete"
+                      type="link"
+                      onClick={() => setPolicyToDelete(policy)}
+                      data-testid={`delete-policy-${policy.key}-btn`}
+                    >
+                      Delete
+                    </Button>,
+                  ]}
+                >
                   <List.Item.Meta
                     title={
                       <Flex align="center" gap={8}>
@@ -116,6 +183,35 @@ const PoliciesPage: NextPage = () => {
           </List>
         )}
       </Flex>
+
+      <PolicyFormModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
+
+      <PolicyFormModal
+        isOpen={!!policyToEdit}
+        onClose={() => setPolicyToEdit(null)}
+        policyKey={policyToEdit?.key ?? undefined}
+      />
+
+      <Modal
+        title="Delete policy"
+        open={!!policyToDelete}
+        onCancel={() => setPolicyToDelete(null)}
+        onOk={handleConfirmDelete}
+        okText="Delete"
+        okButtonProps={{ danger: true }}
+        cancelText="Cancel"
+        centered
+        data-testid="delete-policy-modal"
+      >
+        <Text type="secondary">
+          Are you sure you want to delete the policy &ldquo;
+          {policyToDelete?.name}&rdquo;? This action cannot be undone and will
+          also delete all associated rules.
+        </Text>
+      </Modal>
     </Layout>
   );
 };
