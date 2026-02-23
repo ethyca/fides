@@ -96,6 +96,7 @@ PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
 PRIVACY_REQUEST_RESUBMIT = "/privacy-request/{privacy_request_id}/resubmit"
 REQUEST_TASK_CALLBACK = "/request-task/callback"
 PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-results"
+PRIVACY_REQUEST_DIAGNOSTICS = "/privacy-request/{privacy_request_id}/diagnostics"
 PRIVACY_REQUEST_FILTERED_RESULTS = (
     "/privacy-request/{privacy_request_id}/filtered-results"
 )

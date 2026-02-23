@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { CursorPaginationQueryParams } from "~/features/common/pagination";
 import {
   buildArrayQueryParams,
   getQueryParamsFromArray,
@@ -18,12 +19,12 @@ import {
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
+import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
 import { MonitorTaskInProgressResponse } from "~/types/api/models/MonitorTaskInProgressResponse";
-import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
 import {
   PaginatedResponse,
   PaginationQueryParams,
@@ -122,22 +123,27 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
 
     getMonitorTree: build.query<
-      Page_DatastoreStagedResourceTreeAPIResponse_,
-      Partial<PaginationQueryParams> & {
+      CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+      Partial<CursorPaginationQueryParams> & {
         monitor_config_id: string;
         staged_resource_urn?: string;
         include_descendant_details?: boolean;
       }
     >({
       query: ({
-        page = 1,
+        cursor,
         size = 20,
         monitor_config_id,
         staged_resource_urn,
         include_descendant_details,
       }) => ({
         url: `/plus/discovery-monitor/${monitor_config_id}/tree`,
-        params: { staged_resource_urn, include_descendant_details, page, size },
+        params: {
+          staged_resource_urn,
+          include_descendant_details,
+          cursor,
+          size,
+        },
       }),
     }),
 
