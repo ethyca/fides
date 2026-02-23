@@ -22,7 +22,7 @@ describe("Policy detail page", () => {
   it("shows the tabs with rule count", () => {
     cy.findByRole("tablist").should("be.visible");
     cy.findByRole("tab", { name: /Rules \(1\)/ }).should("be.visible");
-    cy.findByRole("tab", { name: "Conditions" }).should("be.visible");
+    cy.findByRole("tab", { name: /Conditions \(0\)/ }).should("be.visible");
   });
 
   describe("Rules tab", () => {
@@ -124,6 +124,7 @@ describe("Policy conditions list", () => {
     cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "gdpr_erasure_policy"));
     cy.wait("@getDSRPolicy");
 
+    cy.findByRole("tab", { name: /Conditions \(1\)/ }).should("be.visible");
     cy.getAntTab("Conditions").click();
     cy.getAntTabPanel("conditions").within(() => {
       cy.getByTestId("conditions-list").should("be.visible");
@@ -177,6 +178,7 @@ describe("Policy conditions list", () => {
     cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "eu_data_access_request"));
     cy.wait("@getDSRPolicy");
 
+    cy.findByRole("tab", { name: /Conditions \(3\)/ }).should("be.visible");
     cy.getAntTab("Conditions").click();
     cy.getAntTabPanel("conditions").within(() => {
       cy.getByTestId("conditions-list").should("be.visible");
