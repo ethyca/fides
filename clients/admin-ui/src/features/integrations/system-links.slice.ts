@@ -1,24 +1,21 @@
 import { CONNECTION_ROUTE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
-import {
-  SystemConnectionLinkType,
-  SystemLink,
-} from "~/mocks/system-links/data";
 
 export interface SetSystemLinksRequest {
   links: Array<{
     system_fides_key: string;
-    link_type: SystemConnectionLinkType;
   }>;
 }
 
-export interface SystemLinksResponse {
-  links: SystemLink[];
+export interface SystemLinkResponse {
+  system_fides_key: string;
+  system_name: string | null;
+  created_at: string;
 }
 
 export const systemLinksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getSystemLinks: build.query<SystemLink[], string>({
+    getSystemLinks: build.query<SystemLinkResponse[], string>({
       query: (connectionKey) => ({
         url: `${CONNECTION_ROUTE}/${connectionKey}/system-links`,
         method: "GET",
@@ -28,7 +25,7 @@ export const systemLinksApi = baseApi.injectEndpoints({
       ],
     }),
     setSystemLinks: build.mutation<
-      SystemLinksResponse,
+      SystemLinkResponse,
       { connectionKey: string; body: SetSystemLinksRequest }
     >({
       query: ({ connectionKey, body }) => ({
@@ -46,14 +43,12 @@ export const systemLinksApi = baseApi.injectEndpoints({
       {
         connectionKey: string;
         systemFidesKey: string;
-        linkType?: SystemConnectionLinkType;
       }
     >({
-      query: ({ connectionKey, systemFidesKey, linkType }) => {
+      query: ({ connectionKey, systemFidesKey }) => {
         const url = `${CONNECTION_ROUTE}/${connectionKey}/system-links/${systemFidesKey}`;
-        const params = linkType ? `?link_type=${linkType}` : "";
         return {
-          url: url + params,
+          url,
           method: "DELETE",
         };
       },

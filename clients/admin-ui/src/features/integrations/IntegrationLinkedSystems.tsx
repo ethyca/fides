@@ -15,15 +15,12 @@ import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import { EDIT_SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import {
+  SystemLinkResponse,
   useDeleteSystemLinkMutation,
   useGetSystemLinksQuery,
   useSetSystemLinksMutation,
 } from "~/features/integrations/system-links.slice";
-import {
-  MockConnection,
-  SystemConnectionLinkType,
-  SystemLink,
-} from "~/mocks/system-links/data";
+import { ConnectionConfigurationResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const { Paragraph, Text, Link: LinkText } = Typography;
@@ -31,13 +28,13 @@ const { Paragraph, Text, Link: LinkText } = Typography;
 const IntegrationLinkedSystems = ({
   connection,
 }: {
-  connection: MockConnection;
+  connection: ConnectionConfigurationResponse;
 }) => {
   const messageApi = useMessage();
   const modalApi = useModal();
   const [isLinking, setIsLinking] = useState(false);
 
-  const { data: systemLinksData, isLoading } = useGetSystemLinksQuery(
+  const { data: linkedSystems, isLoading } = useGetSystemLinksQuery(
     connection.key,
     {
       skip: !connection.key,
@@ -47,16 +44,10 @@ const IntegrationLinkedSystems = ({
   const [setSystemLinks] = useSetSystemLinksMutation();
   const [deleteSystemLink] = useDeleteSystemLinkMutation();
 
-  const linkedSystems = systemLinksData || [];
-
-  const handleConfirmUnlink = async (
-    systemFidesKey: string,
-    linkType: SystemConnectionLinkType,
-  ) => {
+  const handleConfirmUnlink = async (systemFidesKey: string) => {
     const result = await deleteSystemLink({
       connectionKey: connection.key,
       systemFidesKey,
-      linkType,
     });
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
@@ -65,11 +56,7 @@ const IntegrationLinkedSystems = ({
     }
   };
 
-  const handleUnlinkClicked = (
-    systemFidesKey: string,
-    linkType: SystemConnectionLinkType,
-    systemName: string,
-  ) => {
+  const handleUnlinkClicked = (systemFidesKey: string, systemName: string) => {
     modalApi.confirm({
       title: "Unlink system",
       content: (
@@ -83,7 +70,8 @@ const IntegrationLinkedSystems = ({
       okText: "Unlink",
       okType: "danger",
       cancelText: "Cancel",
-      onOk: () => handleConfirmUnlink(systemFidesKey, linkType),
+      onOk: () => handleConfirmUnlink(systemFidesKey),
+      centered: true,
     });
   };
 
@@ -98,7 +86,6 @@ const IntegrationLinkedSystems = ({
         links: [
           {
             system_fides_key: systemKey,
-            link_type: "monitoring" as SystemConnectionLinkType,
           },
         ],
       },
@@ -150,7 +137,7 @@ const IntegrationLinkedSystems = ({
             type="primary"
             onClick={() => setIsLinking(true)}
             data-testid="link-system-button"
-            disabled={linkedSystems.length > 0}
+            disabled={!!linkedSystems?.length}
           >
             Link system
           </Button>
@@ -158,7 +145,7 @@ const IntegrationLinkedSystems = ({
       </div>
 
       <List
-        dataSource={linkedSystems}
+        dataSource={linkedSystems || []}
         data-testid="linked-systems-list"
         locale={{
           emptyText: (
@@ -170,10 +157,10 @@ const IntegrationLinkedSystems = ({
             </div>
           ),
         }}
-        renderItem={(link: SystemLink) => (
+        renderItem={(link: SystemLinkResponse) => (
           <List.Item
-            key={`${link.system_fides_key}-${link.link_type}`}
-            aria-label={`Linked system: ${link.system_name || link.system_fides_key} (${link.link_type})`}
+            key={link.system_fides_key}
+            aria-label={`Linked system: ${link.system_name || link.system_fides_key}`}
             actions={[
               <Button
                 key="unlink"
@@ -181,12 +168,11 @@ const IntegrationLinkedSystems = ({
                 onClick={() =>
                   handleUnlinkClicked(
                     link.system_fides_key,
-                    link.link_type,
                     link.system_name || link.system_fides_key,
                   )
                 }
                 className="px-1"
-                data-testid={`unlink-${link.system_fides_key}-${link.link_type}`}
+                data-testid={`unlink-${link.system_fides_key}`}
                 aria-label={`Unlink ${link.system_name || link.system_fides_key}`}
               >
                 Unlink
@@ -221,11 +207,7 @@ const IntegrationLinkedSystems = ({
                       </LinkText>
                     </NextLink>
                   </div>
-                  <Tag>
-                    {link.link_type === SystemConnectionLinkType.DSR
-                      ? "Discovery"
-                      : "Detection"}
-                  </Tag>
+                  <Tag>Discovery</Tag>
                 </Flex>
               }
             />
