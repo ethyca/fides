@@ -67,6 +67,7 @@ from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
+from fides.service.system_integration_link.models import SystemConnectionConfigLink
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.async_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
@@ -1569,15 +1570,17 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
         },
     )
 
-    ConnectionConfig.create(
+    connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "system_id": system.id,
             "connection_type": "bigquery",
             "name": "test_connection",
             "secrets": {"password": "test_password"},
             "access": "write",
         },
+    )
+    SystemConnectionConfigLink.create_or_update_link(
+        db, system.id, connection_config.id
     )
 
     db.refresh(system)

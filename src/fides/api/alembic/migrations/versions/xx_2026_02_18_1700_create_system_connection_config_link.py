@@ -51,6 +51,11 @@ def upgrade():
         ),
     )
     op.create_index(
+        "ix_system_connection_config_link_id",
+        "system_connection_config_link",
+        ["id"],
+    )
+    op.create_index(
         "ix_system_connection_config_link_system_id",
         "system_connection_config_link",
         ["system_id"],
