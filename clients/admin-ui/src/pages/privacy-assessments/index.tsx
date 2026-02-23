@@ -82,6 +82,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
         heading="Privacy assessments"
         rightContent={
           <Space>
+            {hasAssessments && (
+              <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
+                <Button type="primary">Evaluate assessments</Button>
+              </NextLink>
+            )}
             <Tooltip title="Assessment settings">
               <Button
                 aria-label="Assessment settings"
@@ -90,11 +95,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
                 data-testid="btn-assessment-settings"
               />
             </Tooltip>
-            {hasAssessments && (
-              <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
-                <Button type="primary">Evaluate assessments</Button>
-              </NextLink>
-            )}
           </Space>
         }
         isSticky
