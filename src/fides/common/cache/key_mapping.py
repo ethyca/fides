@@ -7,7 +7,7 @@ Maps (dsr_id, field_type, field_key, ...) to:
   logical key; set_encoded_object stores under EN_ + logical key in Redis).
 """
 
-from typing import Any, Dict, Tuple
+from typing import Tuple
 
 DSR_KEY_PREFIX = "dsr:"
 
