@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, Index, String, text
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import Session, backref, relationship
 
 from fides.api.db.base_class import Base
 
@@ -63,14 +63,12 @@ class JiraTicketTask(Base):
 
     manual_task_instance = relationship(
         "ManualTaskInstance",
-        backref="jira_ticket_task",
+        backref=backref("jira_ticket_task", passive_deletes=True),
         uselist=False,
-        passive_deletes=True,
     )
     connection_config = relationship(
         "ConnectionConfig",
-        backref="jira_ticket_tasks",
-        passive_deletes=True,
+        backref=backref("jira_ticket_tasks", passive_deletes=True),
     )
 
     @classmethod
