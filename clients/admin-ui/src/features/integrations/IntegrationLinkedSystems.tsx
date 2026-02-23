@@ -1,17 +1,20 @@
 import {
   Button,
-  ColumnsType,
   Flex,
-  Table,
+  List,
+  PageSpinner,
   Tag,
   Typography,
+  useChakraDisclosure as useDisclosure,
   useMessage,
+  WarningIcon,
 } from "fidesui";
-import { useCallback, useMemo, useState } from "react";
+import NextLink from "next/link";
+import { useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { EDIT_SYSTEM_ROUTE } from "~/features/common/nav/routes";
-import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import {
   useDeleteSystemLinkMutation,
   useGetSystemLinksQuery,
@@ -23,6 +26,8 @@ import {
   SystemLink,
 } from "~/mocks/system-links/data";
 
+const { Paragraph, Text, Link: LinkText } = Typography;
+
 const IntegrationLinkedSystems = ({
   connection,
 }: {
@@ -30,6 +35,17 @@ const IntegrationLinkedSystems = ({
 }) => {
   const messageApi = useMessage();
   const [isLinking, setIsLinking] = useState(false);
+  const [linkToDelete, setLinkToDelete] = useState<{
+    systemFidesKey: string;
+    linkType: SystemConnectionLinkType;
+    systemName: string;
+  } | null>(null);
+
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
 
   const { data: systemLinksData, isLoading } = useGetSystemLinksQuery(
     connection.key,
@@ -45,66 +61,41 @@ const IntegrationLinkedSystems = ({
   const linkedSystems = systemLinksData || [];
 
   const handleUnlink = useCallback(
-    async (systemFidesKey: string, linkType: SystemConnectionLinkType) => {
-      if (!connection.key) {
-        return;
-      }
-
-      try {
-        await deleteSystemLink({
-          connectionKey: connection.key,
-          systemFidesKey,
-          linkType,
-        }).unwrap();
-        messageApi.success("System unlinked successfully");
-      } catch (error) {
-        messageApi.error("Failed to unlink system");
-      }
+    (
+      systemFidesKey: string,
+      linkType: SystemConnectionLinkType,
+      systemName: string,
+    ) => {
+      setLinkToDelete({ systemFidesKey, linkType, systemName });
+      onDeleteOpen();
     },
-    [connection.key, deleteSystemLink, messageApi],
+    [onDeleteOpen],
   );
 
-  const columns: ColumnsType<SystemLink> = useMemo(
-    () => [
-      {
-        title: "System",
-        dataIndex: "system_name",
-        key: "system_name",
-        render: (_: string, record: SystemLink) => (
-          <LinkCell
-            href={EDIT_SYSTEM_ROUTE.replace("[id]", record.system_fides_key)}
-          >
-            {record.system_name || record.system_fides_key}
-          </LinkCell>
-        ),
-      },
-      {
-        title: "Link type",
-        dataIndex: "link_type",
-        key: "link_type",
-        render: (linkType: SystemConnectionLinkType) => <Tag>({linkType})</Tag>,
-      },
-      {
-        title: "Actions",
-        key: "actions",
-        render: (_: unknown, record: SystemLink) => (
-          //   <Restrict scopes={["system_integration_link:delete" as any]}>
-          <Button
-            size="small"
-            onClick={() =>
-              handleUnlink(record.system_fides_key, record.link_type)
-            }
-            loading={isDeletingLink}
-            data-testid={`unlink-${record.system_fides_key}-${record.link_type}`}
-          >
-            Unlink
-          </Button>
-          //   </Restrict>
-        ),
-      },
-    ],
-    [handleUnlink, isDeletingLink],
-  );
+  const handleConfirmUnlink = useCallback(async () => {
+    if (!linkToDelete || !connection.key) {
+      return;
+    }
+
+    try {
+      await deleteSystemLink({
+        connectionKey: connection.key,
+        systemFidesKey: linkToDelete.systemFidesKey,
+        linkType: linkToDelete.linkType,
+      }).unwrap();
+      messageApi.success("System unlinked successfully");
+      setLinkToDelete(null);
+    } catch (unlinkError) {
+      messageApi.error("Failed to unlink system");
+    }
+    onDeleteClose();
+  }, [
+    linkToDelete,
+    connection.key,
+    deleteSystemLink,
+    messageApi,
+    onDeleteClose,
+  ]);
 
   const handleLinkSystem = async (systemKey: string) => {
     if (!systemKey || !connection.key) {
@@ -123,53 +114,156 @@ const IntegrationLinkedSystems = ({
           ],
         },
       }).unwrap();
+      messageApi.success("System linked successfully");
       setIsLinking(false);
-    } catch (error) {
-      // Error handling can be added here
-      // eslint-disable-next-line no-console
-      console.error("Failed to link system:", error);
+    } catch (linkError) {
+      messageApi.error("Failed to link system");
     }
   };
 
   if (isLoading) {
-    return null;
+    return (
+      <div className="h-96">
+        <PageSpinner />
+      </div>
+    );
   }
 
   return (
-    <Flex vertical gap="middle">
-      <Typography.Title level={5}>Linked systems</Typography.Title>
-      {linkedSystems.length > 0 ? (
-        <Table
-          columns={columns}
-          dataSource={linkedSystems}
-          rowKey={(record) => `${record.system_fides_key}-${record.link_type}`}
-          pagination={false}
-          size="small"
-          bordered
-        />
-      ) : null}
-      {/* <Restrict scopes={["system_integration_link:create_or_update"]}> */}
-      {isLinking ? (
-        <Flex gap="middle" align="flex-start">
-          <SystemSelect
-            onSelect={(value) => handleLinkSystem(value)}
-            style={{ flex: 1 }}
-            placeholder="Search for a system..."
-          />
-        </Flex>
-      ) : (
-        <Flex>
+    <div>
+      <div>
+        <Typography.Title level={5}>Linked systems</Typography.Title>
+        <Paragraph className="mt-2 w-2/3 text-gray-600">
+          Link a system to automatically surface discovered assets and enable
+          DSR execution within the system you manage.
+        </Paragraph>
+      </div>
+
+      <div className="mb-4 flex items-center justify-end gap-2">
+        {isLinking ? (
+          <Flex gap="middle" align="flex-start" style={{ flex: 1 }}>
+            <SystemSelect
+              onSelect={(value) => handleLinkSystem(value)}
+              style={{ flex: 1 }}
+              placeholder="Search for a system..."
+            />
+            <Button
+              onClick={() => setIsLinking(false)}
+              data-testid="cancel-link-system-button"
+            >
+              Cancel
+            </Button>
+          </Flex>
+        ) : (
           <Button
-            type="default"
+            type="primary"
             onClick={() => setIsLinking(true)}
             data-testid="link-system-button"
           >
-            + Link system
+            Link system
           </Button>
-        </Flex>
-      )}
-      {/* </Restrict> */}
-    </Flex>
+        )}
+      </div>
+
+      <List
+        dataSource={linkedSystems}
+        data-testid="linked-systems-list"
+        locale={{
+          emptyText: (
+            <div className="py-8 text-center">
+              <Text type="secondary">
+                No systems linked. Click &ldquo;Link system&rdquo; to add a
+                system.
+              </Text>
+            </div>
+          ),
+        }}
+        renderItem={(link: SystemLink) => (
+          <List.Item
+            key={`${link.system_fides_key}-${link.link_type}`}
+            aria-label={`Linked system: ${link.system_name || link.system_fides_key} (${link.link_type})`}
+            actions={[
+              <Button
+                key="unlink"
+                type="link"
+                onClick={() =>
+                  handleUnlink(
+                    link.system_fides_key,
+                    link.link_type,
+                    link.system_name || link.system_fides_key,
+                  )
+                }
+                data-testid={`unlink-${link.system_fides_key}-${link.link_type}`}
+                className="px-1"
+                aria-label={`Unlink ${link.system_name || link.system_fides_key}`}
+                loading={isDeletingLink}
+              >
+                Unlink
+              </Button>,
+            ]}
+          >
+            <List.Item.Meta
+              title={
+                <Flex gap={8} align="center" className="font-normal">
+                  <div className="max-w-[300px]">
+                    <NextLink
+                      href={EDIT_SYSTEM_ROUTE.replace(
+                        "[id]",
+                        link.system_fides_key,
+                      )}
+                      passHref
+                      legacyBehavior
+                    >
+                      <LinkText
+                        variant="primary"
+                        ellipsis
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Text
+                          unStyled
+                          ellipsis={{
+                            tooltip: link.system_name || link.system_fides_key,
+                          }}
+                        >
+                          {link.system_name || link.system_fides_key}
+                        </Text>
+                      </LinkText>
+                    </NextLink>
+                  </div>
+                  <Tag>
+                    {link.link_type === SystemConnectionLinkType.DSR
+                      ? "DSR"
+                      : "Monitoring"}
+                  </Tag>
+                </Flex>
+              }
+            />
+          </List.Item>
+        )}
+        className="mb-4"
+      />
+
+      <ConfirmationModal
+        isOpen={isDeleteOpen}
+        onClose={() => {
+          setLinkToDelete(null);
+          onDeleteClose();
+        }}
+        onConfirm={handleConfirmUnlink}
+        title="Unlink system"
+        data-testid="unlink-system-modal"
+        message={
+          <Text className="text-gray-500">
+            Are you sure you want to unlink &ldquo;
+            {linkToDelete?.systemName}&rdquo;? This action cannot be undone.
+          </Text>
+        }
+        continueButtonText="Unlink"
+        isCentered
+        icon={<WarningIcon />}
+        isLoading={isDeletingLink}
+      />
+    </div>
   );
 };
 
