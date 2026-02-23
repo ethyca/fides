@@ -40,8 +40,9 @@ class TestPostUpgradeIndexCreation:
         mock_db_session = MagicMock()
         mock_get_db_session.return_value.return_value = mock_db_session
 
+        mock_check_and_create_objects.return_value = {"test_index": "created"}
+
         post_upgrade_index_creation_task()
 
         mock_check_and_create_objects.assert_called_once()
-        # Check that reacquire was called
         mock_lock.reacquire.assert_called()

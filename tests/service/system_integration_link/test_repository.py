@@ -60,6 +60,20 @@ def connection_config(db: Session):
     config.delete(db)
 
 
+@pytest.fixture()
+def connection_config_b(db: Session):
+    config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": "link_test_connection_b",
+            "connection_type": "manual",
+            "access": "read",
+        },
+    )
+    yield config
+    config.delete(db)
+
+
 @pytest.fixture(autouse=True)
 def cleanup_links(db: Session):
     """Clean up any link records after each test."""
@@ -130,14 +144,32 @@ class TestGetLinksForConnection:
 
 
 class TestDeleteAllLinksForConnection:
-    def test_deletes_all_links(self, repo, db, connection_config, system_a, system_b):
+    def test_deletes_link(self, repo, db, connection_config, system_a):
+        repo.upsert_link(
+            connection_config_id=connection_config.id,
+            system_id=system_a.id,
+            session=db,
+        )
+        db.commit()
+
+        count = repo.delete_all_links_for_connection(connection_config.id, session=db)
+        db.commit()
+
+        assert count == 1
+        remaining = repo.get_links_for_connection(connection_config.id, session=db)
+        assert remaining == []
+
+    def test_only_deletes_target_connection(
+        self, repo, db, connection_config, connection_config_b, system_a, system_b
+    ):
+        """Deleting links for one connection doesn't affect another."""
         repo.upsert_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
         )
         repo.upsert_link(
-            connection_config_id=connection_config.id,
+            connection_config_id=connection_config_b.id,
             system_id=system_b.id,
             session=db,
         )
@@ -146,9 +178,11 @@ class TestDeleteAllLinksForConnection:
         count = repo.delete_all_links_for_connection(connection_config.id, session=db)
         db.commit()
 
-        assert count == 2
-        remaining = repo.get_links_for_connection(connection_config.id, session=db)
-        assert remaining == []
+        assert count == 1
+        assert repo.get_links_for_connection(connection_config.id, session=db) == []
+        remaining_b = repo.get_links_for_connection(connection_config_b.id, session=db)
+        assert len(remaining_b) == 1
+        assert remaining_b[0].system_fides_key == "link_test_system_b"
 
     def test_delete_then_create_in_same_session(
         self, repo, db, connection_config, system_a, system_b
@@ -184,7 +218,7 @@ class TestDeleteAllLinksForConnection:
 
 class TestDeleteLinks:
     def test_deletes_specific_system_link(
-        self, repo, db, connection_config, system_a, system_b
+        self, repo, db, connection_config, connection_config_b, system_a, system_b
     ):
         repo.upsert_link(
             connection_config_id=connection_config.id,
@@ -192,7 +226,7 @@ class TestDeleteLinks:
             session=db,
         )
         repo.upsert_link(
-            connection_config_id=connection_config.id,
+            connection_config_id=connection_config_b.id,
             system_id=system_b.id,
             session=db,
         )
@@ -206,9 +240,10 @@ class TestDeleteLinks:
         db.commit()
 
         assert count == 1
-        remaining = repo.get_links_for_connection(connection_config.id, session=db)
-        assert len(remaining) == 1
-        assert remaining[0].system_fides_key == "link_test_system_b"
+        assert repo.get_links_for_connection(connection_config.id, session=db) == []
+        remaining_b = repo.get_links_for_connection(connection_config_b.id, session=db)
+        assert len(remaining_b) == 1
+        assert remaining_b[0].system_fides_key == "link_test_system_b"
 
 
 class TestResolveHelpers:
