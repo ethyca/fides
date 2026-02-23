@@ -2,6 +2,10 @@
 
 import rich_click as click
 
+from fides.api.db.session import get_db_session
+from fides.api.util.consent_encryption_migration import (
+    migrate_consent_encryption as run_consent_encryption_migration,
+)
 from fides.cli.options import yes_flag
 from fides.cli.utils import with_analytics, with_server_health_check
 from fides.common.utils import echo_red, handle_cli_response
@@ -86,3 +90,57 @@ def db_reset(ctx: click.Context, yes: bool) -> None:
         )
     else:
         print("Aborting!")
+
+
+@database.command(name="migrate-consent-encryption")
+@click.option(
+    "--direction",
+    type=click.Choice(["encrypt", "decrypt"], case_sensitive=False),
+    required=True,
+    help="Whether to encrypt or decrypt the record_data column.",
+)
+@click.option(
+    "--batch-size",
+    default=5000,
+    type=int,
+    help="Rows per batch.",
+)
+@click.pass_context
+def migrate_consent_encryption(
+    ctx: click.Context, direction: str, batch_size: int
+) -> None:
+    """
+    Encrypt or decrypt v3 privacy preferences record_data.
+
+    Warning: This script is not meant for production use.
+
+    Run this while the server is stopped or no privacy preferences records are being saved,
+    before toggling FIDES__CONSENT__CONSENT_V3_ENCRYPTION_ENABLED.
+    """
+    config = ctx.obj["CONFIG"]
+
+    def progress(total: int, batch_num: int) -> None:
+        click.echo(f"Processed {total} rows ({batch_num} batches)...")
+
+    SessionLocal = get_db_session(config)
+    try:
+        with SessionLocal() as db:
+            result = run_consent_encryption_migration(
+                db,
+                direction=direction,
+                batch_size=batch_size,
+                progress_callback=progress,
+            )
+    except Exception as e:
+        echo_red(f"Migration failed: {e}")
+        ctx.exit(1)
+        return
+
+    if result.success:
+        click.echo(
+            f"Done. {direction.capitalize()}ed {result.total_processed} rows "
+            f"in {result.batches} batches."
+        )
+    else:
+        echo_red(f"Completed with errors: {result.errors}")
+        ctx.exit(1)
