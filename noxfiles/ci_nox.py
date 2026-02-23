@@ -1,9 +1,8 @@
 """Contains the nox sessions used during CI checks."""
 
 from enum import StrEnum
-from functools import partial
 from pathlib import Path
-from typing import Callable, Dict
+from typing import Callable
 
 import nox
 from nox import Session
@@ -29,14 +28,8 @@ from setup_tests_nox import (
     pytest_common,
     pytest_config,
     pytest_connectors,
-    pytest_ctl,
-    pytest_lib,
     pytest_migration,
-    pytest_misc_integration,
-    pytest_misc_unit,
-    pytest_nox,
-    pytest_ops,
-    pytest_performance,
+    pytest_service,
 )
 from utils_nox import db, install_requirements
 
@@ -309,97 +302,36 @@ def load_tests(session: nox.Session) -> None:
 ## Pytest ##
 ############
 TEST_GROUPS = [
-    # Legacy groups (will be retired as tests migrate)
-    nox.param("ctl-unit", id="ctl-unit"),
-    nox.param("ctl-not-external", id="ctl-not-external"),
-    nox.param("ctl-integration", id="ctl-integration"),
-    nox.param("ctl-external", id="ctl-external"),
-    nox.param("ops-unit", id="ops-unit"),
-    nox.param("ops-unit-api", id="ops-unit-api"),
-    nox.param("ops-unit-non-api", id="ops-unit-non-api"),
-    nox.param("ops-integration", id="ops-integration"),
-    nox.param("ops-external-datastores", id="ops-external-datastores"),
-    nox.param("ops-saas", id="ops-saas"),
     nox.param("api", id="api"),
-    nox.param("lib", id="lib"),
-    nox.param("misc-unit", id="misc-unit"),
-    nox.param("misc-integration-external", id="misc-integration-external"),
-    nox.param("misc-integration", id="misc-integration"),
-    nox.param("nox", id="nox"),
-    # New domain-aligned groups
     nox.param("cli", id="cli"),
     nox.param("common", id="common"),
     nox.param("config", id="config"),
     nox.param("connectors", id="connectors"),
-    nox.param("connectors-external", id="connectors-external"),
-    nox.param("connectors-saas", id="connectors-saas"),
     nox.param("migration", id="migration"),
-    nox.param("performance", id="performance"),
+    nox.param("service", id="service"),
 ]
 
-TEST_MATRIX: Dict[str, Callable] = {
-    # Legacy groups (will be retired as tests migrate)
-    "ctl-unit": partial(pytest_ctl, mark="unit"),
-    "ctl-not-external": partial(pytest_ctl, mark="not external"),
-    "ctl-integration": partial(pytest_ctl, mark="integration"),
-    "ctl-external": partial(pytest_ctl, mark="external"),
-    "ops-unit": partial(pytest_ops, mark="unit"),
-    "ops-unit-api": partial(pytest_ops, mark="unit", subset_dir="api"),
-    "ops-unit-non-api": partial(pytest_ops, mark="unit", subset_dir="non-api"),
-    "ops-integration": partial(pytest_ops, mark="integration"),
-    "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
-    "ops-saas": partial(pytest_ops, mark="saas"),
+TEST_MATRIX: dict[str, Callable] = {
     "api": pytest_api,
-    "lib": pytest_lib,
-    "misc-unit": pytest_misc_unit,
-    "misc-integration-external": partial(pytest_misc_integration, mark="external"),
-    "misc-integration": partial(
-        pytest_misc_integration,
-        mark="integration_bigquery or integration_snowflake or integration_postgres or integration",
-    ),
-    "nox": pytest_nox,
-    # New domain-aligned groups
     "cli": pytest_cli,
     "common": pytest_common,
     "config": pytest_config,
-    "connectors": partial(pytest_connectors, mark="not external"),
-    "connectors-external": partial(pytest_connectors, mark="integration_external"),
-    "connectors-saas": partial(pytest_connectors, mark="integration_saas"),
+    "connectors": pytest_connectors,
     "migration": pytest_migration,
-    "performance": pytest_performance,
+    "service": pytest_service,
 }
 
-# Define the mapping of test directories to test groups
-# This maps actual test directories to the test groups that cover them
-TEST_DIRECTORY_COVERAGE = {
-    "tests/api/": ["api", "ops-unit-api", "ops-unit-non-api"],
-    "tests/cli/": [
-        "cli",
-        "ctl-unit",
-        "ctl-not-external",
-        "ctl-integration",
-        "ctl-external",
-    ],
-    "tests/common/": ["common", "lib", "ops-unit", "ops-unit-non-api"],
+TEST_DIRECTORY_COVERAGE: dict[str, list[str]] = {
+    "tests/api/": ["api"],
+    "tests/cli/": ["cli"],
+    "tests/common/": ["common"],
     "tests/config/": ["config"],
-    "tests/connectors/": [
-        "connectors",
-        "connectors-external",
-        "connectors-saas",
-        "ops-external-datastores",
-        "ops-saas",
-        "ops-integration",
-    ],
-    "tests/integration/": ["ops-integration"],
+    "tests/connectors/": ["connectors"],
     "tests/migration/": ["migration"],
-    "tests/performance/": ["performance"],
-    "tests/service/": [
-        "misc-unit",
-        "misc-integration",
-        "misc-integration-external",
-        "ops-unit",
-        "ops-unit-non-api",
-    ],
+    "tests/service/": ["service"],
+    # Stub directories (no active tests)
+    "tests/integration/": [],
+    "tests/performance/": [],
     # Support directories (no test runners)
     "tests/factories/": [],
     "tests/fixtures/": [],
@@ -464,7 +396,11 @@ def pytest(session: nox.Session, test_group: str) -> None:
         ),
     )
 
-    TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)
+    TEST_MATRIX[test_group](
+        session=session,
+        pytest_config=pytest_config,
+        extra_args=tuple(session.posargs),
+    )
 
 
 @nox.session()
