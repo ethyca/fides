@@ -121,6 +121,8 @@ def with_optional_sync_readonly_session(
     def wrapper(
         self: Any, *args: Any, session: Optional[Session] = None, **kwargs: Any
     ) -> T:
+        result: T
+
         with ExitStack() as stack:
             if not session:
                 db_session: Session = stack.enter_context(
@@ -129,6 +131,8 @@ def with_optional_sync_readonly_session(
             else:
                 db_session = session
 
-            return decorated_func(self, *args, session=db_session, **kwargs)
+            result = decorated_func(self, *args, session=db_session, **kwargs)
+
+        return result
 
     return wrapper
