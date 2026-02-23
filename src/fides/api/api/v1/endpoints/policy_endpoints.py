@@ -29,6 +29,7 @@ from fides.api.common_exceptions import (
 )
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import DataCategory  # type: ignore
 from fides.api.models.storage import StorageConfig
 from fides.api.oauth.utils import verify_oauth_client
@@ -113,8 +114,6 @@ def delete_policy(
     Delete a policy by key. Returns 409 if the policy is referenced by any privacy requests.
     """
     policy = get_policy_or_error(db, policy_key)
-
-    from fides.api.models.privacy_request import PrivacyRequest
 
     has_privacy_requests = (
         PrivacyRequest.query(db=db)

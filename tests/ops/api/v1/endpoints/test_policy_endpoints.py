@@ -7,6 +7,7 @@ from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
@@ -241,8 +242,6 @@ class TestDeletePolicy:
     def test_delete_policy_in_use(
         self, db, api_client: TestClient, generate_auth_header, policy, url
     ):
-        from fides.api.models.privacy_request import PrivacyRequest
-
         privacy_request = PrivacyRequest.create(
             db=db,
             data={
@@ -257,8 +256,6 @@ class TestDeletePolicy:
         assert resp.status_code == 409
         assert "referenced by one or more privacy requests" in resp.json()["detail"]
 
-        privacy_request.delete(db=db)
-
     def test_delete_policy_success(
         self,
         db,
@@ -268,8 +265,6 @@ class TestDeletePolicy:
         storage_config,
         default_data_categories,
     ):
-        from fides.api.util.data_category import DataCategory
-
         # Create a standalone policy with a rule and target for this test
         test_policy = Policy.create(
             db=db,
