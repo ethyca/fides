@@ -51,6 +51,7 @@ def connection_config(db: Session):
     config = ConnectionConfig.create(
         db=db,
         data={
+            "name": "Link Test Connection",
             "key": "link_test_connection",
             "connection_type": "manual",
             "access": "read",
@@ -65,6 +66,7 @@ def connection_config_b(db: Session):
     config = ConnectionConfig.create(
         db=db,
         data={
+            "name": "Link Test Connection B",
             "key": "link_test_connection_b",
             "connection_type": "manual",
             "access": "read",
