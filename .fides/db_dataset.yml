@@ -3524,6 +3524,9 @@ dataset:
     - name: id
       description: 'Auto-generated unique identifier for the preferences'
       data_categories: [ system.operations ]
+    - name: is_encrypted
+      description: 'True if the record data is encrypted, false otherwise'
+      data_categories: [ system.operations ]
     - name: is_latest
       description: 'Is this the latest set of preferences for the identity?'
       data_categories: [ system.operations ]
@@ -3535,9 +3538,6 @@ dataset:
       data_categories: [ system.operations ]
     - name: updated_at
       description: 'Timestamp when the preferences were last updated'
-      data_categories: [ system.operations ]
-    - name: is_encrypted
-      description: 'True if the record data is encrypted, false otherwise'
       data_categories: [ system.operations ]
   - name: privacy_preferences_current
     description: 'Partition table for privacy preferences where is_latest is true'
@@ -3551,6 +3551,9 @@ dataset:
       data_categories: [ system.operations ]
     - name: id
       description: 'Auto-generated unique identifier for the preferences'
+      data_categories: [ system.operations ]
+    - name: is_encrypted
+      description: 'True if the record data is encrypted, false otherwise'
       data_categories: [ system.operations ]
     - name: is_latest
       description: 'Is this the latest set of preferences for the identity?'
@@ -3576,6 +3579,9 @@ dataset:
       data_categories: [ system.operations ]
     - name: id
       description: 'Auto-generated unique identifier for the preferences'
+      data_categories: [ system.operations ]
+    - name: is_encrypted
+      description: 'True if the record data is encrypted, false otherwise'
       data_categories: [ system.operations ]
     - name: is_latest
       description: 'Is this the latest set of preferences for the identity?'
