@@ -22,7 +22,6 @@
     "format:ci": "turbo run format:ci",
     "test": "turbo run test",
     "test:ci": "turbo run test:ci",
-    "test:watch": "turbo run test:watch",
     "typecheck": "turbo run typecheck",
     "prod-export-admin-ui": "turbo run prod-export --filter=admin-ui",
     "export-admin-ui": "turbo run export --filter=admin-ui",
