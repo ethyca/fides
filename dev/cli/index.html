@@ -567,6 +567,17 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fides-db-migrate-consent-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        migrate-consent-encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-db-reset" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2040,6 +2051,17 @@ You're not viewing the latest version.
 </li>
         
           <li class="md-nav__item">
+  <a href="#fides-db-migrate-consent-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        migrate-consent-encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fides-db-reset" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2667,6 +2689,14 @@ You're not viewing the latest version.
 <p><strong>WARNING</strong>: Deprecated, use <code>upgrade</code> instead.</p>
 <p><strong>Usage:</strong></p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides db init[0m [[1;92mOPTIONS[0m]
+</code></pre></div></td></tr></table></div>
+<h4 id="fides-db-migrate-consent-encryption">fides db migrate-consent-encryption</h4>
+<p>Encrypt or decrypt v3 privacy preferences record_data.</p>
+<p>Warning: This script is not meant for production use.</p>
+<p>Run this while the server is stopped or no privacy preferences records are being saved,
+before toggling FIDES__CONSENT__CONSENT_V3_ENCRYPTION_ENABLED.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>[1mfides db migrate-consent-encryption[0m [[1;92mOPTIONS[0m]
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-db-reset">fides db reset</h4>
 <p>Reset the database back to its initial state.</p>

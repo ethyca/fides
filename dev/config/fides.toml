@@ -45,7 +45,7 @@ healthcheck_ping_timeout = 2.0 # number
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "fc6a18321d82316a289153707a02a8a9" # string
+analytics_id = "3618cb8d385b6389f4a3bee362c0f734" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -76,6 +76,12 @@ ac_enabled = false # boolean
 
 # Whether or not vendor purposes can be globally overridden.
 override_vendor_purposes = false # boolean
+
+# Whether to encrypt PII in v3 consent preference records. Recommended
+# setting is to keep it as true. Set to false to store data in
+# plaintext. WARNING: Changing this setting requires a data migration
+# in order to keep existing data.
+consent_v3_encryption_enabled = true # boolean
 
 #--------------#
 #-- DATABASE --#

@@ -2233,7 +2233,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">534</span>
 <span class="normal">535</span>
 <span class="normal">536</span>
-<span class="normal">537</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2280,7 +2286,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fc6a18321d82316a289153707a02a8a9&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;3618cb8d385b6389f4a3bee362c0f734&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2311,6 +2317,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># Whether or not vendor purposes can be globally overridden.</span>
 <span class="n">override_vendor_purposes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Whether to encrypt PII in v3 consent preference records. Recommended</span>
+<span class="c1"># setting is to keep it as true. Set to false to store data in</span>
+<span class="c1"># plaintext. WARNING: Changing this setting requires a data migration</span>
+<span class="c1"># in order to keep existing data.</span>
+<span class="n">consent_v3_encryption_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#--------------#</span>
 <span class="c1">#-- DATABASE --#</span>
