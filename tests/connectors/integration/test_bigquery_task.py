@@ -3,8 +3,7 @@ from fideslang.models import Dataset
 
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-
-from ...conftest import access_runner_tester, erasure_runner_tester
+from tests.helpers.privacy_request import access_runner_tester, erasure_runner_tester
 
 
 @pytest.mark.xfail(reason="BigQuery integration test failures")

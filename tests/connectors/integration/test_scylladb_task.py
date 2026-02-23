@@ -4,9 +4,8 @@ from sqlalchemy.orm import Session
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from tests.helpers.graph_test_util import assert_rows_match, erasure_policy
-
-from ...conftest import access_runner_tester, erasure_runner_tester
-from ..task.traversal_data import integration_scylladb_graph
+from tests.helpers.privacy_request import access_runner_tester, erasure_runner_tester
+from tests.helpers.traversal_data import integration_scylladb_graph
 
 
 @pytest.mark.integration

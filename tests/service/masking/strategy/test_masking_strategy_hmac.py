@@ -5,8 +5,7 @@ from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, Secret
 from fides.service.privacy_request.masking.strategy.masking_strategy_hmac import (
     HmacMaskingStrategy,
 )
-
-from ....test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
+from tests.helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
 request_id = "1345134"
 

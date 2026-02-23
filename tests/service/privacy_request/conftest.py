@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-from tests.fixtures.application_fixtures import load_dataset
+from tests.fixtures.dataset_fixtures import load_dataset
 from tests.service.graph.conftest import create_dataset_config_fixture
 
 optional_identities_dataset_config = create_dataset_config_fixture(

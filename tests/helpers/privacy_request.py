@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import PrivacyRequestExit
+from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -15,8 +16,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.util.collection_util import Row
-from fides.config.helpers import load_file
-from fides.core.dataset import DatasetGraph
+from fides.config.utils import load_file
 
 
 class DSRThreeTestRunnerTimedOut(Exception):

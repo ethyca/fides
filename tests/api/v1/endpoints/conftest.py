@@ -20,7 +20,7 @@ from fides.service.privacy_request.masking.strategy.masking_strategy_aes_encrypt
 from fides.service.privacy_request.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
+from tests.fixtures.privacy_request_fixtures import _create_privacy_request_for_policy
 
 
 @pytest.fixture(scope="function", autouse=True)

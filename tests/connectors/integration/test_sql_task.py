@@ -25,9 +25,8 @@ from tests.helpers.graph_test_util import (
     field,
     records_matching_fields,
 )
-
-from ...conftest import access_runner_tester, erasure_runner_tester
-from ..task.traversal_data import integration_db_graph, postgres_db_graph_dataset
+from tests.helpers.privacy_request import access_runner_tester, erasure_runner_tester
+from tests.helpers.traversal_data import integration_db_graph, postgres_db_graph_dataset
 
 
 @pytest.mark.integration_postgres

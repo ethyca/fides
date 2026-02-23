@@ -37,7 +37,7 @@ from fides.common.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
-from tests.fixtures.application_fixtures import load_dataset
+from tests.fixtures.dataset_fixtures import load_dataset
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:

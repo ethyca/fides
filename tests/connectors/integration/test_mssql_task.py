@@ -2,9 +2,8 @@ import pytest
 
 from fides.api.models.privacy_request import ExecutionLog
 from tests.helpers.graph_test_util import assert_rows_match, records_matching_fields
-
-from ...conftest import access_runner_tester
-from ..task.traversal_data import integration_db_graph
+from tests.helpers.privacy_request import access_runner_tester
+from tests.helpers.traversal_data import integration_db_graph
 
 
 @pytest.mark.integration_mssql

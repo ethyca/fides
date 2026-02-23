@@ -22,11 +22,10 @@ from fides.connectors.query_config import (
 from fides.service.privacy_request.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
-from tests.fixtures.application_fixtures import load_dataset
+from tests.fixtures.dataset_fixtures import load_dataset
+from tests.helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 from tests.helpers.dataset_utils import remove_primary_keys
-
-from ...task.traversal_data import integration_db_graph
-from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
+from tests.helpers.traversal_data import integration_db_graph
 
 # customers -> address, order
 # orders -> address, payment card

@@ -26,7 +26,7 @@ from fides.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
-from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
+from tests.fixtures.privacy_request_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
 

@@ -22,9 +22,8 @@ from fides.api.schemas.policy import CurrentStep
 from fides.api.schemas.privacy_request import CheckpointActionRequired
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
-
-from ...conftest import access_runner_tester, erasure_runner_tester
-from ..service.privacy_request.test_request_runner_service import (
+from tests.helpers.privacy_request import access_runner_tester, erasure_runner_tester
+from tests.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
 

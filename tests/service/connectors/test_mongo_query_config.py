@@ -21,9 +21,8 @@ from fides.connectors.mongodb.mongodb_query_config import (
 from fides.service.privacy_request.masking.strategy.masking_strategy_hash import (
     HashMaskingStrategy,
 )
-
-from ...task.traversal_data import combined_mongo_postgresql_graph
-from ...test_helpers.cache_secrets_helper import cache_secret
+from tests.helpers.cache_secrets_helper import cache_secret
+from tests.helpers.traversal_data import combined_mongo_postgresql_graph
 
 privacy_request = PrivacyRequest(id="234544")
 
