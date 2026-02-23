@@ -33,9 +33,7 @@ class TestKeyMapper:
         assert legacy_key == "id-pr-abc-encryption-key"
 
     def test_masking_secret(self) -> None:
-        new_key, legacy_key = KeyMapper.masking_secret(
-            "pr-def", "hash", "salt"
-        )
+        new_key, legacy_key = KeyMapper.masking_secret("pr-def", "hash", "salt")
         assert new_key == f"{DSR_KEY_PREFIX}pr-def:masking_secret:hash:salt"
         assert legacy_key == "id-pr-def-masking-secret-hash-salt"
 
@@ -50,9 +48,7 @@ class TestKeyMapper:
         assert legacy_key == "id-pr-jkl-privacy-request-retry-count"
 
     def test_webhook_manual_access(self) -> None:
-        new_key, legacy_key = KeyMapper.webhook_manual_access(
-            "pr-mno", "webhook-uuid"
-        )
+        new_key, legacy_key = KeyMapper.webhook_manual_access("pr-mno", "webhook-uuid")
         assert new_key == f"{DSR_KEY_PREFIX}pr-mno:webhook_manual_access:webhook-uuid"
         assert legacy_key == "WEBHOOK_MANUAL_ACCESS_INPUT__pr-mno__webhook-uuid"
 
@@ -60,7 +56,9 @@ class TestKeyMapper:
         new_key, legacy_key = KeyMapper.webhook_manual_erasure(
             "pr-pqr", "webhook-uuid-2"
         )
-        assert new_key == f"{DSR_KEY_PREFIX}pr-pqr:webhook_manual_erasure:webhook-uuid-2"
+        assert (
+            new_key == f"{DSR_KEY_PREFIX}pr-pqr:webhook_manual_erasure:webhook-uuid-2"
+        )
         assert legacy_key == "WEBHOOK_MANUAL_ERASURE_INPUT__pr-pqr__webhook-uuid-2"
 
     def test_data_use_map(self) -> None:
@@ -72,8 +70,13 @@ class TestKeyMapper:
         new_key, legacy_key = KeyMapper.email_info(
             "pr-vwx", "access", "postgres_example", "address"
         )
-        assert new_key == f"{DSR_KEY_PREFIX}pr-vwx:email_info:access:postgres_example:address"
-        assert legacy_key == "EMAIL_INFORMATION__pr-vwx__access__postgres_example__address"
+        assert (
+            new_key
+            == f"{DSR_KEY_PREFIX}pr-vwx:email_info:access:postgres_example:address"
+        )
+        assert (
+            legacy_key == "EMAIL_INFORMATION__pr-vwx__access__postgres_example__address"
+        )
 
     def test_paused_location(self) -> None:
         new_key, legacy_key = KeyMapper.paused_location("pr-yz1")
@@ -89,21 +92,30 @@ class TestKeyMapper:
         new_key, legacy_key = KeyMapper.access_request(
             "pr-yz3", "access_request__postgres_example:address"
         )
-        assert new_key == f"{DSR_KEY_PREFIX}pr-yz3:access_request:access_request__postgres_example:address"
+        assert (
+            new_key
+            == f"{DSR_KEY_PREFIX}pr-yz3:access_request:access_request__postgres_example:address"
+        )
         assert legacy_key == "pr-yz3__access_request__postgres_example:address"
 
     def test_erasure_request(self) -> None:
         new_key, legacy_key = KeyMapper.erasure_request(
             "pr-yz4", "postgres_example:address"
         )
-        assert new_key == f"{DSR_KEY_PREFIX}pr-yz4:erasure_request:postgres_example:address"
+        assert (
+            new_key
+            == f"{DSR_KEY_PREFIX}pr-yz4:erasure_request:postgres_example:address"
+        )
         assert legacy_key == "pr-yz4__erasure_request__postgres_example:address"
 
     def test_placeholder_results(self) -> None:
         new_key, legacy_key = KeyMapper.placeholder_results(
             "pr-yz5", "postgres_example:customer"
         )
-        assert new_key == f"{DSR_KEY_PREFIX}pr-yz5:placeholder_results:postgres_example:customer"
+        assert (
+            new_key
+            == f"{DSR_KEY_PREFIX}pr-yz5:placeholder_results:postgres_example:customer"
+        )
         assert legacy_key == "PLACEHOLDER_RESULTS__pr-yz5__postgres_example:customer"
 
     def test_index_prefix(self) -> None:

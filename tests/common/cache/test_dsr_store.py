@@ -46,9 +46,7 @@ class InMemoryRedis:
         """Glob-style: * matches any number of chars."""
         return [k for k in self._data if fnmatch.fnmatch(k, pattern)]
 
-    def scan_iter(
-        self, match: str = "*", count: Optional[int] = None
-    ):
+    def scan_iter(self, match: str = "*", count: Optional[int] = None):
         """SCAN-compatible iterator; yields keys matching pattern (count ignored in-memory)."""
         return iter(self.keys(match))
 
@@ -199,7 +197,9 @@ class TestDSRCacheStoreWithInMemoryManager:
         # Legacy key migration
         in_memory_manager.redis.set("id-pr-2-privacy-request-retry-count", "1")
         assert dsr_store.get_retry_count("pr-2") == "1"
-        assert in_memory_manager.redis.get("id-pr-2-privacy-request-retry-count") is None
+        assert (
+            in_memory_manager.redis.get("id-pr-2-privacy-request-retry-count") is None
+        )
 
     def test_drp(
         self, dsr_store: DSRCacheStore, in_memory_manager: InMemoryRedisCacheManager
@@ -241,6 +241,4 @@ class TestDSRCacheStoreWithInMemoryManager:
         assert (
             dsr_store.get_masking_secret("pr-2", "hash", "pepper") == "legacy-masking"
         )
-        assert (
-            in_memory_manager.redis.get("id-pr-2-masking-secret-hash-pepper") is None
-        )
+        assert in_memory_manager.redis.get("id-pr-2-masking-secret-hash-pepper") is None

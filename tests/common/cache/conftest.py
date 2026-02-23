@@ -3,8 +3,9 @@ Conftest for common/cache tests. Overrides session-scoped fixtures so the
 real FastAPI app, DB, and Celery worker are not started when running only these tests.
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 
 @pytest.fixture(scope="session")
@@ -45,6 +46,7 @@ def app():
 def config():
     """Mock config so we don't pull in real config."""
     from fides.config import get_config
+
     config = get_config()
     config.test_mode = True
     yield config

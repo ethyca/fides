@@ -32,7 +32,9 @@ class MockRedis:
         return True
 
     def delete(self, *keys: str) -> int:
-        deleted = sum(1 for k in keys if self._data.pop(k, None) or self._sets.pop(k, None))
+        deleted = sum(
+            1 for k in keys if self._data.pop(k, None) or self._sets.pop(k, None)
+        )
         return deleted
 
     def keys(self, pattern: str) -> List[str]:
@@ -95,15 +97,18 @@ def dsr_id():
 class TestLegacyKeyMigration:
     """Test legacy key formats are readable and migrated correctly."""
 
-    @pytest.mark.parametrize("field_type,getter,field_key,value", [
-        ("identity", "get_identity", "email", "user@example.com"),
-        ("custom-privacy-request-field", "get_custom_field", "dept", "Engineering"),
-        ("encryption", "get_encryption", "key", "encryption-key-123"),
-        ("async-execution", "get_async_execution", "", "celery-task-123"),
-        ("privacy-request-retry-count", "get_retry_count", "", "3"),
-        ("drp", "get_drp", "email", "drp@example.com"),
-        ("masking-secret-hash", "get_masking_secret", "salt", "secret-123"),
-    ])
+    @pytest.mark.parametrize(
+        "field_type,getter,field_key,value",
+        [
+            ("identity", "get_identity", "email", "user@example.com"),
+            ("custom-privacy-request-field", "get_custom_field", "dept", "Engineering"),
+            ("encryption", "get_encryption", "key", "encryption-key-123"),
+            ("async-execution", "get_async_execution", "", "celery-task-123"),
+            ("privacy-request-retry-count", "get_retry_count", "", "3"),
+            ("drp", "get_drp", "email", "drp@example.com"),
+            ("masking-secret-hash", "get_masking_secret", "salt", "secret-123"),
+        ],
+    )
     def test_legacy_keys_readable(
         self, mock_redis, dsr_store, dsr_id, field_type, getter, field_key, value
     ):
@@ -129,19 +134,32 @@ class TestLegacyKeyMigration:
         assert email == "migrate@test.com"
 
         # New key exists, legacy deleted, index updated
-        assert mock_redis.get(make_new_key(dsr_id, "identity:email")) == "migrate@test.com"
+        assert (
+            mock_redis.get(make_new_key(dsr_id, "identity:email")) == "migrate@test.com"
+        )
         assert mock_redis.get(make_legacy_key(dsr_id, "identity", "email")) is None
-        assert make_new_key(dsr_id, "identity:email") in mock_redis.smembers(f"__idx:dsr:{dsr_id}")
+        assert make_new_key(dsr_id, "identity:email") in mock_redis.smembers(
+            f"__idx:dsr:{dsr_id}"
+        )
 
     def test_new_writes_create_indexed_keys_only(self, mock_redis, dsr_store, dsr_id):
         """New writes create new-format keys and index them; no legacy keys written."""
         dsr_store.write_identity(dsr_id, "email", "new@example.com")
         dsr_store.write_custom_field(dsr_id, "department", "Sales")
 
-        assert mock_redis.get(make_new_key(dsr_id, "identity:email")) == "new@example.com"
-        assert mock_redis.get(make_new_key(dsr_id, "custom_field:department")) == "Sales"
+        assert (
+            mock_redis.get(make_new_key(dsr_id, "identity:email")) == "new@example.com"
+        )
+        assert (
+            mock_redis.get(make_new_key(dsr_id, "custom_field:department")) == "Sales"
+        )
         assert mock_redis.get(make_legacy_key(dsr_id, "identity", "email")) is None
-        assert mock_redis.get(make_legacy_key(dsr_id, "custom-privacy-request-field", "department")) is None
+        assert (
+            mock_redis.get(
+                make_legacy_key(dsr_id, "custom-privacy-request-field", "department")
+            )
+            is None
+        )
 
     def test_clear_removes_mixed_keys(self, mock_redis, dsr_store, dsr_id):
         """clear() removes both legacy and new keys using SCAN."""
@@ -157,9 +175,13 @@ class TestLegacyKeyMigration:
     def test_index_backfill(self, mock_redis, dsr_id):
         """Legacy keys are backfilled into index when enabled."""
         mock_redis.set(make_legacy_key(dsr_id, "identity", "email"), "test@example.com")
-        mock_redis.set(make_legacy_key(dsr_id, "identity", "phone_number"), "+1234567890")
+        mock_redis.set(
+            make_legacy_key(dsr_id, "identity", "phone_number"), "+1234567890"
+        )
 
-        store = DSRCacheStore(RedisCacheManager(mock_redis), backfill_index_on_legacy_read=True)
+        store = DSRCacheStore(
+            RedisCacheManager(mock_redis), backfill_index_on_legacy_read=True
+        )
         keys = store.get_all_keys(dsr_id)
 
         assert len(keys) == 2
@@ -206,4 +228,3 @@ class TestMultipleRequestIsolation:
 
         assert mock_redis.get(make_new_key(dsr1, "identity:email")) is None
         assert mock_redis.get(make_new_key(dsr2, "identity:email")) == "dsr2@test.com"
-
