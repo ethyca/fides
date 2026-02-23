@@ -264,3 +264,4 @@ multilang_migration_backup_*
 
 # Claude Code
 .claude/*
+test_report.xml
