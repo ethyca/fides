@@ -327,6 +327,11 @@ export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
 export { TagList } from "./components/data-display/TagList";
+export type {
+  RadarChartDataPoint,
+  RadarChartProps,
+} from "./components/charts/RadarChart";
+export { default as RadarChart } from "./components/charts/RadarChart";
 
 // Export animation components
 export type {
