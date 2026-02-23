@@ -287,7 +287,7 @@ const AssessmentSettingsModal = ({
             <Alert
               type="info"
               message="No Slack channels available"
-              description="Please configure and authorize Slack in Settings > Chat Providers first."
+              description="Please configure and authorize Slack in Settings > Notifications > Chat providers first."
               className="mb-4"
             />
           )}
