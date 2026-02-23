@@ -78,3 +78,9 @@ export const Default: Story = {
   },
   render: (args) => <AnimatedSparkline {...args} />,
 };
+
+export const NoData: Story = {
+  args: {
+    data: null,
+  },
+};
