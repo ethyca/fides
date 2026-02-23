@@ -38,15 +38,12 @@ export const RulePanel = ({ rule }: RulePanelProps) => {
     [strategies],
   );
 
-  const currentStrategyDescription = useMemo(() => {
-    if (!strategies || !rule.masking_strategy?.strategy) {
-      return undefined;
-    }
-    const currentStrategy = strategies.find(
-      (s) => s.name === rule.masking_strategy?.strategy,
-    );
-    return currentStrategy?.description;
-  }, [strategies, rule.masking_strategy?.strategy]);
+  const currentStrategyDescription = useMemo(
+    () =>
+      strategies?.find((s) => s.name === rule.masking_strategy?.strategy)
+        ?.description,
+    [strategies, rule.masking_strategy?.strategy],
+  );
 
   return (
     <Form layout="vertical" disabled className="max-w-md">
