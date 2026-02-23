@@ -161,7 +161,6 @@ class TestJiraTicketTaskModel:
         assert task.ticket_url is None
         assert task.external_status is None
         assert task.external_status_category is None
-        task.delete(db)
 
     def test_unique_constraint_on_instance_id(
         self,

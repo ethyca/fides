@@ -67,6 +67,11 @@ def upgrade():
         ["connection_config_id"],
     )
     op.create_index(
+        "ix_jira_ticket_task_id",
+        "jira_ticket_task",
+        ["id"],
+    )
+    op.create_index(
         "ix_jira_ticket_task_open",
         "jira_ticket_task",
         ["external_status_category"],
@@ -78,6 +83,7 @@ def upgrade():
 
 def downgrade():
     op.drop_index("ix_jira_ticket_task_open", table_name="jira_ticket_task")
+    op.drop_index("ix_jira_ticket_task_id", table_name="jira_ticket_task")
     op.drop_index(
         "ix_jira_ticket_task_connection_config_id",
         table_name="jira_ticket_task",
