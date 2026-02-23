@@ -24,7 +24,7 @@ export const PolicyConditionsTab = ({
   );
 
   return (
-    <div>
+    <>
       <Title level={5} data-testid="policy-conditions-title">
         Policy conditions
       </Title>
@@ -85,6 +85,6 @@ export const PolicyConditionsTab = ({
           );
         }}
       />
-    </div>
+    </>
   );
 };
