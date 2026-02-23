@@ -350,6 +350,7 @@ jobs:
           - "ops-integration"
           - "api"
           - "lib"
+          - "unit-no-db"
           - "misc-unit"
           - "misc-integration"
 

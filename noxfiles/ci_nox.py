@@ -31,6 +31,7 @@ from setup_tests_nox import (
     pytest_misc_unit,
     pytest_nox,
     pytest_ops,
+    pytest_unit_no_db,
 )
 from utils_nox import db, install_requirements
 
@@ -315,6 +316,7 @@ TEST_GROUPS = [
     nox.param("ops-saas", id="ops-saas"),
     nox.param("api", id="api"),
     nox.param("lib", id="lib"),
+    nox.param("unit-no-db", id="unit-no-db"),
     nox.param("misc-unit", id="misc-unit"),
     nox.param("misc-integration-external", id="misc-integration-external"),
     nox.param("misc-integration", id="misc-integration"),
@@ -334,6 +336,7 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-saas": partial(pytest_ops, mark="saas"),
     "api": pytest_api,
     "lib": pytest_lib,
+    "unit-no-db": pytest_unit_no_db,
     "misc-unit": pytest_misc_unit,
     "misc-integration-external": partial(pytest_misc_integration, mark="external"),
     "misc-integration": partial(
@@ -346,8 +349,14 @@ TEST_MATRIX: Dict[str, Callable] = {
 # Define the mapping of test directories to test groups
 # This maps actual test directories to the test groups that cover them
 TEST_DIRECTORY_COVERAGE = {
-    "tests/api/": ["api"],
-    "tests/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
+    "tests/api/": ["api", "unit-no-db"],
+    "tests/ctl/": [
+        "ctl-unit",
+        "ctl-not-external",
+        "ctl-integration",
+        "ctl-external",
+        "unit-no-db",
+    ],
     "tests/lib/": ["lib"],
     "tests/ops/": [
         "ops-unit",
@@ -356,6 +365,7 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-integration",
         "ops-external-datastores",
         "ops-saas",
+        "unit-no-db",
     ],
     "tests/service/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
