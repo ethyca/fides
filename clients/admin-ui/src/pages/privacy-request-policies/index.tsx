@@ -8,8 +8,9 @@ import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import SearchInput from "~/features/common/SearchInput";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
+import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 import { summarizeConditions } from "~/features/policies/utils/summarizeConditions";
-import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
+import { PolicyResponse } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
 
