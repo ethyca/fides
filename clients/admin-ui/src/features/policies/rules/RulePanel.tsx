@@ -1,11 +1,4 @@
-import {
-  Flex,
-  Form,
-  Input,
-  Select,
-  Tag,
-  Typography,
-} from "fidesui";
+import { Flex, Form, Input, Select, Tag, Typography } from "fidesui";
 
 import { ActionType, RuleResponseWithTargets, RuleTarget } from "~/types/api";
 
@@ -57,6 +50,7 @@ const RulePanel = ({ rule }: RulePanelProps) => {
           </Form.Item>
 
           <Form.Item label="Action">
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <Select
               value={rule.action_type}
               options={actionTypeOptions}
@@ -67,6 +61,7 @@ const RulePanel = ({ rule }: RulePanelProps) => {
 
           {isErasureRule && (
             <Form.Item label="Masking strategy">
+              {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
               <Select
                 value={rule.masking_strategy?.strategy}
                 options={maskingStrategyOptions}
@@ -80,7 +75,9 @@ const RulePanel = ({ rule }: RulePanelProps) => {
           {isAccessRule && (
             <Form.Item label="Storage destination">
               <Input
-                value={rule.storage_destination?.name ?? "No storage destination"}
+                value={
+                  rule.storage_destination?.name ?? "No storage destination"
+                }
                 disabled
                 data-testid={`rule-storage-${rule.key}`}
               />

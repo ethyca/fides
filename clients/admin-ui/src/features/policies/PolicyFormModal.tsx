@@ -1,11 +1,4 @@
-import {
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Select,
-  useMessage,
-} from "fidesui";
+import { Form, Input, InputNumber, Modal, Select, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
 
@@ -14,7 +7,7 @@ import {
   useCreateOrUpdatePoliciesMutation,
   useGetPolicyQuery,
 } from "~/features/policy/policy.slice";
-import { DrpAction, PolicyResponse } from "~/types/api";
+import { DrpAction } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface PolicyFormValues {
@@ -93,13 +86,15 @@ const PolicyFormModal = ({
 
       if (result.data.failed.length > 0) {
         message.error(
-          `Failed to save policy: ${result.data.failed[0].message}`
+          `Failed to save policy: ${result.data.failed[0].message}`,
         );
         return;
       }
 
       message.success(
-        isEditing ? "Policy updated successfully" : "Policy created successfully"
+        isEditing
+          ? "Policy updated successfully"
+          : "Policy created successfully",
       );
       onClose();
 
@@ -112,7 +107,7 @@ const PolicyFormModal = ({
         });
       }
     },
-    [createOrUpdatePolicy, isEditing, message, onClose, router]
+    [createOrUpdatePolicy, isEditing, message, onClose, router],
   );
 
   // Auto-generate key from name
@@ -126,7 +121,7 @@ const PolicyFormModal = ({
         form.setFieldValue("key", generatedKey);
       }
     },
-    [form, isEditing]
+    [form, isEditing],
   );
 
   return (
@@ -164,7 +159,8 @@ const PolicyFormModal = ({
             { required: true, message: "Key is required" },
             {
               pattern: /^[a-z0-9_]+$/,
-              message: "Key must contain only lowercase letters, numbers, and underscores",
+              message:
+                "Key must contain only lowercase letters, numbers, and underscores",
             },
           ]}
           tooltip="Unique identifier for the policy. Auto-generated from name."
@@ -181,6 +177,7 @@ const PolicyFormModal = ({
           label="Action"
           tooltip="Data Rights Protocol action to associate with this policy"
         >
+          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
           <Select
             placeholder="Select action (optional)"
             options={drpActionOptions}

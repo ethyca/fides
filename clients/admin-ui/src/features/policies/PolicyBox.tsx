@@ -72,9 +72,9 @@ const PolicyBox = ({
         centered
       >
         <Typography.Text type="secondary">
-          Are you sure you want to delete the policy &ldquo;{policy.name}&rdquo;?
-          This action cannot be undone and will also delete all associated
-          rules.
+          Are you sure you want to delete the policy &ldquo;{policy.name}
+          &rdquo;? This action cannot be undone and will also delete all
+          associated rules.
         </Typography.Text>
       </Modal>
     </>

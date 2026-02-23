@@ -1,11 +1,5 @@
 import { Dayjs } from "dayjs";
-import {
-  Button,
-  ChakraFlex as Flex,
-  Form,
-  Input,
-  Select,
-} from "fidesui";
+import { Button, ChakraFlex as Flex, Form, Input, Select } from "fidesui";
 import { useCallback, useEffect } from "react";
 
 import {
@@ -27,7 +21,6 @@ interface PolicyConditionFormProps {
   onCancel: () => void;
   editingCondition?: ConditionLeaf | null;
   isSubmitting?: boolean;
-  policyKey: string;
 }
 
 // Common privacy request fields for policy conditions
@@ -38,7 +31,10 @@ const privacyRequestFields = [
   { value: "privacy_request.location", label: "Location" },
   { value: "privacy_request.location_country", label: "Location Country" },
   { value: "privacy_request.location_groups", label: "Location Groups" },
-  { value: "privacy_request.location_regulations", label: "Location Regulations" },
+  {
+    value: "privacy_request.location_regulations",
+    label: "Location Regulations",
+  },
   { value: "privacy_request.created_at", label: "Created At" },
   { value: "privacy_request.identity.email", label: "Identity Email" },
   { value: "privacy_request.identity.phone_number", label: "Identity Phone" },
@@ -65,7 +61,7 @@ const PolicyConditionForm = ({
         operator: editingCondition.operator,
         value: parseStoredValueForForm(
           editingCondition.field_address,
-          editingCondition.value
+          editingCondition.value,
         ),
       }
     : {};
@@ -87,7 +83,7 @@ const PolicyConditionForm = ({
 
       onAdd(condition);
     },
-    [onAdd]
+    [onAdd],
   );
 
   const handleCancel = useCallback(() => {
@@ -120,6 +116,7 @@ const PolicyConditionForm = ({
         rules={[{ required: true, message: "Field is required" }]}
         tooltip="Select a privacy request field to use in the condition"
       >
+        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
         <Select
           placeholder="Select a field"
           options={privacyRequestFields}

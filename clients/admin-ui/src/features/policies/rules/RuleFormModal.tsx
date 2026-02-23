@@ -1,21 +1,11 @@
-import {
-  Form,
-  Input,
-  Modal,
-  Select,
-  useMessage,
-} from "fidesui";
+import { Form, Input, Modal, Select, useMessage } from "fidesui";
 import { useCallback, useEffect, useMemo } from "react";
 
 import {
   useCreateOrUpdateRulesMutation,
   useCreateOrUpdateTargetsMutation,
 } from "~/features/policy/policy.slice";
-import {
-  ActionType,
-  RuleResponseWithTargets,
-  RuleTarget,
-} from "~/types/api";
+import { ActionType, RuleResponseWithTargets, RuleTarget } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface RuleFormValues {
@@ -146,7 +136,9 @@ const RuleFormModal = ({
       }
 
       if (ruleResult.data.failed.length > 0) {
-        message.error(`Failed to save rule: ${ruleResult.data.failed[0].message}`);
+        message.error(
+          `Failed to save rule: ${ruleResult.data.failed[0].message}`,
+        );
         return;
       }
 
@@ -170,7 +162,7 @@ const RuleFormModal = ({
       }
 
       message.success(
-        isEditing ? "Rule updated successfully" : "Rule created successfully"
+        isEditing ? "Rule updated successfully" : "Rule created successfully",
       );
       onClose();
     },
@@ -181,7 +173,7 @@ const RuleFormModal = ({
       isEditing,
       message,
       onClose,
-    ]
+    ],
   );
 
   // Auto-generate key from name
@@ -195,7 +187,7 @@ const RuleFormModal = ({
         form.setFieldValue("key", generatedKey);
       }
     },
-    [form, isEditing]
+    [form, isEditing],
   );
 
   return (
@@ -251,6 +243,7 @@ const RuleFormModal = ({
           label="Action type"
           rules={[{ required: true, message: "Action type is required" }]}
         >
+          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
           <Select
             placeholder="Select action type"
             options={actionTypeOptions}
@@ -263,6 +256,7 @@ const RuleFormModal = ({
           label="Data category targets"
           tooltip="Select the data categories this rule should apply to"
         >
+          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
           <Select
             mode="tags"
             placeholder="Select or type data categories"
@@ -280,6 +274,7 @@ const RuleFormModal = ({
             label="Masking strategy"
             tooltip="How matched data will be masked for erasure requests"
           >
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <Select
               placeholder="Select masking strategy"
               options={maskingStrategyOptions}

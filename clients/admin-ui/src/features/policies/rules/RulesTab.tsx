@@ -1,25 +1,12 @@
-import {
-  Collapse,
-  CollapseProps,
-  Empty,
-  Flex,
-  Tag,
-  Typography,
-} from "fidesui";
+import { Collapse, CollapseProps, Empty, Flex, Tag, Typography } from "fidesui";
 import { useMemo } from "react";
 
 import { useGetPolicyRulesQuery } from "~/features/policy/policy.slice";
-import RulePanel from "~/features/policies/rules/RulePanel";
-import { ActionType, RuleResponseWithTargets } from "~/types/api";
+import { RuleResponseWithTargets } from "~/types/api";
+
+import RulePanel from "./RulePanel";
 
 const { Paragraph, Text } = Typography;
-
-const actionTypeColors: Record<ActionType, string> = {
-  [ActionType.ACCESS]: "success",
-  [ActionType.ERASURE]: "error",
-  [ActionType.CONSENT]: "corinth",
-  [ActionType.UPDATE]: "warning",
-};
 
 interface RulesTabProps {
   policyKey: string;
@@ -43,14 +30,12 @@ const RulesTab = ({ policyKey }: RulesTabProps) => {
         label: (
           <Flex align="center" gap={8}>
             <Text strong>{rule.name}</Text>
-            <Tag color={actionTypeColors[rule.action_type]} className="capitalize">
-              {rule.action_type}
-            </Tag>
+            <Tag className="capitalize">{rule.action_type}</Tag>
           </Flex>
         ),
         children: <RulePanel rule={rule} />,
       })),
-    [rules]
+    [rules],
   );
 
   if (isLoading) {
@@ -77,9 +62,9 @@ const RulesTab = ({ policyKey }: RulesTabProps) => {
         <Typography.Title level={5}>Policy rules</Typography.Title>
         <Paragraph type="secondary">
           Rules define what actions to take on data that matches specific data
-          categories. Each rule specifies an action type (access, erasure, etc.),
-          target data categories, and optionally a masking strategy or storage
-          destination.
+          categories. Each rule specifies an action type (access, erasure,
+          etc.), target data categories, and optionally a masking strategy or
+          storage destination.
         </Paragraph>
       </div>
 

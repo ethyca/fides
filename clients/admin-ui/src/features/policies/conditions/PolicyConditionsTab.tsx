@@ -9,16 +9,17 @@ import {
   useMessage,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
+
 import { operatorLabels } from "~/features/integrations/configure-tasks/constants";
 import {
   formatConditionValue,
   formatFieldDisplay,
 } from "~/features/integrations/configure-tasks/utils";
+import PolicyConditionModal from "~/features/policies/conditions/PolicyConditionModal";
 import {
   useGetPolicyQuery,
   useUpdatePolicyConditionsMutation,
 } from "~/features/policy/policy.slice";
-import PolicyConditionModal from "~/features/policies/conditions/PolicyConditionModal";
 import { ConditionLeaf, GroupOperator } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
@@ -69,7 +70,7 @@ const PolicyConditionsTab = ({ policyKey }: PolicyConditionsTabProps) => {
 
       refetch();
     },
-    [policyKey, updateConditions, refetch]
+    [policyKey, updateConditions, refetch],
   );
 
   const handleOpenAddModal = useCallback(() => {
@@ -84,7 +85,7 @@ const PolicyConditionsTab = ({ policyKey }: PolicyConditionsTabProps) => {
       setEditingIndex(index);
       setIsModalOpen(true);
     },
-    []
+    [],
   );
 
   const handleCloseModal = useCallback(() => {
@@ -100,7 +101,7 @@ const PolicyConditionsTab = ({ policyKey }: PolicyConditionsTabProps) => {
 
       if (editingIndex !== null) {
         updatedConditions = originalConditions.map((condition, i) =>
-          i === editingIndex ? newCondition : condition
+          i === editingIndex ? newCondition : condition,
         );
       } else {
         updatedConditions = [...originalConditions, newCondition];
@@ -113,7 +114,7 @@ const PolicyConditionsTab = ({ policyKey }: PolicyConditionsTabProps) => {
         message.success(
           editingIndex !== null
             ? "Condition updated successfully!"
-            : "Condition added successfully!"
+            : "Condition added successfully!",
         );
         handleCloseModal();
       } catch (err) {
@@ -121,7 +122,7 @@ const PolicyConditionsTab = ({ policyKey }: PolicyConditionsTabProps) => {
         throw err;
       }
     },
-    [conditions, editingIndex, saveConditions, message, handleCloseModal]
+    [conditions, editingIndex, saveConditions, message, handleCloseModal],
   );
 
   const handleDeleteCondition = useCallback(
@@ -129,14 +130,14 @@ const PolicyConditionsTab = ({ policyKey }: PolicyConditionsTabProps) => {
       setConditionToDelete({ index, condition });
       setIsDeleteModalOpen(true);
     },
-    []
+    [],
   );
 
   const handleConfirmDelete = useCallback(async () => {
     if (conditionToDelete) {
       const originalConditions = conditions;
       const updatedConditions = originalConditions.filter(
-        (_, i) => i !== conditionToDelete.index
+        (_, i) => i !== conditionToDelete.index,
       );
 
       setConditions(updatedConditions);

@@ -8,8 +8,8 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
-import PolicyBox from "~/features/policies/PolicyBox";
 import PolicyConditionsTab from "~/features/policies/conditions/PolicyConditionsTab";
+import PolicyBox from "~/features/policies/PolicyBox";
 import RulesTab from "~/features/policies/rules/RulesTab";
 import {
   useDeletePolicyMutation,
@@ -61,7 +61,7 @@ const PolicyDetailPage: NextPage = () => {
         children: <PolicyConditionsTab policyKey={policyKey} />,
       },
     ],
-    [policyKey, rulesData?.items?.length]
+    [policyKey, rulesData?.items?.length],
   );
 
   const { activeTab, onTabChange } = useURLHashedTabs({
