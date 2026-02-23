@@ -40,7 +40,9 @@ class KeyMapper:
     def custom_field(dsr_id: str, field_key: str) -> Tuple[str, str]:
         """New: dsr:{id}:custom_field:{key}. Legacy: id-{id}-custom-privacy-request-field-{key}."""
         part = _part("custom_field", field_key)
-        return _new_key(dsr_id, part), f"id-{dsr_id}-custom-privacy-request-field-{field_key}"
+        return _new_key(
+            dsr_id, part
+        ), f"id-{dsr_id}-custom-privacy-request-field-{field_key}"
 
     @staticmethod
     def drp(dsr_id: str, attr: str) -> Tuple[str, str]:
@@ -55,12 +57,12 @@ class KeyMapper:
         return _new_key(dsr_id, part), f"id-{dsr_id}-encryption-{attr}"
 
     @staticmethod
-    def masking_secret(
-        dsr_id: str, strategy: str, secret_type: str
-    ) -> Tuple[str, str]:
+    def masking_secret(dsr_id: str, strategy: str, secret_type: str) -> Tuple[str, str]:
         """New: dsr:{id}:masking_secret:{strategy}:{secret_type}. Legacy: id-{id}-masking-secret-{strategy}-{secret_type}."""
         part = f"masking_secret:{strategy}:{secret_type}"
-        return _new_key(dsr_id, part), f"id-{dsr_id}-masking-secret-{strategy}-{secret_type}"
+        return _new_key(
+            dsr_id, part
+        ), f"id-{dsr_id}-masking-secret-{strategy}-{secret_type}"
 
     @staticmethod
     def async_execution(dsr_id: str) -> Tuple[str, str]:
@@ -80,13 +82,17 @@ class KeyMapper:
     def webhook_manual_access(dsr_id: str, webhook_id: str) -> Tuple[str, str]:
         """New: dsr:{id}:webhook_manual_access:{webhook_id}. Legacy logical: WEBHOOK_MANUAL_ACCESS_INPUT__{id}__{webhook_id}."""
         part = _part("webhook_manual_access", webhook_id)
-        return _new_key(dsr_id, part), f"WEBHOOK_MANUAL_ACCESS_INPUT__{dsr_id}__{webhook_id}"
+        return _new_key(
+            dsr_id, part
+        ), f"WEBHOOK_MANUAL_ACCESS_INPUT__{dsr_id}__{webhook_id}"
 
     @staticmethod
     def webhook_manual_erasure(dsr_id: str, webhook_id: str) -> Tuple[str, str]:
         """New: dsr:{id}:webhook_manual_erasure:{webhook_id}. Legacy logical: WEBHOOK_MANUAL_ERASURE_INPUT__{id}__{webhook_id}."""
         part = _part("webhook_manual_erasure", webhook_id)
-        return _new_key(dsr_id, part), f"WEBHOOK_MANUAL_ERASURE_INPUT__{dsr_id}__{webhook_id}"
+        return _new_key(
+            dsr_id, part
+        ), f"WEBHOOK_MANUAL_ERASURE_INPUT__{dsr_id}__{webhook_id}"
 
     @staticmethod
     def data_use_map(dsr_id: str) -> Tuple[str, str]:
@@ -100,7 +106,9 @@ class KeyMapper:
     ) -> Tuple[str, str]:
         """New: dsr:{id}:email_info:{step}:{dataset}:{collection}. Legacy logical: EMAIL_INFORMATION__{id}__{step}__{dataset}__{collection}."""
         part = f"email_info:{step}:{dataset}:{collection}"
-        return _new_key(dsr_id, part), f"EMAIL_INFORMATION__{dsr_id}__{step}__{dataset}__{collection}"
+        return _new_key(
+            dsr_id, part
+        ), f"EMAIL_INFORMATION__{dsr_id}__{step}__{dataset}__{collection}"
 
     @staticmethod
     def paused_location(dsr_id: str) -> Tuple[str, str]:

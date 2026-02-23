@@ -282,18 +282,18 @@ class DSRCacheStore:
     def clear(self, dsr_id: str) -> None:
         """
         Delete all cache keys for this DSR and remove the index.
-        
+
         Always uses SCAN to find all keys (both indexed and legacy) to ensure
         complete cleanup in mixed-key scenarios.
         """
         # Use SCAN to find ALL keys (indexed + legacy)
         all_keys_via_scan = list(self._redis.scan_iter(match=f"*{dsr_id}*", count=500))
-        
+
         index_prefix = _dsr_index_prefix(dsr_id)
-        
+
         # Delete all found keys in batch
         if all_keys_via_scan:
             self._redis.delete(*all_keys_via_scan)
-        
+
         # Delete the index itself
         self._manager.delete_index(index_prefix)
