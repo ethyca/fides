@@ -15,7 +15,7 @@
 
 .completeContainer {
   border-radius: var(--ant-border-radius-lg);
-  padding: 12px;
+  padding: var(--ant-padding-sm);
   background-color: color-mix(in srgb, var(--fidesui-success) 10%, transparent);
 }
 
