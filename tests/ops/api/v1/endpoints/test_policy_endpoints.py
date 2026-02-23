@@ -293,6 +293,7 @@ class TestDeletePolicy:
             },
         )
 
+        policy_id = test_policy.id
         rule_id = rule.id
         target_id = target.id
 
@@ -305,7 +306,7 @@ class TestDeletePolicy:
         db.expire_all()
 
         # Verify policy, rule, and target are all deleted
-        assert Policy.get(db=db, object_id=test_policy.id) is None
+        assert Policy.get(db=db, object_id=policy_id) is None
         assert Rule.get(db=db, object_id=rule_id) is None
         assert RuleTarget.get(db=db, object_id=target_id) is None
 
