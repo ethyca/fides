@@ -24,6 +24,8 @@ from fides.common.cache.manager import (
 )
 
 
+from fides.api.util.cache import get_cache
+
 @contextmanager
 def get_dsr_cache_store(
     *,
@@ -53,8 +55,6 @@ def get_dsr_cache_store(
             store.write_identity(pr_id, "email", "user@example.com")
             value = store.get_identity(pr_id, "email")
     """
-    from fides.api.util.cache import get_cache
-
     redis_client = get_cache()
     manager = RedisCacheManager(redis_client)
     store = DSRCacheStore(
