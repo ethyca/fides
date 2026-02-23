@@ -46,7 +46,7 @@ from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PR
 from fides.config import CONFIG
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 

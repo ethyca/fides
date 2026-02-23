@@ -27,7 +27,7 @@ from fides.api.api.v1.endpoints import (
     worker_endpoints,
 )
 from fides.api.util.api_router import APIRouter
-from fides.service.system_integration_link import (
+from fides.system_integration_link import (
     routes as system_integration_link_routes,
 )
 

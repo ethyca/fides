@@ -46,7 +46,7 @@ class SystemConnectionConfigLink(Base):
     )
 ```
 
-**Implemented in:** `src/fides/service/system_integration_link/models.py`
+**Implemented in:** `src/fides/system_integration_link/models.py`
 
 **Note:** A `link_type` concept (DSR vs. monitoring) was initially considered but removed to simplify the data migration and initial implementation. The join table can be extended with a type qualifier in the future if a concrete technical need arises.
 
@@ -92,7 +92,7 @@ Add a `link_type` column to `ConnectionConfig` alongside the existing `system_id
 All link management code lives in a single self-contained package:
 
 ```
-src/fides/service/system_integration_link/
+src/fides/system_integration_link/
     __init__.py
     models.py        # SQLAlchemy model + create_or_update_link helper
     routes.py        # FastAPI route definitions (GET, PUT, DELETE)
@@ -106,14 +106,14 @@ src/fides/service/system_integration_link/
 Routes are registered in `src/fides/api/api/v1/api.py` via:
 
 ```python
-from fides.service.system_integration_link import routes as system_integration_link_routes
+from fides.system_integration_link import routes as system_integration_link_routes
 api_router.include_router(system_integration_link_routes.router)
 ```
 
 The model is registered for Alembic discovery in `src/fides/api/db/base.py` via:
 
 ```python
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 ```
 
 ### Session Management
@@ -233,7 +233,7 @@ class SystemLinkResponse(BaseModel):
     created_at: datetime
 ```
 
-**Implemented in:** `src/fides/service/system_integration_link/schemas.py`
+**Implemented in:** `src/fides/system_integration_link/schemas.py`
 
 ## 3. Scope Definitions
 

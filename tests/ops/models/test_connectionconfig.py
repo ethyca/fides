@@ -10,7 +10,7 @@ from fides.api.models.connectionconfig import (
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.text import to_snake_case
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 
 class TestConnectionConfigModel:

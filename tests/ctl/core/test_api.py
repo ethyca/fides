@@ -60,7 +60,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import FidesConfig, get_config
 from fides.core import api as _api
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 CONFIG = get_config()
 

@@ -9,7 +9,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 
 @pytest.fixture(scope="function")

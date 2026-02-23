@@ -3,19 +3,19 @@ from unittest.mock import MagicMock, create_autospec
 
 import pytest
 
-from fides.service.system_integration_link.entities import (
+from fides.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
 )
-from fides.service.system_integration_link.exceptions import (
+from fides.system_integration_link.exceptions import (
     ConnectionConfigNotFoundError,
     SystemIntegrationLinkNotFoundError,
     SystemNotFoundError,
     TooManyLinksError,
 )
-from fides.service.system_integration_link.repository import (
+from fides.system_integration_link.repository import (
     SystemIntegrationLinkRepository,
 )
-from fides.service.system_integration_link.service import (
+from fides.system_integration_link.service import (
     SystemIntegrationLinkService,
 )
 

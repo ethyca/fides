@@ -4,16 +4,16 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.core.repository.session_management import with_optional_sync_session
-from fides.service.system_integration_link.entities import (
+from fides.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
 )
-from fides.service.system_integration_link.exceptions import (
+from fides.system_integration_link.exceptions import (
     ConnectionConfigNotFoundError,
     SystemIntegrationLinkNotFoundError,
     SystemNotFoundError,
     TooManyLinksError,
 )
-from fides.service.system_integration_link.repository import (
+from fides.system_integration_link.repository import (
     SystemIntegrationLinkRepository,
 )
 

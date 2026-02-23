@@ -22,7 +22,7 @@
 
 ### Task 1.2 -- SQLAlchemy model for the join table (Fides OSS, BE) [S] ✅
 
-- New model `SystemConnectionConfigLink` colocated in `src/fides/service/system_integration_link/models.py`.
+- New model `SystemConnectionConfigLink` colocated in `src/fides/system_integration_link/models.py`.
 - Model includes a `create_or_update_link(db, system_id, connection_config_id)` classmethod for centralized link management.
 - Model registered in `src/fides/api/db/base.py`.
 
@@ -59,7 +59,7 @@
 
 ### Task 2.2 -- Link management endpoints (Fides OSS, BE) [M] ✅
 
-All code lives in a self-contained service package at `src/fides/service/system_integration_link/`:
+All code lives in a self-contained service package at `src/fides/system_integration_link/`:
 
 | Module | Purpose |
 |--------|---------|
@@ -71,7 +71,7 @@ All code lives in a self-contained service package at `src/fides/service/system_
 | `entities.py` | Domain entity dataclass |
 | `exceptions.py` | Domain-specific exceptions |
 
-Routes are registered in `src/fides/api/api/v1/api.py` via `from fides.service.system_integration_link import routes`.
+Routes are registered in `src/fides/api/api/v1/api.py` via `from fides.system_integration_link import routes`.
 
 Session management uses the shared `@with_optional_sync_session` decorator from `src/fides/core/repository/session_management.py`. Routes do not inject a database session -- the service creates and owns its session, committing atomically.
 

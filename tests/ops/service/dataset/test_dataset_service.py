@@ -10,7 +10,7 @@ from fides.service.dataset.dataset_service import (
     DatasetService,
     LinkedDatasetException,
 )
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 
 @pytest.fixture

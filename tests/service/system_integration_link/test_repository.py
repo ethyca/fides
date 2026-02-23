@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System
-from fides.service.system_integration_link.models import (
+from fides.system_integration_link.models import (
     SystemConnectionConfigLink,
 )
-from fides.service.system_integration_link.repository import (
+from fides.system_integration_link.repository import (
     SystemIntegrationLinkRepository,
 )
 

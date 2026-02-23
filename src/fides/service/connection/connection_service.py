@@ -78,7 +78,7 @@ from fides.service.connection.merge_configs_util import (
     preserve_monitored_collections_in_dataset_merge,
 )
 from fides.service.event_audit_service import EventAuditService
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 
 class ConnectorTemplateNotFound(Exception):

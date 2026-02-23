@@ -107,4 +107,4 @@ from fides.api.models.tcf_publisher_restrictions import (
 )
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.models.v3.privacy_preferences import PrivacyPreferences
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink

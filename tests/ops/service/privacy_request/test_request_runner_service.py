@@ -74,7 +74,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return

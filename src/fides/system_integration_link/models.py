@@ -11,8 +11,19 @@ class SystemConnectionConfigLink(Base):
     """
     Join table that links a System to a ConnectionConfig.
 
-    Supports one:many and many:many associations between systems and
-    integrations. Currently enforced as one:one at the application level.
+    Current constraint: each ConnectionConfig may be linked to at most one
+    System (enforced by a unique constraint on ``connection_config_id``).
+    This may be relaxed in the future to support many-to-many if a concrete
+    need arises (e.g. a single integration shared across multiple systems).
+
+    Several parts of the codebase still treat the System ↔ ConnectionConfig
+    relationship as 1:1 (``uselist=False`` on both sides of the SQLAlchemy
+    relationship).  Before lifting the unique constraint, audit those call
+    sites and the ``create_or_update_link`` helper below.
+
+    Future: a ``link_type`` column (e.g. "dsr" vs "monitoring") could be
+    added to distinguish the purpose of each link.  The unique constraint
+    would need to be updated to include the new column.
     """
 
     __tablename__ = "system_connection_config_link"  # type: ignore[assignment]
@@ -28,6 +39,7 @@ class SystemConnectionConfigLink(Base):
         ForeignKey("connectionconfig.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
+        unique=True,
     )
     created_at = Column(
         DateTime(timezone=True),

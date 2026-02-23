@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session, joinedload
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.core.repository.session_management import with_optional_sync_session
-from fides.service.system_integration_link.entities import (
+from fides.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
 )
-from fides.service.system_integration_link.models import (
+from fides.system_integration_link.models import (
     SystemConnectionConfigLink,
 )
 

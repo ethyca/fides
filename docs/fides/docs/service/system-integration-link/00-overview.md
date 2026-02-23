@@ -88,7 +88,7 @@ Key files:
 New files (added as part of this effort):
 
 ```
-src/fides/service/system_integration_link/   # Self-contained feature package
+src/fides/system_integration_link/   # Self-contained feature package
     __init__.py
     models.py        # SQLAlchemy model (SystemConnectionConfigLink) + create_or_update_link helper
     routes.py        # FastAPI route definitions (GET, PUT, DELETE)

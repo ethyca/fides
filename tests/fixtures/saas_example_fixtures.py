@@ -37,7 +37,7 @@ from fides.api.util.saas_util import (
     load_config,
     load_yaml_as_string,
 )
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 from tests.fixtures.application_fixtures import load_dataset
 
 

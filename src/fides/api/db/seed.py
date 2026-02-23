@@ -55,7 +55,7 @@ from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
 from fides.config import CONFIG
 from fides.service.dataset.dataset_config_service import DatasetConfigService
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 from .crud import upsert_resources
 from .samples import (

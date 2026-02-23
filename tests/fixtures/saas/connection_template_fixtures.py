@@ -16,7 +16,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.connection_util import validate_secrets
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 
 @pytest.fixture(scope="function")

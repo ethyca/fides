@@ -81,7 +81,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.system.system_service import SystemService
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(

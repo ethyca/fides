@@ -49,7 +49,7 @@ from fides.api.task.task_resources import Connections
 from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 from ..graph.graph_test_util import (
     MockMongoTask,

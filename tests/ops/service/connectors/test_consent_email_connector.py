@@ -27,7 +27,7 @@ from fides.api.service.connectors.consent_email_connector import (
 from fides.api.service.privacy_request.request_runner_service import (
     get_consent_email_connection_configs,
 )
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 
 
 class TestConsentEmailConnectorMethods:

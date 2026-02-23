@@ -67,7 +67,7 @@ from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.async_fixtures import *
 from tests.fixtures.bigquery_fixtures import *

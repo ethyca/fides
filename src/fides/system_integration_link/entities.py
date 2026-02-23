@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from fides.service.system_integration_link.models import (
+from fides.system_integration_link.models import (
     SystemConnectionConfigLink,
 )
 

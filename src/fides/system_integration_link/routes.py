@@ -8,17 +8,17 @@ from fides.common.api.scope_registry import (
     SYSTEM_INTEGRATION_LINK_DELETE,
     SYSTEM_INTEGRATION_LINK_READ,
 )
-from fides.service.system_integration_link.exceptions import (
+from fides.system_integration_link.exceptions import (
     ConnectionConfigNotFoundError,
     SystemIntegrationLinkNotFoundError,
     SystemNotFoundError,
     TooManyLinksError,
 )
-from fides.service.system_integration_link.schemas import (
+from fides.system_integration_link.schemas import (
     SetSystemLinksRequest,
     SystemLinkResponse,
 )
-from fides.service.system_integration_link.service import (
+from fides.system_integration_link.service import (
     SystemIntegrationLinkService,
 )
 

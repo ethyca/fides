@@ -47,7 +47,7 @@ from fides.api.task.create_request_tasks import (
     persist_new_access_request_tasks,
 )
 from fides.config import CONFIG
-from fides.service.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.models import SystemConnectionConfigLink
 from tests.ops.graph.graph_test_util import generate_node
 
 
