@@ -105,7 +105,7 @@ const ActionCenterFields = ({ monitorId }: { monitorId: string }) => {
       path: { monitor_config_id: monitorId },
       query: {
         confidence_bucket: query.confidence_bucket ?? undefined,
-        data_category: query.confidence_bucket ?? undefined,
+        data_category: query.data_category ?? undefined,
         diff_status: query.resource_status.flatMap(intoDiffStatus) ?? undefined,
         search: query.search ?? undefined,
         staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
