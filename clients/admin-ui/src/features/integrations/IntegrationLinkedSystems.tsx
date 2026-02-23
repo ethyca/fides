@@ -7,7 +7,6 @@ import {
   Typography,
   useMessage,
   useModal,
-  WarningIcon,
 } from "fidesui";
 import NextLink from "next/link";
 import { useState } from "react";
@@ -73,7 +72,6 @@ const IntegrationLinkedSystems = ({
   ) => {
     modalApi.confirm({
       title: "Unlink system",
-      icon: <WarningIcon />,
       content: (
         <div data-testid="unlink-system-modal">
           <Text type="secondary">

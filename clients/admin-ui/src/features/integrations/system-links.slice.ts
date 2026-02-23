@@ -1,4 +1,4 @@
-import { PLUS_CONNECTION_API_ROUTE } from "~/constants";
+import { CONNECTION_ROUTE } from "~/constants";
 import { baseApi } from "~/features/common/api.slice";
 import {
   SystemConnectionLinkType,
@@ -20,7 +20,7 @@ export const systemLinksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getSystemLinks: build.query<SystemLink[], string>({
       query: (connectionKey) => ({
-        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/system-links`,
+        url: `${CONNECTION_ROUTE}/${connectionKey}/system-links`,
         method: "GET",
       }),
       providesTags: (result, _error, connectionKey) => [
@@ -32,7 +32,7 @@ export const systemLinksApi = baseApi.injectEndpoints({
       { connectionKey: string; body: SetSystemLinksRequest }
     >({
       query: ({ connectionKey, body }) => ({
-        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/system-links`,
+        url: `${CONNECTION_ROUTE}/${connectionKey}/system-links`,
         method: "PUT",
         body,
       }),
@@ -50,7 +50,7 @@ export const systemLinksApi = baseApi.injectEndpoints({
       }
     >({
       query: ({ connectionKey, systemFidesKey, linkType }) => {
-        const url = `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/system-links/${systemFidesKey}`;
+        const url = `${CONNECTION_ROUTE}/${connectionKey}/system-links/${systemFidesKey}`;
         const params = linkType ? `?link_type=${linkType}` : "";
         return {
           url: url + params,
