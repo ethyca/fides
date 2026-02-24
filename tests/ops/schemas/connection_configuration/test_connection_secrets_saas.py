@@ -130,7 +130,7 @@ class TestSaaSConnectionSecretsDomainValidation:
     """Tests for domain validation during secret validation."""
 
     @pytest.fixture(scope="function")
-    def saas_config_with_allowed_domains(
+    def saas_config_with_allowed_values(
         self, saas_example_config: Dict[str, Any]
     ) -> SaaSConfig:
         config = SaaSConfig(**saas_example_config)
@@ -138,7 +138,8 @@ class TestSaaSConnectionSecretsDomainValidation:
             ConnectorParam(
                 name="domain",
                 default_value="api.stripe.com",
-                allowed_domains=["api.stripe.com"],
+                type="endpoint",
+                allowed_values=["api.stripe.com"],
             ),
             ConnectorParam(name="api_key"),
         ]
@@ -150,10 +151,10 @@ class TestSaaSConnectionSecretsDomainValidation:
         return_value=False,
     )
     def test_allowed_domain_passes(
-        self, mock_disabled, saas_config_with_allowed_domains
+        self, mock_disabled, saas_config_with_allowed_values
     ):
-        """Setting a domain that matches allowed_domains should succeed."""
-        schema = SaaSSchemaFactory(saas_config_with_allowed_domains).get_saas_schema()
+        """Setting a domain that matches allowed_values should succeed."""
+        schema = SaaSSchemaFactory(saas_config_with_allowed_values).get_saas_schema()
         schema.model_validate({"domain": "api.stripe.com", "api_key": "sk_test_123"})
 
     @patch(
@@ -161,11 +162,11 @@ class TestSaaSConnectionSecretsDomainValidation:
         return_value=False,
     )
     def test_disallowed_domain_fails(
-        self, mock_disabled, saas_config_with_allowed_domains
+        self, mock_disabled, saas_config_with_allowed_values
     ):
-        """Setting a domain not in allowed_domains should fail."""
-        schema = SaaSSchemaFactory(saas_config_with_allowed_domains).get_saas_schema()
-        with pytest.raises(ValidationError, match="not in the list of allowed domains"):
+        """Setting a domain not in allowed_values should fail."""
+        schema = SaaSSchemaFactory(saas_config_with_allowed_values).get_saas_schema()
+        with pytest.raises(ValidationError, match="not in the list of allowed values"):
             schema.model_validate(
                 {"domain": "evil.example.com", "api_key": "sk_test_123"}
             )
@@ -175,26 +176,27 @@ class TestSaaSConnectionSecretsDomainValidation:
         return_value=True,
     )
     def test_disallowed_domain_passes_when_validation_disabled(
-        self, mock_disabled, saas_config_with_allowed_domains
+        self, mock_disabled, saas_config_with_allowed_values
     ):
         """Domain validation should be skipped when disabled."""
-        schema = SaaSSchemaFactory(saas_config_with_allowed_domains).get_saas_schema()
+        schema = SaaSSchemaFactory(saas_config_with_allowed_values).get_saas_schema()
         schema.model_validate({"domain": "evil.example.com", "api_key": "sk_test_123"})
 
     @patch(
         "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
-    def test_empty_allowed_domains_permits_any_value(
+    def test_empty_allowed_values_permits_any_value(
         self, mock_disabled, saas_example_config: Dict[str, Any]
     ):
-        """Empty allowed_domains list should permit any domain value."""
+        """Empty allowed_values list should permit any domain value."""
         config = SaaSConfig(**saas_example_config)
         config.connector_params = [
             ConnectorParam(
                 name="domain",
                 default_value="custom.example.com",
-                allowed_domains=[],
+                type="endpoint",
+                allowed_values=[],
             ),
             ConnectorParam(name="api_key"),
         ]
@@ -208,10 +210,10 @@ class TestSaaSConnectionSecretsDomainValidation:
         "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
-    def test_none_allowed_domains_no_validation(
+    def test_none_allowed_values_no_validation(
         self, mock_disabled, saas_example_config: Dict[str, Any]
     ):
-        """None allowed_domains (omitted) should skip validation entirely."""
+        """None allowed_values (omitted) should skip validation entirely."""
         config = SaaSConfig(**saas_example_config)
         config.connector_params = [
             ConnectorParam(name="domain", default_value="localhost"),
@@ -227,15 +229,16 @@ class TestSaaSConnectionSecretsDomainValidation:
         "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
         return_value=False,
     )
-    def test_wildcard_allowed_domain(
+    def test_wildcard_allowed_values(
         self, mock_disabled, saas_example_config: Dict[str, Any]
     ):
-        """Wildcard patterns in allowed_domains should be validated."""
+        """Wildcard patterns in allowed_values should be validated."""
         config = SaaSConfig(**saas_example_config)
         config.connector_params = [
             ConnectorParam(
                 name="domain",
-                allowed_domains=["*.salesforce.com"],
+                type="endpoint",
+                allowed_values=["*.salesforce.com"],
             ),
             ConnectorParam(name="api_key"),
         ]
@@ -257,13 +260,14 @@ class TestSaaSConnectionSecretsDomainValidation:
         config.connector_params = [
             ConnectorParam(
                 name="domain",
-                allowed_domains=["*.salesforce.com"],
+                type="endpoint",
+                allowed_values=["*.salesforce.com"],
             ),
             ConnectorParam(name="api_key"),
         ]
         config.external_references = []
         schema = SaaSSchemaFactory(config).get_saas_schema()
-        with pytest.raises(ValidationError, match="not in the list of allowed domains"):
+        with pytest.raises(ValidationError, match="not in the list of allowed values"):
             schema.model_validate(
                 {"domain": "evil.example.com", "api_key": "sk_test_123"}
             )
