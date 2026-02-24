@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
 
 import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   useCreateOrUpdatePoliciesMutation,
   useGetPolicyQuery,
@@ -20,12 +21,6 @@ interface PolicyFormModalProps {
   onClose: () => void;
   policyKey?: string;
 }
-
-const toSnakeCase = (value: string): string =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "");
 
 export const PolicyFormModal = ({
   isOpen,
@@ -103,7 +98,7 @@ export const PolicyFormModal = ({
   const handleNameChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!isEditing) {
-        form.setFieldValue("key", toSnakeCase(e.target.value));
+        form.setFieldValue("key", formatKey(e.target.value));
       }
     },
     [form, isEditing],
