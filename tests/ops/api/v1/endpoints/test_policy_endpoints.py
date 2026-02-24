@@ -7,6 +7,7 @@ from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
@@ -212,6 +213,102 @@ class TestGetPolicyDetail:
         assert rule["key"] == "access_request_rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
+
+
+class TestDeletePolicy:
+    @pytest.fixture(scope="function")
+    def url(self, policy) -> str:
+        return V1_URL_PREFIX + POLICY_DETAIL_URI.format(policy_key=policy.key)
+
+    def test_delete_policy_unauthenticated(self, url, api_client):
+        resp = api_client.delete(url)
+        assert resp.status_code == 401
+
+    def test_delete_policy_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 403
+
+    def test_delete_policy_not_found(
+        self, api_client: TestClient, generate_auth_header
+    ):
+        url = V1_URL_PREFIX + POLICY_DETAIL_URI.format(policy_key="nonexistent_policy")
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 404
+
+    def test_delete_policy_in_use(
+        self, db, api_client: TestClient, generate_auth_header, policy, url
+    ):
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "status": "pending",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 409
+        assert "referenced by one or more privacy requests" in resp.json()["detail"]
+
+    def test_delete_policy_success(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        oauth_client,
+        storage_config,
+        default_data_categories,
+    ):
+        # Create a standalone policy with a rule and target for this test
+        test_policy = Policy.create(
+            db=db,
+            data={
+                "name": "delete test policy",
+                "key": "delete_test_policy",
+                "client_id": oauth_client.id,
+            },
+        )
+        rule = Rule.create(
+            db=db,
+            data={
+                "action_type": "access",
+                "client_id": oauth_client.id,
+                "name": "Delete Test Rule",
+                "policy_id": test_policy.id,
+                "storage_destination_id": storage_config.id,
+            },
+        )
+        target = RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": DataCategory("user").value,
+                "rule_id": rule.id,
+            },
+        )
+
+        policy_id = test_policy.id
+        rule_id = rule.id
+        target_id = target.id
+
+        url = V1_URL_PREFIX + POLICY_DETAIL_URI.format(policy_key=test_policy.key)
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 204
+
+        # Expire cached objects so the session re-queries the database
+        db.expire_all()
+
+        # Verify policy, rule, and target are all deleted
+        assert Policy.get(db=db, object_id=policy_id) is None
+        assert Rule.get(db=db, object_id=rule_id) is None
+        assert RuleTarget.get(db=db, object_id=target_id) is None
 
 
 class TestGetRules:
