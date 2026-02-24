@@ -5,12 +5,10 @@ import React from "react";
 const { Text } = Typography;
 
 export interface StatCardProps extends Omit<CardProps, "content" | "title"> {
-  /** Label rendered above the stat value in secondary text. */
   title?: string;
   stat: React.ReactNode;
   content?: React.ReactNode;
   footer?: React.ReactNode;
-  /** Class names applied to the footer wrapper. Defaults to `h-16`. */
   footerClassName?: string;
 }
 
@@ -27,7 +25,7 @@ const StatCard = ({
   const cardBodyPadding = token.Card?.bodyPadding ?? token.paddingLG;
 
   return (
-    <Card {...rest}>
+    <Card variant="borderless" {...rest}>
       {title && <Text type="secondary">{title}</Text>}
       <div className={classNames({ "mt-1": title })}>{stat}</div>
       {content && <div className="mt-3">{content}</div>}
