@@ -185,6 +185,7 @@ const AssessmentSettingsModal = ({
       open={open}
       onCancel={onClose}
       width={600}
+      destroyOnClose
       footer={
         <Flex justify="flex-end" gap={8}>
           <Button onClick={onClose}>Cancel</Button>
