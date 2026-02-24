@@ -74,8 +74,6 @@ export interface QuestionGroup {
   title: string;
   requirement_key: string;
   questions: AssessmentQuestion[];
-  answered_count: number;
-  total_count: number;
   risk_level: RiskLevel | null;
   last_updated_at: string | null;
   last_updated_by: string | null;

@@ -1,7 +1,5 @@
-import { uniqBy } from "lodash";
-
-import type { AssessmentQuestion, EvidenceItem, QuestionGroup } from "./types";
-import { AnswerSource, AnswerStatus, EvidenceType } from "./types";
+import type { AssessmentQuestion } from "./types";
+import { AnswerSource, AnswerStatus } from "./types";
 
 export const getInitials = (name: string): string =>
   name
@@ -27,54 +25,6 @@ export const getTimeSince = (dateString: string): string => {
     return `${diffMins}m ago`;
   }
   return "Just now";
-};
-
-export const truncate = (text: string, maxLength: number): string =>
-  text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
-
-export const getGroupEvidence = (
-  questionGroups: QuestionGroup[],
-  groupId: string,
-): EvidenceItem[] => {
-  const group = questionGroups.find((g) => g.id === groupId);
-  if (!group) {
-    return [];
-  }
-  return uniqBy(
-    group.questions.flatMap((q) => q.evidence),
-    "id",
-  );
-};
-
-export const filterEvidence = (
-  evidence: EvidenceItem[],
-  query: string,
-): EvidenceItem[] => {
-  if (!query) {
-    return evidence;
-  }
-  const q = query.toLowerCase();
-  return evidence.filter((item) => {
-    if (item.type === EvidenceType.SYSTEM) {
-      return (
-        item.source.source_name.toLowerCase().includes(q) ||
-        item.value_display.toLowerCase().includes(q)
-      );
-    }
-    if (item.type === EvidenceType.MANUAL_ENTRY) {
-      return (
-        item.author.user_name.toLowerCase().includes(q) ||
-        item.entry.new_value.toLowerCase().includes(q)
-      );
-    }
-    if (item.type === EvidenceType.SLACK_COMMUNICATION) {
-      return (
-        item.channel.channel_name.toLowerCase().includes(q) ||
-        (item.summary?.toLowerCase().includes(q) ?? false)
-      );
-    }
-    return false;
-  });
 };
 
 export const isAssessmentComplete = (
