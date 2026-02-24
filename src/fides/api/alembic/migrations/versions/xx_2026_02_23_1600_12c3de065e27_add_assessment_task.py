@@ -34,7 +34,7 @@ def upgrade():
         ),
         sa.Column("action_type", sa.String(), nullable=False),
         sa.Column("status", sa.String(), nullable=False, index=True),
-        sa.Column("celery_id", sa.String(length=255), nullable=False),
+        sa.Column("celery_id", sa.String(length=255), nullable=False, unique=True),
         sa.Column("total_count", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("completed_count", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("message", sa.String(), nullable=True),
@@ -61,10 +61,9 @@ def upgrade():
         ["action_type"],
     )
     op.create_index(
-        "ix_privacy_assessment_task_celery_id",
+        op.f("ix_privacy_assessment_task_id"),
         "privacy_assessment_task",
-        ["celery_id"],
-        unique=True,
+        ["id"],
     )
 
     op.add_column(
@@ -99,7 +98,7 @@ def downgrade():
     op.drop_column("privacy_assessment", "privacy_assessment_task_id")
 
     op.drop_index(
-        "ix_privacy_assessment_task_celery_id",
+        op.f("ix_privacy_assessment_task_id"),
         table_name="privacy_assessment_task",
     )
     op.drop_index(
