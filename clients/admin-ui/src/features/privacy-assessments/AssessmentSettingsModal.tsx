@@ -56,8 +56,11 @@ const AssessmentSettingsModal = ({
   const { data: defaults } = useGetAssessmentConfigDefaultsQuery(undefined, {
     skip: !open,
   });
-  const { data: channelsData, isLoading: isLoadingChannels } =
-    useGetChatChannelsQuery(undefined, { skip: !open });
+  const {
+    data: channelsData,
+    isLoading: isLoadingChannels,
+    refetch: refetchChannels,
+  } = useGetChatChannelsQuery(undefined, { skip: !open });
   const [updateConfig, { isLoading: isUpdating }] =
     useUpdateAssessmentConfigMutation();
   const [testSlackChannel, { isLoading: isTesting }] =
@@ -312,6 +315,11 @@ const AssessmentSettingsModal = ({
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
+              onDropdownVisibleChange={(visible) => {
+                if (visible) {
+                  refetchChannels();
+                }
+              }}
               data-testid="select-slack-channel"
             />
           </Form.Item>
