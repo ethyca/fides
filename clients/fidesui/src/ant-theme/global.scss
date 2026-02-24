@@ -55,8 +55,16 @@ h6 {
 }
 
 // Input labels should have a font weight of 600
-.ant-form-item-label {
-  font-weight: 600;
+.ant-form-item {
+  &-label {
+    font-weight: 600;
+  }
+  &-explain,
+  &-extra {
+    --ant-font-size: var(--ant-font-size-sm);
+    margin-top: 0.25rem;
+    color: var(--fidesui-neutral-700);
+  }
 }
 
 // Custom styles for dark submenus
