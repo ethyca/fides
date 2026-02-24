@@ -31,8 +31,6 @@ import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
 import { isAssessmentComplete } from "./utils";
 
-const { Title } = Typography;
-
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
 }
@@ -50,26 +48,15 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
 
-  const questionGroups = useMemo(
-    () => assessment.question_groups ?? [],
-    [assessment.question_groups],
-  );
-
-  const allQuestions = useMemo(
-    () => questionGroups.flatMap((g) => g.questions),
-    [questionGroups],
-  );
-
-  const getAnswerValue = useCallback(
-    (questionId: string, apiAnswer: string): string =>
-      localAnswers[questionId] ?? apiAnswer,
-    [localAnswers],
-  );
-
-  const isComplete = useMemo(
-    () => isAssessmentComplete(allQuestions, getAnswerValue),
-    [allQuestions, getAnswerValue],
-  );
+  const isComplete = useMemo(() => {
+    const questions = (assessment.question_groups ?? []).flatMap(
+      (g) => g.questions,
+    );
+    return isAssessmentComplete(
+      questions,
+      (questionId, apiAnswer) => localAnswers[questionId] ?? apiAnswer,
+    );
+  }, [assessment.question_groups, localAnswers]);
 
   const handleAnswerChange = useCallback(
     (questionId: string, newAnswer: string) => {
@@ -121,25 +108,24 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
   const collapseItems = useMemo(
     () =>
-      questionGroups.map((group) =>
+      (assessment.question_groups ?? []).map((group) =>
         buildQuestionGroupPanelItem({
           group,
           isExpanded: expandedKeys.includes(group.id),
-          getAnswerValue,
+          getAnswerValue: (questionId, apiAnswer) =>
+            localAnswers[questionId] ?? apiAnswer,
           onAnswerChange: handleAnswerChange,
           onAnswerSave: handleAnswerSave,
         }),
       ),
     [
-      questionGroups,
+      assessment.question_groups,
       expandedKeys,
-      getAnswerValue,
+      localAnswers,
       handleAnswerChange,
       handleAnswerSave,
     ],
   );
-
-  const assessmentName = assessment.name;
 
   return (
     <>
@@ -147,9 +133,9 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         <Flex justify="space-between" align="flex-start">
           <div>
             <Flex align="center" gap="small" className="mb-1">
-              <Title level={4} className="m-0">
-                {assessmentName}
-              </Title>
+              <Typography.Title level={4} className="m-0">
+                {assessment.name}
+              </Typography.Title>
               <Tag
                 color={
                   isComplete
