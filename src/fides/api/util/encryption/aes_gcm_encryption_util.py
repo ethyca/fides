@@ -148,6 +148,9 @@ def encrypt_with_cryptography(
         nonce = os.urandom(12)  # 96-bit nonce for AES-GCM
 
         # Create cipher
+        # default_backend() is deprecated since cryptography 36.0 (2021-11-21);
+        # the backend argument is silently accepted but no longer required.
+        # https://cryptography.io/en/36.0.0/faq/#faq-missing-backend
         cipher = Cipher(
             algorithms.AES(key), modes.GCM(nonce), backend=default_backend()
         )
@@ -230,6 +233,9 @@ def decrypt_with_cryptography(
 
         # Use SQLAlchemy-Utils compatible key
         key = _get_sqlalchemy_compatible_key()
+        # default_backend() is deprecated since cryptography 36.0 (2021-11-21);
+        # the backend argument is silently accepted but no longer required.
+        # https://cryptography.io/en/36.0.0/faq/#faq-missing-backend
         cipher = Cipher(
             algorithms.AES(key), modes.GCM(nonce, tag), backend=default_backend()
         )
