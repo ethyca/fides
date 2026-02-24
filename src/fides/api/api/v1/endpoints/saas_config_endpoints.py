@@ -209,7 +209,9 @@ def patch_saas_config(
 
         try:
             # Rule A: type and allowed_values are immutable via the API
-            validate_connector_param_constraints_not_modified(original_params, incoming_params)
+            validate_connector_param_constraints_not_modified(
+                original_params, incoming_params
+            )
             # Rule B: all client_config.host placeholders (at any nesting level)
             # must reference domain-restricted params
             validate_host_references_domain_restricted_params(

@@ -189,7 +189,10 @@ def validate_host_references_domain_restricted_params(
                     f"known connector param. When domain restrictions are defined, all "
                     f"host placeholders must reference connector params with allowed_values."
                 )
-            if incoming_param.get("type") != "endpoint" or incoming_param.get("allowed_values") is None:
+            if (
+                incoming_param.get("type") != "endpoint"
+                or incoming_param.get("allowed_values") is None
+            ):
                 raise ValueError(
                     f"client_config.host references connector param '{placeholder}' which does not "
                     f"have allowed_values defined. All host-referenced params must be of type "
