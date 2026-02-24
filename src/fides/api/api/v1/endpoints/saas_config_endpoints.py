@@ -201,29 +201,26 @@ def patch_saas_config(
                 ),
             )
 
-    if existing_saas_config:
-        original_params = [
-            p.model_dump() for p in existing_saas_config.connector_params
-        ]
-        incoming_params = [p.model_dump() for p in saas_config.connector_params]
+    original_params = [p.model_dump() for p in existing_saas_config.connector_params]
+    incoming_params = [p.model_dump() for p in saas_config.connector_params]
 
-        try:
-            # Rule A: type and allowed_values are immutable via the API
-            validate_connector_param_constraints_not_modified(
-                original_params, incoming_params
-            )
-            # Rule B: all client_config.host placeholders (at any nesting level)
-            # must reference domain-restricted params
-            validate_host_references_domain_restricted_params(
-                original_params,
-                incoming_params,
-                saas_config.model_dump(mode="json"),
-            )
-        except ValueError as exc:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=str(exc),
-            )
+    try:
+        # Rule A: type and allowed_values are immutable via the API
+        validate_connector_param_constraints_not_modified(
+            original_params, incoming_params
+        )
+        # Rule B: all client_config.host placeholders (at any nesting level)
+        # must reference domain-restricted params
+        validate_host_references_domain_restricted_params(
+            original_params,
+            incoming_params,
+            saas_config.model_dump(mode="json"),
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        )
 
     connection_config.update_saas_config(db, saas_config=saas_config)
 
