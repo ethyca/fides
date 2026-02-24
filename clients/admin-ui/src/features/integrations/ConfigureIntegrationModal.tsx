@@ -42,12 +42,7 @@ const ConfigureIntegrationModal = ({
     if (!systemLinksData || systemLinksData.length === 0) {
       return undefined;
     }
-    const monitoringLink = systemLinksData.find(
-      (link) => link.link_type === "monitoring",
-    );
-    return (
-      monitoringLink?.system_fides_key || systemLinksData[0]?.system_fides_key
-    );
+    return systemLinksData[0].system_fides_key;
   }, [systemLinksData]);
 
   const handleSave = () => {

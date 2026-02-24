@@ -240,7 +240,7 @@ const IntegrationListView: NextPage = () => {
               variant="primary"
               ellipsis
             >
-              {linked_systems[0].name}
+              {linked_systems[0].name || linked_systems[0].fides_key}
             </Typography.Link>
           );
         }
