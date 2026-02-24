@@ -9,6 +9,10 @@ Maps (dsr_id, field_type, field_key, ...) to:
 
 from typing import Tuple
 
+# TODO: Move to dsr_store.py when deprecating
+# Once we don't need to do migrations we can get rid of this file,
+# the prefix should move to the dsr_store.py (not there to avoid circular
+# dependencies since the store depends on this)
 DSR_KEY_PREFIX = "dsr:"
 
 
