@@ -200,6 +200,29 @@ def validate_host_references_domain_restricted_params(
                 )
 
 
+def validate_connector_param_restrictions(
+    existing_saas_config: SaaSConfig,
+    incoming_saas_config: SaaSConfig,
+) -> None:
+    """
+    Validate that an incoming SaaS config does not violate connector param
+    domain restriction rules.
+
+    Raises ValueError if:
+    - type or allowed_values were modified (Rule A)
+    - client_config.host placeholders don't reference domain-restricted params (Rule B)
+    """
+    original_params = [p.model_dump() for p in existing_saas_config.connector_params]
+    incoming_params = [p.model_dump() for p in incoming_saas_config.connector_params]
+
+    validate_connector_param_constraints_not_modified(original_params, incoming_params)
+    validate_host_references_domain_restricted_params(
+        original_params,
+        incoming_params,
+        incoming_saas_config.model_dump(mode="json"),
+    )
+
+
 def load_yaml_as_string(filename: str) -> str:
     yaml_file = load_file([filename])
     with open(yaml_file, "r", encoding="utf-8") as file:

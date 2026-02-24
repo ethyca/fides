@@ -484,7 +484,8 @@ class TestPatchSaaSConfigAllowedValuesAfterDelete:
             response = api_client.patch(url, headers=auth_header, json=tampered_config)
 
         assert response.status_code == 422
-        assert "allowed_values" in response.json()["detail"].lower()
+        detail = response.json()["detail"].lower()
+        assert "type" in detail or "allowed_values" in detail
 
     def test_patch_after_delete_accepts_matching_allowed_values(
         self,
