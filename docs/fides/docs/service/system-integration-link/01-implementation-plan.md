@@ -99,16 +99,21 @@ Session management uses the shared `@with_optional_sync_session` decorator from 
 
 **Goal:** A role that lets data stewards manage system-integration links and view monitor stewards without full admin access.
 
-### Task 3.1 -- Define Data Steward role (Fides OSS + Fidesplus, BE) [S]
+### Task 3.1 -- Define Data Steward role (Fides OSS + Fidesplus, BE) [S] ✅
 
-- Add `DATA_STEWARD` role with `viewer_scopes` + `system_integration_link:*` scopes.
-- In fidesplus, extend with Plus viewer scopes + `MONITOR_STEWARD_READ` + `DISCOVERY_MONITOR_READ`.
+- Added `DATA_STEWARD` role constant and `RoleRegistryEnum.data_steward` enum entry in `src/fides/api/oauth/roles.py`.
+- `data_steward_scopes` = `viewer_scopes` + `SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE` + `SYSTEM_INTEGRATION_LINK_DELETE` (read already included via `viewer_scopes`).
+- Added `DATA_STEWARD` to `ROLES_TO_SCOPES_MAPPING`.
+- In fidesplus `src/fidesplus/api/plus_scope_registry.py`: imported `DATA_STEWARD`, defined `PLUS_DATA_STEWARD_SCOPES` (same as `PLUS_VIEWER_SCOPES`, which already includes `DISCOVERY_MONITOR_READ` and `MONITOR_STEWARD_READ`), and extended/sorted the mapping in place.
 
-**Status:** Not started.
+**Status:** Complete.
 
-### Task 3.2 -- Data Steward role tests (Fides OSS + Fidesplus, BE) [S]
+### Task 3.2 -- Data Steward role tests (Fides OSS + Fidesplus, BE) [S] ✅
 
-**Status:** Not started.
+- 8 unit tests in `tests/system_integration_link/test_data_steward_role.py` (Fides OSS): role enum, mapping existence, viewer scope superset, all three link scopes, strict superset check, no unexpected write scopes.
+- 6 unit tests in `tests/api/routes/test_data_steward_role.py` (Fidesplus): discovery monitor read, monitor steward read, all plus viewer scopes, all OSS viewer scopes, link write scopes, sorted order.
+
+**Status:** Complete.
 
 ## Slice 4: Integrations Page -- System Association UX
 
@@ -156,8 +161,8 @@ graph LR
     T2_1["2.1 Scopes ✅"] --> T2_2
     T2_2 --> T2_3["2.3 GET response"]
     T2_2 --> T2_4["2.4 API tests ✅"]
-    T2_1 --> T3_1["3.1 Steward role"]
-    T3_1 --> T3_2["3.2 Role tests"]
+    T2_1 --> T3_1["3.1 Steward role ✅"]
+    T3_1 --> T3_2["3.2 Role tests ✅"]
     T2_3 --> T4_1["4.1 Table column"]
     T2_2 --> T4_2["4.2 Link panel"]
     T3_1 --> T4_3["4.3 Scope gating"]
