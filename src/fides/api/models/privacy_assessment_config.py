@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from fides.api.db.base_class import Base
 
 # Default LLM models for assessments
-DEFAULT_ASSESSMENT_MODEL = "openrouter/anthropic/claude-sonnet-4"
+DEFAULT_ASSESSMENT_MODEL = "openrouter/anthropic/claude-opus-4"
 DEFAULT_CHAT_MODEL = "openrouter/google/gemini-2.5-flash"
 
 

@@ -51,11 +51,23 @@ const AssessmentSettingsModal = ({
   const [showCustomCron, setShowCustomCron] = useState(false);
 
   // API hooks
-  const { data: config, isLoading: isLoadingConfig } =
-    useGetAssessmentConfigQuery(undefined, { skip: !open });
+  const {
+    data: config,
+    isLoading: isLoadingConfig,
+    refetch: refetchConfig,
+  } = useGetAssessmentConfigQuery(undefined, { skip: !open });
   const { data: defaults } = useGetAssessmentConfigDefaultsQuery(undefined, {
     skip: !open,
   });
+
+  // Refetch config and reset form state when modal opens
+  useEffect(() => {
+    if (open) {
+      refetchConfig();
+      form.resetFields();
+      setShowCustomCron(false);
+    }
+  }, [open, refetchConfig, form]);
   const {
     data: channelsData,
     isLoading: isLoadingChannels,
@@ -203,7 +215,7 @@ const AssessmentSettingsModal = ({
             <Input
               placeholder={
                 defaults?.default_assessment_model ||
-                "openrouter/anthropic/claude-sonnet-4"
+                "openrouter/anthropic/claude-opus-4"
               }
               data-testid="input-assessment-model"
             />
