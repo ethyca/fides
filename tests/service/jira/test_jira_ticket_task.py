@@ -1,7 +1,8 @@
 """Tests for JiraTicketTask model, pending_external status, and polling task skeleton."""
 
 import uuid
-from unittest.mock import MagicMock
+from contextlib import contextmanager
+from unittest.mock import MagicMock, patch
 
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -248,17 +249,62 @@ class TestJiraTicketTaskModel:
 
 
 class TestPollJiraTicketsTask:
-    def test_poll_task_no_op_without_service(self):
-        assert poll_jira_tickets is not None
-
-    def test_register_poll_service(self):
+    def test_register_poll_service(self, monkeypatch):
         mock_fn = MagicMock()
+        monkeypatch.setattr(polling_task, "_poll_service_fn", None)
         register_poll_service(mock_fn)
-
         assert polling_task._poll_service_fn is mock_fn
 
-        # Clean up
-        polling_task._poll_service_fn = None
+    def test_no_op_when_no_service_registered(self, monkeypatch):
+        """Lock is acquired but no service fn is registered — task skips without touching the DB."""
+        monkeypatch.setattr(polling_task, "_poll_service_fn", None)
+
+        @contextmanager
+        def _fake_lock(*_args, **_kwargs):
+            yield MagicMock()  # truthy lock
+
+        mock_session = MagicMock()
+        with patch.object(polling_task, "redis_lock", _fake_lock):
+            poll_jira_tickets.apply().get()
+
+        mock_session.assert_not_called()
+
+    def test_delegates_to_registered_service(self, monkeypatch):
+        """Lock is acquired and a service fn is registered — task calls it with a DB session."""
+        mock_service = MagicMock()
+        monkeypatch.setattr(polling_task, "_poll_service_fn", mock_service)
+
+        mock_session = MagicMock()
+
+        @contextmanager
+        def _fake_lock(*_args, **_kwargs):
+            yield MagicMock()
+
+        @contextmanager
+        def _fake_get_new_session():
+            yield mock_session
+
+        with patch.object(polling_task, "redis_lock", _fake_lock), patch(
+            "fides.service.jira.polling_task.DatabaseTask.get_new_session",
+            _fake_get_new_session,
+        ):
+            poll_jira_tickets.apply().get()
+
+        mock_service.assert_called_once_with(mock_session)
+
+    def test_skips_when_lock_not_acquired(self, monkeypatch):
+        """Another worker holds the lock — task exits immediately without calling the service."""
+        mock_service = MagicMock()
+        monkeypatch.setattr(polling_task, "_poll_service_fn", mock_service)
+
+        @contextmanager
+        def _fake_lock(*_args, **_kwargs):
+            yield None  # lock not acquired
+
+        with patch.object(polling_task, "redis_lock", _fake_lock):
+            poll_jira_tickets.apply().get()
+
+        mock_service.assert_not_called()
 
 
 # ── Configuration Tests ──────────────────────────────────────────────

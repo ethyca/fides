@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, Index, String, text
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Session, backref, relationship
+from sqlalchemy.orm import Session, backref, joinedload, relationship
 
 from fides.api.db.base_class import Base
 
@@ -73,9 +73,17 @@ class JiraTicketTask(Base):
 
     @classmethod
     def get_open_tasks(cls, db: Session) -> list["JiraTicketTask"]:
-        """Return all tasks that still need polling (not done)."""
+        """Return all tasks that still need polling (not done).
+
+        Eager-loads both relationships so the polling service can access
+        connection credentials and task instance state without N+1 queries.
+        """
         return (
             db.query(cls)
+            .options(
+                joinedload(cls.manual_task_instance),
+                joinedload(cls.connection_config),
+            )
             .filter(
                 (cls.external_status_category.is_(None))
                 | (cls.external_status_category != DONE_STATUS_CATEGORY)

@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     # Add 'pending_external' to PrivacyRequestStatus enum
-    op.execute("ALTER TYPE privacyrequeststatus ADD VALUE 'pending_external'")
+    op.execute("ALTER TYPE privacyrequeststatus ADD VALUE IF NOT EXISTS 'pending_external'")
 
     # Create jira_ticket_task table
     op.create_table(
