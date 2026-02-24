@@ -23,7 +23,7 @@ const DatamapDrawer = ({
     includeDisabled: false,
   });
 
-  const { data: system, isLoading } = useGetSystemByFidesKeyQuery(
+  const { currentData: system, isLoading } = useGetSystemByFidesKeyQuery(
     selectedSystemId!,
     {
       skip: !selectedSystemId,
