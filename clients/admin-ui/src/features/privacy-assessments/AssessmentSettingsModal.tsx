@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
 import {
   useGetAssessmentConfigDefaultsQuery,
@@ -281,6 +282,21 @@ const AssessmentSettingsModal = ({
                     {
                       required: true,
                       message: "Please enter a cron expression",
+                    },
+                    {
+                      validator: (_, value) => {
+                        if (!value) {
+                          return Promise.resolve();
+                        }
+                        if (parseCronExpression(value)) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error(
+                            "Invalid cron expression. Use format: minute hour day month weekday (e.g., '0 9 * * *')",
+                          ),
+                        );
+                      },
                     },
                   ]}
                 >
