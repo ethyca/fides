@@ -301,6 +301,7 @@ export const AssessmentDetail = ({
           activeKey={expandedKeys}
           onChange={(keys) => setExpandedKeys(keys as string[])}
           items={collapseItems}
+          size="large"
         />
       </Space>
 

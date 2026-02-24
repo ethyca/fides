@@ -1,73 +1,18 @@
 .collapse {
-  background-color: var(--ant-color-bg-container);
-  width: 100%;
-  border: 1px solid var(--fidesui-neutral-75);
-  border-radius: var(--ant-border-radius-lg);
-  overflow: visible;
+  --ant-color-border: var(--fidesui-neutral-75);
+  --ant-collapse-header-bg: var(--ant-color-bg-container) !important;
 
   :global(.ant-collapse-item) {
-    border: none;
     border-left: 6px solid transparent;
-    border-radius: 0;
-    margin-bottom: 0;
-    overflow: visible;
-    position: relative;
     transition: border-left-color 0.2s ease;
-    max-width: 100%;
-
-    &:not(:last-child) {
-      border-bottom: 1px solid var(--fidesui-neutral-75);
-    }
-
-    &:first-child {
-      border-top: none;
-    }
-
-    &:last-child {
-      border-bottom: none;
-    }
   }
 
   :global(.ant-collapse-item-active) {
-    border-left: 6px solid var(--fidesui-minos) !important;
-  }
-
-  :global(.ant-collapse-header) {
-    display: flex;
-    align-items: flex-start;
-    min-height: 80px;
-    padding: 16px 140px 20px 18px !important;
-    position: relative;
-    overflow: visible !important;
-  }
-
-  :global(.ant-collapse-item-active .ant-collapse-header) {
-    min-height: 100px;
-  }
-
-  :global(.ant-collapse-arrow) {
-    position: absolute;
-    top: 20px;
-    left: 18px;
-    margin-top: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: auto;
-    padding: 0 8px;
-    z-index: 1;
+    border-left: 6px solid var(--fidesui-minos);
   }
 
   :global(.ant-collapse-header-text) {
-    margin-left: 40px;
-    margin-right: 0;
-    width: calc(100% - 40px);
-    overflow: hidden;
-
-    > div {
-      max-width: 100%;
-      overflow: hidden;
-    }
+    margin-left: 20px;
   }
 
   :global(.ant-collapse-content-box) {
