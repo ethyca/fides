@@ -1568,6 +1568,39 @@ dataset:
     - name: updated_at
       data_categories:
       - system.operations
+  - name: privacy_assessment_config
+    description: 'Global configuration for privacy assessments (single-row table)'
+    fields:
+    - name: assessment_model_override
+      data_categories:
+      - system.operations
+    - name: chat_model_override
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: reassessment_cron
+      data_categories:
+      - system.operations
+    - name: reassessment_enabled
+      data_categories:
+      - system.operations
+    - name: reassessment_timezone
+      data_categories:
+      - system.operations
+    - name: slack_channel_id
+      data_categories:
+      - system.operations
+    - name: slack_channel_name
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: policy
     data_categories: []
     fields:
