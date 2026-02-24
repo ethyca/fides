@@ -102,7 +102,7 @@ describe("Policy CRUD", () => {
 
     it("opens delete confirmation modal", () => {
       cy.getByTestId("delete-policy-default_consent_policy-btn").click();
-      cy.getByTestId("delete-policy-modal").should("be.visible");
+      cy.getAntModal().should("be.visible");
       cy.contains("Are you sure you want to delete").should("be.visible");
       cy.contains("Default Consent Policy").should("be.visible");
     });

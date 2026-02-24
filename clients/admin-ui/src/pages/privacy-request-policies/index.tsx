@@ -3,11 +3,11 @@ import {
   Empty,
   Flex,
   List,
-  Modal,
   Skeleton,
   Tag,
   Typography,
   useMessage,
+  useModal,
 } from "fidesui";
 import { uniqBy } from "lodash";
 import type { NextPage } from "next";
@@ -18,6 +18,7 @@ import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import SearchInput from "~/features/common/SearchInput";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
+import { confirmDeletePolicy } from "~/features/policies/confirmDeletePolicy";
 import {
   useDeletePolicyMutation,
   useGetPoliciesQuery,
@@ -29,12 +30,10 @@ const { Paragraph, Text } = Typography;
 
 const PoliciesPage: NextPage = () => {
   const message = useMessage();
+  const modal = useModal();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [policyToEdit, setPolicyToEdit] = useState<PolicyResponse | null>(null);
-  const [policyToDelete, setPolicyToDelete] = useState<PolicyResponse | null>(
-    null,
-  );
 
   const { data: policiesData, isLoading } = useGetPoliciesQuery();
   const [deletePolicy] = useDeletePolicyMutation();
@@ -58,18 +57,22 @@ const PoliciesPage: NextPage = () => {
     setPolicyToEdit(policy);
   }, []);
 
-  const handleConfirmDelete = useCallback(async () => {
-    if (!policyToDelete?.key) {
-      return;
-    }
-    try {
-      await deletePolicy(policyToDelete.key).unwrap();
-      message.success("Policy deleted successfully");
-    } catch {
-      message.error("Failed to delete policy");
-    }
-    setPolicyToDelete(null);
-  }, [policyToDelete, deletePolicy, message]);
+  const handleDelete = useCallback(
+    (policy: PolicyResponse) => {
+      confirmDeletePolicy(modal, policy.name, async () => {
+        if (!policy.key) {
+          return;
+        }
+        try {
+          await deletePolicy(policy.key).unwrap();
+          message.success("Policy deleted successfully");
+        } catch {
+          message.error("Failed to delete policy");
+        }
+      });
+    },
+    [modal, deletePolicy, message],
+  );
 
   return (
     <Layout title="Policies">
@@ -132,7 +135,7 @@ const PoliciesPage: NextPage = () => {
                     <Button
                       key="delete"
                       type="link"
-                      onClick={() => setPolicyToDelete(policy)}
+                      onClick={() => handleDelete(policy)}
                       data-testid={`delete-policy-${policy.key}-btn`}
                     >
                       Delete
@@ -192,24 +195,6 @@ const PoliciesPage: NextPage = () => {
         }}
         policyKey={policyToEdit?.key ?? undefined}
       />
-
-      <Modal
-        title="Delete policy"
-        open={!!policyToDelete}
-        onCancel={() => setPolicyToDelete(null)}
-        onOk={handleConfirmDelete}
-        okText="Delete"
-        okButtonProps={{ danger: true }}
-        cancelText="Cancel"
-        centered
-        data-testid="delete-policy-modal"
-      >
-        <Text type="secondary">
-          Are you sure you want to delete the policy &ldquo;
-          {policyToDelete?.name}&rdquo;? This action cannot be undone and will
-          also delete all associated rules.
-        </Text>
-      </Modal>
     </Layout>
   );
 };

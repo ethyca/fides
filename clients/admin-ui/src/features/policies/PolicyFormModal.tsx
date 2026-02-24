@@ -117,7 +117,7 @@ export const PolicyFormModal = ({
       onOk={() => form.submit()}
       okText={isEditing ? "Save" : "Create"}
       confirmLoading={isLoading}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
