@@ -148,8 +148,6 @@ export const datastoreConnectionSlice = createSlice({
 export const selectDatastoreConnectionFilters = (state: RootState) =>
   state.datastoreConnections;
 
-export const { reducer } = datastoreConnectionSlice;
-
 export const datastoreConnectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getAuthorizationUrl: build.query<string, string>({
