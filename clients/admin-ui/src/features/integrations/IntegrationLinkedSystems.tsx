@@ -1,7 +1,9 @@
 import {
   Button,
   Flex,
+  Input,
   List,
+  Modal,
   PageSpinner,
   Tag,
   Typography,
@@ -9,21 +11,27 @@ import {
   useModal,
 } from "fidesui";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import { EDIT_SYSTEM_ROUTE } from "~/features/common/nav/routes";
+import { debounce } from "~/features/common/utils";
 import {
   SystemLinkResponse,
   useDeleteSystemLinkMutation,
   useGetSystemLinksQuery,
   useSetSystemLinksMutation,
 } from "~/features/integrations/system-links.slice";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import { useGetSystemsQuery } from "~/features/system/system.slice";
+import {
+  BasicSystemResponseExtended,
+  ConnectionConfigurationResponse,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const { Paragraph, Text, Link: LinkText } = Typography;
+
+const SYSTEMS_PAGE_SIZE = 25;
 
 const IntegrationLinkedSystems = ({
   connection,
@@ -32,7 +40,9 @@ const IntegrationLinkedSystems = ({
 }) => {
   const messageApi = useMessage();
   const modalApi = useModal();
-  const [isLinking, setIsLinking] = useState(false);
+  const [linkSystemModalOpen, setLinkSystemModalOpen] = useState(false);
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [systemSearchValue, setSystemSearchValue] = useState("");
 
   const { data: linkedSystems, isLoading } = useGetSystemLinksQuery(
     connection.key,
@@ -43,6 +53,35 @@ const IntegrationLinkedSystems = ({
 
   const [setSystemLinks] = useSetSystemLinksMutation();
   const [deleteSystemLink] = useDeleteSystemLinkMutation();
+
+  const { data: systemsPage, isFetching: isSystemsLoading } =
+    useGetSystemsQuery(
+      {
+        page: 1,
+        size: SYSTEMS_PAGE_SIZE,
+        search: systemSearchValue.length > 1 ? systemSearchValue : undefined,
+      },
+      { skip: !linkSystemModalOpen },
+    );
+
+  const linkedKeys = useMemo(
+    () => new Set((linkedSystems ?? []).map((l) => l.system_fides_key)),
+    [linkedSystems],
+  );
+
+  const availableSystems = useMemo(
+    () =>
+      (systemsPage?.items ?? []).filter((s) => !linkedKeys.has(s.fides_key)),
+    [systemsPage?.items, linkedKeys],
+  );
+
+  const handleSystemSearch = useCallback((value: string) => {
+    setSystemSearchValue(value ?? "");
+  }, []);
+  const debouncedSystemSearch = useMemo(
+    () => debounce(handleSystemSearch, 300),
+    [handleSystemSearch],
+  );
 
   const handleConfirmUnlink = async (systemFidesKey: string) => {
     const result = await deleteSystemLink({
@@ -94,8 +133,22 @@ const IntegrationLinkedSystems = ({
       messageApi.error(getErrorMessage(result.error));
     } else {
       messageApi.success("System linked successfully");
-      setIsLinking(false);
+      setLinkSystemModalOpen(false);
+      setSearchInputValue("");
+      setSystemSearchValue("");
     }
+  };
+
+  const openLinkModal = () => {
+    setSearchInputValue("");
+    setSystemSearchValue("");
+    setLinkSystemModalOpen(true);
+  };
+
+  const closeLinkModal = () => {
+    setLinkSystemModalOpen(false);
+    setSearchInputValue("");
+    setSystemSearchValue("");
   };
 
   if (isLoading) {
@@ -117,32 +170,100 @@ const IntegrationLinkedSystems = ({
       </div>
 
       <div className="mb-4 flex items-center justify-end gap-2">
-        {isLinking ? (
-          <Flex gap="middle" align="flex-start" className="flex-1">
-            {/* put this in a modal */}
-            <SystemSelect
-              onSelect={(value) => handleLinkSystem(value)}
-              style={{ flex: 1 }}
-              placeholder="Search for a system..."
-            />
-            <Button
-              onClick={() => setIsLinking(false)}
-              data-testid="cancel-link-system-button"
-            >
-              Cancel
-            </Button>
-          </Flex>
-        ) : (
-          <Button
-            type="primary"
-            onClick={() => setIsLinking(true)}
-            data-testid="link-system-button"
-            disabled={!!linkedSystems?.length}
-          >
-            Link system
-          </Button>
-        )}
+        <Button
+          type="primary"
+          onClick={openLinkModal}
+          data-testid="link-system-button"
+          disabled={!!linkedSystems?.length}
+        >
+          Link system
+        </Button>
       </div>
+
+      <Modal
+        open={linkSystemModalOpen}
+        onCancel={closeLinkModal}
+        title="Link system"
+        footer={
+          <Button
+            onClick={closeLinkModal}
+            data-testid="cancel-link-system-button"
+          >
+            Cancel
+          </Button>
+        }
+        width={520}
+        data-testid="link-system-modal"
+      >
+        <div className="flex max-h-96 flex-col gap-4">
+          <Typography.Text>Select a system to link</Typography.Text>
+          <Input.Search
+            placeholder="Search..."
+            allowClear
+            value={searchInputValue}
+            onChange={({ target: { value } }) => {
+              setSearchInputValue(value);
+              debouncedSystemSearch(value);
+            }}
+            onSearch={(value) => {
+              setSearchInputValue(value);
+              debouncedSystemSearch(value);
+            }}
+            aria-label="Search systems"
+            data-testid="link-system-search"
+          />
+          <List
+            dataSource={availableSystems}
+            loading={isSystemsLoading}
+            locale={{
+              emptyText: (
+                <div className="py-6 text-center">
+                  <Text type="secondary">
+                    {systemSearchValue.length > 1
+                      ? "No matching systems. Try a different search."
+                      : "No systems available to link."}
+                  </Text>
+                </div>
+              ),
+            }}
+            renderItem={(system: BasicSystemResponseExtended) => (
+              <List.Item
+                key={system.fides_key}
+                data-testid={`link-system-option-${system.fides_key}`}
+                aria-label={`Link system: ${system.name ?? system.fides_key}`}
+                actions={[
+                  <Button
+                    key="link"
+                    type="link"
+                    onClick={() => handleLinkSystem(system.fides_key)}
+                    data-testid={`link-system-option-${system.fides_key}`}
+                    aria-label={`Link system: ${system.name ?? system.fides_key}`}
+                  >
+                    Link
+                  </Button>,
+                ]}
+              >
+                <List.Item.Meta
+                  title={
+                    <Text
+                      ellipsis={{
+                        tooltip: system.name ?? system.fides_key,
+                      }}
+                    >
+                      {system.name ?? system.fides_key}
+                    </Text>
+                  }
+                  description={
+                    system.description ? (
+                      <Text type="secondary">{system.description}</Text>
+                    ) : undefined
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        </div>
+      </Modal>
 
       <List
         dataSource={linkedSystems || []}
