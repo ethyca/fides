@@ -216,9 +216,7 @@ GET /api/v1/connection/{connection_key}/system-links
 
 **Status:** Implemented.
 
-The `GET /api/v1/connection` list response now includes a `linked_systems` field on each connection config. This is a list of `LinkedSystemInfo` objects, each containing `fides_key` and `name`. Currently the list will contain at most one entry (due to the 1:1 constraint), but the list shape is forward-compatible with many-to-many.
-
-The `ConnectionConfig.system` relationship uses `lazy="selectin"` to avoid N+1 queries when paginating the list.
+The `GET /api/v1/connection` list and `GET /api/v1/connection/{key}` detail responses now include a `linked_systems` field on each connection config. This is a list of `LinkedSystemInfo` objects, each containing `fides_key` and `name`. Currently the list will contain at most one entry (due to the 1:1 constraint), but the list shape is forward-compatible with many-to-many.
 
 **Response example:**
 
@@ -241,11 +239,18 @@ The `ConnectionConfig.system` relationship uses `lazy="selectin"` to avoid N+1 q
 }
 ```
 
-The implementation is scoped to the list endpoint and response schema -- no changes to the core `ConnectionConfig` model. The route adds `selectinload(ConnectionConfig.system)` to eagerly load the relationship for this query only. A `@model_validator(mode='wrap')` on `ConnectionConfigurationResponse` reads the ORM `.system` relationship and populates `linked_systems` during serialization.
+**Implementation approach:** The `ConnectionConfigurationResponse` schema declares `linked_systems` as a plain field (default `[]`) with no Pydantic validator. Population is handled explicitly in each endpoint's route layer:
+
+- **List endpoint** (`get_connections`): Adds `selectinload(ConnectionConfig.system)` to the query and uses a `transformer` callback in `paginate()` to convert each ORM item to a response object with `linked_systems` populated.
+- **Detail endpoint** (`get_connection_detail`): Calls `_enrich_linked_systems()` after `model_validate()`, using the lazy-loaded `.system` relationship (single object, session still open).
+- **System connections endpoint** (`get_system_connections`): Same pattern as the list endpoint -- `selectinload` + transformer.
+- **Async endpoints** (e.g. fidesplus `GET /system`): `linked_systems` defaults to `[]`. These endpoints can opt in by eagerly loading `ConnectionConfig.system` and calling the same enrichment helper.
+
+This approach avoids coupling the Pydantic schema to SQLAlchemy and prevents `MissingGreenlet` errors in async contexts where the `.system` relationship cannot be lazy-loaded.
 
 **Implemented in:**
-- Schema & validator: `ConnectionConfigurationResponse` in `src/fides/api/schemas/connection_configuration/connection_config.py`
-- Eager loading: `get_connections` in `src/fides/api/api/v1/endpoints/connection_endpoints.py`
+- Schema: `ConnectionConfigurationResponse` in `src/fides/api/schemas/connection_configuration/connection_config.py`
+- Route enrichment + eager loading: `src/fides/api/api/v1/endpoints/connection_endpoints.py`, `src/fides/api/api/v1/endpoints/system.py`
 
 ### Schemas
 

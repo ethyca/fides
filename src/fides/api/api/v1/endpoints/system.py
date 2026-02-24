@@ -10,7 +10,7 @@ from loguru import logger
 from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from starlette import status
 from starlette.status import (
     HTTP_200_OK,
@@ -44,6 +44,7 @@ from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
+    LinkedSystemInfo,
     SaasConnectionTemplateResponse,
 )
 from fides.api.schemas.connection_configuration.connection_secrets import (
@@ -117,8 +118,30 @@ def get_system_connections(
             SystemConnectionConfigLink.connection_config_id == ConnectionConfig.id,
         )
         .filter(SystemConnectionConfigLink.system_id == system.id)
+        .options(selectinload(ConnectionConfig.system))
     )
-    return paginate(query.order_by(ConnectionConfig.name.asc()), params=params)
+
+    def _with_linked_systems(
+        items: List[ConnectionConfig],
+    ) -> List[ConnectionConfigurationResponse]:
+        results = []
+        for item in items:
+            resp = ConnectionConfigurationResponse.model_validate(item)
+            if item.system:
+                resp.linked_systems = [
+                    LinkedSystemInfo(
+                        fides_key=item.system.fides_key,
+                        name=item.system.name,
+                    )
+                ]
+            results.append(resp)
+        return results
+
+    return paginate(
+        query.order_by(ConnectionConfig.name.asc()),
+        params=params,
+        transformer=_with_linked_systems,
+    )
 
 
 @SYSTEM_CONNECTIONS_ROUTER.patch(

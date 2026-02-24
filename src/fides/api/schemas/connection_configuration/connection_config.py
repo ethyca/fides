@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, cast
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
@@ -116,22 +116,7 @@ class ConnectionConfigurationResponse(ConnectionConfigurationResponseBase):
     Describes the returned schema for a ConnectionConfiguration.
     """
 
-    system: Any = Field(default=None, exclude=True)
     linked_systems: List[LinkedSystemInfo] = []
-
-    @model_validator(mode="after")
-    def _resolve_linked_systems(self) -> "ConnectionConfigurationResponse":
-        """Populate ``linked_systems`` from the eagerly-loaded ORM
-        ``.system`` relationship, then drop the raw reference."""
-        if self.system is not None:
-            self.linked_systems = [
-                LinkedSystemInfo(
-                    fides_key=self.system.fides_key,
-                    name=self.system.name,
-                )
-            ]
-            self.system = None
-        return self
 
 
 class ConnectionConfigurationResponseWithSystemKey(ConnectionConfigurationResponse):
