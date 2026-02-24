@@ -18,7 +18,7 @@ from typing import List, Optional, Union
 
 from redis import Redis
 
-from fides.common.cache.key_mapping import KeyMapper, DSR_KEY_PREFIX
+from fides.common.cache.key_mapping import DSR_KEY_PREFIX, KeyMapper
 from fides.common.cache.manager import RedisCacheManager, RedisValue
 
 
