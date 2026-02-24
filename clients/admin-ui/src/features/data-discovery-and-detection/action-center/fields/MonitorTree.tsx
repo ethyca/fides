@@ -561,7 +561,6 @@ const MonitorTree = forwardRef<
                   updateNodeStatus(
                     tree,
                     ancestorNode.urn,
-                    ancestorNode.update_status,
                     ancestorNode.diff_status,
                   ),
                 origin,
