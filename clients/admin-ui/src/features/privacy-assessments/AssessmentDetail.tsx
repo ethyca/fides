@@ -5,6 +5,7 @@ import {
   Icons,
   Space,
   Tag,
+  TagList,
   Text,
   Tooltip,
   Typography,
@@ -14,6 +15,7 @@ import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
@@ -50,6 +52,7 @@ export const AssessmentDetail = ({
 }: AssessmentDetailProps) => {
   const router = useRouter();
   const message = useMessage();
+  const { getDataCategoryDisplayName } = useTaxonomies();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
@@ -237,18 +240,27 @@ export const AssessmentDetail = ({
             <Text type="secondary" size="sm" className="mb-2 block">
               System: {assessment.system_name}
             </Text>
-            <Text type="secondary" className="block">
+            <Text type="secondary" className="block leading-loose">
               Processing{" "}
-              {(assessment.data_categories ?? []).map((category, idx) => (
-                <span key={category}>
-                  <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>{category}</Tag>
-                  {idx < (assessment.data_categories ?? []).length - 1 && " "}
-                </span>
-              ))}{" "}
+              {(assessment.data_categories ?? []).length > 0 ? (
+                <TagList
+                  tags={(assessment.data_categories ?? []).map((key) => ({
+                    value: key,
+                    label: getDataCategoryDisplayName(key),
+                  }))}
+                  maxTags={1}
+                  expandable
+                />
+              ) : (
+                <Tag>0 data categories</Tag>
+              )}{" "}
               for{" "}
-              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>
-                {assessment.data_use_name}
-              </Tag>
+              <TagList
+                tags={
+                  assessment.data_use_name ? [assessment.data_use_name] : []
+                }
+                maxTags={1}
+              />
             </Text>
           </div>
 
