@@ -18,11 +18,8 @@ from typing import List, Optional, Union
 
 from redis import Redis
 
-from fides.common.cache.key_mapping import KeyMapper
+from fides.common.cache.key_mapping import KeyMapper, DSR_KEY_PREFIX
 from fides.common.cache.manager import RedisCacheManager, RedisValue
-
-# Key format: dsr:{dsr_id}:{part} (re-export for callers; KeyMapper builds these)
-DSR_KEY_PREFIX = "dsr:"
 
 
 def _dsr_key(dsr_id: str, part: str) -> str:
