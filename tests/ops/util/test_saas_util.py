@@ -17,7 +17,7 @@ from fides.api.util.saas_util import (
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
-    validate_domain_against_allowed_list,
+    validate_value_against_allowed_list,
 )
 
 
@@ -759,16 +759,16 @@ class TestCheckDatasetReferenceValues:
 
 
 @pytest.mark.unit_saas
-class TestValidateDomainAgainstAllowedList:
-    """Tests for validate_domain_against_allowed_list.
+class TestValidateValueAgainstAllowedList:
+    """Tests for validate_value_against_allowed_list.
 
-    Each allowed_domains entry is a wildcard pattern where ``*`` matches
+    Each allowed_values entry is a wildcard pattern where ``*`` matches
     any sequence of characters (including dots).  Everything else is a
-    literal.  Matching is case-insensitive against the full domain string.
+    literal.  Matching is case-insensitive against the full value string.
     """
 
     @pytest.mark.parametrize(
-        "domain,allowed,should_pass",
+        "value,allowed,should_pass",
         [
             pytest.param("api.stripe.com", ["api.stripe.com"], True, id="exact_match"),
             pytest.param(
@@ -802,7 +802,7 @@ class TestValidateDomainAgainstAllowedList:
                 "api.stripe.com",
                 ["api.example.com", "api.stripe.com", "*.other.com"],
                 True,
-                id="multiple_allowed_domains",
+                id="multiple_allowed_values",
             ),
             pytest.param(
                 "sub.other.com",
@@ -845,22 +845,22 @@ class TestValidateDomainAgainstAllowedList:
             ),
         ],
     )
-    def test_domain_validation(self, domain, allowed, should_pass):
+    def test_value_validation(self, value, allowed, should_pass):
         if should_pass:
-            validate_domain_against_allowed_list(domain, allowed, "domain")
+            validate_value_against_allowed_list(value, allowed, "domain")
         else:
             with pytest.raises(ValueError):
-                validate_domain_against_allowed_list(domain, allowed, "domain")
+                validate_value_against_allowed_list(value, allowed, "domain")
 
     def test_error_message_includes_param_name(self):
         """Error message should include the param name and value."""
         with pytest.raises(ValueError, match="The value 'evil.com' for 'domain'"):
-            validate_domain_against_allowed_list(
+            validate_value_against_allowed_list(
                 "evil.com", ["api.stripe.com"], "domain"
             )
 
-    def test_empty_allowed_domains_permits_any_value(self):
-        """Empty allowed_domains list should permit any domain value."""
-        validate_domain_against_allowed_list(
+    def test_empty_allowed_values_permits_any_value(self):
+        """Empty allowed_values list should permit any value."""
+        validate_value_against_allowed_list(
             "literally-anything.example.com", [], "domain"
         )
