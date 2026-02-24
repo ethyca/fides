@@ -51,8 +51,11 @@ const AssessmentSettingsModal = ({
   const [showCustomCron, setShowCustomCron] = useState(false);
 
   // API hooks
-  const { data: config, isLoading: isLoadingConfig } =
-    useGetAssessmentConfigQuery(undefined, { skip: !open });
+  const {
+    data: config,
+    isLoading: isLoadingConfig,
+    refetch: refetchConfig,
+  } = useGetAssessmentConfigQuery(undefined, { skip: !open });
   const { data: defaults } = useGetAssessmentConfigDefaultsQuery(undefined, {
     skip: !open,
   });
@@ -60,12 +63,13 @@ const AssessmentSettingsModal = ({
   // Track if we've initialized the form for this modal session
   const [formInitialized, setFormInitialized] = useState(false);
 
-  // Reset initialization state when modal closes
+  // Refetch config and reset initialization state when modal opens/closes
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      refetchConfig();
       setFormInitialized(false);
     }
-  }, [open]);
+  }, [open, refetchConfig]);
   const {
     data: channelsData,
     isLoading: isLoadingChannels,
