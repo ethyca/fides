@@ -2,6 +2,7 @@
 Models for Privacy Assessment and Answer History Store.
 
 This module provides the database schema for:
+- Assessment task tracking (async Celery task execution)
 - Assessment templates (versioned DPIA/PIA definitions)
 - Assessment questions (linked to templates, grouped by requirement)
 - Privacy assessments (instances linked to systems/declarations)
@@ -12,7 +13,7 @@ This module provides the database schema for:
 from __future__ import annotations
 
 from enum import Enum as EnumType
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import (
     ARRAY,
@@ -29,7 +30,8 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, relationship
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase  # type: ignore[attr-defined]
+from fides.api.models.worker_task import WorkerTask
 
 if TYPE_CHECKING:
     from fides.api.models.questionnaire import Questionnaire
@@ -75,6 +77,55 @@ class AnswerChangeType(str, EnumType):
     human_edited = "human_edited"
     approved = "approved"
     rejected = "rejected"
+
+
+class AssessmentTaskType(EnumType):
+    """Types of assessment tasks that can be executed by a worker."""
+
+    GENERATE = "generate"
+    RE_EVALUATE = "re_evaluate"
+
+
+class PrivacyAssessmentTask(WorkerTask, Base):
+    """
+    Tracks async Celery task execution for privacy assessment generation.
+
+    Each task may produce multiple PrivacyAssessment records (one per
+    system/declaration). Progress is tracked via total_count and
+    completed_count; the celery_id changes on retry while the task's
+    primary key remains stable for API consumers.
+    """
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "privacy_assessment_task"
+
+    celery_id = Column(
+        String(255), unique=True, nullable=False, default=FidesBase.generate_uuid
+    )
+    total_count = Column(Integer, nullable=False, default=0)
+    completed_count = Column(Integer, nullable=False, default=0)
+    message = Column(String, nullable=True)
+    assessment_types = Column(ARRAY(String), server_default="{}", nullable=False)
+    system_fides_keys = Column(ARRAY(String), nullable=True)
+    created_by = Column(String, nullable=True)
+
+    assessments = relationship(
+        "PrivacyAssessment",
+        back_populates="privacy_assessment_task",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    @classmethod
+    def allowed_action_types(cls) -> List[str]:
+        return [e.value for e in AssessmentTaskType]
+
+    @property
+    def progress(self) -> float:
+        if self.total_count and self.total_count > 0:
+            return round((self.completed_count / self.total_count) * 100, 1)
+        return 0.0
 
 
 class AssessmentTemplate(Base):
@@ -200,8 +251,19 @@ class PrivacyAssessment(Base):
     # Creator tracking
     created_by = Column(String, nullable=True, index=True)
 
+    # Task tracking
+    privacy_assessment_task_id = Column(
+        String,
+        ForeignKey("privacy_assessment_task.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     # Relationships
     template = relationship("AssessmentTemplate", back_populates="assessments")
+    privacy_assessment_task = relationship(
+        "PrivacyAssessmentTask", back_populates="assessments"
+    )
     answers = relationship(
         "AssessmentAnswer",
         back_populates="assessment",
