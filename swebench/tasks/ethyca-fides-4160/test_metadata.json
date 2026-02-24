@@ -1,0 +1,28 @@
+{
+  "test_framework": "pytest",
+  "test_command": "pip install 'snowflake-connector-python>=3.6.0' 'numpy<2.0' 'setuptools<70.0' 'iab-tcf==0.2.2' && pytest /workspace/repo/tests/ops/util/test_tc_string.py -v -k 'test_invalid or test_filter or test_consent_language or test_version_hash_model_sorts' --noconftest -p no:cacheprovider",
+  "test_files": [
+    "tests/ops/api/v1/endpoints/test_privacy_experience_endpoints.py",
+    "tests/ops/api/v1/endpoints/test_privacy_preference_endpoints.py",
+    "tests/ops/util/test_tc_string.py",
+    "tests/ops/util/test_tcf_experience_contents.py"
+  ],
+  "num_test_files": 4,
+  "language": "python",
+  "repo_url": "https://github.com/ethyca/fides.git",
+  "base_commit": "ddbae008c9fa37065141be475f3cd3a30a4fc5bc",
+  "repo": "ethyca/fides",
+  "pr_number": 4160,
+  "FAIL_TO_PASS": [
+    "tests.ops.util.test_tc_string.TestHashTCFExperience::test_version_hash_model_sorts_ascending",
+    "tests.ops.util.test_tc_string.TestBuildTCModel::test_invalid_cmp_id",
+    "tests.ops.util.test_tc_string.TestBuildTCModel::test_invalid_vendor_list_version",
+    "tests.ops.util.test_tc_string.TestBuildTCModel::test_invalid_policy_version",
+    "tests.ops.util.test_tc_string.TestBuildTCModel::test_invalid_cmp_version",
+    "tests.ops.util.test_tc_string.TestBuildTCModel::test_invalid_publisher_country_code",
+    "tests.ops.util.test_tc_string.TestBuildTCModel::test_filter_purpose_legitimate_interests",
+    "tests.ops.util.test_tc_string.TestBuildTCModel::test_filter_invalid_vendor_legal_basis",
+    "tests.ops.util.test_tc_string.TestBuildTCModel::test_consent_language"
+  ],
+  "PASS_TO_PASS": []
+}
