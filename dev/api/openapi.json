@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.3b2.dev68+gae8998059"
+    "version": "2.78.3b2.dev69+g77cc33f27"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10823,6 +10823,47 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "DSR Policy"
+        ],
+        "summary": "Delete Policy",
+        "description": "Delete a policy by key. Returns 409 if the policy is referenced by any privacy requests.",
+        "operationId": "delete_policy_api_v1_dsr_policy__policy_key__delete",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "policy:delete"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Policy Key"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
