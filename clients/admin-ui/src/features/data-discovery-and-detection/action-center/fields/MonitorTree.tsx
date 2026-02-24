@@ -264,7 +264,7 @@ const MonitorTree = forwardRef<
     const router = useRouter();
     const { errorAlert } = useAlert();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
-    const [trigger] = useLazyGetMonitorTreeQuery();
+    const [trigger] = useLazyGetMonitorTreeQuery({});
     const [triggerAncestorsStatuses] =
       useLazyGetMonitorTreeAncestorsStatusesQuery();
     const [nodePagination, setNodePaginationState] = useState<
@@ -343,7 +343,7 @@ const MonitorTree = forwardRef<
           }
         });
       },
-      [trigger, showApproved, showIgnored],
+      [trigger],
     );
 
     const onLoadData = useCallback(
@@ -665,12 +665,13 @@ const MonitorTree = forwardRef<
           },
         });
       };
-      setTreeData([]);
 
+      setTreeData([]);
       setExpandedKeys([]);
       setNodePaginationState({});
-
       getInitTreeData();
+
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showIgnored, showApproved]);
 
     return (
