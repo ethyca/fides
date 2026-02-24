@@ -386,9 +386,8 @@ describe("Privacy Request Verification Flow", () => {
       cy.get("#first_name").type("John");
       cy.get("#email").type("test@example.com");
       cy.get("button[type='submit']").click();
+      cy.wait("@postPrivacyRequest");
     });
-
-    cy.wait("@postPrivacyRequest");
 
     // Should navigate to verification page
     cy.url().should("include", "/privacy-request/default_access_policy/verify");
@@ -411,9 +410,8 @@ describe("Privacy Request Verification Flow", () => {
       cy.get("#first_name").type("John");
       cy.get("#email").type("test@example.com");
       cy.get("button[type='submit']").click();
+      cy.wait("@postPrivacyRequest");
     });
-
-    cy.wait("@postPrivacyRequest");
 
     // Should be on verification page
     cy.url().should("include", "/privacy-request/default_access_policy/verify");
@@ -476,9 +474,8 @@ describe("Privacy Request Verification Flow", () => {
       cy.get("#first_name").type("John");
       cy.get("#email").type("test@example.com");
       cy.get("button[type='submit']").click();
+      cy.wait("@postPrivacyRequest");
     });
-
-    cy.wait("@postPrivacyRequest");
 
     // Should be on verification page
     cy.url().should("include", "/privacy-request/default_access_policy/verify");
