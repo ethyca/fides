@@ -193,7 +193,9 @@ declare global {
        * @example cy.selectPrivacyRequestLocation()
        * @example cy.selectPrivacyRequestLocation("us-ca")
        */
-      selectPrivacyRequestLocation(value?: string): Chainable<JQuery<HTMLElement>>;
+      selectPrivacyRequestLocation(
+        value?: string,
+      ): Chainable<JQuery<HTMLElement>>;
       /**
        * Custom command to select DOM element by data-testid attribute
        * @example cy.getByTestId('clear-btn')
