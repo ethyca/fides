@@ -350,12 +350,14 @@ describe("Privacy Request with multiselect custom fields", () => {
   });
 });
 
-describe.only("Privacy Request Verification Flow", () => {
+describe("Privacy Request Verification Flow", () => {
   beforeEach(() => {
+    cy.intercept("GET", `${API_URL}/id-verification/config`, {
+      body: { identity_verification_required: true },
+    }).as("getVerificationConfig");
     cy.intercept("POST", `${API_URL}/privacy-request`, {
       fixture: "privacy-request/unverified",
     }).as("postPrivacyRequest");
-
     cy.intercept(
       "POST",
       `${API_URL}/privacy-request/privacy-request-id/verify`,
@@ -373,10 +375,11 @@ describe.only("Privacy Request Verification Flow", () => {
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Access your data").click();
 
-    // Should be on form page
+    // Should be on form page - wait for verification config so form is ready
     cy.url().should("include", "/privacy-request/default_access_policy");
     cy.getByTestId("privacy-request-layout").should("be.visible");
     cy.getByTestId("privacy-request-form").should("be.visible");
+    cy.wait("@getVerificationConfig");
 
     // Fill and submit form
     cy.getByTestId("privacy-request-form").within(() => {
@@ -400,6 +403,8 @@ describe.only("Privacy Request Verification Flow", () => {
     cy.getByTestId("card").contains("Access your data").click();
 
     cy.url().should("include", "/privacy-request/default_access_policy");
+    cy.getByTestId("privacy-request-form").should("be.visible");
+    cy.wait("@getVerificationConfig");
 
     // Fill and submit form
     cy.getByTestId("privacy-request-form").within(() => {
@@ -461,6 +466,10 @@ describe.only("Privacy Request Verification Flow", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Access your data").click();
+
+    cy.url().should("include", "/privacy-request/default_access_policy");
+    cy.getByTestId("privacy-request-form").should("be.visible");
+    cy.wait("@getVerificationConfig");
 
     // Fill and submit form
     cy.getByTestId("privacy-request-form").within(() => {
