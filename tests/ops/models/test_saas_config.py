@@ -448,7 +448,7 @@ class TestConnectorParam:
 @pytest.mark.unit_saas
 class TestSaaSConfigHostDomainRestrictions:
     """Tests for Rule B model_validator: client_config.host placeholders
-    must reference connector params with allowed_domains defined."""
+    must reference connector params of type 'endpoint' with allowed_values defined."""
 
     @staticmethod
     def _make_config(
@@ -478,13 +478,14 @@ class TestSaaSConfigHostDomainRestrictions:
         return config
 
     def test_host_references_domain_restricted_param_passes(self):
-        """Host referencing a param with allowed_domains should pass."""
+        """Host referencing a param with type=endpoint and allowed_values should pass."""
         config = self._make_config(
             connector_params=[
                 {
                     "name": "domain",
                     "default_value": "api.stripe.com",
-                    "allowed_domains": ["api.stripe.com"],
+                    "type": "endpoint",
+                    "allowed_values": ["api.stripe.com"],
                 },
             ],
             host="<domain>",
@@ -493,14 +494,15 @@ class TestSaaSConfigHostDomainRestrictions:
         assert saas_config.client_config.host == "<domain>"
 
     def test_host_references_unrestricted_param_fails(self):
-        """Host referencing a param without allowed_domains should fail
-        when another param has allowed_domains."""
+        """Host referencing a param without allowed_values should fail
+        when another param has type=endpoint and allowed_values."""
         config = self._make_config(
             connector_params=[
                 {
                     "name": "domain",
                     "default_value": "api.stripe.com",
-                    "allowed_domains": ["api.stripe.com"],
+                    "type": "endpoint",
+                    "allowed_values": ["api.stripe.com"],
                 },
                 {"name": "api_key", "sensitive": True},
             ],
@@ -508,10 +510,10 @@ class TestSaaSConfigHostDomainRestrictions:
         )
         with pytest.raises(ValidationError) as exc:
             SaaSConfig(**config)
-        assert "does not have allowed_domains defined" in str(exc.value)
+        assert "does not have allowed_values defined" in str(exc.value)
 
     def test_no_domain_restrictions_skips_validation(self):
-        """When no connector param has allowed_domains, any host is allowed."""
+        """When no connector param has type=endpoint with allowed_values, any host is allowed."""
         config = self._make_config(
             connector_params=[
                 {"name": "api_key", "sensitive": True},
@@ -519,15 +521,14 @@ class TestSaaSConfigHostDomainRestrictions:
             ],
             host="<hostname>",
         )
-        # Should not raise
         saas_config = SaaSConfig(**config)
         assert saas_config.client_config.host == "<hostname>"
 
-    def test_host_with_empty_allowed_domains_passes(self):
-        """Empty allowed_domains (self-hosted) is non-None, so it passes Rule B."""
+    def test_host_with_empty_allowed_values_passes(self):
+        """Empty allowed_values (self-hosted) is non-None, so it passes Rule B."""
         config = self._make_config(
             connector_params=[
-                {"name": "domain", "allowed_domains": []},
+                {"name": "domain", "type": "endpoint", "allowed_values": []},
             ],
             host="<domain>",
         )
@@ -540,7 +541,8 @@ class TestSaaSConfigHostDomainRestrictions:
             connector_params=[
                 {
                     "name": "domain",
-                    "allowed_domains": ["api.stripe.com"],
+                    "type": "endpoint",
+                    "allowed_values": ["api.stripe.com"],
                 },
                 {"name": "other_host"},
             ],
@@ -563,7 +565,7 @@ class TestSaaSConfigHostDomainRestrictions:
         )
         with pytest.raises(ValidationError) as exc:
             SaaSConfig(**config)
-        assert "does not have allowed_domains defined" in str(exc.value)
+        assert "does not have allowed_values defined" in str(exc.value)
         assert "'other_host'" in str(exc.value)
 
     def test_host_placeholder_not_in_connector_params_fails(self):
@@ -573,7 +575,8 @@ class TestSaaSConfigHostDomainRestrictions:
             connector_params=[
                 {
                     "name": "domain",
-                    "allowed_domains": ["api.stripe.com"],
+                    "type": "endpoint",
+                    "allowed_values": ["api.stripe.com"],
                 },
             ],
             host="<some_other_secret>",
@@ -588,7 +591,8 @@ class TestSaaSConfigHostDomainRestrictions:
             connector_params=[
                 {
                     "name": "domain",
-                    "allowed_domains": ["api.stripe.com"],
+                    "type": "endpoint",
+                    "allowed_values": ["api.stripe.com"],
                 },
             ],
             host="evil.example.com",
@@ -603,7 +607,8 @@ class TestSaaSConfigHostDomainRestrictions:
             connector_params=[
                 {
                     "name": "domain",
-                    "allowed_domains": ["api.stripe.com"],
+                    "type": "endpoint",
+                    "allowed_values": ["api.stripe.com"],
                 },
                 {"name": "test_host"},
             ],
@@ -615,5 +620,5 @@ class TestSaaSConfigHostDomainRestrictions:
         )
         with pytest.raises(ValidationError) as exc:
             SaaSConfig(**config)
-        assert "does not have allowed_domains defined" in str(exc.value)
+        assert "does not have allowed_values defined" in str(exc.value)
         assert "'test_host'" in str(exc.value)
