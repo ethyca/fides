@@ -51,23 +51,21 @@ const AssessmentSettingsModal = ({
   const [showCustomCron, setShowCustomCron] = useState(false);
 
   // API hooks
-  const {
-    data: config,
-    isLoading: isLoadingConfig,
-    refetch: refetchConfig,
-  } = useGetAssessmentConfigQuery(undefined, { skip: !open });
+  const { data: config, isLoading: isLoadingConfig } =
+    useGetAssessmentConfigQuery(undefined, { skip: !open });
   const { data: defaults } = useGetAssessmentConfigDefaultsQuery(undefined, {
     skip: !open,
   });
 
-  // Refetch config and reset form state when modal opens
+  // Track if we've initialized the form for this modal session
+  const [formInitialized, setFormInitialized] = useState(false);
+
+  // Reset initialization state when modal closes
   useEffect(() => {
-    if (open) {
-      refetchConfig();
-      form.resetFields();
-      setShowCustomCron(false);
+    if (!open) {
+      setFormInitialized(false);
     }
-  }, [open, refetchConfig, form]);
+  }, [open]);
   const {
     data: channelsData,
     isLoading: isLoadingChannels,
@@ -82,9 +80,9 @@ const AssessmentSettingsModal = ({
   const reassessmentEnabled = Form.useWatch("reassessment_enabled", form);
   const slackChannelId = Form.useWatch("slack_channel_id", form);
 
-  // Initialize form when config loads
+  // Initialize form when config loads (only once per modal session)
   useEffect(() => {
-    if (config && open) {
+    if (config && open && !formInitialized) {
       // Determine if current cron matches a preset
       const matchingPreset = FREQUENCY_OPTIONS.find(
         (opt) => opt.cron === config.reassessment_cron,
@@ -111,8 +109,9 @@ const AssessmentSettingsModal = ({
           slack_channel_id: config.slack_channel_id || undefined,
         });
       }
+      setFormInitialized(true);
     }
-  }, [config, form, open]);
+  }, [config, form, open, formInitialized]);
 
   const handleFrequencyChange = (value: string) => {
     if (value === "custom") {
