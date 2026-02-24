@@ -45,7 +45,7 @@ def upgrade() -> None:
             "reassessment_enabled",
             sa.Boolean(),
             nullable=False,
-            server_default="false",
+            server_default="f",
             comment="Whether automatic re-assessment is enabled.",
         ),
         sa.Column(

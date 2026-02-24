@@ -42,7 +42,7 @@ class PrivacyAssessmentConfig(Base):
         Boolean,
         nullable=False,
         default=False,
-        server_default="false",
+        server_default="f",
         comment="Whether automatic re-assessment is enabled.",
     )
     reassessment_cron = Column(

@@ -207,7 +207,7 @@ const AssessmentSettingsModal = ({
     >
       <Form form={form} layout="vertical" className="mt-4">
         {/* LLM Configuration Section */}
-        <div className="mb-6">
+        <Flex vertical className="mb-6">
           <Text strong className="mb-3 block text-base">
             LLM Model Configuration
           </Text>
@@ -239,10 +239,10 @@ const AssessmentSettingsModal = ({
               data-testid="input-chat-model"
             />
           </Form.Item>
-        </div>
+        </Flex>
 
         {/* Re-assessment Schedule Section */}
-        <div className="mb-6">
+        <Flex vertical className="mb-6">
           <Text strong className="mb-3 block text-base">
             Automatic Re-assessment
           </Text>
@@ -312,10 +312,10 @@ const AssessmentSettingsModal = ({
               )}
             </>
           )}
-        </div>
+        </Flex>
 
         {/* Slack Configuration Section */}
-        <div className="mb-2">
+        <Flex vertical className="mb-2">
           <Text strong className="mb-3 block text-base">
             Slack Notifications
           </Text>
@@ -366,7 +366,7 @@ const AssessmentSettingsModal = ({
               Test Channel
             </Button>
           </Space>
-        </div>
+        </Flex>
       </Form>
     </Modal>
   );
