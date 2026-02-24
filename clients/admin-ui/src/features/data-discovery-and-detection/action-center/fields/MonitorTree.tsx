@@ -609,6 +609,12 @@ const MonitorTree = forwardRef<
     }));
 
     useEffect(() => {
+      setTreeData([]);
+      setExpandedKeys([]);
+      setNodePaginationState({});
+    }, [showIgnored, showApproved]);
+
+    useEffect(() => {
       const getInitTreeData = async () => {
         // Only load if tree is empty
         if (treeData.length > 0) {
@@ -641,38 +647,6 @@ const MonitorTree = forwardRef<
       showIgnored,
       showApproved,
     ]);
-
-    useEffect(() => {
-      const getInitTreeData = async () => {
-        // Only load if tree is empty
-        if (treeData.length > 0) {
-          return;
-        }
-
-        fetchTreeDataWithDetails({
-          nodeKey: "root",
-          queryParams: {
-            monitor_config_id: monitorId,
-            diff_status: [
-              ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
-              ...(showIgnored ? intoDiffStatus("Ignored") : []),
-              ...(showApproved ? intoDiffStatus("Approved") : []),
-            ],
-            size: TREE_PAGE_SIZE,
-          },
-          fastUpdateFn: (data) => {
-            setTreeData(mapResponseToTreeData(data));
-          },
-        });
-      };
-
-      setTreeData([]);
-      setExpandedKeys([]);
-      setNodePaginationState({});
-      getInitTreeData();
-
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [showIgnored, showApproved]);
 
     return (
       <Flex gap="middle" vertical className="h-full">
