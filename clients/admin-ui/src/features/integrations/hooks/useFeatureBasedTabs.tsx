@@ -1,7 +1,6 @@
 import {
   Button,
   ChakraBox as Box,
-  ChakraFlex,
   ChakraSpacer as Spacer,
   Flex,
   TabsProps,
@@ -90,19 +89,13 @@ export const useFeatureBasedTabs = ({
         children: (
           <Flex vertical gap="middle">
             {supportsConnectionTest && (
-              <ChakraFlex
-                borderRadius="md"
-                outline="1px solid"
-                outlineColor="gray.100"
-                align="center"
-                p={3}
-              >
-                <ChakraFlex flexDirection="column">
+              <Flex align="center" className="p-3">
+                <Flex vertical>
                   <ConnectionStatusNotice
                     testData={testData}
                     connectionOption={integrationOption}
                   />
-                </ChakraFlex>
+                </Flex>
                 <Spacer />
                 <div className="flex gap-4">
                   {needsAuthorization && (
@@ -126,7 +119,7 @@ export const useFeatureBasedTabs = ({
                     Manage
                   </Button>
                 </div>
-              </ChakraFlex>
+              </Flex>
             )}
             <ConfigureIntegrationModal
               isOpen={isOpen}

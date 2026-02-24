@@ -11,7 +11,6 @@ import {
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useMemo, useState } from "react";
 
@@ -226,7 +225,7 @@ const IntegrationListView: NextPage = () => {
       },
     },
     {
-      title: "Linked systems",
+      title: "Linked system",
       dataIndex: "linked_systems",
       key: "linked_systems",
       width: 150,
