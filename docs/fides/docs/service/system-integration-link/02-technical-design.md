@@ -274,6 +274,18 @@ SYSTEM_INTEGRATION_LINK_DELETE = f"{SYSTEM_INTEGRATION_LINK}:{DELETE}"
 
 **Status:** Migration complete. All read and write paths updated.
 
+### Deprecated System-Connection Endpoints
+
+The following endpoints on the `SYSTEM_CONNECTIONS_ROUTER` are now marked `deprecated=True` in OpenAPI. They continue to function but callers should migrate to the new APIs:
+
+| Deprecated endpoint | Replacement |
+|---|---|
+| `GET /system/{fides_key}/connection` | `GET /connection` (with `linked_systems` in response), or `GET /connection/{key}/system-links` |
+| `PATCH /system/{fides_key}/connection` | `PATCH /connection` + `PUT /connection/{key}/system-links` |
+| `PATCH /system/{fides_key}/connection/secrets` | `PATCH /connection/{connection_key}/secret` |
+| `DELETE /system/{fides_key}/connection` | `DELETE /connection/{key}` or `DELETE /connection/{key}/system-links/{system_fides_key}` |
+| `POST /system/{fides_key}/connection/instantiate/{type}` | Connection config + system-links APIs independently |
+
 ## 5. Steward Inference Design
 
 ### Option A: Compute on the Fly (Recommended for Short-Term)

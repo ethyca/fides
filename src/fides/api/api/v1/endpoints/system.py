@@ -102,12 +102,16 @@ SYSTEM_CONNECTION_INSTANTIATE_ROUTER = APIRouter(
     ],
     status_code=HTTP_200_OK,
     response_model=Page[ConnectionConfigurationResponse],
+    deprecated=True,
 )
 def get_system_connections(
     fides_key: str, params: Params = Depends(), db: Session = Depends(deps.get_db)
 ) -> AbstractPage[ConnectionConfigurationResponse]:
     """
     Return all the connection configs related to a system.
+
+    Deprecated: Use GET /connection with `linked_systems` in the response,
+    or GET /connection/{connection_key}/system-links to manage links directly.
     """
     system = get_system(db, fides_key)
     query = (
@@ -131,6 +135,7 @@ def get_system_connections(
     ],
     status_code=HTTP_200_OK,
     response_model=BulkPutConnectionConfiguration,
+    deprecated=True,
 )
 def patch_connections(
     fides_key: str,
@@ -146,6 +151,9 @@ def patch_connections(
 
     If the key in the payload exists, it will be used to update an existing ConnectionConfiguration.
     Otherwise, a new ConnectionConfiguration will be created for you.
+
+    Deprecated: Use PATCH /connection to create/update connection configs, then
+    PUT /connection/{connection_key}/system-links to link them to a system.
     """
     system = get_system(db, fides_key)
     return patch_connection_configs(db, configs, system)
@@ -161,6 +169,7 @@ def patch_connections(
     ],
     status_code=HTTP_200_OK,
     response_model=TestStatusMessage,
+    deprecated=True,
 )
 def patch_connection_secrets(
     fides_key: FidesKey,
@@ -175,6 +184,8 @@ def patch_connection_secrets(
 
     The specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB
     will differ from Dynamo DB.
+
+    Deprecated: Use PATCH /connection/{connection_key}/secret instead.
     """
 
     system = get_system(db, fides_key)
@@ -196,8 +207,15 @@ def patch_connection_secrets(
     ],
     status_code=HTTP_204_NO_CONTENT,
     response_model=None,
+    deprecated=True,
 )
 def delete_connection(fides_key: str, *, db: Session = Depends(deps.get_db)) -> None:
+    """Delete the connection config linked to this system.
+
+    Deprecated: Use DELETE /connection/{connection_key} to delete a connection
+    config, or DELETE /connection/{connection_key}/system-links/{system_fides_key}
+    to unlink it from a system without deleting it.
+    """
     system = get_system(db, fides_key)
     if system.connection_configs is None:
         raise HTTPException(
@@ -563,6 +581,7 @@ async def get(
         Security(verify_oauth_client_prod, scopes=[SAAS_CONNECTION_INSTANTIATE])
     ],
     response_model=SaasConnectionTemplateResponse,
+    deprecated=True,
 )
 def instantiate_connection_from_template(
     fides_key: str,
@@ -573,6 +592,9 @@ def instantiate_connection_from_template(
     """
     Instantiates a SaaS connection from the available template and the template values.
     Associates the newly instantiated connection with the provided system.
+
+    Deprecated: Use the connection config and system-links APIs to create
+    connections and link them to systems independently.
     """
 
     system = get_system(db, fides_key)
