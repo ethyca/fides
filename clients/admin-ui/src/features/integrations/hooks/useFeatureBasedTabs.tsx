@@ -33,6 +33,7 @@ interface UseFeatureBasedTabsProps {
   overview?: React.ReactNode;
   instructions?: React.ReactNode;
   supportsConnectionTest: boolean;
+  supportsSystemLinking: boolean;
 }
 
 export const useFeatureBasedTabs = ({
@@ -48,6 +49,7 @@ export const useFeatureBasedTabs = ({
   overview,
   instructions,
   supportsConnectionTest,
+  supportsSystemLinking,
 }: UseFeatureBasedTabsProps) => {
   const { onOpen, isOpen, onClose } = useDisclosure();
   const tabs = useMemo(() => {
@@ -139,11 +141,13 @@ export const useFeatureBasedTabs = ({
       });
     }
 
-    tabItems.push({
-      label: "Linked system",
-      key: "linked-systems",
-      children: <IntegrationLinkedSystems connection={connection!} />,
-    });
+    if (supportsSystemLinking) {
+      tabItems.push({
+        label: "Linked system",
+        key: "linked-systems",
+        children: <IntegrationLinkedSystems connection={connection!} />,
+      });
+    }
 
     // Add conditional tabs based on enabled features
     if (enabledFeatures?.includes(IntegrationFeature.DATA_SYNC)) {
@@ -185,21 +189,22 @@ export const useFeatureBasedTabs = ({
 
     return tabItems;
   }, [
-    connection,
     enabledFeatures,
-    integrationOption,
-    testData,
-    needsAuthorization,
-    handleAuthorize,
-    testConnection,
-    testIsLoading,
+    supportsSystemLinking,
     onOpen,
     isOpen,
     onClose,
+    connection,
     description,
     overview,
     instructions,
     supportsConnectionTest,
+    testData,
+    integrationOption,
+    needsAuthorization,
+    handleAuthorize,
+    testConnection,
+    testIsLoading,
   ]);
 
   return tabs;
