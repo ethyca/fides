@@ -103,16 +103,6 @@ class ConnectionConfigurationResponseBase(ConnectionConfigSecretsMixin):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ConnectionConfigurationResponseWithSystemKey(ConnectionConfigurationResponseBase):
-    """
-    Describes the full returned schema for a ConnectionConfiguration.
-    """
-
-    # Using this response with models returned from an async DB session will error
-    # because the system_key is lazy loaded. Just a quirk of SQLAlchemy 1.4.
-    system_key: Optional[str] = None
-
-
 class LinkedSystemInfo(BaseModel):
     """Minimal system info embedded in connection config list responses."""
 
@@ -142,6 +132,12 @@ class ConnectionConfigurationResponse(ConnectionConfigurationResponseBase):
             ]
             self.system = None
         return self
+
+
+class ConnectionConfigurationResponseWithSystemKey(ConnectionConfigurationResponse):
+    """Extended response that includes the legacy ``system_key`` field."""
+
+    system_key: Optional[str] = None
 
 
 class BulkPutConnectionConfiguration(BulkResponse):

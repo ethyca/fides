@@ -1404,6 +1404,7 @@ class TestGetConnection:
             "authorized",
             "enabled_actions",
             "system_key",
+            "linked_systems",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
@@ -1411,6 +1412,42 @@ class TestGetConnection:
         assert response_body["access"] == "write"
         assert response_body["updated_at"] is not None
         assert response_body["last_test_timestamp"] is None
+
+    def test_get_connection_detail_linked_systems_empty(
+        self, url, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        """Detail endpoint returns empty linked_systems for unlinked config."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert resp.json()["linked_systems"] == []
+
+    def test_get_connection_detail_linked_systems_populated(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        connection_config,
+        system_with_cleanup,
+    ) -> None:
+        """Detail endpoint returns system info in linked_systems when linked."""
+        SystemConnectionConfigLink.create_or_update_link(
+            db, system_with_cleanup.id, connection_config.id
+        )
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["linked_systems"] == [
+            {
+                "fides_key": system_with_cleanup.fides_key,
+                "name": system_with_cleanup.name,
+            }
+        ]
+        assert body["system_key"] == system_with_cleanup.fides_key
 
 
 class TestDeleteConnection:
