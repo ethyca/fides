@@ -17,9 +17,9 @@ from fides.api.util.saas_util import (
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
-    validate_allowed_domains_not_modified,
-    validate_domain_against_allowed_list,
+    validate_connector_param_constraints_not_modified,
     validate_host_references_domain_restricted_params,
+    validate_value_against_allowed_list,
 )
 
 
@@ -761,16 +761,16 @@ class TestCheckDatasetReferenceValues:
 
 
 @pytest.mark.unit_saas
-class TestValidateDomainAgainstAllowedList:
-    """Tests for validate_domain_against_allowed_list.
+class TestValidateValueAgainstAllowedList:
+    """Tests for validate_value_against_allowed_list.
 
-    Each allowed_domains entry is a wildcard pattern where ``*`` matches
+    Each allowed_values entry is a wildcard pattern where ``*`` matches
     any sequence of characters (including dots).  Everything else is a
-    literal.  Matching is case-insensitive against the full domain string.
+    literal.  Matching is case-insensitive against the full value string.
     """
 
     @pytest.mark.parametrize(
-        "domain,allowed,should_pass",
+        "value,allowed,should_pass",
         [
             pytest.param("api.stripe.com", ["api.stripe.com"], True, id="exact_match"),
             pytest.param(
@@ -804,7 +804,7 @@ class TestValidateDomainAgainstAllowedList:
                 "api.stripe.com",
                 ["api.example.com", "api.stripe.com", "*.other.com"],
                 True,
-                id="multiple_allowed_domains",
+                id="multiple_allowed_values",
             ),
             pytest.param(
                 "sub.other.com",
@@ -847,108 +847,123 @@ class TestValidateDomainAgainstAllowedList:
             ),
         ],
     )
-    def test_domain_validation(self, domain, allowed, should_pass):
+    def test_value_validation(self, value, allowed, should_pass):
         if should_pass:
-            validate_domain_against_allowed_list(domain, allowed, "domain")
+            validate_value_against_allowed_list(value, allowed, "domain")
         else:
             with pytest.raises(ValueError):
-                validate_domain_against_allowed_list(domain, allowed, "domain")
+                validate_value_against_allowed_list(value, allowed, "domain")
 
     def test_error_message_includes_param_name(self):
         """Error message should include the param name and value."""
         with pytest.raises(ValueError, match="The value 'evil.com' for 'domain'"):
-            validate_domain_against_allowed_list(
+            validate_value_against_allowed_list(
                 "evil.com", ["api.stripe.com"], "domain"
             )
 
-    def test_empty_allowed_domains_permits_any_value(self):
-        """Empty allowed_domains list should permit any domain value."""
-        validate_domain_against_allowed_list(
+    def test_empty_allowed_values_permits_any_value(self):
+        """Empty allowed_values list should permit any value."""
+        validate_value_against_allowed_list(
             "literally-anything.example.com", [], "domain"
         )
 
 
 @pytest.mark.unit_saas
-class TestValidateAllowedDomainsNotModified:
-    """Tests for validate_allowed_domains_not_modified (Rule A)."""
+class TestValidateConnectorParamConstraintsNotModified:
+    """Tests for validate_connector_param_constraints_not_modified (Rule A)."""
 
     @pytest.mark.parametrize(
         "original,incoming",
         [
             pytest.param(
-                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
-                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
-                id="identical_allowed_domains",
+                [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}],
+                [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}],
+                id="identical_constraints",
             ),
             pytest.param(
                 [{"name": "api_key"}],
                 [{"name": "api_key"}],
-                id="no_allowed_domains",
+                id="no_constraints",
             ),
             pytest.param(
                 [
-                    {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+                    {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
                     {"name": "extra_param"},
                 ],
-                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
-                id="remove_param_without_allowed_domains",
+                [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}],
+                id="remove_param_without_constraints",
             ),
             pytest.param(
-                [{"name": "domain", "allowed_domains": []}],
-                [{"name": "domain", "allowed_domains": []}],
+                [{"name": "domain", "type": "endpoint", "allowed_values": []}],
+                [{"name": "domain", "type": "endpoint", "allowed_values": []}],
                 id="empty_list_to_empty_list",
             ),
         ],
     )
     def test_modification_passes(self, original, incoming):
-        """Cases where allowed_domains are unchanged or not present."""
-        validate_allowed_domains_not_modified(original, incoming)
+        """Cases where type and allowed_values are unchanged or not present."""
+        validate_connector_param_constraints_not_modified(original, incoming)
 
     @pytest.mark.parametrize(
         "original,incoming,error_match",
         [
             pytest.param(
-                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
-                [{"name": "domain"}],
-                "Cannot modify allowed_domains",
-                id="remove_allowed_domains",
+                [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}],
+                [{"name": "domain", "type": "endpoint"}],
+                "Cannot modify allowed_values",
+                id="remove_allowed_values",
             ),
             pytest.param(
-                [{"name": "domain", "allowed_domains": ["api.stripe.com"]}],
-                [{"name": "domain", "allowed_domains": ["evil.com"]}],
-                "Cannot modify allowed_domains",
-                id="change_allowed_domains_values",
+                [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}],
+                [{"name": "domain", "type": "endpoint", "allowed_values": ["evil.com"]}],
+                "Cannot modify allowed_values",
+                id="change_allowed_values",
             ),
             pytest.param(
                 [{"name": "domain"}],
                 [
                     {"name": "domain"},
-                    {"name": "new_param", "allowed_domains": ["x.com"]},
+                    {"name": "new_param", "allowed_values": ["x.com"]},
                 ],
-                "Cannot set allowed_domains",
-                id="add_allowed_domains_via_api",
+                "Cannot set allowed_values",
+                id="add_allowed_values_via_api",
             ),
             pytest.param(
                 [
-                    {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+                    {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
                     {"name": "api_key"},
                 ],
                 [{"name": "api_key"}],
                 "Cannot remove connector param",
-                id="remove_param_with_allowed_domains",
+                id="remove_param_with_constraints",
             ),
             pytest.param(
-                [{"name": "domain", "allowed_domains": []}],
-                [{"name": "domain"}],
-                "Cannot modify allowed_domains",
+                [{"name": "domain", "type": "endpoint", "allowed_values": []}],
+                [{"name": "domain", "type": "endpoint"}],
+                "Cannot modify allowed_values",
                 id="empty_list_to_none",
+            ),
+            pytest.param(
+                [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}],
+                [{"name": "domain", "type": "other", "allowed_values": ["api.stripe.com"]}],
+                "Cannot modify type",
+                id="change_type",
+            ),
+            pytest.param(
+                [{"name": "domain"}],
+                [
+                    {"name": "domain"},
+                    {"name": "new_param", "type": "endpoint"},
+                ],
+                "Cannot set type",
+                id="add_type_via_api",
             ),
         ],
     )
     def test_modification_fails(self, original, incoming, error_match):
-        """Cases where allowed_domains modification is prohibited."""
+        """Cases where type or allowed_values modification is prohibited."""
         with pytest.raises(ValueError, match=error_match):
-            validate_allowed_domains_not_modified(original, incoming)
+            validate_connector_param_constraints_not_modified(original, incoming)
 
 
 @pytest.mark.unit_saas
@@ -966,21 +981,21 @@ class TestValidateHostReferencesDomainRestrictedParams:
         return config
 
     def test_host_references_restricted_param_passes(self):
-        """Host references a param with allowed_domains - should pass."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
-        incoming = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        """Host references a param with type=endpoint and allowed_values - should pass."""
+        original = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
+        incoming = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
         validate_host_references_domain_restricted_params(
             original, incoming, self._make_config("<domain>")
         )
 
     def test_host_references_unrestricted_param_fails(self):
-        """Host switched to reference a param without allowed_domains - should fail."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        """Host switched to reference a param without allowed_values - should fail."""
+        original = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
         incoming = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+            {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
             {"name": "my_host"},
         ]
-        with pytest.raises(ValueError, match="does not have allowed_domains defined"):
+        with pytest.raises(ValueError, match="does not have allowed_values defined"):
             validate_host_references_domain_restricted_params(
                 original, incoming, self._make_config("<my_host>")
             )
@@ -993,10 +1008,10 @@ class TestValidateHostReferencesDomainRestrictedParams:
             original, incoming, self._make_config("<domain>")
         )
 
-    def test_host_with_empty_allowed_domains_passes(self):
-        """Host references a param with empty allowed_domains (self-hosted) - should pass."""
-        original = [{"name": "domain", "allowed_domains": []}]
-        incoming = [{"name": "domain", "allowed_domains": []}]
+    def test_host_with_empty_allowed_values_passes(self):
+        """Host references a param with empty allowed_values (self-hosted) - should pass."""
+        original = [{"name": "domain", "type": "endpoint", "allowed_values": []}]
+        incoming = [{"name": "domain", "type": "endpoint", "allowed_values": []}]
         validate_host_references_domain_restricted_params(
             original, incoming, self._make_config("<domain>")
         )
@@ -1004,24 +1019,24 @@ class TestValidateHostReferencesDomainRestrictedParams:
     def test_swap_host_to_unrestricted_new_param_fails(self):
         """Attack scenario: add new param without restrictions and swap host to it."""
         original = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+            {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
             {"name": "api_key"},
         ]
         incoming = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+            {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
             {"name": "api_key"},
             {"name": "evil_host"},
         ]
-        with pytest.raises(ValueError, match="does not have allowed_domains defined"):
+        with pytest.raises(ValueError, match="does not have allowed_values defined"):
             validate_host_references_domain_restricted_params(
                 original, incoming, self._make_config("<evil_host>")
             )
 
     def test_nested_endpoint_client_config_host_validated(self):
         """Nested client_config.host in endpoints should also be validated."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        original = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
         incoming = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+            {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
             {"name": "sneaky_host"},
         ]
         config = self._make_config(
@@ -1037,36 +1052,36 @@ class TestValidateHostReferencesDomainRestrictedParams:
                 }
             ],
         )
-        with pytest.raises(ValueError, match="does not have allowed_domains defined"):
+        with pytest.raises(ValueError, match="does not have allowed_values defined"):
             validate_host_references_domain_restricted_params(
                 original, incoming, config
             )
 
     def test_nested_test_request_client_config_host_validated(self):
         """Nested client_config.host in test_request should also be validated."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        original = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
         incoming = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
+            {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
             {"name": "other_host"},
         ]
         config = self._make_config(
             "<domain>",
             test_request={"client_config": {"host": "<other_host>"}},
         )
-        with pytest.raises(ValueError, match="does not have allowed_domains defined"):
+        with pytest.raises(ValueError, match="does not have allowed_values defined"):
             validate_host_references_domain_restricted_params(
                 original, incoming, config
             )
 
-    def test_nested_host_with_allowed_domains_passes(self):
+    def test_nested_host_with_allowed_values_passes(self):
         """Nested client_config.host referencing a restricted param should pass."""
         original = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
-            {"name": "other_domain", "allowed_domains": ["pi.pardot.com"]},
+            {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
+            {"name": "other_domain", "type": "endpoint", "allowed_values": ["pi.pardot.com"]},
         ]
         incoming = [
-            {"name": "domain", "allowed_domains": ["api.stripe.com"]},
-            {"name": "other_domain", "allowed_domains": ["pi.pardot.com"]},
+            {"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]},
+            {"name": "other_domain", "type": "endpoint", "allowed_values": ["pi.pardot.com"]},
         ]
         config = self._make_config(
             "<domain>",
@@ -1085,8 +1100,8 @@ class TestValidateHostReferencesDomainRestrictedParams:
 
     def test_unknown_placeholder_fails(self):
         """Placeholder not in connector_params should fail when domain restrictions exist."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
-        incoming = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        original = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
+        incoming = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
         with pytest.raises(ValueError, match="not a known connector param"):
             validate_host_references_domain_restricted_params(
                 original, incoming, self._make_config("<unknown_param>")
@@ -1094,8 +1109,8 @@ class TestValidateHostReferencesDomainRestrictedParams:
 
     def test_direct_host_value_fails(self):
         """Direct host value (no placeholder) should fail when domain restrictions exist."""
-        original = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
-        incoming = [{"name": "domain", "allowed_domains": ["api.stripe.com"]}]
+        original = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
+        incoming = [{"name": "domain", "type": "endpoint", "allowed_values": ["api.stripe.com"]}]
         with pytest.raises(ValueError, match="does not reference any connector param"):
             validate_host_references_domain_restricted_params(
                 original, incoming, self._make_config("evil.example.com")

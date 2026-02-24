@@ -328,11 +328,12 @@ class ConnectorParam(BaseModel):
     multiselect: Optional[bool] = False
     description: Optional[str] = None
     sensitive: Optional[bool] = False
-    allowed_domains: Optional[List[str]] = (
-        None  # List of allowed domain wildcard patterns for domain params.
-    )
-    # None = not a domain param (no validation). [] = domain param permitting any value (self-hosted).
-    # ["api.stripe.com", "*.salesforce.com"] = only domains matching listed patterns are allowed.
+    type: Optional[str] = None
+    allowed_values: Optional[List[str]] = None
+    # type="endpoint" marks this param as a URL endpoint/domain param.
+    # When type is set, allowed_values controls value restrictions:
+    #   None = no validation. [] = any value permitted (self-hosted).
+    #   ["api.stripe.com", "*.salesforce.com"] = only values matching listed patterns are allowed.
     # Use "*" as a wildcard that matches any sequence of characters (including dots).
 
     @model_validator(mode="before")
@@ -431,24 +432,22 @@ class SaaSConfig(SaaSConfigBase):
     @model_validator(mode="after")
     def validate_host_domain_restrictions(self) -> "SaaSConfig":
         """
-        Rule B: If any connector param defines allowed_domains (non-None),
-        then all client_config.host placeholders must reference connector params
-        that also have allowed_domains defined.
+        Rule B: If any connector param of type "endpoint" defines allowed_values
+        (non-None), then all client_config.host placeholders must reference
+        connector params that are also of type "endpoint" with allowed_values defined.
 
         This ensures that domain-restricted connectors cannot be circumvented
         by pointing client_config.host to an unrestricted param.
         """
-        # Check if any param has domain restrictions
         has_restrictions = any(
-            p.allowed_domains is not None for p in self.connector_params
+            p.type == "endpoint" and p.allowed_values is not None
+            for p in self.connector_params
         )
         if not has_restrictions:
             return self
 
-        # Build param lookup
         params_by_name = {p.name: p for p in self.connector_params}
 
-        # Extract all host values recursively from the config
         config_dict = self.model_dump()
         all_hosts = self._collect_client_config_hosts(config_dict)
 
@@ -458,7 +457,7 @@ class SaaSConfig(SaaSConfigBase):
                 raise ValueError(
                     f"client_config.host value '{host_value}' does not reference any "
                     f"connector param. When domain restrictions are defined, the host "
-                    f"must reference a connector param with allowed_domains."
+                    f"must reference a connector param with allowed_values."
                 )
             for placeholder in placeholders:
                 param = params_by_name.get(placeholder)
@@ -466,14 +465,14 @@ class SaaSConfig(SaaSConfigBase):
                     raise ValueError(
                         f"client_config.host references '{placeholder}' which is not a "
                         f"known connector param. When domain restrictions are defined, all "
-                        f"host placeholders must reference connector params with allowed_domains."
+                        f"host placeholders must reference connector params with allowed_values."
                     )
-                if param.allowed_domains is None:
+                if param.type != "endpoint" or param.allowed_values is None:
                     raise ValueError(
                         f"client_config.host references connector param '{placeholder}' "
-                        f"which does not have allowed_domains defined. All host-referenced "
-                        f"params must have allowed_domains set (use an empty list for "
-                        f"self-hosted services)."
+                        f"which does not have allowed_values defined. All host-referenced "
+                        f"params must be of type 'endpoint' with allowed_values set "
+                        f"(use an empty list for self-hosted services)."
                     )
 
         return self

@@ -22,7 +22,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.saas_util import (
     is_domain_validation_disabled,
-    validate_domain_against_allowed_list,
+    validate_value_against_allowed_list,
 )
 
 
@@ -76,15 +76,16 @@ class SaaSSchema(BaseModel, abc.ABC):
                                 f"[{', '.join(invalid_options)}] are not valid options, '{name}' must be a list of values from [{', '.join(options)}]"
                             )
 
-                # Validate domain values against allowed_domains
-                allowed_domains = connector_param.get("allowed_domains")
+                param_type = connector_param.get("param_type")
+                allowed_values = connector_param.get("allowed_values")
                 if (
-                    allowed_domains is not None
-                    and len(allowed_domains) > 0
+                    param_type == "endpoint"
+                    and allowed_values is not None
+                    and len(allowed_values) > 0
                     and isinstance(value, str)
                     and not is_domain_validation_disabled()
                 ):
-                    validate_domain_against_allowed_list(value, allowed_domains, name)
+                    validate_value_against_allowed_list(value, allowed_values, name)
 
         return values
 
@@ -139,7 +140,8 @@ class SaaSSchemaFactory:
                 "sensitive": connector_param.sensitive,
                 "options": connector_param.options,
                 "multiselect": connector_param.multiselect,
-                "allowed_domains": connector_param.allowed_domains,
+                "param_type": connector_param.type,
+                "allowed_values": connector_param.allowed_values,
             }
             field_definitions[connector_param.name] = (
                 (
