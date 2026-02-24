@@ -31,7 +31,6 @@ import {
   useGetSystemsQuery,
   usePatchSystemConnectionConfigsMutation,
 } from "~/features/system";
-import { SystemConnectionLinkType } from "~/mocks/system-links/data";
 import {
   AccessLevel,
   BigQueryDocsSchema,
@@ -280,7 +279,6 @@ const ConfigureIntegrationForm = ({
               links: [
                 {
                   system_fides_key: values.system_fides_key,
-                  link_type: "monitoring" as SystemConnectionLinkType,
                 },
               ],
             },
@@ -352,7 +350,6 @@ const ConfigureIntegrationForm = ({
             links: [
               {
                 system_fides_key: values.system_fides_key,
-                link_type: "monitoring" as SystemConnectionLinkType,
               },
             ],
           },
