@@ -218,6 +218,7 @@ export type {
   InputRef,
   MenuProps,
   ModalProps,
+  PopoverProps,
   ProgressProps,
   RadioChangeEvent,
   RadioGroupProps,

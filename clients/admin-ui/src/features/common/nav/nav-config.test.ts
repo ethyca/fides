@@ -41,7 +41,6 @@ describe("configureNavGroups", () => {
     ]);
 
     expect(findGroup(navGroups, "Privacy requests").children).toMatchObject([
-      { title: "Policies", path: routes.POLICIES_ROUTE },
       { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
       { title: "Connection manager", path: routes.DATASTORE_CONNECTION_ROUTE },
     ]);
