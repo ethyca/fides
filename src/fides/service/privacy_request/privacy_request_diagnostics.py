@@ -5,13 +5,21 @@ IMPORTANT: These diagnostics models must **never** include PII. If a column can 
 PII (even optionally / depending on deployment), it should be excluded here.
 """
 
-from datetime import datetime
-from typing import List, Optional
+import json
+import secrets
+import zipfile
+from datetime import datetime, timezone
+from io import BytesIO
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import PrivacyRequestNotFound
+from fides.api.common_exceptions import (
+    PrivacyRequestNotFound,
+    RedisConnectionError,
+    RedisNotConfigured,
+)
 from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
@@ -49,6 +57,12 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset as CtlDataset,
 )
 from fides.api.models.storage import StorageConfig
+from fides.api.schemas.storage.storage import StorageType
+from fides.api.service.storage import LocalStorageProvider, StorageProviderFactory
+from fides.api.util.cache import FidesopsRedis, get_cache
+from fides.api.util.lock import redis_lock
+from fides.config import CONFIG
+from fides.config.config_proxy import ConfigProxy
 
 
 class PrivacyRequestSnapshot(BaseModel):
@@ -1289,4 +1303,242 @@ def get_privacy_request_diagnostics(
         attachment_references=get_attachment_references(attachment_ids, db),
         comments=comments,
         comment_references=get_comment_references(comment_ids, db),
+    )
+
+
+DEFAULT_PRIVACY_REQUEST_DIAGNOSTICS_STORAGE_KEY = "privacy_request_diagnostics"
+PRIVACY_REQUEST_DIAGNOSTICS_PREFIX = "privacy-request-diagnostics"
+PRIVACY_REQUEST_DIAGNOSTICS_CACHE_TTL_SECONDS = 60 * 60 * 24  # 24h
+PRIVACY_REQUEST_DIAGNOSTICS_LOCK_TIMEOUT_SECONDS = 60 * 5  # 5m
+
+
+class PrivacyRequestDiagnosticsExportResponse(BaseModel):
+    """Response payload for a diagnostics export request."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    download_url: str
+    storage_type: str
+    storage_config_key: str
+    object_key: str
+    created_at: datetime
+
+
+def _privacy_request_diagnostics_cache_key(privacy_request_id: str) -> str:
+    return f"privacy_request_diagnostics_export:{privacy_request_id}"
+
+
+def _privacy_request_diagnostics_lock_key(privacy_request_id: str) -> str:
+    return f"lock:privacy_request_diagnostics_export:{privacy_request_id}"
+
+
+def _get_cache_or_none() -> Optional[FidesopsRedis]:
+    """Best-effort redis access: if unavailable, proceed without caching/locking."""
+    try:
+        return get_cache()
+    except (RedisNotConfigured, RedisConnectionError):
+        return None
+
+
+def _get_configured_diagnostics_storage_key(db: Session) -> str:
+    """
+    Resolve the StorageConfig key used for diagnostics exports.
+
+    Defaults to DEFAULT_PRIVACY_REQUEST_DIAGNOSTICS_STORAGE_KEY so operators
+    can configure just the StorageConfig row and have the feature work
+    without requiring an additional /config write.
+    """
+
+    configured_key = ConfigProxy(db).storage.privacy_request_diagnostics_storage_key
+    return configured_key or DEFAULT_PRIVACY_REQUEST_DIAGNOSTICS_STORAGE_KEY
+
+
+def _build_diagnostics_object_key(privacy_request_id: str) -> str:
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    rand = secrets.token_hex(3)
+    return (
+        f"{PRIVACY_REQUEST_DIAGNOSTICS_PREFIX}/"
+        f"{privacy_request_id}/"
+        f"{timestamp}-{rand}.zip"
+    )
+
+
+def _resolve_storage_provider(
+    db: Session, storage_config_key: str
+) -> tuple[object, str, StorageType]:
+    """
+    Resolve the storage provider for diagnostics exports.
+
+    Returns:
+        (provider, bucket, storage_type)
+    """
+    storage_config = StorageConfig.get_by(db=db, field="key", value=storage_config_key)
+    if not storage_config:
+        if CONFIG.dev_mode:
+            return LocalStorageProvider(), "", StorageType.local
+        raise ValueError(
+            "Privacy request diagnostics export storage is not configured. "
+            f"Create a StorageConfig with key '{storage_config_key}' (recommended type: s3 or gcs) "
+            "and set its secrets, or run in dev mode to use local storage."
+        )
+
+    if storage_config.type == StorageType.local and not CONFIG.dev_mode:
+        raise ValueError(
+            "Privacy request diagnostics export is not available with local storage outside dev mode. "
+            f"Update StorageConfig '{storage_config_key}' to use S3 or GCS."
+        )
+
+    provider = StorageProviderFactory.create(storage_config)
+    bucket = StorageProviderFactory.get_bucket_from_config(storage_config)
+    if storage_config.type != StorageType.local and not bucket:
+        raise ValueError(
+            f"StorageConfig '{storage_config_key}' is missing required bucket details."
+        )
+
+    # StorageConfig.type is an Enum(StorageType) column; normalize to StorageType
+    storage_type = (
+        storage_config.type
+        if isinstance(storage_config.type, StorageType)
+        else StorageType(storage_config.type)
+    )
+    return provider, bucket, storage_type
+
+
+def _serialize_diagnostics_to_zip(diagnostics: PrivacyRequestDiagnostics) -> BytesIO:
+    """
+    Serialize diagnostics payload into a ZIP file held in memory.
+
+    Note: this service does not implement any bucket cleanup / retention management.
+    Operators should configure object lifecycle policies for the configured prefix.
+    """
+    data = diagnostics.model_dump(mode="json")
+    json_bytes = json.dumps(data, indent=2, sort_keys=True).encode("utf-8")
+
+    buf = BytesIO()
+    with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("diagnostics.json", json_bytes)
+    buf.seek(0)
+    return buf
+
+
+def _get_cached_pointer(
+    cache: FidesopsRedis, cache_key: str
+) -> Optional[Dict[str, Any]]:
+    raw = cache.get(cache_key)
+    decoded = FidesopsRedis.decode_obj(raw) if raw else None
+    return decoded if isinstance(decoded, dict) else None
+
+
+def export_privacy_request_diagnostics(
+    privacy_request_id: str, db: Session
+) -> PrivacyRequestDiagnosticsExportResponse:
+    """
+    Export a non-PII diagnostics report as a ZIP file to configured storage
+    and return a downloadable URL (signed/presigned where applicable).
+
+    Caching:
+      - best-effort Redis pointer cache for 24h (does not cache the signed URL)
+      - best-effort Redis lock to avoid duplicate uploads under concurrency
+    """
+
+    storage_config_key = _get_configured_diagnostics_storage_key(db)
+    provider, bucket, storage_type = _resolve_storage_provider(db, storage_config_key)
+
+    cache = _get_cache_or_none()
+    cache_key = _privacy_request_diagnostics_cache_key(privacy_request_id)
+
+    def _maybe_return_cached() -> Optional[PrivacyRequestDiagnosticsExportResponse]:
+        if not cache:
+            return None
+        cached = _get_cached_pointer(cache, cache_key)
+        if not cached:
+            return None
+
+        if cached.get("storage_config_key") != storage_config_key:
+            return None
+        if cached.get("storage_type") != storage_type.value:
+            return None
+
+        object_key = cached.get("object_key")
+        if not object_key or not isinstance(object_key, str):
+            return None
+
+        if not provider.exists(bucket, object_key):  # type: ignore[attr-defined]
+            return None
+
+        download_url = provider.generate_presigned_url(  # type: ignore[attr-defined]
+            bucket=bucket,
+            key=object_key,
+            ttl_seconds=CONFIG.security.subject_request_download_link_ttl_seconds,
+        )
+        created_at_str = cached.get("created_at")
+        created_at = (
+            datetime.fromisoformat(created_at_str)
+            if isinstance(created_at_str, str)
+            else datetime.now(timezone.utc)
+        )
+        return PrivacyRequestDiagnosticsExportResponse(
+            download_url=str(download_url),
+            storage_type=storage_type.value,
+            storage_config_key=storage_config_key,
+            object_key=object_key,
+            created_at=created_at,
+        )
+
+    cached_response = _maybe_return_cached()
+    if cached_response:
+        return cached_response
+
+    # Best-effort locking; proceed without it if Redis unavailable.
+    if cache:
+        lock_key = _privacy_request_diagnostics_lock_key(privacy_request_id)
+        with redis_lock(
+            lock_key=lock_key,
+            timeout=PRIVACY_REQUEST_DIAGNOSTICS_LOCK_TIMEOUT_SECONDS,
+            blocking=True,
+            blocking_timeout=10,
+        ):
+            cached_response = _maybe_return_cached()
+            if cached_response:
+                return cached_response
+            # fall through to generation/upload
+
+    diagnostics = get_privacy_request_diagnostics(privacy_request_id, db)
+    buf = _serialize_diagnostics_to_zip(diagnostics)
+    object_key = _build_diagnostics_object_key(privacy_request_id)
+
+    provider.upload(  # type: ignore[attr-defined]
+        bucket=bucket,
+        key=object_key,
+        data=buf,
+        content_type="application/zip",
+    )
+
+    download_url = provider.generate_presigned_url(  # type: ignore[attr-defined]
+        bucket=bucket,
+        key=object_key,
+        ttl_seconds=CONFIG.security.subject_request_download_link_ttl_seconds,
+    )
+    created_at = datetime.now(timezone.utc)
+
+    if cache:
+        pointer = {
+            "storage_config_key": storage_config_key,
+            "storage_type": storage_type.value,
+            "bucket": bucket,
+            "object_key": object_key,
+            "created_at": created_at.isoformat(),
+        }
+        cache.set_with_autoexpire(
+            cache_key,
+            FidesopsRedis.encode_obj(pointer),
+            expire_time=PRIVACY_REQUEST_DIAGNOSTICS_CACHE_TTL_SECONDS,
+        )
+
+    return PrivacyRequestDiagnosticsExportResponse(
+        download_url=str(download_url),
+        storage_type=storage_type.value,
+        storage_config_key=storage_config_key,
+        object_key=object_key,
+        created_at=created_at,
     )

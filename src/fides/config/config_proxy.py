@@ -137,6 +137,7 @@ class StorageSettingsProxy(ConfigProxyBase):
     prefix = "storage"
 
     active_default_storage_type: StorageType
+    privacy_request_diagnostics_storage_key: Optional[str] = None
 
 
 @merge_properties(["cors_origins"])
