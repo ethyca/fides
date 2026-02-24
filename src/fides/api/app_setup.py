@@ -111,11 +111,13 @@ def create_fides_app(
         fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
 
     fastapi_app.add_exception_handler(
-        ResponseValidationError, response_validation_error_handler
-    )  # type: ignore
+        ResponseValidationError,
+        response_validation_error_handler,  # type: ignore[arg-type]
+    )
     fastapi_app.add_exception_handler(
-        ValidationError, pydantic_validation_error_handler
-    )  # type: ignore
+        ValidationError,
+        pydantic_validation_error_handler,  # type: ignore[arg-type]
+    )
 
     if is_rate_limit_enabled:
         # Validate header before SlowAPI processes the request
