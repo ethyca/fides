@@ -45,7 +45,7 @@ healthcheck_ping_timeout = 2.0 # number
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "07d0e5c634913333d92627ac5725f2fd" # string
+analytics_id = "c8ffe2232ea89703079a7524962a5a8d" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -290,6 +290,9 @@ memory_watchdog_enabled = false # boolean
 # as a temporary safety net in case of regressions with the optimized
 # traversal.
 use_legacy_traversal = false # boolean
+
+# Minutes between polling Jira for ticket status updates.
+jira_polling_interval_minutes = 10 # integer
 
 #-------------#
 #-- LOGGING --#

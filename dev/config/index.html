@@ -2239,7 +2239,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">540</span>
 <span class="normal">541</span>
 <span class="normal">542</span>
-<span class="normal">543</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2286,7 +2289,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;07d0e5c634913333d92627ac5725f2fd&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;c8ffe2232ea89703079a7524962a5a8d&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2531,6 +2534,9 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># as a temporary safety net in case of regressions with the optimized</span>
 <span class="c1"># traversal.</span>
 <span class="n">use_legacy_traversal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Minutes between polling Jira for ticket status updates.</span>
+<span class="n">jira_polling_interval_minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1">#-------------#</span>
 <span class="c1">#-- LOGGING --#</span>

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.78.3b2.dev70+gdadf26179"
+    "version": "2.78.3b2.dev71+g1ca8ec119"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -32671,6 +32671,7 @@
           "paused",
           "awaiting_email_send",
           "requires_manual_finalization",
+          "pending_external",
           "canceled",
           "error",
           "duplicate"
