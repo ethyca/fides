@@ -152,7 +152,7 @@ async def list_dataset_paginated(
         description="[Troubleshooting only] Skip pydantic response validation. "
         "Use this to retrieve datasets that contain data failing validation.",
     ),
-) -> Union[Page[DatasetResponse], List[DatasetResponse]]:
+) -> Union[Page[DatasetResponse], List[DatasetResponse], Response]:
     """
     Get a list of all of the Datasets.
     If any pagination parameters (size or page) are provided, then the response will be paginated.
@@ -259,7 +259,7 @@ async def get_dataset(
         description="[Troubleshooting only] Skip pydantic response validation. "
         "Use this to retrieve a dataset that contains data failing validation.",
     ),
-) -> Dict:
+) -> Union[Dict, Response]:
     """Get a single dataset by fides key"""
     try:
         result = dataset_service.get_dataset(fides_key)
