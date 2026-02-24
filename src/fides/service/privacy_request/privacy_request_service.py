@@ -36,6 +36,9 @@ from fides.api.schemas.privacy_center_config import LocationCustomPrivacyRequest
 from fides.api.schemas.privacy_center_config import (
     PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
+from fides.api.schemas.privacy_center_config import (
+    reorder_custom_privacy_request_fields,
+)
 from fides.api.schemas.privacy_request import (
     BULK_PRIVACY_REQUEST_BATCH_SIZE,
     BulkPostPrivacyRequests,
@@ -240,17 +243,25 @@ class PrivacyRequestService:
         1) The request's property config (if provided)
         2) The default property's config (if available)
         3) The single-row Privacy Center config table (legacy/global)
+
+        Returns a copy of the config with custom_privacy_request_fields key order
+        restored when custom_privacy_request_field_order is present (JSONB does
+        not preserve object key order).
         """
         # 1) Request's property config
         if property_id:
             prop = Property.get_by(self.db, field="id", value=property_id)
             if prop and getattr(prop, "privacy_center_config", None):
-                return prop.privacy_center_config  # type: ignore[return-value]
+                return reorder_custom_privacy_request_fields(
+                    prop.privacy_center_config  # type: ignore[arg-type]
+                )
 
         # 2) Default property config
         default_prop = Property.get_by(self.db, field="is_default", value=True)
         if default_prop and getattr(default_prop, "privacy_center_config", None):
-            return default_prop.privacy_center_config  # type: ignore[return-value]
+            return reorder_custom_privacy_request_fields(
+                default_prop.privacy_center_config  # type: ignore[arg-type]
+            )
 
         # 3) Single-row global config
         privacy_center_config_record = PrivacyCenterConfigModel.filter(
@@ -258,7 +269,9 @@ class PrivacyRequestService:
             conditions=PrivacyCenterConfigModel.single_row,  # type: ignore[arg-type]
         ).first()
         if privacy_center_config_record:
-            return privacy_center_config_record.config  # type: ignore[return-value]
+            return reorder_custom_privacy_request_fields(
+                privacy_center_config_record.config  # type: ignore[arg-type]
+            )
         return None
 
     def _parse_privacy_center_config(
