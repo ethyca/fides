@@ -46,6 +46,13 @@ def upgrade():
         ),
         sa.Column("system_fides_keys", postgresql.ARRAY(sa.String()), nullable=True),
         sa.Column("created_by", sa.String(), nullable=True),
+        sa.Column(
+            "use_llm",
+            sa.Boolean(),
+            nullable=False,
+            server_default=sa.text("false"),
+        ),
+        sa.Column("llm_model", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(

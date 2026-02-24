@@ -13,7 +13,7 @@ This module provides the database schema for:
 from __future__ import annotations
 
 from enum import Enum as EnumType
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import (
     ARRAY,
@@ -79,7 +79,7 @@ class AnswerChangeType(str, EnumType):
     rejected = "rejected"
 
 
-class AssessmentTaskType(EnumType):
+class AssessmentTaskType(str, EnumType):
     """Types of assessment tasks that can be executed by a worker."""
 
     GENERATE = "generate"
@@ -109,16 +109,17 @@ class PrivacyAssessmentTask(WorkerTask, Base):
     assessment_types = Column(ARRAY(String), server_default="{}", nullable=False)
     system_fides_keys = Column(ARRAY(String), nullable=True)
     created_by = Column(String, nullable=True)
+    use_llm = Column(Boolean, nullable=False, default=False)
+    llm_model = Column(String, nullable=True)
 
     assessments = relationship(
         "PrivacyAssessment",
         back_populates="privacy_assessment_task",
-        cascade="all, delete-orphan",
         passive_deletes=True,
     )
 
     @classmethod
-    def allowed_action_types(cls) -> List[str]:
+    def allowed_action_types(cls) -> list[str]:
         return [e.value for e in AssessmentTaskType]
 
     @property
