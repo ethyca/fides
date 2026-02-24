@@ -183,3 +183,106 @@ class TestRedisCacheManagerPipeline:
         manager.delete_keys_by_index("idx5")
 
         assert mock_redis.smembers("__idx:idx5") == set()
+
+
+@pytest.mark.unit
+class TestRedisCacheManagerIndexOperations:
+    """Tests for add_key_to_index, remove_key_from_index, get_keys_by_index, delete_index."""
+
+    def test_add_key_to_index_registers_key(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Ensure that add_key_to_index adds the key and creates the index set if it doesn't exist."""
+        manager.add_key_to_index("myidx", "cache_key_1")
+
+        assert "cache_key_1" in mock_redis.smembers("__idx:myidx")
+
+    def test_add_key_to_index_multiple_keys(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Ensure that add_key_to_index can add multiple keys to the same index."""
+        manager.add_key_to_index("idx6", "key_a")
+        manager.add_key_to_index("idx6", "key_b")
+        manager.add_key_to_index("idx6", "key_c")
+
+        members = mock_redis.smembers("__idx:idx6")
+        assert members == {"key_a", "key_b", "key_c"}
+
+    def test_remove_key_from_index_idempotent(self, manager: RedisCacheManager, mock_redis: MockRedis) -> None:
+        """Ensure that remove_key_from_index is idempotent and does not error when the specified key is not in the index."""
+        manager.set_with_index("key_a", "value_a", "idx6")
+        manager.set_with_index("key_b", "value_b", "idx6")
+
+        manager.remove_key_from_index("idx6", "key_a")
+
+        # Should not remove other keys when the key is in the index and does not remove the key from the cache
+        assert mock_redis.smembers("__idx:idx6") == {"key_b"}
+        assert mock_redis.get("key_a") == "value_a"
+        assert mock_redis.get("key_b") == "value_b"
+
+
+        # Should not error when the key is not in the index and does not remove other keys
+        manager.remove_key_from_index("idx6", "key_a")
+
+        assert mock_redis.smembers("__idx:idx6") == {"key_b"}
+        assert mock_redis.get("key_a") == "value_a"
+        assert mock_redis.get("key_b") == "value_b"
+
+    def test_remove_key_from_index_unregisters_key(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Ensure that remove_key_from_index removes a key from the index and does not remove other keys."""
+        manager.add_key_to_index("idx7", "keep")
+        manager.add_key_to_index("idx7", "remove_me")
+
+        manager.remove_key_from_index("idx7", "remove_me")
+
+        assert mock_redis.smembers("__idx:idx7") == {"keep"}
+
+    def test_remove_key_from_index_does_not_error_when_missing(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Ensure that remove_key_from_index does not error when the specified key is not in the index, and does not remove other keys."""
+        manager.add_key_to_index("idx8", "existing")
+
+        manager.remove_key_from_index("idx8", "nonexistent")
+
+        assert mock_redis.smembers("__idx:idx8") == {"existing"}
+
+    def test_get_keys_by_index_returns_empty_for_missing_index(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Ensure that get_keys_by_index returns an empty list when the specified index does not exist."""
+        keys = manager.get_keys_by_index("never_used")
+
+        assert keys == []
+
+    def test_get_keys_by_index_returns_registered_keys(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Ensure get_keys_by_index returns all the keys in the index."""
+        manager.add_key_to_index("idx9", "k1")
+        manager.add_key_to_index("idx9", "k2")
+
+        keys = manager.get_keys_by_index("idx9")
+
+        assert set(keys) == {"k1", "k2"}
+        assert len(keys) == 2
+
+    def test_delete_index_removes_index_set_only(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Ensure that delete_index removes the index set but NOT the data keys that are still in the cache."""
+        mock_redis.set("data_key_1", "value1")
+        manager.add_key_to_index("idx10", "data_key_1")
+
+        manager.delete_index("idx10")
+
+        assert mock_redis.smembers("__idx:idx10") == set()
+        assert mock_redis.get("data_key_1") == "value1"
+
+    def test_delete_index_does_not_error_when_empty(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Ensure that delete_index does not error when the specified  index does not exist."""
+        manager.delete_index("nonexistent_idx")
