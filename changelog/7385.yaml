@@ -1,0 +1,8 @@
+type: Added
+description: >
+  Add Comprehensive Ethyca DPIA (EDPIA) assessment template: a de-duplicated privacy
+  impact assessment covering GDPR DPIA, UK GDPR DPIA, California CPRA, Colorado CPA,
+  Virginia VCDPA, and best practice standards (ISO 29134, CNIL, NIST). Includes 57
+  questions across 15 groups with multi-source regulatory guidance.
+pr: 7385
+labels: ["db-migration"]
