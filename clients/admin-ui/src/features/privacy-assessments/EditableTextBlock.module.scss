@@ -44,28 +44,3 @@
   font-style: italic;
   color: var(--ant-color-text-quaternary);
 }
-
-.selectionToolbar {
-  position: fixed;
-  transform: translate(-50%, -100%);
-  background-color: var(--ant-color-bg-container);
-  border: 1px solid var(--ant-color-border);
-  border-radius: var(--ant-border-radius);
-  padding: 4px;
-  box-shadow: var(--ant-box-shadow);
-  z-index: 1000;
-  display: flex;
-  gap: 4px;
-  margin-bottom: 8px;
-  align-items: center;
-}
-
-.toolbarButton {
-  font-size: var(--ant-font-size-sm);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  height: auto;
-  font-weight: 500;
-}

@@ -1,8 +1,10 @@
 import {
   Button,
+  Collapse,
   CUSTOM_TAG_COLOR,
   Flex,
   Icons,
+  Modal,
   Space,
   Tag,
   TagList,
@@ -19,25 +21,19 @@ import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
+import styles from "./AssessmentDetail.module.scss";
 import { DEFAULT_SLACK_CHANNEL } from "./constants";
-import { DeleteAssessmentModal } from "./DeleteAssessmentModal";
 import {
   useCreateQuestionnaireMutation,
   useCreateQuestionnaireReminderMutation,
   useDeletePrivacyAssessmentMutation,
   useUpdateAssessmentAnswerMutation,
 } from "./privacy-assessments.slice";
-import { QuestionGroupCollapse } from "./QuestionGroupCollapse";
 import { buildQuestionGroupPanelItem } from "./QuestionGroupPanel";
 import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
-import {
-  getSlackQuestions,
-  getTimeSince,
-  isAssessmentComplete,
-  truncate,
-} from "./utils";
+import { getSlackQuestions, getTimeSince, isAssessmentComplete } from "./utils";
 
 const { Title } = Typography;
 
@@ -134,13 +130,6 @@ export const AssessmentDetail = ({
     [assessment.id, message, updateAnswer],
   );
 
-  const handleComment = useCallback(
-    (selection: { text: string; start: number; end: number }) => {
-      message.success(`Comment added on "${truncate(selection.text, 30)}"`);
-    },
-    [message],
-  );
-
   const handleRequestInput = useCallback(async () => {
     try {
       await createQuestionnaire({
@@ -201,8 +190,6 @@ export const AssessmentDetail = ({
           getAnswerValue,
           onAnswerChange: handleAnswerChange,
           onAnswerSave: handleAnswerSave,
-          onComment: handleComment,
-          onRequestInput: handleRequestInput,
         }),
       ),
     [
@@ -211,8 +198,6 @@ export const AssessmentDetail = ({
       getAnswerValue,
       handleAnswerChange,
       handleAnswerSave,
-      handleComment,
-      handleRequestInput,
     ],
   );
 
@@ -311,19 +296,30 @@ export const AssessmentDetail = ({
             />
           ))}
 
-        <QuestionGroupCollapse
+        <Collapse
+          className={styles.collapse}
           activeKey={expandedKeys}
           onChange={(keys) => setExpandedKeys(keys as string[])}
           items={collapseItems}
         />
       </Space>
 
-      <DeleteAssessmentModal
+      <Modal
+        title="Delete assessment"
         open={isDeleteModalOpen}
-        isDeleting={isDeleting}
-        onConfirm={handleDelete}
         onCancel={() => setIsDeleteModalOpen(false)}
-      />
+        onOk={handleDelete}
+        okText="Delete"
+        okButtonProps={{ danger: true, loading: isDeleting }}
+      >
+        <Space direction="vertical" size="middle" className="w-full">
+          <Text>Are you sure you want to delete this assessment?</Text>
+          <Text type="secondary">
+            This action cannot be undone. All assessment data, including any
+            responses and documentation, will be permanently removed.
+          </Text>
+        </Space>
+      </Modal>
     </>
   );
 };

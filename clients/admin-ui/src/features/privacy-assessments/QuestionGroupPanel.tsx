@@ -13,12 +13,7 @@ import {
 import { RISK_LEVEL_DOT_COLORS, RISK_LEVEL_LABELS } from "./constants";
 import { QuestionCard } from "./QuestionCard";
 import styles from "./QuestionGroupPanel.module.scss";
-import {
-  AnswerSource,
-  AnswerStatus,
-  AssessmentQuestion,
-  QuestionGroup,
-} from "./types";
+import { AssessmentQuestion, QuestionGroup } from "./types";
 import { getInitials, getTimeSince } from "./utils";
 
 interface QuestionGroupPanelProps {
@@ -27,8 +22,6 @@ interface QuestionGroupPanelProps {
   getAnswerValue: (questionId: string, apiAnswer: string) => string;
   onAnswerChange: (questionId: string, value: string) => void;
   onAnswerSave: (questionId: string, value: string) => void;
-  onComment: (selection: { text: string; start: number; end: number }) => void;
-  onRequestInput: () => void;
 }
 
 export const buildQuestionGroupPanelItem = ({
@@ -37,8 +30,6 @@ export const buildQuestionGroupPanelItem = ({
   getAnswerValue,
   onAnswerChange,
   onAnswerSave,
-  onComment,
-  onRequestInput,
 }: QuestionGroupPanelProps): NonNullable<CollapseProps["items"]>[number] => {
   const answeredCount = group.questions.filter((q) => {
     const answer = getAnswerValue(q.question_id, q.answer_text);
@@ -118,9 +109,6 @@ export const buildQuestionGroupPanelItem = ({
     <Space direction="vertical" size="middle" className={styles.questions}>
       {group.questions.map((q: AssessmentQuestion) => {
         const currentAnswer = getAnswerValue(q.question_id, q.answer_text);
-        const needsInput =
-          q.answer_source === AnswerSource.SLACK ||
-          q.answer_status === AnswerStatus.NEEDS_INPUT;
 
         return (
           <QuestionCard
@@ -129,8 +117,6 @@ export const buildQuestionGroupPanelItem = ({
             currentAnswer={currentAnswer}
             onAnswerChange={onAnswerChange}
             onAnswerSave={onAnswerSave}
-            onComment={onComment}
-            onRequestInput={needsInput ? onRequestInput : undefined}
           />
         );
       })}
