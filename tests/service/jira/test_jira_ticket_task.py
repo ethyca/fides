@@ -281,7 +281,7 @@ class TestPollJiraTicketsTask:
             yield MagicMock()
 
         @contextmanager
-        def _fake_get_new_session():
+        def _fake_get_new_session(_self):
             yield mock_session
 
         with (
