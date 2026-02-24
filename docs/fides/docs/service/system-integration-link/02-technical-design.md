@@ -259,7 +259,7 @@ SYSTEM_INTEGRATION_LINK_DELETE = f"{SYSTEM_INTEGRATION_LINK}:{DELETE}"
 | Viewer | yes | no | no |
 | Approver | no | no | no |
 
-**Status:** `SYSTEM_INTEGRATION_LINK_READ` has been added to `viewer_scopes`. The Data Steward role is not yet implemented.
+**Status:** Complete. `SYSTEM_INTEGRATION_LINK_READ` is in `viewer_scopes`. The Data Steward role is defined in `src/fides/api/oauth/roles.py` with `viewer_scopes` + link write scopes, and extended in fidesplus with `PLUS_VIEWER_SCOPES` (which includes `DISCOVERY_MONITOR_READ` and `MONITOR_STEWARD_READ`).
 
 ## 4. Backward Compatibility
 
