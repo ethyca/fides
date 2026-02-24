@@ -42,18 +42,18 @@ export const fillInDefaultsFlat = (
     properties: ConnectionTypeSecretSchemaResponse["properties"];
   },
 ) => {
-  const filledInValues = { ...defaultValues };
+  const filledInValues: Record<string, unknown> = { ...defaultValues };
   Object.entries(connectionSchema.properties).forEach((key) => {
     const [name, schema] = key;
 
     if (schema.type === "integer") {
       const defaultValue = schema.default
         ? Number(schema.default)
-        : (defaultValues[name] as number | undefined);
-      (filledInValues as Record<string, unknown>)[name] = defaultValue ?? 0;
+        : defaultValues[name];
+      filledInValues[name] = defaultValue ?? 0;
     } else {
-      const defaultValue = schema.default ?? (defaultValues[name] as unknown);
-      (filledInValues as Record<string, unknown>)[name] = defaultValue ?? null;
+      const defaultValue = schema.default ?? defaultValues[name];
+      filledInValues[name] = defaultValue ?? null;
     }
   });
   return filledInValues;
