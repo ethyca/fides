@@ -13,6 +13,9 @@ from redis import Redis
 # Redis key prefix for index sets. Index key = INDEX_KEY_PREFIX + index_prefix.
 INDEX_KEY_PREFIX = "__idx:"
 
+# Default additional TTL for index sets when set_with_index is used with index_ttl_enabled=True
+INDEX_TTL_EXTRA_SECONDS = 60 * 60 * 24  # 24 hours
+
 # Value types supported by Redis SET and basic ops
 RedisValue = Union[bytes, float, int, str]
 
@@ -85,11 +88,17 @@ class RedisCacheManager:
         value: RedisValue,
         index_prefix: str,
         expire_seconds: Optional[int] = None,
+        *,
+        index_ttl_enabled: bool = False,
     ) -> Optional[bool]:
         """
         Set a key and add it to an index in one step.
         If expire_seconds is set, the key will expire after that many seconds.
         Returns the result of SET (e.g. True).
+
+        Index TTL (opt-in safety): When index_ttl_enabled=True and expire_seconds is set,
+        the index set will be given a TTL. If the key's TTL is farther out than the
+        index's current TTL, the index TTL is extended. Disabled by default.
         """
         pipe = self._redis.pipeline()
         if expire_seconds is not None:
@@ -98,6 +107,12 @@ class RedisCacheManager:
             pipe.set(key, value)
         pipe.sadd(self._index_key(index_prefix), key)
         results = pipe.execute()
+        if index_ttl_enabled and expire_seconds is not None:
+            idx_key = self._index_key(index_prefix)
+            current_ttl = self._redis.ttl(idx_key)
+            proposed_index_ttl = expire_seconds + INDEX_TTL_EXTRA_SECONDS
+            if current_ttl < 0 or proposed_index_ttl > current_ttl:
+                self._redis.expire(idx_key, proposed_index_ttl)
         return results[0]
 
     def delete_key_and_remove_from_index(

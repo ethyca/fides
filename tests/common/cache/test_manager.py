@@ -2,7 +2,7 @@ import fnmatch
 
 import pytest
 
-from fides.common.cache.manager import RedisCacheManager
+from fides.common.cache.manager import INDEX_TTL_EXTRA_SECONDS, RedisCacheManager
 
 
 class MockPipeline:
@@ -64,6 +64,7 @@ class MockRedis:
     def __init__(self) -> None:
         self._data: dict = {}
         self._sets: dict = {}
+        self._ttl: dict = {}  # key -> seconds until expiry (simplified; no decay)
 
     def get(self, key: str):
         return self._data.get(key)
@@ -81,6 +82,7 @@ class MockRedis:
             if k in self._sets:
                 del self._sets[k]
                 count += 1
+            self._ttl.pop(k, None)
         return count
 
     def sadd(self, key: str, member: str) -> int:
@@ -103,6 +105,17 @@ class MockRedis:
     def keys(self, pattern: str = "*") -> list:
         all_keys = set(self._data) | set(self._sets)
         return [k for k in all_keys if fnmatch.fnmatch(k, pattern)]
+
+    def ttl(self, key: str) -> int:
+        if key not in self._data and key not in self._sets:
+            return -2
+        return self._ttl.get(key, -1)
+
+    def expire(self, key: str, seconds: int) -> bool:
+        if key in self._data or key in self._sets:
+            self._ttl[key] = seconds
+            return True
+        return False
 
     def pipeline(self) -> MockPipeline:
         return MockPipeline(self._data, self._sets)
@@ -208,7 +221,9 @@ class TestRedisCacheManagerIndexOperations:
         members = mock_redis.smembers("__idx:idx6")
         assert members == {"key_a", "key_b", "key_c"}
 
-    def test_remove_key_from_index_idempotent(self, manager: RedisCacheManager, mock_redis: MockRedis) -> None:
+    def test_remove_key_from_index_idempotent(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
         """Ensure that remove_key_from_index is idempotent and does not error when the specified key is not in the index."""
         manager.set_with_index("key_a", "value_a", "idx6")
         manager.set_with_index("key_b", "value_b", "idx6")
@@ -219,7 +234,6 @@ class TestRedisCacheManagerIndexOperations:
         assert mock_redis.smembers("__idx:idx6") == {"key_b"}
         assert mock_redis.get("key_a") == "value_a"
         assert mock_redis.get("key_b") == "value_b"
-
 
         # Should not error when the key is not in the index and does not remove other keys
         manager.remove_key_from_index("idx6", "key_a")
@@ -286,3 +300,64 @@ class TestRedisCacheManagerIndexOperations:
     ) -> None:
         """Ensure that delete_index does not error when the specified  index does not exist."""
         manager.delete_index("nonexistent_idx")
+
+
+@pytest.mark.unit
+class TestRedisCacheManagerIndexTTL:
+    """Tests for optional index TTL (index_ttl_enabled)."""
+
+    def test_index_ttl_disabled_by_default(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Without index_ttl_enabled, index has no TTL."""
+        manager.set_with_index("k", "v", "idx", expire_seconds=60)
+
+        assert mock_redis.ttl("__idx:idx") == -1
+
+    def test_index_ttl_applied_when_enabled(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """With index_ttl_enabled, index gets TTL matching key."""
+        manager.set_with_index(
+            "k", "v", "idx", expire_seconds=120, index_ttl_enabled=True
+        )
+
+        assert mock_redis.ttl("__idx:idx") == 120 + INDEX_TTL_EXTRA_SECONDS
+
+    def test_index_ttl_extended_when_key_ttl_farther_out(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Index TTL is pushed out when adding key with longer TTL."""
+        manager.set_with_index(
+            "k1", "v1", "idx", expire_seconds=60, index_ttl_enabled=True
+        )
+        assert mock_redis.ttl("__idx:idx") == 60 + INDEX_TTL_EXTRA_SECONDS
+
+        manager.set_with_index(
+            "k2", "v2", "idx", expire_seconds=300, index_ttl_enabled=True
+        )
+
+        assert mock_redis.ttl("__idx:idx") == 300 + INDEX_TTL_EXTRA_SECONDS
+
+    def test_index_ttl_not_shortened_when_key_ttl_shorter(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """Index TTL is NOT shortened when adding key with shorter TTL."""
+        manager.set_with_index(
+            "k1", "v1", "idx", expire_seconds=300, index_ttl_enabled=True
+        )
+        assert mock_redis.ttl("__idx:idx") == 300 + INDEX_TTL_EXTRA_SECONDS
+
+        manager.set_with_index(
+            "k2", "v2", "idx", expire_seconds=60, index_ttl_enabled=True
+        )
+
+        assert mock_redis.ttl("__idx:idx") == 300 + INDEX_TTL_EXTRA_SECONDS
+
+    def test_index_ttl_ignored_when_no_expire_seconds(
+        self, manager: RedisCacheManager, mock_redis: MockRedis
+    ) -> None:
+        """index_ttl_enabled has no effect when expire_seconds is not set."""
+        manager.set_with_index("k", "v", "idx", index_ttl_enabled=True)
+
+        assert mock_redis.ttl("__idx:idx") == -1
