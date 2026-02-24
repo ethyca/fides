@@ -65,6 +65,7 @@ const AssessmentSettingsModal = ({
 
   // Watch form values for conditional rendering
   const reassessmentEnabled = Form.useWatch("reassessment_enabled", form);
+  const slackChannelId = Form.useWatch("slack_channel_id", form);
 
   // Initialize form when config loads
   useEffect(() => {
@@ -319,7 +320,7 @@ const AssessmentSettingsModal = ({
             <Button
               onClick={handleTestChannel}
               loading={isTesting}
-              disabled={!form.getFieldValue("slack_channel_id")}
+              disabled={!slackChannelId}
               data-testid="btn-test-channel"
             >
               Test Channel
