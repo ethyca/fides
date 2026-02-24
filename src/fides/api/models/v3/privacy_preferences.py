@@ -12,6 +12,10 @@ from sqlalchemy import (  # type: ignore[attr-defined]
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesGcmEngine,
+    StringEncryptedType,
+)
 
 from fides.api.cryptography.cryptographic_util import hash_value_with_salt
 from fides.api.cryptography.identity_salt import get_identity_salt
@@ -48,9 +52,11 @@ class PrivacyPreferences(Base):
     # Full record data stored as encrypted text (contains PII) if encryption is enabled,
     # stored in plaintext otherwise. Default is to encrypt.
     record_data = Column(
-        optionally_encrypted_type(
-            encryption_enabled=CONFIG.consent.consent_v3_encryption_enabled,
+        StringEncryptedType(
             type_in=Text(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
         ),
         nullable=True,
     )
