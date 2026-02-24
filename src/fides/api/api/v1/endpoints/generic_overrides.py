@@ -147,6 +147,11 @@ async def list_dataset_paginated(
     only_unlinked_datasets: Optional[bool] = Query(False),
     connection_type: Optional[ConnectionType] = Query(None),
     minimal: Optional[bool] = Query(False),
+    skip_validation: bool = Query(
+        False,
+        description="[Troubleshooting only] Skip pydantic response validation. "
+        "Use this to retrieve datasets that contain data failing validation.",
+    ),
 ) -> Union[Page[DatasetResponse], List[DatasetResponse]]:
     """
     Get a list of all of the Datasets.
@@ -212,6 +217,10 @@ async def list_dataset_paginated(
 
     if not page and not size:
         results = await list_resource_query(db, filtered_query, CtlDataset)
+        if skip_validation:
+            return JSONResponse(
+                content=jsonable_encoder([result.__dict__ for result in results])
+            )
         response = [
             DatasetResponse.model_validate(result.__dict__) for result in results
         ]
@@ -219,6 +228,9 @@ async def list_dataset_paginated(
 
     pagination_params = Params(page=page or 1, size=size or 50)
     results = await async_paginate(db, filtered_query, pagination_params)
+
+    if skip_validation:
+        return JSONResponse(content=jsonable_encoder(results))
 
     validated_items = []
     for result in results.items:  # type: ignore[attr-defined]
@@ -242,15 +254,23 @@ async def list_dataset_paginated(
 async def get_dataset(
     fides_key: str,
     dataset_service: DatasetService = Depends(get_dataset_service),
+    skip_validation: bool = Query(
+        False,
+        description="[Troubleshooting only] Skip pydantic response validation. "
+        "Use this to retrieve a dataset that contains data failing validation.",
+    ),
 ) -> Dict:
     """Get a single dataset by fides key"""
     try:
-        return dataset_service.get_dataset(fides_key)
+        result = dataset_service.get_dataset(fides_key)
     except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=str(e),
         )
+    if skip_validation:
+        return JSONResponse(content=jsonable_encoder(result.__dict__))
+    return result
 
 
 @dataset_router.delete(
