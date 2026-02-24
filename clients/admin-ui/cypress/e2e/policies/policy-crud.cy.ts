@@ -105,18 +105,14 @@ describe("Policy CRUD", () => {
       cy.getAntModal().should("be.visible");
       cy.contains("Are you sure you want to delete").should("be.visible");
       cy.contains("Default Consent Policy").should("be.visible");
-    });
-
-    it("confirms delete and calls DELETE API", () => {
-      cy.getByTestId("delete-policy-default_consent_policy-btn").click();
-      cy.getAntModalFooter().contains("Delete").click();
+      cy.getAntModalConfirmButtons().contains("Delete").click();
       cy.wait("@deleteDSRPolicy");
     });
 
     it("cancels delete without calling API", () => {
       cy.getByTestId("delete-policy-default_consent_policy-btn").click();
-      cy.getAntModalFooter().contains("Cancel").click();
-      cy.getAntModal().should("not.be.visible");
+      cy.getAntModalConfirmButtons().contains("Cancel").click();
+      cy.getAntModal().should("not.exist");
     });
   });
 
@@ -132,11 +128,7 @@ describe("Policy CRUD", () => {
       cy.getByTestId("delete-policy-btn").click();
       cy.contains("Delete policy").should("be.visible");
       cy.contains("Are you sure you want to delete").should("be.visible");
-    });
-
-    it("confirms delete and calls DELETE API", () => {
-      cy.getByTestId("delete-policy-btn").click();
-      cy.getAntModalFooter().contains("Delete").click();
+      cy.getAntModalConfirmButtons().contains("Delete").click();
       cy.wait("@deleteDSRPolicy");
     });
   });
