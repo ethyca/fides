@@ -284,9 +284,12 @@ class TestPollJiraTicketsTask:
         def _fake_get_new_session():
             yield mock_session
 
-        with patch.object(polling_task, "redis_lock", _fake_lock), patch(
-            "fides.service.jira.polling_task.DatabaseTask.get_new_session",
-            _fake_get_new_session,
+        with (
+            patch.object(polling_task, "redis_lock", _fake_lock),
+            patch(
+                "fides.service.jira.polling_task.DatabaseTask.get_new_session",
+                _fake_get_new_session,
+            ),
         ):
             poll_jira_tickets.apply().get()
 
