@@ -25,7 +25,7 @@ const StatCard = ({
   const cardBodyPadding = token.Card?.bodyPadding ?? token.paddingLG;
 
   return (
-    <Card variant="borderless" {...rest}>
+    <Card variant="borderless" className="overflow-clip" {...rest}>
       {title && <Text type="secondary">{title}</Text>}
       <div className={classNames({ "mt-1": title })}>{stat}</div>
       {content && <div className="mt-3">{content}</div>}
