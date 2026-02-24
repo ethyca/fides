@@ -350,7 +350,7 @@ describe("Privacy Request with multiselect custom fields", () => {
   });
 });
 
-describe("Privacy Request Verification Flow", () => {
+describe.only("Privacy Request Verification Flow", () => {
   beforeEach(() => {
     cy.intercept("POST", `${API_URL}/privacy-request`, {
       fixture: "privacy-request/unverified",
@@ -398,6 +398,8 @@ describe("Privacy Request Verification Flow", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Access your data").click();
+
+    cy.url().should("include", "/privacy-request/default_access_policy");
 
     // Fill and submit form
     cy.getByTestId("privacy-request-form").within(() => {
