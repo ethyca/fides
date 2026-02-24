@@ -39,6 +39,7 @@ const DatastoreMonitorResultSystems: NextPage = () => {
           size: "small",
         },
         dropdownProps: {
+          trigger: ["click"],
           menu: {
             onDeselect: (info) => {
               setPageSettings({
