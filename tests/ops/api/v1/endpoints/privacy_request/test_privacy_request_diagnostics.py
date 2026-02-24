@@ -1,8 +1,8 @@
 import json
 from typing import Any, Dict
+from zipfile import ZipFile
 
 from fastapi.testclient import TestClient
-from zipfile import ZipFile
 
 from fides.api.models.privacy_request.provided_identity import ProvidedIdentity
 from fides.common.api.scope_registry import (
