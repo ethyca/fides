@@ -53,7 +53,7 @@ from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
 from fides.api.util.saas_util import (
     load_config_from_string,
-    validate_allowed_domains_not_modified,
+    validate_connector_param_constraints_not_modified,
     validate_host_references_domain_restricted_params,
 )
 from fides.common.api.scope_registry import (
@@ -208,8 +208,8 @@ def patch_saas_config(
         incoming_params = [p.model_dump() for p in saas_config.connector_params]
 
         try:
-            # Rule A: allowed_domains is immutable via the API
-            validate_allowed_domains_not_modified(original_params, incoming_params)
+            # Rule A: type and allowed_values are immutable via the API
+            validate_connector_param_constraints_not_modified(original_params, incoming_params)
             # Rule B: all client_config.host placeholders (at any nesting level)
             # must reference domain-restricted params
             validate_host_references_domain_restricted_params(
