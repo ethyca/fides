@@ -432,7 +432,6 @@ export interface PrivacyAssessmentConfigResponse {
   // Re-assessment Scheduling
   reassessment_enabled: boolean;
   reassessment_cron: string;
-  reassessment_timezone: string;
 
   // Slack Configuration
   slack_channel_id: string | null;
@@ -451,7 +450,6 @@ export interface PrivacyAssessmentConfigUpdate {
   // Re-assessment Scheduling
   reassessment_enabled?: boolean;
   reassessment_cron?: string;
-  reassessment_timezone?: string;
 
   // Slack Configuration
   slack_channel_id?: string | null;
@@ -462,7 +460,6 @@ export interface PrivacyAssessmentConfigDefaults {
   default_assessment_model: string;
   default_chat_model: string;
   default_reassessment_cron: string;
-  default_reassessment_timezone: string;
 }
 
 export interface SlackTestRequest {

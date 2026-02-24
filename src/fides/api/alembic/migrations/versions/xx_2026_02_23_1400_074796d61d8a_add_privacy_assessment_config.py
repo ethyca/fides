@@ -2,7 +2,7 @@
 
 Adds database table for privacy assessment configuration:
 - Stores LLM model overrides for assessment and chat
-- Stores re-assessment scheduling (cron, timezone)
+- Stores re-assessment scheduling (cron expression)
 - Stores Slack channel for questionnaire notifications
 
 This is a single-row table per tenant for global assessment settings.
@@ -54,13 +54,6 @@ def upgrade() -> None:
             nullable=False,
             server_default="0 9 * * *",
             comment="Cron expression for re-assessment schedule. Default: daily at 9am.",
-        ),
-        sa.Column(
-            "reassessment_timezone",
-            sa.String(50),
-            nullable=False,
-            server_default="UTC",
-            comment="Timezone for the cron schedule.",
         ),
         # Slack Configuration
         sa.Column(

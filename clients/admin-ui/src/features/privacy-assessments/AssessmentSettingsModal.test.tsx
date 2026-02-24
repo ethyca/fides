@@ -53,7 +53,6 @@ const mockConfig = {
   chat_model_override: null,
   reassessment_enabled: false,
   reassessment_cron: "0 9 * * *",
-  reassessment_timezone: "UTC",
   slack_channel_id: null,
   slack_channel_name: null,
   effective_assessment_model: "openrouter/anthropic/claude-opus-4",
@@ -64,7 +63,6 @@ const mockDefaults = {
   default_assessment_model: "openrouter/anthropic/claude-opus-4",
   default_chat_model: "openrouter/google/gemini-2.5-flash",
   default_reassessment_cron: "0 9 * * *",
-  default_reassessment_timezone: "UTC",
 };
 
 const mockGetAssessmentConfigQuery = jest.fn();

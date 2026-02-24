@@ -52,13 +52,6 @@ class PrivacyAssessmentConfig(Base):
         server_default="0 9 * * *",
         comment="Cron expression for re-assessment schedule. Default: daily at 9am.",
     )
-    reassessment_timezone = Column(
-        String(50),
-        nullable=False,
-        default="UTC",
-        server_default="UTC",
-        comment="Timezone for the cron schedule.",
-    )
 
     # Slack Configuration
     slack_channel_id = Column(
