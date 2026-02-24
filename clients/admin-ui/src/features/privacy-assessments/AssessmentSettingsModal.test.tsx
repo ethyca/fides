@@ -68,7 +68,6 @@ const mockDefaults = {
 const mockGetAssessmentConfigQuery = jest.fn();
 const mockGetAssessmentConfigDefaultsQuery = jest.fn();
 const mockUpdateAssessmentConfigMutation = jest.fn();
-const mockTestSlackChannelMutation = jest.fn();
 
 jest.mock("./privacy-assessments.slice", () => ({
   useGetAssessmentConfigQuery: () => mockGetAssessmentConfigQuery(),
@@ -76,10 +75,6 @@ jest.mock("./privacy-assessments.slice", () => ({
     mockGetAssessmentConfigDefaultsQuery(),
   useUpdateAssessmentConfigMutation: () => [
     mockUpdateAssessmentConfigMutation(),
-    { isLoading: false },
-  ],
-  useTestSlackChannelMutation: () => [
-    mockTestSlackChannelMutation(),
     { isLoading: false },
   ],
 }));
@@ -112,7 +107,6 @@ describe("AssessmentSettingsModal", () => {
       refetch: jest.fn(),
     });
     mockUpdateAssessmentConfigMutation.mockReturnValue(jest.fn());
-    mockTestSlackChannelMutation.mockReturnValue(jest.fn());
   });
 
   describe("Frequency preset handling", () => {

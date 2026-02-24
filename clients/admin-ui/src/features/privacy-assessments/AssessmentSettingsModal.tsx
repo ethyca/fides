@@ -6,7 +6,6 @@ import {
   Input,
   Modal,
   Select,
-  Space,
   Switch,
   Typography,
   useMessage,
@@ -21,7 +20,6 @@ import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 import {
   useGetAssessmentConfigDefaultsQuery,
   useGetAssessmentConfigQuery,
-  useTestSlackChannelMutation,
   useUpdateAssessmentConfigMutation,
 } from "./privacy-assessments.slice";
 
@@ -78,12 +76,9 @@ const AssessmentSettingsModal = ({
   } = useGetChatChannelsQuery(undefined, { skip: !open });
   const [updateConfig, { isLoading: isUpdating }] =
     useUpdateAssessmentConfigMutation();
-  const [testSlackChannel, { isLoading: isTesting }] =
-    useTestSlackChannelMutation();
 
   // Watch form values for conditional rendering
   const reassessmentEnabled = Form.useWatch("reassessment_enabled", form);
-  const slackChannelId = Form.useWatch("slack_channel_id", form);
 
   // Initialize form when config loads (only once per modal session)
   useEffect(() => {
@@ -126,25 +121,6 @@ const AssessmentSettingsModal = ({
       const preset = FREQUENCY_OPTIONS.find((opt) => opt.value === value);
       if (preset) {
         form.setFieldValue("reassessment_cron", preset.cron);
-      }
-    }
-  };
-
-  const handleTestChannel = async () => {
-    const channelId = form.getFieldValue("slack_channel_id");
-    if (!channelId) {
-      message.warning("Please select a channel first");
-      return;
-    }
-
-    const result = await testSlackChannel({ channel_id: channelId });
-    if (isErrorResult(result)) {
-      handleError(result.error);
-    } else if (result.data) {
-      if (result.data.success) {
-        message.success(result.data.message);
-      } else {
-        message.error(result.data.message);
       }
     }
   };
@@ -355,17 +331,6 @@ const AssessmentSettingsModal = ({
               data-testid="select-slack-channel"
             />
           </Form.Item>
-
-          <Space>
-            <Button
-              onClick={handleTestChannel}
-              loading={isTesting}
-              disabled={!slackChannelId}
-              data-testid="btn-test-channel"
-            >
-              Test Channel
-            </Button>
-          </Space>
         </Flex>
       </Form>
     </Modal>

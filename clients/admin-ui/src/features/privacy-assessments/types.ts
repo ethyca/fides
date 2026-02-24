@@ -461,13 +461,3 @@ export interface PrivacyAssessmentConfigDefaults {
   default_chat_model: string;
   default_reassessment_cron: string;
 }
-
-export interface SlackTestRequest {
-  channel_id: string;
-}
-
-export interface SlackTestResponse {
-  success: boolean;
-  message: string;
-  channel_name: string | null;
-}

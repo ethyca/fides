@@ -22,8 +22,6 @@ import {
   QuestionnaireResponse,
   QuestionnaireStatusResponse,
   ReminderResponse,
-  SlackTestRequest,
-  SlackTestResponse,
   UpdateAnswerRequest,
   UpdateAnswerResponse,
   UpdatePrivacyAssessmentRequest,
@@ -208,14 +206,6 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         url: "plus/privacy-assessments/config/defaults",
       }),
     }),
-
-    testSlackChannel: build.mutation<SlackTestResponse, SlackTestRequest>({
-      query: (body) => ({
-        url: "plus/privacy-assessments/config/test-slack-channel",
-        method: "POST",
-        body,
-      }),
-    }),
   }),
 });
 
@@ -236,7 +226,6 @@ export const {
   useGetAssessmentConfigQuery,
   useUpdateAssessmentConfigMutation,
   useGetAssessmentConfigDefaultsQuery,
-  useTestSlackChannelMutation,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };
