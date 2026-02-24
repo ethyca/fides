@@ -312,7 +312,7 @@ describe("Privacy Request with multiselect custom fields", () => {
       cy.get("#email").type("test@test.com");
 
       // Fill required location
-      cy.get("#location").type("us-ny{enter}");
+      cy.selectPrivacyRequestLocation("us-ny");
 
       // Select preferred format by typing
       cy.get('[data-testid="select-preferred_format"]').click();
@@ -385,6 +385,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("#first_name").type("John");
       cy.get("#email").type("test@example.com");
+      cy.selectPrivacyRequestLocation("us-ny");
       cy.get("button[type='submit']").click();
       cy.wait("@postPrivacyRequest");
     });
@@ -409,6 +410,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("#first_name").type("John");
       cy.get("#email").type("test@example.com");
+      cy.selectPrivacyRequestLocation("us-ny");
       cy.get("button[type='submit']").click();
       cy.wait("@postPrivacyRequest");
     });
@@ -473,6 +475,7 @@ describe("Privacy Request Verification Flow", () => {
     cy.getByTestId("privacy-request-form").within(() => {
       cy.get("#first_name").type("John");
       cy.get("#email").type("test@example.com");
+      cy.selectPrivacyRequestLocation("us-ny");
       cy.get("button[type='submit']").click();
       cy.wait("@postPrivacyRequest");
     });

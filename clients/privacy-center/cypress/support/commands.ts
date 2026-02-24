@@ -21,6 +21,16 @@ Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args),
 );
 
+/**
+ * Select a location in the privacy request form (Ant Design Select).
+ * @param value - ISO 3166-2 region code to type and select (default: "us-ny")
+ * @example cy.selectPrivacyRequestLocation()
+ * @example cy.selectPrivacyRequestLocation("us-ca")
+ */
+Cypress.Commands.add("selectPrivacyRequestLocation", (value = "us-ny") => {
+  cy.get("#location").type(`${value}{enter}`);
+});
+
 Cypress.Commands.add("getToggle", (_, ...args) =>
   cy.get(`input[type="checkbox"]`, ...args),
 );
@@ -178,6 +188,12 @@ Cypress.Commands.add(
 declare global {
   namespace Cypress {
     interface Chainable {
+      /**
+       * Select location in the privacy request form.
+       * @example cy.selectPrivacyRequestLocation()
+       * @example cy.selectPrivacyRequestLocation("us-ca")
+       */
+      selectPrivacyRequestLocation(value?: string): Chainable<JQuery<HTMLElement>>;
       /**
        * Custom command to select DOM element by data-testid attribute
        * @example cy.getByTestId('clear-btn')
