@@ -322,6 +322,10 @@ export { isoCodesToOptions } from "./components/data-entry/LocationSelect";
 export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
+// Export dashboard components
+export type { StatProps, StatTrend, StatCardProps } from "./components/dashboard";
+export { Stat, StatCard } from "./components/dashboard";
+
 // Export data-display components
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
