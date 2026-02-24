@@ -144,21 +144,22 @@ class SaaSSchemaFactory:
                 "allowed_values": connector_param.allowed_values,
             }
 
-            is_single_exact_domain = (
-                connector_param.allowed_domains is not None
-                and len(connector_param.allowed_domains) == 1
-                and "*" not in connector_param.allowed_domains[0]
+            is_single_exact_value = (
+                connector_param.type == "endpoint"
+                and connector_param.allowed_values is not None
+                and len(connector_param.allowed_values) == 1
+                and "*" not in connector_param.allowed_values[0]
             )
-            if is_single_exact_domain:
+            if is_single_exact_value:
                 extra["hidden"] = True
 
             default_value = connector_param.default_value
             if (
-                is_single_exact_domain
+                is_single_exact_value
                 and not default_value
-                and connector_param.allowed_domains
+                and connector_param.allowed_values
             ):
-                default_value = connector_param.allowed_domains[0]
+                default_value = connector_param.allowed_values[0]
 
             field_definitions[connector_param.name] = (
                 (
