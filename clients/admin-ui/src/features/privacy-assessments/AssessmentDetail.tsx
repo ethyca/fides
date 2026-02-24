@@ -22,30 +22,22 @@ import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
-import { DEFAULT_SLACK_CHANNEL } from "./constants";
 import {
-  useCreateQuestionnaireMutation,
-  useCreateQuestionnaireReminderMutation,
   useDeletePrivacyAssessmentMutation,
   useUpdateAssessmentAnswerMutation,
 } from "./privacy-assessments.slice";
 import { buildQuestionGroupPanelItem } from "./QuestionGroupPanel";
-import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
-import { getSlackQuestions, getTimeSince, isAssessmentComplete } from "./utils";
+import { isAssessmentComplete } from "./utils";
 
 const { Title } = Typography;
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
-  refetch: () => void;
 }
 
-export const AssessmentDetail = ({
-  assessment,
-  refetch,
-}: AssessmentDetailProps) => {
+export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const router = useRouter();
   const message = useMessage();
   const { getDataCategoryDisplayName } = useTaxonomies();
@@ -57,10 +49,6 @@ export const AssessmentDetail = ({
   const [updateAnswer] = useUpdateAssessmentAnswerMutation();
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
-  const [createQuestionnaire, { isLoading: isSendingQuestionnaire }] =
-    useCreateQuestionnaireMutation();
-  const [createReminder, { isLoading: isSendingReminder }] =
-    useCreateQuestionnaireReminderMutation();
 
   const questionGroups = useMemo(
     () => assessment.question_groups ?? [],
@@ -78,25 +66,10 @@ export const AssessmentDetail = ({
     [localAnswers],
   );
 
-  const { slackQuestions, answeredSlackQuestions } = useMemo(
-    () => getSlackQuestions(allQuestions, getAnswerValue),
-    [allQuestions, getAnswerValue],
-  );
-
   const isComplete = useMemo(
     () => isAssessmentComplete(allQuestions, getAnswerValue),
     [allQuestions, getAnswerValue],
   );
-
-  const { questionnaireSentAt, timeSinceSent } = useMemo(() => {
-    const sentAt = assessment.questionnaire?.sent_at
-      ? new Date(assessment.questionnaire.sent_at)
-      : null;
-    return {
-      questionnaireSentAt: sentAt,
-      timeSinceSent: sentAt ? getTimeSince(sentAt.toISOString()) : "",
-    };
-  }, [assessment.questionnaire?.sent_at]);
 
   const handleAnswerChange = useCallback(
     (questionId: string, newAnswer: string) => {
@@ -129,41 +102,6 @@ export const AssessmentDetail = ({
     },
     [assessment.id, message, updateAnswer],
   );
-
-  const handleRequestInput = useCallback(async () => {
-    try {
-      await createQuestionnaire({
-        id: assessment.id,
-        body: { channel: DEFAULT_SLACK_CHANNEL },
-      }).unwrap();
-      message.success(
-        `Questionnaire sent to ${DEFAULT_SLACK_CHANNEL} on Slack.`,
-      );
-      refetch();
-    } catch (error) {
-      message.error(
-        getErrorMessage(
-          error as RTKErrorResult["error"],
-          "Failed to send questionnaire. Please try again.",
-        ),
-      );
-    }
-  }, [assessment.id, createQuestionnaire, message, refetch]);
-
-  const handleSendReminder = async () => {
-    try {
-      await createReminder({ id: assessment.id }).unwrap();
-      message.success(`Reminder sent to ${DEFAULT_SLACK_CHANNEL}.`);
-      refetch();
-    } catch (error) {
-      message.error(
-        getErrorMessage(
-          error as RTKErrorResult["error"],
-          "Failed to send reminder. Please try again.",
-        ),
-      );
-    }
-  };
 
   const handleDelete = async () => {
     try {
@@ -274,27 +212,14 @@ export const AssessmentDetail = ({
           </Space>
         </Flex>
 
-        {!isComplete &&
-          (!questionnaireSentAt ? (
-            <Flex justify="flex-end">
-              <Button
-                icon={<SlackIcon size={14} />}
-                size="small"
-                onClick={handleRequestInput}
-                loading={isSendingQuestionnaire}
-              >
-                Request input from team
-              </Button>
-            </Flex>
-          ) : (
-            <QuestionnaireStatusBar
-              timeSinceSent={timeSinceSent}
-              answeredCount={answeredSlackQuestions.length}
-              totalCount={slackQuestions.length}
-              isSendingReminder={isSendingReminder}
-              onSendReminder={handleSendReminder}
-            />
-          ))}
+        {!isComplete && (
+          <Flex justify="flex-end">
+            {/* TODO: implement request input from team */}
+            <Button icon={<SlackIcon size={14} />} size="small">
+              Request input from team
+            </Button>
+          </Flex>
+        )}
 
         <Collapse
           className={styles.collapse}

@@ -7,7 +7,6 @@ export * from "./EmptyState";
 export * from "./privacy-assessments.slice";
 export * from "./QuestionCard";
 export * from "./QuestionGroupPanel";
-export * from "./QuestionnaireStatusBar";
 export * from "./ReferenceBadge";
 export * from "./SlackIcon";
 export * from "./types";

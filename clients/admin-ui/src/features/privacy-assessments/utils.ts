@@ -1,5 +1,4 @@
 import type { AssessmentQuestion } from "./types";
-import { AnswerSource, AnswerStatus } from "./types";
 
 export const getInitials = (name: string): string =>
   name
@@ -35,20 +34,3 @@ export const isAssessmentComplete = (
     (q) => getAnswerValue(q.question_id, q.answer_text).trim().length > 0,
   );
 
-export const getSlackQuestions = (
-  questions: AssessmentQuestion[],
-  getAnswerValue: (questionId: string, apiAnswer: string) => string,
-): {
-  slackQuestions: AssessmentQuestion[];
-  answeredSlackQuestions: AssessmentQuestion[];
-} => {
-  const slackQuestions = questions.filter(
-    (q) =>
-      q.answer_source === AnswerSource.SLACK ||
-      q.answer_status === AnswerStatus.NEEDS_INPUT,
-  );
-  const answeredSlackQuestions = slackQuestions.filter(
-    (q) => getAnswerValue(q.question_id, q.answer_text).trim().length > 0,
-  );
-  return { slackQuestions, answeredSlackQuestions };
-};

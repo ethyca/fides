@@ -81,7 +81,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         ]}
         isSticky
       />
-      <AssessmentDetail assessment={assessment} refetch={refetch} />
+      <AssessmentDetail assessment={assessment} />
     </Layout>
   );
 };
