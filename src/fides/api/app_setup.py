@@ -7,9 +7,11 @@ from logging import DEBUG
 from typing import AsyncGenerator, List
 
 from fastapi import FastAPI
+from fastapi.exceptions import ResponseValidationError
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from loguru import logger
+from pydantic import ValidationError
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
@@ -26,7 +28,11 @@ from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
-from fides.api.api.v1.exception_handlers import ExceptionHandlers
+from fides.api.api.v1.exception_handlers import (
+    ExceptionHandlers,
+    pydantic_validation_error_handler,
+    response_validation_error_handler,
+)
 from fides.api.asgi_middleware import (
     AnalyticsLoggingMiddleware,
     AuditLogMiddleware,
@@ -103,6 +109,13 @@ def create_fides_app(
     for handler in ExceptionHandlers.get_handlers():
         # Starlette bug causing this to fail mypy
         fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
+
+    fastapi_app.add_exception_handler(
+        ResponseValidationError, response_validation_error_handler
+    )  # type: ignore
+    fastapi_app.add_exception_handler(
+        ValidationError, pydantic_validation_error_handler
+    )  # type: ignore
 
     if is_rate_limit_enabled:
         # Validate header before SlowAPI processes the request
