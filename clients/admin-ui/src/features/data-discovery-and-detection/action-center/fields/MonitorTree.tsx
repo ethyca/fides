@@ -37,7 +37,7 @@ import { DatastorePageSettings } from "../types";
 import {
   DEFAULT_FILTER_STATUSES,
   MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
-  MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
+  MAP_DIFF_STATUS_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_LOAD_MORE_TEXT,
   TREE_NODE_SKELETON_KEY_PREFIX,
@@ -55,20 +55,30 @@ import {
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
 import { intoDiffStatus } from "./utils";
 
+const getIconComponent = (
+  diffStatus?: DiffStatus | null,
+  resourceType?: StagedResourceTypeValue,
+) => {
+  if (diffStatus === "muted") {
+    return Icons.ViewOff;
+  }
+
+  return resourceType
+    ? MAP_DATASTORE_RESOURCE_TYPE_TO_ICON[resourceType]
+    : undefined;
+};
+
 const mapResponseToTreeData = (
   data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
 ): CustomTreeDataNode[] => {
   const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => {
-    const IconComponent = treeNode.resource_type
-      ? MAP_DATASTORE_RESOURCE_TYPE_TO_ICON[
-          treeNode.resource_type as StagedResourceTypeValue
-        ]
-      : undefined;
-    const statusInfo = treeNode.update_status
-      ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[
-          treeNode.update_status
-        ]
+    const IconComponent = getIconComponent(
+      treeNode.diff_status,
+      treeNode.resource_type as StagedResourceTypeValue,
+    );
+    const statusInfo = treeNode.diff_status
+      ? MAP_DIFF_STATUS_TO_STATUS_INFO[treeNode.diff_status]
       : undefined;
 
     return {
@@ -89,7 +99,6 @@ const mapResponseToTreeData = (
             </Tooltip>
           )
         : undefined,
-      status: treeNode.update_status,
       diffStatus: treeNode.diff_status,
       isLeaf:
         treeNode.resource_type === StagedResourceTypeValue.FIELD ||
