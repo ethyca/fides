@@ -196,14 +196,18 @@ class TestAuthenticatedClient:
         assert test_authenticated_client.session.verify == certifi.where()
 
 
-def _make_client_with_allowed_domains(
-    allowed_domains_by_param: Dict[str, Any],
+def _make_client_with_allowed_values(
+    allowed_values_by_param: Dict[str, Any],
 ) -> AuthenticatedClient:
     """Build an AuthenticatedClient with a mocked ConnectionConfig
     whose SaaS config has the given connector params."""
     connector_params = [
-        ConnectorParam(name=name, allowed_domains=domains)
-        for name, domains in allowed_domains_by_param.items()
+        ConnectorParam(
+            name=name,
+            type="endpoint" if values is not None else None,
+            allowed_values=values,
+        )
+        for name, values in allowed_values_by_param.items()
     ]
 
     saas_config = mock.MagicMock()
@@ -239,7 +243,7 @@ class TestValidateRequestDomain:
                 {"domain": []},
                 "literally-anything.example.com",
                 True,
-                id="empty_allowed_domains_permits_any",
+                id="empty_allowed_values_permits_any",
             ),
             pytest.param(
                 {"api_key": None},
@@ -278,11 +282,11 @@ class TestValidateRequestDomain:
         return_value=False,
     )
     def test_domain_validation(self, mock_disabled, params, host, should_pass):
-        client = _make_client_with_allowed_domains(params)
+        client = _make_client_with_allowed_values(params)
         if should_pass:
             client._validate_request_domain(host)
         else:
-            with pytest.raises(ValueError, match="not in the list of allowed domains"):
+            with pytest.raises(ValueError, match="not in the list of allowed values"):
                 client._validate_request_domain(host)
 
     @mock.patch(
@@ -291,7 +295,7 @@ class TestValidateRequestDomain:
     )
     def test_validation_disabled_skips(self, mock_disabled):
         """Validation should be skipped when disabled."""
-        client = _make_client_with_allowed_domains({"domain": ["api.stripe.com"]})
+        client = _make_client_with_allowed_values({"domain": ["api.stripe.com"]})
         client._validate_request_domain("evil.example.com")
 
     @mock.patch(

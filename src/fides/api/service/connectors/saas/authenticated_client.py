@@ -29,7 +29,7 @@ from fides.api.util.logger_context_utils import (
 from fides.api.util.saas_util import (
     deny_unsafe_hosts,
     is_domain_validation_disabled,
-    validate_domain_against_allowed_list,
+    validate_value_against_allowed_list,
 )
 from fides.config import CONFIG
 
@@ -61,8 +61,8 @@ class AuthenticatedClient:
         self.rate_limit_config = rate_limit_config
 
     def _validate_request_domain(self, host: str) -> None:
-        """Defense-in-depth: validate the resolved host against allowed_domains
-        from the connector's SaaS config."""
+        """Defense-in-depth: validate the resolved host against allowed_values
+        from the connector's SaaS config endpoint params."""
         if is_domain_validation_disabled():
             return
 
@@ -73,13 +73,13 @@ class AuthenticatedClient:
         host_without_port = host.split(":")[0] if ":" in host else host
 
         all_allowed: List[str] = [
-            d
+            v
             for cp in saas_config.connector_params
-            if cp.allowed_domains
-            for d in cp.allowed_domains
+            if cp.type == "endpoint" and cp.allowed_values
+            for v in cp.allowed_values
         ]
         if all_allowed:
-            validate_domain_against_allowed_list(host_without_port, all_allowed, "host")
+            validate_value_against_allowed_list(host_without_port, all_allowed, "host")
 
     def get_authenticated_request(
         self, request_params: SaaSRequestParams
