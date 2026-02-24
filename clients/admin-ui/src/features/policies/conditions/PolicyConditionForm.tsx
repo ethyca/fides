@@ -3,7 +3,6 @@ import { useCallback, useEffect } from "react";
 
 import { ConditionValueSelector } from "~/features/integrations/configure-tasks/components/ConditionValueSelector";
 import {
-  formatFieldLabel,
   getFieldType,
   parseConditionValue,
   parseStoredValueForForm,
@@ -11,17 +10,12 @@ import {
 import type { ConditionLeaf, Operator } from "~/types/api";
 import { Operator as Op } from "~/types/api";
 
-const LOCATION_FIELDS = [
-  "privacy_request.location",
-  "privacy_request.location_country",
-  "privacy_request.location_groups",
-  "privacy_request.location_regulations",
-] as const;
-
-const FIELD_OPTIONS = LOCATION_FIELDS.map((field) => ({
-  label: formatFieldLabel(field),
-  value: field,
-}));
+const FIELD_OPTIONS = [
+  { label: "State/Province", value: "privacy_request.location" },
+  { label: "Country/Territory", value: "privacy_request.location_country" },
+  { label: "Groups", value: "privacy_request.location_groups" },
+  { label: "Regulation", value: "privacy_request.location_regulations" },
+];
 
 const POLICY_OPERATOR_OPTIONS = [
   { label: "Equals", value: Op.EQ },
