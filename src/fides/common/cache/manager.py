@@ -57,7 +57,11 @@ class RedisCacheManager:
         """
         members = self._redis.smembers(self._index_key(index_prefix))
         # Convert bytes to strings for consistent return type
-        return [m.decode('utf-8') if isinstance(m, bytes) else m for m in members] if members else []
+        return (
+            [m.decode("utf-8") if isinstance(m, bytes) else m for m in members]
+            if members
+            else []
+        )
 
     def delete_index(self, index_prefix: str) -> None:
         """Remove the index set. Does not delete the data keys themselves."""
