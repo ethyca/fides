@@ -1,7 +1,13 @@
 import { uniqBy } from "lodash";
 
-import { AnswerSource, AnswerStatus, EvidenceType } from "./types";
 import type { AssessmentQuestion, EvidenceItem, QuestionGroup } from "./types";
+import { AnswerSource, AnswerStatus, EvidenceType } from "./types";
+
+export const getInitials = (name: string): string =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("");
 
 export const getTimeSince = (dateString: string): string => {
   const date = new Date(dateString);

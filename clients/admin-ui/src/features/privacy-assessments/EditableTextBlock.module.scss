@@ -61,7 +61,7 @@
 }
 
 .toolbarButton {
-  font-size: 13px;
+  font-size: var(--ant-font-size-sm);
   display: flex;
   align-items: center;
   gap: 6px;

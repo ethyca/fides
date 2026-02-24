@@ -2,6 +2,8 @@ import { CUSTOM_TAG_COLOR } from "fidesui";
 
 import { AnswerSource, AssessmentStatus, RiskLevel } from "./types";
 
+export const DEFAULT_SLACK_CHANNEL = "#privacy-team";
+
 export const ASSESSMENT_STATUS_LABELS: Record<AssessmentStatus, string> = {
   [AssessmentStatus.IN_PROGRESS]: "In progress",
   [AssessmentStatus.COMPLETED]: "Completed",

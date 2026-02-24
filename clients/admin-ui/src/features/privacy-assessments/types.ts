@@ -126,14 +126,15 @@ export interface SystemEvidenceItem extends BaseEvidenceItem {
   value_display: string;
 }
 
-export type SystemSourceType =
-  | "system"
-  | "privacy_declaration"
-  | "data_category"
-  | "data_use"
-  | "data_subject"
-  | "dataset"
-  | "data_flow";
+export enum SystemSourceType {
+  SYSTEM = "system",
+  PRIVACY_DECLARATION = "privacy_declaration",
+  DATA_CATEGORY = "data_category",
+  DATA_USE = "data_use",
+  DATA_SUBJECT = "data_subject",
+  DATASET = "dataset",
+  DATA_FLOW = "data_flow",
+}
 
 export interface AIAnalysisEvidenceItem extends BaseEvidenceItem {
   type: EvidenceType.AI_ANALYSIS;
@@ -145,7 +146,7 @@ export interface AIAnalysisEvidenceItem extends BaseEvidenceItem {
     input_summary: string;
     reasoning: string | null;
     confidence: number;
-    confidence_label: "high" | "medium" | "low";
+    confidence_label: RiskLevel;
   };
   sources_used: string[];
 }
@@ -200,8 +201,14 @@ export interface SlackMessage {
   reply_to_message_id: string | null;
 }
 
+export enum SlackAttachmentType {
+  FILE = "file",
+  IMAGE = "image",
+  LINK = "link",
+}
+
 export interface SlackAttachment {
-  type: "file" | "image" | "link";
+  type: SlackAttachmentType;
   name: string;
   url: string | null;
 }
@@ -234,10 +241,15 @@ export interface QuestionnaireStatusResponse {
   reminder_count: number;
 }
 
+export enum QuestionnaireQuestionStatus {
+  ANSWERED = "answered",
+  PENDING = "pending",
+}
+
 export interface QuestionnaireQuestion {
   question_id: string;
   question_text: string;
-  status: "answered" | "pending";
+  status: QuestionnaireQuestionStatus;
   answered_at: string | null;
   answered_by: string | null;
 }

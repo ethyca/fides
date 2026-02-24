@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { Button, CUSTOM_TAG_COLOR, Flex, Icons, Tag, Text } from "fidesui";
 import type { HTMLAttributes } from "react";
 
+import { DEFAULT_SLACK_CHANNEL } from "./constants";
 import styles from "./QuestionnaireStatusBar.module.scss";
 import { SlackIcon } from "./SlackIcon";
 
@@ -11,6 +12,7 @@ interface QuestionnaireStatusBarProps extends HTMLAttributes<HTMLDivElement> {
   totalCount: number;
   isSendingReminder: boolean;
   onSendReminder: () => void;
+  channel?: string;
 }
 
 export const QuestionnaireStatusBar = ({
@@ -19,6 +21,7 @@ export const QuestionnaireStatusBar = ({
   totalCount,
   isSendingReminder,
   onSendReminder,
+  channel = DEFAULT_SLACK_CHANNEL,
   className,
   ...props
 }: QuestionnaireStatusBarProps) => {
@@ -35,7 +38,7 @@ export const QuestionnaireStatusBar = ({
             </Text>
           </Flex>
           <Text type="secondary" size="sm">
-            Sent {timeSinceSent} to #privacy-team
+            Sent {timeSinceSent} to {channel}
           </Text>
           <Flex align="center" gap="small">
             <Text size="sm">Progress:</Text>

@@ -19,7 +19,7 @@ import {
   AssessmentQuestion,
   QuestionGroup,
 } from "./types";
-import { getTimeSince } from "./utils";
+import { getInitials, getTimeSince } from "./utils";
 
 interface QuestionGroupPanelProps {
   group: QuestionGroup;
@@ -66,10 +66,7 @@ export const buildQuestionGroupPanelItem = ({
                     color={CUSTOM_TAG_COLOR.DEFAULT}
                     className={styles.avatarTag}
                   >
-                    {group.last_updated_by
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .join("")}
+                    {getInitials(group.last_updated_by)}
                   </Tag>
                 </>
               )}
