@@ -391,7 +391,11 @@ class TestReorderCustomPrivacyRequestFields:
                         "a_first": {"label": "First", "field_type": "text"},
                         "m_mid": {"label": "Mid", "field_type": "text"},
                     },
-                    "custom_privacy_request_field_order": ["a_first", "m_mid", "z_last"],
+                    "custom_privacy_request_field_order": [
+                        "a_first",
+                        "m_mid",
+                        "z_last",
+                    ],
                 }
             ]
         }
@@ -426,7 +430,10 @@ class TestReorderCustomPrivacyRequestFields:
                 {
                     "policy_key": "p",
                     "title": "T",
-                    "custom_privacy_request_fields": {"a": {"label": "A"}, "b": {"label": "B"}},
+                    "custom_privacy_request_fields": {
+                        "a": {"label": "A"},
+                        "b": {"label": "B"},
+                    },
                     "custom_privacy_request_field_order": ["b", "a"],
                 }
             ]
@@ -435,7 +442,10 @@ class TestReorderCustomPrivacyRequestFields:
         assert result is not config
         assert result["actions"][0] is not config["actions"][0]
         assert "custom_privacy_request_field_order" not in result["actions"][0]
-        assert list(result["actions"][0]["custom_privacy_request_fields"].keys()) == ["b", "a"]
+        assert list(result["actions"][0]["custom_privacy_request_fields"].keys()) == [
+            "b",
+            "a",
+        ]
         assert "custom_privacy_request_field_order" in config["actions"][0]
 
     def test_reorder_empty_actions_passthrough(self):
@@ -461,4 +471,6 @@ class TestReorderCustomPrivacyRequestFields:
         result = reorder_custom_privacy_request_fields(config)
         assert result["actions"][0] == {"policy_key": "p", "title": "T"}
         assert "custom_privacy_request_field_order" not in result["actions"][1]
-        assert list(result["actions"][1]["custom_privacy_request_fields"].keys()) == ["x"]
+        assert list(result["actions"][1]["custom_privacy_request_fields"].keys()) == [
+            "x"
+        ]

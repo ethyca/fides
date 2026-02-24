@@ -32,12 +32,12 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_center_config import LocationCustomPrivacyRequestField
 from fides.api.schemas.privacy_center_config import (
-    PrivacyCenterConfig as PrivacyCenterConfigSchema,
+    LocationCustomPrivacyRequestField,
+    reorder_custom_privacy_request_fields,
 )
 from fides.api.schemas.privacy_center_config import (
-    reorder_custom_privacy_request_fields,
+    PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
 from fides.api.schemas.privacy_request import (
     BULK_PRIVACY_REQUEST_BATCH_SIZE,
