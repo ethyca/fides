@@ -1,7 +1,7 @@
 import { Flex, PageSpinner, Tabs, useMessage } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
@@ -38,7 +38,7 @@ const PolicyDetailPage: NextPage = () => {
 
   const [deletePolicy, { isLoading: isDeleting }] = useDeletePolicyMutation();
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!policyKey) {
       return;
     }
@@ -49,7 +49,7 @@ const PolicyDetailPage: NextPage = () => {
     } catch {
       message.error("Failed to delete policy");
     }
-  };
+  }, [policyKey, deletePolicy, message, router]);
 
   const tabs = useMemo(
     () => [

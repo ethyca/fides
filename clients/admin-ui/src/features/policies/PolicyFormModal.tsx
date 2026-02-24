@@ -66,7 +66,7 @@ export const PolicyFormModal = ({
         {
           name: values.name,
           key: values.key,
-          execution_timeframe: values.execution_timeframe || null,
+          execution_timeframe: values.execution_timeframe ?? null,
         },
       ]);
 
