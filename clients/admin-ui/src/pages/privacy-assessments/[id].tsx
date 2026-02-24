@@ -1,12 +1,4 @@
-import {
-  Button,
-  CUSTOM_TAG_COLOR,
-  Flex,
-  Result,
-  Space,
-  Spin,
-  Tag,
-} from "fidesui";
+import { Button, Flex, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -85,16 +77,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         heading="Privacy assessments"
         breadcrumbItems={[
           { title: "Privacy assessments", href: PRIVACY_ASSESSMENTS_ROUTE },
-          {
-            title: (
-              <Flex align="center" gap="small" wrap="wrap">
-                <span>{assessment.name}</span>
-                <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>
-                  {assessment.assessment_type.toUpperCase()}
-                </Tag>
-              </Flex>
-            ),
-          },
+          { title: assessment.name },
         ]}
         isSticky
       />
