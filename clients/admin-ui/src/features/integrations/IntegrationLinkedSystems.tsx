@@ -99,12 +99,10 @@ const IntegrationLinkedSystems = ({
     modalApi.confirm({
       title: "Unlink system",
       content: (
-        <div data-testid="unlink-system-modal">
-          <Text type="secondary">
-            Are you sure you want to unlink &ldquo;{systemName}&rdquo; from this
-            integration? This action cannot be undone.
-          </Text>
-        </div>
+        <Text type="secondary">
+          Are you sure you want to unlink &ldquo;{systemName}&rdquo; from this
+          integration? This action cannot be undone.
+        </Text>
       ),
       okText: "Unlink",
       okType: "danger",
@@ -160,16 +158,14 @@ const IntegrationLinkedSystems = ({
   }
 
   return (
-    <div>
-      <div>
-        <Typography.Title level={5}>Linked systems</Typography.Title>
-        <Paragraph className="mt-2 w-2/3 text-gray-600">
-          Link a system to automatically surface discovered assets and enable
-          DSR execution within the system you manage.
-        </Paragraph>
-      </div>
+    <Flex vertical gap="middle">
+      <Typography.Title level={5}>Linked systems</Typography.Title>
+      <Paragraph className="mt-2 w-2/3" type="secondary">
+        Link a system to automatically surface discovered assets and enable DSR
+        execution within the system you manage.
+      </Paragraph>
 
-      <div className="mb-4 flex items-center justify-end gap-2">
+      <Flex className="absolute right-2 top-2">
         <Button
           type="primary"
           onClick={openLinkModal}
@@ -178,7 +174,7 @@ const IntegrationLinkedSystems = ({
         >
           Link system
         </Button>
-      </div>
+      </Flex>
 
       <Modal
         open={linkSystemModalOpen}
@@ -195,7 +191,7 @@ const IntegrationLinkedSystems = ({
         width={520}
         data-testid="link-system-modal"
       >
-        <div className="flex max-h-96 flex-col gap-4">
+        <Flex vertical gap="middle" className="max-h-96">
           <Typography.Text>Select a system to link</Typography.Text>
           <Input.Search
             placeholder="Search..."
@@ -229,7 +225,6 @@ const IntegrationLinkedSystems = ({
             renderItem={(system: BasicSystemResponseExtended) => (
               <List.Item
                 key={system.fides_key}
-                data-testid={`link-system-option-${system.fides_key}`}
                 aria-label={`Link system: ${system.name ?? system.fides_key}`}
                 actions={[
                   <Button
@@ -262,7 +257,7 @@ const IntegrationLinkedSystems = ({
               </List.Item>
             )}
           />
-        </div>
+        </Flex>
       </Modal>
 
       <List
@@ -270,12 +265,12 @@ const IntegrationLinkedSystems = ({
         data-testid="linked-systems-list"
         locale={{
           emptyText: (
-            <div className="py-8 text-center">
+            <Flex className="w-full justify-center">
               <Text type="secondary">
                 No systems linked. Click &ldquo;Link system&rdquo; to add a
                 system.
               </Text>
-            </div>
+            </Flex>
           ),
         }}
         renderItem={(link: SystemLinkResponse) => (
@@ -303,7 +298,7 @@ const IntegrationLinkedSystems = ({
             <List.Item.Meta
               title={
                 <Flex gap={8} align="center" className="font-normal">
-                  <div className="max-w-[300px]">
+                  <Flex>
                     <NextLink
                       href={EDIT_SYSTEM_ROUTE.replace(
                         "[id]",
@@ -327,16 +322,15 @@ const IntegrationLinkedSystems = ({
                         </Text>
                       </LinkText>
                     </NextLink>
-                  </div>
+                  </Flex>
                   <Tag>Discovery</Tag>
                 </Flex>
               }
             />
           </List.Item>
         )}
-        className="mb-4"
       />
-    </div>
+    </Flex>
   );
 };
 
