@@ -1,0 +1,83 @@
+import { stubDSRPolicies } from "cypress/support/stubs";
+
+import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
+
+describe("Policy detail page", () => {
+  beforeEach(() => {
+    cy.login();
+    stubDSRPolicies();
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "default_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+  });
+
+  it("shows the policy details", () => {
+    cy.contains("DSR policies").should("be.visible");
+    cy.getByTestId("policy-box").should("be.visible");
+    cy.getByTestId("policy-box").within(() => {
+      cy.contains("Default Erasure Policy").should("be.visible");
+      cy.contains("default_erasure_policy").should("be.visible");
+    });
+  });
+
+  it("shows the tabs with rule count", () => {
+    cy.findByRole("tablist").should("be.visible");
+    cy.findByRole("tab", { name: /Rules \(1\)/ }).should("be.visible");
+    cy.findByRole("tab", { name: "Conditions" }).should("be.visible");
+  });
+
+  describe("Rules tab", () => {
+    beforeEach(() => {
+      cy.getAntTab("Rules").click();
+    });
+
+    it("shows the rules heading and description", () => {
+      cy.getAntTabPanel("rules")
+        .should("be.visible")
+        .within(() => {
+          cy.contains("h5", "Policy rules").should("be.visible");
+          cy.contains("Rules define what actions to take").should("be.visible");
+        });
+    });
+
+    it("shows the rule in a collapse panel", () => {
+      cy.getByTestId("rules-collapse").should("be.visible");
+      cy.getByTestId("rules-collapse").within(() => {
+        cy.contains("Default Erasure Rule").should("be.visible");
+        cy.contains("erasure").should("be.visible");
+      });
+    });
+
+    it("shows the rule details when expanded", () => {
+      // Single rule should be auto-expanded
+      cy.getByTestId("rule-name-default_erasure_policy_rule")
+        .should("be.visible")
+        .should("have.value", "Default Erasure Rule");
+      cy.getByTestId("rule-key-default_erasure_policy_rule")
+        .should("be.visible")
+        .should("have.value", "default_erasure_policy_rule");
+      cy.getByTestId("rule-action-default_erasure_policy_rule").should(
+        "be.visible",
+      );
+    });
+
+    it("shows masking strategy for erasure rules", () => {
+      cy.getByTestId("rule-masking-default_erasure_policy_rule").should(
+        "be.visible",
+      );
+      cy.contains("Masking strategy").should("be.visible");
+    });
+  });
+
+  it("shows the conditions tab", () => {
+    cy.getAntTab("Conditions").click();
+    cy.getAntTabPanel("conditions")
+      .should("be.visible")
+      .within(() => {
+        cy.getByTestId("policy-conditions-title")
+          .should("be.visible")
+          .should("have.text", "Policy conditions");
+        cy.getByTestId("policy-conditions-description").should("be.visible");
+        cy.getByTestId("policy-conditions-note").should("be.visible");
+      });
+  });
+});

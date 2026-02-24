@@ -1570,3 +1570,109 @@ class TestConnectionService:
         }
         assert "email" in products_fields
         assert "orders_id" in orders_fields
+
+    def test_update_existing_connection_configs_case_insensitive(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+    ):
+        """
+                Test that update_existing_connection_configs_for_connector_type matches
+                connection configs regardless of the case of the 'type' field stored
+                in the saas_config JSONB column.
+        .
+        """
+        # Create a connection config with UPPERCASE type in saas_config
+        # (simulates what happens when the raw YAML dict is stored directly)
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": "test_case_connection",
+                "name": "Test Case Connection",
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "saas_config": {
+                    "fides_key": "test_case_instance",
+                    "name": "Test Connector",
+                    "type": "TEST_CASE_CONNECTOR",  # uppercase, as stored from raw YAML
+                    "description": "Test connector",
+                    "version": "0.1.0",
+                    "connector_params": [],
+                    "client_config": {
+                        "protocol": "https",
+                        "host": "api.example.com",
+                    },
+                    "test_request": {"method": "GET", "path": "/test"},
+                    "endpoints": [],
+                },
+            },
+        )
+
+        # Reuse the stored_dataset fixture as the customer's existing dataset
+        customer_dataset = copy.deepcopy(stored_dataset)
+        customer_dataset["fides_key"] = "test_case_instance"
+
+        DatasetConfig.create_or_update(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": "test_case_instance",
+                "dataset": customer_dataset,
+            },
+        )
+
+        # Store the baseline template dataset (as SaasTemplateDataset)
+        SaasTemplateDataset.get_or_create(
+            db=db,
+            connector_type="test_case_connector",
+            dataset_json=stored_dataset,
+        )
+
+        # Create a connector template with LOWERCASE type (as normalized by SaaSConfig)
+        # using the same template YAML helper used by other tests
+        connector_template = ConnectorTemplate(
+            config=dedent(
+                """
+                saas_config:
+                  fides_key: <instance_fides_key>
+                  name: Test Connector
+                  type: test_case_connector
+                  description: Test connector
+                  version: 1.0.0
+                  connector_params: []
+                  client_config:
+                    protocol: https
+                    host: api.example.com
+                  test_request:
+                    method: GET
+                    path: /test
+                  endpoints: []
+            """
+            ).strip(),
+            dataset=self._get_template_yaml(),
+            human_readable="Test Connector",
+            authorization_required=False,
+            supported_actions=[ActionType.access, ActionType.erasure],
+            category=ConnectionCategory.ANALYTICS,
+        )
+
+        # Call with LOWERCASE connector_type (as save_template would)
+        connection_service.update_existing_connection_configs_for_connector_type(
+            "test_case_connector",  # lowercase, from SaaSConfig.type
+            connector_template,
+        )
+
+        # Verify the dataset was updated — the merge should produce
+        # the template's "products" collection
+        dataset_config = DatasetConfig.filter(
+            db=db,
+            conditions=(DatasetConfig.fides_key == "test_case_instance"),
+        ).first()
+
+        assert dataset_config is not None
+        ctl_dataset = dataset_config.ctl_dataset
+        assert ctl_dataset is not None
+
+        collection_names = {c["name"] for c in ctl_dataset.collections}
+        assert "products" in collection_names

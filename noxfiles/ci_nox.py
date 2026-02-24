@@ -268,25 +268,6 @@ def minimal_config_startup(session: nox.Session) -> None:
     session.run(*start_command, external=True)
 
 
-#################
-## Performance ##
-#################
-@nox.session()
-def performance_tests(session: nox.Session) -> None:
-    """Compose the various performance checks into a single uber-test."""
-    session.notify("teardown")
-    perf_env = {
-        "FIDES__SECURITY__AUTH_RATE_LIMIT": "1000000/minute",
-        **session.env,
-    }
-    session.run(*START_APP, external=True, silent=True, env=perf_env)
-    samples = 2
-    for i in range(samples):
-        session.log(f"Sample {i + 1} of {samples}")
-        load_tests(session)
-        docker_stats(session)
-
-
 @nox.session()
 def docker_stats(session: nox.Session) -> None:
     """
