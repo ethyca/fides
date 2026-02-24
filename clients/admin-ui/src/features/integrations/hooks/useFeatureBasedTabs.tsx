@@ -1,5 +1,6 @@
 import {
   Button,
+  Card,
   ChakraBox as Box,
   ChakraSpacer as Spacer,
   Flex,
@@ -89,37 +90,37 @@ export const useFeatureBasedTabs = ({
         children: (
           <Flex vertical gap="middle">
             {supportsConnectionTest && (
-              <Flex align="center" className="p-3">
-                <Flex vertical>
+              <Card size="small">
+                <Flex>
                   <ConnectionStatusNotice
                     testData={testData}
                     connectionOption={integrationOption}
                   />
+                  <Spacer />
+                  <Flex gap="middle">
+                    {needsAuthorization && (
+                      <Button
+                        onClick={handleAuthorize}
+                        data-testid="authorize-integration-btn"
+                      >
+                        Authorize integration
+                      </Button>
+                    )}
+                    {!needsAuthorization && (
+                      <Button
+                        onClick={testConnection}
+                        loading={testIsLoading}
+                        data-testid="test-connection-btn"
+                      >
+                        Test connection
+                      </Button>
+                    )}
+                    <Button onClick={onOpen} data-testid="manage-btn">
+                      Manage
+                    </Button>
+                  </Flex>
                 </Flex>
-                <Spacer />
-                <div className="flex gap-4">
-                  {needsAuthorization && (
-                    <Button
-                      onClick={handleAuthorize}
-                      data-testid="authorize-integration-btn"
-                    >
-                      Authorize integration
-                    </Button>
-                  )}
-                  {!needsAuthorization && (
-                    <Button
-                      onClick={testConnection}
-                      loading={testIsLoading}
-                      data-testid="test-connection-btn"
-                    >
-                      Test connection
-                    </Button>
-                  )}
-                  <Button onClick={onOpen} data-testid="manage-btn">
-                    Manage
-                  </Button>
-                </div>
-              </Flex>
+              </Card>
             )}
             <ConfigureIntegrationModal
               isOpen={isOpen}
