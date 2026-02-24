@@ -34,7 +34,7 @@ export const PolicyBox = ({
             <Text type="secondary" code>
               {policy.key}
             </Text>
-            {policy.execution_timeframe && (
+            {policy.execution_timeframe !== null && (
               <Text type="secondary">
                 Execution timeframe: {policy.execution_timeframe} days
               </Text>

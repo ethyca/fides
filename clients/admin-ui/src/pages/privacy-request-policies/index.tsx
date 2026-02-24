@@ -185,13 +185,11 @@ const PoliciesPage: NextPage = () => {
       </Flex>
 
       <PolicyFormModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
-
-      <PolicyFormModal
-        isOpen={!!policyToEdit}
-        onClose={() => setPolicyToEdit(null)}
+        isOpen={isCreateModalOpen || !!policyToEdit}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setPolicyToEdit(null);
+        }}
         policyKey={policyToEdit?.key ?? undefined}
       />
 
