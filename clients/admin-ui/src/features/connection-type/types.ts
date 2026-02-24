@@ -1,5 +1,3 @@
-import { AddConnectionStep } from "datastore-connections/add-connection/types";
-
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -50,5 +48,4 @@ export type ConnectionTypeState = ConnectionTypeParams & {
   connection?: ConnectionConfigurationResponse;
   connectionOption?: ConnectionSystemTypeMap;
   connectionOptions: ConnectionSystemTypeMap[];
-  step: AddConnectionStep;
 };
