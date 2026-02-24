@@ -5,6 +5,7 @@ import {
   List,
   Modal,
   PageSpinner,
+  Table,
   Tag,
   Typography,
   useMessage,
@@ -23,10 +24,7 @@ import {
   useSetSystemLinksMutation,
 } from "~/features/integrations/system-links.slice";
 import { useGetSystemsQuery } from "~/features/system/system.slice";
-import {
-  BasicSystemResponseExtended,
-  ConnectionConfigurationResponse,
-} from "~/types/api";
+import { ConnectionConfigurationResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const { Paragraph, Text, Link: LinkText } = Typography;
@@ -192,7 +190,6 @@ const IntegrationLinkedSystems = ({
         data-testid="link-system-modal"
       >
         <Flex vertical gap="middle" className="max-h-96">
-          <Typography.Text>Select a system to link</Typography.Text>
           <Input.Search
             placeholder="Search..."
             allowClear
@@ -208,9 +205,12 @@ const IntegrationLinkedSystems = ({
             aria-label="Search systems"
             data-testid="link-system-search"
           />
-          <List
+          <Table
             dataSource={availableSystems}
             loading={isSystemsLoading}
+            rowKey="fides_key"
+            size="small"
+            pagination={false}
             locale={{
               emptyText: (
                 <div className="py-6 text-center">
@@ -222,24 +222,12 @@ const IntegrationLinkedSystems = ({
                 </div>
               ),
             }}
-            renderItem={(system: BasicSystemResponseExtended) => (
-              <List.Item
-                key={system.fides_key}
-                aria-label={`Link system: ${system.name ?? system.fides_key}`}
-                actions={[
-                  <Button
-                    key="link"
-                    type="link"
-                    onClick={() => handleLinkSystem(system.fides_key)}
-                    data-testid={`link-system-option-${system.fides_key}`}
-                    aria-label={`Link system: ${system.name ?? system.fides_key}`}
-                  >
-                    Link
-                  </Button>,
-                ]}
-              >
-                <List.Item.Meta
-                  title={
+            columns={[
+              {
+                title: "System",
+                key: "system",
+                render: (_, system) => (
+                  <>
                     <Text
                       ellipsis={{
                         tooltip: system.name ?? system.fides_key,
@@ -247,15 +235,28 @@ const IntegrationLinkedSystems = ({
                     >
                       {system.name ?? system.fides_key}
                     </Text>
-                  }
-                  description={
-                    system.description ? (
+                    {system.description ? (
                       <Text type="secondary">{system.description}</Text>
-                    ) : undefined
-                  }
-                />
-              </List.Item>
-            )}
+                    ) : null}
+                  </>
+                ),
+              },
+              {
+                title: "Actions",
+                key: "actions",
+                render: (_, system) => (
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => handleLinkSystem(system.fides_key)}
+                    data-testid={`link-system-option-${system.fides_key}`}
+                    aria-label={`Link system: ${system.name ?? system.fides_key}`}
+                  >
+                    Link
+                  </Button>
+                ),
+              },
+            ]}
           />
         </Flex>
       </Modal>
