@@ -9,10 +9,9 @@ import {
   Switch,
   Text,
   Typography,
-  useNotification,
+  useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
@@ -22,16 +21,14 @@ import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  TemplateResponse,
   useCreatePrivacyAssessmentMutation,
   useGetAssessmentTemplatesQuery,
-} from "~/features/privacy-assessments/privacy-assessments.slice";
-import { TemplateResponse } from "~/features/privacy-assessments/types";
+} from "~/features/privacy-assessments";
 import { RTKErrorResult } from "~/types/errors/api";
 
 const { Title, Paragraph } = Typography;
 const { Item } = Form;
-
-const EVALUATION_NOTIFICATION_KEY = "evaluation-progress";
 
 interface FormValues {
   assessment_type: string;
@@ -61,23 +58,26 @@ const renderTemplateOption = (option: { data: TemplateOptionData }) => {
 
 const EvaluateAssessmentPage: NextPage = () => {
   const router = useRouter();
-  const notificationApi = useNotification();
+  const message = useMessage();
   const [form] = Form.useForm<FormValues>();
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<
     string | undefined
   >();
 
+  // Fetch templates
   const { data: templatesData, isLoading: isLoadingTemplates } =
     useGetAssessmentTemplatesQuery({ page: 1, size: 100 });
 
-  const [createAssessment] = useCreatePrivacyAssessmentMutation();
+  const [createAssessment, { isLoading: isCreating }] =
+    useCreatePrivacyAssessmentMutation();
 
   const activeTemplates = useMemo(
     () => (templatesData?.items ?? []).filter((t) => t.is_active !== false),
     [templatesData?.items],
   );
 
+  // Find selected template for description display
   const selectedTemplate = useMemo(
     () =>
       activeTemplates.find(
@@ -88,35 +88,33 @@ const EvaluateAssessmentPage: NextPage = () => {
     [activeTemplates, selectedTemplateId],
   );
 
+  const handleTemplateChange = (value: string) => {
+    setSelectedTemplateId(value);
+  };
+
   const handleSubmit = async (values: FormValues) => {
-    notificationApi.info({
-      key: EVALUATION_NOTIFICATION_KEY,
-      message: "Evaluation in progress",
-      description:
-        "Your assessment is being evaluated. This may take a moment.",
-      duration: 0,
-    });
-
-    router.push(PRIVACY_ASSESSMENTS_ROUTE);
-
     try {
       const result = await createAssessment({
         assessment_type: values.assessment_type,
         system_fides_key: values.system_fides_key || undefined,
         use_llm: values.use_llm,
       }).unwrap();
-      notificationApi.success({
-        key: EVALUATION_NOTIFICATION_KEY,
-        message: "Evaluation complete",
-        description: `Successfully evaluated ${result.total_created} system(s).`,
-      });
+
+      message.success(
+        `Successfully evaluated ${result.total_created} system(s)`,
+      );
+
+      // Navigate to assessments list
+      router.push(PRIVACY_ASSESSMENTS_ROUTE);
     } catch (error) {
-      notificationApi.error({
-        key: EVALUATION_NOTIFICATION_KEY,
-        message: "Evaluation failed",
-        description: getErrorMessage(error as RTKErrorResult["error"]),
-      });
+      message.error(
+        `Failed to evaluate assessment: ${getErrorMessage(error as RTKErrorResult["error"])}`,
+      );
     }
+  };
+
+  const handleCancel = () => {
+    router.push(PRIVACY_ASSESSMENTS_ROUTE);
   };
 
   return (
@@ -129,6 +127,7 @@ const EvaluateAssessmentPage: NextPage = () => {
         ]}
         isSticky
       />
+
       <div className="py-6">
         <div className="max-w-3xl">
           <Space direction="vertical" size="large" className="w-full">
@@ -145,7 +144,9 @@ const EvaluateAssessmentPage: NextPage = () => {
               form={form}
               layout="vertical"
               onFinish={handleSubmit}
-              initialValues={{ use_llm: true }}
+              initialValues={{
+                use_llm: true,
+              }}
             >
               <Item
                 name="assessment_type"
@@ -161,7 +162,7 @@ const EvaluateAssessmentPage: NextPage = () => {
                 <Select
                   placeholder="Select a template"
                   loading={isLoadingTemplates}
-                  onChange={(value: string) => setSelectedTemplateId(value)}
+                  onChange={handleTemplateChange}
                   showSearch
                   optionFilterProp="label"
                   aria-label="Assessment template"
@@ -215,10 +216,8 @@ const EvaluateAssessmentPage: NextPage = () => {
 
               <Item className="mb-0">
                 <Flex gap="middle" justify="flex-end">
-                  <NextLink href={PRIVACY_ASSESSMENTS_ROUTE} passHref>
-                    <Button>Cancel</Button>
-                  </NextLink>
-                  <Button type="primary" htmlType="submit">
+                  <Button onClick={handleCancel}>Cancel</Button>
+                  <Button type="primary" htmlType="submit" loading={isCreating}>
                     Run evaluation
                   </Button>
                 </Flex>
