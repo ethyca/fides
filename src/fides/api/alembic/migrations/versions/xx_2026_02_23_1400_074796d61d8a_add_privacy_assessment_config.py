@@ -16,6 +16,8 @@ Create Date: 2026-02-23 14:00:00.000000
 import sqlalchemy as sa
 from alembic import op
 
+from fides.api.alembic.migrations.helpers.database_functions import generate_record_id
+
 # revision identifiers, used by Alembic.
 revision = "074796d61d8a"
 down_revision = "d3f08ca31314"
@@ -88,6 +90,15 @@ def upgrade() -> None:
         "privacy_assessment_config",
         ["id"],
         unique=False,
+    )
+
+    # Seed the default config row - this is a single-row table
+    op.execute(
+        sa.text(
+            "INSERT INTO privacy_assessment_config (id) "
+            "VALUES (:id) "
+            "ON CONFLICT DO NOTHING"
+        ).bindparams(id=generate_record_id("pri"))
     )
 
 
