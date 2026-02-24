@@ -124,6 +124,14 @@ declare global {
        * Get the modal component from an Ant Design Modal component
        */
       getAntModal: () => Chainable;
+      /**
+       * Get the header component from an Ant Design Modal component
+       */
+      getAntModalHeader: () => Chainable;
+      /**
+       * Get the footer component from an Ant Design Modal component
+       */
+      getAntModalFooter: () => Chainable;
     }
   }
 }
@@ -346,5 +354,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-content`));
+Cypress.Commands.add("getAntModalHeader", () => cy.get(`.ant-modal-header`));
+Cypress.Commands.add("getAntModalFooter", () => cy.get(`.ant-modal-footer`));
 
 export {};
