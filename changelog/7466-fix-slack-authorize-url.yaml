@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed Slack OAuth authorize URL path in admin UI causing 404
+pr: 7466
+labels: []
