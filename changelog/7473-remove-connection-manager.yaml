@@ -1,0 +1,4 @@
+type: Removed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Short description of the change
+pr: 7473 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
