@@ -4,7 +4,6 @@ export * from "./AssessmentGroup";
 export * from "./constants";
 export * from "./EditableTextBlock";
 export * from "./EmptyState";
-export * from "./EvaluateAssessmentForm";
 export * from "./privacy-assessments.slice";
 export * from "./QuestionCard";
 export * from "./QuestionGroupPanel";
