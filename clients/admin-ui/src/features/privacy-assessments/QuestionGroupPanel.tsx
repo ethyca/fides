@@ -29,7 +29,6 @@ interface QuestionGroupPanelProps {
   onAnswerSave: (questionId: string, value: string) => void;
   onComment: (selection: { text: string; start: number; end: number }) => void;
   onRequestInput: () => void;
-  onViewEvidence: (groupId: string) => void;
 }
 
 export const buildQuestionGroupPanelItem = ({
@@ -40,7 +39,6 @@ export const buildQuestionGroupPanelItem = ({
   onAnswerSave,
   onComment,
   onRequestInput,
-  onViewEvidence,
 }: QuestionGroupPanelProps): NonNullable<CollapseProps["items"]>[number] => {
   const answeredCount = group.questions.filter((q) => {
     const answer = getAnswerValue(q.question_id, q.answer_text);
@@ -96,11 +94,8 @@ export const buildQuestionGroupPanelItem = ({
               <Button
                 type="default"
                 icon={<Icons.Document />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewEvidence(group.id);
-                }}
                 size="small"
+                disabled
               >
                 View evidence
               </Button>
@@ -139,7 +134,6 @@ export const buildQuestionGroupPanelItem = ({
             onAnswerSave={onAnswerSave}
             onComment={onComment}
             onRequestInput={needsInput ? onRequestInput : undefined}
-            onViewEvidence={() => onViewEvidence(group.id)}
           />
         );
       })}

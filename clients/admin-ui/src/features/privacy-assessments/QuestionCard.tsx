@@ -13,7 +13,6 @@ interface QuestionCardProps {
   onAnswerSave: (questionId: string, value: string) => void;
   onComment: (selection: { text: string; start: number; end: number }) => void;
   onRequestInput?: () => void;
-  onViewEvidence: () => void;
 }
 
 export const QuestionCard = ({
@@ -23,7 +22,6 @@ export const QuestionCard = ({
   onAnswerSave,
   onComment,
   onRequestInput,
-  onViewEvidence,
 }: QuestionCardProps) => {
   const sourceLabel = ANSWER_SOURCE_LABELS[question.answer_source];
   const sourceColor = ANSWER_SOURCE_TAG_COLORS[question.answer_source];
@@ -55,12 +53,7 @@ export const QuestionCard = ({
         placeholder="Enter your answer..."
         onComment={onComment}
         onRequestInput={onRequestInput}
-        renderContent={(text) => (
-          <ReferenceBadge
-            text={text}
-            onReferenceClick={() => onViewEvidence()}
-          />
-        )}
+        renderContent={(text) => <ReferenceBadge text={text} />}
       />
     </div>
   );

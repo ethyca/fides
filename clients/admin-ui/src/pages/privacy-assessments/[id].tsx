@@ -25,7 +25,6 @@ import PageHeader from "~/features/common/PageHeader";
 import {
   buildQuestionGroupPanelItem,
   DeleteAssessmentModal,
-  EvidenceDrawer,
   QuestionGroupCollapse,
   QuestionnaireStatusBar,
   SlackIcon,
@@ -36,8 +35,6 @@ import {
   useUpdateAssessmentAnswerMutation,
 } from "~/features/privacy-assessments";
 import {
-  filterEvidence,
-  getGroupEvidence,
   getSlackQuestions,
   getTimeSince,
   isAssessmentComplete,
@@ -56,9 +53,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
-  const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
   const [localAnswers, setLocalAnswers] = useState<Record<string, string>>({});
 
   const {
@@ -184,11 +178,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     }
   };
 
-  const handleViewEvidence = useCallback((groupId: string) => {
-    setFocusedGroupId(groupId);
-    setIsDrawerOpen(true);
-  }, []);
-
   const handleDelete = async () => {
     try {
       await deleteAssessment(assessmentId).unwrap();
@@ -205,16 +194,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     }
   };
 
-  const filteredEvidence = useMemo(() => {
-    if (!focusedGroupId) {
-      return [];
-    }
-    return filterEvidence(
-      getGroupEvidence(questionGroups, focusedGroupId),
-      evidenceSearchQuery,
-    );
-  }, [focusedGroupId, evidenceSearchQuery, questionGroups]);
-
   const collapseItems = useMemo(
     () =>
       questionGroups.map((group) =>
@@ -226,7 +205,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
           onAnswerSave: handleAnswerSave,
           onComment: handleComment,
           onRequestInput: handleRequestInput,
-          onViewEvidence: handleViewEvidence,
         }),
       ),
     [
@@ -237,7 +215,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       handleAnswerSave,
       handleComment,
       handleRequestInput,
-      handleViewEvidence,
     ],
   );
 
@@ -401,20 +378,6 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
         isDeleting={isDeleting}
         onConfirm={handleDelete}
         onCancel={() => setIsDeleteModalOpen(false)}
-      />
-
-      <EvidenceDrawer
-        open={isDrawerOpen}
-        onClose={() => {
-          setIsDrawerOpen(false);
-          setFocusedGroupId(null);
-          setEvidenceSearchQuery("");
-        }}
-        focusedGroupId={focusedGroupId}
-        questionGroups={questionGroups}
-        evidence={filteredEvidence}
-        searchQuery={evidenceSearchQuery}
-        onSearchChange={setEvidenceSearchQuery}
       />
     </Layout>
   );
