@@ -111,11 +111,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     icon: <Icons.MessageQueue />,
     routes: [
       {
-        title: "Policies",
-        path: routes.POLICIES_ROUTE,
-        scopes: [ScopeRegistryEnum.POLICY_READ],
-      },
-      {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
         scopes: [
@@ -129,6 +124,24 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Connection manager",
         path: routes.DATASTORE_CONNECTION_ROUTE,
         scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
+      },
+      {
+        title: "Policies",
+        path: routes.POLICIES_ROUTE,
+        requiresFlag: "policies",
+        scopes: [ScopeRegistryEnum.POLICY_READ],
+      },
+    ],
+  },
+  {
+    title: "Privacy assessments",
+    icon: <Icons.Document />,
+    routes: [
+      {
+        title: "Assessments",
+        path: routes.PRIVACY_ASSESSMENTS_ROUTE,
+        scopes: [],
+        requiresFlag: "alphaDataProtectionAssessments",
       },
     ],
   },
@@ -319,6 +332,12 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
     title: "Developer",
     icon: <Icons.Code />,
     routes: [
+      {
+        title: "Prompt Explorer",
+        path: routes.PROMPT_EXPLORER_ROUTE,
+        scopes: [ScopeRegistryEnum.DEVELOPER_READ],
+        requiresPlus: true,
+      },
       {
         title: "Ant Design POC",
         path: routes.ANT_POC_ROUTE,

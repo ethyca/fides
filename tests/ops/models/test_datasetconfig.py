@@ -67,6 +67,23 @@ def test_convert_dataset_to_graph_no_collections(example_datasets):
 
 
 @pytest.mark.parametrize(
+    "property_ids,expected",
+    [
+        (["prop_a", "prop_b"], ["prop_a", "prop_b"]),
+        ([], []),
+        (None, []),
+    ],
+)
+def test_convert_dataset_to_graph_propagates_property_ids(
+    example_datasets, property_ids, expected
+):
+    dataset = Dataset(**example_datasets[0])
+    kwargs = {"property_ids": property_ids} if property_ids is not None else {}
+    graph = convert_dataset_to_graph(dataset, "mock_connection_config_key", **kwargs)
+    assert graph.property_ids == expected
+
+
+@pytest.mark.parametrize(
     "where_clauses,validation_error",
     [
         (

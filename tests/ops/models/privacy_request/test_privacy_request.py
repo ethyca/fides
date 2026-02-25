@@ -51,6 +51,7 @@ from fides.api.util.cache import (
 )
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
+from fides.service.attachment_service import AttachmentService
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -1395,10 +1396,9 @@ class TestPrivacyRequestAttachments:
         """Fixture to create a single attachment"""
 
         def _create_attachment(contents: bytes = b"test contents"):
-            return Attachment.create_and_upload(
-                db=db,
+            return AttachmentService(db).create_and_upload(
                 data=attachment_data,
-                attachment_file=BytesIO(contents),
+                file_data=BytesIO(contents),
             )
 
         return _create_attachment

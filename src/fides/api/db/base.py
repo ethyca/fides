@@ -37,6 +37,7 @@ from fides.api.models.fides_user_respondent_email_verification import (
 )
 from fides.api.models.identity_definition import IdentityDefinition
 from fides.api.models.identity_salt import IdentitySalt
+from fides.api.models.jira_ticket_task import JiraTicketTask
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.manual_task import (
     ManualTask,
@@ -87,6 +88,7 @@ from fides.api.models.property import (
     PrivacyExperienceConfigProperty,
     Property,
 )
+from fides.api.models.questionnaire import ChatMessage, Questionnaire
 from fides.api.models.registration import UserRegistration
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.models.storage import StorageConfig
