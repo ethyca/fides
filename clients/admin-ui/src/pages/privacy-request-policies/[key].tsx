@@ -9,9 +9,9 @@ import { POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import PolicyConditionsTab from "~/features/policies/conditions/PolicyConditionsTab";
+import { useGetPolicyQuery } from "~/features/policies/policy.slice";
 import PolicyBox from "~/features/policies/PolicyBox";
-import RulesTab from "~/features/policies/rules/RulesTab";
-import { useGetPolicyQuery } from "~/features/policy/policy.slice";
+import { RulesTab } from "~/features/policies/rules/RulesTab";
 
 const TAB_KEYS = {
   RULES: "rules",
@@ -34,8 +34,8 @@ const PolicyDetailPage: NextPage = () => {
     () => [
       {
         key: TAB_KEYS.RULES,
-        label: "Rules",
-        children: <RulesTab />,
+        label: `Rules (${policy?.rules?.length ?? 0})`,
+        children: <RulesTab rules={policy?.rules ?? []} />,
       },
       {
         key: TAB_KEYS.CONDITIONS,
@@ -43,7 +43,7 @@ const PolicyDetailPage: NextPage = () => {
         children: <PolicyConditionsTab />,
       },
     ],
-    [],
+    [policy?.rules],
   );
 
   const { activeTab, onTabChange } = useURLHashedTabs({

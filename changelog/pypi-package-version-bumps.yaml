@@ -1,0 +1,4 @@
+type: Changed
+description: Bump Jinja2, pg8000, urllib3, cryptography, cffi, snowflake-connector-python, snowflake-sqlalchemy, and PyNaCL
+pr: 7454
+labels: []

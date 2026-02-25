@@ -120,6 +120,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       query: ({ monitor_config_id, staged_resource_urn }) => ({
         url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}&${getQueryParamsFromArray(staged_resource_urn, "staged_resource_urn")}`,
       }),
+      providesTags: ["Datastore Filters"],
     }),
 
     getMonitorTree: build.query<
