@@ -1,3 +1,8 @@
+$sandstone: #cecac2; // palette.FIDESUI_SANDSTONE – selected bg
+$minos: #2b2e35; // palette.FIDESUI_MINOS – dark bg / selected text
+$neutral-700: #696c71; // palette neutral-700 – hover bg
+$corinth: #fafafa; // palette.FIDESUI_CORINTH – light text
+
 .menu {
   --ant-menu-item-margin-block: 0 !important;
   --ant-menu-item-margin-inline: 0 !important;
@@ -33,41 +38,41 @@
   }
 
   :global(.ant-menu-submenu-selected > .ant-menu-submenu-title) {
-    background-color: #cecac2;
+    background-color: $sandstone;
     border-radius: 4px;
   }
 
   :global(
     .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon
   ) {
-    color: #2b2e35;
+    color: $minos;
   }
 
   :global(.ant-menu-submenu > .ant-menu-submenu-title:hover) {
-    background-color: #696c71;
+    background-color: $neutral-700;
     border-radius: 4px;
   }
 
   :global(
     .ant-menu-submenu > .ant-menu-submenu-title:hover .ant-menu-item-icon
   ) {
-    color: #fafafa;
+    color: $corinth;
   }
 }
 
 .flyout {
-  background-color: #2b2e35 !important;
+  background-color: $minos !important;
 
   :global(.ant-menu) {
-    background-color: #2b2e35 !important;
-    background: #2b2e35 !important;
+    background-color: $minos !important;
+    background: $minos !important;
     --ant-menu-item-margin-inline: 0 !important;
     --ant-menu-item-margin-block: 8px !important;
     padding-block: 8px !important;
   }
 
   :global(.ant-menu-title-content) {
-    color: #fafafa;
+    color: $corinth;
     padding: 0 !important;
     margin: 0 !important;
     display: block;
@@ -80,7 +85,7 @@
     margin: 0 !important;
 
     a {
-      color: #fafafa !important;
+      color: $corinth !important;
       display: block;
       width: 100%;
       margin: 0 !important;
@@ -88,18 +93,18 @@
     }
 
     &:global(.ant-menu-item-selected) {
-      background-color: #cecac2 !important;
+      background-color: $sandstone !important;
 
       a {
-        color: #2b2e35 !important;
+        color: $minos !important;
       }
     }
 
     &:hover {
-      background-color: #696c71 !important;
+      background-color: $neutral-700 !important;
 
       a {
-        color: #fafafa !important;
+        color: $corinth !important;
       }
     }
   }
