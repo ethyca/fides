@@ -95,3 +95,15 @@ def test_html_sanitization_blocks_div_with_onclick_injection():
     expected = "See our <div>privacy policy</div>"
 
     assert sanitized == expected
+
+
+def test_html_sanitization_allows_ul_tags():
+    """Test that the validate_html_str function allows ul and li tags"""
+
+    test_html = "<ul><li>First item</li><li>Second item</li></ul>"
+
+    sanitized = validate_html_str(test_html)
+
+    expected = "<ul><li>First item</li><li>Second item</li></ul>"
+
+    assert sanitized == expected
