@@ -294,8 +294,8 @@ export type {
   CustomInputProps as InputProps,
 } from "./hoc";
 export {
-  CustomCard as Card,
   CustomAvatar as Avatar,
+  CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomInput as Input,

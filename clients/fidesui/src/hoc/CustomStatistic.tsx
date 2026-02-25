@@ -4,48 +4,48 @@ import React from "react";
 export type StatisticTrend = "up" | "down" | "neutral";
 
 export interface CustomStatisticProps extends StatisticProps {
-    /**
-     * Trend direction — controls the value colour.
-     * - `up`: maps to `token.colorSuccess`
-     * - `down`: maps to `token.colorError`
-     * - `neutral`: maps to `token.colorText`
-     * @default "neutral"
-     */
-    trend?: StatisticTrend;
+  /**
+   * Trend direction — controls the value colour.
+   * - `up`: maps to `token.colorSuccess`
+   * - `down`: maps to `token.colorError`
+   * - `neutral`: maps to `token.colorText`
+   * @default "neutral"
+   */
+  trend?: StatisticTrend;
 }
 
 /** Maps a trend direction to the corresponding Ant Design alias-token key. */
 const TREND_TOKEN_MAP: Record<StatisticTrend, string> = {
-    up: "colorSuccess",
-    down: "colorError",
-    neutral: "colorText",
+  up: "colorSuccess",
+  down: "colorError",
+  neutral: "colorText",
 };
 
 const withCustomProps = (WrappedComponent: typeof Statistic) => {
-    const WrappedStatistic = React.forwardRef<
-        React.ComponentRef<typeof Statistic>,
-        CustomStatisticProps
-    >(({ trend = "neutral", valueStyle, ...props }, ref) => {
-        const { token } = theme.useToken();
-        const trendColor = (token as unknown as Record<string, unknown>)[
-            TREND_TOKEN_MAP[trend]
-        ] as string;
+  const WrappedStatistic = React.forwardRef<
+    React.ComponentRef<typeof Statistic>,
+    CustomStatisticProps
+  >(({ trend = "neutral", valueStyle, ...props }, ref) => {
+    const { token } = theme.useToken();
+    const trendColor = (token as unknown as Record<string, unknown>)[
+      TREND_TOKEN_MAP[trend]
+    ] as string;
 
-        return (
-            <WrappedComponent
-                ref={ref}
-                valueStyle={{
-                    fontWeight: 600, // semibold
-                    color: trendColor,
-                    ...valueStyle, // allow per-instance overrides
-                }}
-                {...props}
-            />
-        );
-    });
+    return (
+      <WrappedComponent
+        ref={ref}
+        valueStyle={{
+          fontWeight: 600, // semibold
+          color: trendColor,
+          ...valueStyle, // allow per-instance overrides
+        }}
+        {...props}
+      />
+    );
+  });
 
-    WrappedStatistic.displayName = "CustomStatistic";
-    return WrappedStatistic;
+  WrappedStatistic.displayName = "CustomStatistic";
+  return WrappedStatistic;
 };
 
 /**

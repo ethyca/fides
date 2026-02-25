@@ -73,12 +73,11 @@ const meta = {
     },
     cover: {
       description:
-        "Cover content (e.g. a sparkline). Set `coverPosition=\"bottom\"` to display it below the card body.",
+        'Cover content (e.g. a sparkline). Set `coverPosition="bottom"` to display it below the card body.',
       control: false,
     },
     children: {
-      description:
-        "Card body content, e.g. `<CustomStatistic />` component.",
+      description: "Card body content, e.g. `<CustomStatistic />` component.",
       control: false,
     },
   },
