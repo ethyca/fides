@@ -271,3 +271,140 @@ class TestSaaSConnectionSecretsDomainValidation:
             schema.model_validate(
                 {"domain": "evil.example.com", "api_key": "sk_test_123"}
             )
+
+
+@pytest.mark.unit_saas
+class TestSingleExactValueAutoFill:
+    """Tests for auto-filling connector params that have a single exact allowed value."""
+
+    def test_single_exact_value_marked_hidden(
+        self, saas_example_config: Dict[str, Any]
+    ):
+        """A param with one exact allowed_value should be marked hidden with the value as default."""
+        config = SaaSConfig(**saas_example_config)
+        config.connector_params = [
+            ConnectorParam(
+                name="domain",
+                type="endpoint",
+                allowed_values=["api.stripe.com"],
+            ),
+            ConnectorParam(name="api_key"),
+        ]
+        config.external_references = []
+        schema = SaaSSchemaFactory(config).get_saas_schema()
+        field = schema.model_fields["domain"]
+        assert field.default == "api.stripe.com"
+        assert field.json_schema_extra["hidden"] is True
+
+    def test_single_exact_value_with_existing_default(
+        self, saas_example_config: Dict[str, Any]
+    ):
+        """A param that already has a default_value should keep it and still be hidden."""
+        config = SaaSConfig(**saas_example_config)
+        config.connector_params = [
+            ConnectorParam(
+                name="domain",
+                default_value="api.stripe.com",
+                type="endpoint",
+                allowed_values=["api.stripe.com"],
+            ),
+            ConnectorParam(name="api_key"),
+        ]
+        config.external_references = []
+        schema = SaaSSchemaFactory(config).get_saas_schema()
+        field = schema.model_fields["domain"]
+        assert field.default == "api.stripe.com"
+        assert field.json_schema_extra["hidden"] is True
+
+    def test_single_wildcard_value_not_hidden(
+        self, saas_example_config: Dict[str, Any]
+    ):
+        """A param with one wildcard allowed_value should NOT be hidden."""
+        config = SaaSConfig(**saas_example_config)
+        config.connector_params = [
+            ConnectorParam(
+                name="domain",
+                type="endpoint",
+                allowed_values=["*.auth0.com"],
+            ),
+            ConnectorParam(name="api_key"),
+        ]
+        config.external_references = []
+        schema = SaaSSchemaFactory(config).get_saas_schema()
+        field = schema.model_fields["domain"]
+        assert field.json_schema_extra.get("hidden") is not True
+
+    def test_multiple_allowed_values_not_hidden(
+        self, saas_example_config: Dict[str, Any]
+    ):
+        """A param with multiple allowed_values should NOT be hidden."""
+        config = SaaSConfig(**saas_example_config)
+        config.connector_params = [
+            ConnectorParam(
+                name="domain",
+                default_value="na1.salesforce.com",
+                type="endpoint",
+                allowed_values=["*.salesforce.com", "*.force.com"],
+            ),
+            ConnectorParam(name="api_key"),
+        ]
+        config.external_references = []
+        schema = SaaSSchemaFactory(config).get_saas_schema()
+        field = schema.model_fields["domain"]
+        assert field.json_schema_extra.get("hidden") is not True
+
+    @patch(
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
+        return_value=False,
+    )
+    def test_omitting_hidden_field_uses_default(
+        self, mock_disabled, saas_example_config: Dict[str, Any]
+    ):
+        """Omitting a hidden single-exact-value param should auto-fill the default."""
+        config = SaaSConfig(**saas_example_config)
+        config.connector_params = [
+            ConnectorParam(
+                name="domain",
+                type="endpoint",
+                allowed_values=["api.stripe.com"],
+            ),
+            ConnectorParam(name="api_key"),
+        ]
+        config.external_references = []
+        schema = SaaSSchemaFactory(config).get_saas_schema()
+        instance = schema.model_validate({"api_key": "sk_test_123"})
+        assert instance.domain == "api.stripe.com"
+
+    def test_none_allowed_values_not_hidden(self, saas_example_config: Dict[str, Any]):
+        """A param with allowed_values=None should NOT be hidden."""
+        config = SaaSConfig(**saas_example_config)
+        config.connector_params = [
+            ConnectorParam(
+                name="domain",
+                default_value="api.example.com",
+            ),
+            ConnectorParam(name="api_key"),
+        ]
+        config.external_references = []
+        schema = SaaSSchemaFactory(config).get_saas_schema()
+        field = schema.model_fields["domain"]
+        assert field.json_schema_extra.get("hidden") is not True
+
+    def test_empty_allowed_values_not_hidden(
+        self, saas_example_config: Dict[str, Any]
+    ):
+        """A param with allowed_values=[] should NOT be hidden."""
+        config = SaaSConfig(**saas_example_config)
+        config.connector_params = [
+            ConnectorParam(
+                name="domain",
+                default_value="custom.example.com",
+                type="endpoint",
+                allowed_values=[],
+            ),
+            ConnectorParam(name="api_key"),
+        ]
+        config.external_references = []
+        schema = SaaSSchemaFactory(config).get_saas_schema()
+        field = schema.model_fields["domain"]
+        assert field.json_schema_extra.get("hidden") is not True
