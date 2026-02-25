@@ -1,7 +1,7 @@
 """create system_connection_config_link table
 
 Revision ID: 454edc298288
-Revises: c69ef1fecb20
+Revises: 12c3de065e27
 Create Date: 2026-02-18 17:00:00.000000
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "454edc298288"
-down_revision = "c69ef1fecb20"
+down_revision = "12c3de065e27"
 branch_labels = None
 depends_on = None
 
@@ -44,6 +44,11 @@ def upgrade():
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint(
+            "system_id",
+            "connection_config_id",
+            name="uq_system_connconfig_link",
+        ),
     )
     # Required by Base.id having index=True — Alembic autogenerate check expects this
     # even though Postgres already indexes the PK.
