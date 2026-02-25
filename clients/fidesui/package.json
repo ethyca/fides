@@ -22,6 +22,7 @@
     "iso-3166": "^4.3.0",
     "motion": "^12.23.26",
     "react-hotkeys-hook": "^5.2.1",
+    "recharts": "^3.7.0",
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
