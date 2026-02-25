@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System
+from fides.system_integration_link.entities import SystemLinkInput
 from fides.system_integration_link.exceptions import (
     ConnectionConfigNotFoundError,
     SystemIntegrationLinkNotFoundError,
@@ -11,7 +12,6 @@ from fides.system_integration_link.exceptions import (
 )
 from fides.system_integration_link.models import SystemConnectionConfigLink
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
-from fides.system_integration_link.schemas import SystemLinkRequest
 from fides.system_integration_link.service import (
     SystemIntegrationLinkService,
 )
@@ -111,7 +111,7 @@ class TestSetLinks:
     def test_sets_single_link(self, service, db, connection_config, system_a):
         result = service.set_links(
             connection_config.key,
-            [SystemLinkRequest(system_fides_key="svc_test_system_a")],
+            [SystemLinkInput(system_fides_key="svc_test_system_a")],
             session=db,
         )
         db.commit()
@@ -127,14 +127,14 @@ class TestSetLinks:
         """Setting a new link should replace the existing one."""
         service.set_links(
             connection_config.key,
-            [SystemLinkRequest(system_fides_key="svc_test_system_a")],
+            [SystemLinkInput(system_fides_key="svc_test_system_a")],
             session=db,
         )
         db.commit()
 
         result = service.set_links(
             connection_config.key,
-            [SystemLinkRequest(system_fides_key="svc_test_system_b")],
+            [SystemLinkInput(system_fides_key="svc_test_system_b")],
             session=db,
         )
         db.commit()
@@ -151,7 +151,7 @@ class TestSetLinks:
     ):
         service.set_links(
             connection_config.key,
-            [SystemLinkRequest(system_fides_key="svc_test_system_a")],
+            [SystemLinkInput(system_fides_key="svc_test_system_a")],
             session=db,
         )
         db.commit()
@@ -169,8 +169,8 @@ class TestSetLinks:
             service.set_links(
                 connection_config.key,
                 [
-                    SystemLinkRequest(system_fides_key="sys_a"),
-                    SystemLinkRequest(system_fides_key="sys_b"),
+                    SystemLinkInput(system_fides_key="sys_a"),
+                    SystemLinkInput(system_fides_key="sys_b"),
                 ],
                 session=db,
             )
@@ -182,7 +182,7 @@ class TestSetLinks:
         with pytest.raises(ConnectionConfigNotFoundError):
             service.set_links(
                 "missing_conn",
-                [SystemLinkRequest(system_fides_key="whatever")],
+                [SystemLinkInput(system_fides_key="whatever")],
                 session=db,
             )
 
@@ -190,7 +190,7 @@ class TestSetLinks:
         with pytest.raises(SystemNotFoundError) as exc_info:
             service.set_links(
                 connection_config.key,
-                [SystemLinkRequest(system_fides_key="ghost_system")],
+                [SystemLinkInput(system_fides_key="ghost_system")],
                 session=db,
             )
 
@@ -201,7 +201,7 @@ class TestDeleteLink:
     def test_deletes_existing_link(self, service, db, connection_config, system_a):
         service.set_links(
             connection_config.key,
-            [SystemLinkRequest(system_fides_key="svc_test_system_a")],
+            [SystemLinkInput(system_fides_key="svc_test_system_a")],
             session=db,
         )
         db.commit()

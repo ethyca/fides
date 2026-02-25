@@ -10,6 +10,7 @@ from fides.common.api.scope_registry import (
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.system_integration_link.deps import get_system_integration_link_service
+from fides.system_integration_link.entities import SystemLinkInput
 from fides.system_integration_link.exceptions import (
     ConnectionConfigNotFoundError,
     SystemIntegrationLinkNotFoundError,
@@ -83,7 +84,10 @@ def set_system_links(
     try:
         entities = service.set_links(
             connection_key,
-            payload.links,
+            [
+                SystemLinkInput(system_fides_key=link.system_fides_key)
+                for link in payload.links
+            ],
         )
     except ConnectionConfigNotFoundError as exc:
         raise HTTPException(

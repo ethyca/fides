@@ -9,6 +9,7 @@ from fides.core.repository.session_management import (
 )
 from fides.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
+    SystemLinkInput,
 )
 from fides.system_integration_link.exceptions import (
     ConnectionConfigNotFoundError,
@@ -19,7 +20,6 @@ from fides.system_integration_link.exceptions import (
 from fides.system_integration_link.repository import (
     SystemIntegrationLinkRepository,
 )
-from fides.system_integration_link.schemas import SystemLinkRequest
 
 MAX_LINKS_PER_CONNECTION = 1
 
@@ -47,7 +47,7 @@ class SystemIntegrationLinkService:
     def set_links(
         self,
         connection_key: str,
-        links: list[SystemLinkRequest],
+        links: list[SystemLinkInput],
         *,
         session: Session,
     ) -> list[SystemIntegrationLinkEntity]:
