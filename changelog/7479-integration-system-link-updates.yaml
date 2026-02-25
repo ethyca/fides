@@ -1,0 +1,4 @@
+type: Added
+description: Added linked system column, tab, and form to integrations; removed link from setup
+pr: 7479
+labels: []
