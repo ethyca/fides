@@ -107,9 +107,9 @@ const ActionCenterFields = ({
         diff_status: [
           ...(showIgnored ? intoDiffStatus("Ignored") : []),
           ...(showApproved ? intoDiffStatus("Approved") : []),
-          ...(query?.resource_status?.flatMap(intoDiffStatus)
-            ? query.resource_status.flatMap(intoDiffStatus)
-            : DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus)),
+          ...(query.resource_status ?? DEFAULT_FILTER_STATUSES).flatMap(
+            intoDiffStatus,
+          ),
         ],
         search: query.search ?? undefined,
         staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
