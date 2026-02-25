@@ -39,4 +39,4 @@ jobs:
           # ⚠️ Make sure to configure a `CHROMATIC_PROJECT_TOKEN` repository secret
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           zip: true
-          # onlyChanged: true # 👈 Required option to enable TurboSnap
+          onlyChanged: true # 👈 Required option to enable TurboSnap
