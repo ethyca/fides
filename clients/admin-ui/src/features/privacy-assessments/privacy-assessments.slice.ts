@@ -1,11 +1,13 @@
 import { baseApi } from "~/features/common/api.slice";
-import type { Page_TemplateResponse_ } from "~/types/api";
+import type {
+  CreateAssessmentRequest,
+  Page_TemplateResponse_,
+} from "~/types/api";
 
 import {
   AssessmentEvidenceResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
-  CreatePrivacyAssessmentRequest,
   CreatePrivacyAssessmentResponse,
   CreateQuestionnaireRequest,
   CreateReminderRequest,
@@ -25,17 +27,6 @@ import {
 const privacyAssessmentsApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
-    getAssessmentTemplates: build.query<
-      Page_TemplateResponse_,
-      { page: number; size: number }
-    >({
-      query: (params) => ({
-        url: "plus/privacy-assessments/templates",
-        params,
-      }),
-      providesTags: ["Assessment Template"],
-    }),
-
     getPrivacyAssessments: build.query<
       Page_PrivacyAssessmentResponse_,
       GetPrivacyAssessmentsParams | void
@@ -45,6 +36,16 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         params: params ?? undefined,
       }),
       providesTags: ["Privacy Assessment"],
+    }),
+
+    getAssessmentTemplates: build.query<
+      Page_TemplateResponse_,
+      { page?: number; size?: number } | void
+    >({
+      query: (params) => ({
+        url: "plus/privacy-assessments/templates",
+        params: params ?? undefined,
+      }),
     }),
 
     getPrivacyAssessment: build.query<PrivacyAssessmentDetailResponse, string>({
@@ -58,7 +59,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 
     createPrivacyAssessment: build.mutation<
       CreatePrivacyAssessmentResponse,
-      CreatePrivacyAssessmentRequest
+      CreateAssessmentRequest
     >({
       query: (body) => ({
         url: "plus/privacy-assessments",
@@ -177,8 +178,8 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
+  useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentQuery,
   useCreatePrivacyAssessmentMutation,
   useUpdatePrivacyAssessmentMutation,
