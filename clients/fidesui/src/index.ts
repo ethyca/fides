@@ -333,6 +333,7 @@ export { TagList } from "./components/data-display/TagList";
 export type {
   RadarChartDataPoint,
   RadarChartProps,
+  RadarPointStatus,
 } from "./components/charts/RadarChart";
 export { default as RadarChart } from "./components/charts/RadarChart";
 
