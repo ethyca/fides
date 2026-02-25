@@ -37,7 +37,7 @@ from fides.api.util.saas_util import (
     load_config,
     load_yaml_as_string,
 )
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import load_dataset
 
 
@@ -387,8 +387,10 @@ def oauth2_authorization_code_connection_config(
             "saas_config": saas_config,
         },
     )
-    SystemConnectionConfigLink.create_or_update_link(
-        db, system.id, connection_config.id
+    SystemIntegrationLinkRepository().create_or_update_link(
+        system_id=system.id,
+        connection_config_id=connection_config.id,
+        session=db,
     )
     db.commit()
     yield connection_config

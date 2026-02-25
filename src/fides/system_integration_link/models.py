@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, delete
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base
@@ -19,7 +19,7 @@ class SystemConnectionConfigLink(Base):
     Several parts of the codebase still treat the System ↔ ConnectionConfig
     relationship as 1:1 (``uselist=False`` on both sides of the SQLAlchemy
     relationship).  Before lifting the unique constraint, audit those call
-    sites and the ``create_or_update_link`` helper below.
+    sites and ``SystemIntegrationLinkRepository.create_or_update_link``.
 
     Future: a ``link_type`` column (e.g. "dsr" vs "monitoring") could be
     added to distinguish the purpose of each link.  The unique constraint
@@ -57,28 +57,3 @@ class SystemConnectionConfigLink(Base):
     connection_config = relationship("ConnectionConfig")  # type: ignore[misc]
 
     __table_args__: tuple = ()
-
-    @classmethod
-    def create_or_update_link(
-        cls,
-        db: Session,
-        system_id: str,
-        connection_config_id: str,
-    ) -> SystemConnectionConfigLink:
-        """Replace any existing link for this connection_config with a new one.
-
-        Ensures at most one system link per connection config.
-
-        Prefer ``SystemIntegrationLinkRepository.create_or_update_link`` for
-        new code; this class-level helper is retained for seed scripts and
-        test fixtures where the full repository is not readily available.
-        """
-        db.execute(delete(cls).where(cls.connection_config_id == connection_config_id))
-
-        link = cls(
-            system_id=system_id,
-            connection_config_id=connection_config_id,
-        )
-        db.add(link)
-        db.flush()
-        return link

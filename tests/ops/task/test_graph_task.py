@@ -49,7 +49,7 @@ from fides.api.task.task_resources import Connections
 from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 from ..graph.graph_test_util import (
     MockMongoTask,
@@ -787,8 +787,10 @@ class TestFormatDataUseMapForCaching:
                 "disabled": False,
             },
         )
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
         )
         db.commit()
 
@@ -817,8 +819,10 @@ class TestFormatDataUseMapForCaching:
                 "disabled": False,
             },
         )
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system_multiple_decs.id, connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system_multiple_decs.id,
+            connection_config_id=connection_config.id,
+            session=db,
         )
         db.commit()
 

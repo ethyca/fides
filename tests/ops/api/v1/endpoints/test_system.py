@@ -38,7 +38,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -146,8 +146,10 @@ class TestPatchSystemConnections:
     def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, oauth2_authorization_code_connection_config, db: Session
     ):
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, oauth2_authorization_code_connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=oauth2_authorization_code_connection_config.id,
+            session=db,
         )
         db.commit()
         db.refresh(system)
@@ -157,8 +159,10 @@ class TestPatchSystemConnections:
     def system_linked_with_oauth2_client_credentials_connection_config(
         self, system: System, oauth2_client_credentials_connection_config, db: Session
     ):
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, oauth2_client_credentials_connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=oauth2_client_credentials_connection_config.id,
+            session=db,
         )
         db.commit()
         db.refresh(system)
@@ -507,8 +511,10 @@ class TestDeleteSystemConnectionConfig:
     def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, connection_config, db: Session
     ):
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
         )
         db.commit()
         db.refresh(system)
@@ -567,8 +573,10 @@ class TestDeleteSystemConnectionConfig:
         """Assert both the connection config and its webhook are deleted"""
         access_manual_webhook_id = access_manual_webhook.id
         integration_manual_webhook_config_id = integration_manual_webhook_config.id
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, integration_manual_webhook_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=integration_manual_webhook_config.id,
+            session=db,
         )
         db.commit()
         assert (
