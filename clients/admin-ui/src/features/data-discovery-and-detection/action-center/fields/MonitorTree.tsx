@@ -524,11 +524,58 @@ const MonitorTree = forwardRef<
      */
     const refreshResourcesAndAncestors = useCallback(
       async (urns: string[]) => {
-        const updateAncestorsForUrn = async (urn?: string) => {
+        // Special case: when no URNs provided (bulk action on all filtered resources),
+        // use get_tree to refresh top-level databases with filtered descendants
+        if (urns.length === 0) {
+          try {
+            const result = await trigger({
+              monitor_config_id: monitorId,
+              size: TREE_PAGE_SIZE,
+            });
+
+            if (result.error) {
+              errorAlert(
+                getErrorMessage(result.error),
+                "Failed to get schema explorer top-level resources",
+              );
+              return;
+            }
+
+            const topLevelData = result.data;
+            if (!topLevelData?.items) {
+              return;
+            }
+
+            topLevelData.items.forEach((node) => {
+              collapseNodeAndRemoveChildren(node.urn);
+            });
+
+            setTreeData((origin) =>
+              topLevelData.items.reduce(
+                (tree, node) =>
+                  updateNodeStatus(
+                    tree,
+                    node.urn,
+                    node.update_status,
+                    node.diff_status,
+                  ),
+                origin,
+              ),
+            );
+          } catch (error) {
+            errorAlert(
+              "An unexpected error occurred while refreshing the schema explorer",
+            );
+          }
+          return;
+        }
+
+        // For specific URNs, get ancestors and update them
+        const updateAncestorsForUrn = async (urn: string) => {
           try {
             const result = await triggerAncestorsStatuses({
               monitor_config_id: monitorId,
-              ...(urn && { staged_resource_urn: urn }),
+              staged_resource_urn: urn,
             });
 
             if (result.error) {
@@ -544,17 +591,8 @@ const MonitorTree = forwardRef<
               return;
             }
 
-            // Collapse the affected URN and remove its children
-            if (urn) {
-              collapseNodeAndRemoveChildren(urn);
-            } else {
-              // ancestorsData contains the databases of the monitor
-              ancestorsData.forEach((ancestorNode) => {
-                collapseNodeAndRemoveChildren(ancestorNode.urn);
-              });
-            }
+            collapseNodeAndRemoveChildren(urn);
 
-            // Update the status and diffStatus of each ancestor node
             setTreeData((origin) =>
               ancestorsData.reduce(
                 (tree, ancestorNode) =>
@@ -573,15 +611,11 @@ const MonitorTree = forwardRef<
           }
         };
 
-        if (urns.length === 0) {
-          await updateAncestorsForUrn();
-          return;
-        }
-
         // Process all URNs in parallel
         await Promise.all(urns.map((urn) => updateAncestorsForUrn(urn)));
       },
       [
+        trigger,
         triggerAncestorsStatuses,
         monitorId,
         collapseNodeAndRemoveChildren,
