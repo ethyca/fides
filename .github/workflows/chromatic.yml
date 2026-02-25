@@ -1,0 +1,65 @@
+name: "Chromatic"
+
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+  push:
+    branches:
+      - "main"
+      - "release-**"
+
+env:
+  NODE_VERSION: 24.X
+
+jobs:
+  check-fidesui-changes:
+    name: Check Fidesui Changes
+    runs-on: ubuntu-latest
+    outputs:
+      has_fidesui_changes: ${{ steps.filter.outputs.fidesui }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for fidesUI file changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          list-files: shell
+          filters: |
+            fidesui:
+              - 'clients/fidesui/**'
+              - '.github/workflows/chromatic.yml'
+
+      - name: Log changed files
+        if: steps.filter.outputs.fidesui == 'true'
+        run: echo "${{ steps.filter.outputs.fidesui_files }}"
+
+  chromatic:
+    name: Run Chromatic
+    needs: check-fidesui-changes
+    if: needs.check-fidesui-changes.outputs.has_fidesui_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        working-directory: clients
+        run: npm ci
+      - name: Run Chromatic
+        uses: chromaui/action@latest
+        with:
+          workingDir: clients/fidesui
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          zip: true
+          onlyChanged: true # 👈 Required option to enable TurboSnap
