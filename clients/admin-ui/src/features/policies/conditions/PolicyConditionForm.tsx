@@ -26,7 +26,7 @@ const POLICY_OPERATOR_OPTIONS = [
 interface FormValues {
   fieldAddress: string;
   operator: Operator;
-  value?: string;
+  value?: string | string[];
 }
 
 interface PolicyConditionFormProps {

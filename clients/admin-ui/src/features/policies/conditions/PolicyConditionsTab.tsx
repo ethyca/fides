@@ -119,9 +119,10 @@ export const PolicyConditionsTab = ({
             ? "Condition updated successfully!"
             : "Condition added successfully!",
         );
-      } catch {
+      } catch (e) {
         setLeafConditions(original);
         message.error("Failed to save condition. Please try again.");
+        throw e;
       }
     },
     [leafConditions, editingIndex, saveConditions, message],
