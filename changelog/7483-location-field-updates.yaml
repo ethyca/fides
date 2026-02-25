@@ -1,0 +1,4 @@
+type: Changed
+description: Updated policy condition builder with multiselect location fields and improved labels
+pr: 7483
+labels: []
