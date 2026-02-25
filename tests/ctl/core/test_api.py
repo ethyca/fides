@@ -60,6 +60,8 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import FidesConfig, get_config
 from fides.core import api as _api
+from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 CONFIG = get_config()
 
@@ -2921,7 +2923,7 @@ class TestSystemDelete:
         )
         assert result.status_code == HTTP_403_FORBIDDEN
 
-    def test_delete_system_deletes_connection_config_and_dataset(
+    def test_delete_system_unlinks_connection_config(
         self,
         test_config,
         db,
@@ -2930,40 +2932,52 @@ class TestSystemDelete:
         dataset_config: DatasetConfig,
     ) -> None:
         """
-        Ensure that deleting the system also deletes any associated
-        ConnectionConfig and DatasetConfig records
+        Deleting a system cascade-deletes the join-table link but
+        preserves the ConnectionConfig and DatasetConfig (they become
+        orphaned).  This changed when system_id moved from a direct FK
+        on ConnectionConfig to the system_connection_config_link table.
         """
         auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
 
         connection_config = dataset_config.connection_config
-        connection_config.system_id = (
-            system.id
-        )  # tie the connectionconfig to the system we will delete
-        connection_config.save(db)
-        # the keys are cached before the delete
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.commit()
+        system_fides_key = system.fides_key
+        connection_config_id = connection_config.id
         connection_config_key = connection_config.key
         dataset_config_key = dataset_config.fides_key
 
-        # delete the system via API
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type="system",
-            resource_id=system.fides_key,
+            resource_id=system_fides_key,
             headers=auth_header,
         )
         assert result.status_code == HTTP_200_OK
 
-        # ensure our system itself was deleted
-        assert db.query(System).filter_by(fides_key=system.fides_key).first() is None
-        # ensure our associated ConnectionConfig was deleted
+        db.expire_all()
+
+        assert db.query(System).filter_by(fides_key=system_fides_key).first() is None
+
+        # Link row is cascade-deleted, but ConnectionConfig and
+        # DatasetConfig are preserved (orphaned).
         assert (
-            db.query(ConnectionConfig).filter_by(key=connection_config_key).first()
+            db.query(SystemConnectionConfigLink)
+            .filter_by(connection_config_id=connection_config_id)
+            .first()
             is None
         )
-        # and ensure our associated DatasetConfig was deleted
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config_key).first()
+            is not None
+        )
         assert (
             db.query(DatasetConfig).filter_by(fides_key=dataset_config_key).first()
-            is None
+            is not None
         )
 
     def test_owner_role_gets_404_if_system_not_found(

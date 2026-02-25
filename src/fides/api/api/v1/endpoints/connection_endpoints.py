@@ -65,6 +65,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -140,10 +141,13 @@ def get_connections(
         )
 
     if orphaned_from_system is not None:
+        has_system_link = (
+            SystemIntegrationLinkRepository.has_system_link_exists_clause()
+        )
         if orphaned_from_system:
-            query = query.filter(ConnectionConfig.system_id.is_(null()))
+            query = query.filter(~has_system_link)
         else:
-            query = query.filter(ConnectionConfig.system_id.is_not(null()))  # type: ignore
+            query = query.filter(has_system_link)
 
     if system_type:
         if system_type == SystemType.saas:
