@@ -266,6 +266,14 @@ export interface ReminderResponse {
   message_id: string | null;
 }
 
+export interface CreatePrivacyAssessmentRequest {
+  assessment_type: string;
+  system_fides_key?: string;
+  declaration_id?: string;
+  use_llm?: boolean;
+  model?: string;
+}
+
 export interface CreatePrivacyAssessmentResponse {
   assessments: PrivacyAssessmentResponse[];
   assessment_type: string;

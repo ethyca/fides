@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import type { Page_TemplateResponse_ } from "~/types/api";
 
 import {
   AssessmentEvidenceResponse,
@@ -24,6 +25,17 @@ import {
 const privacyAssessmentsApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
+    getAssessmentTemplates: build.query<
+      Page_TemplateResponse_,
+      { page: number; size: number }
+    >({
+      query: (params) => ({
+        url: "plus/privacy-assessments/templates",
+        params,
+      }),
+      providesTags: ["Assessment Template"],
+    }),
+
     getPrivacyAssessments: build.query<
       Page_PrivacyAssessmentResponse_,
       GetPrivacyAssessmentsParams | void
@@ -165,6 +177,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
   useGetPrivacyAssessmentQuery,
   useCreatePrivacyAssessmentMutation,
