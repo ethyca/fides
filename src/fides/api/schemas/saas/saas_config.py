@@ -24,7 +24,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
-from fides.api.util.domain_util import wildcard_to_regex
+from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.config import CONFIG
 
 
@@ -387,15 +387,7 @@ class ConnectorParam(BaseModel):
             for val in values_to_check:
                 if not isinstance(val, str):
                     continue
-                if not any(
-                    re.fullmatch(wildcard_to_regex(pattern), val)
-                    for pattern in allowed_values
-                ):
-                    raise ValueError(
-                        f"default_value '{val}' for connector param '{name}' "
-                        f"does not match any of the allowed_values: "
-                        f"[{', '.join(allowed_values)}]"
-                    )
+                validate_value_against_allowed_list(val, allowed_values, str(name))
 
         return values
 

@@ -428,6 +428,7 @@ class TestPatchSaaSConfigAllowedValuesAfterDelete:
         for param in config["connector_params"]:
             if param["name"] == "domain":
                 param["type"] = "endpoint"
+                param["default_value"] = "safe.example.com"
                 param["allowed_values"] = ["safe.example.com"]
         return config
 

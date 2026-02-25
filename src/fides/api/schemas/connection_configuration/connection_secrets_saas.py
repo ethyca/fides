@@ -20,10 +20,8 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.util.saas_util import (
-    is_domain_validation_disabled,
-    validate_value_against_allowed_list,
-)
+from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.api.util.saas_util import is_domain_validation_disabled
 
 
 class SaaSSchema(BaseModel, abc.ABC):
