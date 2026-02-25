@@ -47,8 +47,8 @@ export const QuestionCard = ({ assessmentId, question }: QuestionCardProps) => {
   };
 
   return (
-    <div className={styles.container}>
-      <Flex justify="space-between" align="center" className={styles.header}>
+    <div className={`${styles.container} p-4 pb-2`}>
+      <Flex justify="space-between" align="center" className="mb-3">
         <Text strong>
           {question.id}. {question.question_text}
         </Text>
