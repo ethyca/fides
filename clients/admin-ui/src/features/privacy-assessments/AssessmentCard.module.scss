@@ -1,0 +1,24 @@
+.cardWrapper {
+  display: flex;
+  flex-direction: column;
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+}
+
+.cardComplete {
+  border-left: 4px solid var(--fidesui-success);
+}
+
+.completeContainer {
+  border-radius: var(--ant-border-radius-lg);
+  padding: var(--ant-padding-sm);
+  background-color: color-mix(in srgb, var(--fidesui-success) 10%, transparent);
+}
+
+.textWithTags {
+  line-height: 2em;
+}

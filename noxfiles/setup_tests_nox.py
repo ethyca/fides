@@ -458,6 +458,7 @@ def pytest_misc_unit(session: Session, pytest_config: PytestConfig) -> None:
         "/opt/fides/bin/python",
         "pytest",
         *pytest_config.args,
+        "tests/common/",
         "tests/service/",
         "tests/task/",
         "tests/util/",
