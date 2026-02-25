@@ -203,6 +203,7 @@ export type {
   TablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
+  BadgeProps,
   ButtonProps,
   CheckboxProps,
   CollapseProps,
@@ -218,6 +219,7 @@ export type {
   InputRef,
   MenuProps,
   ModalProps,
+  PopoverProps,
   ProgressProps,
   RadioChangeEvent,
   RadioGroupProps,

@@ -11,8 +11,8 @@ import {
   useChakraToast as useToast,
 } from "fidesui";
 import type { NextPage } from "next";
-import { useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { ReactNode, useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import sanitizeHTML from "~/common/sanitize-html";
@@ -24,10 +24,6 @@ import {
   useConsentRequestModal,
 } from "~/components/modals/consent-request-modal/ConsentRequestModal";
 import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
-import {
-  PrivacyRequestModal,
-  usePrivacyRequestModal,
-} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
 import PrivacyCard from "~/components/PrivacyCard";
 import { useConfig } from "~/features/common/config.slice";
 import {
@@ -62,22 +58,12 @@ const TextOrHtml = ({
 
 const HomePage: NextPage = () => {
   const config = useConfig();
+  const router = useRouter();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const [isConsentVerificationDisabled, setIsConsentVerificationDisabled] =
     useState<boolean>(false);
   const toast = useToast();
-  const {
-    isOpen: isPrivacyModalOpen,
-    onClose: onPrivacyModalClose,
-    onOpen: onPrivacyModalOpen,
-    openAction,
-    currentView: currentPrivacyModalView,
-    setCurrentView: setCurrentPrivacyModalView,
-    privacyRequestId,
-    setPrivacyRequestId,
-    successHandler: privacyModalSuccessHandler,
-  } = usePrivacyRequestModal();
 
   const {
     isOpen: isConsentModalOpenConst,
@@ -142,17 +128,25 @@ const HomePage: NextPage = () => {
     toast,
   ]);
 
-  const content: any = [];
+  const handlePrivacyRequestOpen = (policyKey: string) => {
+    // Preserve search params when navigating to privacy request page
+    const currentSearchParams = searchParams?.toString();
+    const url = currentSearchParams
+      ? `/privacy-request/${encodeURIComponent(policyKey)}?${currentSearchParams}`
+      : `/privacy-request/${encodeURIComponent(policyKey)}`;
+    router.push(url);
+  };
 
-  config.actions.forEach((action, index) => {
+  const content: ReactNode[] = [];
+
+  config.actions.forEach((action) => {
     content.push(
       <PrivacyCard
-        key={action.title}
-        index={index}
+        key={action.policy_key}
         title={action.title}
         iconPath={action.icon_path}
         description={action.description}
-        onOpen={onPrivacyModalOpen}
+        onClick={() => handlePrivacyRequestOpen(action.policy_key)}
       />,
     );
   });
@@ -255,17 +249,6 @@ const HomePage: NextPage = () => {
           </Stack>
         )}
       </Stack>
-      <PrivacyRequestModal
-        isOpen={isPrivacyModalOpen}
-        onClose={onPrivacyModalClose}
-        openAction={openAction}
-        currentView={currentPrivacyModalView}
-        setCurrentView={setCurrentPrivacyModalView}
-        privacyRequestId={privacyRequestId}
-        setPrivacyRequestId={setPrivacyRequestId}
-        isVerificationRequired={isVerificationRequired}
-        successHandler={privacyModalSuccessHandler}
-      />
 
       <ConsentRequestModal
         isOpen={isConsentModalOpen}

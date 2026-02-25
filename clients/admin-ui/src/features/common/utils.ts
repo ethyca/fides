@@ -293,6 +293,23 @@ export const truncateUrl = (url: string, limit: number): string => {
  * nFormatter(1111, 1); // returns "1.1K"
  * nFormatter(1111, 2); // returns "1.11K"
  */
+/**
+ * Converts a snake_case string into a human-readable title.
+ * Known acronyms are uppercased; other words are title-cased.
+ */
+export const snakeCaseToTitleCase = (
+  name: string,
+  acronyms: string[] = [],
+): string =>
+  name
+    .split("_")
+    .map((word) =>
+      acronyms.includes(word)
+        ? word.toUpperCase()
+        : word.charAt(0).toUpperCase() + word.slice(1),
+    )
+    .join(" ");
+
 export const nFormatter = (num: number = 0, digits: number = 0) =>
   Intl.NumberFormat("en", {
     notation: "compact",

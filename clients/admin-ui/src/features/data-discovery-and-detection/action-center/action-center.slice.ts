@@ -120,6 +120,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       query: ({ monitor_config_id, staged_resource_urn }) => ({
         url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}&${getQueryParamsFromArray(staged_resource_urn, "staged_resource_urn")}`,
       }),
+      providesTags: ["Datastore Filters"],
     }),
 
     getMonitorTree: build.query<
@@ -128,6 +129,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         monitor_config_id: string;
         staged_resource_urn?: string;
         include_descendant_details?: boolean;
+        diff_status?: DiffStatus[];
       }
     >({
       query: ({
@@ -136,17 +138,21 @@ const actionCenterApi = baseApi.injectEndpoints({
         monitor_config_id,
         staged_resource_urn,
         include_descendant_details,
-      }) => ({
-        url: `/plus/discovery-monitor/${monitor_config_id}/tree`,
-        params: {
-          staged_resource_urn,
-          include_descendant_details,
-          cursor,
-          size,
-        },
-      }),
-    }),
+        diff_status,
+      }) => {
+        const urlParams = buildArrayQueryParams({ diff_status });
 
+        return {
+          url: `/plus/discovery-monitor/${monitor_config_id}/tree?${urlParams}`,
+          params: {
+            staged_resource_urn,
+            include_descendant_details,
+            cursor,
+            size,
+          },
+        };
+      },
+    }),
     getMonitorTreeAncestorsStatuses: build.query<
       Array<DatastoreStagedResourceTreeAPIResponse>,
       {

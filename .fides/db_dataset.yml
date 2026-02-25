@@ -1493,6 +1493,28 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: jira_ticket_task
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: manual_task_instance_id
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+    - name: ticket_key
+      data_categories: [system.operations]
+    - name: ticket_url
+      data_categories: [system.operations]
+    - name: external_status
+      data_categories: [system.operations]
+    - name: external_status_category
+      data_categories: [system.operations]
+    - name: last_polled_at
+      data_categories: [system.operations]
   - name: monitorexecution
     data_categories: []
     fields:
@@ -1563,6 +1585,54 @@ dataset:
       data_categories:
       - system.operations
     - name: updated_at
+      data_categories:
+      - system.operations
+    - name: privacy_assessment_task_id
+      data_categories:
+      - system.operations
+  - name: privacy_assessment_task
+    description: 'Tracks async Celery task execution for privacy assessment generation'
+    fields:
+    - name: id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: action_type
+      data_categories:
+      - system.operations
+    - name: status
+      data_categories:
+      - system.operations
+    - name: celery_id
+      data_categories:
+      - system.operations
+    - name: total_count
+      data_categories:
+      - system.operations
+    - name: completed_count
+      data_categories:
+      - system.operations
+    - name: message
+      data_categories:
+      - system.operations
+    - name: assessment_types
+      data_categories:
+      - system.operations
+    - name: system_fides_keys
+      data_categories:
+      - system.operations
+    - name: created_by
+      data_categories:
+      - system.operations
+    - name: use_llm
+      data_categories:
+      - system.operations
+    - name: llm_model
       data_categories:
       - system.operations
   - name: policy

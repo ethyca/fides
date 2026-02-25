@@ -10,7 +10,7 @@ from fides.service.dataset.dataset_service import (
     DatasetService,
     LinkedDatasetException,
 )
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 @pytest.fixture
@@ -226,8 +226,10 @@ class TestDatasetServiceDeleteDataset:
             "access": "write",
         }
         connection_config = ConnectionConfig.create(db, data=connection_data)
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
         )
         db.commit()
 

@@ -67,7 +67,7 @@ from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.async_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
@@ -1579,8 +1579,10 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
             "access": "write",
         },
     )
-    SystemConnectionConfigLink.create_or_update_link(
-        db, system.id, connection_config.id
+    SystemIntegrationLinkRepository().create_or_update_link(
+        system_id=system.id,
+        connection_config_id=connection_config.id,
+        session=db,
     )
     db.commit()
 

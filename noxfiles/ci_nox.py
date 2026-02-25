@@ -347,6 +347,7 @@ TEST_MATRIX: Dict[str, Callable] = {
 # This maps actual test directories to the test groups that cover them
 TEST_DIRECTORY_COVERAGE = {
     "tests/api/": ["api"],
+    "tests/common/": ["misc-unit"],
     "tests/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
     "tests/lib/": ["lib"],
     "tests/ops/": [
