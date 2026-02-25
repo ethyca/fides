@@ -2242,7 +2242,16 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">543</span>
 <span class="normal">544</span>
 <span class="normal">545</span>
-<span class="normal">546</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2289,7 +2298,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;e882f2c5836fd01d5a5fcb30b8bddc2f&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0f0caa05d5a86266a163d9869d488c39&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2613,8 +2622,9 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1">#--------------------------------------------------------------------#</span>
 <span class="k">[redis]</span><span class="w"> </span><span class="c1"># Configuration settings for Redis.</span>
 
-<span class="c1"># Character set to use for Redis, defaults to &#39;utf8&#39;. Not recommended</span>
-<span class="c1"># to change.</span>
+<span class="c1"># Deprecated and ignored. Redis connections use decode_responses only.</span>
+<span class="c1"># Kept for config compatibility; a deprecation warning is emitted if</span>
+<span class="c1"># set to a non-default value. Will be removed in a future release.</span>
 <span class="n">charset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;utf8&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># The application will use this index in the Redis cache to cache data.</span>
@@ -2624,8 +2634,8 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># for testing.</span>
 <span class="n">test_db_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1"># integer</span>
 
-<span class="c1"># Whether or not to automatically decode the values fetched from Redis.</span>
-<span class="c1"># Decodes using the `charset` configuration value.</span>
+<span class="c1"># Whether or not to automatically decode the values fetched from Redis</span>
+<span class="c1"># as UTF-8 strings.</span>
 <span class="n">decode_responses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># The number of seconds for which data will live in Redis before</span>
@@ -2635,6 +2645,14 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Whether the application&#39;s Redis cache should be enabled. Only set to</span>
 <span class="c1"># false for certain narrow uses of the application.</span>
 <span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># When True, connect to Redis in cluster mode for the application</span>
+<span class="c1"># cache. Uses host/port for cluster discovery. db_index and</span>
+<span class="c1"># read_only_host are ignored; use read_from_replicas for read scaling.</span>
+<span class="c1"># With celery-redis-cluster, Celery can use the same cluster for</span>
+<span class="c1"># broker/backend (redis+cluster://) or set</span>
+<span class="c1"># celery.broker_url/result_backend to override.</span>
+<span class="n">cluster_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># The network address for the application Redis cache.</span>
 <span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;redis&quot;</span><span class="w"> </span><span class="c1"># string</span>
