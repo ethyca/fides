@@ -7,6 +7,8 @@ from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 from pydantic import Field as PydanticField
 
 from fides.api.common_exceptions import ValidationError
+from fides.api.util.domain_util import wildcard_to_regex
+from fides.config import CONFIG
 from fides.api.graph.config import (
     Collection,
     CollectionAddress,
@@ -369,6 +371,31 @@ class ConnectorParam(BaseModel):
             raise ValueError(
                 f"The 'multiselect' field in the {name} connector_param must be accompanied by an 'options' field containing a list of values."
             )
+
+        param_type = values.get("type")
+        allowed_values = values.get("allowed_values")
+        if (
+            param_type == "endpoint"
+            and allowed_values is not None
+            and len(allowed_values) > 0
+            and default_value is not None
+            and not (CONFIG.dev_mode or CONFIG.security.disable_domain_validation)
+        ):
+            values_to_check = (
+                default_value if isinstance(default_value, list) else [default_value]
+            )
+            for val in values_to_check:
+                if not isinstance(val, str):
+                    continue
+                if not any(
+                    re.fullmatch(wildcard_to_regex(pattern), val)
+                    for pattern in allowed_values
+                ):
+                    raise ValueError(
+                        f"default_value '{val}' for connector param '{name}' "
+                        f"does not match any of the allowed_values: "
+                        f"[{', '.join(allowed_values)}]"
+                    )
 
         return values
 
