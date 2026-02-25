@@ -14,7 +14,6 @@ import { ANSWER_SOURCE_LABELS, ANSWER_SOURCE_TAG_COLORS } from "./constants";
 import { EditableTextBlock } from "./EditableTextBlock";
 import { useUpdateAssessmentAnswerMutation } from "./privacy-assessments.slice";
 import styles from "./QuestionCard.module.scss";
-import { ReferenceBadge } from "./ReferenceBadge";
 import { AnswerStatus, AssessmentQuestion } from "./types";
 
 interface QuestionCardProps {
@@ -72,7 +71,6 @@ export const QuestionCard = ({ assessmentId, question }: QuestionCardProps) => {
         onSave={handleSave}
         isLoading={isSaving}
         placeholder="Enter your answer..."
-        renderContent={(text) => <ReferenceBadge text={text} />}
       />
     </div>
   );

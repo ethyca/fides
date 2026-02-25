@@ -18,7 +18,6 @@ interface EditableTextBlockProps {
   isLoading?: boolean;
   placeholder?: string;
   readOnly?: boolean;
-  renderContent?: (text: string) => React.ReactNode;
   className?: string;
 }
 
@@ -28,7 +27,6 @@ export const EditableTextBlock = ({
   isLoading = false,
   placeholder,
   readOnly = false,
-  renderContent,
   className,
 }: EditableTextBlockProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -99,11 +97,7 @@ export const EditableTextBlock = ({
       }
       size="lg"
     >
-      {value ? (
-        (renderContent?.(value) ?? value)
-      ) : (
-        <span className={styles.placeholder}>{placeholder}</span>
-      )}
+      {value || <span className={styles.placeholder}>{placeholder}</span>}
     </Typography.Paragraph>
   );
 };
