@@ -3,7 +3,6 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQU
 
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.util.api_router import APIRouter
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.common.api.scope_registry import (
     SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE,
     SYSTEM_INTEGRATION_LINK_DELETE,
