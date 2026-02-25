@@ -44,8 +44,8 @@ export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;
 export const PRIVACY_REQUEST_DETAIL_ROUTE = "/privacy-requests/[id]";
-export const POLICIES_ROUTE = "/privacy-requests/policies";
-export const POLICY_DETAIL_ROUTE = "/privacy-requests/policies/[key]";
+export const POLICIES_ROUTE = "/privacy-request-policies";
+export const POLICY_DETAIL_ROUTE = "/privacy-request-policies/[key]";
 
 // Consent group
 export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
@@ -105,6 +105,7 @@ export const FORMS_POC_ROUTE = "/poc/forms";
 export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
+export const PROMPT_EXPLORER_ROUTE = "/poc/prompt-explorer";
 
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";

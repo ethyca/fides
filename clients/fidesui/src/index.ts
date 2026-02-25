@@ -218,6 +218,7 @@ export type {
   InputRef,
   MenuProps,
   ModalProps,
+  PopoverProps,
   ProgressProps,
   RadioChangeEvent,
   RadioGroupProps,
@@ -323,6 +324,8 @@ export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
+export type { SparklineProps } from "./components/charts/Sparkline";
+export { default as Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
