@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed datamap report drawer briefly showing previously selected system when opening a new one
+pr: 7465
+labels: []
