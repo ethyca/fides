@@ -36,6 +36,10 @@ class RedisSettings(FidesSettings):
         default=True,
         description="Whether the application's Redis cache should be enabled. Only set to false for certain narrow uses of the application.",
     )
+    cluster_enabled: bool = Field(
+        default=False,
+        description="When True, connect to Redis in cluster mode for the application cache. Uses host/port for cluster discovery. db_index and read_only_host are ignored; use read_from_replicas for read scaling. With celery-redis-cluster, Celery can use the same cluster for broker/backend (redis+cluster://) or set celery.broker_url/result_backend to override.",
+    )
     host: str = Field(
         default="redis",
         description="The network address for the application Redis cache.",
@@ -286,5 +290,14 @@ class RedisSettings(FidesSettings):
             f"{connection_protocol}://{auth_prefix}{host}:{port}/{db_path}{params_str}"
         )
         return connection_url
+
+    def get_cluster_connection_url(self) -> str:
+        """Build a redis+cluster:// or rediss+cluster:// URL for Celery broker/backend."""
+        scheme = "rediss" if self.ssl else "redis"
+        auth_prefix = ""
+        if self.password or self.user:
+            encoded_password = quote_plus(self.password)
+            auth_prefix = f"{quote_plus(self.user)}:{encoded_password}@"
+        return f"{scheme}+cluster://{auth_prefix}{self.host}:{self.port}/0"
 
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
