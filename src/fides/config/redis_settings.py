@@ -1,3 +1,4 @@
+import warnings
 from typing import Optional
 from urllib.parse import quote, quote_plus, urlencode
 
@@ -14,7 +15,7 @@ class RedisSettings(FidesSettings):
 
     charset: str = Field(
         default="utf8",
-        description="Character set to use for Redis, defaults to 'utf8'. Not recommended to change.",
+        description="Deprecated and ignored. Redis connections use decode_responses only. Kept for config compatibility; a deprecation warning is emitted if set to a non-default value. Will be removed in a future release.",
     )
     db_index: int = Field(
         default=0,
@@ -26,7 +27,7 @@ class RedisSettings(FidesSettings):
     )
     decode_responses: bool = Field(
         default=True,
-        description="Whether or not to automatically decode the values fetched from Redis. Decodes using the `charset` configuration value.",
+        description="Whether or not to automatically decode the values fetched from Redis as UTF-8 strings.",
     )
     default_ttl_seconds: int = Field(
         default=604800,
@@ -112,6 +113,19 @@ class RedisSettings(FidesSettings):
         default=None,
         description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate. If not provided, the `ssl_ca_certs` setting will be used.",
     )
+
+    @field_validator("charset", mode="after")
+    @classmethod
+    def warn_if_charset_set(cls, v: str) -> str:
+        """Emit a deprecation warning if charset is set to a non-default value."""
+        if v != "utf8":
+            warnings.warn(
+                "redis.charset (FIDES__REDIS__CHARSET) is deprecated and ignored; "
+                "Redis connections use decode_responses only. It will be removed in a future release.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        return v
 
     # Field validators for automatic fallback behavior
     @field_validator("read_only_port", mode="before")

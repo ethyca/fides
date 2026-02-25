@@ -1,6 +1,7 @@
 """Contains the nox sessions used during CI checks."""
 
 import os
+import socket
 from enum import StrEnum
 from functools import partial
 from pathlib import Path
@@ -330,8 +331,6 @@ REDIS_CLUSTER_TEST_PATHS = [
 
 def _redis_cluster_reachable(host: str = "127.0.0.1", port: int = 6380) -> bool:
     """Return True if a Redis server is reachable at host:port (cluster or standalone)."""
-    import socket
-
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(2)
     try:

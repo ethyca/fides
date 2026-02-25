@@ -39,7 +39,7 @@ _read_only_connection = None
 
 def _is_redis_cluster(client: Any) -> bool:
     """Return True if the client is a Redis Cluster (for cluster-aware behavior)."""
-    return RedisCluster is not None and type(client).__name__ == "RedisCluster"
+    return RedisCluster is not None and isinstance(client, RedisCluster)
 
 
 class FidesopsRedis:
