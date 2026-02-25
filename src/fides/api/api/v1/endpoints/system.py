@@ -20,6 +20,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
+from fides.api.api.v1.endpoints.connection_endpoints import _enrich_linked_systems
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
 from fides.api.db.crud import get_resource, get_resource_with_custom_fields
 from fides.api.db.ctl_session import get_async_db
@@ -44,7 +45,6 @@ from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
     CreateConnectionConfigurationWithSecrets,
-    LinkedSystemInfo,
     SaasConnectionTemplateResponse,
 )
 from fides.api.schemas.connection_configuration.connection_secrets import (
@@ -131,13 +131,7 @@ def get_system_connections(
         results = []
         for item in items:
             resp = ConnectionConfigurationResponse.model_validate(item)
-            if item.system:
-                resp.linked_systems = [
-                    LinkedSystemInfo(
-                        fides_key=item.system.fides_key,
-                        name=item.system.name,
-                    )
-                ]
+            _enrich_linked_systems(resp, item)
             results.append(resp)
         return results
 
