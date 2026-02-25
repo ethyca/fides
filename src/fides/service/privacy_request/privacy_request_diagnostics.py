@@ -1489,6 +1489,47 @@ def export_privacy_request_diagnostics(
     if cached_response:
         return cached_response
 
+    def _generate_upload_and_return() -> PrivacyRequestDiagnosticsExportResponse:
+        diagnostics = get_privacy_request_diagnostics(privacy_request_id, db)
+        buf = _serialize_diagnostics_to_zip(diagnostics)
+        object_key = _build_diagnostics_object_key(privacy_request_id)
+
+        provider.upload(  # type: ignore[attr-defined]
+            bucket=bucket,
+            key=object_key,
+            data=buf,
+            content_type="application/zip",
+        )
+
+        download_url = provider.generate_presigned_url(  # type: ignore[attr-defined]
+            bucket=bucket,
+            key=object_key,
+            ttl_seconds=CONFIG.security.subject_request_download_link_ttl_seconds,
+        )
+        created_at = datetime.now(timezone.utc)
+
+        if cache:
+            pointer = {
+                "storage_config_key": storage_config_key,
+                "storage_type": storage_type.value,
+                "bucket": bucket,
+                "object_key": object_key,
+                "created_at": created_at.isoformat(),
+            }
+            cache.set_with_autoexpire(
+                cache_key,
+                FidesopsRedis.encode_obj(pointer),
+                expire_time=PRIVACY_REQUEST_DIAGNOSTICS_CACHE_TTL_SECONDS,
+            )
+
+        return PrivacyRequestDiagnosticsExportResponse(
+            download_url=str(download_url),
+            storage_type=storage_type.value,
+            storage_config_key=storage_config_key,
+            object_key=object_key,
+            created_at=created_at,
+        )
+
     # Best-effort locking; proceed without it if Redis unavailable.
     if cache:
         lock_key = _privacy_request_diagnostics_lock_key(privacy_request_id)
@@ -1497,48 +1538,16 @@ def export_privacy_request_diagnostics(
             timeout=PRIVACY_REQUEST_DIAGNOSTICS_LOCK_TIMEOUT_SECONDS,
             blocking=True,
             blocking_timeout=10,
-        ):
-            cached_response = _maybe_return_cached()
-            if cached_response:
-                return cached_response
-            # fall through to generation/upload
+        ) as lock:
+            if lock is not None:
+                cached_response = _maybe_return_cached()
+                if cached_response:
+                    return cached_response
+                return _generate_upload_and_return()
 
-    diagnostics = get_privacy_request_diagnostics(privacy_request_id, db)
-    buf = _serialize_diagnostics_to_zip(diagnostics)
-    object_key = _build_diagnostics_object_key(privacy_request_id)
+        # Lock was not acquired within timeout: try cache once more, then fall back.
+        cached_response = _maybe_return_cached()
+        if cached_response:
+            return cached_response
 
-    provider.upload(  # type: ignore[attr-defined]
-        bucket=bucket,
-        key=object_key,
-        data=buf,
-        content_type="application/zip",
-    )
-
-    download_url = provider.generate_presigned_url(  # type: ignore[attr-defined]
-        bucket=bucket,
-        key=object_key,
-        ttl_seconds=CONFIG.security.subject_request_download_link_ttl_seconds,
-    )
-    created_at = datetime.now(timezone.utc)
-
-    if cache:
-        pointer = {
-            "storage_config_key": storage_config_key,
-            "storage_type": storage_type.value,
-            "bucket": bucket,
-            "object_key": object_key,
-            "created_at": created_at.isoformat(),
-        }
-        cache.set_with_autoexpire(
-            cache_key,
-            FidesopsRedis.encode_obj(pointer),
-            expire_time=PRIVACY_REQUEST_DIAGNOSTICS_CACHE_TTL_SECONDS,
-        )
-
-    return PrivacyRequestDiagnosticsExportResponse(
-        download_url=str(download_url),
-        storage_type=storage_type.value,
-        storage_config_key=storage_config_key,
-        object_key=object_key,
-        created_at=created_at,
-    )
+    return _generate_upload_and_return()
