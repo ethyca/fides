@@ -59,7 +59,7 @@ const getIconComponent = (
   diffStatus?: DiffStatus | null,
   resourceType?: StagedResourceTypeValue,
 ) => {
-  if (diffStatus === "muted") {
+  if (diffStatus === DiffStatus.MUTED) {
     return Icons.ViewOff;
   }
 
