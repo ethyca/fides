@@ -288,6 +288,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         "Discovery Monitor Results",
         "Monitor Field Results",
         "Monitor Field Details",
+        "Datastore Filters",
       ],
     }),
     muteResources: build.mutation<any, BulkResourceActionQueryParams>({
@@ -302,6 +303,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         "Discovery Monitor Results",
         "Monitor Field Results",
         "Monitor Field Details",
+        "Datastore Filters",
       ],
     }),
     promoteResources: build.mutation<any, BulkResourceActionQueryParams>({
@@ -316,6 +318,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         "Discovery Monitor Results",
         "Monitor Field Results",
         "Monitor Field Details",
+        "Datastore Filters",
       ],
     }),
     updateResourceCategory: build.mutation<
@@ -341,6 +344,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         "Discovery Monitor Results",
         "Monitor Field Results",
         "Monitor Field Details",
+        "Datastore Filters",
       ],
     }),
     reviewStagedResources: build.mutation<
@@ -360,6 +364,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         "Discovery Monitor Results",
         "Monitor Field Results",
         "Monitor Field Details",
+        "Datastore Filters",
       ],
     }),
     // Identity Provider Monitor endpoints (Okta-specific)
