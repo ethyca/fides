@@ -39,6 +39,7 @@ jobs:
   chromatic:
     name: Run Chromatic
     needs: check-fidesui-changes
+    if: needs.check-fidesui-changes.outputs.has_fidesui_changes == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
