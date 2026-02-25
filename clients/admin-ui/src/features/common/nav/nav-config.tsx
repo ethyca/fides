@@ -176,14 +176,30 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Settings",
-    icon: <Icons.Settings />,
+    title: "Core configuration",
+    icon: <Icons.WorkflowAutomation />,
     routes: [
       {
-        title: "Properties",
-        path: routes.PROPERTIES_ROUTE,
+        title: "Taxonomy",
+        path: routes.TAXONOMY_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.DATA_USE_READ,
+          ScopeRegistryEnum.DATA_CATEGORY_READ,
+          ScopeRegistryEnum.DATA_SUBJECT_READ,
+        ],
+      },
+      {
+        title: "Integrations",
+        path: routes.INTEGRATION_MANAGEMENT_ROUTE,
         requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+        scopes: [
+          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
+          ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
+          ScopeRegistryEnum.CONNECTION_DELETE,
+          ScopeRegistryEnum.CONNECTION_INSTANTIATE,
+          ScopeRegistryEnum.CONNECTION_READ,
+          ScopeRegistryEnum.CONNECTION_TYPE_READ,
+        ],
       },
       {
         title: "Notifications",
@@ -194,6 +210,65 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
         ],
       },
+      {
+        title: "Custom fields",
+        path: routes.CUSTOM_FIELDS_ROUTE,
+        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
+        requiresPlus: true,
+      },
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
+      {
+        title: "Domain verification",
+        path: routes.DOMAIN_RECORDS_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: true,
+        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
+      },
+      {
+        title: "Domains",
+        path: routes.DOMAIN_MANAGEMENT_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+      },
+    ],
+  },
+  {
+    title: "Compliance",
+    icon: <Icons.RuleDraft />,
+    routes: [
+      {
+        title: "Locations",
+        path: routes.LOCATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.LOCATION_READ,
+          ScopeRegistryEnum.LOCATION_UPDATE,
+        ],
+        requiresPlus: true,
+      },
+      {
+        title: "Regulations",
+        path: routes.REGULATIONS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.LOCATION_READ,
+          ScopeRegistryEnum.LOCATION_UPDATE,
+        ],
+        requiresPlus: true,
+      },
+    ],
+  },
+  {
+    title: "Settings",
+    icon: <Icons.Settings />,
+    routes: [
       {
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
@@ -216,19 +291,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [], // Any authenticated user can access their own profile
       },
       {
-        title: "Integrations",
-        path: routes.INTEGRATION_MANAGEMENT_ROUTE,
-        requiresPlus: true,
-        scopes: [
-          ScopeRegistryEnum.CONNECTION_AUTHORIZE,
-          ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE,
-          ScopeRegistryEnum.CONNECTION_DELETE,
-          ScopeRegistryEnum.CONNECTION_INSTANTIATE,
-          ScopeRegistryEnum.CONNECTION_READ,
-          ScopeRegistryEnum.CONNECTION_TYPE_READ,
-        ],
-      },
-      {
         title: "Organization",
         path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
         scopes: [
@@ -237,60 +299,10 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Locations",
-        path: routes.LOCATIONS_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.LOCATION_READ,
-          ScopeRegistryEnum.LOCATION_UPDATE,
-        ],
-        requiresPlus: true,
-      },
-      {
-        title: "Regulations",
-        path: routes.REGULATIONS_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.LOCATION_READ,
-          ScopeRegistryEnum.LOCATION_UPDATE,
-        ],
-        requiresPlus: true,
-      },
-      {
-        title: "Taxonomy",
-        path: routes.TAXONOMY_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.DATA_USE_READ,
-          ScopeRegistryEnum.DATA_CATEGORY_READ,
-          ScopeRegistryEnum.DATA_SUBJECT_READ,
-        ],
-      },
-      {
-        title: "Custom fields",
-        path: routes.CUSTOM_FIELDS_ROUTE,
-        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
-        requiresPlus: true,
-      },
-      {
         title: "Email templates",
         path: routes.EMAIL_TEMPLATES_ROUTE,
         requiresOss: true,
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
-      },
-      {
-        title: "Domain verification",
-        path: routes.DOMAIN_RECORDS_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: true,
-        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
-      },
-      {
-        title: "Domains",
-        path: routes.DOMAIN_MANAGEMENT_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: false,
-        scopes: [
-          ScopeRegistryEnum.CONFIG_READ,
-          ScopeRegistryEnum.CONFIG_UPDATE,
-        ],
       },
       {
         title: "Consent",

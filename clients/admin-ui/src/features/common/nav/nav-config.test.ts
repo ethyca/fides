@@ -142,7 +142,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        findGroup(navGroups, "Settings")
+        findGroup(navGroups, "Core configuration")
           .children.map((c) => c.title)
           .find((title) => title === "Domain verification"),
       ).toBeDefined();
@@ -158,7 +158,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        findGroup(navGroups, "Settings")
+        findGroup(navGroups, "Core configuration")
           .children.map((c) => c.title)
           .find((title) => title === "Domain verification"),
       ).toBeUndefined();
@@ -179,7 +179,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        findGroup(navGroups, "Settings")
+        findGroup(navGroups, "Core configuration")
           .children.map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual({
@@ -194,7 +194,6 @@ describe("configureNavGroups", () => {
         userScopes: [
           ScopeRegistryEnum.CONFIG_READ,
           ScopeRegistryEnum.CONFIG_UPDATE,
-          // include this so Management group is non-empty without domains
           ScopeRegistryEnum.USER_READ,
         ],
         flags: undefined,
@@ -202,9 +201,12 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
+      const coreConfig = navGroups.find(
+        (g) => g.title === "Core configuration",
+      );
       expect(
-        findGroup(navGroups, "Settings")
-          .children.map((c) => ({ title: c.title, path: c.path }))
+        coreConfig?.children
+          .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toBeUndefined();
     });
@@ -221,9 +223,12 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
+      const coreConfig = navGroups.find(
+        (g) => g.title === "Core configuration",
+      );
       expect(
-        findGroup(navGroups, "Settings")
-          .children.map((c) => ({ title: c.title, path: c.path }))
+        coreConfig?.children
+          .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toBeUndefined();
     });

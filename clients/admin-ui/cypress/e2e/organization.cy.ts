@@ -11,7 +11,11 @@ describe("Organization page", () => {
   });
 
   it("can navigate to the Organization page", () => {
-    cy.visit("/");
+    cy.visit("/", {
+      onBeforeLoad(win) {
+        win.localStorage.setItem("mainSideNavCollapsed", "false");
+      },
+    });
     cy.getByTestId("Settings-nav-group").click();
     cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("Organization-nav-link").click();
