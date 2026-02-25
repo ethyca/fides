@@ -27,7 +27,6 @@ import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
-import { isAssessmentComplete } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -44,12 +43,13 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
 
-  const isComplete = useMemo(() => {
-    const questions = (assessment.question_groups ?? []).flatMap(
-      (g) => g.questions,
-    );
-    return isAssessmentComplete(questions);
-  }, [assessment.question_groups]);
+  const isComplete = useMemo(
+    () =>
+      (assessment.question_groups ?? [])
+        .flatMap((g) => g.questions)
+        .every((q) => q.answer_text.trim().length > 0),
+    [assessment.question_groups],
+  );
 
   const handleDelete = () => {
     modalApi.confirm({

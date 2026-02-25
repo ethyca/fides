@@ -9,4 +9,3 @@ export * from "./QuestionCard";
 export * from "./QuestionGroupPanel";
 export * from "./SlackIcon";
 export * from "./types";
-export * from "./utils";

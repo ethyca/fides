@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from "date-fns";
 import {
   Badge,
   Button,
@@ -10,7 +11,6 @@ import {
 
 import { RISK_LEVEL_DOT_COLORS, RISK_LEVEL_LABELS } from "./constants";
 import { QuestionGroup } from "./types";
-import { getInitials, getTimeSince } from "./utils";
 
 interface QuestionGroupPanelProps {
   group: QuestionGroup;
@@ -37,16 +37,8 @@ export const QuestionGroupPanel = ({
           <Flex gap="middle" align="center" wrap="wrap" className="mb-2">
             <Text type="secondary" size="sm">
               {group.last_updated_at
-                ? `Updated ${getTimeSince(group.last_updated_at)}`
+                ? `Updated ${formatDistanceToNow(new Date(group.last_updated_at), { addSuffix: true })}`
                 : "Not updated yet"}
-              {group.last_updated_by && (
-                <>
-                  {" by "}
-                  <Tag color={CUSTOM_TAG_COLOR.DEFAULT} className="ml-1">
-                    {getInitials(group.last_updated_by)}
-                  </Tag>
-                </>
-              )}
             </Text>
             <Text type="secondary" size="sm">
               <Text strong size="sm">
