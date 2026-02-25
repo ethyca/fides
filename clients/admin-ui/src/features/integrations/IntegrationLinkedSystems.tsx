@@ -267,7 +267,7 @@ const IntegrationLinkedSystems = ({
         locale={{
           emptyText: (
             <Flex className="w-full justify-center">
-              <Text type="secondary">
+              <Text type="secondary" data-testid="no-systems-linked-text">
                 No systems linked. Click &ldquo;Link system&rdquo; to add a
                 system.
               </Text>
