@@ -34,13 +34,12 @@ class InMemoryRedis:
         self._data[key] = value
         return True
 
-    def delete(self, *keys: str) -> int:
-        n = 0
+        deleted_count = 0
         for key in keys:
             if key in self._data:
                 del self._data[key]
-                n += 1
-        return n
+                deleted_count += 1
+        return deleted_count
 
     def keys(self, pattern: str) -> List[str]:
         """Glob-style: * matches any number of chars."""
