@@ -142,3 +142,56 @@ Stop immediately if you see:
 - Background Agent PRs contain no Slack context
 
 **Remember**: Once committed to this public repository, information is permanently visible to the world and recorded in git history. When in doubt, use generic alternatives.
+
+## Cursor Cloud specific instructions
+
+### Architecture overview
+
+Fides is a privacy engineering platform with:
+- **Backend**: Python 3.13 / FastAPI API server (port 8080) with Celery workers
+- **Frontend**: Next.js monorepo under `clients/` (Admin UI on port 3000, Privacy Center on port 3001, fides-js SDK, fidesui component library)
+- **Infrastructure**: PostgreSQL 16 (port 5432), Redis 8.0 (port 6379)
+
+### Running the dev environment
+
+The standard dev workflow uses Docker via `nox -s dev`. For cloud agents, use Docker Compose directly:
+
+1. **Start infrastructure**: `docker compose up -d fides-db redis`
+2. **Start Fides API**: `docker compose up -d fides` (uses `ethyca/fides:local` image)
+3. **Start Admin UI locally** (for testing): `cd clients && NEXT_PUBLIC_FIDESCTL_API_SERVER=http://localhost:8080 npm run dev-admin-ui`
+
+The Docker dev image is tagged `ethyca/fides:local`. If the local Docker build fails (e.g., due to transient `virtualenv`/`hatch` compatibility issues), use `docker pull ethyca/fides:dev && docker tag ethyca/fides:dev ethyca/fides:local` as a workaround.
+
+Default credentials: username `root_user`, password `Testpassword1!`.
+
+### Running linting and checks
+
+- **Python lint**: `uv run ruff check src/`
+- **Python format**: `uv run ruff format --check src/`
+- **Python type check**: `uv run mypy src/`
+- **Frontend lint**: `cd clients && npm run lint`
+- **Frontend typecheck**: `cd clients && npm run typecheck` (requires `fides-js` to be built first: `npm run build -w fides-js`)
+
+### Running tests locally (outside Docker)
+
+When running pytest outside Docker, set these env vars to point to the Docker-hosted Postgres/Redis:
+
+```
+export FIDES__DATABASE__SERVER="127.0.0.1"
+export FIDES__DATABASE__PASSWORD="fides"
+export FIDES__REDIS__HOST="127.0.0.1"
+export FIDES__REDIS__PASSWORD="redispassword"
+export FIDES__TEST_MODE="true"
+unset FIDES__CONFIG_PATH
+```
+
+Then run: `uv run pytest tests/lib/ -m "unit"` (see `scripts/run_lib_tests.sh` for reference).
+
+### Gotchas
+
+- The `fides-js` workspace package must be built (`npm run build -w fides-js`) before `privacy-center` typecheck will pass, since it generates type declarations.
+- The `.env` file is auto-created from `example.env` by `noxfile.py` if missing. For direct Docker Compose usage, copy it manually: `cp example.env .env`.
+- The `docker-compose.yml` expects the `.env` file to exist (referenced via `env_file`).
+- The `pymssql` optional dependency requires `freetds-dev` system package to build.
+- Some ctl unit tests (e.g., `test_view_credentials`) expect a credentials file at `~/.fides_credentials` and will fail without it; this is expected when running outside the Docker container.
+- The noxfile startup checks require Docker >= 20.10.17 and Python 3.13.
