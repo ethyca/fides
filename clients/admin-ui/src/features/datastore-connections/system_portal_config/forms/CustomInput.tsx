@@ -13,7 +13,7 @@ import {
 } from "fidesui";
 import { FieldHookConfig, useField } from "formik";
 
-import { InputType } from "./types";
+type InputType = "number" | "text" | "textarea";
 
 type CustomInputProps = {
   disabled?: boolean;
