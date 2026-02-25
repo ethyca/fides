@@ -8,7 +8,7 @@ on:
     branches:
       - "main"
       - "release-**"
-
+jobs:
   chromatic:
     name: Run Chromatic
     runs-on: ubuntu-latest
