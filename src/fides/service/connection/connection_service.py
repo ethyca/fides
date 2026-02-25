@@ -78,7 +78,7 @@ from fides.service.connection.merge_configs_util import (
     preserve_monitored_collections_in_dataset_merge,
 )
 from fides.service.event_audit_service import EventAuditService
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 class ConnectorTemplateNotFound(Exception):
@@ -129,9 +129,15 @@ def _detect_connection_config_changes(
 
 
 class ConnectionService:
-    def __init__(self, db: Session, event_audit_service: EventAuditService):
+    def __init__(
+        self,
+        db: Session,
+        event_audit_service: EventAuditService,
+        link_repo: Optional[SystemIntegrationLinkRepository] = None,
+    ):
         self.db = db
         self.event_audit_service = event_audit_service
+        self.link_repo = link_repo or SystemIntegrationLinkRepository()
 
     def get_connection_config(self, connection_key: FidesKey) -> ConnectionConfig:
         connection_config = ConnectionConfig.get_by(
@@ -369,10 +375,10 @@ class ConnectionService:
             db=self.db
         )  # Not persisted to db until secrets are validated
         if system:
-            SystemConnectionConfigLink.create_or_update_link(
-                self.db,
-                system.id,  # type: ignore[attr-defined]
-                connection_config.id,  # type: ignore[attr-defined]
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
             )
 
         try:
@@ -500,10 +506,10 @@ class ConnectionService:
         ).model_dump(mode="json")
         connection_config.save(db=self.db)
         if system:
-            SystemConnectionConfigLink.create_or_update_link(
-                self.db,
-                system.id,  # type: ignore[attr-defined]
-                connection_config.id,  # type: ignore[attr-defined]
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
             )
 
         # Create audit events for connection and secrets creation
@@ -549,10 +555,10 @@ class ConnectionService:
             self.db, data=config_dict, check_name=False
         )
         if system:
-            SystemConnectionConfigLink.create_or_update_link(
-                self.db,
-                system.id,  # type: ignore[attr-defined]
-                connection_config.id,  # type: ignore[attr-defined]
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
             )
 
         # Track which connection configuration fields changed (only for updates)

@@ -217,9 +217,6 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
 
-    # system_id FK has been migrated to the system_connection_config_link join table.
-    # The 'system' relationship below uses that table via secondary=.
-
     datasets = relationship(  # type: ignore[misc]
         "DatasetConfig",
         back_populates="connection_config",
@@ -255,6 +252,7 @@ class ConnectionConfig(Base):
         cascade="delete",
     )
 
+    # system_id FK has been migrated to the system_connection_config_link join table.
     system = relationship(
         System,
         secondary="system_connection_config_link",

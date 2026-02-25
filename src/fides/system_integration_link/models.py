@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, String, delete
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 
@@ -68,10 +68,12 @@ class SystemConnectionConfigLink(Base):
         """Replace any existing link for this connection_config with a new one.
 
         Ensures at most one system link per connection config.
+
+        Prefer ``SystemIntegrationLinkRepository.create_or_update_link`` for
+        new code; this class-level helper is retained for seed scripts and
+        test fixtures where the full repository is not readily available.
         """
-        db.query(cls).filter(cls.connection_config_id == connection_config_id).delete(
-            synchronize_session="evaluate"
-        )
+        db.execute(delete(cls).where(cls.connection_config_id == connection_config_id))
 
         link = cls(
             system_id=system_id,
