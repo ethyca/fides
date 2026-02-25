@@ -4,20 +4,9 @@ export interface ChartGradientProps {
     id: string;
     color: string;
     type?: "linear" | "radial";
-    /** Reverses the opacity direction (transparent at start, opaque at end). */
     inverse?: boolean;
 }
 
-/**
- * Renders a reusable SVG gradient element (`<linearGradient>` or
- * `<radialGradient>`) to be placed inside a `<defs>` block.
- *
- * - Linear gradient runs top-to-bottom (y1=0 → y2=1).
- * - Radial gradient radiates from center outward.
- * - The `inverse` prop flips the opacity direction:
- *   - Default (false): opaque at start, transparent at end.
- *   - Inverse (true):  transparent at start, opaque at end.
- */
 export const ChartGradient = ({
     id,
     color,
