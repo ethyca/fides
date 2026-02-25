@@ -12,7 +12,9 @@
   vertical-align: baseline;
   margin: 0 2px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 
   &:hover {
     background-color: color-mix(in srgb, var(--fidesui-info) 20%, transparent);

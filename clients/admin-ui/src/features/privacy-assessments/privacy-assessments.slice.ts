@@ -131,7 +131,6 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         { type: "Privacy Assessment Evidence", id },
       ],
     }),
-
   }),
 });
 
