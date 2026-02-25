@@ -1035,6 +1035,7 @@ class TestCreatePolicyWithAutoPopulatedRules:
         assert len(response_data["failed"]) == 0
 
         policy_resp = response_data["succeeded"][0]
+        assert "action_type" not in policy_resp  # should not leak into response
         assert len(policy_resp["rules"]) == 1
 
         rule = policy_resp["rules"][0]
@@ -1176,6 +1177,21 @@ class TestCreatePolicyWithAutoPopulatedRules:
         auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
         resp = api_client.patch(url, json=data, headers=auth_header)
         assert resp.status_code == 422
+
+    def test_create_policy_with_unsupported_action_type_fails(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        """Unsupported action_type (e.g. 'update') should fail early with a clear message."""
+        data = [{"name": "Unsupported Action Policy", "action_type": "update"}]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+
+        response_data = resp.json()
+        assert len(response_data["succeeded"]) == 0
+        assert len(response_data["failed"]) == 1
+        assert "Unsupported action_type" in response_data["failed"][0]["message"]
+        assert "update" in response_data["failed"][0]["message"]
 
 
 class TestCreateRules:

@@ -35,7 +35,11 @@ from fides.api.models.storage import StorageConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import policy as schemas
 from fides.api.schemas.api import BulkUpdateFailed
-from fides.api.schemas.policy import ActionType, RuleCreateWithTargets
+from fides.api.schemas.policy import (
+    SUPPORTED_ACTION_TYPES,
+    ActionType,
+    RuleCreateWithTargets,
+)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.logger import Pii
@@ -259,6 +263,15 @@ def create_or_update_policies(
         policy_data: Dict[str, Any] = dict(policy_schema)
         action_type = policy_schema.action_type
         inline_rules = policy_schema.rules
+
+        if action_type and ActionType(action_type) not in SUPPORTED_ACTION_TYPES:
+            failed.append(
+                BulkUpdateFailed(
+                    message=f"Unsupported action_type '{action_type}'. Must be one of: {', '.join(sorted(a.value for a in SUPPORTED_ACTION_TYPES))}",
+                    data=policy_data,
+                )
+            )
+            continue
 
         # Determine whether this will be a create or an update
         is_new = Policy.get_by_key_or_id(db=db, data=policy_data) is None

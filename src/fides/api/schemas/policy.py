@@ -4,7 +4,7 @@ from typing import Any, Optional, Union
 
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import ConfigDict, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -159,6 +159,7 @@ class Policy(FidesSchema):
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
 
+    action_type: Optional[ActionType] = Field(None, exclude=True)
     rules: Optional[list[RuleResponse]] = None
     drp_action: Optional[DrpAction] = None
     conditions: Optional[Union[ConditionLeaf, ConditionGroup]] = None
