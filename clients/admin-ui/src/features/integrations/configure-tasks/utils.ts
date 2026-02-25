@@ -3,10 +3,10 @@ import dayjs, { Dayjs } from "dayjs";
 import { formatDate } from "~/features/common/utils";
 import { ConditionLeaf, Operator } from "~/types/api";
 
-import { FieldValue } from "./components/ConditionValueSelector";
 import {
   CustomFieldMetadata,
   FieldSource,
+  FieldValue,
   PrivacyRequestFieldDefinition,
 } from "./types";
 

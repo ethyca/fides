@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import {
   DatePicker,
   Input,
@@ -13,10 +13,8 @@ import { useGetLocationsRegulationsQuery } from "~/features/locations/locations.
 import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 import { Operator } from "~/types/api";
 
-import { CustomFieldMetadata } from "../types";
+import { CustomFieldMetadata, FieldValue } from "../types";
 import { FieldType, getFieldTypeWithMetadata } from "../utils";
-
-export type FieldValue = string | boolean | Dayjs | string[] | null;
 
 interface ConditionValueSelectorProps {
   fieldType: FieldType;
