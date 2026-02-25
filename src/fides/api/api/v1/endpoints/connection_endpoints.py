@@ -32,7 +32,6 @@ from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
     ConnectionConfigurationResponseWithSystemKey,
     CreateConnectionConfigurationWithSecrets,
-    LinkedSystemInfo,
 )
 from fides.api.schemas.connection_configuration.connection_oauth_config import (
     OAuthConfigSchema,
@@ -69,21 +68,6 @@ from fides.service.event_audit_service import EventAuditService
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
-
-
-def _enrich_linked_systems(
-    response: ConnectionConfigurationResponse,
-    connection_config: ConnectionConfig,
-) -> ConnectionConfigurationResponse:
-    """Populate ``linked_systems`` from an eagerly-loaded ConnectionConfig."""
-    if connection_config.system:
-        response.linked_systems = [
-            LinkedSystemInfo(
-                fides_key=connection_config.system.fides_key,
-                name=connection_config.system.name,
-            )
-        ]
-    return response
 
 
 @router.get(
@@ -181,22 +165,15 @@ def get_connections(
                 )
             )
 
-    def _with_linked_systems(
-        items: List[ConnectionConfig],
-    ) -> List[ConnectionConfigurationResponse]:
-        results = []
-        for item in items:
-            resp = ConnectionConfigurationResponse.model_validate(item)
-            _enrich_linked_systems(resp, item)
-            results.append(resp)
-        return results
-
     return paginate(
         query.order_by(ConnectionConfig.name.asc()).options(
             selectinload(ConnectionConfig.system)
         ),
         params=params,
-        transformer=_with_linked_systems,
+        transformer=lambda items: [
+            ConnectionConfigurationResponse.from_connection_config(item)
+            for item in items
+        ],
     )
 
 
@@ -210,16 +187,9 @@ def get_connection_detail(
 ) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
-
-    response = ConnectionConfigurationResponseWithSystemKey.model_validate(
+    return ConnectionConfigurationResponseWithSystemKey.from_connection_config(
         connection_config
     )
-    _enrich_linked_systems(response, connection_config)
-    response.system_key = (
-        connection_config.system.fides_key if connection_config.system else None
-    )
-
-    return response
 
 
 @router.patch(

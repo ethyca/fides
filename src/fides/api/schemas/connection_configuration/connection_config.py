@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
@@ -14,6 +16,9 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfigBase
 from fides.api.util.connection_type import get_connection_type_secret_schema
 from fides.api.util.masking_util import mask_sensitive_fields
+
+if TYPE_CHECKING:
+    from fides.api.models.connectionconfig import ConnectionConfig
 
 
 class CreateConnectionConfiguration(BaseModel):
@@ -117,6 +122,21 @@ class ConnectionConfigurationResponse(ConnectionConfigurationResponseBase):
     """
 
     linked_systems: List[LinkedSystemInfo] = []
+
+    @classmethod
+    def from_connection_config(
+        cls, config: ConnectionConfig
+    ) -> ConnectionConfigurationResponse:
+        """Build a response from an ORM ConnectionConfig, populating linked_systems."""
+        response = cls.model_validate(config)
+        if config.system:
+            response.linked_systems = [
+                LinkedSystemInfo(
+                    fides_key=config.system.fides_key,
+                    name=config.system.name,
+                )
+            ]
+        return response
 
 
 class ConnectionConfigurationResponseWithSystemKey(ConnectionConfigurationResponse):
