@@ -6,24 +6,20 @@ type PrivacyCardProps = {
   title: string;
   iconPath: string;
   description: string;
-  onOpen: (index: number) => void;
-  index: number;
+  onClick: () => void;
 };
 
 const PrivacyCard = ({
   title,
   iconPath,
   description,
-  onOpen,
-  index,
+  onClick,
 }: PrivacyCardProps) => (
   <Card
     title={title}
     iconPath={iconPath}
     description={description}
-    onClick={() => {
-      onOpen(index);
-    }}
+    onClick={onClick}
   />
 );
 
