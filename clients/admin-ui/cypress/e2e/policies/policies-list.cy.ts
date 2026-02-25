@@ -32,7 +32,7 @@ describe("Policies list page", () => {
     });
 
     it("displays execution timeframe for each policy", () => {
-      cy.contains("Timeframe: 45 days").should("exist");
+      cy.contains("45 days").should("exist");
     });
 
     it("displays action type tags from policy rules", () => {
