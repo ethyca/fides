@@ -447,18 +447,18 @@ const ConfigureIntegrationForm = ({
                 />
                 {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
                   connectionOption.identifier !== ConnectionType.WEBSITE && (
-                  <ControlledSelect
-                    id="system_fides_key"
-                    name="system_fides_key"
-                    label="System"
-                    tooltip="Link this integration to a system for monitoring purposes"
-                    layout="stacked"
-                    options={systemOptions}
-                    onSearch={onSystemSearch}
-                    loading={isFetchingSystems}
-                    allowClear
-                    placeholder="Search for a system..."
-                  />
+                    <ControlledSelect
+                      id="system_fides_key"
+                      name="system_fides_key"
+                      label="System"
+                      tooltip="Link this integration to a system for monitoring purposes"
+                      layout="stacked"
+                      options={systemOptions}
+                      onSearch={onSystemSearch}
+                      loading={isFetchingSystems}
+                      allowClear
+                      placeholder="Search for a system..."
+                    />
                   )}
                 {hasSecrets && secrets && generateFields(secrets)}
                 {connectionOption.identifier === ConnectionType.DATAHUB && (
