@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
 from loguru import logger
@@ -77,7 +77,8 @@ class FidesopsRedis:
         match = f"{prefix}*"
         if _is_redis_cluster(self._client):
             # Redis Cluster: SCAN must run per node; iterate primaries
-            for node in self._client.get_primaries():
+            cluster = cast(Any, self._client)
+            for node in cluster.get_primaries():
                 conn = node.redis_connection
                 cursor = 0
                 while True:
@@ -88,12 +89,15 @@ class FidesopsRedis:
                     if cursor == 0:
                         break
         else:
-            cursor = "0"
-            while cursor != 0:
-                cursor, keys = self._client.scan(
-                    cursor=cursor, match=match, count=chunk_size
+            # Standalone Redis: scan_cursor is str when decode_responses=True, int when False
+            scan_cursor: Union[int, str] = "0"
+            while True:
+                scan_cursor, keys = self._client.scan(
+                    cursor=scan_cursor, match=match, count=chunk_size
                 )
                 out.extend(keys)
+                if scan_cursor == 0 or scan_cursor == "0":
+                    break
         return out
 
     def delete_keys_by_prefix(self, prefix: str) -> None:
@@ -111,7 +115,8 @@ class FidesopsRedis:
         if not keys:
             return {}
         if _is_redis_cluster(self._client):
-            values = self._client.mget_nonatomic(keys)
+            cluster = cast(Any, self._client)
+            values = cluster.mget_nonatomic(keys)
         else:
             values = self._client.mget(keys)
         return {x[0]: x[1] for x in zip(keys, values)}
@@ -262,7 +267,7 @@ def _build_redis_client(
         if read_from_replicas:
             kwargs["read_from_replicas"] = True
         return RedisCluster(**kwargs)
-    return Redis(
+    return Redis(  # type: ignore[call-overload]
         decode_responses=CONFIG.redis.decode_responses,
         host=host,
         port=port,
@@ -330,7 +335,7 @@ def get_read_only_cache() -> FidesopsRedis:
             _read_only_connection = FidesopsRedis(client)
         else:
             db = _determine_redis_db_index(read_only=True)
-            client = Redis(
+            client = Redis(  # type: ignore[call-overload]
                 decode_responses=CONFIG.redis.decode_responses,
                 host=CONFIG.redis.read_only_host,
                 port=CONFIG.redis.read_only_port,

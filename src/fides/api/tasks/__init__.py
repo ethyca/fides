@@ -1,6 +1,6 @@
 from typing import Any, ContextManager, Dict, List, Optional
 
-import celery_redis_cluster_backend  # noqa: F401 - registers redis+cluster/rediss+cluster backends
+import celery_redis_cluster_backend  # type: ignore[import-untyped]  # noqa: F401 - registers redis+cluster/rediss+cluster backends
 from celery import Celery, Task
 from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
@@ -126,14 +126,24 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     elif config.redis.cluster_enabled:
         broker_url = config.redis.get_cluster_connection_url()
     else:
-        broker_url = config.redis.connection_url
+        connection_url = config.redis.connection_url
+        if connection_url is None:
+            raise ValueError(
+                "Redis connection_url is required when cluster is disabled"
+            )
+        broker_url = connection_url
 
     if config.celery.result_backend is not None:
         result_backend = config.celery.result_backend
     elif config.redis.cluster_enabled:
         result_backend = config.redis.get_cluster_connection_url()
     else:
-        result_backend = config.redis.connection_url
+        connection_url = config.redis.connection_url
+        if connection_url is None:
+            raise ValueError(
+                "Redis connection_url is required when cluster is disabled"
+            )
+        result_backend = connection_url
 
     celery_config: Dict[str, Any] = {
         "broker_url": broker_url,
