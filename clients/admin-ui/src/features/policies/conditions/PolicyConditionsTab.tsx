@@ -1,6 +1,5 @@
 import {
   Button,
-  Empty,
   Flex,
   List,
   Modal,
@@ -57,7 +56,8 @@ export const PolicyConditionsTab = ({
 }: PolicyConditionsTabProps) => {
   const message = useMessage();
   const [modalApi, modalContext] = Modal.useModal();
-  const [updatePolicyConditions] = useUpdatePolicyConditionsMutation();
+  const [updatePolicyConditions, { isLoading: isSavingConditions }] =
+    useUpdatePolicyConditionsMutation();
 
   const serverLeafConditions = useMemo(
     () => extractLeafConditions(conditions),
@@ -120,10 +120,9 @@ export const PolicyConditionsTab = ({
             ? "Condition updated successfully!"
             : "Condition added successfully!",
         );
-      } catch (e) {
+      } catch {
         setLeafConditions(original);
         message.error("Failed to save condition. Please try again.");
-        throw e;
       }
     },
     [leafConditions, editingIndex, saveConditions, message],
@@ -163,7 +162,7 @@ export const PolicyConditionsTab = ({
   );
 
   return (
-    <>
+    <Flex vertical gap="small">
       <Title level={5} data-testid="policy-conditions-title">
         Policy conditions
       </Title>
@@ -195,11 +194,12 @@ export const PolicyConditionsTab = ({
         data-testid="conditions-list"
         locale={{
           emptyText: (
-            <Empty
-              description="No conditions configured. This policy will apply to all matching requests."
-              className="py-8"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+            <div className="py-8 text-center">
+              <Text type="secondary">
+                No conditions configured. This policy will apply to all matching
+                requests.
+              </Text>
+            </div>
           ),
         }}
         renderItem={(condition: ConditionLeaf, index: number) => {
@@ -262,9 +262,10 @@ export const PolicyConditionsTab = ({
         onClose={handleCloseModal}
         onConditionSaved={handleConditionSaved}
         editingCondition={editingCondition}
+        isSubmitting={isSavingConditions}
       />
 
       {modalContext}
-    </>
+    </Flex>
   );
 };
