@@ -145,8 +145,8 @@ const SlackChatForm = ({ configId }: SlackChatFormProps) => {
 
   const handleAuthorize = () => {
     const authorizeUrl = configId
-      ? `/api/v1/plus/chat/authorize?config_id=${configId}`
-      : "/api/v1/plus/chat/authorize";
+      ? `/api/v1/plus/chat/slack/authorize?config_id=${configId}`
+      : "/api/v1/plus/chat/slack/authorize";
     window.location.href = authorizeUrl;
   };
 
