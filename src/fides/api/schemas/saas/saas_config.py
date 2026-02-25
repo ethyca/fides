@@ -7,8 +7,6 @@ from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 from pydantic import Field as PydanticField
 
 from fides.api.common_exceptions import ValidationError
-from fides.api.util.domain_util import wildcard_to_regex
-from fides.config import CONFIG
 from fides.api.graph.config import (
     Collection,
     CollectionAddress,
@@ -26,6 +24,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
+from fides.api.util.domain_util import wildcard_to_regex
+from fides.config import CONFIG
 
 
 class ParamValue(BaseModel):
