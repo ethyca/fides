@@ -1,5 +1,6 @@
 import json
 from typing import Any, Dict
+from unittest.mock import patch
 from zipfile import ZipFile
 
 from fastapi.testclient import TestClient
@@ -13,6 +14,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_DIAGNOSTICS,
     V1_URL_PREFIX,
 )
+from fides.service.privacy_request import privacy_request_diagnostics as diagnostics_service
 
 
 class TestPrivacyRequestDiagnostics:
@@ -106,3 +108,50 @@ class TestPrivacyRequestDiagnostics:
 
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 503
+        payload: Dict[str, Any] = resp.json()
+        assert diagnostics_service.DEFAULT_PRIVACY_REQUEST_DIAGNOSTICS_STORAGE_KEY in payload[
+            "detail"
+        ]
+        assert "s3" in payload["detail"].lower()
+        assert "gcs" in payload["detail"].lower()
+
+    def test_diagnostics_caches_pointer_and_regenerates_url(
+        self,
+        api_client: TestClient,
+        cache,
+        generate_auth_header,
+        privacy_request,
+    ) -> None:
+        """Second request should reuse object_key but regenerate download_url."""
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_DIAGNOSTICS.format(
+            privacy_request_id=privacy_request.id
+        )
+
+        cache_key = diagnostics_service._privacy_request_diagnostics_cache_key(
+            privacy_request.id
+        )
+        cache.delete(cache_key)
+
+        with patch.object(
+            diagnostics_service,
+            "get_privacy_request_diagnostics",
+            wraps=diagnostics_service.get_privacy_request_diagnostics,
+        ) as get_diagnostics_mock, patch.object(
+            diagnostics_service.LocalStorageProvider,
+            "generate_presigned_url",
+            side_effect=["/tmp/diagnostics-url-1", "/tmp/diagnostics-url-2"],
+        ):
+            resp1 = api_client.get(url, headers=auth_header)
+            assert resp1.status_code == 200
+            payload1: Dict[str, Any] = resp1.json()
+
+            resp2 = api_client.get(url, headers=auth_header)
+            assert resp2.status_code == 200
+            payload2: Dict[str, Any] = resp2.json()
+
+        assert payload1["object_key"] == payload2["object_key"]
+        assert payload1["download_url"] != payload2["download_url"]
+        assert get_diagnostics_mock.call_count == 1
+
+        cache.delete(cache_key)
