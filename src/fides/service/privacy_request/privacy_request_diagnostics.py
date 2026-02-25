@@ -1463,7 +1463,12 @@ def export_privacy_request_diagnostics(
         if not object_key or not isinstance(object_key, str):
             return None
 
-        if not provider.exists(bucket, object_key):  # type: ignore[attr-defined]
+        try:
+            exists = provider.exists(bucket, object_key)  # type: ignore[attr-defined]
+        except Exception:
+            # Best-effort cache path: treat provider errors as a cache miss.
+            return None
+        if not exists:
             return None
 
         download_url = provider.generate_presigned_url(  # type: ignore[attr-defined]
