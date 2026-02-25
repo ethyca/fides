@@ -11,6 +11,9 @@ import {
 import type { ConditionLeaf, Operator } from "~/types/api";
 import { Operator as Op } from "~/types/api";
 
+// TODO: These labels don't match what formatFieldDisplay() produces in PolicyConditionsTab
+// (e.g. "Country/Territory" here vs "Location country" in the list). Centralize these
+// labels so the form and the conditions list stay in sync.
 const FIELD_OPTIONS = [
   { label: "State/Province", value: PrivacyRequestField.LOCATION },
   { label: "Country/Territory", value: PrivacyRequestField.LOCATION_COUNTRY },
