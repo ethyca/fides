@@ -56,7 +56,8 @@ export const PolicyConditionsTab = ({
 }: PolicyConditionsTabProps) => {
   const message = useMessage();
   const [modalApi, modalContext] = Modal.useModal();
-  const [updatePolicyConditions] = useUpdatePolicyConditionsMutation();
+  const [updatePolicyConditions, { isLoading: isSavingConditions }] =
+    useUpdatePolicyConditionsMutation();
 
   const serverLeafConditions = useMemo(
     () => extractLeafConditions(conditions),
@@ -261,6 +262,7 @@ export const PolicyConditionsTab = ({
         onClose={handleCloseModal}
         onConditionSaved={handleConditionSaved}
         editingCondition={editingCondition}
+        isSubmitting={isSavingConditions}
       />
 
       {modalContext}

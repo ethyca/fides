@@ -1,5 +1,4 @@
 import { Modal, Typography } from "fidesui";
-import { useState } from "react";
 
 import type { ConditionLeaf } from "~/types/api";
 
@@ -10,6 +9,7 @@ interface AddEditPolicyConditionModalProps {
   onClose: () => void;
   onConditionSaved: (condition: ConditionLeaf) => Promise<void>;
   editingCondition?: ConditionLeaf | null;
+  isSubmitting?: boolean;
 }
 
 export const AddEditPolicyConditionModal = ({
@@ -17,18 +17,13 @@ export const AddEditPolicyConditionModal = ({
   onClose,
   onConditionSaved,
   editingCondition,
+  isSubmitting = false,
 }: AddEditPolicyConditionModalProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!editingCondition;
 
   const handleSubmit = async (condition: ConditionLeaf) => {
-    try {
-      setIsSubmitting(true);
-      await onConditionSaved(condition);
-      onClose();
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onConditionSaved(condition);
+    onClose();
   };
 
   return (
