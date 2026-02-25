@@ -9,6 +9,35 @@ import {
   PrivacyRequestFieldDefinition,
 } from "./types";
 
+/**
+ * Backend-defined field addresses for the privacy request condition system.
+ * These are dot-path addresses into the PrivacyRequest model, used for
+ * conditional dependency evaluation.
+ */
+export const PrivacyRequestField = {
+  CREATED_AT: "privacy_request.created_at",
+  REQUESTED_AT: "privacy_request.requested_at",
+  DUE_DATE: "privacy_request.due_date",
+  IDENTITY_VERIFIED_AT: "privacy_request.identity_verified_at",
+  SOURCE: "privacy_request.source",
+  IDENTITY_EMAIL: "privacy_request.identity.email",
+  IDENTITY_PHONE_NUMBER: "privacy_request.identity.phone_number",
+  IDENTITY_EXTERNAL_ID: "privacy_request.identity.external_id",
+  LOCATION: "privacy_request.location",
+  LOCATION_COUNTRY: "privacy_request.location_country",
+  LOCATION_GROUPS: "privacy_request.location_groups",
+  LOCATION_REGULATIONS: "privacy_request.location_regulations",
+  POLICY_KEY: "privacy_request.policy.key",
+  POLICY_HAS_ACCESS_RULE: "privacy_request.policy.has_access_rule",
+  POLICY_HAS_ERASURE_RULE: "privacy_request.policy.has_erasure_rule",
+  POLICY_HAS_CONSENT_RULE: "privacy_request.policy.has_consent_rule",
+  POLICY_HAS_UPDATE_RULE: "privacy_request.policy.has_update_rule",
+  POLICY_RULE_ACTION_TYPES: "privacy_request.policy.rule_action_types",
+  POLICY_RULE_COUNT: "privacy_request.policy.rule_count",
+  POLICY_RULE_NAMES: "privacy_request.policy.rule_names",
+  CUSTOM_FIELDS_PREFIX: "privacy_request.custom_privacy_request_fields.",
+} as const;
+
 // Field type detection
 export type FieldType =
   | "boolean"
@@ -22,60 +51,34 @@ export type FieldType =
   | "custom_select"
   | "custom_multiselect";
 
-// Hardcoded list of date fields
-export const DATE_FIELDS = [
-  "privacy_request.created_at",
-  "privacy_request.requested_at",
-  "privacy_request.due_date",
-  "privacy_request.identity_verified_at",
+export const DATE_FIELDS: string[] = [
+  PrivacyRequestField.CREATED_AT,
+  PrivacyRequestField.REQUESTED_AT,
+  PrivacyRequestField.DUE_DATE,
+  PrivacyRequestField.IDENTITY_VERIFIED_AT,
 ];
+
+const FIELD_TYPE_MAP: Partial<Record<string, FieldType>> = {
+  [PrivacyRequestField.LOCATION]: "location",
+  [PrivacyRequestField.LOCATION_COUNTRY]: "location_country",
+  [PrivacyRequestField.LOCATION_GROUPS]: "location_groups",
+  [PrivacyRequestField.LOCATION_REGULATIONS]: "location_regulations",
+  [PrivacyRequestField.POLICY_KEY]: "policy",
+  [PrivacyRequestField.POLICY_HAS_ACCESS_RULE]: "boolean",
+  [PrivacyRequestField.POLICY_HAS_ERASURE_RULE]: "boolean",
+  [PrivacyRequestField.POLICY_HAS_CONSENT_RULE]: "boolean",
+  [PrivacyRequestField.POLICY_HAS_UPDATE_RULE]: "boolean",
+};
 
 /**
  * Determines the field type based on the field address.
  * This is used to render appropriate input components for different field types.
  */
 export const getFieldType = (fieldAddress: string): FieldType => {
-  // Check date fields
   if (DATE_FIELDS.includes(fieldAddress)) {
     return "date";
   }
-
-  // Check location field
-  if (fieldAddress === "privacy_request.location") {
-    return "location";
-  }
-
-  // Check location_country field (convenience field)
-  if (fieldAddress === "privacy_request.location_country") {
-    return "location_country";
-  }
-
-  // Check location_groups field (convenience field)
-  if (fieldAddress === "privacy_request.location_groups") {
-    return "location_groups";
-  }
-
-  // Check location_regulations field (convenience field)
-  if (fieldAddress === "privacy_request.location_regulations") {
-    return "location_regulations";
-  }
-
-  // Check policy ID field
-  if (fieldAddress === "privacy_request.policy.key") {
-    return "policy";
-  }
-
-  // Check boolean fields (known boolean fields in privacy request)
-  if (
-    fieldAddress.includes("has_access_rule") ||
-    fieldAddress.includes("has_erasure_rule") ||
-    fieldAddress.includes("has_consent_rule") ||
-    fieldAddress.includes("has_update_rule")
-  ) {
-    return "boolean";
-  }
-
-  return "string";
+  return FIELD_TYPE_MAP[fieldAddress] ?? "string";
 };
 
 /**
@@ -204,35 +207,37 @@ export const getInitialFieldSource = (
   return FieldSource.PRIVACY_REQUEST;
 };
 
-// Allowlist of fields to expose in the UI
-// The backend supports many more fields, but that would overwhelm the user with too many options
-// so we only expose the most useful fields.
+// Allowlist of fields to expose in the UI.
+// The backend supports many more fields, but that would overwhelm the user
+// with too many options so we only expose the most useful fields.
 export const ALLOWED_PRIVACY_REQUEST_FIELDS = [
-  "privacy_request.created_at",
-  "privacy_request.requested_at",
-  "privacy_request.due_date",
-  "privacy_request.source",
-  "privacy_request.identity.email",
-  "privacy_request.identity.phone_number",
-  "privacy_request.identity.external_id",
-  "privacy_request.location",
-  "privacy_request.location_country",
-  "privacy_request.location_groups",
-  "privacy_request.location_regulations",
-  "privacy_request.policy.key",
-  "privacy_request.policy.has_access_rule",
-  "privacy_request.policy.has_erasure_rule",
-  "privacy_request.policy.has_consent_rule",
-  "privacy_request.policy.has_update_rule",
-  "privacy_request.policy.rule_action_types",
-  "privacy_request.policy.rule_count",
-  "privacy_request.policy.rule_names",
+  PrivacyRequestField.CREATED_AT,
+  PrivacyRequestField.REQUESTED_AT,
+  PrivacyRequestField.DUE_DATE,
+  PrivacyRequestField.SOURCE,
+  PrivacyRequestField.IDENTITY_EMAIL,
+  PrivacyRequestField.IDENTITY_PHONE_NUMBER,
+  PrivacyRequestField.IDENTITY_EXTERNAL_ID,
+  PrivacyRequestField.LOCATION,
+  PrivacyRequestField.LOCATION_COUNTRY,
+  PrivacyRequestField.LOCATION_GROUPS,
+  PrivacyRequestField.LOCATION_REGULATIONS,
+  PrivacyRequestField.POLICY_KEY,
+  PrivacyRequestField.POLICY_HAS_ACCESS_RULE,
+  PrivacyRequestField.POLICY_HAS_ERASURE_RULE,
+  PrivacyRequestField.POLICY_HAS_CONSENT_RULE,
+  PrivacyRequestField.POLICY_HAS_UPDATE_RULE,
+  PrivacyRequestField.POLICY_RULE_ACTION_TYPES,
+  PrivacyRequestField.POLICY_RULE_COUNT,
+  PrivacyRequestField.POLICY_RULE_NAMES,
 ];
 
-// Fields that are NOT available for consent requests
-// Consent DSRs don't have execution timeframes (no due_date) and don't have data flowing
-// between nodes (so dataset fields are also unavailable, handled separately)
-export const CONSENT_UNAVAILABLE_FIELDS = ["privacy_request.due_date"];
+// Fields that are NOT available for consent requests.
+// Consent DSRs don't have execution timeframes (no due_date) and don't have
+// data flowing between nodes (dataset fields handled separately).
+export const CONSENT_UNAVAILABLE_FIELDS: string[] = [
+  PrivacyRequestField.DUE_DATE,
+];
 
 // Allowlist of fields available for consent-only manual task conditions
 // This is a subset of ALLOWED_PRIVACY_REQUEST_FIELDS excluding fields not captured for consent

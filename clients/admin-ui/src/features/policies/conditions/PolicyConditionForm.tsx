@@ -6,6 +6,7 @@ import {
   getFieldType,
   parseConditionValue,
   parseStoredValueForForm,
+  PrivacyRequestField,
 } from "~/features/integrations/configure-tasks/utils";
 import type { ConditionLeaf, Operator } from "~/types/api";
 import { Operator as Op } from "~/types/api";
@@ -14,10 +15,10 @@ import { Operator as Op } from "~/types/api";
 // (e.g. "Country/Territory" here vs "Location country" in the list). Centralize these
 // labels so the form and the conditions list stay in sync.
 const FIELD_OPTIONS = [
-  { label: "State/Province", value: "privacy_request.location" },
-  { label: "Country/Territory", value: "privacy_request.location_country" },
-  { label: "Groups", value: "privacy_request.location_groups" },
-  { label: "Regulation", value: "privacy_request.location_regulations" },
+  { label: "State/Province", value: PrivacyRequestField.LOCATION },
+  { label: "Country/Territory", value: PrivacyRequestField.LOCATION_COUNTRY },
+  { label: "Groups", value: PrivacyRequestField.LOCATION_GROUPS },
+  { label: "Regulation", value: PrivacyRequestField.LOCATION_REGULATIONS },
 ];
 
 const POLICY_OPERATOR_OPTIONS = [
