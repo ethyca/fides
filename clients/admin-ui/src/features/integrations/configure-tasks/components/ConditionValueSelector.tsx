@@ -11,17 +11,21 @@ import { ChangeEvent } from "react";
 
 import { useGetLocationsRegulationsQuery } from "~/features/locations/locations.slice";
 import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
+import { Operator } from "~/types/api";
 
 import { CustomFieldMetadata } from "../types";
 import { FieldType, getFieldTypeWithMetadata } from "../utils";
 
+export type FieldValue = string | boolean | Dayjs | string[] | null;
+
 interface ConditionValueSelectorProps {
   fieldType: FieldType;
   disabled?: boolean;
-  value?: string | boolean | Dayjs | null;
-  onChange?: (value: string | boolean | Dayjs | null) => void;
+  value?: FieldValue;
+  onChange?: (value: FieldValue) => void;
   fieldAddress?: string;
   customFieldMetadata?: CustomFieldMetadata | null;
+  operator?: Operator;
 }
 
 /**
@@ -37,12 +41,16 @@ export const ConditionValueSelector = ({
   onChange,
   fieldAddress,
   customFieldMetadata,
+  operator,
 }: ConditionValueSelectorProps) => {
   // Determine the effective field type with custom field metadata
+  const isMultiSelect = operator === Operator.LIST_CONTAINS;
+
   const fieldType = fieldAddress
     ? getFieldTypeWithMetadata(fieldAddress, customFieldMetadata ?? null)
     : baseFieldType;
   // Fetch policies for policy selector (only when needed)
+
   const { data: policiesData } = useGetPoliciesQuery(undefined, {
     skip: baseFieldType !== "policy",
   });
@@ -91,32 +99,46 @@ export const ConditionValueSelector = ({
 
   // Location input
   if (fieldType === "location") {
-    return (
+    const label = isMultiSelect ? "Select locations" : "Select a location";
+    const sharedProps = {
+      onChange,
+      placeholder: disabled ? "Not required" : label,
+      disabled,
+      "data-testid": "value-location-input",
+      allowClear: true,
+      "aria-label": label,
+    };
+    return isMultiSelect ? (
       <LocationSelect
-        value={value as string | null}
-        onChange={onChange}
-        placeholder={disabled ? "Not required" : "Select a location"}
-        disabled={disabled}
-        data-testid="value-location-input"
-        allowClear
-        aria-label="Select a location"
+        mode="multiple"
+        value={value as string[]}
+        {...sharedProps}
       />
+    ) : (
+      <LocationSelect value={value as string | null} {...sharedProps} />
     );
   }
 
   // Location country input (countries only, no subdivisions)
   if (fieldType === "location_country") {
-    return (
+    const label = isMultiSelect ? "Select countries" : "Select a country";
+    const sharedProps = {
+      onChange,
+      placeholder: disabled ? "Not required" : label,
+      disabled,
+      "data-testid": "value-location-country-input",
+      allowClear: true,
+      "aria-label": label,
+      options: { countries: iso31661, regions: [] },
+    };
+    return isMultiSelect ? (
       <LocationSelect
-        value={value as string | null}
-        onChange={onChange}
-        placeholder={disabled ? "Not required" : "Select a country"}
-        disabled={disabled}
-        data-testid="value-location-country-input"
-        allowClear
-        aria-label="Select a country"
-        options={{ countries: iso31661, regions: [] }}
+        mode="multiple"
+        value={value as string[]}
+        {...sharedProps}
       />
+    ) : (
+      <LocationSelect value={value as string | null} {...sharedProps} />
     );
   }
 

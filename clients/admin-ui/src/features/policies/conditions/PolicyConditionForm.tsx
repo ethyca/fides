@@ -29,7 +29,7 @@ const POLICY_OPERATOR_OPTIONS = [
 interface FormValues {
   fieldAddress: string;
   operator: Operator;
-  value?: string;
+  value?: string | string[];
 }
 
 interface PolicyConditionFormProps {
@@ -49,9 +49,13 @@ export const PolicyConditionForm = ({
   const isEditing = !!editingCondition;
 
   const selectedFieldAddress = Form.useWatch("fieldAddress", form);
+  const selectedOperator: Operator | undefined = Form.useWatch(
+    "operator",
+    form,
+  );
   const selectedFieldType = selectedFieldAddress
     ? getFieldType(selectedFieldAddress)
-    : "string";
+    : "location";
 
   const isOperatorFixed =
     selectedFieldType === "location_groups" ||
@@ -69,6 +73,12 @@ export const PolicyConditionForm = ({
     }
   }, [selectedFieldAddress, form]);
 
+  useEffect(() => {
+    if (form.isFieldTouched("operator")) {
+      form.setFieldValue("value", undefined);
+    }
+  }, [selectedOperator, form]);
+
   const initialValues = editingCondition
     ? {
         fieldAddress: editingCondition.field_address,
@@ -82,10 +92,13 @@ export const PolicyConditionForm = ({
 
   const handleSubmit = useCallback(
     (values: FormValues) => {
+      const parsedValue = parseConditionValue(values.operator, values.value);
       const condition: ConditionLeaf = {
         field_address: values.fieldAddress,
         operator: values.operator,
-        value: parseConditionValue(values.operator, values.value),
+        // The auto-generated ConditionLeaf type doesn't include string[] but the
+        // backend accepts arrays for list operators like LIST_CONTAINS
+        value: parsedValue as ConditionLeaf["value"],
       };
       onSubmit(condition);
     },
@@ -127,7 +140,7 @@ export const PolicyConditionForm = ({
           aria-label="Select operator"
           options={POLICY_OPERATOR_OPTIONS}
           data-testid="operator-select"
-          disabled={isOperatorFixed}
+          disabled={isOperatorFixed || !selectedFieldAddress}
         />
       </Form.Item>
 
@@ -138,7 +151,9 @@ export const PolicyConditionForm = ({
       >
         <ConditionValueSelector
           fieldType={selectedFieldType}
-          fieldAddress={selectedFieldAddress}
+          fieldAddress={selectedFieldAddress || PrivacyRequestField.LOCATION}
+          disabled={!selectedFieldAddress}
+          operator={selectedOperator}
         />
       </Form.Item>
 

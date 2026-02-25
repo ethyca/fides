@@ -3,6 +3,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { formatDate } from "~/features/common/utils";
 import { ConditionLeaf, Operator } from "~/types/api";
 
+import { FieldValue } from "./components/ConditionValueSelector";
 import {
   CustomFieldMetadata,
   FieldSource,
@@ -114,10 +115,15 @@ export const getFieldTypeWithMetadata = (
  */
 export const parseConditionValue = (
   operator: Operator,
-  rawValue?: string | boolean | Dayjs,
-): string | number | boolean | null => {
+  rawValue?: FieldValue,
+): FieldValue => {
   if (operator === Operator.EXISTS || operator === Operator.NOT_EXISTS) {
     return null;
+  }
+
+  // Handle array values (from multiselect)
+  if (Array.isArray(rawValue)) {
+    return rawValue;
   }
 
   // Handle Dayjs objects (from DatePicker)
@@ -150,8 +156,6 @@ export const parseConditionValue = (
       return numValue;
     }
 
-    // Date strings, location strings, location_groups, location_regulations, custom field values pass through as-is
-    // Default to string
     return rawValue;
   }
 
@@ -171,9 +175,14 @@ export const parseStoredValueForForm = (
     | Array<string | number | boolean>
     | null
     | undefined,
-): string | boolean | Dayjs | undefined => {
+): string | boolean | Dayjs | string[] | undefined => {
   if (storedValue === null || storedValue === undefined) {
     return undefined;
+  }
+
+  // Handle array values (from multiselect location fields)
+  if (Array.isArray(storedValue)) {
+    return storedValue.map(String);
   }
 
   const fieldType = getFieldType(fieldAddress);
@@ -189,7 +198,6 @@ export const parseStoredValueForForm = (
     return parsed.isValid() ? parsed : undefined;
   }
 
-  // For all other types (location, location_country, location_groups, location_regulations, policy, string, custom fields), return as string
   return storedValue.toString();
 };
 
