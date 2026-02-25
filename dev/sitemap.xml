@@ -92,4 +92,12 @@
          <loc>https://ethyca.github.io/fides/dev/development/ui/privacy_center/</loc>
          <lastmod>2026-02-25</lastmod>
     </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/system-integration-link/00-overview/</loc>
+         <lastmod>2026-02-25</lastmod>
+    </url>
+    <url>
+         <loc>https://ethyca.github.io/fides/dev/system-integration-link/02-technical-design/</loc>
+         <lastmod>2026-02-25</lastmod>
+    </url>
 </urlset>

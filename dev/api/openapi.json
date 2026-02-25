@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.1a3.dev4+g2113f3e0f"
+    "version": "2.79.1a3.dev5+g855f13b1f"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2136,8 +2136,9 @@
           "System"
         ],
         "summary": "Instantiate Connection From Template",
-        "description": "Instantiates a SaaS connection from the available template and the template values.\nAssociates the newly instantiated connection with the provided system.",
+        "description": "Instantiates a SaaS connection from the available template and the template values.\nAssociates the newly instantiated connection with the provided system.\n\nDeprecated: Use the connection config and system-links APIs to create\nconnections and link them to systems independently.",
         "operationId": "instantiate_connection_from_template_api_v1_system__fides_key__connection_instantiate__connector_template_type__post",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2205,8 +2206,9 @@
           "System"
         ],
         "summary": "Get System Connections",
-        "description": "Return all the connection configs related to a system.",
+        "description": "Return all the connection configs related to a system.\n\nDeprecated: Use GET /connection with `linked_systems` in the response,\nor GET /connection/{connection_key}/system-links to manage links directly.",
         "operationId": "get_system_connections_api_v1_system__fides_key__connection_get",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2276,8 +2278,9 @@
           "System"
         ],
         "summary": "Patch Connections",
-        "description": "Given a valid System fides key, a list of connection config data elements, optionally\ncontaining the secrets, create or update corresponding ConnectionConfig objects or report\nfailure.\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.",
+        "description": "Given a valid System fides key, a list of connection config data elements, optionally\ncontaining the secrets, create or update corresponding ConnectionConfig objects or report\nfailure.\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.\n\nDeprecated: Use PATCH /connection to create/update connection configs, then\nPUT /connection/{connection_key}/system-links to link them to a system.",
         "operationId": "patch_connections_api_v1_system__fides_key__connection_patch",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2339,7 +2342,9 @@
           "System"
         ],
         "summary": "Delete Connection",
+        "description": "Delete the connection config linked to this system.\n\nDeprecated: Use DELETE /connection/{connection_key} to delete a connection\nconfig, or DELETE /connection/{connection_key}/system-links/{system_fides_key}\nto unlink it from a system without deleting it.",
         "operationId": "delete_connection_api_v1_system__fides_key__connection_delete",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2381,8 +2386,9 @@
           "System"
         ],
         "summary": "Patch Connection Secrets",
-        "description": "Patch secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.",
+        "description": "Patch secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.\n\nDeprecated: Use PATCH /connection/{connection_key}/secret instead.",
         "operationId": "patch_connection_secrets_api_v1_system__fides_key__connection_secrets_patch",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -18521,6 +18527,171 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/connection/{connection_key}/system-links": {
+      "get": {
+        "tags": [
+          "System Integration Links"
+        ],
+        "summary": "Get System Links",
+        "operationId": "get_system_links_api_v1_connection__connection_key__system_links_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system_integration_link:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SystemLinkResponse"
+                  },
+                  "title": "Response Get System Links Api V1 Connection  Connection Key  System Links Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "System Integration Links"
+        ],
+        "summary": "Set System Links",
+        "operationId": "set_system_links_api_v1_connection__connection_key__system_links_put",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system_integration_link:create_or_update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSystemLinksRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SystemLinkResponse"
+                  },
+                  "title": "Response Set System Links Api V1 Connection  Connection Key  System Links Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connection/{connection_key}/system-links/{system_fides_key}": {
+      "delete": {
+        "tags": [
+          "System Integration Links"
+        ],
+        "summary": "Delete System Link",
+        "operationId": "delete_system_link_api_v1_connection__connection_key__system_links__system_fides_key__delete",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system_integration_link:delete"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          },
+          {
+            "name": "system_fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "System Fides Key"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/admin/db/{action}": {
@@ -36308,6 +36479,9 @@
           "system:read",
           "system:delete",
           "system:update",
+          "system_integration_link:create_or_update",
+          "system_integration_link:delete",
+          "system_integration_link:read",
           "system_manager:read",
           "system_manager:delete",
           "system_manager:update",
@@ -36398,6 +36572,22 @@
         "additionalProperties": false,
         "type": "object",
         "title": "SecurityApplicationConfig"
+      },
+      "SetSystemLinksRequest": {
+        "properties": {
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/SystemLinkRequest"
+            },
+            "type": "array",
+            "title": "Links"
+          }
+        },
+        "type": "object",
+        "required": [
+          "links"
+        ],
+        "title": "SetSystemLinksRequest"
       },
       "SnowflakeDocsSchema": {
         "properties": {
@@ -37496,6 +37686,49 @@
         ],
         "title": "System",
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
+      },
+      "SystemLinkRequest": {
+        "properties": {
+          "system_fides_key": {
+            "type": "string",
+            "title": "System Fides Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "system_fides_key"
+        ],
+        "title": "SystemLinkRequest"
+      },
+      "SystemLinkResponse": {
+        "properties": {
+          "system_fides_key": {
+            "type": "string",
+            "title": "System Fides Key"
+          },
+          "system_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "system_fides_key",
+          "created_at"
+        ],
+        "title": "SystemLinkResponse"
       },
       "SystemMetadata": {
         "properties": {
