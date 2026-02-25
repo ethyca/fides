@@ -2,6 +2,8 @@ import { baseApi } from "~/features/common/api.slice";
 import type {
   MaskingStrategyDescription,
   Page_PolicyResponse_,
+  PolicyConditionRequest,
+  PolicyConditionResponse,
   PolicyResponse,
 } from "~/types/api";
 
@@ -23,6 +25,21 @@ const policyApi = baseApi.injectEndpoints({
     getMaskingStrategies: build.query<MaskingStrategyDescription[], void>({
       query: () => ({ url: `/masking/strategy` }),
     }),
+
+    updatePolicyConditions: build.mutation<
+      PolicyConditionResponse,
+      { policyKey: string; condition: PolicyConditionRequest["condition"] }
+    >({
+      query: ({ policyKey, condition }) => ({
+        url: `/plus/dsr/policy/${policyKey}/conditions`,
+        method: "PUT",
+        body: { condition },
+      }),
+      invalidatesTags: (_r, _e, { policyKey }) => [
+        { type: "Policies", id: policyKey },
+        "Policies",
+      ],
+    }),
   }),
 });
 
@@ -30,4 +47,5 @@ export const {
   useGetPoliciesQuery,
   useGetPolicyQuery,
   useGetMaskingStrategiesQuery,
+  useUpdatePolicyConditionsMutation,
 } = policyApi;
