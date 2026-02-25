@@ -2,22 +2,16 @@ import { theme } from "antd";
 import { useId } from "react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 
-const EMPTY_PLACEHOLDER_DATA = [
-  { value: 5 },
-  { value: 15 },
-  { value: 10 },
-  { value: 20 },
-  { value: 25 },
-];
+const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
 
 export interface SparklineProps {
-  data?: { value: number }[] | null;
+  data?: number[] | null;
   color?: string;
   strokeWidth?: number;
   animationDuration?: number;
 }
 
-const Sparkline = ({
+export const Sparkline = ({
   data,
   color,
   strokeWidth = 2,
@@ -28,11 +22,14 @@ const Sparkline = ({
   const chartColor = empty ? token.colorBorder : (color ?? token.colorText);
 
   const gradientId = `sparkline-gradient-${useId()}`;
+  const chartData = (empty ? EMPTY_PLACEHOLDER_DATA : data).map((v) => ({
+    value: v,
+  }));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart
-        data={empty ? EMPTY_PLACEHOLDER_DATA : data}
+        data={chartData}
         margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
       >
         <defs>
@@ -61,5 +58,3 @@ const Sparkline = ({
     </ResponsiveContainer>
   );
 };
-
-export default Sparkline;

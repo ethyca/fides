@@ -1,22 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useCallback, useState } from "react";
 
-import Sparkline, { SparklineProps } from "./Sparkline";
+import { Sparkline, SparklineProps } from "./Sparkline";
 
-const sampleData = [
-  { value: 12 },
-  { value: 18 },
-  { value: 15 },
-  { value: 22 },
-  { value: 28 },
-  { value: 25 },
-  { value: 34 },
-  { value: 30 },
-  { value: 38 },
-  { value: 42 },
-  { value: 39 },
-  { value: 47 },
-];
+const sampleData = [12, 18, 15, 22, 28, 25, 34, 30, 38, 42, 39, 47];
 
 const AnimatedSparkline = (props: SparklineProps) => {
   const [animationKey, setAnimationKey] = useState(0);
@@ -43,7 +30,7 @@ const meta = {
   argTypes: {
     data: {
       control: "object",
-      description: "Chart data points as an array of { value: number } objects",
+      description: "Chart data points as an array of numbers",
     },
     color: {
       control: "color",
@@ -76,7 +63,7 @@ export const Default: Story = {
   args: {
     data: sampleData,
   },
-  render: (args) => <AnimatedSparkline {...args} />,
+  render: (args: SparklineProps) => <AnimatedSparkline {...args} />,
 };
 
 export const NoData: Story = {
