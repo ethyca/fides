@@ -89,60 +89,37 @@ export const ConditionValueSelector = ({
   }
 
   if (fieldType === "location") {
-    if (isMultiSelect) {
-      return (
-        <LocationSelect
-          mode="multiple"
-          value={value as string[]}
-          onChange={onChange}
-          placeholder={disabled ? "Not required" : "Select locations"}
-          disabled={disabled}
-          data-testid="value-location-input"
-          allowClear
-          aria-label="Select locations"
-        />
-      );
-    }
-    return (
-      <LocationSelect
-        value={value as string | null}
-        onChange={onChange}
-        placeholder={disabled ? "Not required" : "Select a location"}
-        disabled={disabled}
-        data-testid="value-location-input"
-        allowClear
-        aria-label="Select a location"
-      />
+    const label = isMultiSelect ? "Select locations" : "Select a location";
+    const sharedProps = {
+      onChange,
+      placeholder: disabled ? "Not required" : label,
+      disabled,
+      "data-testid": "value-location-input",
+      allowClear: true,
+      "aria-label": label,
+    };
+    return isMultiSelect ? (
+      <LocationSelect mode="multiple" value={value as string[]} {...sharedProps} />
+    ) : (
+      <LocationSelect value={value as string | null} {...sharedProps} />
     );
   }
 
   if (fieldType === "location_country") {
-    if (isMultiSelect) {
-      return (
-        <LocationSelect
-          mode="multiple"
-          value={value as string[]}
-          onChange={onChange}
-          placeholder={disabled ? "Not required" : "Select countries"}
-          disabled={disabled}
-          data-testid="value-location-country-input"
-          allowClear
-          aria-label="Select countries"
-          options={{ countries: iso31661, regions: [] }}
-        />
-      );
-    }
-    return (
-      <LocationSelect
-        value={value as string | null}
-        onChange={onChange}
-        placeholder={disabled ? "Not required" : "Select a country"}
-        disabled={disabled}
-        data-testid="value-location-country-input"
-        allowClear
-        aria-label="Select a country"
-        options={{ countries: iso31661, regions: [] }}
-      />
+    const label = isMultiSelect ? "Select countries" : "Select a country";
+    const sharedProps = {
+      onChange,
+      placeholder: disabled ? "Not required" : label,
+      disabled,
+      "data-testid": "value-location-country-input",
+      allowClear: true,
+      "aria-label": label,
+      options: { countries: iso31661, regions: [] },
+    };
+    return isMultiSelect ? (
+      <LocationSelect mode="multiple" value={value as string[]} {...sharedProps} />
+    ) : (
+      <LocationSelect value={value as string | null} {...sharedProps} />
     );
   }
 
@@ -152,41 +129,23 @@ export const ConditionValueSelector = ({
         label: group.name,
         value: group.id,
       })) ?? [];
-
-    if (isMultiSelect) {
-      return (
-        <Select
-          mode="multiple"
-          value={value as string[]}
-          onChange={onChange}
-          options={locationGroupOptions}
-          placeholder={disabled ? "Not required" : "Select location groups"}
-          disabled={disabled}
-          data-testid="value-location-groups-input"
-          allowClear
-          showSearch
-          aria-label="Select location groups"
-          filterOption={(input, option) =>
-            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-          }
-        />
-      );
-    }
-    return (
-      <Select
-        value={value as string}
-        onChange={onChange}
-        options={locationGroupOptions}
-        placeholder={disabled ? "Not required" : "Select a location group"}
-        disabled={disabled}
-        data-testid="value-location-groups-input"
-        allowClear
-        showSearch
-        aria-label="Select a location group"
-        filterOption={(input, option) =>
-          (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-        }
-      />
+    const label = isMultiSelect ? "Select location groups" : "Select a location group";
+    const sharedProps = {
+      onChange,
+      options: locationGroupOptions,
+      placeholder: disabled ? "Not required" : label,
+      disabled,
+      "data-testid": "value-location-groups-input",
+      allowClear: true,
+      showSearch: true,
+      "aria-label": label,
+      filterOption: (input: string, option: { label?: string } | undefined) =>
+        (option?.label ?? "").toLowerCase().includes(input.toLowerCase()),
+    };
+    return isMultiSelect ? (
+      <Select mode="multiple" value={value as string[]} {...sharedProps} />
+    ) : (
+      <Select value={value as string} {...sharedProps} />
     );
   }
 
@@ -196,41 +155,23 @@ export const ConditionValueSelector = ({
         label: regulation.name,
         value: regulation.id,
       })) ?? [];
-
-    if (isMultiSelect) {
-      return (
-        <Select
-          mode="multiple"
-          value={value as string[]}
-          onChange={onChange}
-          options={regulationOptions}
-          placeholder={disabled ? "Not required" : "Select regulations"}
-          disabled={disabled}
-          data-testid="value-location-regulations-input"
-          allowClear
-          showSearch
-          aria-label="Select regulations"
-          filterOption={(input, option) =>
-            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-          }
-        />
-      );
-    }
-    return (
-      <Select
-        value={value as string}
-        onChange={onChange}
-        options={regulationOptions}
-        placeholder={disabled ? "Not required" : "Select a regulation"}
-        disabled={disabled}
-        data-testid="value-location-regulations-input"
-        allowClear
-        showSearch
-        aria-label="Select a regulation"
-        filterOption={(input, option) =>
-          (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-        }
-      />
+    const label = isMultiSelect ? "Select regulations" : "Select a regulation";
+    const sharedProps = {
+      onChange,
+      options: regulationOptions,
+      placeholder: disabled ? "Not required" : label,
+      disabled,
+      "data-testid": "value-location-regulations-input",
+      allowClear: true,
+      showSearch: true,
+      "aria-label": label,
+      filterOption: (input: string, option: { label?: string } | undefined) =>
+        (option?.label ?? "").toLowerCase().includes(input.toLowerCase()),
+    };
+    return isMultiSelect ? (
+      <Select mode="multiple" value={value as string[]} {...sharedProps} />
+    ) : (
+      <Select value={value as string} {...sharedProps} />
     );
   }
 
