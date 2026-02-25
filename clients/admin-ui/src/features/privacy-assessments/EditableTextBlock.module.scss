@@ -1,46 +1,21 @@
 .root {
   position: relative;
-}
+  padding-right: 20px;
 
-.textarea {
-  margin-bottom: 8px;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: 1.6;
-}
-
-.editButton {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
-  padding: 4px 8px;
-  border-radius: var(--ant-border-radius);
-  background-color: transparent;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: var(--fidesui-bg-corinth) !important;
+  :global(.ant-typography-edit) {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    transition: background-color 0.2s ease;
   }
-}
-
-.content {
-  padding: 8px 12px;
-  min-height: 60px;
-  border-radius: var(--ant-border-radius);
-  border: 1px solid transparent;
-  cursor: text;
-  transition: all 0.2s ease;
-  position: relative;
-  line-height: 1.6;
-  display: block;
-}
-
-.contentWithEditButton {
-  padding-right: 40px;
 }
 
 .placeholder {
   font-style: italic;
-  color: var(--ant-color-text-quaternary);
+  color: var(--ant-color-text-tertiary);
+}
+
+.editIcon {
+  color: var(--ant-color-text);
 }

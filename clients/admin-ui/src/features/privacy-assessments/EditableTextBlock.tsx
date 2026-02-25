@@ -1,4 +1,3 @@
-import type { TextAreaRef } from "antd/es/input/TextArea";
 import classNames from "classnames";
 import {
   Button,
@@ -7,48 +6,39 @@ import {
   Flex,
   Icons,
   Input,
+  Typography,
 } from "fidesui";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "./EditableTextBlock.module.scss";
 
-interface EditableTextBlockProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+interface EditableTextBlockProps {
   value: string;
   onSave?: (value: string) => Promise<void> | void;
   isLoading?: boolean;
   placeholder?: string;
   readOnly?: boolean;
-  showEditButton?: boolean;
   renderContent?: (text: string) => React.ReactNode;
+  className?: string;
 }
 
 export const EditableTextBlock = ({
   value,
   onSave,
   isLoading = false,
-  placeholder = "Click to edit...",
+  placeholder,
   readOnly = false,
-  showEditButton = true,
   renderContent,
   className,
-  ...props
 }: EditableTextBlockProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
-  const textareaRef = useRef<TextAreaRef>(null);
 
   useEffect(() => {
     if (!isEditing) {
       setEditValue(value);
     }
   }, [value, isEditing]);
-
-  useEffect(() => {
-    if (isEditing && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [isEditing]);
 
   const handleSave = async () => {
     await onSave?.(editValue);
@@ -62,16 +52,16 @@ export const EditableTextBlock = ({
 
   if (isEditing) {
     return (
-      <div className={className} {...props}>
+      <div className={className}>
         <Input.TextArea
-          ref={textareaRef}
+          autoFocus
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           placeholder={placeholder}
           rows={4}
-          className={styles.textarea}
+          size="middle"
         />
-        <Flex justify="flex-end" gap="small">
+        <Flex justify="flex-end" gap="small" className="my-2">
           <Button
             type="text"
             icon={<CloseOutlined />}
@@ -95,29 +85,25 @@ export const EditableTextBlock = ({
   }
 
   return (
-    <div className={classNames(styles.root, className)} {...props}>
-      {showEditButton && !readOnly && (
-        <Button
-          type="text"
-          icon={<Icons.Edit size={16} />}
-          size="small"
-          onClick={() => setIsEditing(true)}
-          className={styles.editButton}
-          aria-label="Edit"
-        />
+    <Typography.Paragraph
+      className={classNames(styles.root, className)}
+      editable={
+        !readOnly
+          ? {
+              icon: <Icons.Edit size={16} className={styles.editIcon} />,
+              editing: false,
+              onStart: () => setIsEditing(true),
+              tooltip: false,
+            }
+          : false
+      }
+      size="lg"
+    >
+      {value ? (
+        (renderContent?.(value) ?? value)
+      ) : (
+        <span className={styles.placeholder}>{placeholder}</span>
       )}
-
-      <div
-        className={classNames(styles.content, {
-          [styles.contentWithEditButton]: showEditButton && !readOnly,
-        })}
-      >
-        {value ? (
-          (renderContent?.(value) ?? value)
-        ) : (
-          <span className={styles.placeholder}>{placeholder}</span>
-        )}
-      </div>
-    </div>
+    </Typography.Paragraph>
   );
 };
