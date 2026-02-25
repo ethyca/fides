@@ -450,6 +450,8 @@ export type { PartialPrivacyRequestOption } from "./models/PartialPrivacyRequest
 export { PeriodicIntegrationFrequency } from "./models/PeriodicIntegrationFrequency";
 export type { PlusApplicationConfig } from "./models/PlusApplicationConfig";
 export type { PlusConsentSettingsApplicationConfig } from "./models/PlusConsentSettingsApplicationConfig";
+export type { PolicyConditionRequest } from "./models/PolicyConditionRequest";
+export type { PolicyConditionResponse } from "./models/PolicyConditionResponse";
 export type { PolicyMaskingSpec } from "./models/PolicyMaskingSpec";
 export type { PolicyMaskingSpecResponse } from "./models/PolicyMaskingSpecResponse";
 export type { PolicyResponse } from "./models/PolicyResponse";
