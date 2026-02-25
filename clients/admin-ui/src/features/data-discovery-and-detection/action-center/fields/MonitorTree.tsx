@@ -621,8 +621,7 @@ const MonitorTree = forwardRef<
       setExpandedKeys([]);
       setNodePaginationState({});
       setSelectedNodeKeys([]);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [showIgnored, showApproved]);
+    }, [showIgnored, showApproved, setSelectedNodeKeys]);
 
     useEffect(() => {
       const getInitTreeData = async () => {
