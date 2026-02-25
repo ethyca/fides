@@ -8,7 +8,7 @@ Adds database table for privacy assessment configuration:
 This is a single-row table per tenant for global assessment settings.
 
 Revision ID: 074796d61d8a
-Revises: d3f08ca31314
+Revises: c69ef1fecb20
 Create Date: 2026-02-23 14:00:00.000000
 
 """
@@ -20,7 +20,7 @@ from fides.api.alembic.migrations.helpers.database_functions import generate_rec
 
 # revision identifiers, used by Alembic.
 revision = "074796d61d8a"
-down_revision = "d3f08ca31314"
+down_revision = "c69ef1fecb20"
 branch_labels = None
 depends_on = None
 
