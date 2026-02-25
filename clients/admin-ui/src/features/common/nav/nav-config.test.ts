@@ -41,9 +41,7 @@ describe("configureNavGroups", () => {
     ]);
 
     expect(findGroup(navGroups, "Privacy requests").children).toMatchObject([
-      { title: "Policies", path: routes.POLICIES_ROUTE },
       { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
-      { title: "Connection manager", path: routes.DATASTORE_CONNECTION_ROUTE },
     ]);
   });
 
@@ -302,14 +300,6 @@ describe("findActiveNav", () => {
       expected: {
         title: "Data inventory",
         path: routes.ADD_SYSTEMS_ROUTE,
-      },
-    },
-    // Inexact match is the default.
-    {
-      path: `${routes.DATASTORE_CONNECTION_ROUTE}/new`,
-      expected: {
-        title: "Privacy requests",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
       },
     },
     {
