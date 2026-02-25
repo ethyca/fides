@@ -4,11 +4,12 @@ import {
   CheckOutlined,
   CloseOutlined,
   Flex,
+  Form,
   Icons,
   Input,
   Typography,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import styles from "./EditableTextBlock.module.scss";
 
@@ -30,40 +31,32 @@ export const EditableTextBlock = ({
   className,
 }: EditableTextBlockProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
 
-  useEffect(() => {
-    if (!isEditing) {
-      setEditValue(value);
-    }
-  }, [value, isEditing]);
-
-  const handleSave = async () => {
-    await onSave?.(editValue);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditValue(value);
+  const handleFinish = async ({ content }: { content: string }) => {
+    await onSave?.(content);
     setIsEditing(false);
   };
 
   if (isEditing) {
     return (
-      <div className={className}>
-        <Input.TextArea
-          autoFocus
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          placeholder={placeholder}
-          rows={4}
-          size="middle"
-        />
+      <Form
+        initialValues={{ content: value }}
+        onFinish={handleFinish}
+        className={className}
+      >
+        <Form.Item name="content" noStyle>
+          <Input.TextArea
+            autoFocus
+            placeholder={placeholder}
+            rows={4}
+            size="middle"
+          />
+        </Form.Item>
         <Flex justify="flex-end" gap="small" className="my-2">
           <Button
             type="text"
             icon={<CloseOutlined />}
-            onClick={handleCancel}
+            onClick={() => setIsEditing(false)}
             size="small"
           >
             Cancel
@@ -71,14 +64,14 @@ export const EditableTextBlock = ({
           <Button
             type="primary"
             icon={<CheckOutlined />}
-            onClick={handleSave}
+            htmlType="submit"
             size="small"
             loading={isLoading}
           >
             Save
           </Button>
         </Flex>
-      </div>
+      </Form>
     );
   }
 
