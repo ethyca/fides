@@ -9,17 +9,14 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-/** Maps to Ant Design's colorSuccess / colorWarning / colorError tokens. */
+import { ChartGradient } from "./ChartGradient";
+import { CHART_ANIMATION } from "./chart-constants";
+import type { AntColorTokenKey } from "./chart-constants";
 export type RadarPointStatus = "success" | "warning" | "error";
 
 export interface RadarChartDataPoint {
   subject: string;
   value: number;
-  /**
-   * When provided, the dot and label for this point are colored using the
-   * corresponding Ant Design token (colorSuccess / colorWarning / colorError).
-   * Points without a status render with the default chart color.
-   */
   status?: RadarPointStatus;
 }
 
@@ -34,14 +31,14 @@ const EMPTY_PLACEHOLDER_DATA: RadarChartDataPoint[] = [
 
 export interface RadarChartProps {
   data?: RadarChartDataPoint[] | null;
-  color?: string;
+  color?: AntColorTokenKey;
   animationDuration?: number;
 }
 
-const RadarChart = ({
+export const RadarChart = ({
   data,
   color,
-  animationDuration = 1500,
+  animationDuration = CHART_ANIMATION.defaultDuration,
 }: RadarChartProps) => {
   const { token } = theme.useToken();
   const empty = !data?.length;
@@ -66,10 +63,7 @@ const RadarChart = ({
           outerRadius="70%"
         >
           <defs>
-            <radialGradient id={gradientId} cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor={chartColor} stopOpacity={0.02} />
-              <stop offset="100%" stopColor={chartColor} stopOpacity={0.2} />
-            </radialGradient>
+            <ChartGradient id={gradientId} color={chartColor} type="radial" inverse />
           </defs>
 
           <PolarGrid
@@ -132,7 +126,6 @@ const RadarChart = ({
                 index: number;
               };
               const point = empty ? undefined : data![index];
-              if (!point?.status) return <g key={`dot-${index}`} />;
 
               return (
                 <circle
@@ -140,20 +133,21 @@ const RadarChart = ({
                   cx={dotCx}
                   cy={dotCy}
                   r={3.5}
-                  fill={STATUS_COLORS[point.status]}
-                  stroke="none"
+                  fill={
+                    point?.status ? STATUS_COLORS[point.status] : chartColor
+                  }
+                  stroke={token.colorBgContainer}
+                  strokeWidth={1.5}
                 />
               );
             }}
             activeDot={false}
             isAnimationActive={!empty}
             animationDuration={animationDuration}
-            animationEasing="ease-in-out"
+            animationEasing={CHART_ANIMATION.easing}
           />
         </RechartsRadarChart>
       </ResponsiveContainer>
     </div>
   );
 };
-
-export default RadarChart;

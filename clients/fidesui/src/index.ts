@@ -336,7 +336,9 @@ export type {
   RadarChartProps,
   RadarPointStatus,
 } from "./components/charts/RadarChart";
-export { default as RadarChart } from "./components/charts/RadarChart";
+export { RadarChart } from "./components/charts/RadarChart";
+export type { AntColorTokenKey } from "./components/charts/chart-constants";
+export { CHART_ANIMATION, CHART_GRADIENT } from "./components/charts/chart-constants";
 
 // Export animation components
 export type {

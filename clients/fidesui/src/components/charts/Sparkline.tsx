@@ -1,10 +1,12 @@
-import { GlobalToken, theme } from "antd";
+import { theme } from "antd";
 import { useId } from "react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 
-const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
+import { ChartGradient } from "./ChartGradient";
+import { CHART_ANIMATION } from "./chart-constants";
+import type { AntColorTokenKey } from "./chart-constants";
 
-export type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
+const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
 
 export interface SparklineProps {
   data?: number[] | null;
@@ -17,7 +19,7 @@ export const Sparkline = ({
   data,
   color,
   strokeWidth = 2,
-  animationDuration = 600,
+  animationDuration = CHART_ANIMATION.defaultDuration,
 }: SparklineProps) => {
   const { token } = theme.useToken();
   const empty = !data?.length;
@@ -35,12 +37,8 @@ export const Sparkline = ({
         data={chartData}
         margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
       >
-        {/* TODO: turn this into a reusable chart component */}
         <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={chartColor} stopOpacity={0.25} />
-            <stop offset="100%" stopColor={chartColor} stopOpacity={0} />
-          </linearGradient>
+          <ChartGradient id={gradientId} color={chartColor} />
         </defs>
         <YAxis domain={["dataMin", "dataMax"]} hide />
         <Area
@@ -55,8 +53,8 @@ export const Sparkline = ({
           dot={false}
           activeDot={false}
           isAnimationActive={!empty && animationDuration > 0}
-          animationDuration={animationDuration} // TODO: standardize and export animation configs
-          animationEasing="ease-in-out"
+          animationDuration={animationDuration}
+          animationEasing={CHART_ANIMATION.easing}
         />
       </AreaChart>
     </ResponsiveContainer>

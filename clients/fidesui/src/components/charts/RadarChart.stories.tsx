@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useCallback, useState } from "react";
 
-import RadarChart, { RadarChartProps } from "./RadarChart";
+import { RadarChartProps, RadarChart } from "./RadarChart";
 
 const sampleData = [
-  { subject: "Coverage", value: 80, status: "success" as const },
-  { subject: "Classification", value: 65, status: "success" as const },
+  { subject: "Coverage", value: 80 },
+  { subject: "Classification", value: 65 },
   { subject: "Consent", value: 50, status: "warning" as const },
   { subject: "DSR", value: 30, status: "error" as const },
-  { subject: "Enforcement", value: 70, status: "success" as const },
+  { subject: "Enforcement", value: 70 },
   { subject: "Assessments", value: 45, status: "warning" as const },
 ];
 
