@@ -75,6 +75,9 @@ jobs:
       - name: Format
         run: npm run format:ci
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Unit tests
         run: npm run test
 

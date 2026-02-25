@@ -43,7 +43,7 @@
       "dependsOn": []
     },
     "typecheck": {
-      "dependsOn": ["build"]
+      "dependsOn": ["^build"]
     },
     "test": {
       "dependsOn": ["^typecheck"],
