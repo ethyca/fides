@@ -1,12 +1,14 @@
-import { theme } from "antd";
+import { GlobalToken, theme } from "antd";
 import { useId } from "react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 
 const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
 
+export type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
+
 export interface SparklineProps {
   data?: number[] | null;
-  color?: string;
+  color?: AntColorTokenKey;
   strokeWidth?: number;
   animationDuration?: number;
 }
@@ -19,7 +21,11 @@ export const Sparkline = ({
 }: SparklineProps) => {
   const { token } = theme.useToken();
   const empty = !data?.length;
-  const chartColor = empty ? token.colorBorder : (color ?? token.colorText);
+  const chartColor = empty
+    ? token.colorBorder
+    : color
+      ? token[color]
+      : token.colorText;
 
   const gradientId = `sparkline-gradient-${useId()}`;
   const chartData = (empty ? EMPTY_PLACEHOLDER_DATA : data).map((v) => ({

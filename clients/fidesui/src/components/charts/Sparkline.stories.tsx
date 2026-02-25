@@ -33,9 +33,21 @@ const meta = {
       description: "Chart data points as an array of numbers",
     },
     color: {
-      control: "color",
+      control: "select",
+      options: [
+        undefined,
+        "colorPrimary",
+        "colorSuccess",
+        "colorWarning",
+        "colorError",
+        "colorInfo",
+        "colorText",
+        "colorTextSecondary",
+        "colorTextTertiary",
+        "colorBorder",
+      ],
       description:
-        "Stroke and fill color. Defaults to the Ant Design colorText token when not set.",
+        "Ant Design semantic color token key. Defaults to colorText when not set.",
     },
     strokeWidth: {
       control: { type: "range", min: 1, max: 6, step: 0.5 },
