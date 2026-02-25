@@ -20,7 +20,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.endpoints.connection_endpoints import _enrich_linked_systems
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
 from fides.api.db.crud import get_resource, get_resource_with_custom_fields
 from fides.api.db.ctl_session import get_async_db
@@ -125,20 +124,13 @@ def get_system_connections(
         .options(selectinload(ConnectionConfig.system))
     )
 
-    def _with_linked_systems(
-        items: List[ConnectionConfig],
-    ) -> List[ConnectionConfigurationResponse]:
-        results = []
-        for item in items:
-            resp = ConnectionConfigurationResponse.model_validate(item)
-            _enrich_linked_systems(resp, item)
-            results.append(resp)
-        return results
-
     return paginate(
         query.order_by(ConnectionConfig.name.asc()),
         params=params,
-        transformer=_with_linked_systems,
+        transformer=lambda items: [
+            ConnectionConfigurationResponse.from_connection_config(item)
+            for item in items
+        ],
     )
 
 
