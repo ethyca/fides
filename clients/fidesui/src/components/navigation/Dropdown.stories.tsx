@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import type { DropdownProps } from "../../index";
-import { Dropdown } from "../../index";
+import { Button, Dropdown } from "../../index";
+import { Primary as MenuStory } from "./Menu.stories";
 
 const TriggerOptions: DropdownProps["trigger"] = [
   "contextMenu",
@@ -11,24 +12,7 @@ const TriggerOptions: DropdownProps["trigger"] = [
 
 const meta = {
   title: "Navigation/Dropdown",
-  args: {
-    menu: {
-      selectable: false,
-      selectedKeys: ["2"],
-      items: [
-        {
-          key: 1,
-          label: "menu 1",
-        },
-
-        {
-          key: 2,
-          label: "menu 2",
-        },
-      ],
-    },
-    open: true,
-  },
+  component: Dropdown,
   argTypes: {
     trigger: {
       control: "multi-select",
@@ -41,5 +25,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
-  render: (args) => <Dropdown {...args}>Target</Dropdown>,
+  args: {
+    menu: MenuStory.args,
+    children: <Button>Target</Button>,
+    open: true,
+  },
 };

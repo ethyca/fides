@@ -1,4 +1,8 @@
+import React from "react";
 import type { Preview } from "@storybook/react-vite";
+
+import { darkAntTheme, defaultAntTheme } from "../src/ant-theme";
+import { FidesUIProvider } from "../src/FidesUIProvider";
 
 import "../src/ant-theme/global.scss";
 import "../src/tailwind.css";
@@ -37,6 +41,11 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    options: {
+      storySort: {
+        order: ['General', 'Layout', 'Navigation', 'Data Entry', 'Data Display', 'Feedback', 'Charts']
+      }
+    }
   },
 
   decorators: [withAntTheme],

@@ -5,7 +5,7 @@ import { fn } from "storybook/test";
 import { LocationSelect } from "./LocationSelect";
 
 const meta = {
-  title: "DataEntry/LocationSelect",
+  title: "Data Entry/LocationSelect",
   component: LocationSelect,
   parameters: {},
   tags: ["autodocs"],
