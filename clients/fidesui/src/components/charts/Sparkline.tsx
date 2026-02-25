@@ -58,7 +58,7 @@ export const Sparkline = ({
           dot={false}
           activeDot={false}
           isAnimationActive={!empty && animationDuration > 0}
-          animationDuration={animationDuration} // TODO: standardize and export animatin configs
+          animationDuration={animationDuration} // TODO: standardize and export animation configs
           animationEasing="ease-in-out"
         />
       </AreaChart>
