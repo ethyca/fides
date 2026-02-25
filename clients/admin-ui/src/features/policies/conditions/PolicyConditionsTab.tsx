@@ -196,7 +196,7 @@ export const PolicyConditionsTab = ({
         locale={{
           emptyText: (
             <Empty
-              description="No rules configured for this policy"
+              description="No conditions configured. This policy will apply to all matching requests."
               className="py-8"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
