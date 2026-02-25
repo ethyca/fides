@@ -1,5 +1,6 @@
 import {
   Button,
+  Empty,
   Flex,
   List,
   Modal,
@@ -194,12 +195,11 @@ export const PolicyConditionsTab = ({
         data-testid="conditions-list"
         locale={{
           emptyText: (
-            <div className="py-8 text-center">
-              <Text type="secondary">
-                No conditions configured. This policy will apply to all matching
-                requests.
-              </Text>
-            </div>
+            <Empty
+              description="No conditions configured. This policy will apply to all matching requests."
+              className="py-8"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
           ),
         }}
         renderItem={(condition: ConditionLeaf, index: number) => {
