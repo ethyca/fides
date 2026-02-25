@@ -14,7 +14,7 @@ import {
   useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -22,10 +22,7 @@ import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
-import {
-  useDeletePrivacyAssessmentMutation,
-  useUpdateAssessmentAnswerMutation,
-} from "./privacy-assessments.slice";
+import { useDeletePrivacyAssessmentMutation } from "./privacy-assessments.slice";
 import { buildQuestionGroupPanelItem } from "./QuestionGroupPanel";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
@@ -42,9 +39,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
-  const [localAnswers, setLocalAnswers] = useState<Record<string, string>>({});
 
-  const [updateAnswer] = useUpdateAssessmentAnswerMutation();
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
 
@@ -52,43 +47,8 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     const questions = (assessment.question_groups ?? []).flatMap(
       (g) => g.questions,
     );
-    return isAssessmentComplete(
-      questions,
-      (questionId, apiAnswer) => localAnswers[questionId] ?? apiAnswer,
-    );
-  }, [assessment.question_groups, localAnswers]);
-
-  const handleAnswerChange = useCallback(
-    (questionId: string, newAnswer: string) => {
-      setLocalAnswers((prev) => ({ ...prev, [questionId]: newAnswer }));
-    },
-    [],
-  );
-
-  const handleAnswerSave = useCallback(
-    async (questionId: string, newAnswer: string) => {
-      try {
-        await updateAnswer({
-          id: assessment.id,
-          questionId,
-          body: { answer_text: newAnswer },
-        }).unwrap();
-        setLocalAnswers((prev) => {
-          const updated = { ...prev };
-          delete updated[questionId];
-          return updated;
-        });
-      } catch (error) {
-        message.error(
-          getErrorMessage(
-            error as RTKErrorResult["error"],
-            "Failed to save answer. Please try again.",
-          ),
-        );
-      }
-    },
-    [assessment.id, message, updateAnswer],
-  );
+    return isAssessmentComplete(questions);
+  }, [assessment.question_groups]);
 
   const handleDelete = async () => {
     try {
@@ -110,21 +70,12 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     () =>
       (assessment.question_groups ?? []).map((group) =>
         buildQuestionGroupPanelItem({
+          assessmentId: assessment.id,
           group,
           isExpanded: expandedKeys.includes(group.id),
-          getAnswerValue: (questionId, apiAnswer) =>
-            localAnswers[questionId] ?? apiAnswer,
-          onAnswerChange: handleAnswerChange,
-          onAnswerSave: handleAnswerSave,
         }),
       ),
-    [
-      assessment.question_groups,
-      expandedKeys,
-      localAnswers,
-      handleAnswerChange,
-      handleAnswerSave,
-    ],
+    [assessment.question_groups, assessment.id, expandedKeys],
   );
 
   return (

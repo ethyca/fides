@@ -13,28 +13,23 @@ import {
 import { RISK_LEVEL_DOT_COLORS, RISK_LEVEL_LABELS } from "./constants";
 import { QuestionCard } from "./QuestionCard";
 import styles from "./QuestionGroupPanel.module.scss";
-import { AssessmentQuestion, QuestionGroup } from "./types";
+import { QuestionGroup } from "./types";
 import { getInitials, getTimeSince } from "./utils";
 
 interface QuestionGroupPanelProps {
+  assessmentId: string;
   group: QuestionGroup;
   isExpanded: boolean;
-  getAnswerValue: (questionId: string, apiAnswer: string) => string;
-  onAnswerChange: (questionId: string, value: string) => void;
-  onAnswerSave: (questionId: string, value: string) => void;
 }
 
 export const buildQuestionGroupPanelItem = ({
+  assessmentId,
   group,
   isExpanded,
-  getAnswerValue,
-  onAnswerChange,
-  onAnswerSave,
 }: QuestionGroupPanelProps): NonNullable<CollapseProps["items"]>[number] => {
-  const answeredCount = group.questions.filter((q) => {
-    const answer = getAnswerValue(q.question_id, q.answer_text);
-    return answer.trim().length > 0;
-  }).length;
+  const answeredCount = group.questions.filter(
+    (q) => q.answer_text.trim().length > 0,
+  ).length;
   const totalCount = group.questions.length;
   const isGroupCompleted = answeredCount === totalCount;
 
@@ -107,19 +102,9 @@ export const buildQuestionGroupPanelItem = ({
 
   const children = (
     <Space direction="vertical" size="middle" className={styles.questions}>
-      {group.questions.map((q: AssessmentQuestion) => {
-        const currentAnswer = getAnswerValue(q.question_id, q.answer_text);
-
-        return (
-          <QuestionCard
-            key={q.id}
-            question={q}
-            currentAnswer={currentAnswer}
-            onAnswerChange={onAnswerChange}
-            onAnswerSave={onAnswerSave}
-          />
-        );
-      })}
+      {group.questions.map((q) => (
+        <QuestionCard key={q.id} assessmentId={assessmentId} question={q} />
+      ))}
     </Space>
   );
 

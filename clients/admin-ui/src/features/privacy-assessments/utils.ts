@@ -28,9 +28,4 @@ export const getTimeSince = (dateString: string): string => {
 
 export const isAssessmentComplete = (
   questions: AssessmentQuestion[],
-  getAnswerValue: (questionId: string, apiAnswer: string) => string,
-): boolean =>
-  questions.every(
-    (q) => getAnswerValue(q.question_id, q.answer_text).trim().length > 0,
-  );
-
+): boolean => questions.every((q) => q.answer_text.trim().length > 0);

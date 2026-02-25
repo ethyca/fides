@@ -15,8 +15,8 @@ import styles from "./EditableTextBlock.module.scss";
 interface EditableTextBlockProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   value: string;
-  onChange: (value: string) => void;
-  onSave?: (value: string) => void;
+  onSave?: (value: string) => Promise<void> | void;
+  isLoading?: boolean;
   placeholder?: string;
   readOnly?: boolean;
   showEditButton?: boolean;
@@ -25,8 +25,8 @@ interface EditableTextBlockProps
 
 export const EditableTextBlock = ({
   value,
-  onChange,
   onSave,
+  isLoading = false,
   placeholder = "Click to edit...",
   readOnly = false,
   showEditButton = true,
@@ -39,8 +39,10 @@ export const EditableTextBlock = ({
   const textareaRef = useRef<TextAreaRef>(null);
 
   useEffect(() => {
-    setEditValue(value);
-  }, [value]);
+    if (!isEditing) {
+      setEditValue(value);
+    }
+  }, [value, isEditing]);
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
@@ -48,12 +50,9 @@ export const EditableTextBlock = ({
     }
   }, [isEditing]);
 
-  const handleSave = () => {
-    onChange(editValue);
+  const handleSave = async () => {
+    await onSave?.(editValue);
     setIsEditing(false);
-    if (onSave) {
-      onSave(editValue);
-    }
   };
 
   const handleCancel = () => {
@@ -86,6 +85,7 @@ export const EditableTextBlock = ({
             icon={<CheckOutlined />}
             onClick={handleSave}
             size="small"
+            loading={isLoading}
           >
             Save
           </Button>
