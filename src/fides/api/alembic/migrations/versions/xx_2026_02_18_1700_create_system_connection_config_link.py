@@ -44,11 +44,6 @@ def upgrade():
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint(
-            "system_id",
-            "connection_config_id",
-            name="uq_system_connconfig_link",
-        ),
     )
     # Required by Base.id having index=True — Alembic autogenerate check expects this
     # even though Postgres already indexes the PK.
