@@ -69,7 +69,7 @@ System (ctl_systems)
 +-- dataset_references (soft reference array) -> Dataset fides_keys
 ```
 
-Note: The System:ConnectionConfig relationship was migrated from a direct FK (`ConnectionConfig.system_id`) to the `system_connection_config_link` join table. The old FK has been removed. Both sides of the relationship use `uselist=False` and `viewonly=True` for backward compatibility; writes go through `SystemConnectionConfigLink.create_or_update_link()`.
+Note: The System:ConnectionConfig relationship was migrated from a direct FK (`ConnectionConfig.system_id`) to the `system_connection_config_link` join table. The old FK has been removed. Both sides of the relationship use `uselist=False` and `viewonly=True` for backward compatibility; writes go through `SystemIntegrationLinkRepository.create_or_update_link()`.
 
 **Cascade behavior change:** Deleting a system previously cascade-deleted its linked ConnectionConfig (and DatasetConfig) via the direct FK. With the join table, system deletion only cascade-deletes the link rows -- the ConnectionConfig and DatasetConfig are preserved as orphans. This decouples system and integration lifecycles.
 
@@ -90,10 +90,11 @@ New files (added as part of this effort):
 ```
 src/fides/system_integration_link/   # Self-contained feature package
     __init__.py
-    models.py        # SQLAlchemy model (SystemConnectionConfigLink) + create_or_update_link helper
+    models.py        # SQLAlchemy model (SystemConnectionConfigLink)
     routes.py        # FastAPI route definitions (GET, PUT, DELETE)
     service.py       # Business logic + session management
     repository.py    # Data access layer (SQLAlchemy queries)
+    deps.py          # FastAPI dependency factories
     entities.py      # Domain entity dataclass
     exceptions.py    # Domain-specific exceptions
     schemas.py       # Pydantic request/response schemas
@@ -106,6 +107,7 @@ src/fides/api/alembic/migrations/versions/
     xx_2026_02_20_migrate_system_id_fk_to_link_table.py         # Migrates data, drops ConnectionConfig.system_id
 
 tests/system_integration_link/
-    test_service.py      # 13 unit tests (mock-based)
-    test_repository.py   # 13 integration tests (real DB)
+    test_routes.py       # Route-level integration tests
+    test_service.py      # Unit tests (mock-based)
+    test_repository.py   # Integration tests (real DB)
 ```

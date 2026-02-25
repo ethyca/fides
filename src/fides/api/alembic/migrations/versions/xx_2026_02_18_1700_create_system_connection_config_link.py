@@ -45,6 +45,8 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    # Required by Base.id having index=True — Alembic autogenerate check expects this
+    # even though Postgres already indexes the PK.
     op.create_index(
         "ix_system_connection_config_link_id",
         "system_connection_config_link",
@@ -55,6 +57,9 @@ def upgrade():
         "system_connection_config_link",
         ["system_id"],
     )
+    # Unique index enforces at most one system link per connection config (1:many
+    # system->integrations).  Relaxing to many-to-many would require dropping this
+    # unique constraint and auditing call sites that assume a single link.
     op.create_index(
         "ix_system_connection_config_link_connection_config_id",
         "system_connection_config_link",

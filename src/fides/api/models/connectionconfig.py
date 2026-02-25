@@ -252,7 +252,8 @@ class ConnectionConfig(Base):
         cascade="delete",
     )
 
-    # system_id FK has been migrated to the system_connection_config_link join table.
+    # system_id FK has been migrated to the system_connection_config_link join table;
+    # this relationship uses that table via secondary=.
     system = relationship(
         System,
         secondary="system_connection_config_link",
