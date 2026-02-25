@@ -46,7 +46,7 @@ from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PR
 from fides.config import CONFIG
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -1326,8 +1326,10 @@ class TestGetConnections:
                 db=db,
                 data=data,
             )
-            SystemConnectionConfigLink.create_or_update_link(
-                db, system.id, connection.id
+            SystemIntegrationLinkRepository().create_or_update_link(
+                system_id=system.id,
+                connection_config_id=connection.id,
+                session=db,
             )
             configs.append(connection)
         db.commit()

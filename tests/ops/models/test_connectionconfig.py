@@ -10,7 +10,7 @@ from fides.api.models.connectionconfig import (
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.text import to_snake_case
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 class TestConnectionConfigModel:
@@ -161,8 +161,10 @@ class TestConnectionConfigModel:
     def test_system_key(self, db, connection_config, system):
         assert connection_config.system_key == connection_config.name
 
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
         )
         db.refresh(connection_config)
 

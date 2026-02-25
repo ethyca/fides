@@ -1493,6 +1493,28 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: jira_ticket_task
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: manual_task_instance_id
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+    - name: ticket_key
+      data_categories: [system.operations]
+    - name: ticket_url
+      data_categories: [system.operations]
+    - name: external_status
+      data_categories: [system.operations]
+    - name: external_status_category
+      data_categories: [system.operations]
+    - name: last_polled_at
+      data_categories: [system.operations]
   - name: monitorexecution
     data_categories: []
     fields:

@@ -26,7 +26,7 @@ from fides.api.service.privacy_request.email_batch_service import (
 from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.api.util.lock import redis_lock
 from fides.config import get_config
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
@@ -210,8 +210,10 @@ class TestConsentEmailBatchSend:
         sovrn_email_connection_config,
         system,
     ) -> None:
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, sovrn_email_connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
         )
 
         with pytest.raises(MessageDispatchException):
@@ -429,8 +431,10 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, sovrn_email_connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
         )
 
         cache_identity_and_privacy_preferences(
@@ -485,8 +489,10 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, sovrn_email_connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
         )
 
         # This preference matches on data use
@@ -613,8 +619,10 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, generic_consent_email_connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=generic_consent_email_connection_config.id,
+            session=db,
         )
 
         # This preference matches on data use

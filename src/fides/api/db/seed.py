@@ -55,7 +55,7 @@ from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
 from fides.config import CONFIG
 from fides.service.dataset.dataset_config_service import DatasetConfigService
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 from .crud import upsert_resources
 from .samples import (
@@ -481,10 +481,10 @@ async def load_samples(async_session: AsyncSession) -> None:
                         )
                         continue
 
-                    SystemConnectionConfigLink.create_or_update_link(
-                        db=db_session,
+                    SystemIntegrationLinkRepository().create_or_update_link(
                         system_id=system.id,
                         connection_config_id=connection_config.id,
+                        session=db_session,
                     )
 
     except QueryError:  # pragma: no cover

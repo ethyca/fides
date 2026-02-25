@@ -16,7 +16,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.connection_util import validate_secrets
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
-from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 @pytest.fixture(scope="function")
@@ -155,8 +155,10 @@ def instantiate_connector(
     assert dataset_config is not None
 
     if system:
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system.id, connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
         )
         db.commit()
 

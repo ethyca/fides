@@ -317,6 +317,7 @@ class PrivacyRequestStatus(StrEnum):
     paused = "paused"
     awaiting_email_send = "awaiting_email_send"
     requires_manual_finalization = "requires_manual_finalization"
+    pending_external = "pending_external"  # Awaiting external system (e.g., Jira)
     canceled = "canceled"
     error = "error"
     duplicate = "duplicate"  # Request identified as duplicate of another request
