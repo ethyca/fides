@@ -5,7 +5,6 @@ import {
   List,
   Modal,
   PageSpinner,
-  Table,
   Tag,
   Typography,
   useMessage,
@@ -205,12 +204,9 @@ const IntegrationLinkedSystems = ({
             aria-label="Search systems"
             data-testid="link-system-search"
           />
-          <Table
+          <List
             dataSource={availableSystems}
             loading={isSystemsLoading}
-            rowKey="fides_key"
-            size="small"
-            pagination={false}
             locale={{
               emptyText: (
                 <div className="py-6 text-center">
@@ -222,30 +218,12 @@ const IntegrationLinkedSystems = ({
                 </div>
               ),
             }}
-            columns={[
-              {
-                title: "System",
-                key: "system",
-                render: (_, system) => (
-                  <>
-                    <Text
-                      ellipsis={{
-                        tooltip: system.name ?? system.fides_key,
-                      }}
-                    >
-                      {system.name ?? system.fides_key}
-                    </Text>
-                    {system.description ? (
-                      <Text type="secondary">{system.description}</Text>
-                    ) : null}
-                  </>
-                ),
-              },
-              {
-                title: "Actions",
-                key: "actions",
-                render: (_, system) => (
+            renderItem={(system) => (
+              <List.Item
+                key={system.fides_key}
+                actions={[
                   <Button
+                    key="link"
                     type="link"
                     size="small"
                     onClick={() => handleLinkSystem(system.fides_key)}
@@ -253,10 +231,24 @@ const IntegrationLinkedSystems = ({
                     aria-label={`Link system: ${system.name ?? system.fides_key}`}
                   >
                     Link
-                  </Button>
-                ),
-              },
-            ]}
+                  </Button>,
+                ]}
+              >
+                <List.Item.Meta
+                  title={
+                    <Text
+                      ellipsis={{
+                        tooltip: system.name ?? system.fides_key,
+                      }}
+                    >
+                      {system.name ?? system.fides_key}
+                    </Text>
+                  }
+                  description={system.description ?? undefined}
+                />
+              </List.Item>
+            )}
+            className="overflow-y-auto"
           />
         </Flex>
       </Modal>
