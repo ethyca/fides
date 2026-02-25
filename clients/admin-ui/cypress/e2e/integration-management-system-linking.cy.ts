@@ -48,7 +48,7 @@ describe("Integration management system linking", () => {
       cy.getByTestId("cancel-link-system-button").should("exist");
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("link-system-modal").within(() => {
-        cy.get(".ant-table-tbody tr").should("have.length.greaterThan", 0);
+        cy.get("li").should("have.length.greaterThan", 0);
       });
     });
 
