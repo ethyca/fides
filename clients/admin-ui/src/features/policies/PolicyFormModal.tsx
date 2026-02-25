@@ -1,6 +1,6 @@
 import { Form, Input, InputNumber, Modal, useMessage } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useEffect } from "react";
+import { useCallback, useMemo } from "react";
 
 import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
@@ -39,21 +39,17 @@ export const PolicyFormModal = ({
   const [createOrUpdatePolicy, { isLoading }] =
     useCreateOrUpdatePoliciesMutation();
 
-  useEffect(() => {
-    if (existingPolicy && isEditing) {
-      form.setFieldsValue({
-        name: existingPolicy.name,
-        key: existingPolicy.key ?? "",
-        execution_timeframe: existingPolicy.execution_timeframe,
-      });
-    }
-  }, [existingPolicy, isEditing, form]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      form.resetFields();
-    }
-  }, [isOpen, form]);
+  const initialValues = useMemo<PolicyFormValues | undefined>(
+    () =>
+      isEditing && existingPolicy
+        ? {
+            name: existingPolicy.name,
+            key: existingPolicy.key ?? "",
+            execution_timeframe: existingPolicy.execution_timeframe,
+          }
+        : undefined,
+    [isEditing, existingPolicy],
+  );
 
   const handleSubmit = useCallback(
     async (values: PolicyFormValues) => {
@@ -114,7 +110,13 @@ export const PolicyFormModal = ({
       confirmLoading={isLoading}
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        initialValues={initialValues}
+        key={existingPolicy?.key ?? "create"}
+      >
         <Form.Item
           name="name"
           label="Name"

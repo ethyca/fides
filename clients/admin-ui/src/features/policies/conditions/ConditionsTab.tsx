@@ -1,10 +1,10 @@
-import { Typography } from "fidesui";
+import { Flex, Typography } from "fidesui";
 
 const { Title, Paragraph } = Typography;
 
 const PolicyConditionsTab = () => {
   return (
-    <>
+    <Flex vertical gap="small">
       <Title level={5} data-testid="policy-conditions-title">
         Policy conditions
       </Title>
@@ -20,7 +20,7 @@ const PolicyConditionsTab = () => {
       <Paragraph strong data-testid="policy-conditions-note">
         All conditions must be met for the policy to apply.
       </Paragraph>
-    </>
+    </Flex>
   );
 };
 
