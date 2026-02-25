@@ -986,8 +986,10 @@ class TestGetConnections:
         url,
     ) -> None:
         """Connection config linked to a system returns the system in linked_systems."""
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system_with_cleanup.id, connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system_with_cleanup.id,
+            connection_config_id=connection_config.id,
+            session=db,
         )
         db.commit()
 
@@ -1434,8 +1436,10 @@ class TestGetConnection:
         system_with_cleanup,
     ) -> None:
         """Detail endpoint returns system info in linked_systems when linked."""
-        SystemConnectionConfigLink.create_or_update_link(
-            db, system_with_cleanup.id, connection_config.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system_with_cleanup.id,
+            connection_config_id=connection_config.id,
+            session=db,
         )
         db.commit()
 
