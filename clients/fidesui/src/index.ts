@@ -237,7 +237,6 @@ export {
   Badge,
   Breadcrumb,
   Button,
-  Card,
   Cascader,
   Checkbox,
   Col,
@@ -288,11 +287,13 @@ export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 // Higher-order components
 export type {
   CustomAvatarProps as AvatarProps,
+  CustomCardProps as CardProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
 } from "./hoc";
 export {
+  CustomCard as Card,
   CustomAvatar as Avatar,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
@@ -322,17 +323,13 @@ export { isoCodesToOptions } from "./components/data-entry/LocationSelect";
 export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
-// Export dashboard components
-export type { StatProps, StatTrend, StatCardProps } from "./components/dashboard";
-export { Stat, StatCard } from "./components/dashboard";
-
 // Export data-display components
+export type { SparklineProps } from "./components/charts/Sparkline";
+export { default as Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
 export { TagList } from "./components/data-display/TagList";
-export type { SparklineProps } from "./components/charts/Sparkline";
-export { default as Sparkline } from "./components/charts/Sparkline";
 
 // Export animation components
 export type {

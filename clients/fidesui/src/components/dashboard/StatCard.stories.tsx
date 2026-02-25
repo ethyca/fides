@@ -1,8 +1,10 @@
+import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { theme } from "antd";
 
+import { CustomCard } from "../../hoc/CustomCard";
+import { CustomStatistic } from "../../hoc/CustomStatistic";
 import Sparkline from "../charts/Sparkline";
-import Stat from "./Stat";
-import StatCard from "./StatCard";
 
 const upwardTrendData = [
   { value: 12 },
@@ -57,120 +59,222 @@ const ContentPlaceholder = () => (
 
 const meta = {
   title: "Dashboard/Card",
-  component: StatCard,
+  component: CustomCard,
   parameters: {
     layout: "centered",
   },
   tags: ["autodocs"],
   argTypes: {
-    title: {
-      description: "Label rendered above the stat value in secondary text",
-      control: "text",
+    coverPosition: {
+      description:
+        "Position of the cover relative to the card body. Use `bottom` to place a sparkline below the stat.",
+      control: "radio",
+      options: ["top", "bottom"],
     },
-    stat: {
-      description: "The stat display component, e.g. `<Stat />`",
+    cover: {
+      description:
+        "Cover content (e.g. a sparkline). Set `coverPosition=\"bottom\"` to display it below the card body.",
       control: false,
     },
-    content: {
+    children: {
       description:
-        "Optional content rendered below the stat and above the footer",
+        "Card body content, e.g. `<CustomStatistic />` component.",
       control: false,
-    },
-    footer: {
-      description:
-        "Optional edge-to-edge footer content, ideal for sparkline charts",
-      control: false,
-    },
-    footerClassName: {
-      description:
-        "Class names applied to the footer wrapper. Defaults to `h-16`.",
-      control: "text",
     },
   },
   decorators: [
     (Story) => (
-      <div className="w-72">
+      <div className="w-full min-w-72">
         <Story />
       </div>
     ),
   ],
-} satisfies Meta<typeof StatCard>;
+} satisfies Meta<typeof CustomCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    title: "Data Sharing",
-    stat: <Stat value="15,112,893" change="112,893" trend="up" />,
-    footer: <Sparkline data={upwardTrendData} />,
+    variant: "borderless",
+    cover: (
+      <div className="h-16">
+        <Sparkline data={upwardTrendData} />
+      </div>
+    ),
+    coverPosition: "bottom",
+  },
+  render: (args) => {
+    const { token } = theme.useToken();
+    return (
+      <CustomCard {...args}>
+        <CustomStatistic title="Data Sharing" value="15,112,893" />
+        <CustomStatistic
+          trend="up"
+          value="112,893"
+          prefix={<ArrowUpOutlined />}
+          valueStyle={{ fontSize: token.fontSize }}
+        />
+      </CustomCard>
+    );
   },
 };
 
 export const DownTrend: Story = {
   args: {
-    title: "Active Users",
-    stat: <Stat value="8,430" change="1,204" trend="down" />,
-    footer: <Sparkline data={downwardTrendData} />,
+    variant: "borderless",
+    cover: (
+      <div className="h-16">
+        <Sparkline data={downwardTrendData} />
+      </div>
+    ),
+    coverPosition: "bottom",
+  },
+  render: (args) => {
+    const { token } = theme.useToken();
+    return (
+      <CustomCard {...args}>
+        <CustomStatistic title="Active Users" value="8,430" />
+        <CustomStatistic
+          trend="down"
+          value="1,204"
+          prefix={<ArrowDownOutlined />}
+          valueStyle={{ fontSize: token.fontSize }}
+        />
+      </CustomCard>
+    );
   },
 };
 
 export const NoChange: Story = {
   args: {
-    title: "Total Requests",
-    stat: <Stat value="3,201,554" />,
-    footer: <Sparkline data={neutralTrendData} />,
+    variant: "borderless",
+    cover: (
+      <div className="h-16">
+        <Sparkline data={neutralTrendData} />
+      </div>
+    ),
+    coverPosition: "bottom",
+    children: <CustomStatistic title="Total Requests" value="3,201,554" />,
   },
 };
 
 export const NoFooter: Story = {
   args: {
-    title: "Data Sharing",
-    stat: <Stat value="15,112,893" change="112,893" trend="up" />,
+    variant: "borderless",
+  },
+  render: (args) => {
+    const { token } = theme.useToken();
+    return (
+      <CustomCard {...args}>
+        <CustomStatistic title="Data Sharing" value="15,112,893" />
+        <CustomStatistic
+          trend="up"
+          value="112,893"
+          prefix={<ArrowUpOutlined />}
+          valueStyle={{ fontSize: token.fontSize }}
+        />
+      </CustomCard>
+    );
   },
 };
 
 export const WithContentAndFooter: Story = {
   args: {
-    title: "Data Sharing",
-    stat: <Stat value="15,112,893" change="112,893" trend="up" />,
-    content: <ContentPlaceholder />,
-    footer: <Sparkline data={upwardTrendData} />,
+    variant: "borderless",
+    cover: (
+      <div className="h-16">
+        <Sparkline data={upwardTrendData} />
+      </div>
+    ),
+    coverPosition: "bottom",
+  },
+  render: (args) => {
+    const { token } = theme.useToken();
+    return (
+      <CustomCard {...args}>
+        <>
+          <CustomStatistic title="Data Sharing" value="15,112,893" />
+          <CustomStatistic
+            trend="up"
+            value="112,893"
+            prefix={<ArrowUpOutlined />}
+            valueStyle={{ fontSize: token.fontSize }}
+          />
+          <div className="mt-3">
+            <ContentPlaceholder />
+          </div>
+        </>
+      </CustomCard>
+    );
   },
 };
 
 export const Loading: Story = {
   args: {
-    title: "Data Sharing",
-    stat: <Stat value="15,112,893" change="112,893" trend="up" />,
+    variant: "borderless",
     loading: true,
+    children: <CustomStatistic title="Data Sharing" value="15,112,893" />,
   },
 };
 
 export const DashboardRow: Story = {
-  args: {
-    title: "Data Sharing",
-    stat: <Stat value="15,112,893" change="112,893" trend="up" />,
-  },
+  args: {},
   decorators: [
-    () => (
-      <div className="grid grid-cols-3 gap-4 w-[900px]">
-        <StatCard
-          title="Data Sharing"
-          stat={<Stat value="15,112,893" change="112,893" trend="up" />}
-          footer={<Sparkline data={upwardTrendData} />}
-        />
-        <StatCard
-          title="Active Users"
-          stat={<Stat value="8,430" change="1,204" trend="down" />}
-          footer={<Sparkline data={downwardTrendData} />}
-        />
-        <StatCard
-          title="Total Requests"
-          stat={<Stat value="3,201,554" />}
-          footer={<Sparkline data={neutralTrendData} />}
-        />
-      </div>
-    ),
+    () => {
+      const { token } = theme.useToken();
+      return (
+        <div className="grid grid-cols-3 gap-4 w-[900px]">
+          <CustomCard
+            variant="borderless"
+            title="Data Sharing"
+            cover={
+              <div className="h-16">
+                <Sparkline data={upwardTrendData} />
+              </div>
+            }
+            coverPosition="bottom"
+          >
+            <CustomStatistic value="15,112,893" />
+            <CustomStatistic
+              trend="up"
+              value="112,893"
+              prefix={<ArrowUpOutlined />}
+              valueStyle={{ fontSize: token.fontSize }}
+            />
+          </CustomCard>
+          <CustomCard
+            variant="borderless"
+            title="Active Users"
+            cover={
+              <div className="h-16">
+                <Sparkline data={downwardTrendData} />
+              </div>
+            }
+            coverPosition="bottom"
+          >
+            <CustomStatistic value="8,430" />
+            <CustomStatistic
+              trend="down"
+              value="1,204"
+              prefix={<ArrowDownOutlined />}
+              valueStyle={{ fontSize: token.fontSize }}
+            />
+          </CustomCard>
+          <CustomCard
+            variant="borderless"
+            title="Total Requests"
+            cover={
+              <div className="h-16">
+                <Sparkline data={neutralTrendData} />
+              </div>
+            }
+            coverPosition="bottom"
+          >
+            <CustomStatistic value="3,201,554" />
+          </CustomCard>
+        </div>
+      );
+    },
   ],
 };

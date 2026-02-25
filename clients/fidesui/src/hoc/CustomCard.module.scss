@@ -1,0 +1,12 @@
+.bottomCover {
+  display: flex;
+  flex-direction: column;
+
+  :global(.ant-card-cover) {
+    order: 2;
+  }
+
+  :global(.ant-card-body) {
+    order: 1;
+  }
+}
