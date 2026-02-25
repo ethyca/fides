@@ -10,6 +10,21 @@ export const policyHandlers = () => {
   const apiBase = "/api/v1";
 
   return [
+    // GET /api/v1/dsr/policy/:key - get a single policy by key
+    rest.get(`${apiBase}/dsr/policy/:key`, (req, res, ctx) => {
+      const { key } = req.params;
+      const policy = mockPolicies.find((p) => p.key === key);
+
+      if (!policy) {
+        return res(
+          ctx.status(404),
+          ctx.json({ detail: `Policy with key ${key} not found` }),
+        );
+      }
+
+      return res(ctx.status(200), ctx.json(policy));
+    }),
+
     // GET /api/v1/dsr/policy - list all policies
     rest.get(`${apiBase}/dsr/policy`, (req, res, ctx) => {
       const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);
