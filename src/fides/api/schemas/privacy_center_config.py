@@ -260,10 +260,12 @@ def reorder_custom_privacy_request_fields(config: dict[str, Any]) -> dict[str, A
         order = action.get("custom_privacy_request_field_order")
         if isinstance(order, list) and len(order) > 0:
             ordered = {k: fields[k] for k in order if k in fields}
+            # Append any fields not in order (prevents data loss if order list becomes stale)
+            for k in fields:
+                if k not in ordered:
+                    ordered[k] = fields[k]
             action["custom_privacy_request_fields"] = ordered
             action.pop("custom_privacy_request_field_order", None)
-        else:
-            order = list(fields.keys())
-            action["custom_privacy_request_fields"] = {k: fields[k] for k in order}
+        # No order list: deep copy already preserved existing key order
 
     return result

@@ -474,3 +474,42 @@ class TestReorderCustomPrivacyRequestFields:
         assert list(result["actions"][1]["custom_privacy_request_fields"].keys()) == [
             "x"
         ]
+
+    def test_reorder_ignores_order_keys_not_in_fields(self):
+        """Order keys not present in fields are silently skipped."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "p",
+                    "title": "T",
+                    "custom_privacy_request_fields": {
+                        "a": {"label": "A"},
+                        "b": {"label": "B"},
+                    },
+                    "custom_privacy_request_field_order": ["a", "deleted_field", "b"],
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
+        assert keys == ["a", "b"]  # deleted_field silently skipped
+
+    def test_reorder_appends_fields_not_in_order(self):
+        """Fields not in order list are appended at the end (prevents data loss)."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "p",
+                    "title": "T",
+                    "custom_privacy_request_fields": {
+                        "a": {"label": "A"},
+                        "b": {"label": "B"},
+                        "new_field": {"label": "New"},  # not in order list
+                    },
+                    "custom_privacy_request_field_order": ["b", "a"],  # stale
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
+        assert keys == ["b", "a", "new_field"]  # new_field appended at end
