@@ -8,7 +8,7 @@ import Layout from "~/features/common/Layout";
 import { POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
-import PolicyConditionsTab from "~/features/policies/conditions/ConditionsTab";
+import { PolicyConditionsTab } from "~/features/policies/conditions/PolicyConditionsTab";
 import {
   useDeletePolicyMutation,
   useGetPolicyQuery,
@@ -16,6 +16,7 @@ import {
 import { PolicyBox } from "~/features/policies/PolicyBox";
 import { PolicyFormModal } from "~/features/policies/PolicyFormModal";
 import { RulesTab } from "~/features/policies/rules/RulesTab";
+import { extractLeafConditions } from "~/features/policies/utils/extractLeafConditions";
 
 const TAB_KEYS = {
   RULES: "rules",
@@ -60,11 +61,11 @@ const PolicyDetailPage: NextPage = () => {
       },
       {
         key: TAB_KEYS.CONDITIONS,
-        label: "Conditions",
-        children: <PolicyConditionsTab />,
+        label: `Conditions (${extractLeafConditions(policy?.conditions).length})`,
+        children: <PolicyConditionsTab conditions={policy?.conditions} />,
       },
     ],
-    [policy?.rules],
+    [policy?.rules, policy?.conditions],
   );
 
   const { activeTab, onTabChange } = useURLHashedTabs({

@@ -121,11 +121,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Connection manager",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
-      },
-      {
         title: "Policies",
         path: routes.POLICIES_ROUTE,
         requiresFlag: "policies",
@@ -332,6 +327,12 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
     title: "Developer",
     icon: <Icons.Code />,
     routes: [
+      {
+        title: "Prompt Explorer",
+        path: routes.PROMPT_EXPLORER_ROUTE,
+        scopes: [ScopeRegistryEnum.DEVELOPER_READ],
+        requiresPlus: true,
+      },
       {
         title: "Ant Design POC",
         path: routes.ANT_POC_ROUTE,

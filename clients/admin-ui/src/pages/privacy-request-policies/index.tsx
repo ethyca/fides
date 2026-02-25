@@ -24,6 +24,7 @@ import {
   useGetPoliciesQuery,
 } from "~/features/policies/policy.slice";
 import { PolicyFormModal } from "~/features/policies/PolicyFormModal";
+import { summarizeConditions } from "~/features/policies/utils/summarizeConditions";
 import { PolicyResponse } from "~/types/api";
 
 const { Paragraph, Text } = Typography;
@@ -38,7 +39,14 @@ const PoliciesPage: NextPage = () => {
   const { data: policiesData, isLoading } = useGetPoliciesQuery();
   const [deletePolicy] = useDeletePolicyMutation();
 
-  const allPolicies = useMemo(() => policiesData?.items ?? [], [policiesData]);
+  const allPolicies = useMemo(() => {
+    const items = policiesData?.items ?? [];
+    const defaults = items.filter((p) => p.key?.startsWith("default_"));
+    const rest = items
+      .filter((p) => !p.key?.startsWith("default_"))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return [...defaults, ...rest];
+  }, [policiesData]);
 
   // Filter policies based on search query
   const filteredPolicies = useMemo(() => {
@@ -119,6 +127,7 @@ const PoliciesPage: NextPage = () => {
             data-testid="policies-list"
             renderItem={(policy: PolicyResponse) => {
               const uniqueRules = uniqBy(policy.rules ?? [], "action_type");
+              const conditionsSummary = summarizeConditions(policy.conditions);
 
               return (
                 <List.Item
@@ -162,11 +171,18 @@ const PoliciesPage: NextPage = () => {
                     }
                     description={<Text type="secondary">{policy.key}</Text>}
                   />
-                  {policy.execution_timeframe && (
-                    <Text type="secondary">
-                      Timeframe: {policy.execution_timeframe} days
-                    </Text>
-                  )}
+                  <Flex gap="large" align="center">
+                    {conditionsSummary && (
+                      <Text type="secondary" italic>
+                        {conditionsSummary}
+                      </Text>
+                    )}
+                    {policy.execution_timeframe && (
+                      <Text type="secondary">
+                        {policy.execution_timeframe} days
+                      </Text>
+                    )}
+                  </Flex>
                 </List.Item>
               );
             }}
