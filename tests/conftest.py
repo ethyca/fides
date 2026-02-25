@@ -29,7 +29,9 @@ from pytest import MonkeyPatch
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm.exc import ObjectDeletedError
+from toml import load as load_toml
 
 from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.cryptography.schemas.jwt import (
@@ -44,8 +46,16 @@ from fides.api.db.crud import create_resource
 from fides.api.db.ctl_session import sync_engine
 from fides.api.db.database import seed_db
 from fides.api.db.seed import load_default_organization, load_default_taxonomy
+from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.db.system import create_system
+from fides.api.graph.graph import DatasetGraph
 from fides.api.main import app
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.client import ClientDetail
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.policy import ActionType, Policy
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
@@ -54,11 +64,24 @@ from fides.api.models.privacy_request import (
     generate_request_callback_resume_jwe,
 )
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
-from fides.api.models.sql_models import DataUse, PrivacyDeclaration, sql_model_map
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.models.sql_models import (
+    DataUse,
+    PrivacyDeclaration,
+    System,
+    sql_model_map,
+)
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
+from fides.api.oauth.roles import (
+    APPROVER,
+    CONTRIBUTOR,
+    OWNER,
+    VIEWER,
+    VIEWER_AND_APPROVER,
+)
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.storage.storage import StorageDetails
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.tasks import celery_app, celery_healthcheck
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
@@ -67,35 +90,38 @@ from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
-from tests.fixtures.application_fixtures import *
-from tests.fixtures.async_fixtures import *
-from tests.fixtures.bigquery_fixtures import *
-from tests.fixtures.datahub_fixtures import *
-from tests.fixtures.detection_discovery_fixtures import *
-from tests.fixtures.dynamodb_fixtures import *
-from tests.fixtures.email_fixtures import *
-from tests.fixtures.fides_connector_example_fixtures import *
-from tests.fixtures.google_cloud_sql_mysql_fixtures import *
-from tests.fixtures.google_cloud_sql_postgres_fixtures import *
-from tests.fixtures.integration_fixtures import *
-from tests.fixtures.manual_fixtures import *
-from tests.fixtures.manual_webhook_fixtures import *
-from tests.fixtures.mariadb_fixtures import *
-from tests.fixtures.messaging_fixtures import *
-from tests.fixtures.mongodb_fixtures import *
-from tests.fixtures.mssql_fixtures import *
-from tests.fixtures.mysql_fixtures import *
-from tests.fixtures.okta_fixtures import *
-from tests.fixtures.postgres_fixtures import *
-from tests.fixtures.rds_mysql_fixtures import *
-from tests.fixtures.rds_postgres_fixtures import *
-from tests.fixtures.redshift_fixtures import *
-from tests.fixtures.saas import *
-from tests.fixtures.saas_erasure_order_fixtures import *
-from tests.fixtures.saas_example_fixtures import *
-from tests.fixtures.scylladb_fixtures import *
-from tests.fixtures.snowflake_fixtures import *
-from tests.fixtures.timescale_fixtures import *
+
+pytest_plugins = [
+    "tests.fixtures.application_fixtures",
+    "tests.fixtures.async_fixtures",
+    "tests.fixtures.bigquery_fixtures",
+    "tests.fixtures.datahub_fixtures",
+    "tests.fixtures.detection_discovery_fixtures",
+    "tests.fixtures.dynamodb_fixtures",
+    "tests.fixtures.email_fixtures",
+    "tests.fixtures.fides_connector_example_fixtures",
+    "tests.fixtures.google_cloud_sql_mysql_fixtures",
+    "tests.fixtures.google_cloud_sql_postgres_fixtures",
+    "tests.fixtures.integration_fixtures",
+    "tests.fixtures.manual_fixtures",
+    "tests.fixtures.manual_webhook_fixtures",
+    "tests.fixtures.mariadb_fixtures",
+    "tests.fixtures.messaging_fixtures",
+    "tests.fixtures.mongodb_fixtures",
+    "tests.fixtures.mssql_fixtures",
+    "tests.fixtures.mysql_fixtures",
+    "tests.fixtures.okta_fixtures",
+    "tests.fixtures.postgres_fixtures",
+    "tests.fixtures.rds_mysql_fixtures",
+    "tests.fixtures.rds_postgres_fixtures",
+    "tests.fixtures.redshift_fixtures",
+    "tests.fixtures.saas",
+    "tests.fixtures.saas_erasure_order_fixtures",
+    "tests.fixtures.saas_example_fixtures",
+    "tests.fixtures.scylladb_fixtures",
+    "tests.fixtures.snowflake_fixtures",
+    "tests.fixtures.timescale_fixtures",
+]
 
 ROOT_PATH = Path().absolute()
 CONFIG = get_config()
@@ -134,7 +160,6 @@ def mock_s3_client(s3_client, monkeypatch):
 @pytest.fixture(scope="session")
 def db(api_client, config):
     """Return a connection to the test DB"""
-    # Create the test DB engine
     assert config.test_mode
     assert requests.post != api_client.post
     engine = get_db_engine(
@@ -142,6 +167,7 @@ def db(api_client, config):
     )
 
     create_citext_extension(engine)
+    Base.metadata.create_all(engine)
 
     if not scheduler.running:
         scheduler.start()
@@ -150,10 +176,10 @@ def db(api_client, config):
 
     SessionLocal = get_db_session(config, engine=engine)
     the_session = SessionLocal()
-    # Setup above...
+
+    seed_db(the_session)
 
     yield the_session
-    # Teardown below...
     the_session.close()
     engine.dispose()
 
@@ -319,8 +345,10 @@ def loguru_caplog(caplog):
 
 
 def create_citext_extension(engine: Engine) -> None:
+    from sqlalchemy import text as sa_text
+
     with engine.connect() as con:
-        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
+        con.execute(sa_text("CREATE EXTENSION IF NOT EXISTS citext;"))
 
 
 @pytest.fixture
@@ -833,8 +861,7 @@ def celery_session_worker(
 @pytest.fixture(autouse=True, scope="session")
 def celery_use_virtual_worker(celery_session_worker):
     """
-    This is a catch-all fixture that forces all of our
-    tests to use a virtual celery worker if a registered
+    Forces all tests to use a virtual celery worker if a registered
     task is executed within the scope of the test.
     """
     yield celery_session_worker
@@ -2139,21 +2166,26 @@ def worker_id(request) -> str:
 
 @pytest.hookimpl(optionalhook=True)
 def pytest_configure_node(node):
-    """Pytest hook automatically called for each xdist worker node configuration."""
+    """Pytest hook automatically called for each xdist worker node configuration.
+
+    Creates a per-worker test database and configures the worker to use it.
+    """
     if hasattr(node, "workerinput") and node.workerinput:
         worker_id = node.workerinput["workerid"]
+        test_db_name = f"fides_test_{worker_id}"
         print(
-            f"[Configure Node] Configuring database and config for worker {worker_id}..."
+            f"[Configure Node] Configuring database {test_db_name} for worker {worker_id}..."
         )
 
-        os.environ["FIDES__DATABASE__TEST_DB"] = f"fides_test_{worker_id}"
+        _ensure_worker_database_exists(test_db_name)
+
+        os.environ["FIDES__DATABASE__TEST_DB"] = test_db_name
 
         get_config.cache_clear()
         fides_config = get_config()
         sync_db_uri = fides_config.database.sqlalchemy_test_database_uri
         async_db_uri = fides_config.database.async_database_uri
 
-        # Log connection strings
         print(
             f"[Configure Node] Sync DB URI: {sync_db_uri} Async DB URI: {async_db_uri}"
         )
@@ -2161,6 +2193,30 @@ def pytest_configure_node(node):
         print(
             "[Configure Node] Skipping DB setup/config update on single node or non-xdist run."
         )
+
+
+def _ensure_worker_database_exists(db_name: str) -> None:
+    """Create a per-worker test database if it doesn't already exist."""
+    from sqlalchemy import create_engine
+    from sqlalchemy import text as sa_text
+
+    fides_config = get_config()
+    admin_uri = fides_config.database.sqlalchemy_database_uri
+    engine = create_engine(admin_uri, isolation_level="AUTOCOMMIT")
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                sa_text(f"SELECT 1 FROM pg_database WHERE datname = '{db_name}'")
+            )
+            if not result.fetchone():
+                conn.execute(sa_text(f'CREATE DATABASE "{db_name}"'))
+                print(f"[Configure Node] Created database {db_name}")
+            else:
+                print(f"[Configure Node] Database {db_name} already exists")
+    except Exception as e:
+        print(f"[Configure Node] Warning: could not create database {db_name}: {e}")
+    finally:
+        engine.dispose()
 
 
 @pytest.fixture

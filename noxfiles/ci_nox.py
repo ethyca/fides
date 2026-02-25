@@ -19,6 +19,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
+from run_infrastructure import API_TEST_DIR, OPS_TEST_DIR
 from setup_tests_nox import (
     CoverageConfig,
     PytestConfig,
@@ -388,7 +389,7 @@ def collect_tests(session: nox.Session) -> None:
     """
     session.install(".")
     (install_requirements(session, True))
-    command = ("pytest", "--collect-only", "tests/")
+    command = ("pytest", "--collect-only", "-q", "tests/")
     session.run(
         *command,
         env={"PYTHONDONTWRITEBYTECODE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
@@ -406,10 +407,15 @@ def pytest(session: nox.Session, test_group: str) -> None:
     Runs Pytests.
 
     As new TEST_GROUPS are added, the TEST_MATRIX must also be updated.
+
+    Pass --fail-fast to stop on first failure (useful for local development).
     """
     session.notify("teardown")
 
     validate_test_matrix(session)
+
+    fail_fast = "--fail-fast" in session.posargs
+
     pytest_config = PytestConfig(
         xdist_config=XdistConfig(parallel_runners="auto"),
         coverage_config=CoverageConfig(
@@ -422,9 +428,97 @@ def pytest(session: nox.Session, test_group: str) -> None:
             report_format="xml",
             report_file="test_report.xml",
         ),
+        fail_fast=fail_fast,
     )
 
     TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)
+
+
+SAFE_NATIVE_GROUPS = [
+    nox.param("ctl-not-external", id="ctl-not-external"),
+    nox.param("ops-unit-api", id="ops-unit-api"),
+    nox.param("ops-unit-non-api", id="ops-unit-non-api"),
+    nox.param("api", id="api"),
+    nox.param("lib", id="lib"),
+    nox.param("misc-unit", id="misc-unit"),
+    nox.param("misc-integration", id="misc-integration"),
+]
+
+SAFE_NATIVE_CONFIG: Dict[str, dict] = {
+    "ctl-not-external": {
+        "paths": ["tests/ctl/"],
+        "markers": "not external",
+        "xdist": False,
+    },
+    "ops-unit-api": {
+        "paths": [f"{OPS_TEST_DIR}api/"],
+        "markers": "not integration and not integration_external and not integration_saas",
+    },
+    "ops-unit-non-api": {
+        "paths": [OPS_TEST_DIR],
+        "ignore": [
+            f"{OPS_TEST_DIR}api/",
+            f"{OPS_TEST_DIR}service/connectors/fides/",
+            f"{OPS_TEST_DIR}service/connectors/test_fides_connector.py",
+        ],
+        "markers": "not integration and not integration_external and not integration_saas",
+    },
+    "api": {
+        "paths": [API_TEST_DIR],
+        "markers": "not integration and not integration_external and not integration_saas",
+    },
+    "lib": {
+        "paths": ["tests/lib/"],
+        "markers": None,
+    },
+    "misc-unit": {
+        "paths": ["tests/service/", "tests/task/", "tests/util/"],
+        "markers": "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
+    },
+    "misc-integration": {
+        "paths": ["tests/qa/", "tests/service/", "tests/task/", "tests/util/"],
+        "markers": "integration_bigquery or integration_snowflake or integration_postgres or integration",
+    },
+}
+
+
+@nox.session()
+@nox.parametrize("test_group", SAFE_NATIVE_GROUPS)
+def pytest_native(session: nox.Session, test_group: str) -> None:
+    """
+    Run tests natively (no Docker) with xdist parallelism.
+
+    Requires Postgres and Redis to be available (e.g. via GHA services or local).
+    Skips Docker image build/load/compose entirely for maximum speed.
+    Each group mirrors the existing Safe-Tests matrix entries.
+    """
+    install_requirements(session, include_optional=True)
+
+    config = SAFE_NATIVE_CONFIG[test_group]
+    use_xdist = config.get("xdist", True)
+    pytest_args = [
+        "pytest",
+        "--tb=short",
+        "--no-header",
+        "-q",
+        "--junitxml=test_report.xml",
+        "--cov=fides",
+        "--cov-report=xml",
+        "--cov-branch",
+        "--no-cov-on-fail",
+    ]
+    if use_xdist:
+        pytest_args.extend(["-n", "auto", "--dist", "worksteal"])
+
+    if config.get("markers"):
+        pytest_args.extend(["-m", config["markers"]])
+
+    for path in config.get("ignore", []):
+        pytest_args.append(f"--ignore={path}")
+
+    pytest_args.extend(config["paths"])
+
+    session.run(*pytest_args)
 
 
 @nox.session()

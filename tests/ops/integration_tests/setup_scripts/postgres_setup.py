@@ -1,3 +1,4 @@
+import os
 from uuid import uuid4
 
 import pydash
@@ -58,8 +59,16 @@ def setup():
                 "connection_type": ConnectionType.postgres,
                 "access": AccessLevel.write,
                 "secrets": {
-                    "host": pydash.get(integration_config, "postgres_example.server"),
-                    "port": pydash.get(integration_config, "postgres_example.port"),
+                    "host": os.environ.get(
+                        "POSTGRES_EXAMPLE_HOST",
+                        pydash.get(integration_config, "postgres_example.server"),
+                    ),
+                    "port": int(
+                        os.environ.get(
+                            "POSTGRES_EXAMPLE_PORT",
+                            pydash.get(integration_config, "postgres_example.port"),
+                        )
+                    ),
                     "dbname": pydash.get(integration_config, "postgres_example.db"),
                     "username": pydash.get(integration_config, "postgres_example.user"),
                     "password": pydash.get(

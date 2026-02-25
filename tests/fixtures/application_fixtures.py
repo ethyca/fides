@@ -1,4 +1,5 @@
 import logging
+import os
 import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
@@ -130,8 +131,16 @@ integration_config = load_toml("tests/ops/integration_test_config.toml")
 
 integration_secrets = {
     "postgres_example": {
-        "host": pydash.get(integration_config, "postgres_example.server"),
-        "port": pydash.get(integration_config, "postgres_example.port"),
+        "host": os.environ.get(
+            "POSTGRES_EXAMPLE_HOST",
+            pydash.get(integration_config, "postgres_example.server"),
+        ),
+        "port": int(
+            os.environ.get(
+                "POSTGRES_EXAMPLE_PORT",
+                pydash.get(integration_config, "postgres_example.port"),
+            )
+        ),
         "dbname": pydash.get(integration_config, "postgres_example.db"),
         "username": pydash.get(integration_config, "postgres_example.user"),
         "password": pydash.get(integration_config, "postgres_example.password"),
