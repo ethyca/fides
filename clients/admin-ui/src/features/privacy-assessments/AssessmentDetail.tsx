@@ -23,7 +23,8 @@ import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
 import { useDeletePrivacyAssessmentMutation } from "./privacy-assessments.slice";
-import { buildQuestionGroupPanelItem } from "./QuestionGroupPanel";
+import { QuestionCard } from "./QuestionCard";
+import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
 import { isAssessmentComplete } from "./utils";
@@ -84,13 +85,26 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
   const collapseItems = useMemo(
     () =>
-      (assessment.question_groups ?? []).map((group) =>
-        buildQuestionGroupPanelItem({
-          assessmentId: assessment.id,
-          group,
-          isExpanded: expandedKeys.includes(group.id),
-        }),
-      ),
+      (assessment.question_groups ?? []).map((group) => ({
+        key: group.id,
+        label: (
+          <QuestionGroupPanel
+            group={group}
+            isExpanded={expandedKeys.includes(group.id)}
+          />
+        ),
+        children: (
+          <Space direction="vertical" size="middle" className="w-full">
+            {group.questions.map((q) => (
+              <QuestionCard
+                key={q.id}
+                assessmentId={assessment.id}
+                question={q}
+              />
+            ))}
+          </Space>
+        ),
+      })),
     [assessment.question_groups, assessment.id, expandedKeys],
   );
 

@@ -1,38 +1,33 @@
-import type { CollapseProps } from "antd";
 import {
   Badge,
   Button,
   CUSTOM_TAG_COLOR,
   Flex,
   Icons,
-  Space,
   Tag,
   Text,
 } from "fidesui";
 
 import { RISK_LEVEL_DOT_COLORS, RISK_LEVEL_LABELS } from "./constants";
-import { QuestionCard } from "./QuestionCard";
 import { QuestionGroup } from "./types";
 import { getInitials, getTimeSince } from "./utils";
 
 interface QuestionGroupPanelProps {
-  assessmentId: string;
   group: QuestionGroup;
   isExpanded: boolean;
 }
 
-export const buildQuestionGroupPanelItem = ({
-  assessmentId,
+export const QuestionGroupPanel = ({
   group,
   isExpanded,
-}: QuestionGroupPanelProps): NonNullable<CollapseProps["items"]>[number] => {
+}: QuestionGroupPanelProps) => {
   const answeredCount = group.questions.filter(
     (q) => q.answer_text.trim().length > 0,
   ).length;
   const totalCount = group.questions.length;
   const isGroupCompleted = answeredCount === totalCount;
 
-  const label = (
+  return (
     <>
       <Flex gap="large" align="flex-start" className="min-w-0 flex-1">
         <div className="flex-1">
@@ -95,14 +90,4 @@ export const buildQuestionGroupPanelItem = ({
       </div>
     </>
   );
-
-  const children = (
-    <Space direction="vertical" size="middle" className="w-full">
-      {group.questions.map((q) => (
-        <QuestionCard key={q.id} assessmentId={assessmentId} question={q} />
-      ))}
-    </Space>
-  );
-
-  return { key: group.id, label, children };
 };
