@@ -14,7 +14,9 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_DIAGNOSTICS,
     V1_URL_PREFIX,
 )
-from fides.service.privacy_request import privacy_request_diagnostics as diagnostics_service
+from fides.service.privacy_request import (
+    privacy_request_diagnostics as diagnostics_service,
+)
 
 
 class TestPrivacyRequestDiagnostics:
@@ -109,9 +111,10 @@ class TestPrivacyRequestDiagnostics:
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == 503
         payload: Dict[str, Any] = resp.json()
-        assert diagnostics_service.DEFAULT_PRIVACY_REQUEST_DIAGNOSTICS_STORAGE_KEY in payload[
-            "detail"
-        ]
+        assert (
+            diagnostics_service.DEFAULT_PRIVACY_REQUEST_DIAGNOSTICS_STORAGE_KEY
+            in payload["detail"]
+        )
         assert "s3" in payload["detail"].lower()
         assert "gcs" in payload["detail"].lower()
 
@@ -133,14 +136,17 @@ class TestPrivacyRequestDiagnostics:
         )
         cache.delete(cache_key)
 
-        with patch.object(
-            diagnostics_service,
-            "get_privacy_request_diagnostics",
-            wraps=diagnostics_service.get_privacy_request_diagnostics,
-        ) as get_diagnostics_mock, patch.object(
-            diagnostics_service.LocalStorageProvider,
-            "generate_presigned_url",
-            side_effect=["/tmp/diagnostics-url-1", "/tmp/diagnostics-url-2"],
+        with (
+            patch.object(
+                diagnostics_service,
+                "get_privacy_request_diagnostics",
+                wraps=diagnostics_service.get_privacy_request_diagnostics,
+            ) as get_diagnostics_mock,
+            patch.object(
+                diagnostics_service.LocalStorageProvider,
+                "generate_presigned_url",
+                side_effect=["/tmp/diagnostics-url-1", "/tmp/diagnostics-url-2"],
+            ),
         ):
             resp1 = api_client.get(url, headers=auth_header)
             assert resp1.status_code == 200
