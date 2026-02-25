@@ -12,7 +12,6 @@ import {
 
 import { RISK_LEVEL_DOT_COLORS, RISK_LEVEL_LABELS } from "./constants";
 import { QuestionCard } from "./QuestionCard";
-import styles from "./QuestionGroupPanel.module.scss";
 import { QuestionGroup } from "./types";
 import { getInitials, getTimeSince } from "./utils";
 
@@ -35,12 +34,12 @@ export const buildQuestionGroupPanelItem = ({
 
   const label = (
     <>
-      <Flex gap="large" align="flex-start" className={styles.labelFlex}>
-        <div className={styles.labelContent}>
-          <Text strong className={styles.groupTitle}>
+      <Flex gap="large" align="flex-start" className="min-w-0 flex-1">
+        <div className="flex-1">
+          <Text strong size="lg" className="mb-3 block">
             {group.id}. {group.title}
           </Text>
-          <Flex gap="middle" align="center" wrap="wrap" className={styles.meta}>
+          <Flex gap="middle" align="center" wrap="wrap" className="mb-2">
             <Text type="secondary" size="sm">
               {group.last_updated_at
                 ? `Updated ${getTimeSince(group.last_updated_at)}`
@@ -48,10 +47,7 @@ export const buildQuestionGroupPanelItem = ({
               {group.last_updated_by && (
                 <>
                   {" by "}
-                  <Tag
-                    color={CUSTOM_TAG_COLOR.DEFAULT}
-                    className={styles.avatarTag}
-                  >
+                  <Tag color={CUSTOM_TAG_COLOR.DEFAULT} className="ml-1">
                     {getInitials(group.last_updated_by)}
                   </Tag>
                 </>
@@ -73,7 +69,7 @@ export const buildQuestionGroupPanelItem = ({
             )}
           </Flex>
           {isExpanded && (
-            <Flex align="center" gap="small" className={styles.evidenceButton}>
+            <Flex align="center" gap="small" className="mt-3">
               <Button
                 type="default"
                 icon={<Icons.Document />}
@@ -86,7 +82,7 @@ export const buildQuestionGroupPanelItem = ({
           )}
         </div>
       </Flex>
-      <div className={styles.statusTag}>
+      <div className="absolute right-6 top-4">
         <Tag
           color={
             isGroupCompleted
@@ -101,7 +97,7 @@ export const buildQuestionGroupPanelItem = ({
   );
 
   const children = (
-    <Space direction="vertical" size="middle" className={styles.questions}>
+    <Space direction="vertical" size="middle" className="w-full">
       {group.questions.map((q) => (
         <QuestionCard key={q.id} assessmentId={assessmentId} question={q} />
       ))}
