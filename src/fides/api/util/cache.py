@@ -89,11 +89,14 @@ class FidesopsRedis:
                     if cursor == 0:
                         break
         else:
-            # Standalone Redis: scan_cursor is str when decode_responses=True, int when False
+            # Standalone Redis: scan returns cursor as str when decode_responses=True
             scan_cursor: Union[int, str] = "0"
             while True:
+                cursor_arg = (
+                    int(scan_cursor) if isinstance(scan_cursor, str) else scan_cursor
+                )
                 scan_cursor, keys = self._client.scan(
-                    cursor=scan_cursor, match=match, count=chunk_size
+                    cursor=cursor_arg, match=match, count=chunk_size
                 )
                 out.extend(keys)
                 if scan_cursor == 0 or scan_cursor == "0":
