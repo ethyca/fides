@@ -21,11 +21,8 @@ export const Sparkline = ({
 }: SparklineProps) => {
   const { token } = theme.useToken();
   const empty = !data?.length;
-  const chartColor = empty
-    ? token.colorBorder
-    : color
-      ? token[color]
-      : token.colorText;
+  const activeColor = color ? token[color] : token.colorText;
+  const chartColor = empty ? token.colorBorder : activeColor;
 
   const gradientId = `sparkline-gradient-${useId()}`;
   const chartData = (empty ? EMPTY_PLACEHOLDER_DATA : data).map((v) => ({
