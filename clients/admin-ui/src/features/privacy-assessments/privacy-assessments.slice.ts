@@ -1,19 +1,21 @@
 import { baseApi } from "~/features/common/api.slice";
-import type {
-  CreateAssessmentRequest,
-  Page_TemplateResponse_,
-} from "~/types/api";
 
 import {
   AssessmentEvidenceResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
+  CreatePrivacyAssessmentRequest,
   CreatePrivacyAssessmentResponse,
+  CreateQuestionnaireRequest,
+  CreateReminderRequest,
   GetAssessmentEvidenceParams,
   GetPrivacyAssessmentsParams,
   Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentDetailResponse,
   PrivacyAssessmentResponse,
+  QuestionnaireResponse,
+  QuestionnaireStatusResponse,
+  ReminderResponse,
   UpdateAnswerRequest,
   UpdateAnswerResponse,
   UpdatePrivacyAssessmentRequest,
@@ -33,16 +35,6 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       providesTags: ["Privacy Assessment"],
     }),
 
-    getAssessmentTemplates: build.query<
-      Page_TemplateResponse_,
-      { page?: number; size?: number } | void
-    >({
-      query: (params) => ({
-        url: "plus/privacy-assessments/templates",
-        params: params ?? undefined,
-      }),
-    }),
-
     getPrivacyAssessment: build.query<PrivacyAssessmentDetailResponse, string>({
       query: (id) => ({
         url: `plus/privacy-assessments/${id}`,
@@ -54,7 +46,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
 
     createPrivacyAssessment: build.mutation<
       CreatePrivacyAssessmentResponse,
-      CreateAssessmentRequest
+      CreatePrivacyAssessmentRequest
     >({
       query: (body) => ({
         url: "plus/privacy-assessments",
@@ -131,12 +123,49 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         { type: "Privacy Assessment Evidence", id },
       ],
     }),
+
+    createQuestionnaire: build.mutation<
+      QuestionnaireResponse,
+      { id: string; body: CreateQuestionnaireRequest }
+    >({
+      query: ({ id, body }) => ({
+        url: `plus/privacy-assessments/${id}/questionnaire`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Privacy Assessment Questionnaire", id },
+        { type: "Privacy Assessment", id },
+      ],
+    }),
+
+    getQuestionnaireStatus: build.query<QuestionnaireStatusResponse, string>({
+      query: (id) => ({
+        url: `plus/privacy-assessments/${id}/questionnaire`,
+      }),
+      providesTags: (_result, _error, id) => [
+        { type: "Privacy Assessment Questionnaire", id },
+      ],
+    }),
+
+    createQuestionnaireReminder: build.mutation<
+      ReminderResponse,
+      { id: string; body?: CreateReminderRequest }
+    >({
+      query: ({ id, body }) => ({
+        url: `plus/privacy-assessments/${id}/questionnaire/reminders`,
+        method: "POST",
+        body: body ?? {},
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: "Privacy Assessment Questionnaire", id },
+      ],
+    }),
   }),
 });
 
 export const {
   useGetPrivacyAssessmentsQuery,
-  useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentQuery,
   useCreatePrivacyAssessmentMutation,
   useUpdatePrivacyAssessmentMutation,
@@ -144,6 +173,9 @@ export const {
   useUpdateAssessmentAnswerMutation,
   useBulkUpdateAssessmentAnswersMutation,
   useGetAssessmentEvidenceQuery,
+  useCreateQuestionnaireMutation,
+  useGetQuestionnaireStatusQuery,
+  useCreateQuestionnaireReminderMutation,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };
