@@ -1,0 +1,563 @@
+import {
+  Alert,
+  Button,
+  Card,
+  Checkbox,
+  Col,
+  Flex,
+  Input,
+  Layout,
+  Radio,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Typography,
+} from "fidesui";
+import type { NextPage } from "next";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { useFeatures } from "~/features/common/features";
+import PageHeader from "~/features/common/PageHeader";
+import { DEFAULT_DATA_SECTIONS } from "~/features/prompt-explorer/constants";
+import {
+  DataSectionConfig,
+  PromptCategory,
+  PromptInfo,
+  TemplateSummary,
+  useExecutePromptMutation,
+  useGetAssessmentsQuery,
+  useGetDataSectionsQuery,
+  useGetPromptsQuery,
+  useGetTemplateQuestionsQuery,
+  useGetTemplatesQuery,
+  useRenderPromptMutation,
+} from "~/features/prompt-explorer/prompt-explorer.slice";
+import { QuestionnaireControls } from "~/features/prompt-explorer/QuestionnaireControls";
+import { buildQuestionnaireVariables } from "~/features/prompt-explorer/utils";
+
+const { Content } = Layout;
+const { Text, Paragraph } = Typography;
+const { TextArea } = Input;
+
+const PromptExplorer: NextPage = () => {
+  const { plus: hasPlus } = useFeatures();
+
+  // State for prompt selection (single select)
+  const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<
+    PromptCategory | undefined
+  >(undefined);
+
+  // State for data sections (assessment prompts only)
+  const [dataSections, setDataSections] = useState<DataSectionConfig>(
+    DEFAULT_DATA_SECTIONS,
+  );
+
+  // State for assessment context
+  const [selectedAssessmentId, setSelectedAssessmentId] = useState<
+    string | undefined
+  >(undefined);
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState<
+    string | undefined
+  >(undefined);
+
+  // State for questionnaire prompt inputs
+  const [questionSourceTemplate, setQuestionSourceTemplate] = useState<
+    string | undefined
+  >(undefined);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [userMessage, setUserMessage] = useState<string>(
+    "We use this data for analytics purposes",
+  );
+  const [conversationHistory, setConversationHistory] = useState<string>("");
+  const [selectedAction, setSelectedAction] = useState<string>("answer");
+  const [actionParams, setActionParams] = useState<string>("");
+  const [isFinalQuestion, setIsFinalQuestion] = useState<boolean>(false);
+  const [questionToRephrase, setQuestionToRephrase] = useState<string>(
+    "What is the retention period for this data?",
+  );
+  const [previousPhrasings, setPreviousPhrasings] = useState<string>(
+    "How long do you keep this data?",
+  );
+
+  // State for rendered prompt and response
+  const [renderedPrompt, setRenderedPrompt] = useState<string>("");
+  const [llmResponse, setLlmResponse] = useState<string>("");
+  const [modelOverride, setModelOverride] = useState<string>("");
+
+  // API queries
+  const {
+    data: prompts,
+    isLoading: promptsLoading,
+    error: promptsError,
+  } = useGetPromptsQuery(selectedCategory);
+
+  const { data: dataSectionsList } = useGetDataSectionsQuery();
+  const { data: assessments } = useGetAssessmentsQuery();
+  const { data: templates } = useGetTemplatesQuery();
+  const { data: templateQuestions } = useGetTemplateQuestionsQuery(
+    questionSourceTemplate || "",
+    { skip: !questionSourceTemplate },
+  );
+
+  // Mutations
+  const [renderPrompt, { isLoading: renderLoading }] =
+    useRenderPromptMutation();
+  const [executePrompt, { isLoading: executeLoading }] =
+    useExecutePromptMutation();
+
+  // Get selected prompt info
+  const selectedPrompt = prompts?.find((p) => p.id === selectedPromptId);
+
+  // Build questions list from template
+  const questions = useMemo(() => {
+    if (!templateQuestions) {
+      return [];
+    }
+    return templateQuestions.map((q, i) => ({
+      index: i,
+      text: q.question_text,
+      id: q.id,
+    }));
+  }, [templateQuestions]);
+
+  // Get current question text
+  const currentQuestion = useMemo(() => {
+    if (questions.length === 0) {
+      return "What is the retention period for this data?";
+    }
+    return questions[currentQuestionIndex]?.text || questions[0]?.text || "";
+  }, [questions, currentQuestionIndex]);
+
+  // Build questions summary for intent classification
+  const questionsSummary = useMemo(() => {
+    if (questions.length === 0) {
+      return `1. What is the retention period? (not answered yet)
+2. Who has access to the data? (not answered yet)
+3. Is the data shared with third parties? (not answered yet)`;
+    }
+    return questions
+      .map((q, i) => {
+        let status = "not answered yet";
+        if (i < currentQuestionIndex) {
+          status = "answered";
+        } else if (i === currentQuestionIndex) {
+          status = "current - not answered yet";
+        }
+        return `${i + 1}. ${q.text} (${status})`;
+      })
+      .join("\n");
+  }, [questions, currentQuestionIndex]);
+
+  // Handle data section toggle
+  const handleDataSectionToggle = useCallback(
+    (section: keyof DataSectionConfig) => {
+      setDataSections((prev) => ({
+        ...prev,
+        [section]: !prev[section],
+      }));
+    },
+    [],
+  );
+
+  // Render prompt with data
+  const handleRenderPrompt = useCallback(async () => {
+    if (!selectedPrompt) {
+      return;
+    }
+
+    try {
+      const questionnaireVariables =
+        selectedPrompt.category === "questionnaire"
+          ? buildQuestionnaireVariables({
+              promptType: selectedPrompt.prompt_type,
+              questions,
+              currentQuestionIndex,
+              currentQuestion,
+              questionsSummary,
+              userMessage,
+              conversationHistory,
+              selectedAction,
+              actionParams,
+              isFinalQuestion,
+              questionToRephrase,
+              previousPhrasings,
+            })
+          : {};
+
+      const result = await renderPrompt({
+        prompt_type: selectedPrompt.prompt_type,
+        data_sections: dataSections,
+        assessment_id: selectedAssessmentId,
+        template_key: selectedTemplateKey,
+        questionnaire_variables: questionnaireVariables,
+      }).unwrap();
+
+      setRenderedPrompt(result.rendered_prompt);
+    } catch (error) {
+      console.error("Failed to render prompt:", error);
+    }
+  }, [
+    selectedPrompt,
+    questions,
+    currentQuestionIndex,
+    currentQuestion,
+    questionsSummary,
+    userMessage,
+    conversationHistory,
+    selectedAction,
+    actionParams,
+    isFinalQuestion,
+    questionToRephrase,
+    previousPhrasings,
+    dataSections,
+    selectedAssessmentId,
+    selectedTemplateKey,
+    renderPrompt,
+  ]);
+
+  // Execute prompt against LLM
+  const handleExecutePrompt = useCallback(async () => {
+    if (!renderedPrompt) {
+      return;
+    }
+
+    try {
+      const result = await executePrompt({
+        prompt: renderedPrompt,
+        model: modelOverride || undefined,
+        prompt_type: selectedPrompt?.prompt_type,
+      }).unwrap();
+
+      setLlmResponse(result.response_text);
+    } catch (error) {
+      console.error("Failed to execute prompt:", error);
+    }
+  }, [
+    renderedPrompt,
+    modelOverride,
+    selectedPrompt?.prompt_type,
+    executePrompt,
+  ]);
+
+  // Reset prompt when selection changes
+  useEffect(() => {
+    setRenderedPrompt("");
+    setLlmResponse("");
+  }, [selectedPromptId]);
+
+  // Clear assessment selection when switching to questionnaire prompts
+  useEffect(() => {
+    if (selectedPrompt?.category === "questionnaire") {
+      setSelectedAssessmentId(undefined);
+      setSelectedTemplateKey(undefined);
+    }
+  }, [selectedPrompt?.category]);
+
+  if (!hasPlus) {
+    return (
+      <Layout>
+        <Content className="overflow-auto px-10 py-6">
+          <Alert
+            message="Plus Required"
+            description="The Prompt Explorer requires Fides Plus."
+            type="warning"
+            showIcon
+          />
+        </Content>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout className="h-screen">
+      <Content className="overflow-auto px-10 py-6">
+        <PageHeader heading="Prompt Explorer" />
+        <Paragraph type="secondary" className="mb-6">
+          Developer tool for exploring and testing LLM prompts used in
+          assessments and questionnaires.
+        </Paragraph>
+
+        {promptsError && (
+          <Alert
+            message="Failed to load prompts"
+            description="Make sure fidesplus is running in dev mode."
+            type="error"
+            showIcon
+            className="mb-4"
+          />
+        )}
+
+        <Row gutter={[16, 16]}>
+          {/* Left sidebar - Prompt Selection */}
+          <Col xs={24} md={6}>
+            <Card
+              title="Prompt Templates"
+              size="small"
+              className="h-full"
+              extra={
+                <Select
+                  aria-label="Filter by category"
+                  placeholder="Filter"
+                  allowClear
+                  size="small"
+                  className="w-28"
+                  value={selectedCategory}
+                  onChange={(value) => setSelectedCategory(value)}
+                  options={[
+                    { label: "Assessment", value: "assessment" },
+                    { label: "Questionnaire", value: "questionnaire" },
+                  ]}
+                />
+              }
+            >
+              {promptsLoading ? (
+                <Flex justify="center" className="py-8">
+                  <Spin />
+                </Flex>
+              ) : (
+                <Radio.Group
+                  value={selectedPromptId}
+                  onChange={(e) => setSelectedPromptId(e.target.value)}
+                  className="w-full"
+                >
+                  <Space direction="vertical" className="w-full">
+                    {prompts?.map((prompt: PromptInfo) => (
+                      <Card
+                        key={prompt.id}
+                        size="small"
+                        className={`cursor-pointer transition-all ${
+                          selectedPromptId === prompt.id
+                            ? "border-primary bg-primary/5"
+                            : "hover:border-primary/50"
+                        }`}
+                        onClick={() => setSelectedPromptId(prompt.id)}
+                      >
+                        <Radio value={prompt.id} className="w-full">
+                          <Text strong>{prompt.name}</Text>
+                        </Radio>
+                        <Text
+                          type="secondary"
+                          className="ml-6 mt-1 block text-xs"
+                        >
+                          {prompt.description}
+                        </Text>
+                        <Text code className="ml-6 text-xs">
+                          {prompt.category}
+                        </Text>
+                      </Card>
+                    ))}
+                  </Space>
+                </Radio.Group>
+              )}
+            </Card>
+          </Col>
+
+          {/* Middle - Configuration */}
+          <Col xs={24} md={6}>
+            <Space direction="vertical" className="w-full" size="middle">
+              {/* Data Sections - only for assessment prompts */}
+              {selectedPrompt?.category === "assessment" && (
+                <Card title="Data Sections" size="small">
+                  <Text type="secondary" className="mb-3 block">
+                    Toggle which Fides data to include in the prompt context.
+                  </Text>
+                  <Space direction="vertical" className="w-full">
+                    {dataSectionsList?.map(
+                      (section: { id: string; name: string }) => (
+                        <Checkbox
+                          key={section.id}
+                          checked={
+                            dataSections[section.id as keyof DataSectionConfig]
+                          }
+                          onChange={() =>
+                            handleDataSectionToggle(
+                              section.id as keyof DataSectionConfig,
+                            )
+                          }
+                        >
+                          {section.name}
+                        </Checkbox>
+                      ),
+                    )}
+                  </Space>
+                </Card>
+              )}
+
+              {/* Assessment Context - only for assessment prompts */}
+              {selectedPrompt?.category === "assessment" && (
+                <Card title="Assessment Context" size="small">
+                  <Text type="secondary" className="mb-3 block">
+                    Select a template for questions, or an existing assessment.
+                  </Text>
+                  <Space direction="vertical" className="w-full">
+                    <div>
+                      <Text strong className="mb-1 block">
+                        Template (for questions)
+                      </Text>
+                      <Select
+                        aria-label="Select template"
+                        placeholder="Select template"
+                        allowClear
+                        className="w-full"
+                        value={selectedTemplateKey}
+                        onChange={(value) => {
+                          setSelectedTemplateKey(value);
+                          if (value) {
+                            setSelectedAssessmentId(undefined);
+                          }
+                        }}
+                        options={templates?.map((t: TemplateSummary) => ({
+                          label: `${t.name} (${t.question_count} Qs)`,
+                          value: t.key,
+                        }))}
+                      />
+                    </div>
+                    <Text type="secondary" className="block text-center">
+                      — or —
+                    </Text>
+                    <div>
+                      <Text strong className="mb-1 block">
+                        Existing Assessment
+                      </Text>
+                      <Select
+                        aria-label="Select existing assessment"
+                        placeholder="Select existing assessment"
+                        allowClear
+                        className="w-full"
+                        value={selectedAssessmentId}
+                        onChange={(value) => {
+                          setSelectedAssessmentId(value);
+                          if (value) {
+                            setSelectedTemplateKey(undefined);
+                          }
+                        }}
+                        options={assessments?.map((a) => ({
+                          label: `${a.system_name || a.system_fides_key || "No system"}: ${a.name || `Assessment ${a.id.slice(0, 8)}`} (${a.status})`,
+                          value: a.id,
+                        }))}
+                      />
+                    </div>
+                  </Space>
+                </Card>
+              )}
+
+              {/* Questionnaire-specific controls */}
+              <QuestionnaireControls
+                selectedPrompt={selectedPrompt}
+                questionSourceTemplate={questionSourceTemplate}
+                setQuestionSourceTemplate={setQuestionSourceTemplate}
+                templates={templates}
+                questions={questions}
+                currentQuestionIndex={currentQuestionIndex}
+                setCurrentQuestionIndex={setCurrentQuestionIndex}
+                currentQuestion={currentQuestion}
+                userMessage={userMessage}
+                setUserMessage={setUserMessage}
+                conversationHistory={conversationHistory}
+                setConversationHistory={setConversationHistory}
+                selectedAction={selectedAction}
+                setSelectedAction={setSelectedAction}
+                actionParams={actionParams}
+                setActionParams={setActionParams}
+                isFinalQuestion={isFinalQuestion}
+                setIsFinalQuestion={setIsFinalQuestion}
+                questionToRephrase={questionToRephrase}
+                setQuestionToRephrase={setQuestionToRephrase}
+                previousPhrasings={previousPhrasings}
+                setPreviousPhrasings={setPreviousPhrasings}
+              />
+
+              {/* Actions */}
+              <Card size="small">
+                <Space direction="vertical" className="w-full">
+                  <Button
+                    type="primary"
+                    block
+                    onClick={handleRenderPrompt}
+                    loading={renderLoading}
+                    disabled={!selectedPrompt}
+                  >
+                    Render Prompt
+                  </Button>
+                  <div>
+                    <Text strong className="mb-1 block">
+                      Model Override
+                    </Text>
+                    <Input
+                      placeholder="e.g., openrouter/google/gemini-2.5-flash"
+                      value={modelOverride}
+                      onChange={(e) => setModelOverride(e.target.value)}
+                      size="small"
+                    />
+                  </div>
+                  <Button
+                    type="default"
+                    block
+                    onClick={handleExecutePrompt}
+                    loading={executeLoading}
+                    disabled={!renderedPrompt}
+                  >
+                    Execute Prompt
+                  </Button>
+                </Space>
+              </Card>
+            </Space>
+          </Col>
+
+          {/* Right - Output */}
+          <Col xs={24} md={12}>
+            <Space direction="vertical" className="size-full" size="middle">
+              {/* Rendered Prompt */}
+              <Card
+                title="Rendered Prompt"
+                size="small"
+                className="flex-1"
+                extra={
+                  renderedPrompt && (
+                    <Text type="secondary">
+                      {renderedPrompt.length.toLocaleString()} chars
+                    </Text>
+                  )
+                }
+              >
+                <TextArea
+                  value={renderedPrompt}
+                  onChange={(e) => setRenderedPrompt(e.target.value)}
+                  rows={15}
+                  placeholder="Click 'Render Prompt' to generate the prompt with Fides data..."
+                  className="font-mono text-xs"
+                />
+              </Card>
+
+              {/* LLM Response */}
+              <Card
+                title="LLM Response"
+                size="small"
+                className="flex-1"
+                extra={
+                  llmResponse && (
+                    <Text type="secondary">
+                      {llmResponse.length.toLocaleString()} chars
+                    </Text>
+                  )
+                }
+              >
+                <TextArea
+                  value={llmResponse}
+                  readOnly
+                  rows={15}
+                  placeholder="Click 'Execute Prompt' to send to the LLM..."
+                  className="font-mono text-xs"
+                />
+              </Card>
+            </Space>
+          </Col>
+        </Row>
+      </Content>
+    </Layout>
+  );
+};
+
+export default PromptExplorer;

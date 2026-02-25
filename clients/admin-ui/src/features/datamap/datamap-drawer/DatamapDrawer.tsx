@@ -23,7 +23,7 @@ const DatamapDrawer = ({
     includeDisabled: false,
   });
 
-  const { data: system, isLoading } = useGetSystemByFidesKeyQuery(
+  const { currentData: system, isFetching } = useGetSystemByFidesKeyQuery(
     selectedSystemId!,
     {
       skip: !selectedSystemId,
@@ -37,7 +37,7 @@ const DatamapDrawer = ({
       placement="right"
       width={480}
       title={system?.name ?? "System Information"}
-      loading={isLoading}
+      loading={isFetching}
     >
       {system ? (
         <div data-testid="datamap-drawer">
