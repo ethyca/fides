@@ -1,7 +1,6 @@
 from typing import Any, ContextManager, Dict, List, Optional
 
 import celery_redis_cluster_backend  # noqa: F401 - registers redis+cluster/rediss+cluster backends
-
 from celery import Celery, Task
 from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
@@ -113,13 +112,12 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
         from importlib.metadata import entry_points
 
         cluster_backends = {
-            ep.name: ep.value
-            for ep in entry_points(group="celery.backends")
+            ep.name: ep.value for ep in entry_points(group="celery.backends")
         }
         if cluster_backends:
-            app.loader.override_backends = getattr(
-                app.loader, "override_backends", {}
-            ) | cluster_backends
+            app.loader.override_backends = (
+                getattr(app.loader, "override_backends", {}) | cluster_backends
+            )
 
     # Broker and result backend. When redis.cluster_enabled is True we use redis+cluster://
     # (via celery-redis-cluster) unless overridden. Otherwise use redis.connection_url.

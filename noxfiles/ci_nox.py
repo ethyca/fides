@@ -1,5 +1,6 @@
 """Contains the nox sessions used during CI checks."""
 
+import os
 from enum import StrEnum
 from functools import partial
 from pathlib import Path
@@ -11,6 +12,10 @@ from nox import session as nox_session
 from nox.command import CommandFailed
 
 from constants_nox import (
+    ANALYTICS_ID_OVERRIDE,
+    ANALYTICS_OPT_OUT,
+    CI_ARGS_EXEC,
+    COMPOSE_FILE,
     CONTAINER_NAME,
     IMAGE_NAME,
     LOGIN,
@@ -297,6 +302,137 @@ def load_tests(session: nox.Session) -> None:
     session.run(
         "drill", "-b", "noxfiles/drill.yml", "--quiet", "--stats", external=True
     )
+
+
+############
+## Redis cluster tests (optional; require running cluster) ##
+############
+REDIS_CLUSTER_ENV_LOCAL = {
+    "FIDES__REDIS__CLUSTER_ENABLED": "true",
+    "FIDES__REDIS__HOST": "127.0.0.1",
+    "FIDES__REDIS__PORT": "6380",
+    "FIDES__REDIS__PASSWORD": "redispassword",
+}
+
+# Tests that rely on Redis/cache/Celery; run with cluster enabled to exercise cluster paths.
+# Requeue tests use get_cache() and retry counts; some tests in that file need DB.
+# Model and service tests below exercise get_cached_identity_data, get_cached_task_id, etc.
+REDIS_CLUSTER_TEST_PATHS = [
+    "tests/ops/util/test_cache.py",
+    "tests/ops/tasks/test_celery.py",
+    "tests/task/test_requeue_interrupted_tasks.py",
+    "tests/ops/models/privacy_request/test_privacy_request.py",
+    "tests/ops/models/privacy_request/test_consent.py",
+    "tests/ops/models/privacy_request/test_request_task.py",
+    "tests/ops/service/privacy_request/test_request_service.py",
+]
+
+
+def _redis_cluster_reachable(host: str = "127.0.0.1", port: int = 6380) -> bool:
+    """Return True if a Redis server is reachable at host:port (cluster or standalone)."""
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(2)
+    try:
+        s.connect((host, port))
+        return True
+    except (socket.error, OSError):
+        return False
+    finally:
+        s.close()
+
+
+@nox.session()
+def pytest_redis_cluster(session: nox.Session) -> None:
+    """
+    Run Redis cluster and Celery cluster tests against a local cluster.
+
+    Start the cluster first (e.g. foreman start -f Procfile.redis-cluster),
+    then run: nox -s pytest_redis_cluster
+
+    Fails immediately if nothing is listening on 127.0.0.1:6380 so you know to
+    start the cluster. Tests run on the host with Redis at 127.0.0.1:6380.
+    Includes all cache tests, Celery tests, and requeue-interrupted-tasks tests
+    (some requeue tests need DB).
+    """
+    if not _redis_cluster_reachable():
+        session.error(
+            "Redis is not reachable at 127.0.0.1:6380. Start the cluster first, e.g.:\n"
+            "  foreman start -f Procfile.redis-cluster\n"
+            "Then run this session again."
+        )
+    install_requirements(session)
+    session.install(".")
+    env = {**os.environ, **REDIS_CLUSTER_ENV_LOCAL}
+    run_command = (
+        "uv",
+        "run",
+        "pytest",
+        "-v",
+        *REDIS_CLUSTER_TEST_PATHS,
+    )
+    session.run(*run_command, env=env)
+
+
+@nox.session()
+def pytest_redis_cluster_docker(session: nox.Session) -> None:
+    """
+    Run Redis cluster and Celery cluster tests like other Docker tests: full stack
+    (START_APP) with the Redis cluster also running; pytest runs in the fides
+    container via exec with cluster env vars.
+    """
+    session.notify("teardown")
+    session.log("Starting Redis cluster nodes...")
+    session.run(
+        "docker",
+        "compose",
+        "-f",
+        COMPOSE_FILE,
+        "up",
+        "-d",
+        "--wait",
+        "redis-cluster-node-1",
+        "redis-cluster-node-2",
+        "redis-cluster-node-3",
+        external=True,
+    )
+    session.log("Forming Redis cluster (one-shot init)...")
+    session.run(
+        "docker",
+        "compose",
+        "-f",
+        COMPOSE_FILE,
+        "run",
+        "--rm",
+        "redis-cluster-init",
+        external=True,
+    )
+    session.log("Starting full stack (fides, fides-db, redis)...")
+    session.run(*START_APP, external=True)
+    run_command = (
+        "docker",
+        "exec",
+        *ANALYTICS_OPT_OUT,
+        *ANALYTICS_ID_OVERRIDE,
+        "-e",
+        "FIDES__REDIS__CLUSTER_ENABLED=true",
+        "-e",
+        "FIDES__REDIS__HOST=redis-cluster-node-1",
+        "-e",
+        "FIDES__REDIS__PORT=6379",
+        "-e",
+        "FIDES__REDIS__PASSWORD=redispassword",
+        CI_ARGS_EXEC,
+        CONTAINER_NAME,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        "-v",
+        *REDIS_CLUSTER_TEST_PATHS,
+    )
+    session.run(*run_command, external=True)
 
 
 ############

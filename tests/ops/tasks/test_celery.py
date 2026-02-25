@@ -42,8 +42,13 @@ def test_celery_default_config() -> None:
     assert config.celery.task_default_queue == "fides"
 
     celery_app = _create_celery(config)
-    assert celery_app.conf["broker_url"] == CONFIG.redis.connection_url
-    assert celery_app.conf["result_backend"] == CONFIG.redis.connection_url
+    expected_broker = (
+        config.redis.get_cluster_connection_url()
+        if config.redis.cluster_enabled
+        else config.redis.connection_url
+    )
+    assert celery_app.conf["broker_url"] == expected_broker
+    assert celery_app.conf["result_backend"] == expected_broker
     assert celery_app.conf["event_queue_prefix"] == "fides_worker"
     assert celery_app.conf["task_default_queue"] == "fides"
     assert celery_app.conf["task_always_eager"] is True
@@ -96,8 +101,11 @@ def test_celery_cluster_mode_uses_cluster_urls() -> None:
     """When redis.cluster_enabled is True, broker and result_backend use redis+cluster://."""
     config = get_config()
     cluster_url = "redis+cluster://:redispassword@127.0.0.1:6380/0"
-    with patch.object(config.redis, "cluster_enabled", True), patch.object(
-        config.redis, "get_cluster_connection_url", return_value=cluster_url
+    with (
+        patch.object(config.redis, "cluster_enabled", True),
+        patch.object(
+            config.redis, "get_cluster_connection_url", return_value=cluster_url
+        ),
     ):
         celery_app = _create_celery(config=config)
         assert celery_app.conf["broker_url"] == cluster_url
@@ -110,8 +118,11 @@ def test_celery_cluster_mode_respects_broker_backend_override() -> None:
     config.celery.broker_url = "redis://broker:6379/0"
     config.celery.result_backend = "redis://backend:6379/1"
     cluster_url = "redis+cluster://127.0.0.1:6380/0"
-    with patch.object(config.redis, "cluster_enabled", True), patch.object(
-        config.redis, "get_cluster_connection_url", return_value=cluster_url
+    with (
+        patch.object(config.redis, "cluster_enabled", True),
+        patch.object(
+            config.redis, "get_cluster_connection_url", return_value=cluster_url
+        ),
     ):
         app = _create_celery(config=config)
         assert app.conf["broker_url"] == "redis://broker:6379/0"
