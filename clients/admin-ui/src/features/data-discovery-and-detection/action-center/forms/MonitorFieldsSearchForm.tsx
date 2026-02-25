@@ -18,6 +18,18 @@ const CONFIDENCE_BUCKETS: ConfidenceBucket[] = [
   ConfidenceBucket.MANUAL,
 ] as const;
 
+const RESOURCE_STATUS_OPTIONS: Omit<
+  (typeof RESOURCE_STATUS)[number],
+  "Ignored" | "Approved" | "Approving" | "Removing"
+>[] = [
+  "Unlabeled",
+  "Classifying",
+  "Classified",
+  "Reviewed",
+  "Removed",
+  "Error",
+];
+
 const MonitorFieldsSearchForm = ({
   form,
   shortcutCallback,
@@ -86,19 +98,10 @@ const MonitorFieldsSearchForm = ({
       </Flex>
       <Form.Item name="resource_status" className="!me-0 self-end">
         <Select
-          options={RESOURCE_STATUS.flatMap((resourceStatus) =>
-            resourceStatus !== "Ignored" &&
-            resourceStatus !== "Approved" &&
-            resourceStatus !== "Approving" &&
-            resourceStatus !== "Removing"
-              ? [
-                  {
-                    value: resourceStatus,
-                    label: resourceStatus,
-                  },
-                ]
-              : [],
-          )}
+          options={RESOURCE_STATUS_OPTIONS.map((resourceStatus) => ({
+            value: resourceStatus,
+            label: resourceStatus,
+          }))}
           className="!w-[200px]"
           placeholder="Status"
           allowClear
