@@ -8,6 +8,13 @@ from fides.system_integration_link.models import (
 
 
 @dataclass
+class SystemLinkInput:
+    """Lightweight input for creating a system-integration link."""
+
+    system_fides_key: str
+
+
+@dataclass
 class SystemIntegrationLinkEntity:
     """Domain entity representing a link between a System and a ConnectionConfig."""
 

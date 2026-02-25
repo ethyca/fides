@@ -9,6 +9,7 @@ from fides.core.repository.session_management import (
 )
 from fides.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
+    SystemLinkInput,
 )
 from fides.system_integration_link.exceptions import (
     ConnectionConfigNotFoundError,
@@ -46,7 +47,7 @@ class SystemIntegrationLinkService:
     def set_links(
         self,
         connection_key: str,
-        links: list[dict],
+        links: list[SystemLinkInput],
         *,
         session: Session,
     ) -> list[SystemIntegrationLinkEntity]:
@@ -64,12 +65,14 @@ class SystemIntegrationLinkService:
         if not connection_config:
             raise ConnectionConfigNotFoundError(connection_key)
 
+        system_map: dict = {}
         for link_spec in links:
             system = self._repo.resolve_system(
-                link_spec["system_fides_key"], session=session
+                link_spec.system_fides_key, session=session
             )
             if not system:
-                raise SystemNotFoundError(link_spec["system_fides_key"])
+                raise SystemNotFoundError(link_spec.system_fides_key)
+            system_map[link_spec.system_fides_key] = system
 
         self._repo.delete_all_links_for_connection(
             connection_config.id, session=session
@@ -77,12 +80,10 @@ class SystemIntegrationLinkService:
 
         results: list[SystemIntegrationLinkEntity] = []
         for link_spec in links:
-            system = self._repo.resolve_system(
-                link_spec["system_fides_key"], session=session
-            )
+            system = system_map[link_spec.system_fides_key]
             entity = self._repo.get_or_create_link(
                 connection_config_id=connection_config.id,
-                system_id=system.id,  # type: ignore[union-attr]
+                system_id=system.id,
                 session=session,
             )
             results.append(entity)

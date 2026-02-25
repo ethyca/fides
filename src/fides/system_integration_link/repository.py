@@ -81,7 +81,11 @@ class SystemIntegrationLinkRepository:
     ) -> SystemIntegrationLinkEntity:
         """Replace any existing link for this connection_config with a new one.
 
-        Ensures at most one system link per connection config.
+        Ensures at most one system link per connection config.  The delete
+        intentionally filters only by connection_config_id (not system_id)
+        so that re-pointing a CC to a different system removes the old link.
+        If the unique constraint on connection_config_id is ever relaxed for
+        many-to-many, this method must be revisited.
         """
         session.execute(
             delete(SystemConnectionConfigLink.__table__).where(
