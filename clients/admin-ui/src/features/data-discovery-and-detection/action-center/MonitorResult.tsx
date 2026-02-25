@@ -43,6 +43,12 @@ const MONITOR_RESULT_COUNT_TYPES = {
   [MONITOR_TYPES.INFRASTRUCTURE]: ["system", "systems"],
 } as const;
 
+const MONITOR_TYPE_TAG_LABELS: Record<MONITOR_TYPES, string> = {
+  [MONITOR_TYPES.WEBSITE]: "Web",
+  [MONITOR_TYPES.DATASTORE]: "Datastore",
+  [MONITOR_TYPES.INFRASTRUCTURE]: "IDP",
+};
+
 interface MonitorResultProps extends ListItemProps {
   monitorSummary: MonitorAggregatedResults;
   href: string;
@@ -194,6 +200,7 @@ export const MonitorResult = ({
             {consentStatus && (
               <DiscoveryStatusIcon consentStatus={consentStatus} />
             )}
+            <Tag>{MONITOR_TYPE_TAG_LABELS[monitorType]}</Tag>
             {isTestMonitor && <Tag color="nectar">test monitor</Tag>}
           </Flex>
         }
