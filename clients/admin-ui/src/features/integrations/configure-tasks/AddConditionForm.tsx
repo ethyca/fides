@@ -29,7 +29,7 @@ import {
 interface FormValues {
   fieldAddress: string;
   operator: Operator;
-  value?: string | boolean | Dayjs;
+  value?: string | boolean | Dayjs | string[];
 }
 
 interface AddConditionFormProps {
@@ -166,6 +166,15 @@ const AddConditionForm = ({
       form.setFieldValue("value", "");
     }
   }, [isValueDisabled, form]);
+
+  // Reset value when the user manually changes the operator to prevent stale
+  // array values (e.g. from LIST_CONTAINS multiselect) being submitted with
+  // a non-list operator like EQ
+  useEffect(() => {
+    if (form.isFieldTouched("operator")) {
+      form.setFieldValue("value", undefined);
+    }
+  }, [selectedOperator, form]);
 
   return (
     <Form
