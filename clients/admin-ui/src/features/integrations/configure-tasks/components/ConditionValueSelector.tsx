@@ -11,6 +11,7 @@ import { ChangeEvent } from "react";
 
 import { useGetLocationsRegulationsQuery } from "~/features/locations/locations.slice";
 import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
+import { Operator } from "~/types/api";
 
 import { CustomFieldMetadata } from "../types";
 import { FieldType, getFieldTypeWithMetadata } from "../utils";
@@ -18,10 +19,11 @@ import { FieldType, getFieldTypeWithMetadata } from "../utils";
 interface ConditionValueSelectorProps {
   fieldType: FieldType;
   disabled?: boolean;
-  value?: string | boolean | Dayjs | null;
-  onChange?: (value: string | boolean | Dayjs | null) => void;
+  value?: string | boolean | Dayjs | string[] | null;
+  onChange?: (value: string | boolean | Dayjs | string[] | null) => void;
   fieldAddress?: string;
   customFieldMetadata?: CustomFieldMetadata | null;
+  operator?: Operator;
 }
 
 /**
@@ -37,23 +39,23 @@ export const ConditionValueSelector = ({
   onChange,
   fieldAddress,
   customFieldMetadata,
+  operator,
 }: ConditionValueSelectorProps) => {
-  // Determine the effective field type with custom field metadata
+  const isMultiSelect = operator === Operator.LIST_CONTAINS;
+
   const fieldType = fieldAddress
     ? getFieldTypeWithMetadata(fieldAddress, customFieldMetadata ?? null)
     : baseFieldType;
-  // Fetch policies for policy selector (only when needed)
+
   const { data: policiesData } = useGetPoliciesQuery(undefined, {
     skip: baseFieldType !== "policy",
   });
 
-  // Fetch locations and regulations data (only when needed)
   const { data: locationsData } = useGetLocationsRegulationsQuery(undefined, {
     skip:
       fieldType !== "location_groups" && fieldType !== "location_regulations",
   });
 
-  // Boolean input
   if (fieldType === "boolean") {
     return (
       <Radio.Group
@@ -68,10 +70,7 @@ export const ConditionValueSelector = ({
     );
   }
 
-  // Date input
   if (fieldType === "date") {
-    // Ensure value is a valid Dayjs object or null to prevent "date.isValid is not a function" error
-    // This can happen if the user switches from another field type with a non-date value
     const dateValue = dayjs.isDayjs(value) ? value : null;
 
     return (
@@ -89,8 +88,21 @@ export const ConditionValueSelector = ({
     );
   }
 
-  // Location input
   if (fieldType === "location") {
+    if (isMultiSelect) {
+      return (
+        <LocationSelect
+          mode="multiple"
+          value={value as string[]}
+          onChange={onChange}
+          placeholder={disabled ? "Not required" : "Select locations"}
+          disabled={disabled}
+          data-testid="value-location-input"
+          allowClear
+          aria-label="Select locations"
+        />
+      );
+    }
     return (
       <LocationSelect
         value={value as string | null}
@@ -104,8 +116,22 @@ export const ConditionValueSelector = ({
     );
   }
 
-  // Location country input (countries only, no subdivisions)
   if (fieldType === "location_country") {
+    if (isMultiSelect) {
+      return (
+        <LocationSelect
+          mode="multiple"
+          value={value as string[]}
+          onChange={onChange}
+          placeholder={disabled ? "Not required" : "Select countries"}
+          disabled={disabled}
+          data-testid="value-location-country-input"
+          allowClear
+          aria-label="Select countries"
+          options={{ countries: iso31661, regions: [] }}
+        />
+      );
+    }
     return (
       <LocationSelect
         value={value as string | null}
@@ -120,7 +146,6 @@ export const ConditionValueSelector = ({
     );
   }
 
-  // Location groups input (single-select for location groups like 'us', 'eea', etc.)
   if (fieldType === "location_groups") {
     const locationGroupOptions =
       locationsData?.location_groups?.map((group) => ({
@@ -128,6 +153,25 @@ export const ConditionValueSelector = ({
         value: group.id,
       })) ?? [];
 
+    if (isMultiSelect) {
+      return (
+        <Select
+          mode="multiple"
+          value={value as string[]}
+          onChange={onChange}
+          options={locationGroupOptions}
+          placeholder={disabled ? "Not required" : "Select location groups"}
+          disabled={disabled}
+          data-testid="value-location-groups-input"
+          allowClear
+          showSearch
+          aria-label="Select location groups"
+          filterOption={(input, option) =>
+            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+          }
+        />
+      );
+    }
     return (
       <Select
         value={value as string}
@@ -146,7 +190,6 @@ export const ConditionValueSelector = ({
     );
   }
 
-  // Location regulations input (single-select for regulations like 'gdpr', 'ccpa', etc.)
   if (fieldType === "location_regulations") {
     const regulationOptions =
       locationsData?.regulations?.map((regulation) => ({
@@ -154,6 +197,25 @@ export const ConditionValueSelector = ({
         value: regulation.id,
       })) ?? [];
 
+    if (isMultiSelect) {
+      return (
+        <Select
+          mode="multiple"
+          value={value as string[]}
+          onChange={onChange}
+          options={regulationOptions}
+          placeholder={disabled ? "Not required" : "Select regulations"}
+          disabled={disabled}
+          data-testid="value-location-regulations-input"
+          allowClear
+          showSearch
+          aria-label="Select regulations"
+          filterOption={(input, option) =>
+            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+          }
+        />
+      );
+    }
     return (
       <Select
         value={value as string}
@@ -172,7 +234,6 @@ export const ConditionValueSelector = ({
     );
   }
 
-  // Policy input
   if (fieldType === "policy") {
     const policyOptions =
       policiesData?.items.map((policy) => ({
@@ -230,7 +291,6 @@ export const ConditionValueSelector = ({
     );
   }
 
-  // Default: string input
   return (
     <Input
       value={value as string}

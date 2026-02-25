@@ -117,14 +117,16 @@ const AddConditionForm = ({
 
   const handleSubmit = useCallback(
     (values: FormValues) => {
+      const parsedValue = parseConditionValue(values.operator, values.value);
       const condition: ConditionLeaf = {
         field_address: values.fieldAddress.trim(),
         operator: values.operator,
-        value: parseConditionValue(values.operator, values.value),
+        // The auto-generated ConditionLeaf type doesn't include string[] but the
+        // backend accepts arrays for list operators like LIST_CONTAINS
+        value: parsedValue as ConditionLeaf["value"],
       };
 
       onAdd(condition);
-      // Don't reset form here - let the modal handle it on successful save
     },
     [onAdd],
   );
@@ -256,6 +258,7 @@ const AddConditionForm = ({
           disabled={isValueDisabled}
           fieldAddress={selectedFieldAddress}
           customFieldMetadata={customFieldMetadata}
+          operator={selectedOperator}
         />
       </Form.Item>
 
