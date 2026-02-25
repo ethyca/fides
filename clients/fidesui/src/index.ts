@@ -203,6 +203,7 @@ export type {
   TablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
+  BadgeProps,
   ButtonProps,
   CheckboxProps,
   CollapseProps,
@@ -325,7 +326,7 @@ export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
 export type { SparklineProps } from "./components/charts/Sparkline";
-export { default as Sparkline } from "./components/charts/Sparkline";
+export { Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
