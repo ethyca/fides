@@ -1,7 +1,7 @@
 """Add privacy_assessment_task table and privacy_assessment_task_id FK on privacy_assessment
 
 Revision ID: 12c3de065e27
-Revises: d3f08ca31314
+Revises: c69ef1fecb20
 Create Date: 2026-02-23 16:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision = "12c3de065e27"
-down_revision = "d3f08ca31314"
+down_revision = "c69ef1fecb20"
 branch_labels = None
 depends_on = None
 
