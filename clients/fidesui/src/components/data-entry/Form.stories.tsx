@@ -13,7 +13,7 @@ const LayoutOptions: Array<FormProps["layout"]> = [
 const SizeOptions: Array<FormProps["size"]> = ["middle", "small", "large"];
 
 const meta = {
-  title: "DataEntry/Form",
+  title: "Data Entry/Form",
   args: {
     layout: "vertical",
     size: "middle",
