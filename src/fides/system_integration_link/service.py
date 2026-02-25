@@ -80,7 +80,7 @@ class SystemIntegrationLinkService:
             system = self._repo.resolve_system(
                 link_spec["system_fides_key"], session=session
             )
-            entity = self._repo.upsert_link(
+            entity = self._repo.get_or_create_link(
                 connection_config_id=connection_config.id,
                 system_id=system.id,  # type: ignore[union-attr]
                 session=session,

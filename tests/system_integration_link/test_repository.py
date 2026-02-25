@@ -92,7 +92,7 @@ def cleanup_links(db: Session):
 
 class TestUpsertLink:
     def test_creates_new_link(self, repo, db, connection_config, system_a):
-        entity = repo.upsert_link(
+        entity = repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
@@ -107,14 +107,14 @@ class TestUpsertLink:
     def test_returns_existing_link_on_duplicate(
         self, repo, db, connection_config, system_a
     ):
-        first = repo.upsert_link(
+        first = repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
         )
         db.commit()
 
-        second = repo.upsert_link(
+        second = repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
@@ -128,7 +128,7 @@ class TestGetLinksForConnection:
     def test_returns_links_with_system_info(
         self, repo, db, connection_config, system_a
     ):
-        repo.upsert_link(
+        repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
@@ -147,7 +147,7 @@ class TestGetLinksForConnection:
 
 class TestDeleteAllLinksForConnection:
     def test_deletes_link(self, repo, db, connection_config, system_a):
-        repo.upsert_link(
+        repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
@@ -165,12 +165,12 @@ class TestDeleteAllLinksForConnection:
         self, repo, db, connection_config, connection_config_b, system_a, system_b
     ):
         """Deleting links for one connection doesn't affect another."""
-        repo.upsert_link(
+        repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
         )
-        repo.upsert_link(
+        repo.get_or_create_link(
             connection_config_id=connection_config_b.id,
             system_id=system_b.id,
             session=db,
@@ -190,7 +190,7 @@ class TestDeleteAllLinksForConnection:
         self, repo, db, connection_config, system_a, system_b
     ):
         """Verifies the core set_links flow: delete all, then create new."""
-        repo.upsert_link(
+        repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
@@ -200,7 +200,7 @@ class TestDeleteAllLinksForConnection:
         repo.delete_all_links_for_connection(connection_config.id, session=db)
         db.flush()
 
-        entity = repo.upsert_link(
+        entity = repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_b.id,
             session=db,
@@ -222,12 +222,12 @@ class TestDeleteLinks:
     def test_deletes_specific_system_link(
         self, repo, db, connection_config, connection_config_b, system_a, system_b
     ):
-        repo.upsert_link(
+        repo.get_or_create_link(
             connection_config_id=connection_config.id,
             system_id=system_a.id,
             session=db,
         )
-        repo.upsert_link(
+        repo.get_or_create_link(
             connection_config_id=connection_config_b.id,
             system_id=system_b.id,
             session=db,

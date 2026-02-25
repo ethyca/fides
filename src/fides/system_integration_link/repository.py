@@ -99,7 +99,7 @@ class SystemIntegrationLinkRepository:
         return SystemIntegrationLinkEntity.from_orm(link)
 
     @with_optional_sync_session
-    def upsert_link(
+    def get_or_create_link(
         self,
         connection_config_id: str,
         system_id: str,

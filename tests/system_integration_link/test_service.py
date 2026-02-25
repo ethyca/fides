@@ -105,7 +105,7 @@ class TestSetLinks:
         mock_repo.resolve_connection_config.return_value = cc
         mock_repo.resolve_system.return_value = sys
         mock_repo.delete_all_links_for_connection.return_value = 0
-        mock_repo.upsert_link.return_value = entity
+        mock_repo.get_or_create_link.return_value = entity
 
         result = service.set_links(
             "my_connection",
@@ -117,7 +117,7 @@ class TestSetLinks:
         mock_repo.delete_all_links_for_connection.assert_called_once_with(
             cc.id, session=mock_session
         )
-        mock_repo.upsert_link.assert_called_once_with(
+        mock_repo.get_or_create_link.assert_called_once_with(
             connection_config_id=cc.id,
             system_id=sys.id,
             session=mock_session,
@@ -134,7 +134,7 @@ class TestSetLinks:
         mock_repo.resolve_connection_config.return_value = cc
         mock_repo.resolve_system.return_value = sys
         mock_repo.delete_all_links_for_connection.return_value = 2
-        mock_repo.upsert_link.return_value = new_entity
+        mock_repo.get_or_create_link.return_value = new_entity
 
         result = service.set_links(
             "my_connection",
@@ -156,7 +156,7 @@ class TestSetLinks:
         mock_repo.delete_all_links_for_connection.assert_called_once_with(
             cc.id, session=mock_session
         )
-        mock_repo.upsert_link.assert_not_called()
+        mock_repo.get_or_create_link.assert_not_called()
 
     def test_rejects_more_than_max_links(self, service, mock_repo, mock_session):
         with pytest.raises(TooManyLinksError) as exc_info:
