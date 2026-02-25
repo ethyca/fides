@@ -1,4 +1,4 @@
-import { Input, PageSpinner, Select } from "fidesui";
+import { Flex, Input, PageSpinner, Select } from "fidesui";
 import { ReactNode, useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -142,7 +142,7 @@ export const useIntegrationFilters = () => {
     });
 
   const filterBar: ReactNode = (
-    <div className="flex items-center justify-between gap-4">
+    <Flex align="center" justify="space-between" gap={16}>
       <Input
         placeholder="Search by name..."
         value={searchTerm}
@@ -159,7 +159,7 @@ export const useIntegrationFilters = () => {
         aria-label="Select a category"
         data-testid="category-filter-select"
       />
-    </div>
+    </Flex>
   );
 
   return { filterBar, filteredTypes, isFiltering };

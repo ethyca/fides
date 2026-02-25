@@ -1,4 +1,4 @@
-import { Button, Icons, Tag, Tooltip, Typography } from "fidesui";
+import { Button, Flex, Icons, Tag, Tooltip, Typography } from "fidesui";
 
 import { useConnectionLogo } from "~/features/common/hooks";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -43,16 +43,17 @@ const SelectableIntegrationBox = ({
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
           onClick?.();
         }
       }}
       data-testid={`integration-info-${integration?.key}`}
     >
-      <div className="flex w-full items-start justify-between">
-        <div className="flex w-full grow">
+      <Flex justify="space-between" align="start" className="w-full">
+        <Flex className="w-full grow">
           <ConnectionTypeLogo data={logoData} size={40} />
-          <div className="mx-3 flex min-w-0 shrink grow flex-col">
-            <div className="flex items-center gap-1">
+          <Flex vertical className="mx-3 min-w-0 shrink grow">
+            <Flex align="center" gap={4}>
               <Typography.Text
                 strong
                 style={{ fontSize: "14px" }}
@@ -69,11 +70,11 @@ const SelectableIntegrationBox = ({
                   </span>
                 </Tooltip>
               )}
-            </div>
+            </Flex>
             <span className="mt-1 text-xs text-gray-500">
               {getCategoryLabel(typeInfo.category)}
             </span>
-          </div>
+          </Flex>
           {onDetailsClick && (
             <Button
               size="small"
@@ -88,16 +89,16 @@ const SelectableIntegrationBox = ({
               Details
             </Button>
           )}
-        </div>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-1">
+        </Flex>
+      </Flex>
+      <Flex wrap gap={4} className="mt-3">
         {typeInfo.tags.slice(0, 3).map((item) => (
           <Tag key={item}>{item}</Tag>
         ))}
         {typeInfo.tags.length > 3 && (
           <Tag color="corinth">+{typeInfo.tags.length - 3}</Tag>
         )}
-      </div>
+      </Flex>
     </div>
   );
 };

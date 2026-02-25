@@ -1,4 +1,4 @@
-import { Button, Modal } from "fidesui";
+import { Button, Flex, Modal } from "fidesui";
 import { useState } from "react";
 
 import getIntegrationTypeInfo, {
@@ -101,7 +101,7 @@ const AddIntegrationModal = ({
 
     if (step === IntegrationModalStep.DETAIL) {
       return (
-        <div className="flex w-full justify-between">
+        <Flex justify="space-between" className="w-full">
           <Button onClick={() => setStep(IntegrationModalStep.LIST_VIEW)}>
             Back
           </Button>
@@ -112,13 +112,13 @@ const AddIntegrationModal = ({
           >
             Next
           </Button>
-        </div>
+        </Flex>
       );
     }
 
     if (step === IntegrationModalStep.FORM) {
       return (
-        <div className="flex w-full justify-between">
+        <Flex justify="space-between" className="w-full">
           <Button onClick={handleBack}>Back</Button>
           <Button
             type="primary"
@@ -129,7 +129,7 @@ const AddIntegrationModal = ({
           >
             Save
           </Button>
-        </div>
+        </Flex>
       );
     }
 
