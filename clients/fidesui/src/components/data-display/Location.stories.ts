@@ -5,7 +5,7 @@ import { LocationDisplay } from "./Location";
 import { isoStringToEntry } from "./location.utils";
 
 const meta = {
-  title: "DataDisplay/Location",
+  title: "Data Display/Location",
   component: LocationDisplay,
   parameters: {},
   tags: ["autodocs"],

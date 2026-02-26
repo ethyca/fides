@@ -7,7 +7,7 @@ import { Flex, Typography } from "../../index";
 import { Filter } from "./Filter";
 
 const meta = {
-  title: "DataDisplay/Filter",
+  title: "Data Display/Filter",
   component: Filter,
   parameters: {
     layout: "centered",
