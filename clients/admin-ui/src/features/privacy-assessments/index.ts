@@ -5,6 +5,8 @@ export { default as AssessmentSettingsModal } from "./AssessmentSettingsModal";
 export * from "./constants";
 export * from "./EditableTextBlock";
 export * from "./EmptyState";
+export * from "./EvidenceDrawer";
+export * from "./EvidenceSection";
 export * from "./privacy-assessments.slice";
 export * from "./QuestionCard";
 export * from "./QuestionGroupPanel";

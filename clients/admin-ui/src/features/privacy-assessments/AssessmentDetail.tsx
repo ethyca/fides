@@ -14,7 +14,7 @@ import {
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -22,11 +22,12 @@ import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
+import { EvidenceDrawer } from "./EvidenceDrawer";
 import { useDeletePrivacyAssessmentMutation } from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { SlackIcon } from "./SlackIcon";
-import { PrivacyAssessmentDetailResponse } from "./types";
+import { EvidenceItem, PrivacyAssessmentDetailResponse } from "./types";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -39,6 +40,24 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const { getDataCategoryDisplayName } = useTaxonomies();
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
+  const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
+
+  const focusedGroupEvidence = useMemo<EvidenceItem[]>(() => {
+    if (!focusedGroupId) {
+      return [];
+    }
+    const group = (assessment.question_groups ?? []).find(
+      (g) => g.id === focusedGroupId,
+    );
+    return group ? group.questions.flatMap((q) => q.evidence) : [];
+  }, [focusedGroupId, assessment.question_groups]);
+
+  const handleViewEvidence = useCallback((groupId: string) => {
+    setFocusedGroupId(groupId);
+    setDrawerOpen(true);
+  }, []);
 
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
@@ -91,6 +110,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           <QuestionGroupPanel
             group={group}
             isExpanded={expandedKeys.includes(group.id)}
+            onViewEvidence={() => handleViewEvidence(group.id)}
           />
         ),
         children: (
@@ -105,7 +125,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           </Space>
         ),
       })),
-    [assessment.question_groups, assessment.id, expandedKeys],
+    [assessment.question_groups, assessment.id, expandedKeys, handleViewEvidence],
   );
 
   return (
@@ -189,6 +209,16 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         onChange={(keys) => setExpandedKeys(keys as string[])}
         items={collapseItems}
         size="large"
+      />
+
+      <EvidenceDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        focusedGroupId={focusedGroupId}
+        questionGroups={assessment.question_groups ?? []}
+        evidence={focusedGroupEvidence}
+        searchQuery={evidenceSearchQuery}
+        onSearchChange={setEvidenceSearchQuery}
       />
     </Space>
   );
