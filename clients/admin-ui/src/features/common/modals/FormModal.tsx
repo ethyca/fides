@@ -18,7 +18,6 @@ interface FormModalProps extends ModalProps {
   children: ReactNode;
   modalContentProps?: ModalContentProps;
   showCloseButton?: boolean;
-  subheader?: ReactNode;
   footer?: ReactNode;
 }
 
@@ -29,7 +28,6 @@ const FormModal = ({
   onClose,
   modalContentProps,
   showCloseButton = false,
-  subheader,
   footer,
   ...props
 }: FormModalProps) => (
@@ -67,11 +65,6 @@ const FormModal = ({
           </Heading>
         </Box>
       </ModalHeader>
-      {subheader && (
-        <Box px={6} pt={4} pb={2}>
-          {subheader}
-        </Box>
-      )}
       <ModalBody pb={4} overflow="auto">
         {children}
       </ModalBody>

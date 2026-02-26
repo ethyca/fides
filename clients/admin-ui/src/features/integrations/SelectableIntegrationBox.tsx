@@ -5,22 +5,25 @@ import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeL
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
+import styles from "~/features/integrations/SelectableIntegrationBox.module.scss";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
 import { ConnectionConfigurationResponse } from "~/types/api";
+
+interface SelectableIntegrationBoxProps {
+  integration?: ConnectionConfigurationResponse;
+  integrationTypeInfo?: IntegrationTypeInfo;
+  onClick?: () => void;
+  onDetailsClick?: () => void;
+}
 
 const SelectableIntegrationBox = ({
   integration,
   integrationTypeInfo,
   onClick,
   onDetailsClick,
-}: {
-  integration?: ConnectionConfigurationResponse;
-  integrationTypeInfo?: IntegrationTypeInfo;
-  onClick?: () => void;
-  onDetailsClick?: () => void;
-}) => {
+}: SelectableIntegrationBoxProps) => {
   const logoData = useConnectionLogo(integration);
 
   const typeInfo =
@@ -37,7 +40,7 @@ const SelectableIntegrationBox = ({
 
   return (
     <div
-      className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 p-3 transition-all duration-150 hover:border-gray-600 hover:bg-gray-50 hover:shadow-sm"
+      className={`cursor-pointer overflow-hidden p-3 ${styles.card}`}
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -56,7 +59,6 @@ const SelectableIntegrationBox = ({
             <Flex align="center" gap={4}>
               <Typography.Text
                 strong
-                style={{ fontSize: "14px" }}
                 ellipsis={{
                   tooltip: integration?.name || "(No name)",
                 }}
@@ -71,9 +73,12 @@ const SelectableIntegrationBox = ({
                 </Tooltip>
               )}
             </Flex>
-            <span className="mt-1 text-xs text-gray-500">
+            <Typography.Text
+              type="secondary"
+              className={`mt-1 ${styles.categoryLabel}`}
+            >
               {getCategoryLabel(typeInfo.category)}
-            </span>
+            </Typography.Text>
           </Flex>
           {onDetailsClick && (
             <Button
@@ -83,7 +88,7 @@ const SelectableIntegrationBox = ({
                 onDetailsClick();
               }}
               type="default"
-              className="shrink-0 px-2 py-1 text-xs"
+              className="shrink-0 px-2 py-1"
               data-testid={`details-btn-${integration?.key}`}
             >
               Details

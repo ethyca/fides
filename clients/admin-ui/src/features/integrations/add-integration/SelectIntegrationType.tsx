@@ -142,7 +142,7 @@ export const useIntegrationFilters = () => {
     });
 
   const filterBar: ReactNode = (
-    <Flex align="center" justify="space-between" gap={16}>
+    <Flex align="center" justify="space-between" gap={16} className="w-full">
       <Input
         placeholder="Search by name..."
         value={searchTerm}
@@ -165,12 +165,12 @@ export const useIntegrationFilters = () => {
   return { filterBar, filteredTypes, isFiltering };
 };
 
-type Props = {
+interface Props {
   filteredTypes: IntegrationTypeInfo[];
   isFiltering: boolean;
   onIntegrationClick: (type: IntegrationTypeInfo) => void;
   onDetailClick: (type: IntegrationTypeInfo) => void;
-};
+}
 
 const SelectIntegrationType = ({
   filteredTypes,
@@ -183,14 +183,13 @@ const SelectIntegrationType = ({
   ) : (
     <div className="grid grid-cols-3 gap-6">
       {filteredTypes.map((i) => (
-        <div key={i.placeholder.key}>
-          <SelectableIntegrationBox
-            integration={i.placeholder}
-            integrationTypeInfo={i}
-            onClick={() => onIntegrationClick(i)}
-            onDetailsClick={() => onDetailClick(i)}
-          />
-        </div>
+        <SelectableIntegrationBox
+          key={i.placeholder.key}
+          integration={i.placeholder}
+          integrationTypeInfo={i}
+          onClick={() => onIntegrationClick(i)}
+          onDetailsClick={() => onDetailClick(i)}
+        />
       ))}
     </div>
   );
