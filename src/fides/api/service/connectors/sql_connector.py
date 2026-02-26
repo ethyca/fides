@@ -60,6 +60,7 @@ class SQLConnector(BaseConnector[Engine]):
                 "SQL Connectors must define their secrets schema class"
             )
         self.ssh_server: sshtunnel._ForwardServer = None
+        self._current_namespace_meta: Optional[Dict[str, Any]] = None
 
     def should_dry_run(self, mode_to_check: SqlDryRunMode) -> bool:
         """
@@ -328,10 +329,25 @@ class SQLConnector(BaseConnector[Engine]):
         """
         Get the fully qualified table name for this database.
 
-        Default: Returns the simple collection name
-        Override: Database-specific connectors can implement namespace resolution
+        Uses the query_config's parsed namespace_meta (if present) to build
+        a qualified name like ``schema.table`` or ``database.schema.table``.
+        Returns unquoted names because table_exists() uses split(".") +
+        inspector.has_table().
         """
-        return node.collection.name
+        query_config = self.query_config(node)
+        meta = query_config.namespace_meta
+        if not meta:
+            return node.collection.name
+
+        schema = getattr(meta, "schema", None)
+        if not schema:
+            return node.collection.name
+
+        qualified = f"{schema}.{node.collection.name}"
+        database_name = getattr(meta, "database_name", None)
+        if database_name:
+            return f"{database_name}.{qualified}"
+        return qualified
 
     def table_exists(self, qualified_table_name: str) -> bool:
         """

@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List
 
 import pg8000
 from google.cloud.sql.connector import Connector
@@ -19,9 +19,6 @@ from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_
 )
 from fides.api.schemas.connection_configuration.enums.google_cloud_sql_ip_type import (
     GoogleCloudSQLIPType,
-)
-from fides.api.schemas.namespace_meta.google_cloud_sql_postgres_namespace_meta import (
-    GoogleCloudSQLPostgresNamespaceMeta,
 )
 from fides.api.service.connectors.query_configs.google_cloud_postgres_query_config import (
     GoogleCloudSQLPostgresQueryConfig,
@@ -80,13 +77,15 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
         """
 
     def set_schema(self, connection: Connection) -> None:
-        """Sets the schema for a postgres database if applicable.
+        """Sets the search_path for a GCS Postgres database if applicable.
 
-        Note: This is the legacy path using the db_schema connection secret.
-        When namespace_meta is configured instead, the schema is prepended
-        directly to the table name in the query config. The two approaches
-        are mutually exclusive in practice.
+        Skipped when namespace_meta is present because table names are already
+        schema-qualified in the generated SQL. Only runs for the legacy
+        db_schema connection secret path.
         """
+        if self._current_namespace_meta:
+            return
+
         config = self.secrets_schema(**self.configuration.secrets or {})
         if config.db_schema:
             logger.info("Setting PostgreSQL search_path before retrieving data")
@@ -98,22 +97,6 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
     def query_config(self, node: ExecutionNode) -> GoogleCloudSQLPostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         db: Session = Session.object_session(self.configuration)
-        return GoogleCloudSQLPostgresQueryConfig(
-            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
-        )
-
-    def get_qualified_table_name(self, node: ExecutionNode) -> str:
-        """Get fully qualified table name for table_exists() checks.
-
-        Returns unquoted names (e.g. schema.table) because the generic
-        SQLConnector.table_exists() uses split(".") + inspector.has_table().
-        """
-        query_config = self.query_config(node)
-        if not query_config.namespace_meta:
-            return node.collection.name
-
-        meta = cast(GoogleCloudSQLPostgresNamespaceMeta, query_config.namespace_meta)
-        qualified = f"{meta.schema}.{node.collection.name}"
-        if meta.database_name:
-            return f"{meta.database_name}.{qualified}"
-        return qualified
+        namespace_meta = SQLConnector.get_namespace_meta(db, node.address.dataset)
+        self._current_namespace_meta = namespace_meta
+        return GoogleCloudSQLPostgresQueryConfig(node, namespace_meta)

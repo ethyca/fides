@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Dict, List, Optional, cast
+from typing import Dict, List, Optional
 
 from botocore.exceptions import ClientError
 from loguru import logger
@@ -11,9 +11,6 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
     RDSPostgresSchema,
-)
-from fides.api.schemas.namespace_meta.postgres_namespace_meta import (
-    PostgresNamespaceMeta,
 )
 from fides.api.service.connectors.query_configs.postgres_query_config import (
     PostgresQueryConfig,
@@ -131,19 +128,3 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
-
-    def get_qualified_table_name(self, node: ExecutionNode) -> str:
-        """Get fully qualified Postgres table name for table_exists() checks.
-
-        Returns unquoted names (e.g. schema.table) because the generic
-        SQLConnector.table_exists() uses split(".") + inspector.has_table().
-        """
-        query_config = self.query_config(node)
-        if not query_config.namespace_meta:
-            return node.collection.name
-
-        meta = cast(PostgresNamespaceMeta, query_config.namespace_meta)
-        qualified = f"{meta.schema}.{node.collection.name}"
-        if meta.database_name:
-            return f"{meta.database_name}.{qualified}"
-        return qualified
