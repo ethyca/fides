@@ -15,8 +15,7 @@ import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
-import { isErrorResult } from "~/features/common/helpers";
-import { useAPIHelper } from "~/features/common/hooks";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
@@ -40,7 +39,6 @@ const AssessmentSettingsModal = ({
 }: AssessmentSettingsModalProps) => {
   const [form] = Form.useForm();
   const message = useMessage();
-  const { handleError } = useAPIHelper();
 
   // State for tracking custom cron vs preset
   const [showCustomCron, setShowCustomCron] = useState(false);
@@ -138,7 +136,7 @@ const AssessmentSettingsModal = ({
     });
 
     if (isErrorResult(result)) {
-      handleError(result.error);
+      message.error(getErrorMessage(result.error));
     } else {
       message.success("Assessment settings saved successfully");
       onClose();
