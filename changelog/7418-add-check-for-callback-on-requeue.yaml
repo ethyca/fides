@@ -1,4 +1,0 @@
-type: Fixed
-description: Add check for callback on requeue to prevent erroring standing by tasks
-pr: 7418
-label: []
