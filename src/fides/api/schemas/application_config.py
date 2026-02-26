@@ -28,8 +28,7 @@ class StorageTypeApiAccepted(Enum):
 
 
 class StorageApplicationConfig(FidesSchema):
-    active_default_storage_type: Optional[StorageTypeApiAccepted] = None
-    privacy_request_diagnostics_storage_key: Optional[str] = None
+    active_default_storage_type: StorageTypeApiAccepted
     model_config = ConfigDict(use_enum_values=True, extra="forbid")
 
 

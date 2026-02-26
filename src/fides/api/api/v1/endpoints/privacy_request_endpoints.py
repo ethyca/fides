@@ -35,7 +35,6 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_503_SERVICE_UNAVAILABLE,
 )
 
 from fides.api.api import deps
@@ -176,7 +175,8 @@ from fides.service.dataset.dataset_config_service import (
     replace_references_with_identities,
 )
 from fides.service.messaging.messaging_service import MessagingService
-from fides.service.privacy_request.privacy_request_diagnostics import (
+from fides.service.privacy_request.diagnostics import (
+    DefaultStorageNotConfiguredError,
     PrivacyRequestDiagnosticsExportResponse,
     export_privacy_request_diagnostics,
 )
@@ -680,10 +680,10 @@ def get_privacy_request_diagnostics_report(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No privacy request found with id '{privacy_request_id}'.",
         )
-    except ValueError as exc:
+    except DefaultStorageNotConfiguredError as exc:
         raise HTTPException(
-            status_code=HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=exc.detail,
         )
 
 
