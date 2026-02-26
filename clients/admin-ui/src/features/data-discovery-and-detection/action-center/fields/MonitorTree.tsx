@@ -525,7 +525,8 @@ const MonitorTree = forwardRef<
     const refreshResourcesAndAncestors = useCallback(
       async (urns: string[]) => {
         // Special case: when no URNs provided (bulk action on all filtered resources),
-        // use get_tree to refresh top-level databases with filtered descendants
+        // we use get_tree instead of get_ancestors because there's no specific resource
+        // to get ancestors for. This refreshes top-level databases with filtered descendants.
         if (urns.length === 0) {
           try {
             const result = await trigger({
@@ -550,11 +551,11 @@ const MonitorTree = forwardRef<
               collapseNodeAndRemoveChildren(node.urn);
             });
 
-            setTreeData((origin) =>
+            setTreeData((prevTreeData) =>
               topLevelData.items.reduce(
                 (tree, node) =>
                   updateNodeStatus(tree, node.urn, node.diff_status),
-                origin,
+                prevTreeData,
               ),
             );
           } catch (error) {
@@ -593,7 +594,7 @@ const MonitorTree = forwardRef<
 
             collapseNodeAndRemoveChildren(urn);
 
-            setTreeData((origin) =>
+            setTreeData((prevTreeData) =>
               ancestorsData.reduce(
                 (tree, ancestorNode) =>
                   updateNodeStatus(
@@ -601,7 +602,7 @@ const MonitorTree = forwardRef<
                     ancestorNode.urn,
                     ancestorNode.diff_status,
                   ),
-                origin,
+                prevTreeData,
               ),
             );
           } catch (error) {
