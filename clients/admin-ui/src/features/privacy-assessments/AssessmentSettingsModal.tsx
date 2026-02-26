@@ -197,10 +197,7 @@ const AssessmentSettingsModal = ({
             tooltip="Custom LLM model for running privacy assessments. Leave empty to use the default."
           >
             <Input
-              placeholder={
-                defaults?.default_assessment_model ||
-                "openrouter/anthropic/claude-opus-4"
-              }
+              placeholder={defaults?.default_assessment_model}
               data-testid="input-assessment-model"
             />
           </Form.Item>
@@ -211,10 +208,7 @@ const AssessmentSettingsModal = ({
             tooltip="Custom LLM model for questionnaire chat conversations. Leave empty to use the default."
           >
             <Input
-              placeholder={
-                defaults?.default_chat_model ||
-                "openrouter/google/gemini-2.5-flash"
-              }
+              placeholder={defaults?.default_chat_model}
               data-testid="input-chat-model"
             />
           </Form.Item>
