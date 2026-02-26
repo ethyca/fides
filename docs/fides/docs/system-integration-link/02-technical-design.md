@@ -214,7 +214,43 @@ GET /api/v1/connection/{connection_key}/system-links
 
 ### 2.4 Extended GET /connection List Response
 
-**Status:** Not yet implemented. Will add a `linked_systems` field alongside the existing `system_key`. The existing `system_key` continues to work via the `ConnectionConfig.system` relationship (which reads through the join table transparently).
+**Status:** Implemented.
+
+The `GET /api/v1/connection` list and `GET /api/v1/connection/{key}` detail responses now include a `linked_systems` field on each connection config. This is a list of `LinkedSystemInfo` objects, each containing `fides_key` and `name`. Currently the list will contain at most one entry (due to the 1:1 constraint), but the list shape is forward-compatible with many-to-many.
+
+**Response example:**
+
+```json
+{
+  "items": [
+    {
+      "key": "my_postgres",
+      "name": "My Postgres",
+      "connection_type": "postgres",
+      "linked_systems": [
+        {
+          "fides_key": "my_system",
+          "name": "My System"
+        }
+      ],
+      ...
+    }
+  ]
+}
+```
+
+**Implementation approach:** The `ConnectionConfigurationResponse` schema declares `linked_systems` as a plain field (default `[]`) with no Pydantic validator. Population is handled explicitly in each endpoint's route layer:
+
+- **List endpoint** (`get_connections`): Adds `selectinload(ConnectionConfig.system)` to the query and uses a `transformer` callback in `paginate()` to convert each ORM item to a response object with `linked_systems` populated.
+- **Detail endpoint** (`get_connection_detail`): Calls `_enrich_linked_systems()` after `model_validate()`, using the lazy-loaded `.system` relationship (single object, session still open).
+- **System connections endpoint** (`get_system_connections`): Same pattern as the list endpoint -- `selectinload` + transformer.
+- **Async endpoints** (e.g. fidesplus `GET /system`): `linked_systems` defaults to `[]`. These endpoints can opt in by eagerly loading `ConnectionConfig.system` and calling the same enrichment helper.
+
+This approach avoids coupling the Pydantic schema to SQLAlchemy and prevents `MissingGreenlet` errors in async contexts where the `.system` relationship cannot be lazy-loaded.
+
+**Implemented in:**
+- Schema: `ConnectionConfigurationResponse` in `src/fides/api/schemas/connection_configuration/connection_config.py`
+- Route enrichment + eager loading: `src/fides/api/api/v1/endpoints/connection_endpoints.py`, `src/fides/api/api/v1/endpoints/system.py`
 
 ### Schemas
 
@@ -259,7 +295,7 @@ SYSTEM_INTEGRATION_LINK_DELETE = f"{SYSTEM_INTEGRATION_LINK}:{DELETE}"
 | Viewer | yes | no | no |
 | Approver | no | no | no |
 
-**Status:** `SYSTEM_INTEGRATION_LINK_READ` has been added to `viewer_scopes`. The Data Steward role is not yet implemented.
+**Status:** Complete. `SYSTEM_INTEGRATION_LINK_READ` is in `viewer_scopes`. The Data Steward role is defined in `src/fides/api/oauth/roles.py` with `viewer_scopes` + link write scopes, and extended in fidesplus with `PLUS_VIEWER_SCOPES` (which includes `DISCOVERY_MONITOR_READ` and `MONITOR_STEWARD_READ`).
 
 ## 4. Backward Compatibility
 

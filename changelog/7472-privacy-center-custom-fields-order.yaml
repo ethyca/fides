@@ -1,4 +1,0 @@
-type: Fixed
-description: Preserve custom_privacy_request_fields key order in privacy center config (JSONB does not preserve object key order)
-pr: 7472
-labels: []
