@@ -2,9 +2,6 @@ import type { GlobalToken } from "antd";
 
 export type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
 
-// Brand caption typography: Basier Square Mono, Regular, -3% letter spacing, 150% line height.
-// fontFamily is sourced from token.fontFamilyCode (see default-theme.ts).
-// lineHeight is documented for intent; SVG <text> elements require tspan dy offsets for multi-line use.
 export const CHART_TYPOGRAPHY = {
   fontWeight: 400,
   letterSpacing: "-0.03em",
