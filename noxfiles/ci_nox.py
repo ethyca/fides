@@ -359,6 +359,11 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-saas",
     ],
     "tests/service/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/system_integration_link/": [
+        "misc-unit",
+        "misc-integration",
+        "misc-integration-external",
+    ],
     "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],

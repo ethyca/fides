@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed `any` type on `PolicyResponse.conditions` with proper condition types
-pr: 7419
-labels: []

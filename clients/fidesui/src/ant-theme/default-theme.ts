@@ -74,8 +74,14 @@ export const defaultAntTheme: ThemeConfig = {
     Select: {
       optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
+    Dropdown: {
+      controlItemBgActiveHover: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgHover: palette.FIDESUI_NEUTRAL_50,
+    },
     Menu: {
       itemHoverBg: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgActiveHover: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgHover: palette.FIDESUI_NEUTRAL_50,
       darkItemBg: palette.FIDESUI_MINOS,
       darkItemColor: palette.FIDESUI_CORINTH,
       darkSubMenuItemBg: palette.FIDESUI_MINOS,
