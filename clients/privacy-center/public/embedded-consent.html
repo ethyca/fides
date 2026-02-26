@@ -79,6 +79,18 @@
         flex-shrink: 0 !important;
       }
 
+      /* Tablet/iPad: let content use full space */
+      @media (min-width: 768px) {
+        .fides-banner.fides-embedded > div {
+          padding: 48px 48px 64px 48px !important;
+        }
+
+        .fides-banner.fides-embedded .fides-banner__content {
+          max-height: none !important;
+          overflow-y: visible !important;
+        }
+      }
+
       /* TCF Modal second screen: fix overflow */
       #fides-overlay-wrapper {
         height: 100vh !important;
