@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Adjusted Snowflake test to not expect duplicate table names
-pr: 7311
-labels: []

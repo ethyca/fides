@@ -375,6 +375,7 @@ class TestGetConnections:
             "description",
             "authorized",
             "enabled_actions",
+            "linked_systems",
         }
         connection_keys = [connection["key"] for connection in connections]
         assert response_body["items"][0]["key"] in connection_keys

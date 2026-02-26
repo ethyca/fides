@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated system-integration linking from ConnectionConfig.system_id FK to dedicated join table
-pr: 7432
-labels: ["db-migration", "high-risk"]

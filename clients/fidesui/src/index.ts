@@ -386,7 +386,12 @@ export {
 export * as Icons from "@carbon/icons-react";
 /* end prefixed icons */
 
-export { FidesUIProvider, useMessage, useModal } from "./FidesUIProvider";
+export {
+  FidesUIProvider,
+  useMessage,
+  useModal,
+  useNotification,
+} from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**
