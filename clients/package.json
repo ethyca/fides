@@ -29,9 +29,8 @@
     "cy-pc:start": "turbo run cy:start --filter=privacy-center",
     "analyze": "turbo run analyze",
     "analyze:browser": "turbo run analyze:browser",
-    "analyze:server": "turbo run analyze:server",
-    "openapi:generate": "turbo run openapi:generate"
-  },
+    "analyze:server": "turbo run analyze:server"
+ },
   "devDependencies": {
     "turbo": "^2.2.3"
   },
