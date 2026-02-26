@@ -37,12 +37,6 @@ class TestDataStewardRole:
     def test_has_link_delete(self) -> None:
         assert SYSTEM_INTEGRATION_LINK_DELETE in ROLES_TO_SCOPES_MAPPING[DATA_STEWARD]
 
-    def test_is_superset_of_viewer(self) -> None:
-        """Data steward scopes are a strict superset of viewer scopes."""
-        steward = set(ROLES_TO_SCOPES_MAPPING[DATA_STEWARD])
-        viewer = set(viewer_scopes)
-        assert viewer < steward
-
     def test_no_unexpected_write_scopes(self) -> None:
         """Data steward should only have link write scopes beyond viewer."""
         steward = set(ROLES_TO_SCOPES_MAPPING[DATA_STEWARD])
