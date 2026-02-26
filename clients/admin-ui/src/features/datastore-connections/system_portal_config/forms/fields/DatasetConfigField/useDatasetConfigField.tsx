@@ -41,7 +41,7 @@ export const useDatasetConfigField = ({
     () =>
       unlinkedDatasets?.map((d) => ({
         value: d.fides_key,
-        label: `${d.name} (${d.fides_key})` || d.fides_key,
+        label: d.name || d.fides_key,
       })) ?? [],
     [unlinkedDatasets],
   );
