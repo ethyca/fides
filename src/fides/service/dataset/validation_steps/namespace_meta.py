@@ -25,9 +25,9 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
 
         # Get required secret fields from the namespace meta class
         required_fields = namespace_meta_class.get_fallback_secret_fields()
+        secrets = context.connection_config.secrets or {}
         has_connection_defaults = all(
-            field_name in context.connection_config.secrets
-            and context.connection_config.secrets[field_name]
+            field_name in secrets and secrets[field_name]
             for field_name, _ in required_fields
         )
 
