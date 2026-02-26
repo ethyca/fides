@@ -128,11 +128,3 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
-
-    def get_qualified_table_name(self, node: ExecutionNode) -> str:
-        """Get fully qualified Postgres table name for table_exists() checks.
-
-        Returns unquoted names (e.g. schema.table) because the generic
-        SQLConnector.table_exists() uses split(".") + inspector.has_table().
-        """
-        return self.query_config(node).generate_table_name(quoted=False)
