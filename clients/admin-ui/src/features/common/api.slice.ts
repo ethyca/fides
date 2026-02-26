@@ -75,6 +75,7 @@ export const baseApi = createApi({
     "System",
     "System Assets",
     "System Groups",
+    "System Links",
     "System History",
     "Request",
     "Roles",

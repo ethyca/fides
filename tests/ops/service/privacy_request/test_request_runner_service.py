@@ -74,6 +74,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
@@ -1967,8 +1968,11 @@ class TestConsentEmailStep:
         privacy_preference_history_us_ca_provide,
         sovrn_email_connection_config,
     ):
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
+        )
 
         privacy_preference_history_us_ca_provide.privacy_request_id = (
             privacy_request_with_consent_policy.id
@@ -1991,8 +1995,11 @@ class TestConsentEmailStep:
         sovrn_email_connection_config,
         run_privacy_request_task,
     ):
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
+        )
 
         privacy_preference_history_us_ca_provide.privacy_request_id = (
             privacy_request_with_consent_policy.id

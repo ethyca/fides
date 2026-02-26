@@ -83,7 +83,7 @@ RUN git config --global --add safe.directory /fides
 
 # Export the version to a file for frontend use (hatch-vcs from git tags)
 RUN uv venv /tmp/hatch-env && \
-    uv pip install --python /tmp/hatch-env/bin/python hatch hatch-vcs && \
+    uv pip install --python /tmp/hatch-env/bin/python "virtualenv<21" hatch hatch-vcs && \
     cd /fides && /tmp/hatch-env/bin/hatch version > /fides/version.txt && \
     /opt/fides/bin/python -c "import json; v=open('/fides/version.txt').read().strip(); print(json.dumps({'version': v}))" > /fides/version.json && rm /fides/version.txt && rm -rf /tmp/hatch-env
 
