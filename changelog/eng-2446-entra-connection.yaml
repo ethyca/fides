@@ -1,0 +1,4 @@
+type: Added
+description: Added Microsoft Entra ID connection type for identity provider discovery.
+pr: 7427
+labels: ["db-migration"]
