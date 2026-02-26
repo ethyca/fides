@@ -284,6 +284,37 @@ def test_validate_with_connection_defaults():
     validator.validate(context)
 
 
+def test_validate_mismatched_namespace_skipped():
+    """Test that namespace_meta for a different connection type is silently skipped.
+
+    When datasets of mixed types are linked to a single connection (e.g. a BigQuery
+    dataset linked to a Postgres connection), the namespace_meta belongs to a different
+    connector and should not be validated against the current connection's schema.
+    """
+    dataset = FideslangDataset(
+        fides_key="test_dataset",
+        collections=[],
+        fides_meta={
+            "namespace": {
+                "project_id": "my-project",
+                "dataset_id": "my_dataset",
+            }
+        },
+    )
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    validator.validate(context)  # Should not raise — namespace is for BigQuery, not Postgres
+
+
 @pytest.mark.parametrize(
     "falsy_value",
     [None, ""],
