@@ -27,10 +27,11 @@ export const useDatasetConfigField = ({
   );
 
   const initialDatasets = data?.items?.map((d) => d.fides_key) ?? [];
-  const initialDatasetOptions = initialDatasets.map((d) => ({
-    label: d,
-    value: d,
-  }));
+  const initialDatasetOptions =
+    data?.items?.map((d) => ({
+      value: d.fides_key,
+      label: d.ctl_dataset.name || d.fides_key,
+    })) ?? [];
 
   const { data: unlinkedDatasets } = useGetAllFilteredDatasetsQuery({
     onlyUnlinkedDatasets: true,
