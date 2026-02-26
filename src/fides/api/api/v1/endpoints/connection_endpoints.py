@@ -12,7 +12,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy import null, or_
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, load_only, noload, selectinload
 from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
@@ -25,6 +25,7 @@ from fides.api.api import deps
 from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.event_audit import EventAuditType
+from fides.api.models.sql_models import System  # type:ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -167,7 +168,10 @@ def get_connections(
 
     return paginate(
         query.order_by(ConnectionConfig.name.asc()).options(
-            selectinload(ConnectionConfig.system)
+            selectinload(ConnectionConfig.system).options(
+                load_only(System.fides_key, System.name),
+                noload("*"),
+            )
         ),
         params=params,
         transformer=lambda items: [

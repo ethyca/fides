@@ -10,7 +10,7 @@ from loguru import logger
 from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, load_only, noload, selectinload
 from starlette import status
 from starlette.status import (
     HTTP_200_OK,
@@ -121,7 +121,12 @@ def get_system_connections(
             SystemConnectionConfigLink.connection_config_id == ConnectionConfig.id,
         )
         .filter(SystemConnectionConfigLink.system_id == system.id)
-        .options(selectinload(ConnectionConfig.system))
+        .options(
+            selectinload(ConnectionConfig.system).options(
+                load_only(System.fides_key, System.name),
+                noload("*"),
+            )
+        )
     )
 
     return paginate(
