@@ -37,9 +37,7 @@ class TestPostgresQueryConfig:
         example_datasets: List[Dict],
     ) -> Generator:
         postgres_dataset = deepcopy(example_datasets[0])
-        postgres_dataset["fides_meta"] = {
-            "namespace": {"schema": "billing"}
-        }
+        postgres_dataset["fides_meta"] = {"namespace": {"schema": "billing"}}
         fides_key = postgres_dataset["fides_key"]
 
         ctl_dataset = CtlDataset.create_from_dataset_dict(db, postgres_dataset)

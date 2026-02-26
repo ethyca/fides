@@ -38,7 +38,7 @@ class PostgresQueryConfig(SQLQueryConfig):
     ) -> str:
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Postgres reserved words."""
-        return f'SELECT {field_list} FROM {self.generate_table_name()} WHERE ({" OR ".join(clauses)})'
+        return f"SELECT {field_list} FROM {self.generate_table_name()} WHERE ({' OR '.join(clauses)})"
 
     def get_update_stmt(
         self,
