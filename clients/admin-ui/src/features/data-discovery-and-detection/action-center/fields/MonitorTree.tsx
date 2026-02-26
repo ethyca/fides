@@ -553,12 +553,7 @@ const MonitorTree = forwardRef<
             setTreeData((origin) =>
               topLevelData.items.reduce(
                 (tree, node) =>
-                  updateNodeStatus(
-                    tree,
-                    node.urn,
-                    node.update_status,
-                    node.diff_status,
-                  ),
+                  updateNodeStatus(tree, node.urn, node.diff_status),
                 origin,
               ),
             );
