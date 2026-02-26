@@ -7,6 +7,7 @@
     "dev:windows": "dev",
     "build": "next build",
     "build:test": "NODE_ENV=test FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true next build",
+    "build:vercel": "cd ../fides-js && npm run build && cd ../privacy-center && next build",
     "start": "next start",
     "start:test": "FIDES_PRIVACY_CENTER__ENABLE_EXTERNAL_TASK_PORTAL=true next start -p 3001",
     "lint": "next lint && eslint ./cypress/**/*.ts",
