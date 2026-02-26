@@ -15,6 +15,7 @@ export const CHART_ANIMATION = {
 export const CHART_STROKE = {
   strokeWidth: 2,
   strokeOpacity: 0.8,
+  dotRadius: 3.5,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
 } as const;

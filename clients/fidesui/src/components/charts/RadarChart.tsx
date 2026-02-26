@@ -96,7 +96,7 @@ const RadarDot = ({
     <circle
       cx={dotCx}
       cy={dotCy}
-      r={3.5}
+      r={CHART_STROKE.dotRadius}
       fill={point?.status ? statusColors[point.status] : chartColor}
       stroke={bgColor}
       strokeWidth={CHART_STROKE.strokeWidth}
