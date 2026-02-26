@@ -1,3 +1,37 @@
+.inlineHeader {
+  :global(.ant-card-head) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding-bottom: 0;
+  }
+
+  :global(.ant-card-head-wrapper) {
+    width: auto;
+    flex: 0 0 auto;
+    margin-right: var(--ant-card-padding-lg, 24px);
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  :global(.ant-card-head-tabs) {
+    flex: 0 0 auto;
+    margin-left: auto;
+    margin-top: 0;
+    margin-bottom: 0;
+    min-width: 0;
+  }
+
+  // Ant adds padding-top to title/extra when tabs are present via:
+  //   .ant-card-contain-tabs > div.ant-card-head .ant-card-head-title { padding-top: var(--ant-padding) }
+  // The `div` element selector gives that rule specificity (0,3,1) vs our (0,3,0), so we need !important.
+  :global(.ant-card-head .ant-card-head-title),
+  :global(.ant-card-head .ant-card-extra) {
+    padding-top: 0 !important;
+  }
+}
+
 .bottomCover {
   display: flex;
   flex-direction: column;

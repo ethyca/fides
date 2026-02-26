@@ -2,6 +2,7 @@ import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { theme } from "antd";
 import { Card, Statistic } from "fidesui";
+import { useState } from "react";
 
 import { RadarChart } from "../charts/RadarChart";
 import { Sparkline } from "../charts/Sparkline";
@@ -51,11 +52,28 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     variant: "borderless",
-    cover: (
-      <div className="h-16">
-        <Sparkline data={upwardTrendData} />
-      </div>
-    ),
+    coverPosition: "bottom",
+    title: "Default Card",
+  },
+  render: (args) => {
+    const { token } = theme.useToken();
+    return (
+      <Card {...args}>
+        <Statistic title="Data Sharing" value="15,112,893" />
+        <Statistic
+          trend="up"
+          value="112,893"
+          prefix={<ArrowUpOutlined />}
+          valueStyle={{ fontSize: token.fontSize }}
+        />
+      </Card>
+    );
+  },
+};
+
+export const NoTitle: Story = {
+  args: {
+    variant: "borderless",
     coverPosition: "bottom",
   },
   render: (args) => {
@@ -74,7 +92,7 @@ export const Default: Story = {
   },
 };
 
-export const DownTrend: Story = {
+export const WithSparkline: Story = {
   args: {
     variant: "borderless",
     cover: (
@@ -82,6 +100,7 @@ export const DownTrend: Story = {
         <Sparkline data={downwardTrendData} />
       </div>
     ),
+    title: "Active Users",
     coverPosition: "bottom",
   },
   render: (args) => {
@@ -93,39 +112,6 @@ export const DownTrend: Story = {
           trend="down"
           value="1,204"
           prefix={<ArrowDownOutlined />}
-          valueStyle={{ fontSize: token.fontSize }}
-        />
-      </Card>
-    );
-  },
-};
-
-export const NoChange: Story = {
-  args: {
-    variant: "borderless",
-    cover: (
-      <div className="h-16">
-        <Sparkline data={neutralTrendData} />
-      </div>
-    ),
-    coverPosition: "bottom",
-    children: <Statistic title="Total Requests" value="3,201,554" />,
-  },
-};
-
-export const NoFooter: Story = {
-  args: {
-    variant: "borderless",
-  },
-  render: (args) => {
-    const { token } = theme.useToken();
-    return (
-      <Card {...args}>
-        <Statistic title="Data Sharing" value="15,112,893" />
-        <Statistic
-          trend="up"
-          value="112,893"
-          prefix={<ArrowUpOutlined />}
           valueStyle={{ fontSize: token.fontSize }}
         />
       </Card>
@@ -178,6 +164,67 @@ export const Loading: Story = {
     variant: "borderless",
     loading: true,
     children: <Statistic title="Data Sharing" value="15,112,893" />,
+  },
+};
+
+const TAB_CONTENT: Record<string, string> = {
+  a: "Content A",
+  b: "Content B",
+  c: "Content C",
+};
+
+export const WithTabs: Story = {
+  args: {
+    variant: "borderless",
+    title: "Overview",
+  },
+  render: (args) => {
+    const [activeTab, setActiveTab] = useState("a");
+    return (
+      <Card
+        {...args}
+        tabList={[
+          { key: "a", label: "Tab A" },
+          { key: "b", label: "Tab B" },
+          { key: "c", label: "Tab C" },
+        ]}
+        activeTabKey={activeTab}
+        onTabChange={setActiveTab}
+      >
+        <div className="flex items-center justify-center bg-gray-50 p-8">
+          {TAB_CONTENT[activeTab]}
+        </div>
+      </Card>
+    );
+  },
+};
+
+export const WithInlineTabs: Story = {
+  args: {
+    variant: "borderless",
+    title: "Overview",
+    headerLayout: "inline",
+  },
+  render: (args) => {
+    const [activeTab, setActiveTab] = useState("a");
+    return (
+      <div className="w-[400px]">
+        <Card
+          {...args}
+          tabList={[
+            { key: "a", label: "Tab A" },
+            { key: "b", label: "Tab B" },
+            { key: "c", label: "Tab C" },
+          ]}
+          activeTabKey={activeTab}
+          onTabChange={setActiveTab}
+        >
+          <div className="flex items-center justify-center bg-gray-50 p-8">
+            {TAB_CONTENT[activeTab]}
+          </div>
+        </Card>
+      </div>
+    );
   },
 };
 
