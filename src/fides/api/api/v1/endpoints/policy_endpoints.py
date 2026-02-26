@@ -277,7 +277,7 @@ def create_or_update_policies(
         is_new = Policy.get_by_key_or_id(db=db, data=policy_data) is None
 
         try:
-            policy = Policy.create_or_update(
+            policy: Policy = Policy.create_or_update(  # type: ignore[assignment]
                 db=db,
                 data={
                     "name": policy_data["name"],

@@ -159,8 +159,8 @@ class Policy(FidesSchema):
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
 
-    action_type: Optional[ActionType] = Field(None, exclude=True)
-    rules: Optional[list[RuleResponse]] = None
+    action_type: Optional[ActionType] = Field(None, exclude=True)  # type: ignore[assignment]
+    rules: Optional[list[RuleResponse]] = None  # type: ignore[assignment]
     drp_action: Optional[DrpAction] = None
     conditions: Optional[Union[ConditionLeaf, ConditionGroup]] = None
 

@@ -1047,7 +1047,9 @@ class TestCreatePolicyWithAutoPopulatedRules:
             assert rule["masking_strategy"] is None
 
         # Verify targets in DB
-        pol = Policy.filter(db=db, conditions=(Policy.key == policy_resp["key"])).first()
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == policy_resp["key"])
+        ).first()
         db_rule = Rule.filter(db=db, conditions=(Rule.policy_id == pol.id)).first()
         targets = RuleTarget.filter(
             db=db, conditions=(RuleTarget.rule_id == db_rule.id)
@@ -1082,7 +1084,9 @@ class TestCreatePolicyWithAutoPopulatedRules:
         policy_resp = response_data["succeeded"][0]
         assert policy_resp["rules"] == [] or policy_resp["rules"] is None
 
-        pol = Policy.filter(db=db, conditions=(Policy.key == policy_resp["key"])).first()
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == policy_resp["key"])
+        ).first()
         pol.delete(db=db)
 
     def test_update_existing_policy_with_action_type_does_not_create_rules(
@@ -1147,7 +1151,9 @@ class TestCreatePolicyWithAutoPopulatedRules:
         assert policy_resp["rules"][0]["name"] == "My Custom Access Rule"
         assert policy_resp["rules"][0]["action_type"] == "access"
 
-        pol = Policy.filter(db=db, conditions=(Policy.key == policy_resp["key"])).first()
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == policy_resp["key"])
+        ).first()
         db_rule = Rule.filter(db=db, conditions=(Rule.policy_id == pol.id)).first()
         targets = RuleTarget.filter(
             db=db, conditions=(RuleTarget.rule_id == db_rule.id)
