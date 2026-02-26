@@ -123,3 +123,22 @@ List of all available translations for the current experience.
 
 This corresponds with the "Reject all mechanism" configuration option for TCF overlay experiences.
 Determines whether opting out of all purposes blocks everything (both consent and legitimate interest processing) or only blocks consent-based processing while allowing legitimate interest to continue.
+
+***
+
+### resurface\_behavior?
+
+> `optional` **resurface\_behavior**: `string`[]
+
+This corresponds with the "Resurface banner" configuration option.
+Controls when to show the consent banner again after the user has interacted with it.
+Can include "reject", "dismiss", both, or be empty/null for default behavior (only resurface on cookie expiration or vendor changes).
+
+#### Example
+
+```ts
+["reject"]  // Resurface only on reject
+["dismiss"]  // Resurface only on dismiss
+["reject", "dismiss"]  // Resurface on both
+null  // Default behavior (no resurfacing)
+```
