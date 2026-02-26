@@ -9,7 +9,7 @@ import {
   useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
