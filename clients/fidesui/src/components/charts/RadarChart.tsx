@@ -1,5 +1,5 @@
 import { theme } from "antd";
-import { useId } from "react";
+import { useId, useMemo } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -116,14 +116,16 @@ export const RadarChart = ({
   const empty = !data?.length;
   const chartColor = color ? token[color] : token.colorText;
 
-  const uid = useId().replace(/:/g, "");
-  const gradientId = `radar-gradient-${uid}`;
+  const gradientId = `radar-gradient-${useId()}`;
 
-  const STATUS_COLORS: Record<RadarPointStatus, string> = {
-    success: token.colorSuccess,
-    warning: token.colorWarning,
-    error: token.colorError,
-  };
+  const STATUS_COLORS = useMemo<Record<RadarPointStatus, string>>(
+    () => ({
+      success: token.colorSuccess,
+      warning: token.colorWarning,
+      error: token.colorError,
+    }),
+    [token]
+  );
 
   return (
     <div className="h-full w-full pointer-events-none">
@@ -183,7 +185,7 @@ export const RadarChart = ({
               )
             }
             activeDot={false}
-            isAnimationActive={!empty}
+            isAnimationActive={!empty && animationDuration > 0}
             animationDuration={animationDuration}
             animationEasing={CHART_ANIMATION.easing}
           />

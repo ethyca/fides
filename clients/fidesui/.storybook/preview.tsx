@@ -6,11 +6,9 @@ import "../src/tailwind.css";
 import { withAntTheme, DEFAULT_THEME } from "./withAntTheme";
 
 const preview: Preview = {
-  /**
-   * Registers the `theme` global so the toolbar dropdown has an initial value.
-   * The actual current value lives in Storybook's globals store and is updated
-   * whenever the user clicks a toolbar item.
-   */
+  initialGlobals: {
+    theme: DEFAULT_THEME,
+  },
 
   /**
    * Declares the toolbar UI for theme switching.
