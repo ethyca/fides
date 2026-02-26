@@ -850,7 +850,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
             )
             if self.request_task.id:
-                # For DSR 3.0, saved as part of
+                # Saved as part of the request task
                 self.request_task.consent_sent = False
             self.update_status(
                 f"No consent requests were sent since this connection {self.connector.configuration.key} has not been "
@@ -931,18 +931,6 @@ def collect_queries(
     env: Dict[CollectionAddress, str] = {}
     traversal.traverse(env, collect_queries_fn)
     return env
-
-
-def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
-    """Return a function for collections with no upstream dependencies, that just start
-    with seed data.
-
-    This is used for root nodes or previously-visited nodes on restart."""
-
-    def g() -> List[Dict[str, Any]]:
-        return seed
-
-    return g
 
 
 def filter_by_enabled_actions(

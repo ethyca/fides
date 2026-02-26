@@ -705,9 +705,7 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     integration_mongodb_config.secrets = saved_secrets
     integration_mongodb_config.save(db)
 
-    # Restart from the checkpoint - scheduler detection will determine which scheduler to use
-    # For DSR 2.0 requests, this may switch to DSR 3.0 (the new default)
-    # For DSR 3.0 requests, they continue with DSR 3.0 (no switching back to 2.0)
+    # Restart from the checkpoint
     access_runner_tester(
         privacy_request,
         policy,

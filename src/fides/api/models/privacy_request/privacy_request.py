@@ -822,14 +822,6 @@ class PrivacyRequest(
                 result[key.split("-")[-1]] = json.loads(value)
         return result
 
-    def get_results(self) -> Dict[str, Any]:
-        """Retrieves all cached identity data associated with this Privacy Request
-        Just used in testing
-        """
-        cache: FidesopsRedis = get_cache()
-        result_prefix = f"{self.id}__*"
-        return cache.get_encoded_objects_by_prefix(result_prefix)
-
     def cache_email_connector_template_contents(
         self,
         step: CurrentStep,

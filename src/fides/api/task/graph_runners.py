@@ -24,7 +24,7 @@ def access_runner(
     session: Session,
     privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
 ) -> Dict[str, List[Row]]:
-    """Run an access request using DSR 3.0 task-based execution."""
+    """Run an access request using task-based execution."""
     run_access_request(
         privacy_request=privacy_request,
         policy=policy,
@@ -47,7 +47,7 @@ def erasure_runner(
     session: Session,
     privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
 ) -> Dict[str, int]:
-    """Run an erasure request using DSR 3.0 task-based execution."""
+    """Run an erasure request using task-based execution."""
     run_erasure_request(
         privacy_request=privacy_request,
         session=session,
@@ -65,7 +65,7 @@ def consent_runner(
     session: Session,
     privacy_request_proceed: bool = True,  # Can be set to False in testing to run this in isolation
 ) -> Dict[str, bool]:
-    """Run a consent request using DSR 3.0 task-based execution."""
+    """Run a consent request using task-based execution."""
     run_consent_request(
         privacy_request=privacy_request,
         graph=graph,
