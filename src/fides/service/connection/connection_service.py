@@ -1,9 +1,10 @@
-from typing import Any, Iterable, Optional, Set, Tuple
+from typing import Any, Optional, Set, Tuple
 
 import yaml
 from fideslang.models import System
 from fideslang.validation import FidesKey
 from loguru import logger
+from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -77,6 +78,7 @@ from fides.service.connection.merge_configs_util import (
     preserve_monitored_collections_in_dataset_merge,
 )
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 class ConnectorTemplateNotFound(Exception):
@@ -127,9 +129,15 @@ def _detect_connection_config_changes(
 
 
 class ConnectionService:
-    def __init__(self, db: Session, event_audit_service: EventAuditService):
+    def __init__(
+        self,
+        db: Session,
+        event_audit_service: EventAuditService,
+        link_repo: Optional[SystemIntegrationLinkRepository] = None,
+    ):
         self.db = db
         self.event_audit_service = event_audit_service
+        self.link_repo = link_repo or SystemIntegrationLinkRepository()
 
     def get_connection_config(self, connection_key: FidesKey) -> ConnectionConfig:
         connection_config = ConnectionConfig.get_by(
@@ -363,11 +371,15 @@ class ConnectionService:
         connection_config.secrets = self.validate_secrets(
             template_values.secrets, connection_config
         ).model_dump(mode="json")
-        if system:
-            connection_config.system_id = system.id  # type: ignore[attr-defined]
         connection_config.save(
             db=self.db
         )  # Not persisted to db until secrets are validated
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         try:
             dataset_config: DatasetConfig = self.upsert_dataset_config_from_template(
@@ -397,6 +409,17 @@ class ConnectionService:
         )
         return connection_config, dataset_config
 
+    # Connection types that are limited to a single instance per deployment.
+    _singleton_connection_types: Set[str] = {
+        ConnectionType.jira_ticket.value,
+    }
+
+    # Connection types that auto-create a ManualTask on first save.
+    _auto_task_type_mapping: dict[str, ManualTaskType] = {
+        ConnectionType.manual_task.value: ManualTaskType.privacy_request,
+        ConnectionType.jira_ticket.value: ManualTaskType.jira_ticket,
+    }
+
     def create_or_update_connection_config(
         self,
         config: CreateConnectionConfigurationWithSecrets,
@@ -413,6 +436,22 @@ class ConnectionService:
             existing_connection_config = ConnectionConfig.get_by(
                 self.db, field="key", value=config.key
             )
+
+        # Enforce singleton constraint for certain connection types
+        if (
+            config.connection_type in self._singleton_connection_types
+            and not existing_connection_config
+        ):
+            existing_of_type = ConnectionConfig.get_by(
+                self.db,
+                field="connection_type",
+                value=str(config.connection_type),
+            )
+            if existing_of_type:
+                raise ValidationError(
+                    f"Only one {config.connection_type} connection is allowed. "
+                    f"A connection with key '{existing_of_type.key}' already exists."
+                )
 
         # Handle SaaS connections with special template-based creation
         if config.connection_type == "saas" and config.secrets:
@@ -457,22 +496,21 @@ class ConnectionService:
             instance_key=config.key,
         )
 
-        if system:
-            connection_config = self.create_connection_config_from_template_no_save(
-                connector_template,
-                template_values,
-                system_id=system.id,  # type: ignore[attr-defined]
-            )
-        else:
-            connection_config = self.create_connection_config_from_template_no_save(
-                connector_template,
-                template_values,
-            )
+        connection_config = self.create_connection_config_from_template_no_save(
+            connector_template,
+            template_values,
+        )
         connection_config.secrets = self.validate_secrets(
             template_values.secrets,
             connection_config,
         ).model_dump(mode="json")
         connection_config.save(db=self.db)
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         # Create audit events for connection and secrets creation
         self.create_connection_audit_event(
@@ -513,12 +551,15 @@ class ConnectionService:
                 if isinstance(value, bool) or value
             }
 
-        if system:
-            config_dict["system_id"] = system.id  # type: ignore[attr-defined]
-
         connection_config = ConnectionConfig.create_or_update(
             self.db, data=config_dict, check_name=False
         )
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         # Track which connection configuration fields changed (only for updates)
         changed_fields = None
@@ -560,16 +601,14 @@ class ConnectionService:
                 connection_config.secrets,  # type: ignore[arg-type]
             )
 
-        # Automatically create a ManualTask if this is a manual_task connection
-        # and it doesn't already have one
-        if (
-            connection_config.connection_type == ConnectionType.manual_task
-            and not connection_config.manual_task
-        ):
+        auto_task_type = self._auto_task_type_mapping.get(
+            connection_config.connection_type.value  # type: ignore
+        )
+        if auto_task_type and not connection_config.manual_task:
             ManualTask.create(
                 db=self.db,
                 data={
-                    "task_type": ManualTaskType.privacy_request,
+                    "task_type": auto_task_type,
                     "parent_entity_id": connection_config.id,
                     "parent_entity_type": ManualTaskParentEntityType.connection_config,
                 },
@@ -630,11 +669,8 @@ class ConnectionService:
         self,
         template: ConnectorTemplate,
         template_values: SaasConnectionTemplateValues,
-        system_id: Optional[str] = None,
     ) -> ConnectionConfig:
         """Creates a SaaS connection config from a template without saving it."""
-        # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
-        # the user has chosen
         config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_values.instance_key
         )
@@ -643,10 +679,6 @@ class ConnectionService:
             config_from_template=config_from_template
         )
 
-        if system_id:
-            data["system_id"] = system_id
-
-        # Create SaaS ConnectionConfig
         connection_config = ConnectionConfig.create_without_saving(self.db, data=data)
 
         return connection_config
@@ -772,10 +804,19 @@ class ConnectionService:
         Updates all existing connection configs that use the specified connector type
         with the provided template.
         """
-        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
+        connection_configs: list[ConnectionConfig] = ConnectionConfig.filter(
             db=self.db,
-            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+            conditions=(
+                sa_func.lower(ConnectionConfig.saas_config["type"].astext)
+                == connector_type.lower()
+            ),
         ).all()
+
+        logger.info(
+            "Found {} existing connection config(s) for connector type '{}'",
+            len(connection_configs),
+            connector_type,
+        )
 
         for connection_config in connection_configs:
             saas_config_instance = SaaSConfig.model_validate(
@@ -817,15 +858,16 @@ class ConnectionService:
                 f"Fides-provided template with type '{connector_type}' not found."
             )
 
-        # Delete the custom template from the database and in-memory cache
+        # Delete the custom template from the database and invalidate cache.
+        # The delete_template method bumps the Redis version counter so every
+        # server detects the change on its next get_connector_templates() call.
         CustomConnectorTemplateLoader.delete_template(self.db, connector_type)
-        CustomConnectorTemplateLoader.get_connector_templates().pop(
-            connector_type, None
-        )
 
-        # Get the file template that is now active
-        file_connector_template = ConnectorRegistry.get_connector_template(
-            connector_type
+        # Get the file template directly from the file loader rather than
+        # going through ConnectorRegistry, which would trigger a cache reload
+        # on CustomConnectorTemplateLoader before the DB transaction commits.
+        file_connector_template = (
+            FileConnectorTemplateLoader.get_connector_templates().get(connector_type)
         )
         if not file_connector_template:
             raise ConnectorTemplateNotFound(

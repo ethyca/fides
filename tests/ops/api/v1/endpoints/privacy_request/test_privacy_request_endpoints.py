@@ -1109,6 +1109,7 @@ class TestGetPrivacyRequests:
                                 privacy_request.policy
                             ).rules
                         ],
+                        "conditions": None,
                     },
                 }
             ],
@@ -1161,6 +1162,7 @@ class TestGetPrivacyRequests:
                                 privacy_request.policy
                             ).rules
                         ],
+                        "conditions": None,
                     },
                 }
             ],
@@ -2042,6 +2044,7 @@ class TestGetPrivacyRequests:
                                 privacy_request.policy
                             ).rules
                         ],
+                        "conditions": None,
                     },
                     "results": {
                         "Request approved": [
@@ -2600,6 +2603,7 @@ class TestPrivacyRequestSearch:
                                 privacy_request.policy
                             ).rules
                         ],
+                        "conditions": None,
                     },
                 }
             ],
@@ -2652,6 +2656,7 @@ class TestPrivacyRequestSearch:
                                 privacy_request.policy
                             ).rules
                         ],
+                        "conditions": None,
                     },
                 }
             ],
@@ -3205,6 +3210,7 @@ class TestPrivacyRequestSearch:
                                 privacy_request.policy
                             ).rules
                         ],
+                        "conditions": None,
                     },
                     "results": {
                         "Request approved": [
@@ -5678,6 +5684,7 @@ class TestResumePrivacyRequest:
                         privacy_request.policy
                     ).rules
                 ],
+                "conditions": None,
             },
         }
 

@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Button, Flex, Form, Input } from "antd";
-import FormItem from "antd/es/form/FormItem";
-import { FormProps } from "antd/lib";
 
 import { CustomSelect } from "../../hoc";
+import type { FormProps } from "../../index";
+import { Button, Flex, Form, Input } from "../../index";
 import { LocationSelect } from "./LocationSelect";
 
 const LayoutOptions: Array<FormProps["layout"]> = [
@@ -48,7 +47,7 @@ export const Primary: Story = {
         <LocationSelect />
       </Form.Item>
 
-      <FormItem>
+      <Form.Item>
         <Flex justify="space-between" gap="middle">
           <Button type="default" variant="outlined" htmlType="reset" block>
             Reset
@@ -57,7 +56,7 @@ export const Primary: Story = {
             Submit
           </Button>
         </Flex>
-      </FormItem>
+      </Form.Item>
     </Form>
   ),
 };
@@ -81,7 +80,7 @@ export const Validation: Story = {
         <LocationSelect />
       </Form.Item>
 
-      <FormItem>
+      <Form.Item>
         <Flex justify="space-between" gap="middle">
           <Button type="default" variant="outlined" htmlType="reset" block>
             Reset
@@ -90,7 +89,7 @@ export const Validation: Story = {
             Submit
           </Button>
         </Flex>
-      </FormItem>
+      </Form.Item>
     </Form>
   ),
 };

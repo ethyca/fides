@@ -77,6 +77,8 @@ import {
 } from "~/features/user-management";
 import { SystemResponse } from "~/types/api";
 
+import { formatUser } from "../common/utils";
+
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
   const headingName = isManual
@@ -120,7 +122,7 @@ const SystemInformationForm = ({
   const dataStewardOptions = useMemo(() => {
     const users = eligibleUsersData?.items || [];
     return users.map((user) => ({
-      label: user.username,
+      label: formatUser(user),
       value: user.username,
     }));
   }, [eligibleUsersData]);

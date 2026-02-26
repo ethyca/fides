@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Flex, Typography } from "antd";
 import type { TreeProps } from "antd/lib";
 import { notification } from "antd/lib";
 import { useState } from "react";
 
+import { Flex, Typography } from "../../index";
 import { Filter } from "./Filter";
 
 const meta = {

@@ -12,7 +12,6 @@ import {
   useAuthorizeIntegrationStep,
   useCreateIntegrationStep,
   useCreateMonitorStep,
-  useLinkSystemStep,
 } from "./hooks";
 
 interface IntegrationSetupStepsProps {
@@ -59,13 +58,6 @@ export const IntegrationSetupSteps = ({
     connectionOption,
   });
 
-  const linkSystemStep = useLinkSystemStep({
-    testData,
-    testIsLoading,
-    connection,
-    connectionOption,
-  });
-
   // Use useMemo just to combine and filter the steps
   const steps = useMemo(() => {
     const allSteps: (Step | null)[] = [
@@ -74,7 +66,6 @@ export const IntegrationSetupSteps = ({
       createMonitorStep,
       addManualTaskStep,
       assignTasksToUsersStep,
-      linkSystemStep,
     ];
 
     // Filter out null steps (e.g., authorization step may be null if not required)
@@ -85,7 +76,6 @@ export const IntegrationSetupSteps = ({
     createMonitorStep,
     addManualTaskStep,
     assignTasksToUsersStep,
-    linkSystemStep,
   ]);
 
   const getCurrentStep = () => {

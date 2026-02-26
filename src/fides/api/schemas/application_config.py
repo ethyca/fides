@@ -158,6 +158,7 @@ class ApplicationConfig(FidesSchema):
     privacy_request_duplicate_detection: Optional[
         DuplicateDetectionApplicationConfig
     ] = None
+    default_policies: Optional[Dict[str, Optional[str]]] = None
 
     @model_validator(mode="before")
     @classmethod

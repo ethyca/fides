@@ -1,20 +1,21 @@
 import {
   ChakraBox as Box,
   ChakraVStack as VStack,
-  useChakraToast as useToast,
+  PageSpinner,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { INTEGRATION_DETAIL_ROUTE } from "~/features/common/nav/routes";
+import { debounce } from "~/features/common/utils";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
@@ -25,8 +26,9 @@ import {
 } from "~/features/datastore-connections";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
+import { useSetSystemLinksMutation } from "~/features/integrations/system-links.slice";
 import {
-  useGetAllSystemsQuery,
+  useGetSystemsQuery,
   usePatchSystemConnectionConfigsMutation,
 } from "~/features/system";
 import {
@@ -87,6 +89,7 @@ const ConfigureIntegrationForm = ({
   onClose,
   description,
   onFormStateChange,
+  initialSystemFidesKey,
 }: {
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
@@ -98,6 +101,7 @@ const ConfigureIntegrationForm = ({
     submitForm: () => void;
     loading: boolean;
   }) => void;
+  initialSystemFidesKey?: string;
 }) => {
   const [
     patchConnectionSecretsMutationTrigger,
@@ -112,6 +116,8 @@ const ConfigureIntegrationForm = ({
   const [createUnlinkedSassConnectionConfigTrigger] =
     useCreateUnlinkedSassConnectionConfigMutation();
 
+  const [setSystemLinks] = useSetSystemLinksMutation();
+
   const hasSecrets = connectionOption.identifier !== ConnectionType.MANUAL_TASK;
 
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
@@ -119,12 +125,44 @@ const ConfigureIntegrationForm = ({
       skip: !hasSecrets,
     });
 
-  const { data: allSystems } = useGetAllSystemsQuery();
+  // System select search state
+  const [systemSearchValue, setSystemSearchValue] = useState<string>();
+  const OPTIONS_LIMIT = 25;
 
-  const systemOptions = allSystems?.map((s) => ({
-    label: s.name ?? s.fides_key,
-    value: s.fides_key,
-  }));
+  // Fetch systems for the select dropdown
+  const { data: systemsData, isFetching: isFetchingSystems } =
+    useGetSystemsQuery({
+      page: 1,
+      size: OPTIONS_LIMIT,
+      search: systemSearchValue || undefined,
+    });
+
+  const systemOptions = useMemo(
+    () =>
+      systemsData?.items?.map((system) => ({
+        value: system.fides_key,
+        label: system.name,
+      })) || [],
+    [systemsData],
+  );
+
+  // Handle system search with debouncing
+  const handleSystemSearch = useCallback(
+    (search: string) => {
+      if (search?.length > 1) {
+        setSystemSearchValue(search);
+      }
+      if (search?.length === 0) {
+        setSystemSearchValue(undefined);
+      }
+    },
+    [setSystemSearchValue],
+  );
+
+  const onSystemSearch = useMemo(
+    () => debounce(handleSystemSearch, 300),
+    [handleSystemSearch],
+  );
 
   const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
     minimal: true,
@@ -146,6 +184,7 @@ const ConfigureIntegrationForm = ({
   const initialValues: FormValues = {
     name: connection?.name ?? "",
     description: connection?.description ?? "",
+    system_fides_key: initialSystemFidesKey,
     ...(hasSecrets && {
       secrets: mapValues(secrets?.properties, (s, key) => {
         const value = connection?.secrets?.[key] ?? s.default;
@@ -159,11 +198,10 @@ const ConfigureIntegrationForm = ({
     dataset: initialDatasets,
   };
 
-  const toast = useToast();
+  const messageApi = useMessage();
 
   const isEditing = !!connection;
   const isSaas = connectionOption.type === SystemType.SAAS;
-  const isWebsite = connectionOption.identifier === ConnectionType.WEBSITE;
 
   // Exclude secrets fields that haven't changed
   // The api returns secrets masked as asterisks (*****)
@@ -228,17 +266,55 @@ const ConfigureIntegrationForm = ({
           isEditing ? "updating" : "creating"
         } this integration. Please try again.`,
       );
-      toast({ status: "error", description: patchErrorMsg });
+      messageApi.error(patchErrorMsg);
       return;
     }
     if (!hasSecrets || !values.secrets) {
-      toast({
-        status: "success",
-        description: `Integration ${
-          isEditing ? "updated" : "created"
-        } successfully`,
-      });
+      // Link system if provided (using system-links API)
+      if (values.system_fides_key && connectionPayload.key) {
+        try {
+          await setSystemLinks({
+            connectionKey: connectionPayload.key,
+            body: {
+              links: [
+                {
+                  system_fides_key: values.system_fides_key,
+                },
+              ],
+            },
+          }).unwrap();
+        } catch (error) {
+          messageApi.error(
+            "Integration saved but system linking failed. You can link it later.",
+          );
+        }
+      }
+
+      messageApi.success(
+        `Integration ${isEditing ? "updated" : "created"} successfully`,
+      );
+
       onClose();
+
+      // Redirect to the newly created integration detail page
+      if (!isEditing) {
+        router.push({
+          pathname: INTEGRATION_DETAIL_ROUTE,
+          query: {
+            id: connectionPayload.key,
+          },
+        });
+      }
+
+      if (
+        connectionPayload &&
+        values.dataset &&
+        connectionOption.identifier === ConnectionType.DATAHUB
+      ) {
+        await patchConnectionDatasetConfig(values, connectionPayload.key, {
+          showSuccessAlert: false,
+        });
+      }
       return;
     }
 
@@ -256,17 +332,37 @@ const ConfigureIntegrationForm = ({
             isEditing ? "updating" : "creating"
           } this integration's secret.  Please try again.`,
         );
-        toast({ status: "error", description: secretsErrorMsg });
+        messageApi.error(secretsErrorMsg);
         return;
       }
     }
 
-    toast({
-      status: "success",
-      description: `Integration secret ${
-        isEditing ? "updated" : "created"
-      } successfully`,
-    });
+    messageApi.success(
+      `Integration secret ${isEditing ? "updated" : "created"} successfully`,
+    );
+
+    // If a system is provided, link it to the integration
+    if (values.system_fides_key && connectionPayload.key) {
+      try {
+        await setSystemLinks({
+          connectionKey: connectionPayload.key,
+          body: {
+            links: [
+              {
+                system_fides_key: values.system_fides_key,
+              },
+            ],
+          },
+        }).unwrap();
+      } catch (error) {
+        // Log error but don't fail the form submission
+        // eslint-disable-next-line no-console
+        console.error("Failed to link system:", error);
+        messageApi.error(
+          "Failed to link this integration to a system.  The integration was saved, please try again.",
+        );
+      }
+    }
 
     onClose();
 
@@ -294,7 +390,7 @@ const ConfigureIntegrationForm = ({
   const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
   if (secretsSchemaIsLoading) {
-    return <FidesSpinner />;
+    return <PageSpinner />;
   }
 
   const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>
@@ -349,17 +445,22 @@ const ConfigureIntegrationForm = ({
                   label="Description"
                   variant="stacked"
                 />
+                {connectionOption.identifier !== ConnectionType.MANUAL_TASK &&
+                  connectionOption.identifier !== ConnectionType.WEBSITE && (
+                    <ControlledSelect
+                      id="system_fides_key"
+                      name="system_fides_key"
+                      label="System"
+                      tooltip="Link this integration to a system for monitoring purposes"
+                      layout="stacked"
+                      options={systemOptions}
+                      onSearch={onSystemSearch}
+                      loading={isFetchingSystems}
+                      allowClear
+                      placeholder="Search for a system..."
+                    />
+                  )}
                 {hasSecrets && secrets && generateFields(secrets)}
-                {!isEditing && !isSaas && !isWebsite && (
-                  <ControlledSelect
-                    id="system_fides_key"
-                    name="system_fides_key"
-                    options={systemOptions ?? []}
-                    label="System"
-                    tooltip="The system to associate with the integration"
-                    layout="stacked"
-                  />
-                )}
                 {connectionOption.identifier === ConnectionType.DATAHUB && (
                   <ControlledSelect
                     id="dataset"

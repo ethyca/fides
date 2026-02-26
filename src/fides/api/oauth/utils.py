@@ -99,13 +99,13 @@ def is_token_expired_by_payload(
 
 
 def is_callback_token_expired(issued_at: Optional[datetime]) -> bool:
-    """Check if a callback token has expired (24 hours)."""
+    """Check if a callback token has expired."""
     if not issued_at:
         return True
 
-    return (
-        datetime.now() - issued_at
-    ).total_seconds() / 60.0 > CONFIG.execution.privacy_request_delay_timeout
+    minutes_since_issuance = (datetime.now() - issued_at).total_seconds() / 60.0
+
+    return minutes_since_issuance > CONFIG.execution.privacy_request_delay_timeout
 
 
 def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:

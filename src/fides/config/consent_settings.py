@@ -18,6 +18,13 @@ class ConsentSettings(FidesSettings):
         default=False,
         description="Whether or not vendor purposes can be globally overridden.",
     )
+
+    consent_v3_encryption_enabled: bool = Field(
+        default=True,
+        description="Whether to encrypt PII in v3 consent preference records. "
+        "Recommended setting is to keep it as true. Set to false to store data in plaintext. "
+        "WARNING: Changing this setting requires a data migration in order to keep existing data.",
+    )
     model_config = SettingsConfigDict(env_prefix="FIDES__CONSENT__")
 
     @model_validator(mode="after")

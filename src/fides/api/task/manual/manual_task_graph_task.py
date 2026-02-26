@@ -32,6 +32,7 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
+from fides.service.attachment_service import AttachmentService
 
 
 class ManualTaskGraphTask(GraphTask):
@@ -437,7 +438,7 @@ class ManualTaskGraphTask(GraphTask):
             submission.attachments,
         ):
             try:
-                size, url = attachment.retrieve_attachment()
+                size, url = AttachmentService().retrieve_url(attachment)
                 attachment_list.append(
                     {
                         "file_name": attachment.file_name,

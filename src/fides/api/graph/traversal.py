@@ -349,17 +349,22 @@ class BaseTraversal:
                 break
 
             # Process the node
+            is_first_visit = current_node.address.value not in finished_str
             node_run_fn(current_node, environment)
             finished_nodes[current_node.address] = current_node
             finished_str.add(current_node.address.value)
 
-            # Update blocked_by counts for nodes waiting on this one
-            for waiting_addr in unblocks.get(current_node.address.value, set()):
-                if waiting_addr in blocked_by:
-                    blocked_by[waiting_addr] -= 1
-                    # If this node is pending and now has 0 blockers, move to ready
-                    if waiting_addr in pending and blocked_by[waiting_addr] == 0:
-                        ready_queue.append(pending.pop(waiting_addr))
+            # Update blocked_by counts for nodes waiting on this one.
+            # Only decrement on the first visit — cycle re-processing must not
+            # double-decrement, which would push the counter below zero and
+            # permanently strand the dependent node in the pending queue.
+            if is_first_visit:
+                for waiting_addr in unblocks.get(current_node.address.value, set()):
+                    if waiting_addr in blocked_by:
+                        blocked_by[waiting_addr] -= 1
+                        # If this node is pending and now has 0 blockers, move to ready
+                        if waiting_addr in pending and blocked_by[waiting_addr] == 0:
+                            ready_queue.append(pending.pop(waiting_addr))
 
             # Handle edge-based parent/child relationships - O(edges) not O(finished_nodes)
             # Only check edges incident to current node, not all finished nodes

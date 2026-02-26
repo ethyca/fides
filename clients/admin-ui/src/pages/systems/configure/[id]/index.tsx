@@ -1,4 +1,4 @@
-import { Button, ChakraText as Text, Tabs } from "fidesui";
+import { Button, ChakraText as Text, PageSpinner, Tabs } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFeatures } from "~/features/common/features";
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
 import { GearLightIcon } from "~/features/common/Icon";
 import Layout from "~/features/common/Layout";
@@ -68,7 +67,7 @@ const ConfigureSystem: NextPage = () => {
   if ((isLoading || isDictionaryLoading) && !dictionaryError) {
     return (
       <Layout title="Systems">
-        <FidesSpinner />
+        <PageSpinner />
       </Layout>
     );
   }

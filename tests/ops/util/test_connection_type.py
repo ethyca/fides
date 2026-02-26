@@ -15,8 +15,8 @@ from fides.api.util.connection_type import (
 def test_get_connection_types():
     data = [obj.model_dump(mode="json") for obj in get_connection_types()]
     assert (
-        len(data) == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-    )  # there are 5 connection types that are not returned by the endpoint
+        len(data) == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
+    )  # there are 6 connection types that are not returned by the endpoint
 
     assert {
         "identifier": ConnectionType.postgres.value,
@@ -60,6 +60,7 @@ def test_get_connection_types():
     assert "https" not in [item["identifier"] for item in data]
     assert "custom" not in [item["identifier"] for item in data]
     assert "manual" not in [item["identifier"] for item in data]
+    assert "manual_webhook" not in [item["identifier"] for item in data]
 
     assert {
         "identifier": ConnectionType.sovrn.value,
@@ -172,7 +173,6 @@ def connection_type_objects():
             [ActionType.access],
             [
                 ConnectionType.postgres.value,
-                ConnectionType.manual_webhook.value,
                 HUBSPOT,
                 MAILCHIMP,
                 STRIPE,
@@ -180,6 +180,7 @@ def connection_type_objects():
             [
                 ConnectionType.sovrn.value,
                 ConnectionType.attentive_email.value,
+                ConnectionType.manual_webhook.value,
             ],
         ),
         (
@@ -190,10 +191,10 @@ def connection_type_objects():
                 STRIPE,
                 MAILCHIMP,
                 ConnectionType.attentive_email.value,
-                ConnectionType.manual_webhook.value,
             ],
             [
                 ConnectionType.sovrn.value,
+                ConnectionType.manual_webhook.value,
             ],
         ),
         (
@@ -203,11 +204,11 @@ def connection_type_objects():
                 MAILCHIMP,
                 ConnectionType.sovrn.value,
                 ConnectionType.postgres.value,
-                ConnectionType.manual_webhook.value,
                 STRIPE,
             ],
             [
                 ConnectionType.attentive_email.value,
+                ConnectionType.manual_webhook.value,
             ],
         ),
         (
@@ -219,15 +220,15 @@ def connection_type_objects():
                 ConnectionType.postgres.value,
                 STRIPE,
                 ConnectionType.attentive_email.value,
+            ],
+            [
                 ConnectionType.manual_webhook.value,
             ],
-            [],
         ),
         (
             [ActionType.access, ActionType.erasure],
             [
                 ConnectionType.postgres.value,
-                ConnectionType.manual_webhook.value,
                 MAILCHIMP,
                 HUBSPOT,
                 STRIPE,
@@ -235,6 +236,7 @@ def connection_type_objects():
             ],
             [
                 ConnectionType.sovrn.value,
+                ConnectionType.manual_webhook.value,
             ],
         ),
     ],

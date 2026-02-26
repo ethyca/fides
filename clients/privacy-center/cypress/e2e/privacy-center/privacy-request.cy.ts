@@ -2,17 +2,22 @@ import { API_URL } from "../../support/constants";
 
 describe("Privacy Request with custom fields with query params", () => {
   beforeEach(() => {
+    cy.intercept("GET", `${API_URL}/id-verification/config`, {
+      body: {
+        identity_verification_required: false,
+      },
+    }).as("getVerificationConfig");
     cy.intercept("POST", `${API_URL}/privacy-request`, {
+      statusCode: 200,
       fixture: "privacy-request/success",
     }).as("postPrivacyRequest");
   });
 
   it("displays a visible custom field, prefilled with the value from query param", () => {
-    cy.visit("/?name=John");
-    cy.getByTestId("home");
+    cy.visit("/privacy-request/default_access_policy?name=John");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
     cy.loadConfigFixture("config/config_custom_request_fields.json").then(
       () => {
-        cy.getByTestId("card").contains("Access your data").click();
         cy.getByTestId("privacy-request-form")
           .find("#name")
           .should("be.visible")
@@ -22,12 +27,12 @@ describe("Privacy Request with custom fields with query params", () => {
   });
 
   it("send hidden custom field as part of the request with the value from query param", () => {
-    cy.visit("/?name=John&my_custom_app_id=123");
-    cy.getByTestId("home");
+    cy.visit(
+      "/privacy-request/default_access_policy?name=John&my_custom_app_id=123",
+    );
+    cy.getByTestId("privacy-request-layout").should("be.visible");
     cy.loadConfigFixture("config/config_custom_request_fields.json").then(
       () => {
-        cy.getByTestId("card").contains("Access your data").click();
-
         cy.getByTestId("privacy-request-form")
           .find("#email")
           .type("test@test.com");
@@ -43,17 +48,19 @@ describe("Privacy Request with custom fields with query params", () => {
             "123",
           );
         });
+        cy.url().should(
+          "include",
+          "/privacy-request/default_access_policy/success",
+        );
       },
     );
   });
 
   it("uses default value if query param doesn't have a value", () => {
-    cy.visit("/?name=John");
-    cy.getByTestId("home");
+    cy.visit("/privacy-request/default_access_policy?name=John");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
     cy.loadConfigFixture("config/config_custom_request_fields.json").then(
       () => {
-        cy.getByTestId("card").contains("Access your data").click();
-
         cy.getByTestId("privacy-request-form")
           .find("#email")
           .type("test@test.com");
@@ -69,6 +76,10 @@ describe("Privacy Request with custom fields with query params", () => {
             customPrivacyRequestFields.another_custom_app_id.value,
           ).to.equal("12345");
         });
+        cy.url().should(
+          "include",
+          "/privacy-request/default_access_policy/success",
+        );
       },
     );
   });
@@ -76,7 +87,13 @@ describe("Privacy Request with custom fields with query params", () => {
 
 describe("Privacy Request with multiselect custom fields", () => {
   beforeEach(() => {
+    cy.intercept("GET", `${API_URL}/id-verification/config`, {
+      body: {
+        identity_verification_required: false,
+      },
+    }).as("getVerificationConfig");
     cy.intercept("POST", `${API_URL}/privacy-request`, {
+      statusCode: 200,
       fixture: "privacy-request/success",
     }).as("postPrivacyRequest");
   });
@@ -85,6 +102,8 @@ describe("Privacy Request with multiselect custom fields", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
 
     // Check that the data_categories multiselect field is displayed
     cy.getByTestId("privacy-request-form").within(() => {
@@ -100,6 +119,8 @@ describe("Privacy Request with multiselect custom fields", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
       // Select multiple data categories by typing
@@ -144,6 +165,8 @@ describe("Privacy Request with multiselect custom fields", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
       // Fill required email
@@ -185,12 +208,18 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
+    cy.url().should(
+      "include",
+      "/privacy-request/default_erasure_policy/success",
+    );
   });
 
   it("handles empty multiselect fields correctly", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
       // Fill required email
@@ -214,12 +243,18 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
+    cy.url().should(
+      "include",
+      "/privacy-request/default_erasure_policy/success",
+    );
   });
 
   it("works correctly with erasure policy form", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Erase your data").click();
+    cy.url().should("include", "/privacy-request/default_erasure_policy");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
       // Verify data_categories multiselect is available in erasure form
@@ -253,12 +288,18 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
+    cy.url().should(
+      "include",
+      "/privacy-request/default_erasure_policy/success",
+    );
   });
 
   it("displays and works with select fields correctly", () => {
     cy.visit("/");
     cy.getByTestId("home");
     cy.getByTestId("card").contains("Access your data").click();
+    cy.url().should("include", "/privacy-request/default_access_policy");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
 
     cy.getByTestId("privacy-request-form").within(() => {
       // Verify preferred_format select field is displayed
@@ -271,7 +312,7 @@ describe("Privacy Request with multiselect custom fields", () => {
       cy.get("#email").type("test@test.com");
 
       // Fill required location
-      cy.get("#location").type("us-ny{enter}");
+      cy.selectPrivacyRequestLocation("us-ny");
 
       // Select preferred format by typing
       cy.get('[data-testid="select-preferred_format"]').click();
@@ -302,5 +343,159 @@ describe("Privacy Request with multiselect custom fields", () => {
         );
       });
     });
+    cy.url().should(
+      "include",
+      "/privacy-request/default_access_policy/success",
+    );
+  });
+});
+
+describe("Privacy Request Verification Flow", () => {
+  beforeEach(() => {
+    cy.intercept("GET", `${API_URL}/id-verification/config`, {
+      body: { identity_verification_required: true },
+    }).as("getVerificationConfig");
+    cy.intercept("POST", `${API_URL}/privacy-request`, {
+      fixture: "privacy-request/unverified",
+    }).as("postPrivacyRequest");
+    cy.intercept(
+      "POST",
+      `${API_URL}/privacy-request/privacy-request-id/verify`,
+      {
+        body: {
+          id: "privacy-request-id",
+          status: "pending",
+        },
+      },
+    ).as("verifyPrivacyRequest");
+  });
+
+  it("should navigate to verification page after form submission when verification is required", () => {
+    cy.visit("/");
+    cy.getByTestId("home");
+    cy.getByTestId("card").contains("Access your data").click();
+
+    // Should be on form page - wait for verification config so form is ready
+    cy.url().should("include", "/privacy-request/default_access_policy");
+    cy.getByTestId("privacy-request-layout").should("be.visible");
+    cy.getByTestId("privacy-request-form").should("be.visible");
+    cy.wait("@getVerificationConfig");
+
+    // Fill and submit form
+    cy.getByTestId("privacy-request-form").within(() => {
+      cy.get("#first_name").type("John");
+      cy.get("#email").type("test@example.com");
+      cy.selectPrivacyRequestLocation("us-ny");
+      cy.get("button[type='submit']").click();
+      cy.wait("@postPrivacyRequest");
+    });
+
+    // Should navigate to verification page
+    cy.url().should("include", "/privacy-request/default_access_policy/verify");
+    cy.getByTestId("privacy-request-verify-layout").should("be.visible");
+    cy.getByTestId("verification-form").should("be.visible");
+    cy.contains("Verification code").should("be.visible");
+  });
+
+  it("should complete full verification flow and navigate to success page", () => {
+    cy.visit("/");
+    cy.getByTestId("home");
+    cy.getByTestId("card").contains("Access your data").click();
+
+    cy.url().should("include", "/privacy-request/default_access_policy");
+    cy.getByTestId("privacy-request-form").should("be.visible");
+    cy.wait("@getVerificationConfig");
+
+    // Fill and submit form
+    cy.getByTestId("privacy-request-form").within(() => {
+      cy.get("#first_name").type("John");
+      cy.get("#email").type("test@example.com");
+      cy.selectPrivacyRequestLocation("us-ny");
+      cy.get("button[type='submit']").click();
+      cy.wait("@postPrivacyRequest");
+    });
+
+    // Should be on verification page
+    cy.url().should("include", "/privacy-request/default_access_policy/verify");
+    cy.getByTestId("verification-form").should("be.visible");
+
+    // Enter verification code
+    cy.getByTestId("verification-form").within(() => {
+      cy.get("input#code").type("123456");
+      cy.get("button").contains("Submit code").click();
+    });
+
+    cy.wait("@verifyPrivacyRequest");
+
+    // Should navigate to success page
+    cy.url().should(
+      "include",
+      "/privacy-request/default_access_policy/success",
+    );
+    cy.getByTestId("privacy-request-success-layout").should("be.visible");
+    cy.contains("Request submitted").should("be.visible");
+    cy.contains("Thanks for your request").should("be.visible");
+  });
+
+  it("should redirect to form page if no request ID in sessionStorage", () => {
+    // Clear sessionStorage
+    cy.window().then((win) => {
+      win.sessionStorage.clear();
+    });
+
+    // Try to visit verification page directly
+    cy.visit("/privacy-request/default_access_policy/verify");
+
+    // Should redirect to form page
+    cy.url().should("include", "/privacy-request/default_access_policy");
+    cy.url().should("not.include", "/verify");
+    cy.getByTestId("privacy-request-form").should("be.visible");
+  });
+
+  it("should show error for invalid verification code", () => {
+    // Mock error response for invalid code
+    cy.intercept(
+      "POST",
+      `${API_URL}/privacy-request/privacy-request-id/verify`,
+      {
+        statusCode: 400,
+        body: { detail: "Invalid verification code" },
+      },
+    ).as("verifyPrivacyRequestError");
+
+    cy.visit("/");
+    cy.getByTestId("home");
+    cy.getByTestId("card").contains("Access your data").click();
+
+    cy.url().should("include", "/privacy-request/default_access_policy");
+    cy.getByTestId("privacy-request-form").should("be.visible");
+    cy.wait("@getVerificationConfig");
+
+    // Fill and submit form
+    cy.getByTestId("privacy-request-form").within(() => {
+      cy.get("#first_name").type("John");
+      cy.get("#email").type("test@example.com");
+      cy.selectPrivacyRequestLocation("us-ny");
+      cy.get("button[type='submit']").click();
+      cy.wait("@postPrivacyRequest");
+    });
+
+    // Should be on verification page
+    cy.url().should("include", "/privacy-request/default_access_policy/verify");
+    cy.getByTestId("verification-form").should("be.visible");
+
+    // Enter invalid code
+    cy.getByTestId("verification-form").within(() => {
+      cy.get("input#code").type("000000");
+      cy.get("button").contains("Submit code").click();
+    });
+
+    cy.wait("@verifyPrivacyRequestError");
+
+    // Should show error toast and redirect to home
+    cy.contains("An error occurred while verifying your identity").should(
+      "be.visible",
+    );
+    cy.url().should("eq", Cypress.config().baseUrl + "/");
   });
 });

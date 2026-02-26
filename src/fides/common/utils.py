@@ -7,6 +7,7 @@ from local Fides modules.
 
 import json
 import pprint
+import re
 import sys
 from functools import partial
 from json.decoder import JSONDecodeError
@@ -15,6 +16,30 @@ from typing import Dict, Union
 import click
 import requests
 from loguru import logger
+
+
+def clean_version(version: str) -> str:
+    """
+    Clean up version strings for user display.
+
+    Removes:
+    - The dirty suffix (.dirty or -dirty) added when there are uncommitted changes
+    - The +0.gXXXXXX suffix when exactly on a tag (zero commits past)
+
+    Examples:
+        2.99.0 -> 2.99.0 (unchanged)
+        2.78.0a1 -> 2.78.0a1 (unchanged)
+        2.78.1a0+0.gabcdef -> 2.78.1a0 (strip zero-distance suffix)
+        2.78.1a0+0.gabcdef.dirty -> 2.78.1a0 (strip both)
+        2.78.0a1+5.gabcdef -> 2.78.0a1+5.gabcdef (keep non-zero distance)
+        2.78.0a1+5.gabcdef.dirty -> 2.78.0a1+5.gabcdef (strip dirty only)
+    """
+    # First remove dirty suffix
+    version = re.sub(r"[.-]dirty$", "", version)
+    # Then remove +0.gXXXXXX suffix (zero commits past tag)
+    version = re.sub(r"\+0\.g[a-f0-9]+$", "", version)
+    return version
+
 
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)

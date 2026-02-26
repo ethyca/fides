@@ -1,62 +1,71 @@
 import { Form, FormProps } from "fidesui";
 import { useQueryStates, UseQueryStatesKeysMap, Values } from "nuqs";
 import { useEffect } from "react";
+import { InferOutput, ObjectEntries, ObjectSchema, safeParse } from "valibot";
+
+/** Ugly type matching for now * */
+type InferredOutput<
+  Output,
+  VSchema extends ObjectSchema<ObjectEntries, undefined>,
+  NState extends UseQueryStatesKeysMap,
+> =
+  Output extends InferOutput<ObjectSchema<ObjectEntries, undefined>>
+    ? Output extends Values<NState>
+      ? {
+          schema: VSchema;
+          queryState: NState;
+        }
+      : never
+    : never;
 
 /**
- * @description links ant form handler with nuqs query state
+ * @description links ant form handler with nuqs query state via valibot
  */
-const useSearchForm = <RequestData, QueryState extends UseQueryStatesKeysMap>({
+const useSearchForm = <RequestData, FormType>({
+  schema /** Ant form validation and types are abysmal. A separate schema validator is necessary to get sane types that can be verified * */,
   queryState,
   initialValues,
   translate,
-}: {
-  queryState: QueryState;
-  initialValues?: Partial<Values<QueryState>>;
-  translate: (formData: Values<QueryState>) => RequestData;
+}: InferredOutput<
+  FormType,
+  ObjectSchema<ObjectEntries, undefined>,
+  UseQueryStatesKeysMap
+> & {
+  initialValues?: Partial<FormType>;
+  translate: (formData: FormType) => RequestData;
 }) => {
   const [searchForm, setSearchForm] = useQueryStates(queryState, {
     history: "push",
   });
-  const [form] = Form.useForm<Values<QueryState>>();
+  const [form] = Form.useForm<FormType>();
 
   // Without a submit button, we want to re-submit on every change
-  const onFieldsChange: FormProps<
-    Values<QueryState>
-  >["onFieldsChange"] = () => {
-    const values = form.getFieldsValue(true);
-    // Translation of undefined/empty string usage as default values in ant vs nuqs
-    const translatedValues = Object.fromEntries(
-      Object.entries(values).map(([key, value]) => [
-        key,
-        value === undefined ? "" : value,
-      ]),
-    );
-    setSearchForm(translatedValues as typeof values);
+  const onFieldsChange: FormProps<FormType>["onFieldsChange"] = () =>
+    form.submit();
+
+  const onFinish: FormProps<FormType>["onFinish"] = (values) => {
+    const { success, output } = safeParse(schema, values);
+
+    if (success) {
+      setSearchForm(output);
+    }
   };
 
   // Unfortunate need for effect due to current routing strategy
   useEffect(() => {
-    // Translation of undefined/empty string usage as default values in ant vs nuqs
-    const translatedValues = Object.fromEntries(
-      Object.entries(searchForm).map(([key, value]) => [
-        key,
-        value === "" ? undefined : value,
-      ]),
-    );
-
-    form.setFieldsValue(
-      translatedValues as Parameters<typeof form.setFieldsValue>[0],
-    ); // Casting again due to weird ant types
-  }, [searchForm, form]);
+    form.setFieldsValue(searchForm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchForm]);
 
   return {
     form,
     onFieldsChange,
+    onFinish,
     initialValues: {
       ...initialValues,
       ...searchForm,
     },
-    requestData: translate(searchForm),
+    requestData: translate(searchForm as FormType),
   };
 };
 

@@ -8,12 +8,13 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from starlette.exceptions import HTTPException
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
     HTTP_404_NOT_FOUND,
+    HTTP_409_CONFLICT,
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
@@ -28,6 +29,7 @@ from fides.api.common_exceptions import (
 )
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import DataCategory  # type: ignore
 from fides.api.models.storage import StorageConfig
 from fides.api.oauth.utils import verify_oauth_client
@@ -57,7 +59,14 @@ def get_policy_list(
     Return a paginated list of all Policy records in this system
     """
     logger.debug("Finding all policies with pagination params '{}'", params)
-    policies = Policy.query(db=db).order_by(Policy.created_at.desc())
+    policies = (
+        Policy.query(db=db)
+        .options(
+            selectinload(Policy.rules).joinedload(Rule.storage_destination),  # type: ignore[attr-defined] # backref
+            selectinload(Policy.conditions),
+        )
+        .order_by(Policy.created_at.desc())
+    )
     return paginate(policies, params=params)
 
 
@@ -89,6 +98,38 @@ def get_policy(
     Return a single Policy
     """
     return get_policy_or_error(db, policy_key)  # type: ignore[return-value]
+
+
+@router.delete(
+    urls.POLICY_DETAIL,
+    status_code=HTTP_204_NO_CONTENT,
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.POLICY_DELETE])],
+)
+def delete_policy(
+    *,
+    policy_key: FidesKey,
+    db: Session = Depends(deps.get_db),
+) -> None:
+    """
+    Delete a policy by key. Returns 409 if the policy is referenced by any privacy requests.
+    """
+    policy = get_policy_or_error(db, policy_key)
+
+    has_privacy_requests = (
+        PrivacyRequest.query(db=db)
+        .filter(PrivacyRequest.policy_id == policy.id)
+        .limit(1)
+        .count()
+        > 0
+    )
+    if has_privacy_requests:
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT,
+            detail=f"Cannot delete policy {policy_key}: it is referenced by one or more privacy requests.",
+        )
+
+    logger.info("Deleting policy with key '{}'", policy_key)
+    policy.delete(db=db)
 
 
 @router.patch(

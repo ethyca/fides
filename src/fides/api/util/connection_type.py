@@ -313,29 +313,6 @@ def get_connection_types(
         )
         connection_system_types.extend(saas_connection_types)
 
-    if (system_type == SystemType.manual or system_type is None) and (
-        ActionType.access in action_types or ActionType.erasure in action_types
-    ):
-        manual_types: list[str] = sorted(
-            [
-                manual_type.value
-                for manual_type in ConnectionType
-                if manual_type == ConnectionType.manual_webhook
-                and _is_match(manual_type.value, search)
-            ]
-        )
-        connection_system_types.extend(
-            [
-                ConnectionSystemTypeMap(
-                    identifier=item,
-                    type=SystemType.manual,
-                    human_readable=ConnectionType(item).human_readable,
-                    supported_actions=[ActionType.access, ActionType.erasure],
-                )
-                for item in manual_types
-            ]
-        )
-
     if system_type == SystemType.email or system_type is None:
         email_types: list[str] = sorted(
             [

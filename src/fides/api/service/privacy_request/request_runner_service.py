@@ -25,7 +25,7 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.graph import DatasetGraph, apply_dataset_graph_filters
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
@@ -529,6 +529,30 @@ def run_privacy_request(
                     session, config_types=[ActionType.access, ActionType.erasure]
                 )
                 dataset_graphs.extend(manual_task_graphs)
+
+                # Apply registered dataset graph filters (e.g. property-based DAG filtering)
+                all_dataset_names = {ds.name for ds in dataset_graphs}
+                dataset_graphs = apply_dataset_graph_filters(
+                    dataset_graphs, privacy_request.property_id
+                )
+                filtered_dataset_names = {ds.name for ds in dataset_graphs}
+
+                if filtered_dataset_names != all_dataset_names:
+                    excluded = sorted(all_dataset_names - filtered_dataset_names)
+                    privacy_request.add_success_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Dataset filtering",
+                        collection_name=None,
+                        message=(
+                            f"Dataset filtering applied for property_id "
+                            f"'{privacy_request.property_id}': "
+                            f"{len(filtered_dataset_names)} of "
+                            f"{len(all_dataset_names)} datasets retained. "
+                            f"Excluded: {excluded}"
+                        ),
+                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    )
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
 
