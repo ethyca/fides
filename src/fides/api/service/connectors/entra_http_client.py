@@ -1,6 +1,6 @@
 """HTTP client for Microsoft Graph API using OAuth 2.0 client credentials.
 
-Used by the Entra connector for IDP discovery (list service principals).
+Used by the Entra connector for IDP discovery (list app registrations).
 """
 
 from typing import Any, Dict, List, Optional, Tuple
@@ -14,9 +14,13 @@ from fides.api.common_exceptions import ConnectionException
 GRAPH_BASE_URL = "https://graph.microsoft.com"
 GRAPH_DEFAULT_SCOPE = "https://graph.microsoft.com/.default"
 DEFAULT_REQUEST_TIMEOUT = 30
-# Max page size for servicePrincipals list (Microsoft Graph limit)
+
+# /v1.0/applications — app registrations (max $top=999)
+APPLICATIONS_PAGE_SIZE = 999
+APPLICATIONS_SELECT = "id,displayName,appId,createdDateTime,description,signInAudience"
+
+# /v1.0/servicePrincipals — enterprise apps / service principals (max $top=100)
 SERVICE_PRINCIPALS_PAGE_SIZE = 100
-# Minimal $select for connection test and list
 SERVICE_PRINCIPALS_SELECT = (
     "id,displayName,appDisplayName,accountEnabled,createdDateTime,"
     "preferredSingleSignOnMode,servicePrincipalType,appId,description"
@@ -28,7 +32,7 @@ class EntraHttpClient:
     HTTP client for Microsoft Graph with client credentials flow.
 
     - Obtains access token from login.microsoftonline.com
-    - Calls Graph API (e.g. list service principals) with Bearer token
+    - Calls Graph API (e.g. list app registrations) with Bearer token
     - Supports pagination via @odata.nextLink
     """
 
@@ -91,32 +95,31 @@ class EntraHttpClient:
             raise ConnectionException("Entra token response missing access_token")
         return self._token
 
-    def list_service_principals(
+    def _list_graph_collection(
         self,
-        top: int = SERVICE_PRINCIPALS_PAGE_SIZE,
-        next_link: Optional[str] = None,
-        select: Optional[str] = None,
+        resource_path: str,
+        top: int,
+        max_top: int,
+        default_select: str,
+        next_link: Optional[str],
+        select: Optional[str],
     ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
         """
-        List service principals (enterprise applications) from Microsoft Graph.
+        Shared pagination helper for Microsoft Graph list endpoints.
 
-        Args:
-            top: Page size (max 100 for this endpoint).
-            next_link: If provided, GET this URL instead of building one (pagination).
-            select: OData $select string; default is minimal fields for IDP monitor.
-
-        Returns:
-            Tuple of (list of service principal dicts, next_link or None).
+        Builds the initial URL from resource_path / top / select, or uses next_link
+        directly when continuing a paginated result set. Handles 401 token invalidation
+        and surfaces a friendly 403 message for missing API permissions.
         """
         token = self._get_token()
-        select = select or SERVICE_PRINCIPALS_SELECT
+        resolved_select = select or default_select
         if next_link:
             url = next_link
         else:
             url = (
-                f"{GRAPH_BASE_URL}/v1.0/servicePrincipals"
-                f"?$top={min(top, SERVICE_PRINCIPALS_PAGE_SIZE)}"
-                f"&$select={select}"
+                f"{GRAPH_BASE_URL}{resource_path}"
+                f"?$top={min(top, max_top)}"
+                f"&$select={resolved_select}"
             )
         response = self._session.get(
             url,
@@ -138,7 +141,7 @@ class EntraHttpClient:
                         msg = (
                             "Insufficient Microsoft Graph permissions. "
                             "In Azure Portal: App registrations > Your app > API permissions: "
-                            "add application permission 'Application.Read.All' (Microsoft Graph), "
+                            "add the required application permission (Microsoft Graph), "
                             "then grant admin consent."
                         )
                 except (ValueError, KeyError, TypeError):
@@ -148,5 +151,66 @@ class EntraHttpClient:
         value = data.get("value", [])
         if not isinstance(value, list):
             value = []
-        next_link_out = data.get("@odata.nextLink")
-        return value, next_link_out
+        return value, data.get("@odata.nextLink")
+
+    def list_applications(
+        self,
+        top: int = APPLICATIONS_PAGE_SIZE,
+        next_link: Optional[str] = None,
+        select: Optional[str] = None,
+    ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+        """
+        List app registrations (/v1.0/applications) from Microsoft Graph.
+
+        Requires the 'Application.Read.All' application permission with admin consent.
+
+        Args:
+            top: Page size (max 999).
+            next_link: If provided, resumes pagination from this URL.
+            select: Comma-separated OData $select fields. When omitted, a minimal
+                    default set is used. Callers can supply a custom list, e.g.
+                    "id,displayName,appId,createdDateTime,web,requiredResourceAccess".
+
+        Returns:
+            Tuple of (list of application dicts, next_link or None).
+        """
+        return self._list_graph_collection(
+            resource_path="/v1.0/applications",
+            top=top,
+            max_top=APPLICATIONS_PAGE_SIZE,
+            default_select=APPLICATIONS_SELECT,
+            next_link=next_link,
+            select=select,
+        )
+
+    def list_service_principals(
+        self,
+        top: int = SERVICE_PRINCIPALS_PAGE_SIZE,
+        next_link: Optional[str] = None,
+        select: Optional[str] = None,
+    ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+        """
+        List service principals (/v1.0/servicePrincipals) from Microsoft Graph.
+
+        Useful for reading fields only available on the service principal object
+        (e.g. preferredSingleSignOnMode, accountEnabled, servicePrincipalType).
+        Requires the 'Application.Read.All' application permission with admin consent.
+
+        Args:
+            top: Page size (max 100 for this endpoint).
+            next_link: If provided, resumes pagination from this URL.
+            select: Comma-separated OData $select fields. When omitted, a minimal
+                    default set is used. Callers can supply a custom list, e.g.
+                    "id,displayName,appId,accountEnabled,preferredSingleSignOnMode".
+
+        Returns:
+            Tuple of (list of service principal dicts, next_link or None).
+        """
+        return self._list_graph_collection(
+            resource_path="/v1.0/servicePrincipals",
+            top=top,
+            max_top=SERVICE_PRINCIPALS_PAGE_SIZE,
+            default_select=SERVICE_PRINCIPALS_SELECT,
+            next_link=next_link,
+            select=select,
+        )

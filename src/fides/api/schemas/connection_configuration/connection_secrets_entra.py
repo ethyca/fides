@@ -13,7 +13,11 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 
-# Azure tenant ID: 32 hex chars, optionally with hyphens (UUID format)
+# Azure tenant ID / client ID: UUID format (32 hex chars, optional hyphens).
+# Restricting to this pattern is also the token URL safety mechanism — since the
+# tenant_id is interpolated directly into the token URL
+# (https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token), accepting
+# only UUID-shaped values prevents path-traversal or host-injection attacks.
 ENTRA_TENANT_ID_PATTERN = re.compile(
     r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$"
 )
