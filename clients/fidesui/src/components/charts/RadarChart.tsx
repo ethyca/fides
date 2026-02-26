@@ -183,7 +183,7 @@ export const RadarChart = ({
               )
             }
             activeDot={false}
-            isAnimationActive={!empty}
+            isAnimationActive={!empty && animationDuration > 0}
             animationDuration={animationDuration}
             animationEasing={CHART_ANIMATION.easing}
           />
