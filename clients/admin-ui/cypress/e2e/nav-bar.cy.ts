@@ -28,7 +28,6 @@ describe("Nav Bar", () => {
       .parents(".ant-menu-submenu")
       .within(() => {
         cy.getByTestId("Request manager-nav-link");
-        cy.getByTestId("Connection manager-nav-link");
       });
     cy.getByTestId("Settings-nav-group")
       .click()

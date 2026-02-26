@@ -1142,9 +1142,6 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
-    - name: system_id
-      description: 'The identifier of the system to locate this data within'
-      data_categories: [system.operations]
     - name: enabled_actions
       description: 'The privacy actions that are enabled for this connection'
       data_categories: [system.operations]
@@ -1240,6 +1237,8 @@ dataset:
     - name: fides_key
       data_categories: [system.operations]
     - name: id
+      data_categories: [system.operations]
+    - name: property_ids
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
@@ -1412,6 +1411,8 @@ dataset:
       data_categories: [system.operations]
     - name: execution_timing
       data_categories: [system.operations]
+    - name: property_ids
+      data_categories: [system.operations]
   - name: manual_task_config_field
     fields:
     - name: config_id
@@ -1492,6 +1493,28 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: jira_ticket_task
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: manual_task_instance_id
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+    - name: ticket_key
+      data_categories: [system.operations]
+    - name: ticket_url
+      data_categories: [system.operations]
+    - name: external_status
+      data_categories: [system.operations]
+    - name: external_status_category
+      data_categories: [system.operations]
+    - name: last_polled_at
+      data_categories: [system.operations]
   - name: monitorexecution
     data_categories: []
     fields:
@@ -1562,6 +1585,54 @@ dataset:
       data_categories:
       - system.operations
     - name: updated_at
+      data_categories:
+      - system.operations
+    - name: privacy_assessment_task_id
+      data_categories:
+      - system.operations
+  - name: privacy_assessment_task
+    description: 'Tracks async Celery task execution for privacy assessment generation'
+    fields:
+    - name: id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: action_type
+      data_categories:
+      - system.operations
+    - name: status
+      data_categories:
+      - system.operations
+    - name: celery_id
+      data_categories:
+      - system.operations
+    - name: total_count
+      data_categories:
+      - system.operations
+    - name: completed_count
+      data_categories:
+      - system.operations
+    - name: message
+      data_categories:
+      - system.operations
+    - name: assessment_types
+      data_categories:
+      - system.operations
+    - name: system_fides_keys
+      data_categories:
+      - system.operations
+    - name: created_by
+      data_categories:
+      - system.operations
+    - name: use_llm
+      data_categories:
+      - system.operations
+    - name: llm_model
       data_categories:
       - system.operations
   - name: policy
@@ -2409,6 +2480,19 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
     - name: updated_systems
+      data_categories: [system.operations]
+  - name: system_connection_config_link
+    description: 'Join table linking systems to connection configurations'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: system_id
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
       data_categories: [system.operations]
   - name: tcf_purpose_overrides
     fields:
@@ -3520,6 +3604,9 @@ dataset:
     - name: id
       description: 'Auto-generated unique identifier for the preferences'
       data_categories: [ system.operations ]
+    - name: is_encrypted
+      description: 'True if the record data is encrypted, false otherwise'
+      data_categories: [ system.operations ]
     - name: is_latest
       description: 'Is this the latest set of preferences for the identity?'
       data_categories: [ system.operations ]
@@ -3545,6 +3632,9 @@ dataset:
     - name: id
       description: 'Auto-generated unique identifier for the preferences'
       data_categories: [ system.operations ]
+    - name: is_encrypted
+      description: 'True if the record data is encrypted, false otherwise'
+      data_categories: [ system.operations ]
     - name: is_latest
       description: 'Is this the latest set of preferences for the identity?'
       data_categories: [ system.operations ]
@@ -3569,6 +3659,9 @@ dataset:
       data_categories: [ system.operations ]
     - name: id
       description: 'Auto-generated unique identifier for the preferences'
+      data_categories: [ system.operations ]
+    - name: is_encrypted
+      description: 'True if the record data is encrypted, false otherwise'
       data_categories: [ system.operations ]
     - name: is_latest
       description: 'Is this the latest set of preferences for the identity?'
@@ -3648,4 +3741,54 @@ dataset:
       - name: user_id
         data_categories: [system.operations]
       - name: monitor_config_id
+        data_categories: [system.operations]
+  - name: questionnaire
+    description: 'SME questionnaire sessions linked to privacy assessments'
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: assessment_id
+        data_categories: [system.operations]
+      - name: title
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: current_question_index
+        data_categories: [system.operations]
+      - name: provider_context
+        data_categories: [system.operations]
+      - name: completed_at
+        data_categories: [system.operations]
+      - name: last_reminder_at
+        data_categories: [system.operations]
+      - name: reminder_count
+        data_categories: [system.operations]
+  - name: chat_message
+    description: 'Conversation messages within questionnaire sessions'
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: questionnaire_id
+        data_categories: [system.operations]
+      - name: message_id
+        data_categories: [system.operations]
+      - name: timestamp
+        data_categories: [system.operations]
+      - name: sender_email
+        data_categories: [user.contact.email]
+      - name: sender_display_name
+        data_categories: [user.name]
+      - name: text
+        data_categories: [system.operations]
+      - name: is_bot_message
+        data_categories: [system.operations]
+      - name: question_index
         data_categories: [system.operations]
