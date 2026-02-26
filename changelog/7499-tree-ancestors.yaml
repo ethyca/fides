@@ -1,0 +1,4 @@
+type: Changed
+description: Monitor tree now applies active filters when refreshing after resource actions
+pr: 7499
+labels: []
