@@ -3,7 +3,7 @@ import { useId } from "react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 
 import type { AntColorTokenKey } from "./chart-constants";
-import { CHART_ANIMATION } from "./chart-constants";
+import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
 import { ChartGradient } from "./ChartGradient";
 
 const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
@@ -18,7 +18,7 @@ export interface SparklineProps {
 export const Sparkline = ({
   data,
   color,
-  strokeWidth = 2,
+  strokeWidth = CHART_STROKE.strokeWidth,
   animationDuration = CHART_ANIMATION.defaultDuration,
 }: SparklineProps) => {
   const { token } = theme.useToken();
@@ -44,9 +44,9 @@ export const Sparkline = ({
           dataKey="value"
           stroke={chartColor}
           strokeWidth={strokeWidth}
-          strokeOpacity={0.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeOpacity={CHART_STROKE.strokeOpacity}
+          strokeLinecap={CHART_STROKE.strokeLinecap}
+          strokeLinejoin={CHART_STROKE.strokeLinejoin}
           fill={`url(#${gradientId})`}
           dot={false}
           activeDot={false}

@@ -10,8 +10,9 @@ import {
 } from "recharts";
 
 import type { AntColorTokenKey } from "./chart-constants";
-import { CHART_ANIMATION } from "./chart-constants";
+import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
 import { ChartGradient } from "./ChartGradient";
+import { ChartText } from "./ChartText";
 
 export type RadarPointStatus = "success" | "warning" | "error";
 
@@ -60,18 +61,14 @@ const RadarTick = ({
   const statusColor = point?.status ? statusColors[point.status] : undefined;
 
   return (
-    <text
+    <ChartText
       x={x}
       y={y}
-      textAnchor="middle"
-      dominantBaseline="central"
-      fontSize={11}
-      fontWeight={600}
       fill={statusColor ?? chartColor}
       fillOpacity={statusColor ? 1 : 0.75}
     >
       {payload.value}
-    </text>
+    </ChartText>
   );
 };
 
@@ -102,7 +99,7 @@ const RadarDot = ({
       r={3.5}
       fill={point?.status ? statusColors[point.status] : chartColor}
       stroke={bgColor}
-      strokeWidth={1.5}
+      strokeWidth={2}
     />
   );
 };
@@ -124,7 +121,7 @@ export const RadarChart = ({
       warning: token.colorWarning,
       error: token.colorError,
     }),
-    [token]
+    [token],
   );
 
   return (
@@ -167,10 +164,10 @@ export const RadarChart = ({
           <Radar
             dataKey="value"
             stroke={chartColor}
-            strokeWidth={1.5}
-            strokeOpacity={0.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeWidth={CHART_STROKE.strokeWidth}
+            strokeOpacity={CHART_STROKE.strokeOpacity}
+            strokeLinecap={CHART_STROKE.strokeLinecap}
+            strokeLinejoin={CHART_STROKE.strokeLinejoin}
             fill={`url(#${gradientId})`}
             dot={
               !empty ? (

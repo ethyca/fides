@@ -329,7 +329,10 @@ export type { AntColorTokenKey } from "./components/charts/chart-constants";
 export {
   CHART_ANIMATION,
   CHART_GRADIENT,
+  CHART_STROKE,
 } from "./components/charts/chart-constants";
+export type { ChartTextProps } from "./components/charts/ChartText";
+export { ChartText } from "./components/charts/ChartText";
 export type {
   RadarChartDataPoint,
   RadarChartProps,
