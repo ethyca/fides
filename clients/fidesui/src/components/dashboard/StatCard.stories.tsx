@@ -4,58 +4,14 @@ import { theme } from "antd";
 
 import { CustomCard } from "../../hoc/CustomCard";
 import { CustomStatistic } from "../../hoc/CustomStatistic";
-import Sparkline from "../charts/Sparkline";
+import { RadarChart } from "../charts/RadarChart";
+import { Sparkline } from "../charts/Sparkline";
 
-const upwardTrendData = [
-  { value: 12 },
-  { value: 18 },
-  { value: 15 },
-  { value: 22 },
-  { value: 28 },
-  { value: 25 },
-  { value: 34 },
-  { value: 30 },
-  { value: 38 },
-  { value: 42 },
-  { value: 39 },
-  { value: 47 },
-];
+const upwardTrendData = [12, 18, 15, 22, 28, 25, 34, 30, 38, 42, 39, 47];
 
-const downwardTrendData = [
-  { value: 47 },
-  { value: 42 },
-  { value: 45 },
-  { value: 38 },
-  { value: 34 },
-  { value: 36 },
-  { value: 28 },
-  { value: 24 },
-  { value: 26 },
-  { value: 18 },
-  { value: 15 },
-  { value: 12 },
-];
+const downwardTrendData = [47, 42, 45, 38, 34, 36, 28, 24, 26, 18, 15, 12];
 
-const neutralTrendData = [
-  { value: 28 },
-  { value: 32 },
-  { value: 25 },
-  { value: 30 },
-  { value: 27 },
-  { value: 33 },
-  { value: 26 },
-  { value: 31 },
-  { value: 28 },
-  { value: 34 },
-  { value: 29 },
-  { value: 30 },
-];
-
-const ContentPlaceholder = () => (
-  <div className="h-20 flex items-center justify-center bg-gray-50 rounded text-xs text-gray-300">
-    chart / content
-  </div>
-);
+const neutralTrendData = [28, 32, 25, 30, 27, 33, 26, 31, 28, 34, 29, 30];
 
 const meta = {
   title: "Dashboard/Card",
@@ -181,27 +137,36 @@ export const NoFooter: Story = {
 export const WithContentAndFooter: Story = {
   args: {
     variant: "borderless",
-    cover: (
-      <div className="h-16">
-        <Sparkline data={upwardTrendData} />
-      </div>
-    ),
-    coverPosition: "bottom",
   },
   render: (args) => {
     const { token } = theme.useToken();
     return (
-      <CustomCard {...args}>
+      <CustomCard title="Posture" {...args}>
         <>
-          <CustomStatistic title="Data Sharing" value="15,112,893" />
+          <CustomStatistic value="67" />
           <CustomStatistic
             trend="up"
             value="112,893"
             prefix={<ArrowUpOutlined />}
             valueStyle={{ fontSize: token.fontSize }}
           />
-          <div className="mt-3">
-            <ContentPlaceholder />
+          <div
+            className="h-48"
+            style={{
+              marginLeft: -token.paddingLG,
+              marginRight: -token.paddingLG,
+            }}
+          >
+            <RadarChart
+              data={[
+                { subject: "Coverage", value: 80 },
+                { subject: "Classification", value: 65 },
+                { subject: "Consent", value: 50, status: "warning" },
+                { subject: "DSR", value: 30, status: "error" },
+                { subject: "Enforcement", value: 70 },
+                { subject: "Assessments", value: 45, status: "warning" },
+              ]}
+            />
           </div>
         </>
       </CustomCard>
