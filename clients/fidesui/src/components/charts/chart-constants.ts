@@ -11,3 +11,16 @@ export const CHART_GRADIENT = {
   startOpacity: 0.25,
   endOpacity: 0,
 } as const;
+
+export const COLOR_OPTIONS = [
+  undefined,
+  "colorPrimary",
+  "colorSuccess",
+  "colorWarning",
+  "colorError",
+  "colorInfo",
+  "colorText",
+  "colorTextSecondary",
+  "colorTextTertiary",
+  "colorBorder",
+] as const;

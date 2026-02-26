@@ -20,23 +20,24 @@ export const ChartGradient = ({
     ? CHART_GRADIENT.startOpacity
     : CHART_GRADIENT.endOpacity;
 
-  if (type === "radial") {
-    return (
-      <defs>
-        <radialGradient id={id} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={color} stopOpacity={startOpacity} />
-          <stop offset="100%" stopColor={color} stopOpacity={endOpacity} />
-        </radialGradient>
-      </defs>
-    );
-  }
+  const stops = (
+    <>
+      <stop offset="0%" stopColor={color} stopOpacity={startOpacity} />
+      <stop offset="100%" stopColor={color} stopOpacity={endOpacity} />
+    </>
+  );
 
   return (
     <defs>
-      <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor={color} stopOpacity={startOpacity} />
-        <stop offset="100%" stopColor={color} stopOpacity={endOpacity} />
-      </linearGradient>
+      {type === "radial" ? (
+        <radialGradient id={id} cx="50%" cy="50%" r="50%">
+          {stops}
+        </radialGradient>
+      ) : (
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          {stops}
+        </linearGradient>
+      )}
     </defs>
   );
 };

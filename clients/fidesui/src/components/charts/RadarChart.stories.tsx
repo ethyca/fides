@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useCallback, useState } from "react";
 
 import { RadarChart, RadarChartProps } from "./RadarChart";
+import { COLOR_OPTIONS } from "./chart-constants";
 
 const sampleData = [
   { subject: "Coverage", value: 80 },
@@ -51,13 +52,7 @@ const meta = {
     },
     color: {
       control: { type: "select" },
-      options: [
-        "colorText",
-        "colorPrimary",
-        "colorSuccess",
-        "colorWarning",
-        "colorError",
-      ],
+      options: COLOR_OPTIONS,
       description:
         "Stroke and fill color for the radar and grid. Provide an Ant Design color token key (e.g., colorText, colorPrimary). Defaults to the colorText token when not set.",
     },

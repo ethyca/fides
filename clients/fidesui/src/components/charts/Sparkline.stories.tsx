@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useCallback, useState } from "react";
+import { COLOR_OPTIONS } from "./chart-constants";
 
 import { Sparkline, SparklineProps } from "./Sparkline";
 
@@ -34,18 +35,7 @@ const meta = {
     },
     color: {
       control: "select",
-      options: [
-        undefined,
-        "colorPrimary",
-        "colorSuccess",
-        "colorWarning",
-        "colorError",
-        "colorInfo",
-        "colorText",
-        "colorTextSecondary",
-        "colorTextTertiary",
-        "colorBorder",
-      ],
+      options: COLOR_OPTIONS,
       description:
         "Ant Design semantic color token key. Defaults to colorText when not set.",
     },
