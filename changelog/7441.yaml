@@ -1,0 +1,4 @@
+type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: New page settings option to filter ignored and active items
+pr: 7441 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]

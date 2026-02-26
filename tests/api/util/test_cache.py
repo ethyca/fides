@@ -130,32 +130,35 @@ class TestGetReadOnlyCache:
         self, enable_read_only_cache_settings
     ):
         """Test that when read-only is enabled, a new read-only Redis connection is created"""
-        # Mock FidesopsRedis to avoid actual Redis connection
-        with patch("fides.api.util.cache.FidesopsRedis") as MockRedis:
+        config = enable_read_only_cache_settings
+        # Mock Redis client construction and FidesopsRedis wrapper
+        with (
+            patch("fides.api.util.cache.Redis") as MockRedisClient,
+            patch("fides.api.util.cache.FidesopsRedis") as MockFidesopsRedis,
+        ):
+            mock_client = MagicMock()
+            MockRedisClient.return_value = mock_client
             mock_redis_instance = MagicMock()
-            MockRedis.return_value = mock_redis_instance
-
-            # Mock ping to return True (successful connection)
+            MockFidesopsRedis.return_value = mock_redis_instance
             mock_redis_instance.ping.return_value = True
 
             result = get_read_only_cache()
 
-            # Should create a new FidesopsRedis instance with read-only config
-            # We check the last one because there may be multiple calls if running parallel tests
-            MockRedis.assert_called_with(
-                charset=enable_read_only_cache_settings.redis.charset,
-                decode_responses=enable_read_only_cache_settings.redis.decode_responses,
-                host=enable_read_only_cache_settings.redis.read_only_host,
-                port=enable_read_only_cache_settings.redis.read_only_port,
-                db=ANY,  # There may be more than one in testing with xdist
-                username=enable_read_only_cache_settings.redis.read_only_user,
-                password=enable_read_only_cache_settings.redis.read_only_password,
-                ssl=enable_read_only_cache_settings.redis.read_only_ssl,
-                ssl_ca_certs=enable_read_only_cache_settings.redis.read_only_ssl_ca_certs,
-                ssl_cert_reqs=enable_read_only_cache_settings.redis.read_only_ssl_cert_reqs,
+            # Redis() should be called with read-only config
+            MockRedisClient.assert_called_once_with(
+                decode_responses=config.redis.decode_responses,
+                host=config.redis.read_only_host,
+                port=config.redis.read_only_port,
+                db=ANY,
+                username=config.redis.read_only_user,
+                password=config.redis.read_only_password,
+                ssl=config.redis.read_only_ssl,
+                ssl_ca_certs=config.redis.read_only_ssl_ca_certs,
+                ssl_cert_reqs=config.redis.read_only_ssl_cert_reqs,
             )
-
-            # Should ping to test connection
+            # FidesopsRedis(client) wraps the Redis client
+            MockFidesopsRedis.assert_called_once()
+            assert MockFidesopsRedis.call_args[0][0] == mock_client
             mock_redis_instance.ping.assert_called_once()
             assert result == mock_redis_instance
 
@@ -223,31 +226,32 @@ class TestGetReadOnlyCache:
         self, enable_read_only_cache_with_fallbacks
     ):
         """Test that read-only cache uses writer settings as fallbacks when read-only settings are None"""
-        # Mock FidesopsRedis to avoid actual Redis connection
-        with patch("fides.api.util.cache.FidesopsRedis") as MockRedis:
+        config = enable_read_only_cache_with_fallbacks
+        with (
+            patch("fides.api.util.cache.Redis") as MockRedisClient,
+            patch("fides.api.util.cache.FidesopsRedis") as MockFidesopsRedis,
+        ):
+            mock_client = MagicMock()
+            MockRedisClient.return_value = mock_client
             mock_redis_instance = MagicMock()
-            MockRedis.return_value = mock_redis_instance
-
-            # Mock ping to return True (successful connection)
+            MockFidesopsRedis.return_value = mock_redis_instance
             mock_redis_instance.ping.return_value = True
 
             result = get_read_only_cache()
 
-            # Should create a new FidesopsRedis instance with fallback values
-            # Check last call in case of parallel tests
-            MockRedis.assert_called_with(
-                charset=enable_read_only_cache_with_fallbacks.redis.charset,
-                decode_responses=enable_read_only_cache_with_fallbacks.redis.decode_responses,
-                host=enable_read_only_cache_with_fallbacks.redis.read_only_host,  # This was set explicitly to "test-read-only-host"
-                port=enable_read_only_cache_with_fallbacks.redis.port,  # Fallback to writer port (default 6379)
-                db=ANY,  # May be more than one call if running parallel tests
-                username="test-writer-user",  # Fallback to writer user we set in fixture
-                password="test-writer-password",  # Fallback to writer password we set in fixture
-                ssl=enable_read_only_cache_with_fallbacks.redis.ssl,  # Fallback to writer ssl (default False)
-                ssl_ca_certs=enable_read_only_cache_with_fallbacks.redis.ssl_ca_certs,  # Fallback to writer ssl_ca_certs (default "")
-                ssl_cert_reqs=enable_read_only_cache_with_fallbacks.redis.ssl_cert_reqs,  # Fallback to writer ssl_cert_reqs (default "required")
+            # Redis() should be called with fallback values (read_only_* None -> writer values)
+            MockRedisClient.assert_called_once_with(
+                decode_responses=config.redis.decode_responses,
+                host=config.redis.read_only_host,  # set explicitly to "test-read-only-host"
+                port=config.redis.port,  # fallback to writer port (6379)
+                db=ANY,
+                username="test-writer-user",
+                password="test-writer-password",
+                ssl=config.redis.ssl,
+                ssl_ca_certs=config.redis.ssl_ca_certs,
+                ssl_cert_reqs=config.redis.ssl_cert_reqs,
             )
-
-            # Should ping to test connection
+            MockFidesopsRedis.assert_called_once()
+            assert MockFidesopsRedis.call_args[0][0] == mock_client
             mock_redis_instance.ping.assert_called_once()
             assert result == mock_redis_instance

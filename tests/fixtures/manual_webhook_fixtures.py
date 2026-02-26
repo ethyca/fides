@@ -9,6 +9,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.manual_webhook import AccessManualWebhook
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 @pytest.fixture(scope="function")
@@ -20,9 +21,14 @@ def integration_manual_webhook_config(db, system) -> ConnectionConfig:
             "key": "manual_webhook_example",
             "connection_type": ConnectionType.manual_webhook,
             "access": AccessLevel.read,
-            "system_id": system.id,
         },
     )
+    SystemIntegrationLinkRepository().create_or_update_link(
+        system_id=system.id,
+        connection_config_id=connection_config.id,
+        session=db,
+    )
+    db.commit()
     yield connection_config
     try:
         connection_config.delete(db)
@@ -41,9 +47,14 @@ def integration_manual_webhook_config_with_system2(
             "key": "manual_webhook_example2",
             "connection_type": ConnectionType.manual_webhook,
             "access": AccessLevel.read,
-            "system_id": system_with_dataset_references.id,
         },
     )
+    SystemIntegrationLinkRepository().create_or_update_link(
+        system_id=system_with_dataset_references.id,
+        connection_config_id=connection_config.id,
+        session=db,
+    )
+    db.commit()
     yield connection_config
     try:
         connection_config.delete(db)
