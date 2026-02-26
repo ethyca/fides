@@ -122,9 +122,7 @@ class TestGoogleCloudSQLPostgresQueryConfig:
     def test_generate_query_with_namespace_meta(
         self, execution_node: ExecutionNode, namespace_meta, expected_query
     ):
-        query_config = GoogleCloudSQLPostgresQueryConfig(
-            execution_node, namespace_meta
-        )
+        query_config = GoogleCloudSQLPostgresQueryConfig(execution_node, namespace_meta)
         assert (
             query_config.generate_query(
                 input_data={"email": ["customer-1@example.com"]}
