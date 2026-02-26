@@ -6,7 +6,7 @@ from sqlalchemy.orm import Load, Session, joinedload, load_only, noload, selecti
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-from fides.core.repository.session_management import (
+from fides.common.session.session_management import (
     with_optional_sync_readonly_session,
     with_optional_sync_session,
 )
