@@ -41,9 +41,7 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             )
         if namespace_meta:
             # Skip validation when the namespace_meta is clearly intended for a
-            # different connection type.  This happens when datasets of mixed types
-            # (e.g. BigQuery, Snowflake) are linked to a single connection in tests
-            # or migration scenarios.
+            # different connection type.
             meta_connection_type = namespace_meta.get("connection_type")
             if meta_connection_type and meta_connection_type != connection_type:
                 return
