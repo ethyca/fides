@@ -1,5 +1,6 @@
 import { baseApi } from "~/features/common/api.slice";
 import type {
+  ChatChannelsResponse,
   ChatConfigCreate,
   ChatConfigListResponse,
   ChatConfigUpdate,
@@ -89,6 +90,11 @@ const chatProviderApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    getChatChannels: build.query<ChatChannelsResponse, void>({
+      query: () => ({
+        url: "plus/chat/channels",
+      }),
+    }),
   }),
 });
 
@@ -104,4 +110,6 @@ export const {
   useUpdateChatConfigSecretsMutation,
   // Messaging
   useSendChatMessageMutation,
+  // Channels
+  useGetChatChannelsQuery,
 } = chatProviderApi;
