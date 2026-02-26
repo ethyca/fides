@@ -18,7 +18,6 @@ from fides.api.graph.config import Collection, CollectionAddress, Field, GraphDa
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.api.util.domain_util import wildcard_to_regex
 from fides.config import CONFIG
 from fides.config.helpers import load_file
 
@@ -59,42 +58,6 @@ def deny_unsafe_hosts(host: str) -> str:
 def is_domain_validation_disabled() -> bool:
     """Check if domain validation is disabled via config flags."""
     return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
-
-
-def validate_value_against_allowed_list(
-    value: str, allowed_values: List[str], param_name: str
-) -> None:
-    """
-    Validate that a value matches at least one of the allowed patterns.
-
-    Each entry in allowed_values is a wildcard pattern that is matched
-    case-insensitively against the full value string.  The only special
-    character is ``*`` which matches any sequence of characters (including
-    dots).  Everything else is treated as a literal.
-
-    An empty ``allowed_values`` list means the param is self-hosted and any
-    value is permitted.
-
-    Examples:
-      - Exact: "api.stripe.com"
-      - Subdomain wildcard: "*.salesforce.com"
-      - Any position: "api.*.stripe.com"
-
-    Raises ValueError if the value does not match any allowed pattern.
-    """
-    if not allowed_values:
-        return
-
-    value_stripped = value.strip()
-    for pattern in allowed_values:
-        pattern_stripped = pattern.strip()
-        regex = wildcard_to_regex(pattern_stripped)
-        if re.fullmatch(regex, value_stripped, re.IGNORECASE):
-            return
-    raise ValueError(
-        f"The value '{value}' for '{param_name}' is not in the list of "
-        f"allowed values: [{', '.join(allowed_values)}]"
-    )
 
 
 def load_yaml_as_string(filename: str) -> str:

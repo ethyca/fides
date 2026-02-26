@@ -10,6 +10,7 @@ from fides.api.graph.config import (
 )
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.util.collection_util import unflatten_dict
+from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.api.util.saas_util import (
     assign_placeholders,
     check_dataset_missing_reference_values,
@@ -17,7 +18,6 @@ from fides.api.util.saas_util import (
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
-    validate_value_against_allowed_list,
 )
 
 
@@ -827,6 +827,12 @@ class TestValidateValueAgainstAllowedList:
                 ["?*.salesforce.com"],
                 False,
                 id="question_mark_is_literal_not_regex",
+            ),
+            pytest.param(
+                ".salesforce.com",
+                ["*.salesforce.com"],
+                False,
+                id="wildcard_rejects_empty_subdomain",
             ),
             pytest.param(
                 "evil.example.com", ["api.stripe.com"], False, id="different_domain"
