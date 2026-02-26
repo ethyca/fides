@@ -40,8 +40,12 @@ def test_validate_unsupported_connection_type():
     validator.validate(context)
 
 
-def test_validate_postgres_missing_namespace_and_secrets():
-    """Test validation fails when Postgres dataset has no namespace metadata and missing required secrets"""
+def test_validate_postgres_without_namespace_or_schema():
+    """Test validation passes for Postgres without namespace_meta or db_schema.
+
+    Postgres defaults to the public schema, so neither namespace_meta nor
+    db_schema is required — this must remain backward compatible.
+    """
     dataset = FideslangDataset(fides_key="test_dataset", collections=[])
     connection_config = ConnectionConfig(
         key="test_connection",
@@ -54,14 +58,7 @@ def test_validate_postgres_missing_namespace_and_secrets():
     )
 
     validator = NamespaceMetaValidationStep()
-    with pytest.raises(ValidationError) as exc:
-        validator.validate(context)
-
-    assert (
-        "Dataset for postgres connection must either have namespace metadata "
-        "or the connection must have values for the following fields:"
-    ) in str(exc.value)
-    assert "Schema" in str(exc.value)
+    validator.validate(context)  # Should not raise — defaults to public schema
 
 
 def test_validate_postgres_with_valid_namespace():
