@@ -162,7 +162,7 @@ export const PolicyConditionsTab = ({
   );
 
   return (
-    <>
+    <Flex vertical gap="small">
       <Title level={5} data-testid="policy-conditions-title">
         Policy conditions
       </Title>
@@ -266,6 +266,6 @@ export const PolicyConditionsTab = ({
       />
 
       {modalContext}
-    </>
+    </Flex>
   );
 };

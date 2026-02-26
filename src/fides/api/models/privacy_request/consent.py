@@ -97,9 +97,8 @@ class ConsentRequest(IdentityVerificationMixin, Base):
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache."""
-        prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
+        keys = cache.get_keys_by_prefix(f"id-{self.id}-identity-")
         return {key.split("-")[-1]: cache.get(key) for key in keys}
 
     def verify_identity(
