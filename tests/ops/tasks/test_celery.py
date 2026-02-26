@@ -1,9 +1,7 @@
 import os
 from unittest.mock import patch
 
-import pytest
-
-from fides.api.tasks import _create_celery, celery_app
+from fides.api.tasks import _create_celery
 from fides.config import CONFIG, CelerySettings, get_config
 
 
@@ -42,13 +40,8 @@ def test_celery_default_config() -> None:
     assert config.celery.task_default_queue == "fides"
 
     celery_app = _create_celery(config)
-    expected_broker = (
-        config.redis.get_cluster_connection_url()
-        if config.redis.cluster_enabled
-        else config.redis.connection_url
-    )
-    assert celery_app.conf["broker_url"] == expected_broker
-    assert celery_app.conf["result_backend"] == expected_broker
+    assert celery_app.conf["broker_url"] == CONFIG.redis.connection_url
+    assert celery_app.conf["result_backend"] == CONFIG.redis.connection_url
     assert celery_app.conf["event_queue_prefix"] == "fides_worker"
     assert celery_app.conf["task_default_queue"] == "fides"
     assert celery_app.conf["task_always_eager"] is True
@@ -95,58 +88,6 @@ def test_celery_arbitrary_env_vars() -> None:
 
     # Clear cache again for other tests
     get_config.cache_clear()
-
-
-def test_celery_cluster_mode_uses_cluster_urls() -> None:
-    """When redis.cluster_enabled is True, broker and result_backend use redis+cluster://."""
-    config = get_config()
-    cluster_url = "redis+cluster://:redispassword@127.0.0.1:6380/0"
-    with (
-        patch.object(config.redis, "cluster_enabled", True),
-        patch.object(
-            config.redis, "get_cluster_connection_url", return_value=cluster_url
-        ),
-    ):
-        celery_app = _create_celery(config=config)
-        assert celery_app.conf["broker_url"] == cluster_url
-        assert celery_app.conf["result_backend"] == cluster_url
-
-
-def test_celery_cluster_mode_respects_broker_backend_override() -> None:
-    """When cluster_enabled but broker_url/result_backend are set, overrides are used."""
-    config = get_config()
-    config.celery.broker_url = "redis://broker:6379/0"
-    config.celery.result_backend = "redis://backend:6379/1"
-    cluster_url = "redis+cluster://127.0.0.1:6380/0"
-    with (
-        patch.object(config.redis, "cluster_enabled", True),
-        patch.object(
-            config.redis, "get_cluster_connection_url", return_value=cluster_url
-        ),
-    ):
-        app = _create_celery(config=config)
-        assert app.conf["broker_url"] == "redis://broker:6379/0"
-        assert app.conf["result_backend"] == "redis://backend:6379/1"
-
-
-def test_celery_cluster_broker_connect() -> None:
-    """
-    Integration: when Redis cluster is enabled, the default Celery app can connect
-    to the broker (redis+cluster). Skip if cluster is not running.
-    Run with cluster: FIDES__REDIS__CLUSTER_ENABLED=true FIDES__REDIS__HOST=127.0.0.1
-    FIDES__REDIS__PORT=6380 FIDES__REDIS__PASSWORD=redispassword (and Procfile.redis-cluster).
-    """
-    if not CONFIG.redis.cluster_enabled:
-        pytest.skip("Redis cluster not enabled")
-    conn = celery_app.connection()
-    try:
-        conn.connect()
-        conn.release()
-    except Exception as e:
-        pytest.skip(
-            f"Redis cluster broker not reachable (start Procfile.redis-cluster or "
-            f"docker compose redis cluster): {e}"
-        )
 
 
 @patch.dict(

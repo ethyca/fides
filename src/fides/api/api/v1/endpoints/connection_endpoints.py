@@ -12,7 +12,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy import null, or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
@@ -166,8 +166,14 @@ def get_connections(
             )
 
     return paginate(
-        query.order_by(ConnectionConfig.name.asc()),
+        query.order_by(ConnectionConfig.name.asc()).options(
+            selectinload(ConnectionConfig.system)
+        ),
         params=params,
+        transformer=lambda items: [
+            ConnectionConfigurationResponse.from_connection_config(item)
+            for item in items
+        ],
     )
 
 
@@ -181,18 +187,9 @@ def get_connection_detail(
 ) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
     connection_config = get_connection_config_or_error(db, connection_key)
-
-    # Convert to Pydantic model with all fields
-    response = ConnectionConfigurationResponseWithSystemKey.model_validate(
+    return ConnectionConfigurationResponseWithSystemKey.from_connection_config(
         connection_config
     )
-
-    # Override just the system_key field to use only the system's fides_key without fallback
-    response.system_key = (
-        connection_config.system.fides_key if connection_config.system else None
-    )
-
-    return response
 
 
 @router.patch(

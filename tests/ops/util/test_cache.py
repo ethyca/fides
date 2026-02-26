@@ -8,9 +8,6 @@ from unittest import mock
 
 import pytest
 from bson.objectid import ObjectId
-from redis.exceptions import ConnectionError as RedisConnectionError
-from redis.exceptions import RedisClusterException
-from redis.exceptions import TimeoutError as RedisTimeoutError
 
 from fides.api.util.cache import (
     FidesopsRedis,
@@ -101,7 +98,8 @@ class TestCustomJSONEncoder:
         class TestEnum(Enum):
             test = "test_value"
 
-        result = FidesopsRedis.encode_obj({"key": TestEnum.test})
+        cache = FidesopsRedis()
+        result = cache.encode_obj({"key": TestEnum.test})
 
         assert result == '{"key": "test_value"}'
 
@@ -109,7 +107,8 @@ class TestCustomJSONEncoder:
         class TestEnum(Enum):
             test = {"key": "test_value"}
 
-        result = FidesopsRedis.encode_obj({"key": TestEnum.test})
+        cache = FidesopsRedis()
+        result = cache.encode_obj({"key": TestEnum.test})
 
         assert result == '{"key": {"key": "test_value"}}'
 
@@ -118,7 +117,8 @@ class TestCustomJSONEncoder:
             def __init__(self):
                 self.val = "some value"
 
-        assert FidesopsRedis.encode_obj(SomeClass()) == '{"val": "some value"}'
+        cache = FidesopsRedis()
+        assert cache.encode_obj(SomeClass()) == '{"val": "some value"}'
 
     @pytest.mark.parametrize(
         "value, expected",
@@ -148,7 +148,8 @@ class TestCustomJSONEncoder:
         ],
     )
     def test_encode(self, value, expected):
-        assert FidesopsRedis.encode_obj(value) == expected
+        cache = FidesopsRedis()
+        assert cache.encode_obj(value) == expected
 
 
 class PickleObj:
@@ -186,12 +187,14 @@ class TestCustomDecoder:
         ],
     )
     def test_cache_decode(self, value, expected):
-        assert FidesopsRedis.decode_obj(value) == expected
+        cache = FidesopsRedis()
+        assert cache.decode_obj(value) == expected
 
     def test_decode_pickle_doesnt_break(self):
         """Test to ensure cache values in the old format don't break the decode."""
         value = b64encode(pickle.dumps(PickleObj()))
-        assert FidesopsRedis.decode_obj(value) is None
+        cache = FidesopsRedis()
+        assert cache.decode_obj(value) is None
 
 
 class TestCacheTaskTrackingKey:
@@ -448,111 +451,3 @@ class TestPrivacyRequestRetryCache:
         # Reset and verify
         reset_privacy_request_retry_count(privacy_request_id)
         assert get_privacy_request_retry_count(privacy_request_id) == 0
-
-
-def _cluster_skip_reason(e: Exception) -> str:
-    msg = str(e).lower()
-    if "slots are not covered" in msg or "not covered after query" in msg:
-        return (
-            "Cluster slots not fully covered. Run cluster tests from inside Docker so "
-            "the client can reach all nodes: docker compose run --rm fides env "
-            "FIDES__REDIS__CLUSTER_ENABLED=true FIDES__REDIS__HOST=redis-cluster-node-1 "
-            "FIDES__REDIS__PORT=6379 FIDES__REDIS__PASSWORD=redispassword "
-            "uv run pytest tests/ops/util/test_cache.py::TestRedisClusterMode -v"
-        )
-    if "172.19.0" in msg or "connection refused" in msg:
-        return (
-            "Cluster nodes use Docker addresses. Run tests inside the stack: "
-            "docker compose run --rm fides env FIDES__REDIS__CLUSTER_ENABLED=true "
-            "FIDES__REDIS__HOST=redis-cluster-node-1 FIDES__REDIS__PORT=6379 "
-            "FIDES__REDIS__PASSWORD=redispassword uv run pytest tests/ops/util/test_cache.py::TestRedisClusterMode -v"
-        )
-    return (
-        "Redis cluster not reachable. Run tests inside Docker with HOST=redis-cluster-node-1 "
-        "PORT=6379, or run without FIDES__REDIS__CLUSTER_ENABLED"
-    )
-
-
-@pytest.fixture
-def redis_cluster_cache() -> FidesopsRedis:
-    """
-    Cache for TestRedisClusterMode. Skips when cluster is enabled but unreachable
-    (e.g. CI without a running cluster) instead of failing with connection timeout.
-    Run cluster tests from inside Docker: docker compose run --rm fides env
-    FIDES__REDIS__CLUSTER_ENABLED=true FIDES__REDIS__HOST=redis-cluster-node-1
-    FIDES__REDIS__PORT=6379 FIDES__REDIS__PASSWORD=redispassword
-    uv run pytest tests/ops/util/test_cache.py::TestRedisClusterMode -v
-    """
-    from fides.api.util.cache import get_cache
-
-    try:
-        return get_cache()
-    except (RedisClusterException, RedisConnectionError, RedisTimeoutError) as e:
-        if CONFIG.redis.cluster_enabled:
-            pytest.skip(f"{_cluster_skip_reason(e)}: {e}")
-        raise
-
-
-class TestRedisClusterMode:
-    """
-    Integration tests for Redis Cluster support in FidesopsRedis.
-    Run against a real Redis (standalone or cluster) via redis_cluster_cache.
-    With FIDES__REDIS__CLUSTER_ENABLED=true and a cluster, these exercise the
-    cluster code paths (get_primaries scan, mget_nonatomic, delete_keys_by_prefix).
-    Skips when cluster is enabled but unreachable.
-
-    The Docker Compose cluster uses Docker hostnames so nodes can reach each other.
-    Run these tests FROM INSIDE the stack so the client can reach all nodes:
-      docker compose run --rm fides env \\
-        FIDES__REDIS__CLUSTER_ENABLED=true FIDES__REDIS__HOST=redis-cluster-node-1 \\
-        FIDES__REDIS__PORT=6379 FIDES__REDIS__PASSWORD=redispassword \\
-        uv run pytest tests/ops/util/test_cache.py::TestRedisClusterMode -v
-    """
-
-    def test_fidesops_redis_wrapper_delegates_to_client(
-        self, redis_cluster_cache: FidesopsRedis
-    ):
-        """Cache delegates get/set/ping to the underlying client."""
-        key = f"cluster_test_{random.random()}_k"
-        redis_cluster_cache.set(key, "v")
-        assert redis_cluster_cache.get(key) == "v"
-        assert redis_cluster_cache.ping() is True
-        redis_cluster_cache.delete(key)
-
-    def test_get_keys_by_prefix_uses_primaries_when_cluster(
-        self, redis_cluster_cache: FidesopsRedis
-    ):
-        """get_keys_by_prefix returns all keys matching the prefix (cluster-aware)."""
-        prefix = f"cluster_test_{random.random()}_id-1-identity-"
-        redis_cluster_cache.set(f"{prefix}email", "e")
-        redis_cluster_cache.set(f"{prefix}name", "n")
-        keys = redis_cluster_cache.get_keys_by_prefix(prefix)
-        assert len(keys) == 2
-        assert f"{prefix}email" in keys
-        assert f"{prefix}name" in keys
-        redis_cluster_cache.delete(f"{prefix}email")
-        redis_cluster_cache.delete(f"{prefix}name")
-
-    def test_get_values_uses_mget_path(self, redis_cluster_cache: FidesopsRedis):
-        """get_values returns a dict of key -> value (mget or mget_nonatomic)."""
-        prefix = f"cluster_test_{random.random()}_"
-        k1, k2 = f"{prefix}k1", f"{prefix}k2"
-        redis_cluster_cache.set(k1, "v1")
-        redis_cluster_cache.set(k2, "v2")
-        result = redis_cluster_cache.get_values([k1, k2])
-        assert result == {k1: "v1", k2: "v2"}
-        redis_cluster_cache.delete(k1)
-        redis_cluster_cache.delete(k2)
-
-    def test_delete_keys_by_prefix_scans_then_deletes_when_cluster(
-        self, redis_cluster_cache: FidesopsRedis
-    ):
-        """delete_keys_by_prefix removes all keys matching the prefix."""
-        prefix = f"cluster_test_{random.random()}_p-"
-        redis_cluster_cache.set(f"{prefix}a", "1")
-        redis_cluster_cache.set(f"{prefix}b", "2")
-        keys_before = redis_cluster_cache.get_keys_by_prefix(prefix)
-        assert len(keys_before) == 2
-        redis_cluster_cache.delete_keys_by_prefix(prefix)
-        keys_after = redis_cluster_cache.get_keys_by_prefix(prefix)
-        assert len(keys_after) == 0

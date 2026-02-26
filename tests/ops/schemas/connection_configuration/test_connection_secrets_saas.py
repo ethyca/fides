@@ -133,18 +133,17 @@ class TestSaaSConnectionSecretsDomainValidation:
     def saas_config_with_allowed_values(
         self, saas_example_config: Dict[str, Any]
     ) -> SaaSConfig:
-        config = SaaSConfig(**saas_example_config)
-        config.connector_params = [
-            ConnectorParam(
-                name="domain",
-                default_value="api.stripe.com",
-                type="endpoint",
-                allowed_values=["api.stripe.com"],
-            ),
-            ConnectorParam(name="api_key"),
+        saas_example_config["connector_params"] = [
+            {
+                "name": "domain",
+                "default_value": "api.stripe.com",
+                "type": "endpoint",
+                "allowed_values": ["api.stripe.com"],
+            },
+            {"name": "api_key"},
         ]
-        config.external_references = []
-        return config
+        saas_example_config["external_references"] = []
+        return SaaSConfig(**saas_example_config)
 
     @patch(
         "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
@@ -190,17 +189,17 @@ class TestSaaSConnectionSecretsDomainValidation:
         self, mock_disabled, saas_example_config: Dict[str, Any]
     ):
         """Empty allowed_values list should permit any domain value."""
-        config = SaaSConfig(**saas_example_config)
-        config.connector_params = [
-            ConnectorParam(
-                name="domain",
-                default_value="custom.example.com",
-                type="endpoint",
-                allowed_values=[],
-            ),
-            ConnectorParam(name="api_key"),
+        saas_example_config["connector_params"] = [
+            {
+                "name": "domain",
+                "default_value": "custom.example.com",
+                "type": "endpoint",
+                "allowed_values": [],
+            },
+            {"name": "api_key"},
         ]
-        config.external_references = []
+        saas_example_config["external_references"] = []
+        config = SaaSConfig(**saas_example_config)
         schema = SaaSSchemaFactory(config).get_saas_schema()
         schema.model_validate(
             {"domain": "anything.example.com", "api_key": "sk_test_123"}
@@ -214,12 +213,12 @@ class TestSaaSConnectionSecretsDomainValidation:
         self, mock_disabled, saas_example_config: Dict[str, Any]
     ):
         """None allowed_values (omitted) should skip validation entirely."""
-        config = SaaSConfig(**saas_example_config)
-        config.connector_params = [
-            ConnectorParam(name="domain", default_value="localhost"),
-            ConnectorParam(name="api_key"),
+        saas_example_config["connector_params"] = [
+            {"name": "domain", "default_value": "localhost"},
+            {"name": "api_key"},
         ]
-        config.external_references = []
+        saas_example_config["external_references"] = []
+        config = SaaSConfig(**saas_example_config)
         schema = SaaSSchemaFactory(config).get_saas_schema()
         schema.model_validate(
             {"domain": "literally-anything", "api_key": "sk_test_123"}
@@ -233,16 +232,16 @@ class TestSaaSConnectionSecretsDomainValidation:
         self, mock_disabled, saas_example_config: Dict[str, Any]
     ):
         """Wildcard patterns in allowed_values should be validated."""
-        config = SaaSConfig(**saas_example_config)
-        config.connector_params = [
-            ConnectorParam(
-                name="domain",
-                type="endpoint",
-                allowed_values=["*.salesforce.com"],
-            ),
-            ConnectorParam(name="api_key"),
+        saas_example_config["connector_params"] = [
+            {
+                "name": "domain",
+                "type": "endpoint",
+                "allowed_values": ["*.salesforce.com"],
+            },
+            {"name": "api_key"},
         ]
-        config.external_references = []
+        saas_example_config["external_references"] = []
+        config = SaaSConfig(**saas_example_config)
         schema = SaaSSchemaFactory(config).get_saas_schema()
         schema.model_validate(
             {"domain": "na1.salesforce.com", "api_key": "sk_test_123"}
@@ -256,16 +255,16 @@ class TestSaaSConnectionSecretsDomainValidation:
         self, mock_disabled, saas_example_config: Dict[str, Any]
     ):
         """Domain not matching wildcard pattern should fail."""
-        config = SaaSConfig(**saas_example_config)
-        config.connector_params = [
-            ConnectorParam(
-                name="domain",
-                type="endpoint",
-                allowed_values=["*.salesforce.com"],
-            ),
-            ConnectorParam(name="api_key"),
+        saas_example_config["connector_params"] = [
+            {
+                "name": "domain",
+                "type": "endpoint",
+                "allowed_values": ["*.salesforce.com"],
+            },
+            {"name": "api_key"},
         ]
-        config.external_references = []
+        saas_example_config["external_references"] = []
+        config = SaaSConfig(**saas_example_config)
         schema = SaaSSchemaFactory(config).get_saas_schema()
         with pytest.raises(ValidationError, match="not in the list of allowed values"):
             schema.model_validate(
