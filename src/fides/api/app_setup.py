@@ -11,7 +11,6 @@ from fastapi.exceptions import ResponseValidationError
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from loguru import logger
-from pydantic import ValidationError
 from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
@@ -30,7 +29,6 @@ from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTE
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import (
     ExceptionHandlers,
-    pydantic_validation_error_handler,
     response_validation_error_handler,
 )
 from fides.api.asgi_middleware import (
@@ -113,10 +111,6 @@ def create_fides_app(
     fastapi_app.add_exception_handler(
         ResponseValidationError,
         response_validation_error_handler,  # type: ignore[arg-type]
-    )
-    fastapi_app.add_exception_handler(
-        ValidationError,
-        pydantic_validation_error_handler,  # type: ignore[arg-type]
     )
 
     if is_rate_limit_enabled:

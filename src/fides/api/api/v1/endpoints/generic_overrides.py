@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.sqlalchemy import paginate as async_paginate
 from fideslang.models import Dataset as FideslangDataset
+from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -69,6 +70,32 @@ dataset_router = APIRouter(tags=["Dataset"], prefix=V1_URL_PREFIX)
 data_use_router = APIRouter(tags=["DataUse"], prefix=V1_URL_PREFIX)
 data_category_router = APIRouter(tags=["DataCategory"], prefix=V1_URL_PREFIX)
 data_subject_router = APIRouter(tags=["DataSubject"], prefix=V1_URL_PREFIX)
+
+
+def _dataset_validation_error_response(
+    exc: PydanticValidationError,
+) -> JSONResponse:
+    """Return a structured 422 response for dataset validation failures.
+
+    Scoped to dataset endpoints to avoid masking unrelated pydantic errors
+    as 422s across the application.
+    """
+    errors = exc.errors()
+    field_errors = [
+        {"loc": e.get("loc"), "msg": e.get("msg"), "type": e.get("type")}
+        for e in errors
+    ]
+    logger.error(
+        "Dataset validation error: "
+        f"{len(field_errors)} validation error(s): {field_errors}"
+    )
+    return JSONResponse(
+        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": "The requested dataset contains data that fails validation.",
+            "errors": field_errors,
+        },
+    )
 
 
 @dataset_router.post(
@@ -218,12 +245,13 @@ async def list_dataset_paginated(
     if not page and not size:
         results = await list_resource_query(db, filtered_query, CtlDataset)
         if skip_validation:
-            return JSONResponse(
-                content=jsonable_encoder([result.__dict__ for result in results])
-            )
-        response = [
-            DatasetResponse.model_validate(result.__dict__) for result in results
-        ]
+            return JSONResponse(content=jsonable_encoder(results))
+        try:
+            response = [
+                DatasetResponse.model_validate(result.__dict__) for result in results
+            ]
+        except PydanticValidationError as exc:
+            return _dataset_validation_error_response(exc)
         return response
 
     pagination_params = Params(page=page or 1, size=size or 50)
@@ -232,13 +260,15 @@ async def list_dataset_paginated(
     if skip_validation:
         return JSONResponse(content=jsonable_encoder(results))
 
-    validated_items = []
-    for result in results.items:  # type: ignore[attr-defined]
-        # run pydantic validation in a threadpool to avoid blocking the main thread
-        validated_item = await run_in_threadpool(
-            partial(DatasetResponse.model_validate, result.__dict__)
-        )
-        validated_items.append(validated_item)
+    try:
+        validated_items = []
+        for result in results.items:  # type: ignore[attr-defined]
+            validated_item = await run_in_threadpool(
+                partial(DatasetResponse.model_validate, result.__dict__)
+            )
+            validated_items.append(validated_item)
+    except PydanticValidationError as exc:
+        return _dataset_validation_error_response(exc)
 
     results.items = validated_items  # type: ignore[attr-defined]
 
@@ -269,7 +299,7 @@ async def get_dataset(
             detail=str(e),
         )
     if skip_validation:
-        return JSONResponse(content=jsonable_encoder(result.__dict__))
+        return JSONResponse(content=jsonable_encoder(result))
     return result
 
 

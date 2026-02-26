@@ -4,7 +4,6 @@ from fastapi import Request
 from fastapi.exceptions import ResponseValidationError
 from fastapi.responses import JSONResponse
 from loguru import logger
-from pydantic import ValidationError
 from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
     HTTP_500_INTERNAL_SERVER_ERROR,
@@ -40,37 +39,6 @@ async def response_validation_error_handler(
         content={
             "detail": "The requested resource contains data that fails validation "
             "when serializing the response.",
-            "errors": field_errors,
-        },
-    )
-
-
-async def pydantic_validation_error_handler(
-    request: Request, exc: ValidationError
-) -> JSONResponse:
-    """Handle pydantic ValidationError raised from explicit model_validate() calls.
-
-    This occurs when endpoint code validates database records against a response
-    schema and the data is inconsistent — for example, a dataset field with
-    data_type='string' that has sub-fields (should be 'object').
-    """
-    errors = exc.errors()
-    field_errors = [
-        {
-            "loc": error.get("loc"),
-            "msg": error.get("msg"),
-            "type": error.get("type"),
-        }
-        for error in errors
-    ]
-    logger.error(
-        f"Pydantic validation error for {request.method} {request.url.path}: "
-        f"{len(field_errors)} validation error(s): {field_errors}"
-    )
-    return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "detail": "The requested resource contains data that fails validation.",
             "errors": field_errors,
         },
     )
