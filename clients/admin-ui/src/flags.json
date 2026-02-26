@@ -63,8 +63,8 @@
     "test": false,
     "production": false
   },
-  "policies": {
-    "label": "DSR Policies",
+  "alphaPolicies": {
+    "label": "Alpha DSR Policies",
     "description": "Privacy request policies management",
     "development": true,
     "test": true,
