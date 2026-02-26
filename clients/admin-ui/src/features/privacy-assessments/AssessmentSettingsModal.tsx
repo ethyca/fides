@@ -20,6 +20,7 @@ import { useAPIHelper } from "~/features/common/hooks";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
+import { FREQUENCY_OPTIONS } from "./constants";
 import {
   useGetAssessmentConfigDefaultsQuery,
   useGetAssessmentConfigQuery,
@@ -27,14 +28,6 @@ import {
 } from "./privacy-assessments.slice";
 
 const { Title } = Typography;
-
-// Frequency options for the schedule picker
-const FREQUENCY_OPTIONS = [
-  { label: "Daily", value: "daily", cron: "0 9 * * *" },
-  { label: "Weekly (Mondays)", value: "weekly", cron: "0 9 * * 1" },
-  { label: "Monthly (1st)", value: "monthly", cron: "0 9 1 * *" },
-  { label: "Yearly (Jan 1st)", value: "yearly", cron: "0 9 1 1 *" },
-];
 
 interface AssessmentSettingsModalProps {
   open: boolean;
@@ -129,31 +122,26 @@ const AssessmentSettingsModal = ({
   };
 
   const handleSave = async () => {
-    try {
-      const values = await form.validateFields();
+    const values = await form.validateFields();
 
-      // Find channel name for display
-      const selectedChannel = channelsData?.channels.find(
-        (ch) => ch.id === values.slack_channel_id,
-      );
+    const selectedChannel = channelsData?.channels.find(
+      (ch) => ch.id === values.slack_channel_id,
+    );
 
-      const result = await updateConfig({
-        assessment_model_override: values.assessment_model_override || null,
-        chat_model_override: values.chat_model_override || null,
-        reassessment_enabled: values.reassessment_enabled,
-        reassessment_cron: values.reassessment_cron,
-        slack_channel_id: values.slack_channel_id || null,
-        slack_channel_name: selectedChannel?.name || null,
-      });
+    const result = await updateConfig({
+      assessment_model_override: values.assessment_model_override || null,
+      chat_model_override: values.chat_model_override || null,
+      reassessment_enabled: values.reassessment_enabled,
+      reassessment_cron: values.reassessment_cron,
+      slack_channel_id: values.slack_channel_id || null,
+      slack_channel_name: selectedChannel?.name || null,
+    });
 
-      if (isErrorResult(result)) {
-        handleError(result.error);
-      } else {
-        message.success("Assessment settings saved successfully");
-        onClose();
-      }
-    } catch {
-      // Form validation error - handled by antd
+    if (isErrorResult(result)) {
+      handleError(result.error);
+    } else {
+      message.success("Assessment settings saved successfully");
+      onClose();
     }
   };
 
@@ -188,7 +176,7 @@ const AssessmentSettingsModal = ({
         {/* LLM Configuration Section */}
         <Flex vertical>
           <div className="mb-3">
-            <Title level={5}>LLM Model Configuration</Title>
+            <Title level={5}>LLM model configuration</Title>
           </div>
 
           <Form.Item
@@ -219,7 +207,7 @@ const AssessmentSettingsModal = ({
         {/* Re-assessment Schedule Section */}
         <Flex vertical>
           <div className="mb-3">
-            <Title level={5}>Automatic Reassessment</Title>
+            <Title level={5}>Automatic reassessment</Title>
           </div>
 
           <Form.Item
@@ -238,7 +226,7 @@ const AssessmentSettingsModal = ({
                 initialValue="daily"
               >
                 <Select
-                  aria-label="Schedule Frequency"
+                  aria-label="Schedule frequency"
                   options={[
                     ...FREQUENCY_OPTIONS,
                     { label: "Custom (Advanced)", value: "custom" },
@@ -251,7 +239,7 @@ const AssessmentSettingsModal = ({
               {showCustomCron && (
                 <Form.Item
                   name="reassessment_cron"
-                  label="Cron Expression"
+                  label="Cron expression"
                   tooltip="Enter a valid cron expression (e.g., '0 9 * * *' for daily at 9am)"
                   rules={[
                     {
@@ -313,11 +301,11 @@ const AssessmentSettingsModal = ({
           ) : (
             <Form.Item
               name="slack_channel_id"
-              label="Questionnaire Notifications Channel"
+              label="Questionnaire notifications channel"
               tooltip="Select the Slack channel where questionnaire notifications will be sent"
             >
               <Select
-                aria-label="Questionnaire Notifications Channel"
+                aria-label="Questionnaire notifications channel"
                 options={channelOptions}
                 placeholder="Select a channel"
                 loading={isLoadingChannels}
