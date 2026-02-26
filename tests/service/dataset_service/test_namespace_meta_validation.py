@@ -6,6 +6,9 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (  # noqa: F401
     BigQueryNamespaceMeta,
 )
+from fides.api.schemas.namespace_meta.google_cloud_sql_postgres_namespace_meta import (  # noqa: F401
+    GoogleCloudSQLPostgresNamespaceMeta,
+)
 from fides.api.schemas.namespace_meta.rds_postgres_namespace_meta import (  # noqa: F401
     RDSPostgresNamespaceMeta,
 )
@@ -132,6 +135,97 @@ def test_validate_postgres_with_invalid_namespace():
         validator.validate(context)
 
     assert "Invalid namespace metadata for postgres" in str(exc.value)
+
+
+def test_validate_gcs_postgres_without_namespace_or_schema():
+    """Test validation passes for GCS Postgres without namespace_meta or db_schema.
+
+    GCS Postgres defaults to the public schema, so neither namespace_meta nor
+    db_schema is required — this must remain backward compatible.
+    """
+    dataset = FideslangDataset(fides_key="test_dataset", collections=[])
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.google_cloud_sql_postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    validator.validate(context)  # Should not raise
+
+
+def test_validate_gcs_postgres_with_valid_namespace():
+    """Test validation succeeds with valid GCS Postgres namespace metadata"""
+    dataset = FideslangDataset(
+        fides_key="test_dataset",
+        collections=[],
+        fides_meta={
+            "namespace": {
+                "schema": "billing",
+            }
+        },
+    )
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.google_cloud_sql_postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    validator.validate(context)
+
+
+def test_validate_gcs_postgres_with_connection_defaults():
+    """Test validation succeeds when GCS Postgres has db_schema in secrets"""
+    dataset = FideslangDataset(fides_key="test_dataset", collections=[])
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.google_cloud_sql_postgres,
+        name="Test Connection",
+        secrets={"db_schema": "billing"},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    validator.validate(context)
+
+
+def test_validate_gcs_postgres_with_invalid_namespace():
+    """Test validation fails with invalid GCS Postgres namespace metadata"""
+    dataset = FideslangDataset(
+        fides_key="test_dataset",
+        collections=[],
+        fides_meta={
+            "namespace": {
+                "database_name": "prod_db",  # Missing required schema
+            }
+        },
+    )
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.google_cloud_sql_postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    with pytest.raises(ValidationError) as exc:
+        validator.validate(context)
+
+    assert "Invalid namespace metadata for google_cloud_sql_postgres" in str(exc.value)
 
 
 def test_validate_snowflake_missing_namespace_and_secrets():
@@ -307,7 +401,7 @@ def test_validate_mismatched_namespace_skipped():
     )
     connection_config = ConnectionConfig(
         key="test_connection",
-        connection_type=ConnectionType.postgres,
+        connection_type=ConnectionType.google_cloud_sql_postgres,
         name="Test Connection",
         secrets={},
     )
@@ -316,7 +410,7 @@ def test_validate_mismatched_namespace_skipped():
     )
 
     validator = NamespaceMetaValidationStep()
-    # Should not raise — namespace is for BigQuery, not Postgres
+    # Should not raise — namespace is for BigQuery, not GCS Postgres
     validator.validate(context)
 
 
