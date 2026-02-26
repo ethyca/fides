@@ -1142,9 +1142,6 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
-    - name: system_id
-      description: 'The identifier of the system to locate this data within'
-      data_categories: [system.operations]
     - name: enabled_actions
       description: 'The privacy actions that are enabled for this connection'
       data_categories: [system.operations]
@@ -2483,6 +2480,19 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
     - name: updated_systems
+      data_categories: [system.operations]
+  - name: system_connection_config_link
+    description: 'Join table linking systems to connection configurations'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: system_id
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
       data_categories: [system.operations]
   - name: tcf_purpose_overrides
     fields:

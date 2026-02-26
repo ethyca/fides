@@ -81,6 +81,10 @@ const IntegrationDetailView: NextPage = () => {
   const supportsConnectionTest =
     connection?.connection_type !== ConnectionType.MANUAL_TASK;
 
+  const supportsSystemLinking =
+    connection?.connection_type !== ConnectionType.WEBSITE &&
+    connection?.connection_type !== ConnectionType.MANUAL_TASK;
+
   const tabs = useFeatureBasedTabs({
     connection,
     enabledFeatures,
@@ -94,6 +98,7 @@ const IntegrationDetailView: NextPage = () => {
     overview,
     instructions,
     supportsConnectionTest,
+    supportsSystemLinking,
   });
 
   const { activeTab, onTabChange } = useURLHashedTabs({

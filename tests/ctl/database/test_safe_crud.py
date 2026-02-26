@@ -11,15 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from fides.api.db import safe_crud
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
 from fides.api.models.sql_models import (
     CustomField,
     CustomFieldDefinition,
     DataCategory,
+    PrivacyDeclaration,
     ResourceTypes,
     System,
 )
@@ -411,15 +407,16 @@ class TestSafeCrudDeleteResource:
         system = await safe_crud.create_resource(System, system_data, async_session)
         await async_session.commit()
 
-        # Create a ConnectionConfig that references the system
-        # This creates a real foreign key constraint
-        connection_config_data = {
-            "key": f"test_connection_{uuid4().hex[:8]}",
-            "connection_type": ConnectionType.postgres,
-            "access": AccessLevel.read,
+        # Create a PrivacyDeclaration that references the system
+        # This creates a real foreign key constraint (non-cascading)
+        declaration_data = {
+            "name": "Test declaration",
             "system_id": system.id,
+            "data_use": "essential",
+            "data_categories": [],
+            "data_subjects": [],
         }
-        ConnectionConfig.create(db=db, data=connection_config_data)
+        PrivacyDeclaration.create(db=db, data=declaration_data)
 
         # Now try to delete the system - this should fail with a foreign key constraint
         with pytest.raises(HTTPException) as exc_info:

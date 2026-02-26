@@ -1,11 +1,19 @@
 import { baseApi } from "~/features/common/api.slice";
 import type {
+  BulkPutPolicyResponse,
   MaskingStrategyDescription,
   Page_PolicyResponse_,
+  PolicyConditionRequest,
+  PolicyConditionResponse,
   PolicyResponse,
 } from "~/types/api";
 
-// Policy API
+interface PolicyCreateUpdate {
+  name: string;
+  key?: string;
+  execution_timeframe?: number | null;
+}
+
 const policyApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getPolicies: build.query<Page_PolicyResponse_, void>({
@@ -20,8 +28,43 @@ const policyApi = baseApi.injectEndpoints({
       ],
     }),
 
+    createOrUpdatePolicies: build.mutation<
+      BulkPutPolicyResponse,
+      PolicyCreateUpdate[]
+    >({
+      query: (policies) => ({
+        url: `/dsr/policy`,
+        method: "PATCH",
+        body: policies,
+      }),
+      invalidatesTags: ["Policies"],
+    }),
+
+    deletePolicy: build.mutation<void, string>({
+      query: (policyKey) => ({
+        url: `/dsr/policy/${policyKey}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Policies"],
+    }),
+
     getMaskingStrategies: build.query<MaskingStrategyDescription[], void>({
       query: () => ({ url: `/masking/strategy` }),
+    }),
+
+    updatePolicyConditions: build.mutation<
+      PolicyConditionResponse,
+      { policyKey: string; condition: PolicyConditionRequest["condition"] }
+    >({
+      query: ({ policyKey, condition }) => ({
+        url: `/plus/dsr/policy/${policyKey}/conditions`,
+        method: "PUT",
+        body: { condition },
+      }),
+      invalidatesTags: (_r, _e, { policyKey }) => [
+        { type: "Policies", id: policyKey },
+        "Policies",
+      ],
     }),
   }),
 });
@@ -29,5 +72,8 @@ const policyApi = baseApi.injectEndpoints({
 export const {
   useGetPoliciesQuery,
   useGetPolicyQuery,
+  useCreateOrUpdatePoliciesMutation,
+  useDeletePolicyMutation,
   useGetMaskingStrategiesQuery,
+  useUpdatePolicyConditionsMutation,
 } = policyApi;
