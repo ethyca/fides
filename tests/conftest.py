@@ -925,7 +925,7 @@ def access_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the access request for either DSR 2.0 and DSR 3.0
+    Function for testing the access request using DSR 3.0.
     """
     try:
         return access_runner(
@@ -955,7 +955,7 @@ def erasure_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the erasure runner for either DSR 2.0 and DSR 3.0
+    Function for testing the erasure runner using DSR 3.0.
     """
     try:
         return erasure_runner(
@@ -984,7 +984,7 @@ def consent_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the consent request for either DSR 2.0 and DSR 3.0
+    Function for testing the consent request using DSR 3.0.
     """
     try:
         return consent_runner(

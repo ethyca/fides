@@ -15,10 +15,6 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 
 @pytest.mark.integration_saas
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_create_and_process_access_request_saas_mailchimp(
     trigger_webhook_mock,
     mailchimp_connection_config,
@@ -28,13 +24,9 @@ def test_create_and_process_access_request_saas_mailchimp(
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
-    dsr_version,
-    request,
     mailchimp_identity_email,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = mailchimp_identity_email
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -68,10 +60,6 @@ def test_create_and_process_access_request_saas_mailchimp(
 
 @pytest.mark.integration_saas
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_create_and_process_erasure_request_saas(
     _,
     mailchimp_connection_config,
@@ -80,14 +68,11 @@ def test_create_and_process_erasure_request_saas(
     cache,
     erasure_policy_hmac,
     generate_auth_header,
-    dsr_version,
     request,
     mailchimp_identity_email,
     reset_mailchimp_data,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = mailchimp_identity_email
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",

@@ -3,7 +3,6 @@ import pytest
 from fides.api.graph.graph import DatasetGraph
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
-from fides.api.task.graph_task import get_cached_data_for_erasures
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
@@ -15,10 +14,6 @@ def test_mailchimp_connection_test(mailchimp_connection_config) -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_mailchimp_access_request_task(
     db,
     policy,
@@ -26,12 +21,8 @@ async def test_mailchimp_access_request_task(
     mailchimp_dataset_config,
     mailchimp_identity_email,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
     """Full access request based on the Mailchimp SaaS config"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     identity = Identity(**{"email": mailchimp_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -97,10 +88,6 @@ async def test_mailchimp_access_request_task(
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_mailchimp_erasure_request_task(
     db,
     privacy_request,
@@ -109,12 +96,8 @@ async def test_mailchimp_erasure_request_task(
     mailchimp_dataset_config,
     mailchimp_identity_email,
     reset_mailchimp_data,
-    dsr_version,
-    request,
 ) -> None:
     """Full erasure request based on the Mailchimp SaaS config"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     privacy_request.policy_id = erasure_policy_string_rewrite.id
     privacy_request.save(db)
 
@@ -140,7 +123,7 @@ async def test_mailchimp_erasure_request_task(
         graph,
         [mailchimp_connection_config],
         {"email": mailchimp_identity_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        {},
         db,
     )
 

@@ -15,7 +15,6 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestType,
     register,
 )
-from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.collection_util import Row
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
@@ -132,23 +131,15 @@ def mailchimp_member_update(
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_mailchimp_override_access_request_task(
     db,
     privacy_request,
-    dsr_version,
-    request,
     policy,
     mailchimp_override_connection_config,
     mailchimp_override_dataset_config,
     mailchimp_identity_email,
 ) -> None:
     """Full access request based on the Mailchimp SaaS config"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     identity = Identity(**{"email": mailchimp_identity_email})
     privacy_request.cache_identity(identity)
 
@@ -215,14 +206,8 @@ async def test_mailchimp_override_access_request_task(
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_mailchimp_erasure_request_task(
     db,
-    dsr_version,
-    request,
     privacy_request,
     erasure_policy_string_rewrite,
     mailchimp_override_connection_config,
@@ -231,8 +216,6 @@ async def test_mailchimp_erasure_request_task(
     reset_override_mailchimp_data,
 ) -> None:
     """Full erasure request based on the Mailchimp SaaS config"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     privacy_request.policy_id = erasure_policy_string_rewrite.id
     privacy_request.save(db)
 
@@ -258,7 +241,7 @@ async def test_mailchimp_erasure_request_task(
         graph,
         [mailchimp_override_connection_config],
         {"email": mailchimp_identity_email},
-        get_cached_data_for_erasures(privacy_request.id),
+        {},
         db,
     )
 

@@ -117,7 +117,7 @@ from fides.api.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
 )
-from fides.api.util.collection_util import Row, extract_key_for_address
+from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
 from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomatonMixin
@@ -822,14 +822,6 @@ class PrivacyRequest(
                 result[key.split("-")[-1]] = json.loads(value)
         return result
 
-    def get_results(self) -> Dict[str, Any]:
-        """Retrieves all cached identity data associated with this Privacy Request
-        Just used in testing
-        """
-        cache: FidesopsRedis = get_cache()
-        result_prefix = f"{self.id}__*"
-        return cache.get_encoded_objects_by_prefix(result_prefix)
-
     def cache_email_connector_template_contents(
         self,
         step: CurrentStep,
@@ -1508,62 +1500,37 @@ class PrivacyRequest(
 
         These shouldn't be returned to the user - they are not filtered by data category
         """
-        # For DSR 3.0, pull these off of the RequestTask.access_data fields
-        if self.access_tasks.count():
-            final_results: Dict = {}
-            for task in self.access_tasks.filter(
-                RequestTask.status == PrivacyRequestStatus.complete,
-                RequestTask.collection_address.notin_(
-                    [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
-                ),
+        final_results: Dict = {}
+        for task in self.access_tasks.filter(
+            RequestTask.status == PrivacyRequestStatus.complete,
+            RequestTask.collection_address.notin_(
+                [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
+            ),
+        ):
+            if (
+                task.collection
+                and task.collection.get("property_scope") == "traversal_only"
             ):
-                if (
-                    task.collection
-                    and task.collection.get("property_scope") == "traversal_only"
-                ):
-                    continue
-                final_results[task.collection_address] = task.get_access_data()
+                continue
+            final_results[task.collection_address] = task.get_access_data()
 
-            return final_results
-
-        # TODO Remove when we stop support for DSR 2.0
-        # We will no longer be pulling access results from the cache, but off of Request Tasks instead
-        cache: FidesopsRedis = get_cache()
-        value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__access_request")
-        # extract request id to return a map of address:value
-        number_of_leading_strings_to_exclude = 2
-        return {
-            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
-            for k, v in value_dict.items()
-        }
+        return final_results
 
     def get_raw_masking_counts(self) -> Dict[str, int]:
         """For parity, return the rows masked for an erasure request
 
         This is largely just used for testing
         """
-        if self.erasure_tasks.count():
-            # For DSR 3.0
-            # Defer large columns since we only need metadata (collection_address, rows_masked, status)
-            tasks_query = RequestTask.query_with_deferred_data(
-                self.erasure_tasks.filter(
-                    RequestTask.status.in_(COMPLETED_EXECUTION_LOG_STATUSES)
-                )
+        # Defer large columns since we only need metadata (collection_address, rows_masked, status)
+        tasks_query = RequestTask.query_with_deferred_data(
+            self.erasure_tasks.filter(
+                RequestTask.status.in_(COMPLETED_EXECUTION_LOG_STATUSES)
             )
-            return {
-                t.collection_address: t.rows_masked
-                for t in tasks_query
-                if not t.is_root_task and not t.is_terminator_task
-            }
-
-        # TODO Remove when we stop support for DSR 2.0
-        cache: FidesopsRedis = get_cache()
-        value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__erasure_request")
-        # extract request id to return a map of address:value
-        number_of_leading_strings_to_exclude = 2
+        )
         return {
-            extract_key_for_address(k, number_of_leading_strings_to_exclude): v  # type: ignore
-            for k, v in value_dict.items()
+            t.collection_address: t.rows_masked
+            for t in tasks_query
+            if not t.is_root_task and not t.is_terminator_task
         }
 
     def get_consent_results(self) -> Dict[str, int]:
@@ -1572,21 +1539,17 @@ class PrivacyRequest(
 
         This is largely just used for testing
         """
-        if self.consent_tasks.count():
-            # For DSR 3.0
-            # Defer large columns since we only need metadata (collection_address, consent_sent, status)
-            tasks_query = RequestTask.query_with_deferred_data(
-                self.consent_tasks.filter(
-                    RequestTask.status.in_(EXITED_EXECUTION_LOG_STATUSES)
-                )
+        # Defer large columns since we only need metadata (collection_address, consent_sent, status)
+        tasks_query = RequestTask.query_with_deferred_data(
+            self.consent_tasks.filter(
+                RequestTask.status.in_(EXITED_EXECUTION_LOG_STATUSES)
             )
-            return {
-                t.collection_address: t.consent_sent
-                for t in tasks_query
-                if not t.is_root_task and not t.is_terminator_task
-            }
-        # DSR 2.0 does not cache the results so nothing to do here
-        return {}
+        )
+        return {
+            t.collection_address: t.consent_sent
+            for t in tasks_query
+            if not t.is_root_task and not t.is_terminator_task
+        }
 
     def cleanup_external_storage(self) -> None:
         """Clean up all external storage files for this privacy request"""
