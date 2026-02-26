@@ -32,7 +32,11 @@ const ConnectionStatusNotice = ({
   }
 
   if (!testData.timestamp) {
-    return <Text data-testid="connection-status">Connection not tested</Text>;
+    return (
+      <Flex align="center">
+        <Text data-testid="connection-status">Connection not tested</Text>
+      </Flex>
+    );
   }
 
   const testDate = formatDate(testData.timestamp);

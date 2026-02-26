@@ -42,6 +42,7 @@ export const RulesTab = ({ rules = [] }: RulesTabProps) => {
         <Empty
           description="No rules configured for this policy"
           className="py-8"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       ) : (
         <Collapse

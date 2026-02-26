@@ -78,7 +78,6 @@ from fides.api.task.graph_runners import access_runner, consent_runner, erasure_
 from fides.api.task.graph_task import (
     build_consent_dataset_graph,
     filter_by_enabled_actions,
-    get_cached_data_for_erasures,
 )
 from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.tasks import DatabaseTask, celery_app
@@ -655,9 +654,7 @@ def run_privacy_request(
                         graph=dataset_graph,
                         connection_configs=connection_configs,
                         identity=identity_data,
-                        access_request_data=get_cached_data_for_erasures(
-                            privacy_request.id
-                        ),
+                        access_request_data={},
                         session=session,
                         privacy_request_proceed=True,  # Should always be True unless we're testing
                     )

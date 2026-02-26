@@ -12,7 +12,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy import null, or_
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
@@ -65,7 +65,10 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
-from fides.system_integration_link.repository import SystemIntegrationLinkRepository
+from fides.system_integration_link.repository import (
+    SystemIntegrationLinkRepository,
+    linked_system_load_options,
+)
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -167,7 +170,7 @@ def get_connections(
 
     return paginate(
         query.order_by(ConnectionConfig.name.asc()).options(
-            selectinload(ConnectionConfig.system)
+            linked_system_load_options()
         ),
         params=params,
         transformer=lambda items: [
@@ -186,7 +189,17 @@ def get_connection_detail(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
-    connection_config = get_connection_config_or_error(db, connection_key)
+    connection_config = (
+        db.query(ConnectionConfig)
+        .filter(ConnectionConfig.key == connection_key)
+        .options(linked_system_load_options())
+        .first()
+    )
+    if not connection_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connection configuration found with key '{connection_key}'.",
+        )
     return ConnectionConfigurationResponseWithSystemKey.from_connection_config(
         connection_config
     )
