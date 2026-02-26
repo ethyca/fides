@@ -14,23 +14,21 @@ export interface CustomStatisticProps extends StatisticProps {
   trend?: StatisticTrend;
 }
 
-/** Maps a trend direction to the corresponding Ant Design alias-token key. */
-const TREND_TOKEN_MAP: Record<StatisticTrend, string> = {
-  up: "colorSuccess",
-  down: "colorError",
-  neutral: "colorText",
-};
-
 const withCustomProps = (WrappedComponent: typeof Statistic) => {
   const WrappedStatistic = React.forwardRef<
     React.ComponentRef<typeof Statistic>,
     CustomStatisticProps
   >(({ trend = "neutral", valueStyle, ...props }, ref) => {
     const { token } = theme.useToken();
-    const trendColor = (token as unknown as Record<string, unknown>)[
-      TREND_TOKEN_MAP[trend]
-    ] as string;
 
+    /** Maps a trend direction to the corresponding Ant Design alias-token key. */
+    const TREND_TOKEN_MAP: Record<StatisticTrend, keyof typeof token> = {
+      up: "colorSuccess",
+      down: "colorError",
+      neutral: "colorText",
+    };
+
+    const trendColor = token[TREND_TOKEN_MAP[trend]];
     return (
       <WrappedComponent
         ref={ref}
