@@ -25,9 +25,9 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
 
         # Get required secret fields from the namespace meta class
         required_fields = namespace_meta_class.get_fallback_secret_fields()
+        secrets = context.connection_config.secrets or {}
         has_connection_defaults = all(
-            field_name in context.connection_config.secrets
-            and context.connection_config.secrets[field_name]
+            field_name in secrets and secrets[field_name]
             for field_name, _ in required_fields
         )
 
@@ -40,6 +40,27 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
                 f"or the connection must have values for the following fields: {field_descriptions}"
             )
         if namespace_meta:
+            # Skip validation when the namespace_meta is clearly intended for a
+            # different connection type.
+            meta_connection_type = namespace_meta.get("connection_type")
+            if meta_connection_type and meta_connection_type != connection_type:
+                return
+
+            # If no explicit connection_type, check whether the namespace_meta
+            # contains any fields that belong to this connection's schema.
+            # If there's no overlap, the metadata was written for a different
+            # connector and should not be validated here.
+            if not meta_connection_type:
+                schema_field_names = {
+                    f
+                    for f in namespace_meta_class.model_fields
+                    if f != "connection_type"
+                }
+                if schema_field_names and not schema_field_names.intersection(
+                    namespace_meta.keys()
+                ):
+                    return
+
             try:
                 namespace_meta_class(**namespace_meta)
             except Exception as e:

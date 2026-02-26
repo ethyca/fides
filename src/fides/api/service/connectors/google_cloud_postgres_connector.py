@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, cast
 
 import pg8000
 from google.cloud.sql.connector import Connector
@@ -11,6 +11,7 @@ from sqlalchemy.engine import (  # type: ignore
     LegacyCursorResult,
     create_engine,
 )
+from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
@@ -18,6 +19,9 @@ from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_
 )
 from fides.api.schemas.connection_configuration.enums.google_cloud_sql_ip_type import (
     GoogleCloudSQLIPType,
+)
+from fides.api.schemas.namespace_meta.google_cloud_sql_postgres_namespace_meta import (
+    GoogleCloudSQLPostgresNamespaceMeta,
 )
 from fides.api.service.connectors.query_configs.google_cloud_postgres_query_config import (
     GoogleCloudSQLPostgresQueryConfig,
@@ -87,4 +91,23 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
     # Overrides SQLConnector.query_config
     def query_config(self, node: ExecutionNode) -> GoogleCloudSQLPostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return GoogleCloudSQLPostgresQueryConfig(node)
+        db: Session = Session.object_session(self.configuration)
+        return GoogleCloudSQLPostgresQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )
+
+    def get_qualified_table_name(self, node: ExecutionNode) -> str:
+        """Get fully qualified table name for table_exists() checks.
+
+        Returns unquoted names (e.g. schema.table) because the generic
+        SQLConnector.table_exists() uses split(".") + inspector.has_table().
+        """
+        query_config = self.query_config(node)
+        if not query_config.namespace_meta:
+            return node.collection.name
+
+        meta = cast(GoogleCloudSQLPostgresNamespaceMeta, query_config.namespace_meta)
+        qualified = f"{meta.schema}.{node.collection.name}"
+        if meta.database_name:
+            return f"{meta.database_name}.{qualified}"
+        return qualified

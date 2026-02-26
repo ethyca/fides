@@ -106,6 +106,8 @@ class SQLConnector(BaseConnector[Engine]):
         """
         Util function to return the namespace meta for a given ctl_dataset.
         """
+        if db is None:
+            return None
 
         return db.scalar(
             select(CtlDataset.fides_meta["namespace"].cast(JSONB)).where(
