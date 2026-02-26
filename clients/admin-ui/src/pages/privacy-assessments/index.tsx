@@ -1,4 +1,4 @@
-import { Button, Flex, Icons, Result, Space, Spin, Tooltip } from "fidesui";
+import { Button, Flex, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
@@ -87,14 +87,12 @@ const PrivacyAssessmentsPage: NextPage = () => {
                 <Button type="primary">Evaluate assessments</Button>
               </NextLink>
             )}
-            <Tooltip title="Assessment settings">
-              <Button
-                aria-label="Assessment settings"
-                icon={<Icons.Settings />}
-                onClick={() => setSettingsModalOpen(true)}
-                data-testid="btn-assessment-settings"
-              />
-            </Tooltip>
+            <Button
+              aria-label="Assessment settings"
+              icon={<Icons.Settings />}
+              onClick={() => setSettingsModalOpen(true)}
+              data-testid="btn-assessment-settings"
+            />
           </Space>
         }
         isSticky
