@@ -141,7 +141,7 @@ class SecuritySettings(FidesSettings):
     disable_domain_validation: bool = Field(
         default=False,
         description="When true, disables domain validation for SaaS connector params globally. "
-        "Domain validation restricts connector endpoints to allowed domains defined in the connector template. "
+        "Domain validation restricts connector endpoints to allowed values defined in the connector template. "
         "Set via FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION.",
     )
     enable_audit_log_resource_middleware: Optional[bool] = Field(
