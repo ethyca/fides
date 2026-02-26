@@ -1,0 +1,4 @@
+type: Fixed
+description: Replaced 500 errors with 422 responses for dataset validation failures and added skip_validation query param for troubleshooting
+pr: 7475
+labels: []
