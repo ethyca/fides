@@ -473,7 +473,7 @@ export const PrivacyExperienceForm = ({
           <Text fontSize="sm" color="gray.600" mb={3}>
             Choose when to show the banner again after the user has interacted
             with it. Leave unchecked for default behavior (only resurface on
-            cookie expiration or vendor changes).
+            cookie expiration, vendor changes, and other mandatory updates.)
           </Text>
           <CheckboxGroup
             value={values.resurface_behavior ?? []}
