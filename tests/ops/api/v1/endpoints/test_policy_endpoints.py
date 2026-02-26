@@ -1067,7 +1067,6 @@ class TestCreatePolicyWithAutoPopulatedRules:
         else:
             assert len(targets) == 0
 
-        pol.delete(db=db)
 
     def test_create_policy_without_action_type_no_auto_rules(
         self, db, api_client: TestClient, generate_auth_header, url
