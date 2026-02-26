@@ -8,5 +8,6 @@ export const CHART_ANIMATION = {
 } as const;
 
 export const CHART_GRADIENT = {
-  startOpacity: 0.25, endOpacity: 0
+  startOpacity: 0.25,
+  endOpacity: 0,
 } as const;

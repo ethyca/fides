@@ -9,9 +9,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { ChartGradient } from "./ChartGradient";
-import { CHART_ANIMATION } from "./chart-constants";
 import type { AntColorTokenKey } from "./chart-constants";
+import { CHART_ANIMATION } from "./chart-constants";
+import { ChartGradient } from "./ChartGradient";
+
 export type RadarPointStatus = "success" | "warning" | "error";
 
 export interface RadarChartDataPoint {
@@ -35,6 +36,77 @@ export interface RadarChartProps {
   animationDuration?: number;
 }
 
+interface RadarTickProps {
+  x?: number;
+  y?: number;
+  payload?: { value: string; index: number };
+  data: RadarChartDataPoint[];
+  statusColors: Record<RadarPointStatus, string>;
+  chartColor: string;
+}
+
+const RadarTick = ({
+  x = 0,
+  y = 0,
+  payload,
+  data,
+  statusColors,
+  chartColor,
+}: RadarTickProps) => {
+  if (!payload) {
+    return null;
+  }
+  const point = data[payload.index];
+  const statusColor = point?.status ? statusColors[point.status] : undefined;
+
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor="middle"
+      dominantBaseline="central"
+      fontSize={11}
+      fontWeight={600}
+      fill={statusColor ?? chartColor}
+      fillOpacity={statusColor ? 1 : 0.75}
+    >
+      {payload.value}
+    </text>
+  );
+};
+
+interface RadarDotProps {
+  cx?: number;
+  cy?: number;
+  index?: number;
+  data: RadarChartDataPoint[];
+  statusColors: Record<RadarPointStatus, string>;
+  chartColor: string;
+  bgColor: string;
+}
+
+const RadarDot = ({
+  cx: dotCx = 0,
+  cy: dotCy = 0,
+  index = 0,
+  data,
+  statusColors,
+  chartColor,
+  bgColor,
+}: RadarDotProps) => {
+  const point = data[index];
+  return (
+    <circle
+      cx={dotCx}
+      cy={dotCy}
+      r={3.5}
+      fill={point?.status ? statusColors[point.status] : chartColor}
+      stroke={bgColor}
+      strokeWidth={1.5}
+    />
+  );
+};
+
 export const RadarChart = ({
   data,
   color,
@@ -42,7 +114,7 @@ export const RadarChart = ({
 }: RadarChartProps) => {
   const { token } = theme.useToken();
   const empty = !data?.length;
-  const chartColor = color ?? token.colorText;
+  const chartColor = color ? token[color] : token.colorText;
 
   const uid = useId().replace(/:/g, "");
   const gradientId = `radar-gradient-${uid}`;
@@ -62,9 +134,12 @@ export const RadarChart = ({
           cy="50%"
           outerRadius="70%"
         >
-          <defs>
-            <ChartGradient id={gradientId} color={chartColor} type="radial" inverse />
-          </defs>
+          <ChartGradient
+            id={gradientId}
+            color={chartColor}
+            type="radial"
+            inverse
+          />
 
           <PolarGrid
             stroke={chartColor}
@@ -77,32 +152,13 @@ export const RadarChart = ({
           {!empty && (
             <PolarAngleAxis
               dataKey="subject"
-              tick={(props: Record<string, unknown>) => {
-                const { x, y, payload } = props as {
-                  x: number;
-                  y: number;
-                  payload: { value: string; index: number };
-                };
-                const point = data![payload.index];
-                const statusColor = point?.status
-                  ? STATUS_COLORS[point.status]
-                  : undefined;
-
-                return (
-                  <text
-                    x={x}
-                    y={y}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize={11}
-                    fontWeight={600}
-                    fill={statusColor ?? chartColor}
-                    fillOpacity={statusColor ? 1 : 0.75}
-                  >
-                    {payload.value}
-                  </text>
-                );
-              }}
+              tick={
+                <RadarTick
+                  data={data!}
+                  statusColors={STATUS_COLORS}
+                  chartColor={chartColor}
+                />
+              }
             />
           )}
 
@@ -114,34 +170,18 @@ export const RadarChart = ({
             strokeLinecap="round"
             strokeLinejoin="round"
             fill={`url(#${gradientId})`}
-            dot={(props: Record<string, unknown>) => {
-              const {
-                cx: dotCx,
-                cy: dotCy,
-                index,
-              } = props as {
-                cx: number;
-                cy: number;
-                index: number;
-              };
-              const point = empty ? undefined : data![index];
-
-              return (
-                !empty &&
-                <circle
-                  key={`dot-${index}`}
-                  cx={dotCx}
-                  cy={dotCy}
-                  r={3.5}
-                  fill={
-                    point?.status ? STATUS_COLORS[point.status] : chartColor
-                  }
-                  stroke={token.colorBgContainer}
-                  strokeWidth={1.5}
+            dot={
+              !empty ? (
+                <RadarDot
+                  data={data!}
+                  statusColors={STATUS_COLORS}
+                  chartColor={chartColor}
+                  bgColor={token.colorBgContainer}
                 />
-
-              );
-            }}
+              ) : (
+                false
+              )
+            }
             activeDot={false}
             isAnimationActive={!empty}
             animationDuration={animationDuration}

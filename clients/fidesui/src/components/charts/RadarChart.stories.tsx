@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useCallback, useState } from "react";
 
-import { RadarChartProps, RadarChart } from "./RadarChart";
+import { RadarChart, RadarChartProps } from "./RadarChart";
 
 const sampleData = [
   { subject: "Coverage", value: 80 },
@@ -21,10 +21,6 @@ const sampleDataNoStatus = [
   { subject: "Assessments", value: 55 },
 ];
 
-/**
- * Click the chart to replay its entry animation.
- * This wrapper is only for the Storybook demo.
- */
 const AnimatedRadarChart = (props: RadarChartProps) => {
   const [animationKey, setAnimationKey] = useState(0);
 
@@ -51,7 +47,7 @@ const meta = {
     data: {
       control: "object",
       description:
-        "Chart data points. Each point can include an optional `status` (\"success\" | \"warning\" | \"error\") to color its dot and label using Ant Design tokens.",
+        'Chart data points. Each point can include an optional `status` ("success" | "warning" | "error") to color its dot and label using Ant Design tokens.',
     },
     color: {
       control: "color",
@@ -76,10 +72,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/**
- * Each data point carries a `status` that drives the dot and label color.
- * Click the chart to replay its entry animation.
- */
 export const WithStatus: Story = {
   args: {
     data: sampleData,
@@ -87,7 +79,6 @@ export const WithStatus: Story = {
   render: (args) => <AnimatedRadarChart {...args} />,
 };
 
-/** Without `status` on any point — dots are hidden, labels use the default color. */
 export const Default: Story = {
   args: {
     data: sampleDataNoStatus,
@@ -95,7 +86,6 @@ export const Default: Story = {
   render: (args) => <AnimatedRadarChart {...args} />,
 };
 
-/** Renders a neutral hexagon shape when no data is provided. */
 export const NoData: Story = {
   args: {
     data: null,

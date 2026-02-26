@@ -2,9 +2,9 @@ import { theme } from "antd";
 import { useId } from "react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 
-import { ChartGradient } from "./ChartGradient";
-import { CHART_ANIMATION } from "./chart-constants";
 import type { AntColorTokenKey } from "./chart-constants";
+import { CHART_ANIMATION } from "./chart-constants";
+import { ChartGradient } from "./ChartGradient";
 
 const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
 
@@ -37,9 +37,7 @@ export const Sparkline = ({
         data={chartData}
         margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
       >
-        <defs>
-          <ChartGradient id={gradientId} color={chartColor} />
-        </defs>
+        <ChartGradient id={gradientId} color={chartColor} />
         <YAxis domain={["dataMin", "dataMax"]} hide />
         <Area
           type="monotone"
