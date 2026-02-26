@@ -243,7 +243,7 @@ class AuthenticatedClient:
         request_host = urlparse(prepared_request.url).netloc
         deny_unsafe_hosts(request_host)
 
-        # Defense-in-depth: validate the resolved host against allowed_domains
+        # Defense-in-depth: validate the resolved host against allowed_values
         self._validate_request_domain(request_host)
 
         # utf-8 encode the body before sending
