@@ -766,4 +766,5 @@ def user_email_invite_status(
     messaging_service: MessagingService = Depends(get_messaging_service),
 ) -> UserEmailInviteStatus:
     """Returns whether or not all the necessary configurations are in place to be able to invite a user via email."""
-    return UserEmailInviteStatus(enabled=messaging_service.is_email_invite_enabled())
+    is_enabled = messaging_service.is_email_invite_enabled()
+    return UserEmailInviteStatus(enabled=is_enabled)
