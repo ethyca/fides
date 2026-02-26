@@ -312,7 +312,8 @@ def test_validate_mismatched_namespace_skipped():
     )
 
     validator = NamespaceMetaValidationStep()
-    validator.validate(context)  # Should not raise — namespace is for BigQuery, not Postgres
+    # Should not raise — namespace is for BigQuery, not Postgres
+    validator.validate(context)
 
 
 @pytest.mark.parametrize(
