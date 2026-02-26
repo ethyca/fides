@@ -125,6 +125,7 @@ export const RadarChart = ({
   );
 
   return (
+    // The chart is not interactive, so pointer events are turned off to avoid rendering a misleading outline
     <div className="h-full w-full pointer-events-none">
       <ResponsiveContainer width="100%" height="100%">
         <RechartsRadarChart
