@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useCallback, useState } from "react";
 
-import { RadarChart, RadarChartProps } from "./RadarChart";
 import { COLOR_OPTIONS } from "./chart-constants";
+import { RadarChart, RadarChartProps } from "./RadarChart";
 
 const sampleData = [
   { subject: "Coverage", value: 80 },
