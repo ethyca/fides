@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.1a3.dev12+g842b5feaa"
+    "version": "2.79.1a3.dev13+g0707523ef"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19274,6 +19274,18 @@
               "default": false,
               "title": "Minimal"
             }
+          },
+          {
+            "name": "skip_validation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "[Troubleshooting only] Skip pydantic response validation. Use this to retrieve datasets that contain data failing validation.",
+              "default": false,
+              "title": "Skip Validation"
+            },
+            "description": "[Troubleshooting only] Skip pydantic response validation. Use this to retrieve datasets that contain data failing validation."
           }
         ],
         "responses": {
@@ -19335,6 +19347,18 @@
               "type": "string",
               "title": "Fides Key"
             }
+          },
+          {
+            "name": "skip_validation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "[Troubleshooting only] Skip pydantic response validation. Use this to retrieve a dataset that contains data failing validation.",
+              "default": false,
+              "title": "Skip Validation"
+            },
+            "description": "[Troubleshooting only] Skip pydantic response validation. Use this to retrieve a dataset that contains data failing validation."
           }
         ],
         "responses": {
