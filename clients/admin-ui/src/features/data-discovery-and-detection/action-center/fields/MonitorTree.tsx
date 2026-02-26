@@ -576,6 +576,11 @@ const MonitorTree = forwardRef<
             const result = await triggerAncestorsStatuses({
               monitor_config_id: monitorId,
               staged_resource_urn: urn,
+              diff_status: [
+                ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
+                ...(showIgnored ? intoDiffStatus("Ignored") : []),
+                ...(showApproved ? intoDiffStatus("Approved") : []),
+              ],
             });
 
             if (result.error) {
@@ -620,6 +625,8 @@ const MonitorTree = forwardRef<
         monitorId,
         collapseNodeAndRemoveChildren,
         errorAlert,
+        showIgnored,
+        showApproved,
       ],
     );
 

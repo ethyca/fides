@@ -158,11 +158,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       {
         monitor_config_id: string;
         staged_resource_urn: string;
+        diff_status?: DiffStatus[];
       }
     >({
-      query: ({ monitor_config_id, staged_resource_urn }) => ({
-        url: `/plus/discovery-monitor/${monitor_config_id}/tree/ancestors-statuses/${encodeURIComponent(staged_resource_urn)}`,
-      }),
+      query: ({ monitor_config_id, staged_resource_urn, diff_status }) => {
+        const urlParams = buildArrayQueryParams({ diff_status });
+
+        return {
+          url: `/plus/discovery-monitor/${monitor_config_id}/tree/ancestors-statuses/${encodeURIComponent(staged_resource_urn)}?${urlParams}`,
+        };
+      },
     }),
 
     getDiscoveredSystemAggregate: build.query<
