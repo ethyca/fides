@@ -22,6 +22,13 @@ export const ROLES = [
     description: "Viewers have view access to the Data Map and all systems",
   },
   {
+    label: "Data Steward",
+    permissions_label: "Data Steward",
+    roleKey: RoleRegistryEnum.DATA_STEWARD,
+    description:
+      "Data Stewards have viewer access plus the ability to manage system-integration links and view monitor steward assignments",
+  },
+  {
     label: "Viewer & Approver",
     permissions_label: "Viewer & Approver",
     roleKey: RoleRegistryEnum.VIEWER_AND_APPROVER,
