@@ -2072,7 +2072,7 @@ You're not viewing the latest version.
 </tr>
 </tbody>
 </table>
-<p><strong>Status:</strong> <code>SYSTEM_INTEGRATION_LINK_READ</code> has been added to <code>viewer_scopes</code>. The Data Steward role is not yet implemented.</p>
+<p><strong>Status:</strong> Complete. <code>SYSTEM_INTEGRATION_LINK_READ</code> is in <code>viewer_scopes</code>. The Data Steward role is defined in <code>src/fides/api/oauth/roles.py</code> with <code>viewer_scopes</code> + link write scopes, and extended in fidesplus with <code>PLUS_VIEWER_SCOPES</code> (which includes <code>DISCOVERY_MONITOR_READ</code> and <code>MONITOR_STEWARD_READ</code>).</p>
 <h2 id="4-backward-compatibility">4. Backward Compatibility</h2>
 <table>
 <thead>
