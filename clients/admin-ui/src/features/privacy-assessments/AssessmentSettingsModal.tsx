@@ -10,11 +10,13 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
+import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
+import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
 
 import {
@@ -296,41 +298,46 @@ const AssessmentSettingsModal = ({
             Slack notifications
           </Text>
 
-          {channelOptions.length === 0 && !isLoadingChannels && (
+          {channelOptions.length === 0 && !isLoadingChannels ? (
             <Alert
               type="info"
-              message="No Slack channels available"
-              description="Please configure and authorize Slack in Settings > Notifications > Chat providers first."
+              message="Configure Slack to enable channel notifications."
+              action={
+                <NextLink href={CHAT_PROVIDERS_ROUTE} target="_blank" passHref>
+                  <Button size="small" type="link">
+                    Configure Slack
+                  </Button>
+                </NextLink>
+              }
               className="mb-4"
             />
-          )}
-
-          <Form.Item
-            name="slack_channel_id"
-            label="Questionnaire Notifications Channel"
-            tooltip="Select the Slack channel where questionnaire notifications will be sent"
-          >
-            <Select
-              aria-label="Questionnaire Notifications Channel"
-              options={channelOptions}
-              placeholder="Select a channel"
-              loading={isLoadingChannels}
-              disabled={channelOptions.length === 0}
-              allowClear
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              onDropdownVisibleChange={(visible) => {
-                if (visible) {
-                  refetchChannels();
+          ) : (
+            <Form.Item
+              name="slack_channel_id"
+              label="Questionnaire Notifications Channel"
+              tooltip="Select the Slack channel where questionnaire notifications will be sent"
+            >
+              <Select
+                aria-label="Questionnaire Notifications Channel"
+                options={channelOptions}
+                placeholder="Select a channel"
+                loading={isLoadingChannels}
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
                 }
-              }}
-              data-testid="select-slack-channel"
-            />
-          </Form.Item>
+                onDropdownVisibleChange={(visible) => {
+                  if (visible) {
+                    refetchChannels();
+                  }
+                }}
+                data-testid="select-slack-channel"
+              />
+            </Form.Item>
+          )}
         </Flex>
       </Form>
     </Modal>
