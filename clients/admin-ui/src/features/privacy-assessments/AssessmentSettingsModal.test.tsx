@@ -164,7 +164,7 @@ describe("AssessmentSettingsModal", () => {
   describe("Modal rendering", () => {
     it("renders the modal title", () => {
       render(<AssessmentSettingsModal open onClose={mockOnClose} />);
-      expect(screen.getByText("Assessment Settings")).toBeInTheDocument();
+      expect(screen.getByText("Assessment settings")).toBeInTheDocument();
     });
 
     it("renders LLM configuration inputs", () => {

@@ -162,7 +162,7 @@ const AssessmentSettingsModal = ({
 
   return (
     <Modal
-      title="Assessment Settings"
+      title="Assessment settings"
       open={open}
       onCancel={onClose}
       width={600}
@@ -181,7 +181,7 @@ const AssessmentSettingsModal = ({
         </Flex>
       }
     >
-      <Form form={form} layout="vertical" className="mt-4">
+      <Form form={form} layout="vertical">
         {/* LLM Configuration Section */}
         <Flex vertical className="mb-6">
           <Text strong className="mb-3 block text-base">
