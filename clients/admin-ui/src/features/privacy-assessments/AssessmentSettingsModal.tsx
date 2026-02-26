@@ -1,6 +1,7 @@
 import {
   Alert,
   Button,
+  Divider,
   Flex,
   Form,
   Input,
@@ -25,7 +26,7 @@ import {
   useUpdateAssessmentConfigMutation,
 } from "./privacy-assessments.slice";
 
-const { Text } = Typography;
+const { Title } = Typography;
 
 // Frequency options for the schedule picker
 const FREQUENCY_OPTIONS = [
@@ -185,10 +186,10 @@ const AssessmentSettingsModal = ({
     >
       <Form form={form} layout="horizontal">
         {/* LLM Configuration Section */}
-        <Flex vertical className="mb-6">
-          <Text strong className="mb-3 block text-base">
-            LLM Model Configuration
-          </Text>
+        <Flex vertical>
+          <div className="mb-3">
+            <Title level={5}>LLM Model Configuration</Title>
+          </div>
 
           <Form.Item
             name="assessment_model_override"
@@ -219,11 +220,13 @@ const AssessmentSettingsModal = ({
           </Form.Item>
         </Flex>
 
+        <Divider className="mt-2" />
+
         {/* Re-assessment Schedule Section */}
-        <Flex vertical className="mb-6">
-          <Text strong className="mb-3 block text-base">
-            Automatic Reassessment
-          </Text>
+        <Flex vertical>
+          <div className="mb-3">
+            <Title level={5}>Automatic Reassessment</Title>
+          </div>
 
           <Form.Item
             name="reassessment_enabled"
@@ -292,11 +295,13 @@ const AssessmentSettingsModal = ({
           )}
         </Flex>
 
+        <Divider className="mt-2" />
+
         {/* Slack Configuration Section */}
-        <Flex vertical className="mb-2">
-          <Text strong className="mb-3 block text-base">
-            Slack notifications
-          </Text>
+        <Flex vertical>
+          <div className="mb-3">
+            <Title level={5}>Slack notifications</Title>
+          </div>
 
           {channelOptions.length === 0 && !isLoadingChannels ? (
             <Alert
