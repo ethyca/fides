@@ -33,6 +33,14 @@ const LOGO_FULL_WIDTH = 107;
 const LOGO_HEIGHT = 24;
 const LOGO_ICON_SIZE = 24;
 
+interface UnconnectedMainSideNavProps {
+  groups: NavGroup[];
+  active: ActiveNav | undefined;
+  handleLogout: () => Promise<void>;
+  collapsed?: boolean;
+  onCollapseToggle?: () => void;
+}
+
 /** Inner component which we export for component testing */
 export const UnconnectedMainSideNav = ({
   groups,
@@ -40,13 +48,7 @@ export const UnconnectedMainSideNav = ({
   handleLogout,
   collapsed = false,
   onCollapseToggle,
-}: {
-  groups: NavGroup[];
-  active: ActiveNav | undefined;
-  handleLogout: any;
-  collapsed?: boolean;
-  onCollapseToggle?: () => void;
-}) => {
+}: UnconnectedMainSideNavProps) => {
   const navMenuItems = groups
     .filter((group) => group.children.some((child) => !child.hidden)) // Only include groups with visible children
     .map((group) => ({
@@ -153,13 +155,17 @@ export const UnconnectedMainSideNav = ({
         <Box width="100%">
           <Box
             pb={6}
-            px={4}
+            pr={4}
             display="flex"
-            justifyContent={collapsed ? "center" : "flex-start"}
+            justifyContent="flex-start"
+            sx={{
+              paddingInlineStart: collapsed ? "28px" : "16px",
+              transition: "padding-inline-start 0.35s ease",
+            }}
           >
             <button
               type="button"
-              className="inline-flex cursor-pointer rounded border-none bg-transparent p-0 hover:bg-gray-700"
+              className={`inline-flex cursor-pointer p-0 ${navStyles.collapseToggle}`}
               onClick={onCollapseToggle}
               aria-label={
                 collapsed
@@ -170,6 +176,7 @@ export const UnconnectedMainSideNav = ({
             >
               <Box
                 position="relative"
+                overflow="hidden"
                 width={
                   collapsed ? `${LOGO_ICON_SIZE}px` : `${LOGO_FULL_WIDTH}px`
                 }
@@ -183,7 +190,7 @@ export const UnconnectedMainSideNav = ({
                   inset={0}
                   opacity={collapsed ? 0 : 1}
                   sx={{
-                    transition: "opacity 0.35s ease",
+                    transition: "opacity 0.3s ease-in-out",
                     pointerEvents: collapsed ? "none" : "auto",
                   }}
                 >
@@ -200,7 +207,7 @@ export const UnconnectedMainSideNav = ({
                   inset={0}
                   opacity={collapsed ? 1 : 0}
                   sx={{
-                    transition: "opacity 0.35s ease",
+                    transition: "opacity 0.3s ease-in-out",
                     pointerEvents: collapsed ? "auto" : "none",
                   }}
                 >
@@ -237,7 +244,7 @@ export const UnconnectedMainSideNav = ({
             type="primary"
             href="https://docs.ethyca.com"
             target="_blank"
-            className="border-none bg-transparent  hover:!bg-gray-700"
+            className={navStyles.helpButton}
             icon={<Icons.Help />}
             aria-label="Help"
           />

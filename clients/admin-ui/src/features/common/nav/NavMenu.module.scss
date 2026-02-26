@@ -1,7 +1,16 @@
-$sandstone: #cecac2; // palette.FIDESUI_SANDSTONE – selected bg
-$minos: #2b2e35; // palette.FIDESUI_MINOS – dark bg / selected text
-$neutral-700: #696c71; // palette neutral-700 – hover bg
-$corinth: #fafafa; // palette.FIDESUI_CORINTH – light text
+.collapseToggle {
+  background-color: transparent;
+  border: none;
+}
+
+.helpButton {
+  background-color: transparent;
+  border: none;
+
+  &:hover {
+    background-color: var(--fidesui-neutral-700);
+  }
+}
 
 .menu {
   --ant-menu-item-margin-block: 0 !important;
@@ -38,41 +47,41 @@ $corinth: #fafafa; // palette.FIDESUI_CORINTH – light text
   }
 
   :global(.ant-menu-submenu-selected > .ant-menu-submenu-title) {
-    background-color: $sandstone;
+    background-color: var(--fidesui-sandstone);
     border-radius: 4px;
   }
 
   :global(
     .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon
   ) {
-    color: $minos;
+    color: var(--fidesui-minos);
   }
 
   :global(.ant-menu-submenu > .ant-menu-submenu-title:hover) {
-    background-color: $neutral-700;
+    background-color: var(--fidesui-neutral-700);
     border-radius: 4px;
   }
 
   :global(
     .ant-menu-submenu > .ant-menu-submenu-title:hover .ant-menu-item-icon
   ) {
-    color: $corinth;
+    color: var(--fidesui-corinth);
   }
 }
 
 .flyout {
-  background-color: $minos !important;
+  background-color: var(--fidesui-minos) !important;
 
   :global(.ant-menu) {
-    background-color: $minos !important;
-    background: $minos !important;
+    background-color: var(--fidesui-minos) !important;
+    background: var(--fidesui-minos) !important;
     --ant-menu-item-margin-inline: 0 !important;
     --ant-menu-item-margin-block: 8px !important;
     padding-block: 8px !important;
   }
 
   :global(.ant-menu-title-content) {
-    color: $corinth;
+    color: var(--fidesui-corinth);
     padding: 0 !important;
     margin: 0 !important;
     display: block;
@@ -85,7 +94,7 @@ $corinth: #fafafa; // palette.FIDESUI_CORINTH – light text
     margin: 0 !important;
 
     a {
-      color: $corinth !important;
+      color: var(--fidesui-corinth) !important;
       display: block;
       width: 100%;
       margin: 0 !important;
@@ -93,18 +102,18 @@ $corinth: #fafafa; // palette.FIDESUI_CORINTH – light text
     }
 
     &:global(.ant-menu-item-selected) {
-      background-color: $sandstone !important;
+      background-color: var(--fidesui-sandstone) !important;
 
       a {
-        color: $minos !important;
+        color: var(--fidesui-minos) !important;
       }
     }
 
     &:hover {
-      background-color: $neutral-700 !important;
+      background-color: var(--fidesui-neutral-700) !important;
 
       a {
-        color: $corinth !important;
+        color: var(--fidesui-corinth) !important;
       }
     }
   }

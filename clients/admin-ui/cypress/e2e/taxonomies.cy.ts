@@ -11,11 +11,7 @@ describe("Taxonomy management page", () => {
   });
 
   it("Can navigate to the taxonomy page", () => {
-    cy.visit("/", {
-      onBeforeLoad(win) {
-        win.localStorage.setItem("mainSideNavCollapsed", "false");
-      },
-    });
+    cy.visitWithExpandedNav("/");
     cy.getByTestId("Core configuration-nav-group").click();
     cy.getByTestId("Taxonomy-nav-link").click();
     cy.getByTestId("taxonomy-type-selector");

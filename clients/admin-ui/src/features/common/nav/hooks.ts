@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features";
+import { devShowPlusNav, useFeatures } from "~/features/common/features";
 import {
   configureNavGroups,
   findActiveNav,
@@ -9,11 +9,6 @@ import {
 } from "~/features/common/nav/nav-config";
 import { selectThisUsersScopes } from "~/features/user-management";
 import { ScopeRegistryEnum } from "~/types/api";
-
-/** When true in dev, nav shows all items regardless of user scopes (nav only). */
-const devShowPlusNav =
-  process.env.NODE_ENV === "development" &&
-  process.env.NEXT_PUBLIC_DEV_SHOW_PLUS_NAV === "true";
 
 const ALL_SCOPES = Object.values(ScopeRegistryEnum);
 

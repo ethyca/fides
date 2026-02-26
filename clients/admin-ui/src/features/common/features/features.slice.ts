@@ -149,7 +149,7 @@ export type Features = {
  * NEXT_PUBLIC_DEV_SHOW_PLUS_NAV=true
  * Plus-only pages may 404 or error when the backend is not Plus.
  */
-const devShowPlusNav =
+export const devShowPlusNav =
   process.env.NODE_ENV === "development" &&
   process.env.NEXT_PUBLIC_DEV_SHOW_PLUS_NAV === "true";
 

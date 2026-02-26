@@ -6,7 +6,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import * as routes from "./routes";
 
-export type NavConfigRoute = {
+export interface NavConfigRoute {
   title?: string;
   path: string;
   exact?: boolean;
@@ -24,13 +24,13 @@ export type NavConfigRoute = {
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
   routes?: NavConfigRoute[];
-};
+}
 
-export type NavConfigGroup = {
+export interface NavConfigGroup {
   title: string;
   icon: ReactNode;
   routes: NavConfigRoute[];
-};
+}
 
 export const NAV_CONFIG: NavConfigGroup[] = [
   {
@@ -285,7 +285,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "User Detail",
+        title: "User detail",
         path: routes.USER_DETAIL_ROUTE,
         hidden: true, // Don't show in nav but allow access
         scopes: [], // Any authenticated user can access their own profile
@@ -379,15 +379,15 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
   });
 }
 
-export type NavGroupChild = {
+export interface NavGroupChild {
   title: string;
   path: string;
   exact?: boolean;
   hidden?: boolean;
   children: Array<NavGroupChild>;
-};
+}
 
-export type NavGroup = {
+export interface NavGroup {
   /**
    * Title of the group. Displayed as an accordion in MainSideNav.
    */
@@ -401,7 +401,7 @@ export type NavGroup = {
    * Icon to display in the accordion header
    */
   icon: React.ReactNode;
-};
+}
 
 /** If all routes in the group require plus and plus is not running then return true */
 const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
@@ -593,7 +593,9 @@ export const configureNavGroups = ({
   return navGroups;
 };
 
-export type ActiveNav = NavGroup & { path?: string };
+export interface ActiveNav extends NavGroup {
+  path?: string;
+}
 
 export const findActiveNav = ({
   navGroups,

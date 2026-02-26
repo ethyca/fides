@@ -3,6 +3,14 @@
 declare global {
   namespace Cypress {
     interface Chainable {
+      /**
+       * Visit a page with the side nav guaranteed to be expanded.
+       * Sets localStorage before page load to prevent collapsed-nav test flakes.
+       */
+      visitWithExpandedNav: (
+        url: string,
+        options?: Partial<Cypress.VisitOptions>,
+      ) => Chainable;
       getAntSelectOption: (optionLabel: string | number) => Chainable;
       /**
        * Select an option from an Ant Design Select component
@@ -346,5 +354,17 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-content`));
+
+Cypress.Commands.add(
+  "visitWithExpandedNav",
+  (url: string, options?: Partial<Cypress.VisitOptions>) =>
+    cy.visit(url, {
+      ...options,
+      onBeforeLoad(win) {
+        win.localStorage.setItem("mainSideNavCollapsed", "false");
+        options?.onBeforeLoad?.(win);
+      },
+    }),
+);
 
 export {};
