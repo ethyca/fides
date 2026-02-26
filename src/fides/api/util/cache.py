@@ -1,13 +1,17 @@
 import json
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
 from loguru import logger
 from redis import Redis
-from redis.client import Script  # type: ignore
 from redis.exceptions import ConnectionError as ConnectionErrorFromRedis
 from redis.exceptions import DataError
+
+try:
+    from redis.cluster import RedisCluster
+except ImportError:
+    RedisCluster = None  # type: ignore[misc, assignment]
 
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
@@ -33,11 +37,28 @@ _connection = None
 _read_only_connection = None
 
 
-class FidesopsRedis(Redis):
+def _is_redis_cluster(client: Any) -> bool:
+    """Return True if the client is a Redis Cluster (for cluster-aware behavior)."""
+    return RedisCluster is not None and isinstance(client, RedisCluster)
+
+
+class FidesopsRedis:
     """
-    An extension to Redis' python bindings to support auto expiring data input. This class
-    should never be instantiated on its own.
+    Wrapper around Redis or RedisCluster that adds Fides-specific helpers (auto-expire,
+    prefix scan/delete, encoded objects). Delegates all other operations to the
+    underlying client. Supports both standalone Redis and Redis Cluster.
     """
+
+    def __init__(self, client: Union[Redis, Any]) -> None:
+        """
+        Args:
+            client: A redis.Redis (standalone) or redis.cluster.RedisCluster instance.
+        """
+        self._client = client
+
+    def __getattr__(self, name: str) -> Any:
+        """Delegate attribute lookups to the underlying Redis client."""
+        return getattr(self._client, name)
 
     def set_with_autoexpire(
         self,
@@ -47,34 +68,60 @@ class FidesopsRedis(Redis):
     ) -> Optional[bool]:
         """Call the connection class' default set method with ex= our default TTL"""
         if not expire_time:
-            # We have to check this condition for the edge case where `None` is explicitly
-            # passed to this method.
             expire_time = CONFIG.redis.default_ttl_seconds
-        return self.set(key, value, ex=expire_time)
+        return self._client.set(key, value, ex=expire_time)
 
     def get_keys_by_prefix(self, prefix: str, chunk_size: int = 1000) -> List[str]:
-        """Retrieve all keys that match a given prefix."""
-        cursor: Any = "0"
-        out = []
-        while cursor != 0:
-            cursor, keys = self.scan(
-                cursor=cursor, match=f"{prefix}*", count=chunk_size
-            )
-            out.extend(keys)
+        """Retrieve all keys that match a given prefix. Cluster-aware (scans all nodes)."""
+        out: List[str] = []
+        match = f"{prefix}*"
+        if _is_redis_cluster(self._client):
+            # Redis Cluster: SCAN must run per node; iterate primaries
+            cluster = cast(Any, self._client)
+            for node in cluster.get_primaries():
+                conn = node.redis_connection
+                cursor = 0
+                while True:
+                    cursor, keys = conn.scan(
+                        cursor=cursor, match=match, count=chunk_size
+                    )
+                    out.extend(keys)
+                    if cursor == 0:
+                        break
+        else:
+            # Standalone Redis: scan returns cursor as str when decode_responses=True
+            scan_cursor: Union[int, str] = "0"
+            while True:
+                cursor_arg = (
+                    int(scan_cursor) if isinstance(scan_cursor, str) else scan_cursor
+                )
+                scan_cursor, keys = self._client.scan(
+                    cursor=cursor_arg, match=match, count=chunk_size
+                )
+                out.extend(keys)
+                if scan_cursor == 0 or scan_cursor == "0":
+                    break
         return out
 
     def delete_keys_by_prefix(self, prefix: str) -> None:
-        """Delete all keys starting with a given prefix"""
-        s: Script = self.register_script(
-            f"for _,k in ipairs(redis.call('keys','{prefix}*')) do redis.call('del',k) end"
-        )
-        s()
+        """Delete all keys starting with a given prefix. Cluster-safe (scan then delete)."""
+        keys = self.get_keys_by_prefix(prefix, chunk_size=1000)
+        if keys:
+            if _is_redis_cluster(self._client):
+                for key in keys:
+                    self._client.delete(key)
+            else:
+                self._client.delete(*keys)
 
     def get_values(self, keys: List[str]) -> Dict[str, Optional[Any]]:
-        """Retrieve all values corresponding to the set of input keys and return them as a
-        dictionary. Note that if a key does not exist in redis it will be returned as None
-        """
-        values = self.mget(keys)
+        """Retrieve all values for the given keys. Uses mget_nonatomic in cluster."""
+        if not keys:
+            return {}
+        if _is_redis_cluster(self._client):
+            cluster = cast(Any, self._client)
+            values = cluster.mget_nonatomic(keys)
+        else:
+            values = self._client.mget(keys)
         return {x[0]: x[1] for x in zip(keys, values)}
 
     def set_encoded_object(self, key: str, obj: Any) -> Optional[bool]:
@@ -84,7 +131,7 @@ class FidesopsRedis(Redis):
 
     def get_encoded_by_key(self, key: str) -> Optional[Any]:
         """Returns cached obj decoded from base64"""
-        val = super().get(key)
+        val = self._client.get(key)
         return self.decode_obj(val) if val else None
 
     def get_encoded_objects_by_prefix(self, prefix: str) -> Dict[str, Optional[Any]]:
@@ -106,7 +153,7 @@ class FidesopsRedis(Redis):
         Returns:
             List of decoded items stored under the key. Empty list if key doesn't exist.
         """
-        items = self.lrange(key, 0, -1)
+        items = self._client.lrange(key, 0, -1)
         decoded_items = []
         for item in items:
             if item and (decoded := self.decode_obj(item)):
@@ -156,8 +203,8 @@ class FidesopsRedis(Redis):
             The length of the list after the push operation
         """
         encoded_entry = self.encode_obj(obj)
-        list_length = self.rpush(key, encoded_entry)
-        self.expire(key, expire_time)
+        list_length = self._client.rpush(key, encoded_entry)
+        self._client.expire(key, expire_time)
         return list_length
 
 
@@ -192,6 +239,50 @@ def _determine_redis_db_index(
     return CONFIG.redis.read_only_db_index if read_only else CONFIG.redis.db_index
 
 
+def _build_redis_client(
+    host: str,
+    port: int,
+    db: int,
+    read_from_replicas: bool = False,
+) -> Union[Redis, Any]:
+    """Build a Redis or RedisCluster client from CONFIG. Used by get_cache and get_read_only_cache."""
+    if CONFIG.redis.cluster_enabled and RedisCluster is not None:
+        kwargs: Dict[str, Any] = {
+            "host": host,
+            "port": port,
+            "decode_responses": CONFIG.redis.decode_responses,
+            "ssl": CONFIG.redis.ssl,
+            "ssl_ca_certs": CONFIG.redis.ssl_ca_certs or None,
+            "ssl_cert_reqs": CONFIG.redis.ssl_cert_reqs,
+            # Avoid blocking indefinitely on connect or topology discovery
+            "socket_connect_timeout": 10.0,
+            "socket_timeout": 10.0,
+        }
+        # Only send password when set; in test mode skip default "testpassword" so
+        # no AUTH is sent to a cluster with no password (avoids "AUTH without password" error).
+        if CONFIG.redis.password and not (
+            getattr(CONFIG, "test_mode", False)
+            and CONFIG.redis.password == "testpassword"
+        ):
+            kwargs["password"] = CONFIG.redis.password
+        if CONFIG.redis.user:
+            kwargs["username"] = CONFIG.redis.user
+        if read_from_replicas:
+            kwargs["read_from_replicas"] = True
+        return RedisCluster(**kwargs)
+    return Redis(  # type: ignore[call-overload]
+        decode_responses=CONFIG.redis.decode_responses,
+        host=host,
+        port=port,
+        db=db,
+        username=CONFIG.redis.user,
+        password=CONFIG.redis.password,
+        ssl=CONFIG.redis.ssl,
+        ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
+        ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
+    )
+
+
 def get_cache() -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
 
@@ -202,18 +293,14 @@ def get_cache() -> FidesopsRedis:
 
     global _connection  # pylint: disable=W0603
     if _connection is None:
-        _connection = FidesopsRedis(  # type: ignore[call-overload]
-            charset=CONFIG.redis.charset,
-            decode_responses=CONFIG.redis.decode_responses,
+        db = 0 if CONFIG.redis.cluster_enabled else _determine_redis_db_index()
+        client = _build_redis_client(
             host=CONFIG.redis.host,
             port=CONFIG.redis.port,
-            db=_determine_redis_db_index(),
-            username=CONFIG.redis.user,
-            password=CONFIG.redis.password,
-            ssl=CONFIG.redis.ssl,
-            ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
-            ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
+            db=db,
+            read_from_replicas=False,
         )
+        _connection = FidesopsRedis(client)
 
     try:
         connected = _connection.ping()
@@ -232,34 +319,44 @@ def get_read_only_cache() -> FidesopsRedis:
     """
     Return a singleton connection to the read-only Redis cache.
     If read-only is not enabled, return the regular cache.
+    In cluster mode, read-only uses the same cluster with read_from_replicas=True.
     """
-    # If read-only is not enabled, return the regular cache
     if not CONFIG.redis.read_only_enabled:
         return get_cache()
 
     global _read_only_connection  # pylint: disable=W0603
     if _read_only_connection is None:
-        _read_only_connection = FidesopsRedis(  # type: ignore[call-overload]
-            charset=CONFIG.redis.charset,
-            decode_responses=CONFIG.redis.decode_responses,
-            host=CONFIG.redis.read_only_host,
-            port=CONFIG.redis.read_only_port,
-            db=_determine_redis_db_index(read_only=True),
-            username=CONFIG.redis.read_only_user,
-            password=CONFIG.redis.read_only_password,
-            ssl=CONFIG.redis.read_only_ssl,
-            ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs,
-            ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
-        )
+        if CONFIG.redis.cluster_enabled and RedisCluster is not None:
+            # Cluster: use same host/port with read_from_replicas=True
+            db = 0
+            client = _build_redis_client(
+                host=CONFIG.redis.host,
+                port=CONFIG.redis.port,
+                db=db,
+                read_from_replicas=True,
+            )
+            _read_only_connection = FidesopsRedis(client)
+        else:
+            db = _determine_redis_db_index(read_only=True)
+            client = Redis(  # type: ignore[call-overload]
+                decode_responses=CONFIG.redis.decode_responses,
+                host=CONFIG.redis.read_only_host,
+                port=CONFIG.redis.read_only_port,
+                db=db,
+                username=CONFIG.redis.read_only_user,
+                password=CONFIG.redis.read_only_password,
+                ssl=CONFIG.redis.read_only_ssl,
+                ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs,
+                ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
+            )
+            _read_only_connection = FidesopsRedis(client)
 
     try:
-        # Test the connection by attempting to ping the Redis server
         connected = _read_only_connection.ping()
     except Exception:
         connected = False
 
     if not connected:
-        # If we can't connect to the read-only cache, fall back to the regular cache
         return get_cache()
 
     return _read_only_connection
@@ -302,7 +399,7 @@ def get_masking_secret_cache_key(
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]:
     """Returns all cache keys related to this privacy request's cached identities"""
     cache: FidesopsRedis = get_cache()
-    return cache.keys(f"*{privacy_request_id}*")
+    return cache.get_keys_by_prefix(f"id-{privacy_request_id}-")
 
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
@@ -451,4 +548,4 @@ def get_queue_counts() -> Dict[str, int]:
 
 def get_all_masking_secret_keys(privacy_request_id: str) -> List[str]:
     cache: FidesopsRedis = get_cache()
-    return cache.keys(f"id-{privacy_request_id}-masking-secret-*")
+    return cache.get_keys_by_prefix(f"id-{privacy_request_id}-masking-secret-")

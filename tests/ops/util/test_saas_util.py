@@ -831,6 +831,12 @@ class TestValidateValueAgainstAllowedList:
                 id="question_mark_is_literal_not_regex",
             ),
             pytest.param(
+                ".salesforce.com",
+                ["*.salesforce.com"],
+                False,
+                id="wildcard_rejects_empty_subdomain",
+            ),
+            pytest.param(
                 "evil.example.com", ["api.stripe.com"], False, id="different_domain"
             ),
             pytest.param(

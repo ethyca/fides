@@ -9,12 +9,13 @@ def wildcard_to_regex(pattern: str) -> str:
     Convert a wildcard pattern (using ``*``) into a regex string.
 
     The conversion escapes every regex-special character first, then
-    replaces the escaped ``\\*`` tokens with ``.*`` so that each ``*``
-    in the original pattern matches any sequence of characters
-    (including dots and empty strings).
+    replaces the escaped ``\\*`` tokens with ``.+`` so that each ``*``
+    in the original pattern matches one or more characters (including
+    dots).  This prevents ``*.example.com`` from matching the bare
+    ``.example.com`` (leading dot, no subdomain).
     """
     escaped = re.escape(pattern)
-    return escaped.replace(r"\*", ".*")
+    return escaped.replace(r"\*", ".+")
 
 
 def validate_value_against_allowed_list(
