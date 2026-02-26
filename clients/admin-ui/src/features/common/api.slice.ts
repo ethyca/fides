@@ -75,6 +75,7 @@ export const baseApi = createApi({
     "System",
     "System Assets",
     "System Groups",
+    "System Links",
     "System History",
     "Request",
     "Roles",
@@ -97,6 +98,7 @@ export const baseApi = createApi({
     "Privacy Assessment Questionnaire",
     "Privacy Assessment Evidence",
     "User Monitors",
+    "Datastore Filters",
   ],
   endpoints: () => ({}),
 });

@@ -96,7 +96,7 @@ export const DiscoveredSystemActionsCell = ({
       <Tooltip
         title={
           !system.id
-            ? `These assets must be categorized before you can add them to the inventory.`
+            ? `These assets must be categorized before you can approve them.`
             : undefined
         }
       >
@@ -107,7 +107,7 @@ export const DiscoveredSystemActionsCell = ({
           disabled={!system.id || anyActionIsLoading}
           loading={isAddingResults}
         >
-          Add
+          Approve
         </Button>
       </Tooltip>
       {allowIgnore && (

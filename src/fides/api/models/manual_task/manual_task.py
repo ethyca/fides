@@ -13,7 +13,7 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
@@ -47,7 +47,7 @@ class ManualTaskType(StrEnum):
     """Enum for manual task types."""
 
     privacy_request = "privacy_request"
-    # Add more task types as needed
+    jira_ticket = "jira_ticket"
 
 
 class ManualTaskParentEntityType(StrEnum):
@@ -500,6 +500,9 @@ class ManualTaskConfig(Base):
         nullable=False,
         default=ManualTaskExecutionTiming.pre_execution,
     )
+    property_ids = Column(
+        ARRAY(String), nullable=False, server_default="{}", default=list
+    )
 
     __table_args__ = (
         Index("ix_manual_task_config_config_type", "config_type"),
@@ -760,11 +763,12 @@ class ManualTaskSubmission(Base):
 
     def delete(self, db: Session) -> None:
         """Delete the submission and all associated attachments."""
-        from fides.api.models.attachment import Attachment, AttachmentReferenceType
+        from fides.api.models.attachment import AttachmentReferenceType
+        from fides.service.attachment_service import AttachmentService
 
         # Delete attachments associated with this submission
-        Attachment.delete_attachments_for_reference_and_type(
-            db, self.id, AttachmentReferenceType.manual_task_submission
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.manual_task_submission
         )
         # Delete the submission itself
         db.delete(self)

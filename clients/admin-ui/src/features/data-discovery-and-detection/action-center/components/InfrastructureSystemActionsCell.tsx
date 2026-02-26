@@ -158,7 +158,7 @@ export const InfrastructureSystemActionsCell = ({
         title={
           !system.urn
             ? `This system cannot be promoted: URN is missing.`
-            : "Add"
+            : "Approve"
         }
       >
         <Button
@@ -168,9 +168,9 @@ export const InfrastructureSystemActionsCell = ({
           disabled={!system.urn || isActionInProgress}
           loading={isPromoting}
           icon={addIcon}
-          aria-label="Add"
+          aria-label="Approve"
         >
-          {!addIcon && "Add"}
+          {!addIcon && "Approve"}
         </Button>
       </Tooltip>
     </Space>

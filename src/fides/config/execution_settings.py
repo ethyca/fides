@@ -13,7 +13,7 @@ class ExecutionSettings(FidesSettings):
 
     privacy_request_delay_timeout: int = Field(
         default=3600,
-        description="The amount of time to wait for actions which delay privacy requests (e.g., pre- and post-processing webhooks).",
+        description="The amount of time to wait, in minutes, for actions which delay privacy requests (e.g., pre- and post-processing webhooks). Default: 3600 minutes",
     )
     require_manual_request_approval: bool = Field(
         default=False,
@@ -92,5 +92,9 @@ class ExecutionSettings(FidesSettings):
     use_legacy_traversal: bool = Field(
         default=False,
         description="When enabled, falls back to the legacy traversal algorithm. Intended as a temporary safety net in case of regressions with the optimized traversal.",
+    )
+    jira_polling_interval_minutes: int = Field(
+        default=10,
+        description="Minutes between polling Jira for ticket status updates.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

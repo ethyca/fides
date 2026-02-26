@@ -1,6 +1,18 @@
-import { Button, Checkbox, Flex, List, Tag, Text, useMessage } from "fidesui";
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  Flex,
+  Icons,
+  List,
+  Tag,
+  Text,
+  useMessage,
+} from "fidesui";
+import { useMemo } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { getBrandIconUrl, getDomain } from "~/features/common/utils";
 import { INFRASTRUCTURE_DIFF_STATUS_COLOR } from "~/features/data-discovery-and-detection/action-center/constants";
 import { tagRender } from "~/features/data-discovery-and-detection/action-center/fields/MonitorFieldListItem";
 import { useUpdateInfrastructureSystemDataUsesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
@@ -57,30 +69,30 @@ export const InfrastructureSystemListItem = ({
     }
   };
 
-  // TODO: uncomment with ENG-2391
+  const metadata = item.metadata;
+
   // Get logo URL: prefer vendor_logo_url, then try brandfetch, then use generic icon
-  // const logoUrl = useMemo(() => {
-  //   // First priority: vendor logo URL from metadata (usually from brandfetch)
-  //   if (metadata?.vendor_logo_url) {
-  //     return metadata.vendor_logo_url;
-  //   }
+  const logoUrl = useMemo(() => {
+    // First priority: vendor logo URL from metadata (usually from brandfetch)
+    if (metadata?.vendor_logo_url) {
+      return metadata.vendor_logo_url;
+    }
 
-  //   // Second priority: try to get logo from brandfetch using vendor_id or system name
-  //   const vendorId = item.vendor_id || systemName;
-  //   if (vendorId && vendorId !== "Uncategorized") {
-  //     try {
-  //       // Try to extract domain from vendor ID or system name
-  //       const domain = getDomain(vendorId);
-  //       if (domain) {
-  //         return getBrandIconUrl(domain, 36); // 18px * 2 for retina
-  //       }
-  //     } catch {
-  //       // If domain extraction fails, continue to fallback
-  //     }
-  //   }
+    // Second priority: try to get logo from brandfetch using vendor_id or system name
+    const vendorId = item.vendor_id || systemName;
+    if (vendorId && vendorId !== "Uncategorized") {
+      try {
+        const domain = getDomain(vendorId);
+        if (domain) {
+          return getBrandIconUrl(domain, 36); // 18px * 2 for retina
+        }
+      } catch {
+        // If domain extraction fails, continue to fallback
+      }
+    }
 
-  //   return undefined;
-  // }, [metadata?.vendor_logo_url, item.vendor_id, systemName]);
+    return undefined;
+  }, [metadata?.vendor_logo_url, item.vendor_id, systemName]);
 
   const handleClick = () => {
     if (url && onNavigate) {
@@ -129,24 +141,30 @@ export const InfrastructureSystemListItem = ({
               onChange={(e) => handleCheckboxChange(e.target.checked)}
               onClick={(e) => e.stopPropagation()}
             />
-            {/* TODO: uncomment with ENG-2391 */}
-            {/* <Avatar
+            <Avatar
               size={18}
               src={logoUrl}
               icon={<Icons.Settings />}
               alt={systemName}
-            /> */}
+            />
           </Flex>
         }
         title={
-          <Flex gap="small" align="center" wrap="wrap">
-            <Button type="text" size="small" onClick={handleClick}>
-              <Text strong>{systemName}</Text>
-            </Button>
-            {item.diff_status === DiffStatus.MUTED && (
-              <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[item.diff_status]}>
-                Ignored
-              </Tag>
+          <Flex vertical gap={2}>
+            <Flex gap="small" align="center" wrap="wrap">
+              <Button type="text" size="small" onClick={handleClick}>
+                <Text strong>{systemName}</Text>
+              </Button>
+              {item.diff_status === DiffStatus.MUTED && (
+                <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[item.diff_status]}>
+                  Ignored
+                </Tag>
+              )}
+            </Flex>
+            {item.description && (
+              <Text type="secondary" className="text-xs pl-1">
+                {item.description}
+              </Text>
             )}
           </Flex>
         }

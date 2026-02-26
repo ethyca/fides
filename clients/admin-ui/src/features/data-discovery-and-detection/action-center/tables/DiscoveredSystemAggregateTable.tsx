@@ -85,12 +85,12 @@ export const DiscoveredSystemAggregateTable = ({
                     <Tooltip
                       title={
                         uncategorizedIsSelected
-                          ? "Uncategorized assets can't be added to the inventory"
+                          ? "Uncategorized assets can't be approved"
                           : null
                       }
                       placement="left"
                     >
-                      Add
+                      Approve
                     </Tooltip>
                   ),
                   onClick: handleBulkAdd,

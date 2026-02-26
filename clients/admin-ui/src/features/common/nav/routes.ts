@@ -40,10 +40,11 @@ export const UNCATEGORIZED_SEGMENT = "[undefined]";
 export const DATA_CATALOG_ROUTE = "/data-catalog";
 
 // Privacy requests group
-export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;
 export const PRIVACY_REQUEST_DETAIL_ROUTE = "/privacy-requests/[id]";
+export const POLICIES_ROUTE = "/privacy-request-policies";
+export const POLICY_DETAIL_ROUTE = "/privacy-request-policies/[key]";
 
 // Consent group
 export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
@@ -85,7 +86,7 @@ export const NOTIFICATIONS_DIGESTS_ROUTE = "/notifications/digests";
 export const NOTIFICATIONS_ADD_DIGEST_ROUTE = "/notifications/digests/new";
 export const NOTIFICATIONS_EDIT_DIGEST_ROUTE = "/notifications/digests/[id]";
 
-// Email providers (messaging providers, now part of notifications)
+// Messaging providers (now part of notifications)
 export const MESSAGING_PROVIDERS_ROUTE = "/notifications/providers";
 export const MESSAGING_PROVIDERS_EDIT_ROUTE = "/notifications/providers/[key]";
 export const MESSAGING_PROVIDERS_NEW_ROUTE = "/notifications/providers/new";
@@ -103,6 +104,13 @@ export const FORMS_POC_ROUTE = "/poc/forms";
 export const ERRORS_POC_ROUTE = "/poc/error";
 export const TABLE_MIGRATION_POC_ROUTE = "/poc/table-migration";
 export const FIDES_JS_DOCS = "/fides-js-docs";
+export const PROMPT_EXPLORER_ROUTE = "/poc/prompt-explorer";
 
 // Sandbox routes
 export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
+
+// Privacy Assessments routes
+export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
+export const PRIVACY_ASSESSMENTS_EVALUATE_ROUTE =
+  "/privacy-assessments/evaluate";
+export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";

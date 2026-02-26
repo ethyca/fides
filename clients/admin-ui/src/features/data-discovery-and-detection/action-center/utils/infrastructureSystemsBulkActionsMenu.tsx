@@ -21,7 +21,7 @@ export const getBulkActionsMenuItems = ({
     return [
       {
         key: InfrastructureSystemBulkActionType.ADD,
-        label: "Add",
+        label: "Approve",
         onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
         disabled: isBulkActionInProgress,
       },
@@ -37,7 +37,7 @@ export const getBulkActionsMenuItems = ({
   return [
     {
       key: InfrastructureSystemBulkActionType.ADD,
-      label: "Add",
+      label: "Approve",
       onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
       disabled: isBulkActionInProgress,
     },
