@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Fixed React unknown-prop warnings in PrivacyRequestFiltersBar tests
-pr: 7443
-labels: []

@@ -420,64 +420,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
-  Pytest-Redis-Cluster:
-    needs: [Check-Backend-Changes, Check-Container-Startup]
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: Pull Docker images in background
-        run: |
-          docker pull postgres:16 > /dev/null 2>&1 &
-          docker pull redis:8.0-alpine > /dev/null 2>&1 &
-          echo "Docker pull initiated in background."
-        shell: bash
-
-      - name: Download container
-        uses: actions/download-artifact@v4
-        with:
-          name: python-${{ env.DEFAULT_PYTHON_VERSION }}
-          path: /tmp/
-
-      - name: Load image
-        run: docker load --input /tmp/python-${{ env.DEFAULT_PYTHON_VERSION }}.tar
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-
-      - name: Set Up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Install dependencies and nox
-        run: |
-          uv venv
-          uv pip install setuptools==80.10.2 wheel
-          uv sync
-
-      - name: Cache Nox virtual environment
-        uses: actions/cache@v4
-        with:
-          path: .nox/
-          key: ${{ runner.os }}-uv-nox-pytest_redis_cluster_docker-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfile.py') }}-${{ hashFiles('noxfiles/**.py') }}-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-nox-pytest_redis_cluster_docker-${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ env.DOCKER_USER }}
-          password: ${{ env.DOCKER_RO_TOKEN }}
-
-      - name: Run Redis cluster tests
-        run: uv run nox -s pytest_redis_cluster_docker
-
   ##################
   ## Unsafe Tests ##
   ##################

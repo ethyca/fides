@@ -45,6 +45,7 @@ def embedded_http_connection_config(connection_config: ConnectionConfig) -> Dict
         "secrets": None,
         "authorized": False,
         "enabled_actions": None,
+        "linked_systems": [],
     }
 
 
