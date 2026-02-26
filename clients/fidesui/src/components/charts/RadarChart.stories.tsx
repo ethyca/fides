@@ -52,7 +52,7 @@ const meta = {
     },
     color: {
       control: { type: "select" },
-      options: COLOR_OPTIONS,
+      options: [undefined, ...COLOR_OPTIONS],
       description:
         "Stroke and fill color for the radar and grid. Provide an Ant Design color token key (e.g., colorText, colorPrimary). Defaults to the colorText token when not set.",
     },

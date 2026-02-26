@@ -25,7 +25,6 @@ export const CHART_GRADIENT = {
 } as const;
 
 export const COLOR_OPTIONS = [
-  undefined,
   "colorPrimary",
   "colorSuccess",
   "colorWarning",

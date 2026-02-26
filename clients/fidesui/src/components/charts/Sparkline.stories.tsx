@@ -35,7 +35,7 @@ const meta = {
     },
     color: {
       control: "select",
-      options: COLOR_OPTIONS,
+      options: [undefined, ...COLOR_OPTIONS],
       description:
         "Ant Design semantic color token key. Defaults to colorText when not set.",
     },
