@@ -258,7 +258,17 @@ async def list_dataset_paginated(
     results = await async_paginate(db, filtered_query, pagination_params)
 
     if skip_validation:
-        return JSONResponse(content=jsonable_encoder(results))
+        return JSONResponse(
+            content={
+                "items": jsonable_encoder(
+                    list(results.items)  # type: ignore[attr-defined]
+                ),
+                "total": results.total,  # type: ignore[attr-defined]
+                "page": results.page,  # type: ignore[attr-defined]
+                "size": results.size,  # type: ignore[attr-defined]
+                "pages": results.pages,  # type: ignore[attr-defined]
+            }
+        )
 
     try:
         validated_items = []
