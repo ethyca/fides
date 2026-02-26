@@ -36,7 +36,6 @@ dependencies = [
     "asyncpg==0.30.0",
     "attrs~=25.4.0",
     "boto3==1.41.2",
-    "celery-redis-cluster~=0.2.3",
     "celery==5.5.3",
     "certifi==2024.8.30",
     "click-repl~=0.3.0",
@@ -91,7 +90,7 @@ dependencies = [
     "pyinstrument==4.5.1",
     "pymongo[srv]==4.7.3",
     "python-jose[cryptography]==3.5.0",
-    "redis==7.2.0",
+    "redis==3.5.3",
     "requests-oauth2client>=1.5.0",
     "requests-oauthlib==2.0.0",
     "rich-click==1.9.0",
@@ -133,6 +132,7 @@ dependencies = [
     "rfc3986~=2.0.0",
     "ordered-set==4.1.0",
     "setuptools~=80.10.2",
+
 ]
 
 [project.optional-dependencies]

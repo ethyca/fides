@@ -1,4 +1,0 @@
-type: Added
-description: Redis cluster support for cache and Celery; FidesopsRedis now accepts a single client (Redis or RedisCluster) and provides cluster-aware get_keys_by_prefix, delete_keys_by_prefix, and get_values
-pr: 0  # Update with PR number
-labels: []

@@ -457,19 +457,6 @@ wheels = [
 ]
 
 [[package]]
-name = "celery-redis-cluster"
-version = "0.2.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "celery" },
-    { name = "redis" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/68/26/2974f1268b21dad968a0ed73495915cdc24cd05172e217169a9e1e142d2e/celery_redis_cluster-0.2.3.tar.gz", hash = "sha256:0d3476a1095e9e763cc371848ead5f0068bed18f999e363e8dad7139cf3a3222", size = 4868, upload-time = "2025-02-14T20:50:24.872Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1a/66/f9a52f3baaa43a082a2770792b525b5713f14421978c1338fd8b6d3b63c3/celery_redis_cluster-0.2.3-py3-none-any.whl", hash = "sha256:af7b57f4edf663cd20a5b3c1af4126dda937141b4adeb57cec0252faf6d0e241", size = 4641, upload-time = "2025-02-14T20:50:22.737Z" },
-]
-
-[[package]]
 name = "certifi"
 version = "2024.8.30"
 source = { registry = "https://pypi.org/simple" }
@@ -961,7 +948,6 @@ dependencies = [
     { name = "boto3" },
     { name = "cachecontrol" },
     { name = "celery" },
-    { name = "celery-redis-cluster" },
     { name = "certifi" },
     { name = "cffi" },
     { name = "click" },
@@ -1123,7 +1109,6 @@ requires-dist = [
     { name = "boto3", specifier = "==1.41.2" },
     { name = "cachecontrol", specifier = "~=0.14.4" },
     { name = "celery", specifier = "==5.5.3" },
-    { name = "celery-redis-cluster", specifier = "~=0.2.3" },
     { name = "certifi", specifier = "==2024.8.30" },
     { name = "cffi", specifier = "~=2.0.0" },
     { name = "click", specifier = "==8.1.7" },
@@ -1189,7 +1174,7 @@ requires-dist = [
     { name = "pyopenssl", specifier = "~=25.3.0" },
     { name = "python-dateutil", specifier = "~=2.9.0.post0" },
     { name = "python-jose", extras = ["cryptography"], specifier = "==3.5.0" },
-    { name = "redis", specifier = "==7.2.0" },
+    { name = "redis", specifier = "==3.5.3" },
     { name = "requests", specifier = "~=2.32.5" },
     { name = "requests-oauth2client", specifier = ">=1.5.0" },
     { name = "requests-oauthlib", specifier = "==2.0.0" },
@@ -3747,11 +3732,11 @@ wheels = [
 
 [[package]]
 name = "redis"
-version = "7.2.0"
+version = "3.5.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9f/32/6fac13a11e73e1bc67a2ae821a72bfe4c2d8c4c48f0267e4a952be0f1bae/redis-7.2.0.tar.gz", hash = "sha256:4dd5bf4bd4ae80510267f14185a15cba2a38666b941aff68cccf0256b51c1f26", size = 4901247, upload-time = "2026-02-16T17:16:22.797Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b3/17/1e567ff78c83854e16b98694411fe6e08c3426af866ad11397cddceb80d3/redis-3.5.3.tar.gz", hash = "sha256:0e7e0cfca8660dea8b7d5cd8c4f6c5e29e11f31158c0b0ae91a397f00e5a05a2", size = 141112, upload-time = "2020-06-01T21:30:35.286Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/86/cf/f6180b67f99688d83e15c84c5beda831d1d341e95872d224f87ccafafe61/redis-7.2.0-py3-none-any.whl", hash = "sha256:01f591f8598e483f1842d429e8ae3a820804566f1c73dca1b80e23af9fba0497", size = 394898, upload-time = "2026-02-16T17:16:20.693Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/7c/24fb0511df653cf1a5d938d8f5d19802a88cef255706fdda242ff97e91b7/redis-3.5.3-py2.py3-none-any.whl", hash = "sha256:432b788c4530cfe16d8d943a09d40ca6c16149727e4afe8c2c9d5580c59d9f24", size = 72144, upload-time = "2020-06-01T21:30:33.523Z" },
 ]
 
 [[package]]
