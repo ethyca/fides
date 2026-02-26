@@ -65,21 +65,13 @@ def redshift_resources(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_redshift
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_create_and_process_access_request_redshift(
     redshift_resources,
     db,
     cache,
     policy,
     run_privacy_request_task,
-    dsr_version,
-    request,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = redshift_resources["email"]
     customer_name = redshift_resources["name"]
     data = {
@@ -113,10 +105,6 @@ def test_create_and_process_access_request_redshift(
 
 @pytest.mark.integration_external
 @pytest.mark.integration_redshift
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_create_and_process_erasure_request_redshift(
     redshift_example_test_dataset_config,
     redshift_resources,
@@ -124,12 +112,8 @@ def test_create_and_process_erasure_request_redshift(
     db,
     cache,
     erasure_policy,
-    dsr_version,
-    request,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = redshift_resources["email"]
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",

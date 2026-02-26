@@ -881,15 +881,15 @@ class TraversalNode(Contextualizable):
         ).model_dump(mode="json")
 
     def to_mock_request_task(self) -> RequestTask:
-        """Converts a portion of the TraversalNode into a RequestTask - used in building
-        dry run queries or for supporting Deprecated DSR 2.0. Request Tasks were introduced in DSR 3.0
+        """Converts a portion of the TraversalNode into a RequestTask in memory,
+        used in building dry-run queries.
         """
         collection_data = json.loads(
             # Serializes with duck-typing behavior, no longer the default in Pydantic v2
             # Needed for serializing nested collection fields
             self.node.collection.model_dump_json(serialize_as_any=True)
         )
-        return RequestTask(  # Mock a RequestTask object in memory
+        return RequestTask(
             collection_address=self.node.address.value,
             dataset_name=self.node.address.dataset,
             collection_name=self.node.address.collection,
@@ -898,11 +898,8 @@ class TraversalNode(Contextualizable):
         )
 
     def to_mock_execution_node(self) -> ExecutionNode:
-        """Converts a TraversalNode into an ExecutionNode - used for supporting DSR 2.0, to convert
-        Traversal Nodes into the Execution Node format which is needed for executing the graph in
-        DSR 3.0
-
-        DSR 3.0 on the other hand, creates ExecutionNodes from data on the RequestTask.
+        """Converts a TraversalNode into an ExecutionNode in memory via a mock
+        RequestTask. Used by test infrastructure and connector query config tests.
         """
         request_task: RequestTask = self.to_mock_request_task()
         return ExecutionNode(request_task)
