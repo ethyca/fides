@@ -27,6 +27,11 @@ const config: StorybookConfig = {
       // (e.g. toast.store.mjs, transition-utils.mjs, use-style-config.mjs).
       // Forcing Vite to pre-bundle Chakra causes esbuild to use the complete CJS
       // build and produce a single ESM bundle, bypassing the broken imports.
+      resolve: {
+        alias: {
+          "antd/lib": "antd",
+        },
+      },
       optimizeDeps: {
         include: ["@chakra-ui/react", "@chakra-ui/icons"],
       },

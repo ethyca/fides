@@ -54,7 +54,7 @@ export const RadarChart = ({
   };
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full pointer-events-none">
       <ResponsiveContainer width="100%" height="100%">
         <RechartsRadarChart
           data={empty ? EMPTY_PLACEHOLDER_DATA : data}
@@ -72,8 +72,7 @@ export const RadarChart = ({
             strokeOpacity={0.15}
           />
 
-          {/* Lock radial scale to 0-100 */}
-          <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+          <PolarRadiusAxis tick={false} axisLine={false} />
 
           {!empty && (
             <PolarAngleAxis
@@ -96,9 +95,9 @@ export const RadarChart = ({
                     textAnchor="middle"
                     dominantBaseline="central"
                     fontSize={11}
-                    fontWeight={statusColor ? 600 : 400}
+                    fontWeight={600}
                     fill={statusColor ?? chartColor}
-                    fillOpacity={statusColor ? 1 : 0.45}
+                    fillOpacity={statusColor ? 1 : 0.75}
                   >
                     {payload.value}
                   </text>
@@ -128,6 +127,7 @@ export const RadarChart = ({
               const point = empty ? undefined : data![index];
 
               return (
+                !empty &&
                 <circle
                   key={`dot-${index}`}
                   cx={dotCx}
@@ -139,6 +139,7 @@ export const RadarChart = ({
                   stroke={token.colorBgContainer}
                   strokeWidth={1.5}
                 />
+
               );
             }}
             activeDot={false}
