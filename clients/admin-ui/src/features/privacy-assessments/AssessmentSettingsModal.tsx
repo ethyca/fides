@@ -181,7 +181,7 @@ const AssessmentSettingsModal = ({
         </Flex>
       }
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="horizontal">
         {/* LLM Configuration Section */}
         <Flex vertical className="mb-6">
           <Text strong className="mb-3 block text-base">
@@ -190,7 +190,7 @@ const AssessmentSettingsModal = ({
 
           <Form.Item
             name="assessment_model_override"
-            label="Assessment Model Override"
+            label="Assessment model"
             tooltip="Custom LLM model for running privacy assessments. Leave empty to use the default."
           >
             <Input
@@ -204,7 +204,7 @@ const AssessmentSettingsModal = ({
 
           <Form.Item
             name="chat_model_override"
-            label="Chat Model Override"
+            label="Chat model"
             tooltip="Custom LLM model for questionnaire chat conversations. Leave empty to use the default."
           >
             <Input
@@ -220,12 +220,12 @@ const AssessmentSettingsModal = ({
         {/* Re-assessment Schedule Section */}
         <Flex vertical className="mb-6">
           <Text strong className="mb-3 block text-base">
-            Automatic Re-assessment
+            Automatic Reassessment
           </Text>
 
           <Form.Item
             name="reassessment_enabled"
-            label="Enable Automatic Re-assessment"
+            label="Enable automatic reassessment"
             valuePropName="checked"
           >
             <Switch data-testid="switch-reassessment-enabled" />
@@ -235,7 +235,7 @@ const AssessmentSettingsModal = ({
             <>
               <Form.Item
                 name="frequency_preset"
-                label="Schedule Frequency"
+                label="Schedule frequency"
                 initialValue="daily"
               >
                 <Select
@@ -293,7 +293,7 @@ const AssessmentSettingsModal = ({
         {/* Slack Configuration Section */}
         <Flex vertical className="mb-2">
           <Text strong className="mb-3 block text-base">
-            Slack Notifications
+            Slack notifications
           </Text>
 
           {channelOptions.length === 0 && !isLoadingChannels && (
