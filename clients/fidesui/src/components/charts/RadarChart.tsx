@@ -99,7 +99,7 @@ const RadarDot = ({
       r={3.5}
       fill={point?.status ? statusColors[point.status] : chartColor}
       stroke={bgColor}
-      strokeWidth={2}
+      strokeWidth={CHART_STROKE.strokeWidth}
     />
   );
 };
@@ -142,8 +142,8 @@ export const RadarChart = ({
 
           <PolarGrid
             stroke={chartColor}
-            strokeWidth={0.5}
-            strokeOpacity={0.15}
+            strokeWidth={CHART_STROKE.strokeWidth * 0.25}
+            strokeOpacity={CHART_STROKE.strokeOpacity * 0.25}
           />
 
           <PolarRadiusAxis tick={false} axisLine={false} />
