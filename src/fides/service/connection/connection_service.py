@@ -78,6 +78,7 @@ from fides.service.connection.merge_configs_util import (
     preserve_monitored_collections_in_dataset_merge,
 )
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 class ConnectorTemplateNotFound(Exception):
@@ -128,9 +129,15 @@ def _detect_connection_config_changes(
 
 
 class ConnectionService:
-    def __init__(self, db: Session, event_audit_service: EventAuditService):
+    def __init__(
+        self,
+        db: Session,
+        event_audit_service: EventAuditService,
+        link_repo: Optional[SystemIntegrationLinkRepository] = None,
+    ):
         self.db = db
         self.event_audit_service = event_audit_service
+        self.link_repo = link_repo or SystemIntegrationLinkRepository()
 
     def get_connection_config(self, connection_key: FidesKey) -> ConnectionConfig:
         connection_config = ConnectionConfig.get_by(
@@ -364,11 +371,15 @@ class ConnectionService:
         connection_config.secrets = self.validate_secrets(
             template_values.secrets, connection_config
         ).model_dump(mode="json")
-        if system:
-            connection_config.system_id = system.id  # type: ignore[attr-defined]
         connection_config.save(
             db=self.db
         )  # Not persisted to db until secrets are validated
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         try:
             dataset_config: DatasetConfig = self.upsert_dataset_config_from_template(
@@ -485,22 +496,21 @@ class ConnectionService:
             instance_key=config.key,
         )
 
-        if system:
-            connection_config = self.create_connection_config_from_template_no_save(
-                connector_template,
-                template_values,
-                system_id=system.id,  # type: ignore[attr-defined]
-            )
-        else:
-            connection_config = self.create_connection_config_from_template_no_save(
-                connector_template,
-                template_values,
-            )
+        connection_config = self.create_connection_config_from_template_no_save(
+            connector_template,
+            template_values,
+        )
         connection_config.secrets = self.validate_secrets(
             template_values.secrets,
             connection_config,
         ).model_dump(mode="json")
         connection_config.save(db=self.db)
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         # Create audit events for connection and secrets creation
         self.create_connection_audit_event(
@@ -541,12 +551,15 @@ class ConnectionService:
                 if isinstance(value, bool) or value
             }
 
-        if system:
-            config_dict["system_id"] = system.id  # type: ignore[attr-defined]
-
         connection_config = ConnectionConfig.create_or_update(
             self.db, data=config_dict, check_name=False
         )
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         # Track which connection configuration fields changed (only for updates)
         changed_fields = None
@@ -656,11 +669,8 @@ class ConnectionService:
         self,
         template: ConnectorTemplate,
         template_values: SaasConnectionTemplateValues,
-        system_id: Optional[str] = None,
     ) -> ConnectionConfig:
         """Creates a SaaS connection config from a template without saving it."""
-        # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
-        # the user has chosen
         config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_values.instance_key
         )
@@ -669,10 +679,6 @@ class ConnectionService:
             config_from_template=config_from_template
         )
 
-        if system_id:
-            data["system_id"] = system_id
-
-        # Create SaaS ConnectionConfig
         connection_config = ConnectionConfig.create_without_saving(self.db, data=data)
 
         return connection_config

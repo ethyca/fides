@@ -68,7 +68,7 @@ describe("Policy detail page", () => {
     });
   });
 
-  it("shows the conditions tab", () => {
+  it("shows the conditions tab with add button", () => {
     cy.getAntTab("Conditions").click();
     cy.getAntTabPanel("conditions")
       .should("be.visible")
@@ -78,6 +78,7 @@ describe("Policy detail page", () => {
           .should("have.text", "Policy conditions");
         cy.getByTestId("policy-conditions-description").should("be.visible");
         cy.getByTestId("policy-conditions-note").should("be.visible");
+        cy.getByTestId("add-condition-btn").should("be.visible");
       });
   });
 });
@@ -195,6 +196,167 @@ describe("Policy conditions list", () => {
       cy.getByTestId("condition-row-2").within(() => {
         cy.contains("IT").should("be.visible");
       });
+    });
+  });
+
+  it("shows edit and delete buttons for each condition", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.intercept("GET", "/api/v1/dsr/policy/*", {
+      body: {
+        name: "GDPR Erasure Policy",
+        key: "gdpr_erasure_policy",
+        drp_action: null,
+        execution_timeframe: 30,
+        conditions: {
+          field_address: "privacy_request.location_regulations",
+          operator: "list_contains",
+          value: "gdpr",
+        },
+        rules: [
+          {
+            name: "Erasure Rule",
+            key: "erasure_rule",
+            action_type: "erasure",
+          },
+        ],
+      },
+    }).as("getDSRPolicy");
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "gdpr_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getAntTabPanel("conditions").within(() => {
+      cy.getByTestId("edit-condition-0-btn").should("be.visible");
+      cy.getByTestId("delete-condition-0-btn").should("be.visible");
+    });
+  });
+});
+
+describe("Policy condition builder", () => {
+  it("opens the add condition modal", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "default_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getByTestId("add-condition-btn").click();
+    cy.getAntModal().should("be.visible");
+    cy.getAntModal().within(() => {
+      cy.contains("Add condition").should("be.visible");
+      cy.getByTestId("field-select").should("be.visible");
+      cy.getByTestId("operator-select").should("be.visible");
+    });
+  });
+
+  it("can add a location country condition", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.intercept("PUT", "/api/v1/plus/dsr/policy/*/conditions", {
+      statusCode: 200,
+      body: {
+        condition: {
+          field_address: "privacy_request.location_country",
+          operator: "eq",
+          value: "FR",
+        },
+      },
+    }).as("updateConditions");
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "default_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getByTestId("add-condition-btn").click();
+    cy.getAntModal().should("be.visible");
+
+    cy.getByTestId("field-select").antSelect("Location country");
+    cy.getByTestId("operator-select").antSelect("Equals");
+
+    cy.getByTestId("save-condition-btn").click();
+  });
+
+  it("can cancel adding a condition", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "default_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getByTestId("add-condition-btn").click();
+    cy.getAntModal().should("be.visible");
+
+    cy.getByTestId("cancel-btn").click();
+    cy.get(".ant-modal-content").should("not.exist");
+  });
+
+  it("shows the delete confirmation modal", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.intercept("GET", "/api/v1/dsr/policy/*", {
+      body: {
+        name: "GDPR Erasure Policy",
+        key: "gdpr_erasure_policy",
+        drp_action: null,
+        execution_timeframe: 30,
+        conditions: {
+          field_address: "privacy_request.location_regulations",
+          operator: "list_contains",
+          value: "gdpr",
+        },
+        rules: [
+          {
+            name: "Erasure Rule",
+            key: "erasure_rule",
+            action_type: "erasure",
+          },
+        ],
+      },
+    }).as("getDSRPolicy");
+    cy.intercept("PUT", "/api/v1/plus/dsr/policy/*/conditions", {
+      statusCode: 200,
+      body: { condition: null },
+    }).as("updateConditions");
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "gdpr_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getByTestId("delete-condition-0-btn").click();
+    cy.contains("Delete condition").should("be.visible");
+    cy.contains("Are you sure you want to delete").should("be.visible");
+  });
+
+  it("opens the edit condition modal with pre-filled values", () => {
+    cy.login();
+    stubDSRPolicies();
+    cy.intercept("GET", "/api/v1/dsr/policy/*", {
+      body: {
+        name: "GDPR Erasure Policy",
+        key: "gdpr_erasure_policy",
+        drp_action: null,
+        execution_timeframe: 30,
+        conditions: {
+          field_address: "privacy_request.location_regulations",
+          operator: "list_contains",
+          value: "gdpr",
+        },
+        rules: [
+          {
+            name: "Erasure Rule",
+            key: "erasure_rule",
+            action_type: "erasure",
+          },
+        ],
+      },
+    }).as("getDSRPolicy");
+    cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "gdpr_erasure_policy"));
+    cy.wait("@getDSRPolicy");
+
+    cy.getAntTab("Conditions").click();
+    cy.getByTestId("edit-condition-0-btn").click();
+    cy.getAntModal().should("be.visible");
+    cy.getAntModal().within(() => {
+      cy.contains("Edit condition").should("be.visible");
     });
   });
 });
