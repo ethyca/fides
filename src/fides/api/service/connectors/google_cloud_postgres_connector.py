@@ -80,7 +80,13 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
         """
 
     def set_schema(self, connection: Connection) -> None:
-        """Sets the schema for a postgres database if applicable"""
+        """Sets the schema for a postgres database if applicable.
+
+        Note: This is the legacy path using the db_schema connection secret.
+        When namespace_meta is configured instead, the schema is prepended
+        directly to the table name in the query config. The two approaches
+        are mutually exclusive in practice.
+        """
         config = self.secrets_schema(**self.configuration.secrets or {})
         if config.db_schema:
             logger.info("Setting PostgreSQL search_path before retrieving data")
