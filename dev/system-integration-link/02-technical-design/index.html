@@ -1944,7 +1944,52 @@ You're not viewing the latest version.
 <span class="p">]</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="24-extended-get-connection-list-response">2.4 Extended GET /connection List Response</h3>
-<p><strong>Status:</strong> Not yet implemented. Will add a <code>linked_systems</code> field alongside the existing <code>system_key</code>. The existing <code>system_key</code> continues to work via the <code>ConnectionConfig.system</code> relationship (which reads through the join table transparently).</p>
+<p><strong>Status:</strong> Implemented.</p>
+<p>The <code>GET /api/v1/connection</code> list and <code>GET /api/v1/connection/{key}</code> detail responses now include a <code>linked_systems</code> field on each connection config. This is a list of <code>LinkedSystemInfo</code> objects, each containing <code>fides_key</code> and <code>name</code>. Currently the list will contain at most one entry (due to the 1:1 constraint), but the list shape is forward-compatible with many-to-many.</p>
+<p><strong>Response example:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my_postgres&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My Postgres&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;connection_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;postgres&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;linked_systems&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;fides_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my_system&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;My System&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="err">...</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+<p><strong>Implementation approach:</strong> The <code>ConnectionConfigurationResponse</code> schema declares <code>linked_systems</code> as a plain field (default <code>[]</code>) with no Pydantic validator. Population is handled explicitly in each endpoint's route layer:</p>
+<ul>
+<li><strong>List endpoint</strong> (<code>get_connections</code>): Adds <code>selectinload(ConnectionConfig.system)</code> to the query and uses a <code>transformer</code> callback in <code>paginate()</code> to convert each ORM item to a response object with <code>linked_systems</code> populated.</li>
+<li><strong>Detail endpoint</strong> (<code>get_connection_detail</code>): Calls <code>_enrich_linked_systems()</code> after <code>model_validate()</code>, using the lazy-loaded <code>.system</code> relationship (single object, session still open).</li>
+<li><strong>System connections endpoint</strong> (<code>get_system_connections</code>): Same pattern as the list endpoint -- <code>selectinload</code> + transformer.</li>
+<li><strong>Async endpoints</strong> (e.g. fidesplus <code>GET /system</code>): <code>linked_systems</code> defaults to <code>[]</code>. These endpoints can opt in by eagerly loading <code>ConnectionConfig.system</code> and calling the same enrichment helper.</li>
+</ul>
+<p>This approach avoids coupling the Pydantic schema to SQLAlchemy and prevents <code>MissingGreenlet</code> errors in async contexts where the <code>.system</code> relationship cannot be lazy-loaded.</p>
+<p><strong>Implemented in:</strong>
+- Schema: <code>ConnectionConfigurationResponse</code> in <code>src/fides/api/schemas/connection_configuration/connection_config.py</code>
+- Route enrichment + eager loading: <code>src/fides/api/api/v1/endpoints/connection_endpoints.py</code>, <code>src/fides/api/api/v1/endpoints/system.py</code></p>
 <h3 id="schemas">Schemas</h3>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>

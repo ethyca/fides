@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.1a3.dev6+g7f4204bdb"
+    "version": "2.79.1a3.dev7+g186845f5f"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -21704,6 +21704,14 @@
               }
             ],
             "title": "Enabled Actions"
+          },
+          "linked_systems": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedSystemInfo"
+            },
+            "type": "array",
+            "title": "Linked Systems",
+            "default": []
           }
         },
         "type": "object",
@@ -21850,6 +21858,14 @@
             ],
             "title": "Enabled Actions"
           },
+          "linked_systems": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedSystemInfo"
+            },
+            "type": "array",
+            "title": "Linked Systems",
+            "default": []
+          },
           "system_key": {
             "anyOf": [
               {
@@ -21870,7 +21886,7 @@
           "created_at"
         ],
         "title": "ConnectionConfigurationResponseWithSystemKey",
-        "description": "Describes the full returned schema for a ConnectionConfiguration."
+        "description": "Extended response that includes the legacy ``system_key`` field."
       },
       "ConnectionSystemTypeMap": {
         "properties": {
@@ -27569,6 +27585,31 @@
         ],
         "title": "LegalBasisForProfilingEnum",
         "description": "The model for describing the legal basis under which profiling is performed"
+      },
+      "LinkedSystemInfo": {
+        "properties": {
+          "fides_key": {
+            "type": "string",
+            "title": "Fides Key"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fides_key"
+        ],
+        "title": "LinkedSystemInfo",
+        "description": "Minimal system info embedded in connection config list responses."
       },
       "LogEntry": {
         "properties": {
