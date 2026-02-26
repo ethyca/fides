@@ -45,6 +45,9 @@ from fides.common.api.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
+    SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE,
+    SYSTEM_INTEGRATION_LINK_DELETE,
+    SYSTEM_INTEGRATION_LINK_READ,
     SYSTEM_MANAGER_READ,
     SYSTEM_READ,
     USER_PERMISSION_ASSIGN_OWNERS,
@@ -55,6 +58,7 @@ from fides.common.api.scope_registry import (
 
 APPROVER = "approver"
 CONTRIBUTOR = "contributor"
+DATA_STEWARD = "data_steward"
 OWNER = "owner"
 VIEWER = "viewer"
 VIEWER_AND_APPROVER = "viewer_and_approver"
@@ -70,6 +74,7 @@ class RoleRegistryEnum(Enum):
     Approver - Limited viewer but can approve Privacy Requests
     Viewer + Approver = Full View and can approve Privacy Requests
     Contributor - Can't configure storage and messaging
+    Data Steward - Viewer + can manage system-integration links
     Respondent - Internal user who can respond to manual steps
     External Respondent - External user who can only respond to assigned manual steps
     """
@@ -79,6 +84,7 @@ class RoleRegistryEnum(Enum):
     viewer = VIEWER
     approver = APPROVER
     contributor = CONTRIBUTOR
+    data_steward = DATA_STEWARD
     respondent = RESPONDENT
     external_respondent = EXTERNAL_RESPONDENT
 
@@ -120,6 +126,7 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ and PRIVACY_REQU
     RULE_READ,
     SCOPE_READ,
     STORAGE_READ,
+    SYSTEM_INTEGRATION_LINK_READ,
     SYSTEM_READ,
     MESSAGING_READ,
     WEBHOOK_READ,
@@ -135,6 +142,11 @@ respondent_scopes = [
 
 external_respondent_scopes = [
     PRIVACY_REQUEST_MANUAL_STEPS_RESPOND,  # allows external respondents to respond to assigned manual steps
+]
+
+data_steward_scopes = viewer_scopes + [
+    SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE,
+    SYSTEM_INTEGRATION_LINK_DELETE,
 ]
 
 not_contributor_scopes = [
@@ -155,6 +167,7 @@ ROLES_TO_SCOPES_MAPPING: Dict[str, List] = {
     VIEWER: sorted(viewer_scopes),
     APPROVER: sorted(approver_scopes),
     CONTRIBUTOR: sorted(list(set(SCOPE_REGISTRY) - set(not_contributor_scopes))),
+    DATA_STEWARD: sorted(list(set(data_steward_scopes))),
     RESPONDENT: sorted(respondent_scopes),
     EXTERNAL_RESPONDENT: sorted(external_respondent_scopes),
 }

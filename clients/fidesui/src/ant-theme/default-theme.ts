@@ -16,6 +16,7 @@ export const defaultAntTheme: ThemeConfig = {
   cssVar: true,
   token: {
     fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+    fontFamilyCode: `"Basier Square Mono", 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`,
     colorText: palette.FIDESUI_MINOS,
     colorTextBase: palette.FIDESUI_MINOS,
     colorTextHeading: palette.FIDESUI_MINOS,
@@ -74,8 +75,14 @@ export const defaultAntTheme: ThemeConfig = {
     Select: {
       optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
+    Dropdown: {
+      controlItemBgActiveHover: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgHover: palette.FIDESUI_NEUTRAL_50,
+    },
     Menu: {
       itemHoverBg: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgActiveHover: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgHover: palette.FIDESUI_NEUTRAL_50,
       darkItemBg: palette.FIDESUI_MINOS,
       darkItemColor: palette.FIDESUI_CORINTH,
       darkSubMenuItemBg: palette.FIDESUI_MINOS,

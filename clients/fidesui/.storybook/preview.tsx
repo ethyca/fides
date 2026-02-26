@@ -1,45 +1,35 @@
 import type { Preview } from "@storybook/react-vite";
-import { App, ConfigProvider, ThemeConfig } from "antd";
-import React from "react";
-
-import { darkAntTheme, defaultAntTheme } from "../src/ant-theme";
-import { FidesUIProvider } from "../src/FidesUIProvider";
 
 import "../src/ant-theme/global.scss";
 import "../src/tailwind.css";
 
-const antThemes: Record<string, ThemeConfig> = {
-  default: defaultAntTheme,
-  dark: darkAntTheme,
-};
-
-const StorybookThemeWrapper = ({
-  theme,
-  children,
-}: {
-  theme: ThemeConfig;
-  children: React.ReactNode;
-}) => (
-  <ConfigProvider theme={theme}>
-    <App>{children}</App>
-  </ConfigProvider>
-);
+import { withAntTheme, DEFAULT_THEME } from "./withAntTheme";
 
 const preview: Preview = {
+  initialGlobals: {
+    theme: DEFAULT_THEME,
+  },
+
+  /**
+   * Declares the toolbar UI for theme switching.
+   * Add more entries to `items` (and to THEME_MAP in withAntTheme.tsx) to
+   * expose additional Ant Design themes without touching anything else.
+   */
   globalTypes: {
-    antTheme: {
-      name: "Ant Theme",
-      description: "Switch between Ant Design themes",
-      defaultValue: "default",
+    theme: {
+      description: "Ant Design theme",
       toolbar: {
+        title: "Theme",
         icon: "paintbrush",
         items: [
-          { value: "default", title: "Default (Light)" },
-          { value: "dark", title: "Dark" },
+          { value: "light", title: "Light", icon: "sun" },
+          { value: "dark", title: "Dark", icon: "moon" },
         ],
+        dynamicTitle: true,
       },
     },
   },
+
   parameters: {
     controls: {
       matchers: {
@@ -48,18 +38,8 @@ const preview: Preview = {
       },
     },
   },
-  decorators: [
-    (Story, { globals }) => {
-      const theme = antThemes[globals.antTheme] ?? defaultAntTheme;
-      return (
-        <FidesUIProvider antTheme={theme}>
-          <StorybookThemeWrapper theme={theme}>
-            <Story />
-          </StorybookThemeWrapper>
-        </FidesUIProvider>
-      );
-    },
-  ],
+
+  decorators: [withAntTheme],
 };
 
 export default preview;

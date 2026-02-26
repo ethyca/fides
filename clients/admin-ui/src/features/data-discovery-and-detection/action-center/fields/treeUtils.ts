@@ -1,4 +1,4 @@
-import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DiffStatus } from "~/types/api";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 
 import { CustomTreeDataNode } from "./types";
@@ -14,21 +14,19 @@ import { CustomTreeDataNode } from "./types";
 const updateNodeStatus = (
   list: CustomTreeDataNode[],
   key: React.Key,
-  status: TreeResourceChangeIndicator | null | undefined,
   diffStatus?: DiffStatus | null | undefined,
 ): CustomTreeDataNode[] =>
   list.map((node) => {
     if (node.key === key) {
       return {
         ...node,
-        status,
         diffStatus,
       };
     }
     if (node.children) {
       return {
         ...node,
-        children: updateNodeStatus(node.children, key, status, diffStatus),
+        children: updateNodeStatus(node.children, key, diffStatus),
       };
     }
 
@@ -117,7 +115,8 @@ const findNodeByUrn = (
  * @returns True if the badge dot should be shown
  */
 const shouldShowBadgeDot = (treeNode: DatastoreStagedResourceTreeAPIResponse) =>
-  !!treeNode.update_status && treeNode.diff_status !== DiffStatus.MUTED;
+  treeNode.diff_status === DiffStatus.ADDITION ||
+  treeNode.diff_status === DiffStatus.REMOVAL;
 
 /**
  * Collects all URNs from nodes including their descendants

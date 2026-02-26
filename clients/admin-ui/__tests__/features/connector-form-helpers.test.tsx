@@ -1,4 +1,4 @@
-import { fillInDefaults } from "~/features/datastore-connections/add-connection/forms/helpers";
+import { fillInDefaultsFlat } from "~/features/datastore-connections/system_portal_config/forms/helpers";
 
 describe("connector form helpers", () => {
   describe("fill in defaults", () => {
@@ -34,7 +34,7 @@ describe("connector form helpers", () => {
         an_optional_secret: { type: "string", title: "an_optional_secret" },
       };
       const schema = { ...baseResponse, properties };
-      expect(fillInDefaults(baseDefaultValues, schema)).toEqual({
+      expect(fillInDefaultsFlat(baseDefaultValues, schema)).toEqual({
         description: "default",
         name: "",
         instance_key: "",
@@ -56,7 +56,7 @@ describe("connector form helpers", () => {
       };
       const defaultValues = { ...baseDefaultValues, port: "" };
       const schema = { ...baseResponse, properties };
-      expect(fillInDefaults(defaultValues, schema)).toEqual({
+      expect(fillInDefaultsFlat(defaultValues, schema)).toEqual({
         description: "default",
         name: "",
         instance_key: "",
