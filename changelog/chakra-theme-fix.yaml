@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed Chakra theme which cause checkboxes and other components to not render correctly.
-pr: 7379
-labels: []

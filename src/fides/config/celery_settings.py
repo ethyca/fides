@@ -1,7 +1,7 @@
 import json
 import os
 from json import JSONDecodeError
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
@@ -32,16 +32,6 @@ class CelerySettings(FidesSettings):
     )
     healthcheck_ping_timeout: float = Field(
         default=2.0, description="The timeout in seconds for the health check ping"
-    )
-    broker_url: Optional[str] = Field(
-        default=None,
-        description="Celery broker URL. When set, overrides the default. With redis.cluster_enabled, "
-        "the default is redis+cluster:// (celery-redis-cluster). Set to a standalone redis:// URL to use a separate broker.",
-    )
-    result_backend: Optional[str] = Field(
-        default=None,
-        description="Celery result backend URL. When set, overrides the default. With redis.cluster_enabled, "
-        "the default is redis+cluster:// (celery-redis-cluster). Set to a standalone redis:// URL to override.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
 
