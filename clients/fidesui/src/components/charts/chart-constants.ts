@@ -6,7 +6,6 @@ export const CHART_TYPOGRAPHY = {
   fontWeight: 400,
   letterSpacing: "-0.03em",
 } as const;
-} as const;
 
 export const CHART_ANIMATION = {
   defaultDuration: 600,
