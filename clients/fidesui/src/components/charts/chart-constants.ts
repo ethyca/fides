@@ -1,4 +1,4 @@
-import { GlobalToken } from "antd";
+import type { GlobalToken } from "antd";
 
 export type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
 

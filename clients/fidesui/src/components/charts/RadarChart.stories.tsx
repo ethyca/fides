@@ -50,9 +50,16 @@ const meta = {
         'Chart data points. Each point can include an optional `status` ("success" | "warning" | "error") to color its dot and label using Ant Design tokens.',
     },
     color: {
-      control: "color",
+      control: { type: "select" },
+      options: [
+        "colorText",
+        "colorPrimary",
+        "colorSuccess",
+        "colorWarning",
+        "colorError",
+      ],
       description:
-        "Stroke and fill color for the radar and grid. Defaults to the Ant Design colorText token when not set.",
+        "Stroke and fill color for the radar and grid. Provide an Ant Design color token key (e.g., colorText, colorPrimary). Defaults to the colorText token when not set.",
     },
     animationDuration: {
       control: { type: "range", min: 0, max: 3000, step: 100 },
