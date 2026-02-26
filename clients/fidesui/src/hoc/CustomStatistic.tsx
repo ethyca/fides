@@ -1,6 +1,8 @@
 import { Statistic, StatisticProps, theme } from "antd/lib";
 import React from "react";
 
+import type { AntColorTokenKey } from "../components/charts/chart-constants";
+
 export type StatisticTrend = "up" | "down" | "neutral";
 
 export interface CustomStatisticProps extends StatisticProps {
@@ -21,8 +23,8 @@ const withCustomProps = (WrappedComponent: typeof Statistic) => {
   >(({ trend = "neutral", valueStyle, ...props }, ref) => {
     const { token } = theme.useToken();
 
-    /** Maps a trend direction to the corresponding Ant Design alias-token key. */
-    const TREND_TOKEN_MAP: Record<StatisticTrend, keyof typeof token> = {
+    /** Maps a trend direction to the corresponding Ant Design color-token key. */
+    const TREND_TOKEN_MAP: Record<StatisticTrend, AntColorTokenKey> = {
       up: "colorSuccess",
       down: "colorError",
       neutral: "colorText",

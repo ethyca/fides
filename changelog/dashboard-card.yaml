@@ -1,4 +1,4 @@
 type: Added
-description: Create HOC Card and Statistic, demonstrate in StatsCard
+description: Create Card and Statistic HOCs, demonstrate in StatCard
 pr: 7477
 labels: []

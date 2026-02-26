@@ -20,7 +20,6 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
       <WrappedComponent
         ref={ref}
         className={classNames(
-          "overflow-clip",
           { [styles.bottomCover]: coverPosition === "bottom" },
           className,
         )}
@@ -41,8 +40,6 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
  *   displayed relative to the card body. Use `"bottom"` to place a sparkline or chart
  *   below the card content.
  *
- * The component always applies `overflow-clip` so sparkline covers are clipped to the card
- * boundary; pass an additional `className` to extend styling further.
  *
  * @example
  * // Card with a sparkline at the bottom

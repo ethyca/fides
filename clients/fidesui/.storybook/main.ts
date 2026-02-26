@@ -36,7 +36,7 @@ const config: StorybookConfig = {
       // Forcing Vite to pre-bundle Chakra causes esbuild to use the complete CJS
       // build and produce a single ESM bundle, bypassing the broken imports.
       optimizeDeps: {
-        include: ["@chakra-ui/react", "@chakra-ui/icons", "antd"],
+        include: ["@chakra-ui/react", "@chakra-ui/icons"],
       },
     });
   },

@@ -293,6 +293,8 @@ export type {
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
+  CustomStatisticProps as StatisticProps,
+  StatisticTrend,
 } from "./hoc";
 export {
   CustomAvatar as Avatar,
@@ -302,6 +304,7 @@ export {
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
+  CustomStatistic as Statistic,
   CustomTable as Table,
   CustomTag as Tag,
   CustomTooltip as Tooltip,
