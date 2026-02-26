@@ -5,7 +5,7 @@ export type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
 export const CHART_TYPOGRAPHY = {
   fontWeight: 400,
   letterSpacing: "-0.03em",
-  lineHeight: 1.5,
+} as const;
 } as const;
 
 export const CHART_ANIMATION = {
