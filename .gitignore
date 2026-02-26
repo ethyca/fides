@@ -264,3 +264,7 @@ multilang_migration_backup_*
 
 # Claude Code
 .claude/*
+
+# Cline
+.cline/*
+.clinerules/*

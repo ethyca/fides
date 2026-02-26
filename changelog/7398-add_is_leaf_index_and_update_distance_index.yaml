@@ -1,4 +1,0 @@
-type: Added
-description: Add optimized database indexes for leaf resource filtering and ancestor distance lookups, improving tree query performance
-pr: 7398
-labels: ["db-migration"]

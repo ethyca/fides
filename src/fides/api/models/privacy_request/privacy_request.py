@@ -761,7 +761,7 @@ class PrivacyRequest(
         """Returns the prefix and cache keys for the identity data for this request"""
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
-        keys = cache.get_keys_by_prefix(f"id-{self.id}-identity-")
+        keys = cache.keys(prefix)
         return prefix, cache, keys
 
     def verify_cache_for_identity_data(self) -> bool:
@@ -778,7 +778,7 @@ class PrivacyRequest(
             logger.debug(f"Cache miss for request {self.id}, falling back to DB")
             identity = self.get_persisted_identity()
             self.cache_identity(identity)
-            keys = cache.get_keys_by_prefix(f"id-{self.id}-identity-")
+            keys = cache.keys(prefix)
 
         for key in keys:
             value = cache.get(key)
@@ -798,10 +798,10 @@ class PrivacyRequest(
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""
         result: Dict[str, Any] = {}
-        prefix = f"id-{self.id}-custom-privacy-request-field-"
+        prefix = f"id-{self.id}-custom-privacy-request-field-*"
 
         cache: FidesopsRedis = get_cache()
-        keys = cache.get_keys_by_prefix(prefix)
+        keys = cache.keys(prefix)
 
         if not keys:
             logger.debug(f"Cache miss for request {self.id}, falling back to DB")
@@ -814,7 +814,7 @@ class PrivacyRequest(
                     for key, value in custom_privacy_request_fields.items()
                 }
             )
-            keys = cache.get_keys_by_prefix(prefix)
+            keys = cache.keys(prefix)
 
         for key in keys:
             value = cache.get(key)
