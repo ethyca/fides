@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Self, cast
 
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
@@ -124,9 +124,7 @@ class ConnectionConfigurationResponse(ConnectionConfigurationResponseBase):
     linked_systems: List[LinkedSystemInfo] = []
 
     @classmethod
-    def from_connection_config(
-        cls, config: ConnectionConfig
-    ) -> ConnectionConfigurationResponse:
+    def from_connection_config(cls, config: ConnectionConfig) -> Self:
         """Build a response from an ORM ConnectionConfig, populating linked_systems."""
         response = cls.model_validate(config)
         if config.system:
