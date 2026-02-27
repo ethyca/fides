@@ -1,0 +1,4 @@
+type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
+description: Website monitor missing system filter in added tab
+pr: 7516 # PR number
+labels: [] # Optional: ["high-risk", "db-migration"]
