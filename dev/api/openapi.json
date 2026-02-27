@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.1a3.dev24+g1ff8f3352"
+    "version": "2.79.1a3.dev25+gc9f68667a"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5083,70 +5083,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BulkPutConnectionConfiguration"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/connection_legacy": {
-      "get": {
-        "tags": [
-          "Connections"
-        ],
-        "summary": "Get Connections Legacy",
-        "description": "TEMPORARY: Pre-#7458 version of get_connections for A/B perf comparison.\n\nNo selectinload, no transformer, no from_connection_config.",
-        "operationId": "get_connections_legacy_api_v1_connection_legacy_get",
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "connection:read"
-            ]
-          }
-        ],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1,
-              "title": "Page"
-            }
-          },
-          {
-            "name": "size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 50,
-              "title": "Size"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_ConnectionConfigurationResponse_"
                 }
               }
             }
