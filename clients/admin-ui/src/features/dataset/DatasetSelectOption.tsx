@@ -1,7 +1,7 @@
 import { Flex, Typography } from "fidesui";
 import React from "react";
 
-const DatasetOption = ({
+const DatasetSelectOption = ({
   label,
   value,
 }: {
@@ -24,4 +24,4 @@ const DatasetOption = ({
   );
 };
 
-export default DatasetOption;
+export default DatasetSelectOption;
