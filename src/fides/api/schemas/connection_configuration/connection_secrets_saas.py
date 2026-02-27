@@ -20,6 +20,8 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 from fides.api.schemas.saas.saas_config import SaaSConfig
+from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.api.util.saas_util import is_domain_validation_disabled
 
 
 class SaaSSchema(BaseModel, abc.ABC):
@@ -72,20 +74,26 @@ class SaaSSchema(BaseModel, abc.ABC):
                                 f"[{', '.join(invalid_options)}] are not valid options, '{name}' must be a list of values from [{', '.join(options)}]"
                             )
 
+                param_type = connector_param.get("param_type")
+                allowed_values = connector_param.get("allowed_values")
+                if (
+                    param_type == "endpoint"
+                    and allowed_values is not None
+                    and len(allowed_values) > 0
+                    and isinstance(value, str)
+                    and not is_domain_validation_disabled()
+                ):
+                    validate_value_against_allowed_list(value, allowed_values, name)
+
         return values
 
-    # TODO: See if there's a way to do this that isn't so brittle
     @classmethod
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
-        if not cls.__private_attributes__:
-            # Not sure why this was needed for Pydantic V2.
-            # This was to address 'NoneType' object has no attribute 'default'
-            return {}
-        try:
-            return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
-        except AttributeError:
-            # Default not fetchable
-            return {}
+        """Retrieve connector param metadata stored in the field's json_schema_extra."""
+        field = cls.model_fields.get(name)
+        if field and isinstance(field.json_schema_extra, dict):
+            return field.json_schema_extra
+        return {}
 
     @classmethod
     def external_references(cls) -> List[str]:
@@ -122,6 +130,17 @@ class SaaSSchemaFactory:
                     type=str,
                 )
                 param_type = Union[DynamicOption, List[DynamicOption]]  # type: ignore[assignment]
+            # Store connector param metadata in json_schema_extra so the
+            # model validator can access it via cls.model_fields.
+            # (PrivateAttr + __private_attributes__ is broken in Pydantic V2's
+            # create_model and silently returns empty data.)
+            extra: Dict[str, Any] = {
+                "sensitive": connector_param.sensitive,
+                "options": connector_param.options,
+                "multiselect": connector_param.multiselect,
+                "param_type": connector_param.type,
+                "allowed_values": connector_param.allowed_values,
+            }
             field_definitions[connector_param.name] = (
                 (
                     Optional[
@@ -131,7 +150,7 @@ class SaaSSchemaFactory:
                         title=connector_param.label,
                         description=connector_param.description,
                         default=connector_param.default_value,
-                        json_schema_extra={"sensitive": connector_param.sensitive},
+                        json_schema_extra=extra,
                     ),
                 )
                 if connector_param.default_value
@@ -140,7 +159,7 @@ class SaaSSchemaFactory:
                     FieldInfo(
                         title=connector_param.label,
                         description=connector_param.description,
-                        json_schema_extra={"sensitive": connector_param.sensitive},
+                        json_schema_extra=extra,
                     ),
                 )
             )
@@ -158,20 +177,9 @@ class SaaSSchemaFactory:
                 )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description
 
-        # set the connector_params as a private attribute on the schema class
-        # so they can be accessible in the 'required_components_supplied' validator
         model: Type[SaaSSchema] = create_model(
             f"{self.saas_config.type}_schema",
             __base__=SaaSSchema,
-            _connector_params=PrivateAttr(
-                {
-                    connector_param.name: {
-                        "options": connector_param.options,
-                        "multiselect": connector_param.multiselect,
-                    }
-                    for connector_param in self.saas_config.connector_params
-                }
-            ),
             _external_references=PrivateAttr(
                 [
                     external_reference.name
