@@ -75,7 +75,7 @@
       /* Tablet & up: let content use full space */
       @media (min-width: 768px) {
         #fides-banner {
-          padding: 48px 48px 64px 48px !important;
+          padding: 48px !important;
         }
 
         #fides-banner-inner-container {
@@ -89,18 +89,17 @@
 
       /* TCF Modal second screen: fix overflow */
       #fides-overlay-wrapper {
-        height: 100vh !important;
-        overflow: hidden !important;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
       }
-
-      #fides-consent-content {
-        max-height: 100vh !important;
-        overflow: hidden !important;
-      }
-
-      #fides-consent-content .fides-modal-body {
-        max-height: calc(100vh - 200px) !important;
-        overflow-y: auto !important;
+      /* Tablet & up: let content use full space */
+      @media (min-width: 768px) {
+        #fides-overlay-wrapper {
+          --fides-overlay-padding: 48px;
+        }
       }
 
       .no-results {
