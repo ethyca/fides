@@ -25,6 +25,7 @@ import styles from "./AssessmentDetail.module.scss";
 import { useDeletePrivacyAssessmentMutation } from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
+import { ReportModal } from "./ReportModal";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
 
@@ -39,6 +40,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const { getDataCategoryDisplayName } = useTaxonomies();
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
@@ -167,7 +169,11 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
                 : undefined
             }
           >
-            <Button type="primary" disabled={!isComplete}>
+            <Button
+              type="primary"
+              disabled={!isComplete}
+              onClick={() => setIsReportModalOpen(true)}
+            >
               Generate report
             </Button>
           </Tooltip>
@@ -189,6 +195,13 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         onChange={(keys) => setExpandedKeys(keys as string[])}
         items={collapseItems}
         size="large"
+      />
+
+      <ReportModal
+        assessment={assessment}
+        isComplete={isComplete}
+        open={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
       />
     </Space>
   );
