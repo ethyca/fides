@@ -44,51 +44,46 @@
 
       /* TCF Overlay first screen: fill viewport with sticky footer */
       .fides-banner.fides-embedded {
-        height: 100vh !important;
-        display: flex !important;
+        height: 100vh;
+        display: flex;
+      }
+
+      .fides-banner.fides-embedded #fides-banner .fides-close-button {
+        display: none;
+      }
+
+      #fides-banner {
+        --fides-overlay-padding: 16px;
         flex-direction: column !important;
-        box-sizing: border-box !important;
       }
 
-      .fides-banner.fides-embedded .fides-close-button {
-        display: none !important;
+      #fides-banner-inner {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
       }
 
-      .fides-banner.fides-embedded > div {
-        padding: 16px !important;
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        min-height: 0 !important;
-      }
-
-      .fides-banner.fides-embedded [role="document"] {
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        min-height: 0 !important;
-      }
-
-      .fides-banner.fides-embedded [role="document"] > div:nth-child(2) {
-        flex: 1 !important;
-        overflow-y: auto !important;
-        min-height: 0 !important;
+      #fides-banner-inner-container {
         max-height: none !important;
       }
 
-      .fides-banner.fides-embedded [role="document"] > div:last-child {
-        flex-shrink: 0 !important;
+      #fides-button-group {
+        flex-shrink: 0;
       }
 
-      /* Tablet/iPad: let content use full space */
+      /* Tablet & up: let content use full space */
       @media (min-width: 768px) {
-        .fides-banner.fides-embedded > div {
+        #fides-banner {
           padding: 48px 48px 64px 48px !important;
         }
 
+        #fides-banner-inner-container {
+          flex: 1;
+        }
+
         .fides-banner.fides-embedded .fides-banner__content {
-          max-height: none !important;
-          overflow-y: visible !important;
+          max-height: none;
         }
       }
 
