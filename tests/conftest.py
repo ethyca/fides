@@ -797,7 +797,9 @@ def celery_session_app(celery_session_app):
 
 # This is here because the test suite occasionally fails to teardown the
 # Celery worker if it takes too long to terminate the worker thread. This
-# will prevent that and, instead, log a warning
+# will prevent that and, instead, log a warning.
+# When Redis cluster is enabled, we skip starting the real worker (it can block
+# on cluster connections at teardown) and use task_always_eager so tasks run in-process.
 @pytest.fixture(scope="session")
 def celery_session_worker(
     request,
@@ -814,12 +816,24 @@ def celery_session_worker(
     for class_task in celery_class_tasks:
         celery_session_app.register_task(class_task)
 
+    config = get_config()
+    if config.redis.cluster_enabled:
+        logger.info(
+            "Redis cluster enabled: skipping real Celery worker, using task_always_eager."
+        )
+        celery_session_app.conf.task_always_eager = True
+        # Minimal mock so tests that call .stop() or .reload() don't break
+        from types import SimpleNamespace
+
+        yield SimpleNamespace(stop=lambda: None, reload=lambda: None)
+        return
+
     try:
         logger.info("Starting safe celery session worker...")
         with worker.start_worker(
             celery_session_app,
             pool=celery_worker_pool,
-            shutdown_timeout=2.0,
+            shutdown_timeout=10.0,
             **celery_worker_parameters,
         ) as w:
             try:
@@ -925,7 +939,7 @@ def access_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the access request for either DSR 2.0 and DSR 3.0
+    Function for testing the access request using DSR 3.0.
     """
     try:
         return access_runner(
@@ -955,7 +969,7 @@ def erasure_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the erasure runner for either DSR 2.0 and DSR 3.0
+    Function for testing the erasure runner using DSR 3.0.
     """
     try:
         return erasure_runner(
@@ -984,7 +998,7 @@ def consent_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the consent request for either DSR 2.0 and DSR 3.0
+    Function for testing the consent request using DSR 3.0.
     """
     try:
         return consent_runner(
