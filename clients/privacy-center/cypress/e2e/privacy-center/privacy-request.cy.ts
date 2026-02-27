@@ -395,7 +395,10 @@ describe("Privacy Request Verification Flow", () => {
     });
 
     // Should navigate to verification page
-    cy.url().should("include", `/privacy-request/${ENCODED_ACCESS_POLICY}/verify`);
+    cy.url().should(
+      "include",
+      `/privacy-request/${ENCODED_ACCESS_POLICY}/verify`,
+    );
     cy.getByTestId("privacy-request-verify-layout").should("be.visible");
     cy.getByTestId("verification-form").should("be.visible");
     cy.contains("Verification code").should("be.visible");
@@ -420,7 +423,10 @@ describe("Privacy Request Verification Flow", () => {
     });
 
     // Should be on verification page
-    cy.url().should("include", `/privacy-request/${ENCODED_ACCESS_POLICY}/verify`);
+    cy.url().should(
+      "include",
+      `/privacy-request/${ENCODED_ACCESS_POLICY}/verify`,
+    );
     cy.getByTestId("verification-form").should("be.visible");
 
     // Enter verification code
@@ -485,7 +491,10 @@ describe("Privacy Request Verification Flow", () => {
     });
 
     // Should be on verification page
-    cy.url().should("include", `/privacy-request/${ENCODED_ACCESS_POLICY}/verify`);
+    cy.url().should(
+      "include",
+      `/privacy-request/${ENCODED_ACCESS_POLICY}/verify`,
+    );
     cy.getByTestId("verification-form").should("be.visible");
 
     // Enter invalid code
