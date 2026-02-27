@@ -132,7 +132,7 @@ export const RadarChart = ({
           data={empty ? EMPTY_PLACEHOLDER_DATA : data}
           cx="50%"
           cy="50%"
-          outerRadius="70%"
+          outerRadius="80%"
         >
           <ChartGradient
             id={gradientId}
@@ -148,19 +148,6 @@ export const RadarChart = ({
           />
 
           <PolarRadiusAxis tick={false} axisLine={false} />
-
-          {!empty && (
-            <PolarAngleAxis
-              dataKey="subject"
-              tick={
-                <RadarTick
-                  data={data!}
-                  statusColors={STATUS_COLORS}
-                  chartColor={chartColor}
-                />
-              }
-            />
-          )}
 
           <Radar
             dataKey="value"
@@ -187,6 +174,19 @@ export const RadarChart = ({
             animationDuration={animationDuration}
             animationEasing={CHART_ANIMATION.easing}
           />
+
+          {!empty && (
+            <PolarAngleAxis
+              dataKey="subject"
+              tick={
+                <RadarTick
+                  data={data!}
+                  statusColors={STATUS_COLORS}
+                  chartColor={chartColor}
+                />
+              }
+            />
+          )}
         </RechartsRadarChart>
       </ResponsiveContainer>
     </div>

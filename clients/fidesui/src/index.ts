@@ -239,7 +239,6 @@ export {
   Badge,
   Breadcrumb,
   Button,
-  Card,
   Cascader,
   Checkbox,
   Col,
@@ -290,17 +289,22 @@ export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 // Higher-order components
 export type {
   CustomAvatarProps as AvatarProps,
+  CustomCardProps as CardProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
+  CustomStatisticProps as StatisticProps,
+  StatisticTrend,
 } from "./hoc";
 export {
   CustomAvatar as Avatar,
+  CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
+  CustomStatistic as Statistic,
   CustomTable as Table,
   CustomTag as Tag,
   CustomTooltip as Tooltip,
