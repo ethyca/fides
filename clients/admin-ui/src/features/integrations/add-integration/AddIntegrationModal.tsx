@@ -168,8 +168,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
           <Flex
             vertical
             flex={1}
-            className="px-6 pb-4"
-            style={{ overflowY: "auto" }}
+            className="overflow-y-auto px-6 pb-4"
           >
             <SelectIntegrationType
               filteredTypes={filteredTypes}
