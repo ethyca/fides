@@ -56,27 +56,40 @@ class AuthenticatedClient:
         self.configuration = configuration
         self.client_config = client_config
         self.rate_limit_config = rate_limit_config
+        self._allowed_hosts: Optional[List[str]] = self._extract_allowed_hosts()
 
-    def _validate_request_domain(self, host: str) -> None:
-        """Defense-in-depth: validate the resolved host against allowed_values
-        from the connector's SaaS config endpoint params."""
+    def _extract_allowed_hosts(self) -> Optional[List[str]]:
+        """One-time extraction of allowed host patterns from the SaaS config.
+
+        Returns None when validation should be skipped (disabled, no SaaS
+        config, or no endpoint params with allowed_values).  A non-None list
+        means every outbound host must match at least one entry.
+        """
         if is_domain_validation_disabled():
-            return
+            return None
 
         saas_config = self.configuration.get_saas_config()
         if not saas_config:
-            return
+            return None
 
-        host_without_port = host.split(":")[0] if ":" in host else host
-
-        all_allowed: List[str] = [
+        allowed = [
             v
             for cp in saas_config.connector_params
             if cp.type == "endpoint" and cp.allowed_values
             for v in cp.allowed_values
         ]
-        if all_allowed:
-            validate_value_against_allowed_list(host_without_port, all_allowed, "host")
+        return allowed if allowed else None
+
+    def _validate_request_domain(self, host: str) -> None:
+        """Defense-in-depth: validate the resolved host against the
+        pre-extracted allowed host patterns."""
+        if self._allowed_hosts is None:
+            return
+
+        host_without_port = host.split(":")[0] if ":" in host else host
+        validate_value_against_allowed_list(
+            host_without_port, self._allowed_hosts, "host"
+        )
 
     def get_authenticated_request(
         self, request_params: SaaSRequestParams

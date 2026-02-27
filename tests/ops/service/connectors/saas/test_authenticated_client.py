@@ -312,6 +312,24 @@ class TestValidateRequestDomain:
         )
         client._validate_request_domain("anything.example.com")
 
+    @mock.patch(
+        "fides.api.service.connectors.saas.authenticated_client.is_domain_validation_disabled",
+        return_value=False,
+    )
+    def test_allowed_hosts_extracted_once_at_construction(self, mock_disabled):
+        """get_saas_config should be called once during __init__, not on every
+        _validate_request_domain call."""
+        client = _make_client_with_allowed_values({"domain": ["api.stripe.com"]})
+
+        assert client._allowed_hosts == ["api.stripe.com"]
+        assert client.configuration.get_saas_config.call_count == 1
+
+        client._validate_request_domain("api.stripe.com")
+        client._validate_request_domain("api.stripe.com")
+        client._validate_request_domain("api.stripe.com")
+
+        assert client.configuration.get_saas_config.call_count == 1
+
 
 @pytest.mark.unit_saas
 class TestRetryAfterHeaderParsing:
