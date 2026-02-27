@@ -3,7 +3,6 @@ import { Button, CUSTOM_TAG_COLOR, Flex, Icons, Tag, Text } from "fidesui";
 import type { HTMLAttributes } from "react";
 
 import styles from "./QuestionnaireStatusBar.module.scss";
-import { SlackIcon } from "./SlackIcon";
 
 interface QuestionnaireStatusBarProps extends HTMLAttributes<HTMLDivElement> {
   timeSinceSent: string;
@@ -53,7 +52,6 @@ export const QuestionnaireStatusBar = ({
           </Flex>
         </Flex>
         <Button
-          icon={<SlackIcon size={14} />}
           size="small"
           onClick={onSendReminder}
           loading={isSendingReminder}
