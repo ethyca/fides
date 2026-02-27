@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { useEffect, useState } from "react";
 
 const MINUTE_S = 60;
@@ -13,7 +13,7 @@ export const useRelativeTime = (
   intervalSeconds: number = MINUTE_S,
 ): string => {
   const [relativeTime, setRelativeTime] = useState(() =>
-    date ? formatDistanceToNow(date, { addSuffix: true }) : "",
+    date ? formatDistanceToNowStrict(date, { addSuffix: true }) : "",
   );
 
   useEffect(() => {
@@ -21,9 +21,9 @@ export const useRelativeTime = (
       setRelativeTime("");
       return undefined;
     }
-    setRelativeTime(formatDistanceToNow(date, { addSuffix: true }));
+    setRelativeTime(formatDistanceToNowStrict(date, { addSuffix: true }));
     const interval = setInterval(() => {
-      setRelativeTime(formatDistanceToNow(date, { addSuffix: true }));
+      setRelativeTime(formatDistanceToNowStrict(date, { addSuffix: true }));
     }, intervalSeconds * 1000);
     return () => {
       clearInterval(interval);

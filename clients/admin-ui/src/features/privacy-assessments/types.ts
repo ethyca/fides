@@ -400,3 +400,42 @@ export interface PrivacyAssessmentConfigDefaults {
   default_chat_model: string;
   default_reassessment_cron: string;
 }
+
+// =============================================================================
+// Assessment Task Types
+// =============================================================================
+
+export enum TaskStatus {
+  IN_PROCESSING = "in_processing",
+  PENDING = "pending",
+  COMPLETE = "complete",
+  ERROR = "error",
+  RETRYING = "retrying",
+}
+
+export interface AssessmentTaskResponse {
+  id: string;
+  action_type: string;
+  status: TaskStatus;
+  total_count: number;
+  completed_count: number;
+  progress: number;
+  message: string | null;
+  assessment_types: string[];
+  system_fides_keys: string[] | null;
+  created_by: string | null;
+  use_llm: boolean;
+  llm_model: string | null;
+  assessment_ids: string[];
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export interface Page_AssessmentTaskResponse_ {
+  items: AssessmentTaskResponse[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+}

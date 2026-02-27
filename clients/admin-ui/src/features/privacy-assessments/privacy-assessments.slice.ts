@@ -13,6 +13,7 @@ import {
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
   GetPrivacyAssessmentsParams,
+  Page_AssessmentTaskResponse_,
   Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentConfigDefaults,
   PrivacyAssessmentConfigResponse,
@@ -69,6 +70,18 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["Privacy Assessment Tasks"],
+    }),
+
+    getAssessmentTasks: build.query<
+      Page_AssessmentTaskResponse_,
+      { page?: number; size?: number; status?: string } | void
+    >({
+      query: (params) => ({
+        url: "plus/privacy-assessments/tasks",
+        params: params ?? undefined,
+      }),
+      providesTags: ["Privacy Assessment Tasks"],
     }),
 
     updatePrivacyAssessment: build.mutation<
@@ -225,6 +238,8 @@ export const {
   useGetAssessmentConfigQuery,
   useUpdateAssessmentConfigMutation,
   useGetAssessmentConfigDefaultsQuery,
+  // Assessment Tasks
+  useGetAssessmentTasksQuery,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };
