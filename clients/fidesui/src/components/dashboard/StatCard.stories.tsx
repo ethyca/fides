@@ -191,9 +191,9 @@ export const WithTabs: Story = {
         activeTabKey={activeTab}
         onTabChange={setActiveTab}
       >
-        <div className="flex items-center justify-center bg-gray-50 p-8">
-          {TAB_CONTENT[activeTab]}
-        </div>
+          <Flex align="center" justify="center" className="bg-gray-50 p-8">
+            {TAB_CONTENT[activeTab]}
+          </Flex>
       </Card>
     );
   },
