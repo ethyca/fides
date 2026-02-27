@@ -60,7 +60,7 @@ from fides.api.v1.exception_handlers import (
     ExceptionHandlers,
     response_validation_error_handler,
 )
-from fides.common.session import get_api_session, get_autoclose_db_session
+from fides.common.session_management import get_api_session, get_autoclose_db_session
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 

@@ -3,7 +3,7 @@ from typing import Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.common.session.session_management import (
+from fides.common.session_management import (
     with_optional_sync_readonly_session,
     with_optional_sync_session,
 )

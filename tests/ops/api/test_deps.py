@@ -5,10 +5,10 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 
-import fides.common.session.session_management as session_mgmt
+import fides.common.session_management as session_mgmt
 from fides.api.common_exceptions import RedisNotConfigured
 from fides.api.deps import get_cache
-from fides.common.session import get_api_session
+from fides.common.session_management import get_api_session
 from fides.config import CONFIG
 
 

@@ -74,7 +74,7 @@ from fides.api.util.saas_util import (
     check_dataset_missing_reference_values,
     map_param_values,
 )
-from fides.common.session import get_autoclose_db_session as get_db
+from fides.common.session_management import get_autoclose_db_session as get_db
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):

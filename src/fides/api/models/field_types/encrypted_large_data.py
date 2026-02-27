@@ -9,7 +9,7 @@ from fides.api.service.external_data_storage import (
     ExternalDataStorageService,
 )
 from fides.api.util.data_size import LARGE_DATA_THRESHOLD_BYTES, calculate_data_size
-from fides.common.session import get_autoclose_db_session
+from fides.common.session_management import get_autoclose_db_session
 
 
 class EncryptedLargeDataDescriptor:

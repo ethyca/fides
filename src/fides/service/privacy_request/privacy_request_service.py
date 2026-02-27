@@ -62,7 +62,7 @@ from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
-from fides.common.session import get_autoclose_db_session
+from fides.common.session_management import get_autoclose_db_session
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (
     MessagingService,

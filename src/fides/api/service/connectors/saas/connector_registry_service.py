@@ -32,7 +32,7 @@ from fides.api.util.saas_util import (
     replace_version,
 )
 from fides.api.util.unsafe_file_util import verify_svg, verify_zip
-from fides.common.session import get_api_session
+from fides.common.session_management import get_api_session
 
 
 class ConnectorTemplateLoader(ABC):

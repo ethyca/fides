@@ -8,17 +8,9 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import RedisNotConfigured
 from fides.api.db.ctl_session import async_session, get_async_db
 from fides.api.util.cache import get_cache as get_redis_connection
-from fides.common.session import (
-    get_api_session as get_api_session,
-)
-from fides.common.session import (
-    get_autoclose_db_session as get_autoclose_db_session,
-)
-from fides.common.session import (
-    get_readonly_api_session as get_readonly_api_session,
-)
-from fides.common.session import (
-    get_readonly_autoclose_db_session as get_readonly_autoclose_db_session,
+from fides.common.session_management import (
+    get_api_session,
+    get_readonly_api_session,
 )
 from fides.config import CONFIG, FidesConfig
 from fides.config import get_config as get_app_config

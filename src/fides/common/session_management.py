@@ -18,8 +18,6 @@ from fides.api.db.ctl_session import async_session
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.config import CONFIG
 
-_test_mypy: int = "this is not an int"  # TEMPORARY - delete me
-
 T = TypeVar("T")
 
 _engine = None

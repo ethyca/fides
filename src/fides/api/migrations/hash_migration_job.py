@@ -12,7 +12,7 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import CustomPrivacyRequestField, ProvidedIdentity
 from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.common.session import get_autoclose_db_session
+from fides.common.session_management import get_autoclose_db_session
 from fides.config import CONFIG
 
 HASH_MIGRATION = "hash_migration"

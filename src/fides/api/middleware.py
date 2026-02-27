@@ -9,7 +9,7 @@ from starlette.types import Message
 
 from fides.api.models.sql_models import AuditLogResource  # type: ignore[attr-defined]
 from fides.api.oauth.utils import extract_token_and_load_client
-from fides.common.session import get_api_session
+from fides.common.session_management import get_api_session
 
 
 async def handle_audit_log_resource(request: Request) -> None:
