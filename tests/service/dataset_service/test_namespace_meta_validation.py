@@ -29,7 +29,7 @@ def test_validate_unsupported_connection_type():
     dataset = FideslangDataset(fides_key="test_dataset", collections=[])
     connection_config = ConnectionConfig(
         key="test_connection",
-        connection_type=ConnectionType.postgres,
+        connection_type=ConnectionType.mariadb,
         name="Test Connection",
     )
     context = DatasetValidationContext(
@@ -38,6 +38,97 @@ def test_validate_unsupported_connection_type():
 
     validator = NamespaceMetaValidationStep()
     validator.validate(context)
+
+
+def test_validate_postgres_without_namespace_or_schema():
+    """Test validation passes for Postgres without namespace_meta or db_schema.
+
+    Postgres defaults to the public schema, so neither namespace_meta nor
+    db_schema is required — this must remain backward compatible.
+    """
+    dataset = FideslangDataset(fides_key="test_dataset", collections=[])
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    validator.validate(context)  # Should not raise — defaults to public schema
+
+
+def test_validate_postgres_with_valid_namespace():
+    """Test validation succeeds with valid Postgres namespace metadata"""
+    dataset = FideslangDataset(
+        fides_key="test_dataset",
+        collections=[],
+        fides_meta={
+            "namespace": {
+                "schema": "billing",
+            }
+        },
+    )
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    validator.validate(context)
+
+
+def test_validate_postgres_with_connection_defaults():
+    """Test validation succeeds when Postgres connection has db_schema in secrets"""
+    dataset = FideslangDataset(fides_key="test_dataset", collections=[])
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.postgres,
+        name="Test Connection",
+        secrets={"db_schema": "billing"},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    validator.validate(context)
+
+
+def test_validate_postgres_with_invalid_namespace():
+    """Test validation fails with invalid Postgres namespace metadata (missing schema)"""
+    dataset = FideslangDataset(
+        fides_key="test_dataset",
+        collections=[],
+        fides_meta={
+            "namespace": {
+                "database_name": "ramp_prod",  # Missing required schema
+            }
+        },
+    )
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    with pytest.raises(ValidationError) as exc:
+        validator.validate(context)
+
+    assert "Invalid namespace metadata for postgres" in str(exc.value)
 
 
 def test_validate_snowflake_missing_namespace_and_secrets():
@@ -190,6 +281,38 @@ def test_validate_with_connection_defaults():
     )
 
     validator = NamespaceMetaValidationStep()
+    validator.validate(context)
+
+
+def test_validate_mismatched_namespace_skipped():
+    """Test that namespace_meta for a different connection type is silently skipped.
+
+    When datasets of mixed types are linked to a single connection (e.g. a BigQuery
+    dataset linked to a Postgres connection), the namespace_meta belongs to a different
+    connector and should not be validated against the current connection's schema.
+    """
+    dataset = FideslangDataset(
+        fides_key="test_dataset",
+        collections=[],
+        fides_meta={
+            "namespace": {
+                "project_id": "my-project",
+                "dataset_id": "my_dataset",
+            }
+        },
+    )
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    # Should not raise — namespace is for BigQuery, not Postgres
     validator.validate(context)
 
 
