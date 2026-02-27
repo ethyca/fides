@@ -1,6 +1,6 @@
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { theme } from "antd";
+import { Flex, theme } from "antd";
 import { Card, Statistic } from "fidesui";
 import { useState } from "react";
 
@@ -191,9 +191,9 @@ export const WithTabs: Story = {
         activeTabKey={activeTab}
         onTabChange={setActiveTab}
       >
-          <Flex align="center" justify="center" className="bg-gray-50 p-8">
-            {TAB_CONTENT[activeTab]}
-          </Flex>
+        <Flex align="center" justify="center" className="bg-gray-50 p-8">
+          {TAB_CONTENT[activeTab]}
+        </Flex>
       </Card>
     );
   },
