@@ -1,4 +1,4 @@
-import { Tag, Tooltip } from "fidesui";
+import { Space, Tag, Tooltip } from "fidesui";
 
 import {
   ANSWER_SOURCE_LABELS,
@@ -15,9 +15,14 @@ interface AnswerStatusTagsProps {
 export const AnswerStatusTags = ({ question }: AnswerStatusTagsProps) => {
   if (question.answer_status === AnswerStatus.COMPLETE) {
     return (
-      <Tag color={ANSWER_SOURCE_TAG_COLORS[question.answer_source]}>
-        {ANSWER_SOURCE_LABELS[question.answer_source]}
-      </Tag>
+      <Space size="small">
+        <Tag color={ANSWER_STATUS_TAG_COLORS[question.answer_status]}>
+          {ANSWER_STATUS_LABELS[question.answer_status]}
+        </Tag>
+        <Tag color={ANSWER_SOURCE_TAG_COLORS[question.answer_source]}>
+          {ANSWER_SOURCE_LABELS[question.answer_source]}
+        </Tag>
+      </Space>
     );
   }
 
