@@ -23,7 +23,6 @@ import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
 import {
-  useCreateQuestionnaireMutation,
   useCreateQuestionnaireReminderMutation,
   useDeletePrivacyAssessmentMutation,
   useGetAssessmentConfigQuery,
@@ -31,6 +30,7 @@ import {
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
+import { RequestInputModal } from "./RequestInputModal";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
 import { getSlackQuestions, getTimeSince } from "./utils";
@@ -46,12 +46,11 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const { getDataCategoryDisplayName } = useTaxonomies();
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
 
   const { data: config } = useGetAssessmentConfigQuery();
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
-  const [createQuestionnaire, { isLoading: isSendingQuestionnaire }] =
-    useCreateQuestionnaireMutation();
   const [createReminder, { isLoading: isSendingReminder }] =
     useCreateQuestionnaireReminderMutation();
 
@@ -116,24 +115,11 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     });
   };
 
-  const handleRequestInput = async () => {
+  const handleRequestInput = () => {
     if (!slackChannelName) {
       return;
     }
-    try {
-      await createQuestionnaire({
-        id: assessment.id,
-        body: { channel: slackChannelName },
-      }).unwrap();
-      message.success(`Questionnaire sent to ${slackChannelName} on Slack.`);
-    } catch (error) {
-      message.error(
-        getErrorMessage(
-          error as RTKErrorResult["error"],
-          "Failed to send questionnaire. Please try again.",
-        ),
-      );
-    }
+    setIsRequestInputOpen(true);
   };
 
   const handleSendReminder = async () => {
@@ -255,7 +241,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
                 icon={<SlackIcon size={14} />}
                 size="small"
                 onClick={handleRequestInput}
-                loading={isSendingQuestionnaire}
                 disabled={!slackChannelName}
               >
                 Request input from team
@@ -280,6 +265,16 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         items={collapseItems}
         size="large"
       />
+
+      {slackChannelName && (
+        <RequestInputModal
+          open={isRequestInputOpen}
+          onClose={() => setIsRequestInputOpen(false)}
+          assessmentId={assessment.id}
+          questions={allQuestions}
+          slackChannelName={slackChannelName}
+        />
+      )}
     </Space>
   );
 };
