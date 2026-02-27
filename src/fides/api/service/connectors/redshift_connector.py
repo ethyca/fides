@@ -1,5 +1,5 @@
 from typing import Dict, Union
-from urllib.parse import quote_plus
+from urllib.parse import quote
 
 from loguru import logger
 from sqlalchemy import text
@@ -22,25 +22,32 @@ class RedshiftConnector(SQLConnector):
     secrets_schema = RedshiftSchema
 
     def build_ssh_uri(self, local_address: tuple) -> str:
-        """Build SSH URI of format redshift+psycopg2://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
+        """Build SSH URI of format redshift+psycopg2://[user[:password]@][ssh_host][:ssh_port][/dbname].
+        Username and password are URL-encoded so that reserved characters (e.g. @, :) do not
+        break URI parsing."""
         local_host, local_port = local_address
 
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         port = f":{local_port}" if local_port else ""
         database = f"/{config.database}" if config.database else ""
-        url = f"redshift+psycopg2://{config.user}:{config.password}@{local_host}{port}{database}"
+        user = quote(str(config.user), safe="")
+        password = quote(str(config.password), safe="")
+        url = f"redshift+psycopg2://{user}:{password}@{local_host}{port}{database}"
         return url
 
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
-        """Build URI of format redshift+psycopg2://user:password@[host][:port][/database]"""
+        """Build URI of format redshift+psycopg2://user:password@[host][:port][/database].
+        Username and password are URL-encoded so that reserved characters (e.g. @, :) do not
+        break URI parsing."""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
-        url_encoded_password = quote_plus(config.password)
+        user = quote(str(config.user), safe="")
+        password = quote(str(config.password), safe="")
         port = f":{config.port}" if config.port else ""
         database = f"/{config.database}" if config.database else ""
-        url = f"redshift+psycopg2://{config.user}:{url_encoded_password}@{config.host}{port}{database}"
+        url = f"redshift+psycopg2://{user}:{password}@{config.host}{port}{database}"
         return url
 
     # Overrides SQLConnector.create_client
