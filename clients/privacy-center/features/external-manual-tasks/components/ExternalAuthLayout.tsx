@@ -19,11 +19,7 @@ export const ExternalAuthLayout = ({
   title = "External Manual Tasks",
 }: ExternalAuthLayoutProps) => {
   return (
-    <AuthFormLayout
-      title={title}
-      className="max-w-[512px]"
-      dataTestId="external-auth-container"
-    >
+    <AuthFormLayout title={title} dataTestId="external-auth-container">
       {children}
     </AuthFormLayout>
   );

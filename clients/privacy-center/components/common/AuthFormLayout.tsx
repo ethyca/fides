@@ -24,7 +24,7 @@ interface AuthFormLayoutProps {
 export const AuthFormLayout = ({
   children,
   title,
-  className = "max-w-[640px]",
+  className,
   dataTestId = "auth-form-layout",
 }: AuthFormLayoutProps) => {
   const config = useConfig();
