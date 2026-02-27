@@ -1115,7 +1115,6 @@ class TestCreatePolicyWithAutoPopulatedRules:
         rules = Rule.filter(db=db, conditions=(Rule.policy_id == pol.id)).all()
         assert len(rules) == 0
 
-        pol.delete(db=db)
 
     def test_create_policy_with_explicit_rules_and_targets(
         self, db, api_client: TestClient, generate_auth_header, url
