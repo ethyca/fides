@@ -11,8 +11,8 @@ describe("Taxonomy management page", () => {
   });
 
   it("Can navigate to the taxonomy page", () => {
-    cy.visit("/");
-    cy.getByTestId("Settings-nav-group").click();
+    cy.visitWithExpandedNav("/");
+    cy.getByTestId("Core configuration-nav-group").click();
     cy.getByTestId("Taxonomy-nav-link").click();
     cy.getByTestId("taxonomy-type-selector");
   });

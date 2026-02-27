@@ -65,7 +65,12 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
                     <CommonSubscriptions />
                     <Flex width="100%" height="100%" flex={1}>
                       <MainSideNav />
-                      <Flex direction="column" width="100%">
+                      <Flex
+                        direction="column"
+                        flex={1}
+                        minWidth={0}
+                        overflow="hidden"
+                      >
                         <Component {...pageProps} />
                       </Flex>
                     </Flex>

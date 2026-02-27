@@ -24,8 +24,8 @@ describe("Domains page", () => {
   });
 
   it("can navigate to the Domains page", () => {
-    cy.visit("/");
-    cy.getByTestId("Settings-nav-group").click();
+    cy.visitWithExpandedNav("/");
+    cy.getByTestId("Core configuration-nav-group").click();
     cy.getByTestId("Domains-nav-link").click();
     cy.getByTestId("management-domains");
   });

@@ -1,13 +1,16 @@
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { useFeatures } from "~/features/common/features";
+import { devShowPlusNav, useFeatures } from "~/features/common/features";
 import {
   configureNavGroups,
   findActiveNav,
   NAV_CONFIG,
 } from "~/features/common/nav/nav-config";
 import { selectThisUsersScopes } from "~/features/user-management";
+import { ScopeRegistryEnum } from "~/types/api";
+
+const ALL_SCOPES = Object.values(ScopeRegistryEnum);
 
 export const useNav = ({ path }: { path: string }) => {
   const features = useFeatures();
@@ -20,7 +23,7 @@ export const useNav = ({ path }: { path: string }) => {
         hasPlus: features.plus,
         flags: features.flags,
         hasFidesCloud: features.fidesCloud,
-        userScopes,
+        userScopes: devShowPlusNav ? ALL_SCOPES : userScopes,
       }),
     [features, userScopes],
   );

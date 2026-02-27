@@ -1,6 +1,120 @@
+.collapseToggle {
+  background-color: transparent;
+  border: none;
+}
+
+.helpButton {
+  background-color: transparent;
+  border: none;
+
+  &:hover {
+    background-color: var(--fidesui-neutral-700);
+  }
+}
+
 .menu {
   --ant-menu-item-margin-block: 0 !important;
   --ant-menu-item-margin-inline: 0 !important;
   --ant-menu-item-width: 100% !important;
   --ant-margin: 8px;
+
+  :global(.ant-menu-item),
+  :global(.ant-menu-submenu > .ant-menu-submenu-title) {
+    transition: padding 0.35s ease;
+  }
+}
+
+.menu:global(.ant-menu-inline-collapsed) {
+  padding-inline: 8px !important;
+  --ant-menu-item-margin-block: 4px !important;
+
+  :global(.ant-menu-item),
+  :global(.ant-menu-submenu > .ant-menu-submenu-title) {
+    padding-inline: 0 !important;
+    text-align: center;
+  }
+
+  :global(.ant-menu-submenu-title > :not(.ant-menu-item-icon)),
+  :global(.ant-menu-item > :not(.ant-menu-item-icon)) {
+    display: none !important;
+  }
+
+  :global(.ant-menu-item .anticon),
+  :global(.ant-menu-item .ant-menu-item-icon),
+  :global(.ant-menu-submenu-title .anticon),
+  :global(.ant-menu-submenu-title .ant-menu-item-icon) {
+    margin: 0 !important;
+  }
+
+  :global(.ant-menu-submenu-selected > .ant-menu-submenu-title) {
+    background-color: var(--fidesui-sandstone);
+    border-radius: 4px;
+  }
+
+  :global(
+    .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon
+  ) {
+    color: var(--fidesui-minos);
+  }
+
+  :global(.ant-menu-submenu > .ant-menu-submenu-title:hover) {
+    background-color: var(--fidesui-neutral-700);
+    border-radius: 4px;
+  }
+
+  :global(
+    .ant-menu-submenu > .ant-menu-submenu-title:hover .ant-menu-item-icon
+  ) {
+    color: var(--fidesui-corinth);
+  }
+}
+
+.flyout {
+  background-color: var(--fidesui-minos) !important;
+
+  :global(.ant-menu) {
+    background-color: var(--fidesui-minos) !important;
+    background: var(--fidesui-minos) !important;
+    --ant-menu-item-margin-inline: 0 !important;
+    --ant-menu-item-margin-block: 8px !important;
+    padding-block: 8px !important;
+  }
+
+  :global(.ant-menu-title-content) {
+    color: var(--fidesui-corinth);
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block;
+    width: 100%;
+  }
+
+  :global(.ant-menu-item) {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    margin: 0 !important;
+
+    a {
+      color: var(--fidesui-corinth) !important;
+      display: block;
+      width: 100%;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    &:global(.ant-menu-item-selected) {
+      background-color: var(--fidesui-sandstone) !important;
+
+      a {
+        color: var(--fidesui-minos) !important;
+      }
+    }
+
+    &:hover {
+      background-color: var(--fidesui-neutral-700) !important;
+
+      a {
+        color: var(--fidesui-corinth) !important;
+      }
+    }
+  }
 }

@@ -38,6 +38,12 @@ running the app, for example:
 
 Or you can configure the environment using `env.local` as described by the [Next.js docs](https://nextjs.org/docs/basic-features/environment-variables#loading-environment-variables).
 
+To show all navigation items (including Plus-only sections like Integrations, Properties, Locations, Compliance) when running against a plain Fides API, set in `.env.local`:
+
+`NEXT_PUBLIC_DEV_SHOW_PLUS_NAV=true`
+
+The nav will show the full menu; Plus-only pages may 404 or error if the backend is not Fides Plus. When this flag is set, the nav also shows every item regardless of your user's scopes, so you can see the full menu even with a limited role.
+
 In addition, you can mark a flag as `userCannotModify: true` in `flags.json`. This will prevent the user from seeing that flag as an override-able option in the Beta Features section. However, the values given to the various environments will still be in effect. Therefore, you can still control the flag with the same level of granularity via the `flags.json` file, but not via the UI.
 
 ## Preparing for production
