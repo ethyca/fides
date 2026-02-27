@@ -1085,7 +1085,6 @@ class TestCreatePolicyWithAutoPopulatedRules:
         pol = Policy.filter(
             db=db, conditions=(Policy.key == policy_resp["key"])
         ).first()
-        pol.delete(db=db)
 
     def test_update_existing_policy_with_action_type_does_not_create_rules(
         self, db, api_client: TestClient, generate_auth_header, url
