@@ -1,0 +1,36 @@
+.root {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f5f5; // neutral-75 from palette
+}
+
+.container {
+  width: 100%;
+  max-width: 512px;
+  padding: 48px 24px;
+}
+
+.formBox {
+  background-color: white;
+  padding: 48px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+
+  @media (max-width: 640px) {
+    padding: 24px;
+  }
+}
+
+.title {
+  font-size: 1.875rem; // 3xl
+  color: #2b2e35; // minos
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.formContent {
+  width: 100%;
+}
