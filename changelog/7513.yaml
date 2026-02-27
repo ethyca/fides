@@ -1,0 +1,4 @@
+type: Fixed
+description: Added margin reset to embedded consent page body for proper mobile SDK WebView layout
+pr: 7513
+labels: []
