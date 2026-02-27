@@ -1158,7 +1158,6 @@ class TestCreatePolicyWithAutoPopulatedRules:
         target_categories = {t.data_category for t in targets}
         assert target_categories == {"user.name", "user.contact"}
 
-        pol.delete(db=db)
 
     def test_create_policy_with_both_action_type_and_rules_fails(
         self, api_client: TestClient, generate_auth_header, url
