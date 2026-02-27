@@ -23,6 +23,7 @@ import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import {
   DataCategory,
   Dataset,
@@ -144,6 +145,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="Referenced Dataset fides keys used by the system."
           mode="multiple"
           layout="stacked"
+          optionRender={DatasetSelectOption}
         />
       ) : null}
       {includeCustomFields ? (
