@@ -1,10 +1,12 @@
-import { GlobalToken, theme } from "antd";
+import { theme } from "antd";
 import { useId } from "react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 
-const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
+import type { AntColorTokenKey } from "./chart-constants";
+import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
+import { ChartGradient } from "./ChartGradient";
 
-export type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
+const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
 
 export interface SparklineProps {
   data?: number[] | null;
@@ -16,8 +18,8 @@ export interface SparklineProps {
 export const Sparkline = ({
   data,
   color,
-  strokeWidth = 2,
-  animationDuration = 600,
+  strokeWidth = CHART_STROKE.strokeWidth,
+  animationDuration = CHART_ANIMATION.defaultDuration,
 }: SparklineProps) => {
   const { token } = theme.useToken();
   const empty = !data?.length;
@@ -35,28 +37,22 @@ export const Sparkline = ({
         data={chartData}
         margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
       >
-        {/* TODO: turn this into a reusable chart component */}
-        <defs>
-          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={chartColor} stopOpacity={0.25} />
-            <stop offset="100%" stopColor={chartColor} stopOpacity={0} />
-          </linearGradient>
-        </defs>
+        <ChartGradient id={gradientId} color={chartColor} />
         <YAxis domain={["dataMin", "dataMax"]} hide />
         <Area
           type="monotone"
           dataKey="value"
           stroke={chartColor}
           strokeWidth={strokeWidth}
-          strokeOpacity={0.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeOpacity={CHART_STROKE.strokeOpacity}
+          strokeLinecap={CHART_STROKE.strokeLinecap}
+          strokeLinejoin={CHART_STROKE.strokeLinejoin}
           fill={`url(#${gradientId})`}
           dot={false}
           activeDot={false}
           isAnimationActive={!empty && animationDuration > 0}
-          animationDuration={animationDuration} // TODO: standardize and export animation configs
-          animationEasing="ease-in-out"
+          animationDuration={animationDuration}
+          animationEasing={CHART_ANIMATION.easing}
         />
       </AreaChart>
     </ResponsiveContainer>

@@ -11,10 +11,6 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @pytest.mark.integration
 @pytest.mark.integration_scylladb
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 def test_create_and_process_access_request_scylladb(
     trigger_webhook_mock,
     scylladb_test_dataset_config,
@@ -22,14 +18,10 @@ def test_create_and_process_access_request_scylladb(
     db,
     cache,
     policy,
-    dsr_version,
-    request,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
@@ -86,10 +78,6 @@ def test_create_and_process_access_request_scylladb(
 @pytest.mark.integration
 @pytest.mark.integration_scylladb
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0"],
-)
 def test_create_and_process_access_request_scylladb_no_keyspace(
     trigger_webhook_mock,
     scylladb_test_dataset_config_no_keyspace,
@@ -97,14 +85,10 @@ def test_create_and_process_access_request_scylladb_no_keyspace(
     db,
     cache,
     policy,
-    dsr_version,
-    request,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     customer_email = "customer-1@example.com"
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",

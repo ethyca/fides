@@ -14,6 +14,9 @@ import {
   GetAssessmentEvidenceParams,
   GetPrivacyAssessmentsParams,
   Page_PrivacyAssessmentResponse_,
+  PrivacyAssessmentConfigDefaults,
+  PrivacyAssessmentConfigResponse,
+  PrivacyAssessmentConfigUpdate,
   PrivacyAssessmentDetailResponse,
   PrivacyAssessmentResponse,
   QuestionnaireResponse,
@@ -174,6 +177,35 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         { type: "Privacy Assessment Questionnaire", id },
       ],
     }),
+
+    // Assessment Configuration Endpoints
+    getAssessmentConfig: build.query<PrivacyAssessmentConfigResponse, void>({
+      query: () => ({
+        url: "plus/privacy-assessments/config",
+      }),
+      providesTags: ["Privacy Assessment Config"],
+    }),
+
+    updateAssessmentConfig: build.mutation<
+      PrivacyAssessmentConfigResponse,
+      PrivacyAssessmentConfigUpdate
+    >({
+      query: (body) => ({
+        url: "plus/privacy-assessments/config",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Privacy Assessment Config"],
+    }),
+
+    getAssessmentConfigDefaults: build.query<
+      PrivacyAssessmentConfigDefaults,
+      void
+    >({
+      query: () => ({
+        url: "plus/privacy-assessments/config/defaults",
+      }),
+    }),
   }),
 });
 
@@ -190,6 +222,10 @@ export const {
   useCreateQuestionnaireMutation,
   useGetQuestionnaireStatusQuery,
   useCreateQuestionnaireReminderMutation,
+  // Assessment Configuration
+  useGetAssessmentConfigQuery,
+  useUpdateAssessmentConfigMutation,
+  useGetAssessmentConfigDefaultsQuery,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };
