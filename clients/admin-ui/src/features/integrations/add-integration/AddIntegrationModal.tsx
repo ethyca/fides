@@ -181,7 +181,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
         </>
       )}
       {step === IntegrationModalStep.DETAIL && (
-        <Flex vertical flex={1} className="p-6" style={{ overflowY: "auto" }}>
+        <Flex vertical flex={1} className="overflow-y-auto p-6">
           <IntegrationTypeDetail
             integrationType={integrationType}
             onConfigure={handleConfigure}
