@@ -1,4 +1,4 @@
 type: Changed
-description: Streamlined Add Integration modal with single-click selection, sticky search/filter bar, and migrated modal shell from Chakra to Ant Design
+description: Enhanced user interaction for Integrations modal
 pr: 7491
 labels: []
