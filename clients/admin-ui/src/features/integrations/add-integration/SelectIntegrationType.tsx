@@ -1,4 +1,4 @@
-import { Flex, Input, PageSpinner, Select } from "fidesui";
+import { Col, Flex, Input, PageSpinner, Row, Select } from "fidesui";
 import { ReactNode, useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -181,17 +181,18 @@ const SelectIntegrationType = ({
   isFiltering ? (
     <PageSpinner />
   ) : (
-    <div className="grid grid-cols-3 gap-6">
+    <Row gutter={[24, 24]}>
       {filteredTypes.map((i) => (
-        <SelectableIntegrationBox
-          key={i.placeholder.key}
-          integration={i.placeholder}
-          integrationTypeInfo={i}
-          onClick={() => onIntegrationClick(i)}
-          onDetailsClick={() => onDetailClick(i)}
-        />
+        <Col span={8} key={i.placeholder.key}>
+          <SelectableIntegrationBox
+            integration={i.placeholder}
+            integrationTypeInfo={i}
+            onClick={() => onIntegrationClick(i)}
+            onDetailsClick={() => onDetailClick(i)}
+          />
+        </Col>
       ))}
-    </div>
+    </Row>
   );
 
 export default SelectIntegrationType;
