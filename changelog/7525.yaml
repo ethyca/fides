@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed watchdog false-positive that canceled DSRs with pending tasks legitimately awaiting upstream dependencies
+pr: 7525
+labels: []
