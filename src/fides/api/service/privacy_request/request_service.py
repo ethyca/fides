@@ -656,6 +656,29 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
+                            # Check if the task is pending and legitimately waiting for upstream
+                            # tasks to complete. Such tasks haven't been dispatched to Celery yet
+                            # so they will never have a cache key — this is not a stuck state.
+                            request_task_obj = (
+                                db.query(RequestTask)
+                                .filter(RequestTask.id == request_task_id)
+                                .first()
+                            )
+                            if (
+                                request_task_obj is not None
+                                and request_task_obj.status
+                                == ExecutionLogStatus.pending
+                                and not request_task_obj.upstream_tasks_complete(
+                                    db, should_log=False
+                                )
+                            ):
+                                logger.debug(
+                                    f"Request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is pending and "
+                                    f"waiting for upstream tasks to complete - not stuck"
+                                )
+                                continue
+
                             # For other statuses, cancel the entire privacy request
                             _cancel_interrupted_tasks_and_error_privacy_request(
                                 db,
