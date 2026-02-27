@@ -45,7 +45,7 @@ healthcheck_ping_timeout = 2.0 # number
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "2a9f7880a546bde80acbd7f392f3e129" # string
+analytics_id = "eec63c144660655bdda4adf03dab4a48" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -369,8 +369,9 @@ match_identity_fields = [] # array
 #--------------------------------------------------------------------#
 [redis] # Configuration settings for Redis.
 
-# Character set to use for Redis, defaults to 'utf8'. Not recommended
-# to change.
+# Deprecated and ignored. Redis connections use decode_responses only.
+# Kept for config compatibility; a deprecation warning is emitted if
+# set to a non-default value. Will be removed in a future release.
 charset = "utf8" # string
 
 # The application will use this index in the Redis cache to cache data.
@@ -380,8 +381,8 @@ db_index = 0 # integer
 # for testing.
 test_db_index = 1 # integer
 
-# Whether or not to automatically decode the values fetched from Redis.
-# Decodes using the `charset` configuration value.
+# Whether or not to automatically decode the values fetched from Redis
+# as UTF-8 strings.
 decode_responses = true # boolean
 
 # The number of seconds for which data will live in Redis before
@@ -391,6 +392,14 @@ default_ttl_seconds = 604800 # integer
 # Whether the application's Redis cache should be enabled. Only set to
 # false for certain narrow uses of the application.
 enabled = true # boolean
+
+# When True, connect to Redis in cluster mode for the application
+# cache. Uses host/port for cluster discovery. db_index and
+# read_only_host are ignored; use read_from_replicas for read scaling.
+# With celery-redis-cluster, Celery can use the same cluster for
+# broker/backend (redis+cluster://) or set
+# celery.broker_url/result_backend to override.
+cluster_enabled = false # boolean
 
 # The network address for the application Redis cache.
 host = "redis" # string
