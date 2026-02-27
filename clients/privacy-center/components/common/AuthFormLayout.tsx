@@ -14,6 +14,8 @@ import React from "react";
 
 import { useConfig } from "~/features/common/config.slice";
 
+import styles from "./AuthFormLayout.module.scss";
+
 interface AuthFormLayoutProps {
   children: React.ReactNode;
   title?: string;
@@ -33,15 +35,10 @@ export const AuthFormLayout = ({
     <Flex
       justify="center"
       align="center"
-      style={{
-        width: "100%",
-        minHeight: "100vh",
-        backgroundColor: "#f5f5f5", // neutral-75 from palette
-      }}
       data-testid={dataTestId}
-      className={className}
+      className={[styles.root, className].filter(Boolean).join(" ")}
     >
-      <div style={{ width: "100%", maxWidth: "512px", padding: "48px 24px" }}>
+      <div className={styles.container}>
         <Space direction="vertical" size={64} style={{ width: "100%" }}>
           {/* Fides Logo */}
           <Flex justify="center">
@@ -57,18 +54,7 @@ export const AuthFormLayout = ({
           {/* Title and Form Container */}
           <Space direction="vertical" size={24} style={{ width: "100%" }}>
             {/* Form Box */}
-            <div
-              style={{
-                backgroundColor: "white",
-                padding: "48px",
-                width: "100%",
-                maxWidth: "640px",
-                margin: "0 auto",
-                borderRadius: "4px",
-                boxShadow:
-                  "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
-              }}
-            >
+            <div className={styles.formBox}>
               <Space direction="vertical" size={32} style={{ width: "100%" }}>
                 {title && (
                   <div>
@@ -78,15 +64,7 @@ export const AuthFormLayout = ({
                       style={{ width: "100%" }}
                     >
                       <Flex justify="center">
-                        <Typography.Title
-                          level={2}
-                          style={{
-                            fontSize: "1.875rem", // 3xl
-                            color: "#2b2e35", // minos
-                            marginBottom: 0,
-                            textAlign: "center",
-                          }}
-                        >
+                        <Typography.Title level={2} className={styles.title}>
                           {title}
                         </Typography.Title>
                       </Flex>
@@ -95,7 +73,7 @@ export const AuthFormLayout = ({
                 )}
 
                 {/* Form Content */}
-                <div style={{ width: "100%" }}>{children}</div>
+                <div className={styles.formContent}>{children}</div>
               </Space>
             </div>
           </Space>
