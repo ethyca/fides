@@ -30,7 +30,7 @@ const RequestSubmittedPage = () => {
         block
         style={{ marginTop: "24px" }}
       >
-        Continue
+        Return home
       </Button>
     </Flex>
   );
