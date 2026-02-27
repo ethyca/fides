@@ -1,0 +1,15 @@
+.card {
+  border-radius: var(--ant-border-radius-lg);
+  border: 1px solid var(--ant-color-border);
+  transition: all 150ms ease;
+
+  &:hover {
+    border-color: var(--fidesui-neutral-600);
+    background-color: var(--fidesui-neutral-50);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+}
+
+.categoryLabel {
+  font-size: var(--ant-font-size-sm);
+}
