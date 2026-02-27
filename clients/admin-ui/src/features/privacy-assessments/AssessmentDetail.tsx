@@ -1,4 +1,3 @@
-import { formatDistanceToNow } from "date-fns";
 import {
   Button,
   Collapse,
@@ -15,9 +14,10 @@ import {
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
@@ -82,28 +82,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     [assessment.questionnaire?.sent_at],
   );
 
-  const [timeSinceSent, setTimeSinceSent] = useState(() =>
-    questionnaireSentAt
-      ? formatDistanceToNow(questionnaireSentAt, { addSuffix: true })
-      : "",
-  );
-
-  useEffect(() => {
-    if (!questionnaireSentAt) {
-      return undefined;
-    }
-    setTimeSinceSent(
-      formatDistanceToNow(questionnaireSentAt, { addSuffix: true }),
-    );
-    const interval = setInterval(() => {
-      setTimeSinceSent(
-        formatDistanceToNow(questionnaireSentAt, { addSuffix: true }),
-      );
-    }, 60_000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [questionnaireSentAt]);
+  const timeSinceSent = useRelativeTime(questionnaireSentAt);
 
   const handleDelete = () => {
     modalApi.confirm({
