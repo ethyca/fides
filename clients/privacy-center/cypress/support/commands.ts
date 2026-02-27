@@ -28,7 +28,7 @@ Cypress.Commands.add("getByTestId", (selector, ...args) =>
  * @example cy.selectPrivacyRequestLocation("us-ca")
  */
 Cypress.Commands.add("selectPrivacyRequestLocation", (value = "us-ny") => {
-  cy.get("#location").type(`${value}{enter}`);
+  cy.get("#location").clear({ force: true }).type(`${value}{enter}`);
 });
 
 Cypress.Commands.add("getToggle", (_, ...args) =>
