@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Self, cast
 
@@ -68,35 +67,23 @@ class ConnectionConfigSecretsMixin(BaseModel):
         if self.secrets is None:
             return self
 
-        t0 = time.perf_counter()
         connection_type = (
             self.saas_config.type
             if self.connection_type == ConnectionType.saas and self.saas_config
             else self.connection_type.value  # type: ignore
         )
         try:
-            t_schema_start = time.perf_counter()
             secret_schema = get_connection_type_secret_schema(
                 connection_type=connection_type
             )
-            t_schema_ms = (time.perf_counter() - t_schema_start) * 1000
         except NoSuchConnectionTypeSecretSchemaError as e:
             logger.error(e)
+            # if there is no schema, we don't know what values to mask.
+            # so all the secrets are removed.
             self.secrets = None
             return self
 
-        t_mask_start = time.perf_counter()
         self.secrets = mask_sensitive_fields(cast(dict, self.secrets), secret_schema)
-        t_mask_ms = (time.perf_counter() - t_mask_start) * 1000
-        total_ms = (time.perf_counter() - t0) * 1000
-        if total_ms > 10:
-            logger.warning(
-                "PERF mask_sensitive_values: conn_type={} total={:.1f}ms (schema_lookup={:.1f}ms, masking={:.1f}ms)",
-                connection_type,
-                total_ms,
-                t_schema_ms,
-                t_mask_ms,
-            )
         return self
 
 
