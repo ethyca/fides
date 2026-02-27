@@ -56,23 +56,6 @@ export const AuthFormLayout = ({
 
           {/* Title and Form Container */}
           <Space direction="vertical" size={24} style={{ width: "100%" }}>
-            {/* Title - Hidden on mobile, shown on desktop */}
-            {title && (
-              <div style={{ display: "none" }}>
-                <Flex justify="center">
-                  <Typography.Title
-                    level={1}
-                    style={{
-                      fontSize: "2.25rem", // 4xl
-                      color: "#2b2e35", // minos
-                      marginBottom: 0,
-                    }}
-                  >
-                    {title}
-                  </Typography.Title>
-                </Flex>
-              </div>
-            )}
             {/* Form Box */}
             <div
               style={{
