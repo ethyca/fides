@@ -56,7 +56,7 @@ const SelectableIntegrationBox = ({
         <Flex className="w-full grow">
           <ConnectionTypeLogo data={logoData} size={40} />
           <Flex vertical className="mx-3 min-w-0 shrink grow">
-            <Flex align="center" gap={4}>
+            <Flex align="center" gap="small">
               <Typography.Text
                 strong
                 ellipsis={{
