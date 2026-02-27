@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { CustomSelect } from "../../hoc";
 import type { FormProps } from "../../index";
-import { Button, Flex, Form, Input } from "../../index";
+import { Button, Flex, Form, Input, Select } from "../../index";
 import { LocationSelect } from "./LocationSelect";
 
 const LayoutOptions: Array<FormProps["layout"]> = [
@@ -13,12 +12,16 @@ const LayoutOptions: Array<FormProps["layout"]> = [
 const SizeOptions: Array<FormProps["size"]> = ["middle", "small", "large"];
 
 const meta = {
-  title: "DataEntry/Form",
+  title: "Data Entry/Form",
   args: {
-    layout: "vertical",
-    size: "middle",
     style: { maxWidth: "50rem" },
   },
+} satisfies Meta<typeof Form>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = {
   argTypes: {
     layout: {
       control: "select",
@@ -29,19 +32,14 @@ const meta = {
       options: SizeOptions,
     },
   },
-} satisfies Meta<typeof Form>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Primary: Story = {
   render: (args) => (
     <Form {...args}>
       <Form.Item label="Name" required>
         <Input placeholder="Name" />
       </Form.Item>
       <Form.Item label="Select">
-        <CustomSelect placeholder="Select Option" />
+        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+        <Select placeholder="Select Option" />
       </Form.Item>
       <Form.Item label="Location">
         <LocationSelect />
@@ -74,7 +72,8 @@ export const Validation: Story = {
         <Input placeholder="Name" />
       </Form.Item>
       <Form.Item label="Select" validateStatus="success">
-        <CustomSelect placeholder="Select Option" />
+        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+        <Select placeholder="Select Option" />
       </Form.Item>
       <Form.Item label="Location" validateStatus="validating">
         <LocationSelect />
