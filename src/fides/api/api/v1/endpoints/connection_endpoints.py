@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Sequence
 from typing import Annotated, Any, Dict, List, Optional
 
 import sqlalchemy
@@ -179,7 +180,7 @@ def get_connections(
         linked_system_load_options()
     )
 
-    def _timed_transformer(items: list) -> list:
+    def _timed_transformer(items: Sequence[Any]) -> Sequence[Any]:
         t_ser_start = time.perf_counter()
         results = []
         for i, item in enumerate(items):
