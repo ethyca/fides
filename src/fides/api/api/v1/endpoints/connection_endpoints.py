@@ -181,7 +181,13 @@ def get_connections(
     )
 
     def _timed_transformer(items: Sequence[Any]) -> Sequence[Any]:
-        t_ser_start = time.perf_counter()
+        t_db_done = time.perf_counter()
+        db_ms = (t_db_done - t_start) * 1000
+        logger.warning(
+            "PERF connection_list: DB query + hydration took {:.1f}ms ({} rows)",
+            db_ms,
+            len(items),
+        )
         results = []
         for i, item in enumerate(items):
             t_item = time.perf_counter()
@@ -195,7 +201,7 @@ def get_connections(
                     elapsed_item,
                     item.secrets is not None,
                 )
-        t_ser_total = (time.perf_counter() - t_ser_start) * 1000
+        t_ser_total = (time.perf_counter() - t_db_done) * 1000
         logger.warning(
             "PERF connection_list: serialized {} items in {:.1f}ms",
             len(results),
@@ -211,7 +217,39 @@ def get_connections(
     t_total = (time.perf_counter() - t_start) * 1000
     redis_calls, redis_ms = perf_get_redis_counters()
     logger.warning(
-        "PERF connection_list: total endpoint time {:.1f}ms | redis: {} calls, {:.1f}ms total",
+        "PERF connection_list: total={:.1f}ms (db={:.1f}ms approx) | redis: {} calls, {:.1f}ms total",
+        t_total,
+        t_total - redis_ms,
+        redis_calls,
+        redis_ms,
+    )
+    return result
+
+
+@router.get(
+    "/connection_legacy",
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
+    response_model=Page[ConnectionConfigurationResponse],
+)
+def get_connections_legacy(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+) -> AbstractPage[ConnectionConfig]:
+    """TEMPORARY: Pre-#7458 version of get_connections for A/B perf comparison.
+
+    No selectinload, no transformer, no from_connection_config.
+    """
+    perf_reset_redis_counters()
+    t_start = time.perf_counter()
+    result = paginate(
+        ConnectionConfig.query(db).order_by(ConnectionConfig.name.asc()),
+        params=params,
+    )
+    t_total = (time.perf_counter() - t_start) * 1000
+    redis_calls, redis_ms = perf_get_redis_counters()
+    logger.warning(
+        "PERF connection_list_LEGACY: total={:.1f}ms | redis: {} calls, {:.1f}ms total",
         t_total,
         redis_calls,
         redis_ms,
