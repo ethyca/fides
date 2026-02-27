@@ -96,7 +96,7 @@ const SelectableIntegrationBox = ({
           )}
         </Flex>
       </Flex>
-      <Flex wrap gap={4} className="mt-3">
+      <Flex wrap gap="small" className="mt-3">
         {typeInfo.tags.slice(0, 3).map((item) => (
           <Tag key={item}>{item}</Tag>
         ))}
