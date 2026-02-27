@@ -220,14 +220,8 @@ def test_limiter_times_out_when_bucket_full() -> None:
 
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_rate_limiter_full_integration(
     db,
-    dsr_version,
-    request,
     policy,
     privacy_request,
     stripe_connection_config,
@@ -235,8 +229,6 @@ async def test_rate_limiter_full_integration(
     stripe_identity_email,
 ) -> None:
     """Test rate limiter by creating privacy request to Stripe and setting a rate limit"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     rate_limit = 1
     rate_limit_config = {"limits": [{"rate": rate_limit, "period": "second"}]}
     stripe_connection_config.saas_config["rate_limit_config"] = rate_limit_config

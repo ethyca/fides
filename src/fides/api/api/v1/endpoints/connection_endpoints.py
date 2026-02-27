@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+from collections.abc import Sequence
 from typing import Annotated, Any, Dict, List, Optional
 
 import sqlalchemy
@@ -12,7 +14,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy import null, or_
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
 from starlette.status import (
     HTTP_200_OK,
@@ -50,6 +52,10 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     update_connection_secrets,
 )
+from fides.api.util.redis_version_cache import (
+    perf_get_redis_counters,
+    perf_reset_redis_counters,
+)
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -65,7 +71,10 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
-from fides.system_integration_link.repository import SystemIntegrationLinkRepository
+from fides.system_integration_link.repository import (
+    SystemIntegrationLinkRepository,
+    linked_system_load_options,
+)
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -165,16 +174,87 @@ def get_connections(
                 )
             )
 
-    return paginate(
-        query.order_by(ConnectionConfig.name.asc()).options(
-            selectinload(ConnectionConfig.system)
-        ),
-        params=params,
-        transformer=lambda items: [
-            ConnectionConfigurationResponse.from_connection_config(item)
-            for item in items
-        ],
+    perf_reset_redis_counters()
+    t_start = time.perf_counter()
+    ordered_query = query.order_by(ConnectionConfig.name.asc()).options(
+        linked_system_load_options()
     )
+
+    def _timed_transformer(items: Sequence[Any]) -> Sequence[Any]:
+        t_db_done = time.perf_counter()
+        db_ms = (t_db_done - t_start) * 1000
+        logger.warning(
+            "PERF connection_list: DB query + hydration took {:.1f}ms ({} rows)",
+            db_ms,
+            len(items),
+        )
+        results = []
+        for i, item in enumerate(items):
+            t_item = time.perf_counter()
+            results.append(ConnectionConfigurationResponse.from_connection_config(item))
+            elapsed_item = (time.perf_counter() - t_item) * 1000
+            if elapsed_item > 50:
+                logger.warning(
+                    "PERF connection_list: item #{} key={} serialization took {:.1f}ms (has_secrets={})",
+                    i,
+                    item.key,
+                    elapsed_item,
+                    item.secrets is not None,
+                )
+        t_ser_total = (time.perf_counter() - t_db_done) * 1000
+        logger.warning(
+            "PERF connection_list: serialized {} items in {:.1f}ms",
+            len(results),
+            t_ser_total,
+        )
+        return results
+
+    result = paginate(
+        ordered_query,
+        params=params,
+        transformer=_timed_transformer,
+    )
+    t_total = (time.perf_counter() - t_start) * 1000
+    redis_calls, redis_ms = perf_get_redis_counters()
+    logger.warning(
+        "PERF connection_list: total={:.1f}ms (db={:.1f}ms approx) | redis: {} calls, {:.1f}ms total",
+        t_total,
+        t_total - redis_ms,
+        redis_calls,
+        redis_ms,
+    )
+    return result
+
+
+@router.get(
+    "/connection_legacy",
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
+    response_model=Page[ConnectionConfigurationResponse],
+)
+def get_connections_legacy(
+    *,
+    db: Session = Depends(deps.get_db),
+    params: Params = Depends(),
+) -> AbstractPage[ConnectionConfig]:
+    """TEMPORARY: Pre-#7458 version of get_connections for A/B perf comparison.
+
+    No selectinload, no transformer, no from_connection_config.
+    """
+    perf_reset_redis_counters()
+    t_start = time.perf_counter()
+    result = paginate(
+        ConnectionConfig.query(db).order_by(ConnectionConfig.name.asc()),
+        params=params,
+    )
+    t_total = (time.perf_counter() - t_start) * 1000
+    redis_calls, redis_ms = perf_get_redis_counters()
+    logger.warning(
+        "PERF connection_list_LEGACY: total={:.1f}ms | redis: {} calls, {:.1f}ms total",
+        t_total,
+        redis_calls,
+        redis_ms,
+    )
+    return result
 
 
 @router.get(
@@ -186,7 +266,17 @@ def get_connection_detail(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
-    connection_config = get_connection_config_or_error(db, connection_key)
+    connection_config = (
+        db.query(ConnectionConfig)
+        .filter(ConnectionConfig.key == connection_key)
+        .options(linked_system_load_options())
+        .first()
+    )
+    if not connection_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connection configuration found with key '{connection_key}'.",
+        )
     return ConnectionConfigurationResponseWithSystemKey.from_connection_config(
         connection_config
     )

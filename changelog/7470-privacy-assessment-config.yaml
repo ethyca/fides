@@ -1,0 +1,4 @@
+type: Added
+description: Added privacy assessment configuration model and Admin UI settings modal
+pr: 7470
+labels: ["db-migration"]

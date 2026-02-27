@@ -40,3 +40,10 @@ export const RISK_LEVEL_DOT_COLORS: Record<RiskLevel, string> = {
   [RiskLevel.MEDIUM]: "var(--fidesui-warning)",
   [RiskLevel.LOW]: "var(--fidesui-success)",
 };
+
+export const FREQUENCY_OPTIONS = [
+  { label: "Daily", value: "daily", cron: "0 9 * * *" },
+  { label: "Weekly (Mondays)", value: "weekly", cron: "0 9 * * 1" },
+  { label: "Monthly (1st)", value: "monthly", cron: "0 9 1 * *" },
+  { label: "Yearly (Jan 1st)", value: "yearly", cron: "0 9 1 1 *" },
+];

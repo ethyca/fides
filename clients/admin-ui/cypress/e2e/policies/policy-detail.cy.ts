@@ -270,7 +270,7 @@ describe("Policy condition builder", () => {
     cy.getByTestId("add-condition-btn").click();
     cy.getAntModal().should("be.visible");
 
-    cy.getByTestId("field-select").antSelect("Location country");
+    cy.getByTestId("field-select").antSelect("Country/Territory");
     cy.getByTestId("operator-select").antSelect("Equals");
 
     cy.getByTestId("save-condition-btn").click();

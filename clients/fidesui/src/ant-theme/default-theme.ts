@@ -16,6 +16,7 @@ export const defaultAntTheme: ThemeConfig = {
   cssVar: true,
   token: {
     fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+    fontFamilyCode: `"Basier Square Mono", 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`,
     colorText: palette.FIDESUI_MINOS,
     colorTextBase: palette.FIDESUI_MINOS,
     colorTextHeading: palette.FIDESUI_MINOS,
@@ -31,7 +32,6 @@ export const defaultAntTheme: ThemeConfig = {
     borderRadiusSM: 4,
     borderRadius: 6,
     borderRadiusLG: 6,
-    wireframe: true,
     colorErrorBg: "#ffdcd6", // custom override
     colorErrorBorder: "#f2aca5", // custom override
     colorWarningBg: "#ffecc9", // custom override
