@@ -34,12 +34,80 @@
         color: var(--fides-overlay-font-color-dark);
         font-size: var(--fides-overlay-font-size-body);
         background-color: var(--fides-overlay-background-color);
+        margin: 0;
       }
 
       /* Allow the embedded consent modal to fill the width of the screen */
       .container {
         --fides-overlay-width: "auto";
       }
+
+      /* TCF Overlay first screen: fill viewport with sticky footer */
+      .fides-banner.fides-embedded {
+        height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
+      }
+
+      .fides-banner.fides-embedded .fides-close-button {
+        display: none !important;
+      }
+
+      .fides-banner.fides-embedded > div {
+        padding: 16px !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+      }
+
+      .fides-banner.fides-embedded [role="document"] {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+      }
+
+      .fides-banner.fides-embedded [role="document"] > div:nth-child(2) {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+      }
+
+      .fides-banner.fides-embedded [role="document"] > div:last-child {
+        flex-shrink: 0 !important;
+      }
+
+      /* Tablet/iPad: let content use full space */
+      @media (min-width: 768px) {
+        .fides-banner.fides-embedded > div {
+          padding: 48px 48px 64px 48px !important;
+        }
+
+        .fides-banner.fides-embedded .fides-banner__content {
+          max-height: none !important;
+          overflow-y: visible !important;
+        }
+      }
+
+      /* TCF Modal second screen: fix overflow */
+      #fides-overlay-wrapper {
+        height: 100vh !important;
+        overflow: hidden !important;
+      }
+
+      #fides-consent-content {
+        max-height: 100vh !important;
+        overflow: hidden !important;
+      }
+
+      #fides-consent-content .fides-modal-body {
+        max-height: calc(100vh - 200px) !important;
+        overflow-y: auto !important;
+      }
+
       .no-results {
         text-align: center;
         font-family: var(--fides-overlay-font-family);
