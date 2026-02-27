@@ -45,9 +45,16 @@ from fides.api.service.authentication.authentication_strategy import (
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
+from fides.api.service.connectors.saas.connector_registry_service import (
+    ConnectorRegistry,
+)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
+from fides.api.util.saas_util import (
+    load_config_from_string,
+    validate_connector_param_restrictions,
+)
 from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
@@ -175,6 +182,32 @@ def patch_saas_config(
         saas_config.fides_key,
         connection_config.key,
     )
+
+    existing_saas_config = connection_config.get_saas_config()
+    if not existing_saas_config:
+        template = ConnectorRegistry.get_connector_template(saas_config.type)
+        if template:
+            existing_saas_config = SaaSConfig(
+                **load_config_from_string(template.config)
+            )
+        else:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    "Cannot create a SaaS config via PATCH when no existing config "
+                    "or connector template is available. Use the connector template "
+                    "registration flow instead."
+                ),
+            )
+
+    try:
+        validate_connector_param_restrictions(existing_saas_config, saas_config)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        )
+
     connection_config.update_saas_config(db, saas_config=saas_config)
 
     # Create audit event for SaaS config update
