@@ -26,6 +26,7 @@ from fides.api.service.privacy_request.email_batch_service import (
 from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.api.util.lock import redis_lock
 from fides.config import get_config
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
@@ -209,8 +210,11 @@ class TestConsentEmailBatchSend:
         sovrn_email_connection_config,
         system,
     ) -> None:
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
+        )
 
         with pytest.raises(MessageDispatchException):
             # Assert there's no messaging config hooked up so this consent email send should fail
@@ -427,8 +431,11 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
+        )
 
         cache_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
@@ -482,8 +489,11 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
+        )
 
         # This preference matches on data use
         cache_identity_and_privacy_preferences(
@@ -609,8 +619,11 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        generic_consent_email_connection_config.system_id = system.id
-        generic_consent_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=generic_consent_email_connection_config.id,
+            session=db,
+        )
 
         # This preference matches on data use
         cache_identity_and_privacy_preferences(

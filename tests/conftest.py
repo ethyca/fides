@@ -67,6 +67,7 @@ from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.async_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
@@ -938,7 +939,7 @@ def access_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the access request for either DSR 2.0 and DSR 3.0
+    Function for testing the access request using DSR 3.0.
     """
     try:
         return access_runner(
@@ -968,7 +969,7 @@ def erasure_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the erasure runner for either DSR 2.0 and DSR 3.0
+    Function for testing the erasure runner using DSR 3.0.
     """
     try:
         return erasure_runner(
@@ -997,7 +998,7 @@ def consent_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the consent request for either DSR 2.0 and DSR 3.0
+    Function for testing the consent request using DSR 3.0.
     """
     try:
         return consent_runner(
@@ -1583,16 +1584,21 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
         },
     )
 
-    ConnectionConfig.create(
+    connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "system_id": system.id,
             "connection_type": "bigquery",
             "name": "test_connection",
             "secrets": {"password": "test_password"},
             "access": "write",
         },
     )
+    SystemIntegrationLinkRepository().create_or_update_link(
+        system_id=system.id,
+        connection_config_id=connection_config.id,
+        session=db,
+    )
+    db.commit()
 
     db.refresh(system)
     yield system

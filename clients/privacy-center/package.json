@@ -17,7 +17,6 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "test:ci": "npm run typecheck && jest",
     "clean": "rm -rf .turbo node_modules .next",
     "cy:open": "cypress open",
     "cy:run": "cypress run",

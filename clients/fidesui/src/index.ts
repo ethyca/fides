@@ -203,6 +203,7 @@ export type {
   TablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
+  BadgeProps,
   ButtonProps,
   CheckboxProps,
   CollapseProps,
@@ -324,6 +325,23 @@ export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
+export type { AntColorTokenKey } from "./components/charts/chart-constants";
+export {
+  CHART_ANIMATION,
+  CHART_GRADIENT,
+  CHART_STROKE,
+  CHART_TYPOGRAPHY,
+} from "./components/charts/chart-constants";
+export type { ChartTextProps } from "./components/charts/ChartText";
+export { ChartText } from "./components/charts/ChartText";
+export type {
+  RadarChartDataPoint,
+  RadarChartProps,
+  RadarPointStatus,
+} from "./components/charts/RadarChart";
+export { RadarChart } from "./components/charts/RadarChart";
+export type { SparklineProps } from "./components/charts/Sparkline";
+export { Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
@@ -383,7 +401,12 @@ export {
 export * as Icons from "@carbon/icons-react";
 /* end prefixed icons */
 
-export { FidesUIProvider, useMessage, useModal } from "./FidesUIProvider";
+export {
+  FidesUIProvider,
+  useMessage,
+  useModal,
+  useNotification,
+} from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**

@@ -14,7 +14,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.external_data_storage import ExternalDataStorageError
 from fides.api.service.storage.util import get_local_filename
-from fides.api.util.cache import FidesopsRedis, cache_task_tracking_key, get_cache
+from fides.api.util.cache import cache_task_tracking_key
 
 
 class TestRequestTask:
@@ -229,21 +229,6 @@ class TestGetRawAccessResults:
             ]
         }
 
-    def test_dsr_2_0(self, privacy_request):
-        """DSR 2.0 uses the cache to store results"""
-        cache: FidesopsRedis = get_cache()
-        key = "access_request__test_dataset:test_collection"
-        cache.set_encoded_object(
-            f"{privacy_request.id}__{key}",
-            [{"name": "Jane", "street": "102 Test Town"}],
-        )
-
-        assert privacy_request.get_raw_access_results() == {
-            "test_dataset:test_collection": [
-                {"name": "Jane", "street": "102 Test Town"}
-            ]
-        }
-
 
 class TestGetRawMaskingCounts:
     def test_no_results(self, privacy_request):
@@ -259,16 +244,6 @@ class TestGetRawMaskingCounts:
         """DSR 3.0 stores results on RequestTask.rows_masked"""
         erasure_request_task.rows_masked = 2
         erasure_request_task.update_status(db, ExecutionLogStatus.complete)
-        assert privacy_request.get_raw_masking_counts() == {
-            "test_dataset:test_collection": 2
-        }
-
-    def test_dsr_2_0(self, privacy_request):
-        """DSR 2.0 uses the cache to store rows_masked"""
-        cache: FidesopsRedis = get_cache()
-        key = "erasure_request__test_dataset:test_collection"
-        cache.set_encoded_object(f"{privacy_request.id}__{key}", 2)
-
         assert privacy_request.get_raw_masking_counts() == {
             "test_dataset:test_collection": 2
         }

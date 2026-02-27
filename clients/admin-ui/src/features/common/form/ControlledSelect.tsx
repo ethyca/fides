@@ -98,7 +98,11 @@ export const ControlledSelect = ({
                 data-testid={`controlled-select-${field.name}`}
                 {...props}
                 optionRender={optionRender}
-                onSearch={props.mode === "tags" ? handleSearch : undefined}
+                onSearch={
+                  props.onSearch || props.mode === "tags"
+                    ? handleSearch
+                    : undefined
+                }
                 onChange={handleChange}
                 value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
                 status={isInvalid ? "error" : undefined}
@@ -142,7 +146,9 @@ export const ControlledSelect = ({
           data-testid={`controlled-select-${field.name}`}
           {...props}
           optionRender={optionRender}
-          onSearch={props.mode === "tags" ? handleSearch : undefined}
+          onSearch={
+            props.onSearch || props.mode === "tags" ? handleSearch : undefined
+          }
           onChange={handleChange}
           value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
           status={isInvalid ? "error" : undefined}

@@ -175,9 +175,10 @@ from fides.service.dataset.dataset_config_service import (
     replace_references_with_identities,
 )
 from fides.service.messaging.messaging_service import MessagingService
-from fides.service.privacy_request.privacy_request_diagnostics import (
-    PrivacyRequestDiagnostics,
-    get_privacy_request_diagnostics,
+from fides.service.privacy_request.diagnostics import (
+    DefaultStorageNotConfiguredError,
+    PrivacyRequestDiagnosticsExportResponse,
+    export_privacy_request_diagnostics,
 )
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
@@ -658,26 +659,31 @@ def get_request_status_logs(
 @router.get(
     PRIVACY_REQUEST_DIAGNOSTICS,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
-    response_model=PrivacyRequestDiagnostics,
+    response_model=PrivacyRequestDiagnosticsExportResponse,
     status_code=HTTP_200_OK,
 )
 def get_privacy_request_diagnostics_report(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
-) -> PrivacyRequestDiagnostics:
+) -> PrivacyRequestDiagnosticsExportResponse:
     """
-    Return a diagnostics snapshot for a single privacy request.
+    Export a non-PII diagnostics snapshot for a single privacy request and return a download URL.
 
     This report intentionally excludes any fields that could contain PII.
     """
 
     try:
-        return get_privacy_request_diagnostics(privacy_request_id, db)
+        return export_privacy_request_diagnostics(privacy_request_id, db)
     except PrivacyRequestNotFound:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No privacy request found with id '{privacy_request_id}'.",
+        )
+    except DefaultStorageNotConfiguredError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=exc.detail,
         )
 
 

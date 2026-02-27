@@ -85,7 +85,6 @@ class TestPrivacyRequestService:
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.usefixtures(
-        "use_dsr_3_0",
         "postgres_integration_db",
         "automatically_approved",
         "postgres_example_test_dataset_config",
@@ -248,7 +247,6 @@ class TestPrivacyRequestService:
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.usefixtures(
-        "use_dsr_3_0",
         "postgres_integration_db",
         "require_manual_request_approval",
         "postgres_example_test_dataset_config",
@@ -345,7 +343,6 @@ class TestPrivacyRequestService:
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.usefixtures(
-        "use_dsr_3_0",
         "postgres_integration_db",
         "require_manual_request_approval",
         "postgres_example_test_dataset_config",

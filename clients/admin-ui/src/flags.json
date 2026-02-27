@@ -7,13 +7,6 @@
     "production": false,
     "userCannotModify": true
   },
-  "standaloneConnections": {
-    "label": "Standalone connections",
-    "description": "Allow the creation of standalone connections for testing",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "dataCatalog": {
     "label": "Data catalog",
     "description": "Data catalog view",
@@ -70,8 +63,8 @@
     "test": false,
     "production": false
   },
-  "policies": {
-    "label": "DSR Policies",
+  "alphaPolicies": {
+    "label": "Alpha DSR Policies",
     "description": "Privacy request policies management",
     "development": true,
     "test": true,

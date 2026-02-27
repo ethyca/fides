@@ -1,0 +1,5 @@
+type: Changed
+description: Updated privacy request diagnostics export endpoint to upload a non-PII ZIP report to configured storage and return a download URL instead of returning JSON directly
+pr: 7481
+labels: []
+
