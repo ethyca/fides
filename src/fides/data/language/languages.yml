@@ -25,6 +25,8 @@ languages:
   name: Spanish
 - id: es-MX
   name: Spanish (Mexico)
+- id: es-US
+  name: Spanish (United States)
 - id: et
   name: Estonian
 - id: eu
