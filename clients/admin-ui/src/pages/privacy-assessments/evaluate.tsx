@@ -1,6 +1,6 @@
 import {
   Button,
-  Card,
+  Collapse,
   Descriptions,
   Flex,
   Form,
@@ -31,8 +31,8 @@ const { Title, Paragraph } = Typography;
 const { Item } = Form;
 
 interface FormValues {
-  assessment_type: string;
-  system_fides_key?: string;
+  assessment_types: string[];
+  system_fides_keys?: string[];
   use_llm: boolean;
 }
 
@@ -61,9 +61,7 @@ const EvaluateAssessmentPage: NextPage = () => {
   const message = useMessage();
   const [form] = Form.useForm<FormValues>();
 
-  const [selectedTemplateId, setSelectedTemplateId] = useState<
-    string | undefined
-  >();
+  const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
 
   // Fetch templates
   const { data: templatesData, isLoading: isLoadingTemplates } =
@@ -77,38 +75,38 @@ const EvaluateAssessmentPage: NextPage = () => {
     [templatesData?.items],
   );
 
-  // Find selected template for description display
-  const selectedTemplate = useMemo(
+  // Find selected templates for description display
+  const selectedTemplates = useMemo(
     () =>
-      activeTemplates.find(
-        (t) =>
-          t.assessment_type === selectedTemplateId ||
-          t.key === selectedTemplateId,
+      activeTemplates.filter((t) =>
+        selectedTemplateIds.includes(t.assessment_type || t.key),
       ),
-    [activeTemplates, selectedTemplateId],
+    [activeTemplates, selectedTemplateIds],
   );
 
-  const handleTemplateChange = (value: string) => {
-    setSelectedTemplateId(value);
+  const handleTemplateChange = (values: string[]) => {
+    setSelectedTemplateIds(values);
   };
 
   const handleSubmit = async (values: FormValues) => {
     try {
-      const result = await createAssessment({
-        assessment_type: values.assessment_type,
-        system_fides_key: values.system_fides_key || undefined,
+      await createAssessment({
+        assessment_types: values.assessment_types,
+        system_fides_keys:
+          values.system_fides_keys && values.system_fides_keys.length > 0
+            ? values.system_fides_keys
+            : null,
         use_llm: values.use_llm,
       }).unwrap();
 
       message.success(
-        `Successfully evaluated ${result.total_created} system(s)`,
+        "Assessment evaluation queued. Results will appear on the assessments page shortly.",
       );
 
-      // Navigate to assessments list
       router.push(PRIVACY_ASSESSMENTS_ROUTE);
     } catch (error) {
       message.error(
-        `Failed to evaluate assessment: ${getErrorMessage(error as RTKErrorResult["error"])}`,
+        `Failed to queue assessment: ${getErrorMessage(error as RTKErrorResult["error"])}`,
       );
     }
   };
@@ -149,23 +147,24 @@ const EvaluateAssessmentPage: NextPage = () => {
               }}
             >
               <Item
-                name="assessment_type"
-                label="Assessment template"
+                name="assessment_types"
+                label="Assessment templates"
                 rules={[
                   {
                     required: true,
-                    message: "Please select an assessment template",
+                    message: "Please select at least one assessment template",
                   },
                 ]}
-                tooltip="Choose the type of privacy assessment based on your regulatory requirements"
+                tooltip="Choose one or more privacy assessment types based on your regulatory requirements"
               >
                 <Select
-                  placeholder="Select a template"
+                  mode="multiple"
+                  placeholder="Select one or more templates"
                   loading={isLoadingTemplates}
                   onChange={handleTemplateChange}
                   showSearch
                   optionFilterProp="label"
-                  aria-label="Assessment template"
+                  aria-label="Assessment templates"
                   options={activeTemplates.map((template) => ({
                     value: template.assessment_type || template.key,
                     label: template.name,
@@ -175,34 +174,54 @@ const EvaluateAssessmentPage: NextPage = () => {
                 />
               </Item>
 
-              {selectedTemplate && (
-                <Card type="inner" className="mb-6">
-                  <Descriptions column={1} size="small">
-                    {selectedTemplate.description && (
-                      <Descriptions.Item label="Description">
-                        {selectedTemplate.description}
-                      </Descriptions.Item>
-                    )}
-                    {selectedTemplate.authority && (
-                      <Descriptions.Item label="Authority">
-                        {selectedTemplate.authority}
-                      </Descriptions.Item>
-                    )}
-                    {selectedTemplate.legal_reference && (
-                      <Descriptions.Item label="Legal reference">
-                        {selectedTemplate.legal_reference}
-                      </Descriptions.Item>
-                    )}
-                  </Descriptions>
-                </Card>
+              {selectedTemplates.length > 0 && (
+                <Collapse
+                  className="mb-6"
+                  items={selectedTemplates.map((template) => ({
+                    key: template.key,
+                    label: (
+                      <Flex align="center" gap="small">
+                        <Text strong>{template.name}</Text>
+                        {template.region && (
+                          <Text type="secondary" size="sm">
+                            {template.region}
+                          </Text>
+                        )}
+                      </Flex>
+                    ),
+                    children: (
+                      <Descriptions column={1} size="small">
+                        {template.description && (
+                          <Descriptions.Item label="Description">
+                            {template.description}
+                          </Descriptions.Item>
+                        )}
+                        {template.authority && (
+                          <Descriptions.Item label="Authority">
+                            {template.authority}
+                          </Descriptions.Item>
+                        )}
+                        {template.legal_reference && (
+                          <Descriptions.Item label="Legal reference">
+                            {template.legal_reference}
+                          </Descriptions.Item>
+                        )}
+                      </Descriptions>
+                    ),
+                  }))}
+                />
               )}
 
               <Item
-                name="system_fides_key"
-                label="System"
-                tooltip="Optionally scope this assessment to a specific system. Leave blank to evaluate all systems."
+                name="system_fides_keys"
+                label="Systems"
+                tooltip="Optionally scope this assessment to specific systems. Leave blank to evaluate all systems."
               >
-                <SystemSelect placeholder="All systems" allowClear />
+                <SystemSelect
+                  mode="multiple"
+                  placeholder="All systems"
+                  allowClear
+                />
               </Item>
 
               <Item

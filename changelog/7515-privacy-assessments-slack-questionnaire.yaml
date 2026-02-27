@@ -1,0 +1,4 @@
+type: Added
+description: Added questionnaire workflow for privacy assessments, including request input modal, questionnaire status bar, and send reminder
+pr: 7515
+labels: []

@@ -1,20 +1,13 @@
-import {
-  CUSTOM_TAG_COLOR,
-  Flex,
-  Tag,
-  Text,
-  Tooltip,
-  useMessage,
-} from "fidesui";
+import { Flex, Space, Text, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { RTKErrorResult } from "~/types/errors/api";
 
-import { ANSWER_SOURCE_LABELS, ANSWER_SOURCE_TAG_COLORS } from "./constants";
+import { AnswerStatusTags } from "./AnswerStatusTags";
 import { EditableTextBlock } from "./EditableTextBlock";
 import { useUpdateAssessmentAnswerMutation } from "./privacy-assessments.slice";
 import styles from "./QuestionCard.module.scss";
-import { AnswerStatus, AssessmentQuestion } from "./types";
+import { AssessmentQuestion } from "./types";
 
 interface QuestionCardProps {
   assessmentId: string;
@@ -25,9 +18,6 @@ export const QuestionCard = ({ assessmentId, question }: QuestionCardProps) => {
   const message = useMessage();
   const [updateAnswer, { isLoading: isSaving }] =
     useUpdateAssessmentAnswerMutation();
-
-  const sourceLabel = ANSWER_SOURCE_LABELS[question.answer_source];
-  const sourceColor = ANSWER_SOURCE_TAG_COLORS[question.answer_source];
 
   const handleSave = async (newAnswer: string) => {
     try {
@@ -52,19 +42,9 @@ export const QuestionCard = ({ assessmentId, question }: QuestionCardProps) => {
         <Text strong>
           {question.id}. {question.question_text}
         </Text>
-        {question.answer_status === AnswerStatus.PARTIAL ? (
-          <Tooltip
-            title={
-              question.missing_data && question.missing_data.length > 0
-                ? `This answer can be automatically derived if you populate: ${question.missing_data.join(", ")}`
-                : "This answer can be derived from Fides data if the relevant field is populated"
-            }
-          >
-            <Tag color={CUSTOM_TAG_COLOR.WARNING}>System derivable</Tag>
-          </Tooltip>
-        ) : (
-          <Tag color={sourceColor}>{sourceLabel}</Tag>
-        )}
+        <Space size="small">
+          <AnswerStatusTags question={question} />
+        </Space>
       </Flex>
       <EditableTextBlock
         value={question.answer_text}
