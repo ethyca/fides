@@ -19,7 +19,82 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.79.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.80.0..main)
+
+## [2.80.0](https://github.com/ethyca/fides/compare/2.79.0..2.80.0)
+
+### Added
+- Added privacy assessments navigation and dashboard list page [#7391](https://github.com/ethyca/fides/pull/7391)
+- Added PrivacyAssessmentTask model for async assessment generation [#7467](https://github.com/ethyca/fides/pull/7467) https://github.com/ethyca/fides/labels/db-migration
+- Added create, edit, and delete UI for DSR policies [#7480](https://github.com/ethyca/fides/pull/7480)
+- Added ul tag to the HTML sanitization allow list [#7442](https://github.com/ethyca/fides/pull/7442)
+- Added privacy request diagnostics export endpoint for troubleshooting [#7332](https://github.com/ethyca/fides/pull/7332)
+- Added shared clean_version() utility to fides.common.utils for version string sanitization [#7345](https://github.com/ethyca/fides/pull/7345)
+- Added property_ids column to DatasetConfig and ManualTaskConfig for property-based dataset scoping [#7361](https://github.com/ethyca/fides/pull/7361) https://github.com/ethyca/fides/labels/db-migration
+- Added condition builder interface for creating and editing policy conditions [#7464](https://github.com/ethyca/fides/pull/7464)
+- Added support for custom default policy configuration per action type via ApplicationConfig [#7323](https://github.com/ethyca/fides/pull/7323)
+- Add optimized database indexes for leaf resource filtering and ancestor distance lookups, improving tree query performance [#7398](https://github.com/ethyca/fides/pull/7398) https://github.com/ethyca/fides/labels/db-migration
+- Added read-only DSR policies list page with search and filtering [#7403](https://github.com/ethyca/fides/pull/7403)
+- Added property-based DAG filtering infrastructure for DSR traversal [#7404](https://github.com/ethyca/fides/pull/7404)
+- Added Data Steward role with viewer access plus system-integration link management [#7484](https://github.com/ethyca/fides/pull/7484)
+- Added read-only DSR policy detail page with Rules and Conditions tabs [#7408](https://github.com/ethyca/fides/pull/7408)
+- Added Questionnaire and ChatMessage database models for SME questionnaire sessions [#7396](https://github.com/ethyca/fides/pull/7396) https://github.com/ethyca/fides/labels/db-migration
+- New page settings option to filter ignored and active items [#7441](https://github.com/ethyca/fides/pull/7441)
+- Added FIDES__CONSENT__CONSENT_V3_ENCRYPTION_ENABLED setting to optionally disable encryption for v3 consent records [#7413](https://github.com/ethyca/fides/pull/7413) https://github.com/ethyca/fides/labels/db-migration
+- Added jira_ticket connection type with secrets schema, singleton enforcement, and Alembic migration [#7388](https://github.com/ethyca/fides/pull/7388) https://github.com/ethyca/fides/labels/db-migration
+- Added linked system column, tab, and form to integrations; removed link from setup [#7479](https://github.com/ethyca/fides/pull/7479)
+- Adds an (alpha) light/dark mode capability to the Admin UI Home page [#7430](https://github.com/ethyca/fides/pull/7430)
+- Add comprehensive privacy assessment templates based on authoritative legal sources: GDPR DPIA (enhanced with EDPB WP248 requirements), UK GDPR DPIA (ICO guidance + Children's Code), California CPRA Risk Assessment (enhanced with CPPA Section 7150), Colorado CPA DPA (4 CCR 904-3), Virginia VCDPA DPA, US Multi-State DPA, and Best Practice PIA (ISO 29134/CNIL methodology)
+ [#7356](https://github.com/ethyca/fides/pull/7356) https://github.com/ethyca/fides/labels/db-migration
+- Added policy_evaluated audit log action and default_policies to ApplicationConfig schema [#7395](https://github.com/ethyca/fides/pull/7395) https://github.com/ethyca/fides/labels/db-migration
+- Added JiraTicketTask model, pending_external privacy request status, and Jira polling task skeleton [#7410](https://github.com/ethyca/fides/pull/7410) https://github.com/ethyca/fides/labels/db-migration
+- Added DELETE /dsr/policy/{policy_key} endpoint with in-use guard [#7459](https://github.com/ethyca/fides/pull/7459)
+- Created sparkline charting [#7461](https://github.com/ethyca/fides/pull/7461)
+- Added fides_external_id option to FidesJS for custom user ID on consent APIs [#7094](https://github.com/ethyca/fides/pull/7094)
+- Added rules tab to DSR policy detail page [#7437](https://github.com/ethyca/fides/pull/7437)
+
+### Changed
+- Updated the monitor fields screen to use dropdown filters [#7411](https://github.com/ethyca/fides/pull/7411)
+- Updates the system form to use correctly formatted data stewards [#7344](https://github.com/ethyca/fides/pull/7344)
+- Bumped scylla-driver from 3.26.8 to 3.29.7 and refreshed lockfile [#7446](https://github.com/ethyca/fides/pull/7446)
+- Updated propagation policy keys in notice sandbox to match backend API changes [#7378](https://github.com/ethyca/fides/pull/7378)
+- Increase the limit of execution logs to 1000 for long running requests like polling requests. [#7412](https://github.com/ethyca/fides/pull/7412)
+- Refactored attachment storage to use service layer [#7286](https://github.com/ethyca/fides/pull/7286)
+- Updated CommentType reply docstring to indicate reserved status [#7407](https://github.com/ethyca/fides/pull/7407)
+- Updated the monitor tree to use cursor pagination [#7425](https://github.com/ethyca/fides/pull/7425)
+- Bump Jinja2, pg8000, urllib3, cryptography, cffi, snowflake-connector-python, snowflake-sqlalchemy, and PyNaCL [#7454](https://github.com/ethyca/fides/pull/7454)
+- Migrated system-integration linking from ConnectionConfig.system_id FK to dedicated join table [#7432](https://github.com/ethyca/fides/pull/7432) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
+- Updated connector registry to use Redis version counter for cross-server cache invalidation [#7392](https://github.com/ethyca/fides/pull/7392)
+- Updated privacy request and ID verification flow to use separate pages instead of a modal [#7238](https://github.com/ethyca/fides/pull/7238)
+
+### Developer Experience
+- Added Prompt Explorer UI for testing LLM prompts used in assessments and questionnaires [#7420](https://github.com/ethyca/fides/pull/7420)
+- Added a Redis cache manager for internal development use [#7462](https://github.com/ethyca/fides/pull/7462)
+- Removed duplicate cursor config files now managed in shared cursor repo [#7384](https://github.com/ethyca/fides/pull/7384)
+- Update PR size check to exclude auto-generated API types, docs, etc. [#7414](https://github.com/ethyca/fides/pull/7414)
+- Optimized backend CI by skipping frontend build, adding Docker cache mounts, and parallelizing jobs [#7435](https://github.com/ethyca/fides/pull/7435)
+- Adjusted Snowflake test to not expect duplicate table names [#7311](https://github.com/ethyca/fides/pull/7311)
+- Refactored nav config tests to use name-based lookups instead of brittle index-based assertions [#7363](https://github.com/ethyca/fides/pull/7363)
+- Fixed React unknown-prop warnings in PrivacyRequestFiltersBar tests [#7443](https://github.com/ethyca/fides/pull/7443)
+- Migrated standalone page spinners from Chakra to Ant Design PageSpinner [#7371](https://github.com/ethyca/fides/pull/7371)
+
+### Fixed
+- Preserve custom_privacy_request_fields key order in privacy center config (JSONB does not preserve object key order) [#7472](https://github.com/ethyca/fides/pull/7472)
+- Fixed case-insensitive connector type matching when updating custom connector configs [#7386](https://github.com/ethyca/fides/pull/7386)
+- Add check for callback on requeue to prevent erroring standing by tasks [#7418](https://github.com/ethyca/fides/pull/7418)
+- Fixed `any` type on `PolicyResponse.conditions` with proper condition types [#7419](https://github.com/ethyca/fides/pull/7419)
+- Fixed Slack OAuth authorize URL path in admin UI causing 404 [#7466](https://github.com/ethyca/fides/pull/7466)
+- Fixed datamap report drawer briefly showing previously selected system when opening a new one [#7465](https://github.com/ethyca/fides/pull/7465)
+- Re-ordered activity tabs to show attention required first [#7376](https://github.com/ethyca/fides/pull/7376)
+- Website monitor features being displayed when flag is disabled [#7382](https://github.com/ethyca/fides/pull/7382)
+- Removing code causing storybook to run and updating deps [#7444](https://github.com/ethyca/fides/pull/7444)
+- Fixed PyPI package build to include admin UI assets (src/fides/ui-build) when using hatchling/uv. [#7372](https://github.com/ethyca/fides/pull/7372)
+- Fixed Chakra theme which cause checkboxes and other components to not render correctly. [#7379](https://github.com/ethyca/fides/pull/7379)
+
+### Removed
+- Removed standalone connection manager page and components [#7473](https://github.com/ethyca/fides/pull/7473)
+- Removed Manual Process (manual_webhook) from available connection types [#7369](https://github.com/ethyca/fides/pull/7369)
+- Removed Drill tests from CI [#7417](https://github.com/ethyca/fides/pull/7417)
 
 ## [2.79.0](https://github.com/ethyca/fides/compare/2.78.2..2.79.0)
 

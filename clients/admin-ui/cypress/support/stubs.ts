@@ -1242,4 +1242,22 @@ export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
       },
     ],
   }).as("getMaskingStrategies");
+  cy.intercept("PATCH", "/api/v1/dsr/policy", {
+    body: {
+      succeeded: [
+        {
+          name: "Test Policy",
+          key: "test_policy",
+          drp_action: null,
+          execution_timeframe: null,
+          rules: [],
+        },
+      ],
+      failed: [],
+    },
+  }).as("patchDSRPolicy");
+  cy.intercept("DELETE", "/api/v1/dsr/policy/*", {
+    statusCode: 200,
+    body: {},
+  }).as("deleteDSRPolicy");
 };

@@ -77,16 +77,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("integrations-table")
           .find("tbody tr")
           .should("have.length.greaterThan", 0);
-        cy.getByTestId("integration-info-bq_integration").should("exist");
         cy.getByTestId("manage-btn-bq_integration").should("exist");
-      });
-
-      it("should be able to navigate to management page when row is clicked", () => {
-        cy.intercept("GET", "/api/v1/connection/bq_integration", {
-          fixture: "connectors/bigquery_connection.json",
-        }).as("getConnection");
-        cy.getByTestId("integration-info-bq_integration").click();
-        cy.url().should("contain", "/bq_integration");
       });
 
       it("should navigate to management page when 'manage' button is clicked", () => {
@@ -1150,44 +1141,6 @@ describe("Integration management for data detection & discovery", () => {
           true,
           "Data monitor created successfully",
         );
-      });
-
-      it("shows unchecked link system step when no system linked", () => {
-        cy.visit("/integrations/bq_integration");
-        cy.wait("@getConnection");
-        cy.wait("@getConnectionTypes");
-
-        checkStepStatus("Link system", false);
-        cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Link this integration in the").should("exist");
-        });
-      });
-
-      it("shows checked link system step when system is linked", () => {
-        // Set up intercepts before visiting the page
-        cy.intercept("GET", "/api/v1/connection/*", (req) => {
-          const fixtureData = require("../fixtures/connectors/salesforce_connection.json");
-          fixtureData.system_key = "fidesctl_system";
-          req.reply(fixtureData);
-        }).as("getConnectionWithSystem");
-
-        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
-          fixture: "detection-discovery/monitors/monitor_list.json",
-        }).as("getMonitors");
-
-        cy.visit("/integrations/salesforce_integration");
-        cy.wait("@getConnectionWithSystem");
-        cy.wait("@getMonitors");
-        cy.wait("@getConnectionTypes");
-
-        cy.getByTestId("integration-setup-card").should("exist");
-        cy.getByTestId("integration-setup-card")
-          .should("contain.text", "System linked", { timeout: 10000 })
-          .should("contain.text", "Data monitor created successfully", {
-            timeout: 10000,
-          });
-
-        checkStepStatus("Link system", true, "System linked");
       });
 
       it("shows unchecked authorize step for unauthorized Salesforce integration", () => {

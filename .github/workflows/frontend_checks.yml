@@ -39,13 +39,6 @@ jobs:
     needs: Check-Frontend-Changes
     if: needs.Check-Frontend-Changes.outputs.has_frontend_changes == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-        clients:
-          - "admin-ui"
-          - "privacy-center"
-          - "fides-js"
     defaults:
       run:
         working-directory: clients
@@ -53,22 +46,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20.x
         uses: actions/setup-node@v5
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20.x
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Generate docs
-        if: matrix.clients == 'fides-js'
         working-directory: clients/fides-js
         run: npm run docs:generate
 
       - name: Fail if docs are not up to date
-        if: matrix.clients == 'fides-js'
         working-directory: clients/fides-js
         run: |
           if [[ -n "$(git status --porcelain)" ]]; then
@@ -78,19 +69,17 @@ jobs:
             exit 1
           fi
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Lint
         run: npm run lint
 
       - name: Format
         run: npm run format:ci
 
-      - name: Build FidesJS # needed for type checks
-        working-directory: clients/fides-js
-        run: npm run build
-
-      - name: Unit test (${{ matrix.clients }})
-        working-directory: clients/${{ matrix.clients }}
-        run: npm run test:ci
+      - name: Unit tests
+        run: npm run test
 
   # Summary job for branch protection - consolidates all frontend checks
   Frontend-Checks-Summary:
