@@ -1,3 +1,4 @@
+import warnings
 from typing import Optional
 from urllib.parse import quote, quote_plus, urlencode
 
@@ -14,7 +15,7 @@ class RedisSettings(FidesSettings):
 
     charset: str = Field(
         default="utf8",
-        description="Character set to use for Redis, defaults to 'utf8'. Not recommended to change.",
+        description="Deprecated and ignored. Redis connections use decode_responses only. Kept for config compatibility; a deprecation warning is emitted if set to a non-default value. Will be removed in a future release.",
     )
     db_index: int = Field(
         default=0,
@@ -26,7 +27,7 @@ class RedisSettings(FidesSettings):
     )
     decode_responses: bool = Field(
         default=True,
-        description="Whether or not to automatically decode the values fetched from Redis. Decodes using the `charset` configuration value.",
+        description="Whether or not to automatically decode the values fetched from Redis as UTF-8 strings.",
     )
     default_ttl_seconds: int = Field(
         default=604800,
@@ -35,6 +36,10 @@ class RedisSettings(FidesSettings):
     enabled: bool = Field(
         default=True,
         description="Whether the application's Redis cache should be enabled. Only set to false for certain narrow uses of the application.",
+    )
+    cluster_enabled: bool = Field(
+        default=False,
+        description="When True, connect to Redis in cluster mode for the application cache. Uses host/port for cluster discovery. db_index and read_only_host are ignored; use read_from_replicas for read scaling. With celery-redis-cluster, Celery can use the same cluster for broker/backend (redis+cluster://) or set celery.broker_url/result_backend to override.",
     )
     host: str = Field(
         default="redis",
@@ -108,6 +113,19 @@ class RedisSettings(FidesSettings):
         default=None,
         description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate. If not provided, the `ssl_ca_certs` setting will be used.",
     )
+
+    @field_validator("charset", mode="after")
+    @classmethod
+    def warn_if_charset_set(cls, v: str) -> str:
+        """Emit a deprecation warning if charset is set to a non-default value."""
+        if v != "utf8":
+            warnings.warn(
+                "redis.charset (FIDES__REDIS__CHARSET) is deprecated and ignored; "
+                "Redis connections use decode_responses only. It will be removed in a future release.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        return v
 
     # Field validators for automatic fallback behavior
     @field_validator("read_only_port", mode="before")
@@ -286,5 +304,14 @@ class RedisSettings(FidesSettings):
             f"{connection_protocol}://{auth_prefix}{host}:{port}/{db_path}{params_str}"
         )
         return connection_url
+
+    def get_cluster_connection_url(self) -> str:
+        """Build a redis+cluster:// or rediss+cluster:// URL for Celery broker/backend."""
+        scheme = "rediss" if self.ssl else "redis"
+        auth_prefix = ""
+        if self.password or self.user:
+            encoded_password = quote_plus(self.password)
+            auth_prefix = f"{quote_plus(self.user)}:{encoded_password}@"
+        return f"{scheme}+cluster://{auth_prefix}{self.host}:{self.port}/0"
 
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
