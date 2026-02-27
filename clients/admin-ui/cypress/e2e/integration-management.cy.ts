@@ -171,7 +171,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-modal-content")
           .should("be.visible")
           .within(() => {
-            cy.get(".grid-cols-3").should("exist");
+            cy.get(".ant-row").should("exist");
             cy.getByTestId("integration-info-bq_placeholder").should("exist");
           });
       });

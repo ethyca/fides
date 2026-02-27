@@ -165,11 +165,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
       {step === IntegrationModalStep.LIST_VIEW && (
         <>
           <Flex className="px-6 py-4">{filterBar}</Flex>
-          <Flex
-            vertical
-            flex={1}
-            className="overflow-y-auto px-6 pb-4"
-          >
+          <Flex vertical flex={1} className="overflow-y-auto px-6 pb-4">
             <SelectIntegrationType
               filteredTypes={filteredTypes}
               isFiltering={isFiltering}
