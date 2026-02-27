@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.1a3.dev30+g2b877be39"
+    "version": "2.79.1a3.dev31+g808e95741"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10745,7 +10745,7 @@
           "DSR Policy"
         ],
         "summary": "Create Or Update Policies",
-        "description": "Given a list of policy data elements, create or update corresponding Policy objects\nor report failure",
+        "description": "Given a list of policy data elements, create or update corresponding Policy objects\nor report failure.\n\nOptionally accepts ``action_type`` **or** ``rules`` on each policy element\nto auto-populate rules and targets when the policy is newly created:\n\n* ``action_type`` \u2013 auto-generates a rule (with HMAC masking for erasure)\n  and seeds default data-category targets for access/erasure policies.\n* ``rules`` \u2013 creates the supplied rules (and their nested targets) exactly\n  as specified.\n\nThe two fields are mutually exclusive. Existing policies being updated\nignore both fields.",
         "operationId": "create_or_update_policies_api_v1_dsr_policy_patch",
         "security": [
           {
@@ -29684,6 +29684,30 @@
             ],
             "title": "Key"
           },
+          "action_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActionType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RuleResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rules"
+          },
           "drp_action": {
             "anyOf": [
               {
@@ -29704,20 +29728,6 @@
               }
             ],
             "title": "Execution Timeframe"
-          },
-          "rules": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/RuleResponse"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rules"
           },
           "conditions": {
             "anyOf": [
@@ -32697,6 +32707,70 @@
         ],
         "title": "RuleCreate",
         "description": "The schema to use when creating a Rule. This schema accepts a storage_destination_key\nover a composite object."
+      },
+      "RuleCreateWithTargets": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key"
+          },
+          "action_type": {
+            "$ref": "#/components/schemas/ActionType"
+          },
+          "storage_destination_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage Destination Key"
+          },
+          "masking_strategy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolicyMaskingSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "targets": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RuleTarget"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "action_type"
+        ],
+        "title": "RuleCreateWithTargets",
+        "description": "RuleCreate extended with inline targets for policy creation."
       },
       "RuleResponse": {
         "properties": {
@@ -37976,6 +38050,30 @@
               }
             ],
             "title": "Key"
+          },
+          "action_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActionType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RuleCreateWithTargets"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rules"
           },
           "drp_action": {
             "anyOf": [
