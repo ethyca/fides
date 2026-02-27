@@ -4,6 +4,7 @@ import { Flex } from "fidesui";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
+import { decodePolicyKey, encodePolicyKey } from "~/common/policy-key";
 import { ModalViews, VerificationType } from "~/components/modals/types";
 
 import VerificationForm from "../modals/verification-request/VerificationForm";
@@ -16,7 +17,7 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
   const router = useRouter();
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
 
-  const policyKey = decodeURIComponent(actionKey);
+  const policyKey = decodePolicyKey(actionKey);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -25,7 +26,7 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
         setPrivacyRequestId(storedId);
       } else {
         // If no request ID, redirect back to form
-        router.push(`/privacy-request/${encodeURIComponent(policyKey)}`);
+        router.push(`/privacy-request/${encodePolicyKey(policyKey)}`);
       }
     }
   }, [policyKey, router]);
@@ -41,13 +42,13 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
   const handleSetCurrentView = (view: string) => {
     // If going back to form, navigate to form page
     if (view === "privacyRequest") {
-      router.push(`/privacy-request/${encodeURIComponent(policyKey)}`);
+      router.push(`/privacy-request/${encodePolicyKey(policyKey)}`);
     }
   };
 
   const handleSuccess = () => {
     // Navigate to success page
-    router.push(`/privacy-request/${encodeURIComponent(policyKey)}/success`);
+    router.push(`/privacy-request/${encodePolicyKey(policyKey)}/success`);
   };
 
   return (
