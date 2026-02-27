@@ -165,7 +165,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   return (
     <Space direction="vertical" size="small" className="w-full">
       <Flex justify="space-between" align="flex-start">
-        <div>
+        <div className="flex-1">
           <Flex align="center" gap="small" className="mb-1">
             <Typography.Title level={4} className="m-0">
               {assessment.name}
@@ -178,28 +178,8 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
               {isComplete ? "Completed" : "In progress"}
             </Tag>
           </Flex>
-          <Text type="secondary" size="sm" className="mb-2 block">
+          <Text type="secondary" size="sm" className="block">
             System: {assessment.system_name}
-          </Text>
-          <Text type="secondary" className="block leading-loose">
-            Processing{" "}
-            {(assessment.data_categories ?? []).length > 0 ? (
-              <TagList
-                tags={(assessment.data_categories ?? []).map((key) => ({
-                  value: key,
-                  label: getDataCategoryDisplayName(key),
-                }))}
-                maxTags={1}
-                expandable
-              />
-            ) : (
-              <Tag>0 data categories</Tag>
-            )}{" "}
-            for{" "}
-            <TagList
-              tags={assessment.data_use_name ? [assessment.data_use_name] : []}
-              maxTags={1}
-            />
           </Text>
         </div>
 
@@ -228,36 +208,57 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         </Space>
       </Flex>
 
-      {!isComplete &&
-        (!questionnaireSentAt ? (
-          <Flex justify="flex-end">
-            <Tooltip
-              title={
-                !slackChannelName
-                  ? "Configure a Slack channel in assessment settings to enable this feature"
-                  : undefined
-              }
-            >
-              <Button
-                icon={<SlackIcon size={14} />}
-                size="small"
-                onClick={handleRequestInput}
-                disabled={!slackChannelName}
-              >
-                Request input from team
-              </Button>
-            </Tooltip>
-          </Flex>
-        ) : (
-          <QuestionnaireStatusBar
-            channel={slackChannelName ?? ""}
-            timeSinceSent={timeSinceSent}
-            answeredCount={answeredSlackQuestions.length}
-            totalCount={slackQuestions.length}
-            isSendingReminder={isSendingReminder}
-            onSendReminder={handleSendReminder}
+      <Flex justify="space-between" align="center" className="mb-2 w-full">
+        <Text type="secondary" className="leading-loose">
+          Processing{" "}
+          {(assessment.data_categories ?? []).length > 0 ? (
+            <TagList
+              tags={(assessment.data_categories ?? []).map((key) => ({
+                value: key,
+                label: getDataCategoryDisplayName(key),
+              }))}
+              maxTags={1}
+              expandable
+            />
+          ) : (
+            <Tag>0 data categories</Tag>
+          )}{" "}
+          for{" "}
+          <TagList
+            tags={assessment.data_use_name ? [assessment.data_use_name] : []}
+            maxTags={1}
           />
-        ))}
+        </Text>
+        {!isComplete && (
+          <Tooltip
+            title={
+              !slackChannelName
+                ? "Configure a Slack channel in assessment settings to enable this feature"
+                : undefined
+            }
+          >
+            <Button
+              icon={<SlackIcon size={14} />}
+              size="small"
+              onClick={handleRequestInput}
+              disabled={!slackChannelName}
+            >
+              Request input from team
+            </Button>
+          </Tooltip>
+        )}
+      </Flex>
+
+      {!isComplete && questionnaireSentAt && (
+        <QuestionnaireStatusBar
+          channel={slackChannelName ?? ""}
+          timeSinceSent={timeSinceSent}
+          answeredCount={answeredSlackQuestions.length}
+          totalCount={slackQuestions.length}
+          isSendingReminder={isSendingReminder}
+          onSendReminder={handleSendReminder}
+        />
+      )}
 
       <Collapse
         className={styles.collapse}
