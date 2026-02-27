@@ -50,6 +50,7 @@ export const AuthFormLayout = ({
               alt="Logo"
               width={205}
               height={46}
+              data-testid="logo"
             />
           </Flex>
 
