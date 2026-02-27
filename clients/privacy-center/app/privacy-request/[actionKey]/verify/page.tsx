@@ -29,10 +29,7 @@ const PrivacyRequestVerifyPage = async ({
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <AuthFormLayout
-        showTitleOnDesktop
-        dataTestId="privacy-request-verify-layout"
-      >
+      <AuthFormLayout dataTestId="privacy-request-verify-layout">
         <VerificationPage actionKey={actionKey} />
       </AuthFormLayout>
     </LoadServerEnvironmentIntoStores>

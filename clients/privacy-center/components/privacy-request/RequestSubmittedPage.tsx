@@ -18,6 +18,7 @@ const RequestSubmittedPage = () => {
         alt="green-checkmark"
         width="48px"
         height="48px"
+        preview={false}
       />
       <Text style={{ textAlign: "center" }}>
         Thanks for your request. A member of our team will review and be in
