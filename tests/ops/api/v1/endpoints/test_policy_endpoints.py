@@ -1115,7 +1115,6 @@ class TestCreatePolicyWithAutoPopulatedRules:
         rules = Rule.filter(db=db, conditions=(Rule.policy_id == pol.id)).all()
         assert len(rules) == 0
 
-
     def test_create_policy_with_explicit_rules_and_targets(
         self, db, api_client: TestClient, generate_auth_header, url
     ):
@@ -1157,7 +1156,6 @@ class TestCreatePolicyWithAutoPopulatedRules:
         assert len(targets) == 2
         target_categories = {t.data_category for t in targets}
         assert target_categories == {"user.name", "user.contact"}
-
 
     def test_create_policy_with_both_action_type_and_rules_fails(
         self, api_client: TestClient, generate_auth_header, url
