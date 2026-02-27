@@ -16,6 +16,7 @@ except ImportError:
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.tasks import (
+    CONSENT_WEBHOOK_QUEUE_NAME,
     DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
     DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
     DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
@@ -534,6 +535,7 @@ def get_queue_counts() -> Dict[str, int]:
             PRIVACY_PREFERENCES_EXPORT_JOB_QUEUE_NAME,
             PRIVACY_PREFERENCES_INGESTION_JOB_QUEUE_NAME,
             DSR_QUEUE_NAME,
+            CONSENT_WEBHOOK_QUEUE_NAME,
             DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
             DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
             DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
