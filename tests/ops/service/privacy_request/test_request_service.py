@@ -933,7 +933,9 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         mock_redis_lock.return_value.__enter__.return_value = True
         mock_get_queue_tasks.return_value = []
         mock_tasks_in_flight.return_value = False
-        mock_get_request_task_ids.return_value = ["request_task_id_1"]
+        mock_get_request_task_ids.return_value = [
+            ("request_task_id_1", ExecutionLogStatus.in_processing)
+        ]
 
         # Mock main task ID success, then cache exception for request task
         mock_get_cached_task_id.side_effect = [
@@ -985,7 +987,9 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         mock_redis_lock.return_value.__enter__.return_value = True
         mock_get_queue_tasks.return_value = []  # Tasks not in queue
         mock_tasks_in_flight.return_value = False  # Tasks not running
-        mock_get_request_task_ids.return_value = ["request_task_id_1"]
+        mock_get_request_task_ids.return_value = [
+            ("request_task_id_1", ExecutionLogStatus.in_processing)
+        ]
         mock_get_cached_task_id.side_effect = ["main_task_id", "subtask_id"]
 
         with mock.patch.object(
