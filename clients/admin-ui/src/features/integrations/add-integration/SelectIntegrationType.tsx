@@ -142,7 +142,7 @@ export const useIntegrationFilters = () => {
     });
 
   const filterBar: ReactNode = (
-    <Flex align="center" justify="space-between" gap={16} className="w-full">
+    <Flex align="center" justify="space-between" gap="large" className="w-full">
       <Input
         placeholder="Search by name..."
         value={searchTerm}
