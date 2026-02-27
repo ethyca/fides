@@ -1,3 +1,4 @@
+export * from "./AnswerStatusTags";
 export * from "./AssessmentCard";
 export * from "./AssessmentDetail";
 export * from "./AssessmentGroup";

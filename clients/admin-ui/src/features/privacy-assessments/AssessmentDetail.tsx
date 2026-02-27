@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from "date-fns";
 import {
   Button,
   Collapse,
@@ -14,7 +15,7 @@ import {
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -33,7 +34,7 @@ import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { RequestInputModal } from "./RequestInputModal";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
-import { getSlackQuestions, getTimeSince } from "./utils";
+import { getSlackQuestions } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -73,15 +74,36 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     [allQuestions],
   );
 
-  const { questionnaireSentAt, timeSinceSent } = useMemo(() => {
-    const sentAt = assessment.questionnaire?.sent_at
-      ? new Date(assessment.questionnaire.sent_at)
-      : null;
-    return {
-      questionnaireSentAt: sentAt,
-      timeSinceSent: sentAt ? getTimeSince(sentAt.toISOString()) : "",
+  const questionnaireSentAt = useMemo(
+    () =>
+      assessment.questionnaire?.sent_at
+        ? new Date(assessment.questionnaire.sent_at)
+        : null,
+    [assessment.questionnaire?.sent_at],
+  );
+
+  const [timeSinceSent, setTimeSinceSent] = useState(() =>
+    questionnaireSentAt
+      ? formatDistanceToNow(questionnaireSentAt, { addSuffix: true })
+      : "",
+  );
+
+  useEffect(() => {
+    if (!questionnaireSentAt) {
+      return undefined;
+    }
+    setTimeSinceSent(
+      formatDistanceToNow(questionnaireSentAt, { addSuffix: true }),
+    );
+    const interval = setInterval(() => {
+      setTimeSinceSent(
+        formatDistanceToNow(questionnaireSentAt, { addSuffix: true }),
+      );
+    }, 60_000);
+    return () => {
+      clearInterval(interval);
     };
-  }, [assessment.questionnaire?.sent_at]);
+  }, [questionnaireSentAt]);
 
   const handleDelete = () => {
     modalApi.confirm({
