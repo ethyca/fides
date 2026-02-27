@@ -78,4 +78,7 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
  *   <div>Tab content here</div>
  * </CustomCard>
  */
-export const CustomCard = withCustomProps(Card);
+export const CustomCard = Object.assign(withCustomProps(Card), {
+  Meta: Card.Meta,
+  Grid: Card.Grid,
+});
