@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Annotated, Any, Dict, List, Optional
 
 import sqlalchemy
@@ -49,6 +50,10 @@ from fides.api.util.connection_util import (
     get_connection_config_or_error,
     patch_connection_configs,
     update_connection_secrets,
+)
+from fides.api.util.redis_version_cache import (
+    perf_get_redis_counters,
+    perf_reset_redis_counters,
 )
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
@@ -168,16 +173,49 @@ def get_connections(
                 )
             )
 
-    return paginate(
-        query.order_by(ConnectionConfig.name.asc()).options(
-            linked_system_load_options()
-        ),
-        params=params,
-        transformer=lambda items: [
-            ConnectionConfigurationResponse.from_connection_config(item)
-            for item in items
-        ],
+    perf_reset_redis_counters()
+    t_start = time.perf_counter()
+    ordered_query = query.order_by(ConnectionConfig.name.asc()).options(
+        linked_system_load_options()
     )
+
+    def _timed_transformer(items: list) -> list:
+        t_ser_start = time.perf_counter()
+        results = []
+        for i, item in enumerate(items):
+            t_item = time.perf_counter()
+            results.append(ConnectionConfigurationResponse.from_connection_config(item))
+            elapsed_item = (time.perf_counter() - t_item) * 1000
+            if elapsed_item > 50:
+                logger.warning(
+                    "PERF connection_list: item #{} key={} serialization took {:.1f}ms (has_secrets={})",
+                    i,
+                    item.key,
+                    elapsed_item,
+                    item.secrets is not None,
+                )
+        t_ser_total = (time.perf_counter() - t_ser_start) * 1000
+        logger.warning(
+            "PERF connection_list: serialized {} items in {:.1f}ms",
+            len(results),
+            t_ser_total,
+        )
+        return results
+
+    result = paginate(
+        ordered_query,
+        params=params,
+        transformer=_timed_transformer,
+    )
+    t_total = (time.perf_counter() - t_start) * 1000
+    redis_calls, redis_ms = perf_get_redis_counters()
+    logger.warning(
+        "PERF connection_list: total endpoint time {:.1f}ms | redis: {} calls, {:.1f}ms total",
+        t_total,
+        redis_calls,
+        redis_ms,
+    )
+    return result
 
 
 @router.get(
