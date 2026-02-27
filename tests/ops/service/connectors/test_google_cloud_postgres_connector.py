@@ -187,3 +187,72 @@ class TestGoogleCloudSQLPostgresConnectorCreateClient:
             enable_iam_auth=True,
         )
         assert result == mock_engine
+
+
+class TestGoogleCloudSQLPostgresConnectorSetSchema:
+    """Tests for set_schema reconciliation with namespace_meta."""
+
+    def test_set_schema_skipped_when_namespace_meta_present(self, connector):
+        """When namespace_meta is present, set_schema should be a no-op."""
+        connector._current_namespace_meta = {"schema": "billing"}
+
+        mock_connection = MagicMock()
+        connector.set_schema(mock_connection)
+
+        # Should NOT execute any SQL
+        mock_connection.execute.assert_not_called()
+
+    def test_set_schema_runs_when_namespace_meta_absent(self, connector):
+        """When namespace_meta is absent and db_schema is configured, set_schema should run."""
+        connector._current_namespace_meta = None
+
+        mock_connection = MagicMock()
+        connector.set_schema(mock_connection)
+
+        # Should execute SELECT set_config (db_schema="public" in mock_config)
+        mock_connection.execute.assert_called_once()
+
+    def test_set_schema_noop_when_no_db_schema_and_no_namespace(self, mock_config):
+        """When neither namespace_meta nor db_schema is configured, set_schema is a no-op."""
+        mock_config["db_schema"] = None
+        connector = GoogleCloudSQLPostgresConnector(
+            configuration=MagicMock(secrets=mock_config)
+        )
+        connector._current_namespace_meta = None
+
+        mock_connection = MagicMock()
+        connector.set_schema(mock_connection)
+
+        mock_connection.execute.assert_not_called()
+
+    @patch(
+        "fides.api.service.connectors.google_cloud_postgres_connector"
+        ".SQLConnector.get_namespace_meta"
+    )
+    def test_query_config_sets_namespace_meta_state(self, mock_get_ns, connector):
+        """query_config() should store namespace_meta on the connector instance."""
+        mock_get_ns.return_value = {"schema": "billing"}
+        assert connector._current_namespace_meta is None
+
+        mock_node = MagicMock()
+        mock_node.address.dataset = "test_dataset"
+        mock_node.collection.name = "customer"
+
+        connector.query_config(mock_node)
+        assert connector._current_namespace_meta == {"schema": "billing"}
+
+    @patch(
+        "fides.api.service.connectors.google_cloud_postgres_connector"
+        ".SQLConnector.get_namespace_meta"
+    )
+    def test_query_config_clears_namespace_meta_state(self, mock_get_ns, connector):
+        """query_config() should clear namespace_meta when dataset has none."""
+        mock_get_ns.return_value = None
+        connector._current_namespace_meta = {"schema": "old_value"}
+
+        mock_node = MagicMock()
+        mock_node.address.dataset = "test_dataset"
+        mock_node.collection.name = "customer"
+
+        connector.query_config(mock_node)
+        assert connector._current_namespace_meta is None

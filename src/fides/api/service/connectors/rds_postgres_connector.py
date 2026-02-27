@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from botocore.exceptions import ClientError
 from loguru import logger
@@ -9,15 +9,12 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
     RDSPostgresSchema,
 )
 from fides.api.service.connectors.query_configs.postgres_query_config import (
     PostgresQueryConfig,
 )
-from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.rds_connector_mixin import RDSConnectorMixin
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
@@ -86,9 +83,12 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
             db_name=db_name,
         )
 
-    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+    def query_config(self, node: ExecutionNode) -> PostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return PostgresQueryConfig(node)
+        db: Session = Session.object_session(self.configuration)
+        return PostgresQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
@@ -128,26 +128,3 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
-
-    def retrieve_data(
-        self,
-        node: ExecutionNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        request_task: RequestTask,
-        input_data: Dict[str, List[Any]],
-    ) -> List[Row]:
-        """DSR execution not yet supported for RDS Postgres"""
-        return []
-
-    def mask_data(
-        self,
-        node: ExecutionNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        request_task: RequestTask,
-        rows: List[Row],
-        input_data: Optional[Dict[str, List[Any]]] = None,
-    ) -> int:
-        """DSR execution not yet supported for RDS Postgres"""
-        return 0

@@ -1,13 +1,13 @@
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine, create_engine  # type: ignore
+from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration import PostgreSQLSchema
 from fides.api.service.connectors.query_configs.postgres_query_config import (
     PostgresQueryConfig,
 )
-from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.config import get_config
 
@@ -79,7 +79,15 @@ class PostgreSQLConnector(SQLConnector):
         )
 
     def set_schema(self, connection: Connection) -> None:
-        """Sets the schema for a postgres database if applicable"""
+        """Sets the search_path for a Postgres database if applicable.
+
+        Skipped when namespace_meta is present because table names are already
+        schema-qualified in the generated SQL. Only runs for the legacy
+        db_schema connection secret path.
+        """
+        if self._current_namespace_meta:
+            return
+
         config = self.secrets_schema(**self.configuration.secrets or {})
         if config.db_schema:
             logger.info("Setting PostgreSQL search_path before retrieving data")
@@ -87,6 +95,9 @@ class PostgreSQLConnector(SQLConnector):
             stmt = stmt.bindparams(search_path=config.db_schema)
             connection.execute(stmt)
 
-    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+    def query_config(self, node: ExecutionNode) -> PostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return PostgresQueryConfig(node)
+        db: Session = Session.object_session(self.configuration)
+        namespace_meta = SQLConnector.get_namespace_meta(db, node.address.dataset)
+        self._current_namespace_meta = namespace_meta
+        return PostgresQueryConfig(node, namespace_meta)
