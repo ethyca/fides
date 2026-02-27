@@ -24,11 +24,11 @@ const withCustomProps = (WrappedComponent: typeof Statistic) => {
     const { token } = theme.useToken();
 
     /** Maps a trend direction to the corresponding Ant Design color-token key. */
-    const TREND_TOKEN_MAP: Record<StatisticTrend, AntColorTokenKey> = {
-      up: "colorSuccess",
-      down: "colorError",
-      neutral: "colorText",
-    };
+const TREND_TOKEN_MAP: Record<StatisticTrend, AntColorTokenKey> = {
+  up: "colorSuccess",
+  down: "colorError",
+  neutral: "colorText",
+};
 
     const trendColor = token[TREND_TOKEN_MAP[trend]];
     return (
