@@ -22,11 +22,18 @@ import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
-import { useDeletePrivacyAssessmentMutation } from "./privacy-assessments.slice";
+import {
+  useCreateQuestionnaireMutation,
+  useCreateQuestionnaireReminderMutation,
+  useDeletePrivacyAssessmentMutation,
+  useGetAssessmentConfigQuery,
+} from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
+import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
+import { getSlackQuestions, getTimeSince } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -40,16 +47,42 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
 
+  const { data: config } = useGetAssessmentConfigQuery();
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
+  const [createQuestionnaire, { isLoading: isSendingQuestionnaire }] =
+    useCreateQuestionnaireMutation();
+  const [createReminder, { isLoading: isSendingReminder }] =
+    useCreateQuestionnaireReminderMutation();
 
-  const isComplete = useMemo(
-    () =>
-      (assessment.question_groups ?? [])
-        .flatMap((g) => g.questions)
-        .every((q) => q.answer_text.trim().length > 0),
+  const slackChannelName = config?.slack_channel_name
+    ? `#${config.slack_channel_name}`
+    : null;
+
+  const allQuestions = useMemo(
+    () => (assessment.question_groups ?? []).flatMap((g) => g.questions),
     [assessment.question_groups],
   );
+
+  const isComplete = useMemo(
+    () => allQuestions.every((q) => q.answer_text.trim().length > 0),
+    [allQuestions],
+  );
+
+  const { slackQuestions, answeredSlackQuestions } = useMemo(
+    () => getSlackQuestions(allQuestions),
+    [allQuestions],
+  );
+
+  const { questionnaireSentAt, timeSinceSent } = useMemo(() => {
+    const sentAt = assessment.questionnaire?.sent_at
+      ? new Date(assessment.questionnaire.sent_at)
+      : null;
+    return {
+      questionnaireSentAt: sentAt,
+      timeSinceSent: sentAt ? getTimeSince(sentAt.toISOString()) : "",
+    };
+  }, [assessment.questionnaire?.sent_at]);
 
   const handleDelete = () => {
     modalApi.confirm({
@@ -81,6 +114,40 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         }
       },
     });
+  };
+
+  const handleRequestInput = async () => {
+    if (!slackChannelName) {
+      return;
+    }
+    try {
+      await createQuestionnaire({
+        id: assessment.id,
+        body: { channel: slackChannelName },
+      }).unwrap();
+      message.success(`Questionnaire sent to ${slackChannelName} on Slack.`);
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Failed to send questionnaire. Please try again.",
+        ),
+      );
+    }
+  };
+
+  const handleSendReminder = async () => {
+    try {
+      await createReminder({ id: assessment.id }).unwrap();
+      message.success(`Reminder sent to ${slackChannelName}.`);
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Failed to send reminder. Please try again.",
+        ),
+      );
+    }
   };
 
   const collapseItems = useMemo(
@@ -174,14 +241,37 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         </Space>
       </Flex>
 
-      {!isComplete && (
-        <Flex justify="flex-end">
-          {/* TODO: implement request input from team */}
-          <Button icon={<SlackIcon size={14} />} size="small">
-            Request input from team
-          </Button>
-        </Flex>
-      )}
+      {!isComplete &&
+        (!questionnaireSentAt ? (
+          <Flex justify="flex-end">
+            <Tooltip
+              title={
+                !slackChannelName
+                  ? "Configure a Slack channel in assessment settings to enable this feature"
+                  : undefined
+              }
+            >
+              <Button
+                icon={<SlackIcon size={14} />}
+                size="small"
+                onClick={handleRequestInput}
+                loading={isSendingQuestionnaire}
+                disabled={!slackChannelName}
+              >
+                Request input from team
+              </Button>
+            </Tooltip>
+          </Flex>
+        ) : (
+          <QuestionnaireStatusBar
+            channel={slackChannelName ?? ""}
+            timeSinceSent={timeSinceSent}
+            answeredCount={answeredSlackQuestions.length}
+            totalCount={slackQuestions.length}
+            isSendingReminder={isSendingReminder}
+            onSendReminder={handleSendReminder}
+          />
+        ))}
 
       <Collapse
         className={styles.collapse}
