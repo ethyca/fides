@@ -70,7 +70,6 @@ export const AuthFormLayout = ({
               }}
             >
               <Space direction="vertical" size={32} style={{ width: "100%" }}>
-                {/* Mobile Title - Shown on mobile, hidden on desktop */}
                 {title && (
                   <div>
                     <Space
