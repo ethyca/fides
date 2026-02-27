@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
 
-const MINUTE_MS = 60_000;
+const MINUTE_S = 60;
 
 /**
  * Returns a human-readable relative time string (e.g. "5 minutes ago") for
@@ -10,7 +10,7 @@ const MINUTE_MS = 60_000;
  */
 export const useRelativeTime = (
   date: Date | null | undefined,
-  intervalMs: number = MINUTE_MS,
+  intervalSeconds: number = MINUTE_S,
 ): string => {
   const [relativeTime, setRelativeTime] = useState(() =>
     date ? formatDistanceToNow(date, { addSuffix: true }) : "",
@@ -24,11 +24,11 @@ export const useRelativeTime = (
     setRelativeTime(formatDistanceToNow(date, { addSuffix: true }));
     const interval = setInterval(() => {
       setRelativeTime(formatDistanceToNow(date, { addSuffix: true }));
-    }, intervalMs);
+    }, intervalSeconds * 1000);
     return () => {
       clearInterval(interval);
     };
-  }, [date, intervalMs]);
+  }, [date, intervalSeconds]);
 
   return relativeTime;
 };
