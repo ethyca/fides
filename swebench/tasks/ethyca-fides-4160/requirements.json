@@ -1,0 +1,17 @@
+[
+  "TCModel must validate cmp_id as non-negative; negative values must raise a ValidationError, and string/float inputs must be coerced to integers",
+  "TCModel must validate vendor_list_version as non-negative; string/float inputs must be coerced to integers",
+  "TCModel must validate policy_version as non-negative; string/float inputs must be coerced to integers",
+  "TCModel must validate cmp_version as positive (greater than 0); values of 0 or negative must raise a ValidationError",
+  "TCModel must validate publisher_country_code as exactly 2 alphabetic characters; non-alphabetic characters (like '^^') must raise a ValidationError, and lowercase input must be uppercased (e.g., 'aa' becomes 'AA')",
+  "TCModel must filter purpose_legitimate_interests to remove invalid purposes; purposes 1, 3, 4, 5, and 6 are not valid for legitimate interests, so input [1, 2, 3, 4, 7] must become [2, 7]",
+  "TCModel must filter vendor_consents to remove vendors that have no consent purposes; vendor ID 56 which has no purposes must be filtered out",
+  "TCModel must filter vendor_legitimate_interests based on GVL rules; vendors without legitimate interest purposes but with special purposes should be included, but vendors with only flexible purposes should be excluded when is_service_specific is False",
+  "TCModel must convert consent_language to a 2-letter uppercase code; input 'English' must return 'EN'",
+  "TCFVersionHash must automatically sort all list fields (purpose_consents, purpose_legitimate_interests, special_feature_optins, vendor_consents, vendor_legitimate_interests) in ascending order",
+  "The tcf_util module must be refactored into a tcf subpackage; ConsentRecordType and get_tcf_contents must be importable from fides.api.util.tcf.tcf_experience_contents",
+  "When include_meta query parameter is True, the privacy experience API response must include a meta object with fields: version_hash, accept_all_tc_string, accept_all_tc_mobile_data, reject_all_tc_string, reject_all_tc_mobile_data",
+  "When TCF is disabled or no TCF contents exist, all meta fields (version_hash, accept_all_tc_string, accept_all_tc_mobile_data, reject_all_tc_string, reject_all_tc_mobile_data) must be empty or falsy",
+  "When TCF is enabled with valid contents, meta.version_hash must contain a 12-character hash string such as '75fb2dafef58'",
+  "When TCF is enabled with valid contents, meta must include populated accept_all_tc_string, accept_all_tc_mobile_data, reject_all_tc_string, and reject_all_tc_mobile_data fields"
+]
