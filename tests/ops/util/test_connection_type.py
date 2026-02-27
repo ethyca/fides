@@ -7,6 +7,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
 from fides.api.util.connection_type import (
+    NoSuchConnectionTypeSecretSchemaError,
     get_connection_type_secret_schema,
     get_connection_types,
 )
@@ -283,7 +284,6 @@ def test_get_connection_type_secret_schema_manual_webhook():
 def test_get_connection_type_secret_schema_not_in_secrets_schemas():
     """Types that exist in ConnectionType but have no entry in secrets_schemas
     (e.g. the deprecated 'manual' type) should raise NoSuchConnectionTypeSecretSchemaError."""
-    from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 
     with pytest.raises(NoSuchConnectionTypeSecretSchemaError):
         get_connection_type_secret_schema(connection_type="manual")
