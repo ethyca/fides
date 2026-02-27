@@ -168,8 +168,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
           <Flex
             vertical
             flex={1}
-            className="px-6 pb-4"
-            style={{ overflowY: "auto" }}
+            className="overflow-y-auto px-6 pb-4"
           >
             <SelectIntegrationType
               filteredTypes={filteredTypes}
@@ -181,7 +180,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
         </>
       )}
       {step === IntegrationModalStep.DETAIL && (
-        <Flex vertical flex={1} className="p-6" style={{ overflowY: "auto" }}>
+        <Flex vertical flex={1} className="overflow-y-auto p-6">
           <IntegrationTypeDetail
             integrationType={integrationType}
             onConfigure={handleConfigure}
@@ -189,7 +188,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
         </Flex>
       )}
       {step === IntegrationModalStep.FORM && (
-        <Flex vertical flex={1} className="p-6" style={{ overflowY: "auto" }}>
+        <Flex vertical flex={1} className="overflow-y-auto p-6">
           <ConfigureIntegrationForm
             connectionOption={connectionOption!}
             onClose={handleCancel}
