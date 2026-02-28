@@ -10,6 +10,7 @@ from fides.api.graph.config import (
 )
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.util.collection_util import unflatten_dict
+from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.api.util.saas_util import (
     assign_placeholders,
     check_dataset_missing_reference_values,
@@ -755,3 +756,117 @@ class TestCheckDatasetReferenceValues:
         assert check_dataset_missing_reference_values(input_data, param_values) == [
             "missing_param"
         ]
+
+
+@pytest.mark.unit_saas
+class TestValidateValueAgainstAllowedList:
+    """Tests for validate_value_against_allowed_list.
+
+    Each allowed_values entry is a wildcard pattern where ``*`` matches
+    any sequence of characters (including dots).  Everything else is a
+    literal.  Matching is case-insensitive against the full value string.
+    """
+
+    @pytest.mark.parametrize(
+        "value,allowed,should_pass",
+        [
+            pytest.param("api.stripe.com", ["api.stripe.com"], True, id="exact_match"),
+            pytest.param(
+                "API.Stripe.COM", ["api.stripe.com"], True, id="case_insensitive"
+            ),
+            pytest.param(
+                "  api.stripe.com  ",
+                ["  api.stripe.com  "],
+                True,
+                id="whitespace_stripped",
+            ),
+            pytest.param(
+                "na1.salesforce.com",
+                ["*.salesforce.com"],
+                True,
+                id="wildcard_subdomain",
+            ),
+            pytest.param(
+                "a.b.c.salesforce.com",
+                ["*.salesforce.com"],
+                True,
+                id="wildcard_multi_level",
+            ),
+            pytest.param(
+                "NA1.Salesforce.COM",
+                ["*.salesforce.com"],
+                True,
+                id="wildcard_case_insensitive",
+            ),
+            pytest.param(
+                "api.stripe.com",
+                ["api.example.com", "api.stripe.com", "*.other.com"],
+                True,
+                id="multiple_allowed_values",
+            ),
+            pytest.param(
+                "sub.other.com",
+                ["api.example.com", "api.stripe.com", "*.other.com"],
+                True,
+                id="multiple_allowed_wildcard",
+            ),
+            pytest.param(
+                "api.us-east.stripe.com",
+                ["api.*.stripe.com"],
+                True,
+                id="wildcard_in_middle",
+            ),
+            pytest.param(
+                "api.us-east.stripe.com",
+                ["*.*.stripe.com"],
+                True,
+                id="multiple_wildcards",
+            ),
+            pytest.param(
+                "salesforce.com",
+                ["?*.salesforce.com"],
+                False,
+                id="question_mark_is_literal_not_regex",
+            ),
+            pytest.param(
+                ".salesforce.com",
+                ["*.salesforce.com"],
+                False,
+                id="wildcard_rejects_empty_subdomain",
+            ),
+            pytest.param(
+                "evil.example.com", ["api.stripe.com"], False, id="different_domain"
+            ),
+            pytest.param(
+                "not-api.stripe.com",
+                ["api.stripe.com"],
+                False,
+                id="partial_match_rejected",
+            ),
+            pytest.param(
+                "api.stripe.com.evil.com",
+                ["api.stripe.com"],
+                False,
+                id="suffix_attack_rejected",
+            ),
+        ],
+    )
+    def test_value_validation(self, value, allowed, should_pass):
+        if should_pass:
+            validate_value_against_allowed_list(value, allowed, "domain")
+        else:
+            with pytest.raises(ValueError):
+                validate_value_against_allowed_list(value, allowed, "domain")
+
+    def test_error_message_includes_param_name(self):
+        """Error message should include the param name and value."""
+        with pytest.raises(ValueError, match="The value 'evil.com' for 'domain'"):
+            validate_value_against_allowed_list(
+                "evil.com", ["api.stripe.com"], "domain"
+            )
+
+    def test_empty_allowed_values_permits_any_value(self):
+        """Empty allowed_values list should permit any value."""
+        validate_value_against_allowed_list(
+            "literally-anything.example.com", [], "domain"
+        )

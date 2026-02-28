@@ -55,6 +55,11 @@ def deny_unsafe_hosts(host: str) -> str:
     return host
 
 
+def is_domain_validation_disabled() -> bool:
+    """Check if domain validation is disabled via config flags."""
+    return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
+
+
 def load_yaml_as_string(filename: str) -> str:
     yaml_file = load_file([filename])
     with open(yaml_file, "r", encoding="utf-8") as file:
