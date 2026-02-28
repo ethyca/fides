@@ -56,6 +56,13 @@
     "test": false,
     "production": false
   },
+  "alphaWebMonitorClassifyWithAI": {
+    "label": "Web monitor classify with AI",
+    "description": "Enable AI classification for website assets and classification reports",
+    "development": true,
+    "test": false,
+    "production": false
+  },
   "alphaDataProtectionAssessments": {
     "label": "Alpha data protection assessments",
     "description": "Enable data protection impact assessments feature",

@@ -38,6 +38,7 @@ import {
 import {
   useAddMonitorResultAssetsMutation,
   useAddMonitorResultSystemsMutation,
+  useClassifyWebsiteAssetsMutation,
   useGetDiscoveredAssetsQuery,
   useGetWebsiteMonitorResourceFiltersQuery,
   useIgnoreMonitorResultAssetsMutation,
@@ -139,6 +140,8 @@ export const useDiscoveredAssetsTable = ({
     restoreMonitorResultAssetsMutation,
     { isLoading: isRestoringResults },
   ] = useRestoreMonitorResultAssetsMutation();
+  const [classifyWebsiteAssetsMutation, { isLoading: isClassifyingAssets }] =
+    useClassifyWebsiteAssetsMutation();
 
   const anyBulkActionIsLoading =
     isAddingResults ||
@@ -146,7 +149,8 @@ export const useDiscoveredAssetsTable = ({
     isAddingAllResults ||
     isBulkUpdatingSystem ||
     isRestoringResults ||
-    isBulkAddingDataUses;
+    isBulkAddingDataUses ||
+    isClassifyingAssets;
 
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
@@ -612,6 +616,31 @@ export const useDiscoveredAssetsTable = ({
     resetSelections,
   ]);
 
+  const handleClassifyWithAI = useCallback(async () => {
+    const result = await classifyWebsiteAssetsMutation({
+      monitor_config_key: monitorId,
+      staged_resource_urns: selectedUrns.length > 0 ? selectedUrns : undefined,
+    });
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      const count = selectedUrns.length > 0 ? selectedUrns.length : "all";
+      toast(
+        successToastParams(
+          `Classification complete for ${count} uncategorized assets.`,
+          `Confirmed`,
+        ),
+      );
+      resetSelections();
+    }
+  }, [
+    classifyWebsiteAssetsMutation,
+    monitorId,
+    selectedUrns,
+    toast,
+    resetSelections,
+  ]);
+
   const handleAddAll = useCallback(async () => {
     const assetCount = data?.items.length || 0;
     const result = await addMonitorResultSystemsMutation({
@@ -700,6 +729,7 @@ export const useDiscoveredAssetsTable = ({
     handleBulkIgnore,
     handleBulkRestore,
     handleAddAll,
+    handleClassifyWithAI,
 
     // Loading states
     anyBulkActionIsLoading,
@@ -709,6 +739,7 @@ export const useDiscoveredAssetsTable = ({
     isBulkUpdatingSystem,
     isBulkAddingDataUses,
     isRestoringResults,
+    isClassifyingAssets,
     disableAddAll,
   };
 };
