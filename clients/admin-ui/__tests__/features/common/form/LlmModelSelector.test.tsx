@@ -235,8 +235,12 @@ describe("LlmModelSelector", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("input-use_llm_classifier")).toBeInTheDocument();
-      expect(screen.getByTestId("input-llm_model_override")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("input-use_llm_classifier"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("input-llm_model_override"),
+      ).toBeInTheDocument();
     });
 
     it("works for database monitor", () => {
@@ -246,8 +250,12 @@ describe("LlmModelSelector", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("input-use_llm_classifier")).toBeInTheDocument();
-      expect(screen.getByTestId("input-llm_model_override")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("input-use_llm_classifier"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("input-llm_model_override"),
+      ).toBeInTheDocument();
     });
   });
 
@@ -281,7 +289,9 @@ describe("LlmModelSelector", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByTestId("input-llm_model_override")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("input-llm_model_override"),
+      ).toBeInTheDocument();
     });
 
     it("renders with custom label and tooltip", () => {
