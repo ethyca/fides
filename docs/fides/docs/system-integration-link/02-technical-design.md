@@ -118,7 +118,7 @@ from fides.system_integration_link.models import SystemConnectionConfigLink
 
 ### Session Management
 
-The service and repository use the shared `@with_optional_sync_session` decorator from `src/fides/common/session/session_management.py`. This decorator provides composable session semantics:
+The service and repository use the shared `@with_optional_sync_session` decorator from `src/fides/common/session_management.py`. This decorator provides composable session semantics:
 
 - **When called without a session** (from routes): creates a new session, commits on success, closes on exit.
 - **When called with a session** (from another service/repo method): participates in the caller's transaction (flush only, no commit).
