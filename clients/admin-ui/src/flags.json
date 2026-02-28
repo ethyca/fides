@@ -56,9 +56,9 @@
     "test": false,
     "production": false
   },
-  "alphaWebMonitorClassifyWithAI": {
-    "label": "Web monitor classify with AI",
-    "description": "Enable AI classification for website assets and classification reports",
+  "alphaWebMonitorClassifierDemoUI": {
+    "label": "Web monitor classifier demo UI",
+    "description": "Enable demo UI for LLM classification of website assets (Classify with AI button and classification reports)",
     "development": true,
     "test": false,
     "production": false

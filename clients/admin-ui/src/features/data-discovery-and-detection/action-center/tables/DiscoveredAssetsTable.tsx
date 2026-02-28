@@ -41,7 +41,7 @@ export const DiscoveredAssetsTable = ({
 }: DiscoveredAssetsTableProps) => {
   // Feature flags
   const { flags } = useFlags();
-  const showLlmClassification = flags.alphaWebMonitorClassifyWithAI;
+  const showLlmClassification = flags.alphaWebMonitorClassifierDemoUI;
 
   // Modal state
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
