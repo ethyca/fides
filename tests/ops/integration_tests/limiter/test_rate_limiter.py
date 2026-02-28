@@ -18,16 +18,16 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors.limiter.rate_limiter import (
-    RateLimiter,
-    RateLimiterPeriod,
-    RateLimiterRequest,
-    RateLimiterTimeoutException,
-)
 from fides.api.task.graph_runners import access_runner
 from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
+)
+from fides.connectors.utils.rate_limiter import (
+    RateLimiter,
+    RateLimiterPeriod,
+    RateLimiterRequest,
+    RateLimiterTimeoutException,
 )
 from tests.conftest import access_runner_tester
 

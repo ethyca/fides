@@ -43,8 +43,6 @@ from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
@@ -65,6 +63,10 @@ from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.common.session_management import get_autoclose_db_session as get_db
 from fides.config import CONFIG
+from fides.connectors.base_connector import BaseConnector
+from fides.service.privacy_request.execution_context import (
+    collect_execution_log_messages,
+)
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
 

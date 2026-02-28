@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from fides.api.service.privacy_request.request_service import requeue_polling_tasks
+from fides.service.privacy_request.request_service import requeue_polling_tasks
 
 
 @pytest.mark.async_dsr

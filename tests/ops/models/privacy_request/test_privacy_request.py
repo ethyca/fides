@@ -51,7 +51,7 @@ from fides.api.util.cache import (
 )
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
-from fides.service.attachment_service import AttachmentService
+from fides.service.attachment.attachment_service import AttachmentService
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -1387,7 +1387,7 @@ class TestPrivacyRequestAttachments:
             return s3_client
 
         monkeypatch.setattr(
-            "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+            "fides.service.storage.s3.get_s3_client", mock_get_s3_client
         )
         return s3_client
 

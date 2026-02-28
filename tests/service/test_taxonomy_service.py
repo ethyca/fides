@@ -11,7 +11,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
 )
 from fides.api.models.taxonomy import LEGACY_TAXONOMY_KEYS, Taxonomy, TaxonomyUsage
 from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 from fides.service.taxonomy.handlers.legacy_handler import LegacyTaxonomyHandler
 from fides.service.taxonomy.taxonomy_service import TaxonomyService
 from fides.service.taxonomy.utils import generate_taxonomy_fides_key

@@ -9,23 +9,23 @@ from fides.api.common_exceptions import NoSuchSaaSRequestOverrideException
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
-from fides.api.service.authentication.authentication_strategy import (
-    AuthenticationStrategy,
-)
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-    CustomConnectorTemplateLoader,
-    FileConnectorTemplateLoader,
-)
-from fides.api.service.saas_request.saas_request_override_factory import (
-    SaaSRequestOverrideFactory,
-    SaaSRequestType,
-)
 from fides.api.util.saas_util import (
     encode_file_contents,
     load_config_from_string,
     load_yaml_as_string,
     replace_version,
+)
+from fides.connectors.saas.strategies.authentication.authentication_strategy import (
+    AuthenticationStrategy,
+)
+from fides.service.connection.connector_registry_service import (
+    ConnectorRegistry,
+    CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
+)
+from fides.service.privacy_request.saas_request.saas_request_override_factory import (
+    SaaSRequestOverrideFactory,
+    SaaSRequestType,
 )
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 

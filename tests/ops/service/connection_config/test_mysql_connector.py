@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.service.connectors.mysql_connector import MySQLConnector
+from fides.connectors.mysql.mysql_connector import MySQLConnector
 
 
 def test_mysql_connector_build_uri(connection_config_mysql, db: Session):

@@ -12,7 +12,7 @@ import pytest
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import StorageSecrets, StorageSecretsS3
-from fides.api.service.storage.streaming.s3.streaming_s3 import (
+from fides.service.storage.streaming.s3.streaming_s3 import (
     format_secrets,
     upload_to_s3_streaming,
 )
@@ -281,10 +281,8 @@ class TestFormatSecrets:
 class TestUploadToS3Streaming:
     """Tests for upload_to_s3_streaming function."""
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
-    @patch(
-        "fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage"
-    )
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage")
     def test_successful_upload(
         self,
         mock_streaming_storage_class,
@@ -338,7 +336,7 @@ class TestUploadToS3Streaming:
             None,  # document
         )
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.generic_upload_to_s3")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.generic_upload_to_s3")
     def test_document_upload_path(
         self,
         mock_generic_upload,
@@ -382,7 +380,7 @@ class TestUploadToS3Streaming:
         assert call_args[0][3] == "secret_keys"  # auth_method
         assert call_args[0][4] == mock_document  # document
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
     def test_client_creation_failure(
         self,
         mock_client_class,
@@ -410,10 +408,8 @@ class TestUploadToS3Streaming:
                 max_workers=3,
             )
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
-    @patch(
-        "fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage"
-    )
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage")
     def test_upload_failure(
         self,
         mock_streaming_storage_class,
@@ -449,10 +445,8 @@ class TestUploadToS3Streaming:
                 max_workers=3,
             )
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
-    @patch(
-        "fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage"
-    )
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage")
     def test_different_auth_methods(
         self,
         mock_streaming_storage_class,
@@ -504,10 +498,8 @@ class TestUploadToS3Streaming:
                 "s3", auth_method, expected_secrets
             )
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
-    @patch(
-        "fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage"
-    )
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage")
     def test_different_response_formats(
         self,
         mock_streaming_storage_class,
@@ -551,10 +543,8 @@ class TestUploadToS3Streaming:
             # Verify the upload was called
             mock_storage.upload_to_storage_streaming.assert_called_once()
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
-    @patch(
-        "fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage"
-    )
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage")
     def test_different_max_workers(
         self,
         mock_streaming_storage_class,
@@ -636,10 +626,8 @@ class TestUploadToS3Streaming:
                 max_workers=3,
             )
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
-    @patch(
-        "fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage"
-    )
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage")
     def test_upload_with_automatic_auth_and_assume_role(
         self,
         mock_streaming_storage_class,
@@ -686,10 +674,8 @@ class TestUploadToS3Streaming:
         }
         mock_client_class.assert_called_once_with("s3", "automatic", expected_secrets)
 
-    @patch("fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
-    @patch(
-        "fides.api.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage"
-    )
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStorageClient")
+    @patch("fides.service.storage.streaming.s3.streaming_s3.SmartOpenStreamingStorage")
     def test_upload_with_secret_keys_auth_and_assume_role(
         self,
         mock_streaming_storage_class,

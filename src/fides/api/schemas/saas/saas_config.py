@@ -19,7 +19,7 @@ from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.display_info import SaaSDisplayInfo
 from fides.api.schemas.saas.shared_schemas import HTTPMethod
-from fides.api.service.saas_request.saas_request_override_factory import (
+from fides.service.privacy_request.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
@@ -133,7 +133,7 @@ class SaaSRequest(BaseModel):
         """
 
         # delay import to avoid cyclic-dependency error - We still ignore the pylint error
-        from fides.api.service.pagination.pagination_strategy import (  # pylint: disable=R0401
+        from fides.connectors.saas.strategies.pagination.pagination_strategy import (  # pylint: disable=R0401
             PaginationStrategy,
         )
 

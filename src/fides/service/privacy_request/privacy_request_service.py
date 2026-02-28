@@ -52,23 +52,19 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestSource,
     PrivacyRequestStatus,
 )
-from fides.api.service.messaging.message_dispatch_service import message_send_enabled
-from fides.api.service.privacy_request.duplication_detection import check_for_duplicates
-from fides.api.service.privacy_request.request_service import (
-    build_required_privacy_request_kwargs,
-    cache_data,
-)
 from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.session_management import get_autoclose_db_session
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.message_dispatch_service import message_send_enabled
 from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
     send_privacy_request_receipt_message_to_user,
 )
+from fides.service.privacy_request.duplication_detection import check_for_duplicates
 from fides.service.privacy_request.privacy_request_csv_download import (
     privacy_request_csv_download,
 )
@@ -76,6 +72,10 @@ from fides.service.privacy_request.privacy_request_query_utils import (
     filter_privacy_request_queryset,
     resolve_request_ids_from_filters,
     sort_privacy_request_queryset,
+)
+from fides.service.privacy_request.request_service import (
+    build_required_privacy_request_kwargs,
+    cache_data,
 )
 
 
@@ -986,7 +986,7 @@ def queue_privacy_request(
     """
     logger.info("Queueing privacy request from step {}", from_step)
 
-    from fides.api.service.privacy_request.request_runner_service import (
+    from fides.service.privacy_request.request_runner_service import (
         run_privacy_request,
     )
 

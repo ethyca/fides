@@ -13,8 +13,8 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
 from fides.api.schemas.partitioning.time_based_partitioning import TimeBasedPartitioning
-from fides.api.service.connectors import BigQueryConnector
-from fides.api.service.connectors.query_configs.bigquery_query_config import (
+from fides.connectors import BigQueryConnector
+from fides.connectors.bigquery.bigquery_query_config import (
     BigQueryQueryConfig,
 )
 from tests.fixtures.bigquery_fixtures import PROJECT_NAME

@@ -14,16 +14,16 @@ from fides.api.schemas.connection_configuration.connection_type_system_map impor
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.schemas.policy import SUPPORTED_ACTION_TYPES, ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.service.connectors.consent_email_connector import (
+from fides.api.util.saas_util import load_config_from_string
+from fides.connectors.email.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
 )
-from fides.api.service.connectors.erasure_email_connector import (
+from fides.connectors.email.erasure_email_connector import (
     ERASURE_EMAIL_CONNECTOR_TYPES,
 )
-from fides.api.service.connectors.saas.connector_registry_service import (
+from fides.service.connection.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.api.util.saas_util import load_config_from_string
 
 
 def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:

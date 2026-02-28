@@ -65,7 +65,7 @@ class TestPrivacyRequestWithAsyncCallback:
 
         yield connection_config
 
-    @patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @patch("fides.connectors.saas.saas_connector.AuthenticatedClient.send")
     def test_privacy_request_with_async_callback(
         self,
         mock_send,

@@ -7,13 +7,13 @@ import pytest
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat
-from fides.api.service.storage.streaming.schemas import (
+from fides.service.storage.streaming.schemas import (
     AttachmentInfo,
     AttachmentProcessingInfo,
     StorageUploadConfig,
     StreamingBufferConfig,
 )
-from fides.api.service.storage.streaming.smart_open_streaming_storage import (
+from fides.service.storage.streaming.smart_open_streaming_storage import (
     SmartOpenStreamingStorage,
 )
 
@@ -351,7 +351,7 @@ class TestSmartOpenStreamingStorageAttachments:
         assert result[0].attachment.file_name == "doc1.pdf"
 
     @patch(
-        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
+        "fides.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
     )
     def test_upload_to_storage_streaming_csv(
         self, mock_html_report, mock_smart_open_client, mock_privacy_request
@@ -374,7 +374,7 @@ class TestSmartOpenStreamingStorageAttachments:
         mock_html_report.assert_not_called()
 
     @patch(
-        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
+        "fides.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
     )
     def test_upload_to_storage_streaming_json(
         self, mock_html_report, mock_smart_open_client, mock_privacy_request
@@ -397,10 +397,10 @@ class TestSmartOpenStreamingStorageAttachments:
         mock_html_report.assert_not_called()
 
     @patch(
-        "fides.api.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
+        "fides.service.storage.streaming.smart_open_streaming_storage.stream_dsr_buffer_to_storage"
     )
     @patch(
-        "fides.api.service.privacy_request.dsr_package.dsr_report_builder.object_session"
+        "fides.service.privacy_request.dsr_package.dsr_report_builder.object_session"
     )
     def test_upload_to_storage_streaming_html(
         self,
@@ -984,7 +984,7 @@ class TestSmartOpenStreamingStorageAttachments:
             storage._parse_storage_url(url)
 
     @patch(
-        "fides.api.service.storage.streaming.smart_open_streaming_storage.DSRReportBuilder"
+        "fides.service.storage.streaming.smart_open_streaming_storage.DSRReportBuilder"
     )
     def test_html_format_upload_uses_redacted_data(
         self, mock_dsr_builder_class, mock_smart_open_client, mock_privacy_request

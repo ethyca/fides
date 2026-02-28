@@ -35,8 +35,8 @@ NEW_SESSION_RETRIES = 5
 autodiscover_task_locations: List[str] = [
     "fides.api.tasks",
     "fides.api.tasks.scheduled",
-    "fides.api.service.privacy_request",
-    "fides.api.service.privacy_request.request_runner_service",
+    "fides.service.privacy_request",
+    "fides.service.privacy_request.request_runner_service",
 ]
 
 

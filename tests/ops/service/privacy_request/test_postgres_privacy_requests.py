@@ -19,7 +19,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.service.privacy_request.request_runner_service.upload")
 def test_upload_access_results_has_data_category_field_mapping(
     upload_mock: Mock,
     postgres_example_test_dataset_config_read_access,
@@ -85,7 +85,7 @@ def test_upload_access_results_has_data_category_field_mapping(
 
 @pytest.mark.integration_postgres
 @pytest.mark.integration
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch("fides.service.privacy_request.request_runner_service.upload")
 def test_upload_access_results_has_data_use_map(
     upload_mock: Mock,
     postgres_example_test_dataset_config_read_access,

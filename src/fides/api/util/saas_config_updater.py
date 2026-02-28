@@ -9,12 +9,12 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.schemas.saas.connector_template import ConnectorTemplate
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-)
 from fides.api.util.saas_util import load_config_from_string, load_dataset_from_string
 from fides.service.connection.connection_service import ConnectionService
-from fides.service.event_audit_service import EventAuditService
+from fides.service.connection.connector_registry_service import (
+    ConnectorRegistry,
+)
+from fides.service.event_audit.event_audit_service import EventAuditService
 
 
 def update_saas_configs(db: Session) -> None:

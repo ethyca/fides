@@ -105,8 +105,6 @@ from fides.api.schemas.privacy_request import (
     RequestTaskCallbackRequest,
     VerificationCode,
 )
-from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
-from fides.api.service.privacy_request.email_batch_service import send_email_batch
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
@@ -174,12 +172,14 @@ from fides.config.config_proxy import ConfigProxy
 from fides.service.dataset.dataset_config_service import (
     replace_references_with_identities,
 )
+from fides.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.diagnostics import (
     DefaultStorageNotConfiguredError,
     PrivacyRequestDiagnosticsExportResponse,
     export_privacy_request_diagnostics,
 )
+from fides.service.privacy_request.email_batch_service import send_email_batch
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
     _process_privacy_request_restart,

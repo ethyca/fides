@@ -83,7 +83,7 @@ class TestPrivacyRequestPerformance:
     """Test N+1 query fixes with eager loading."""
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_csv_download_query_count(
         self,
@@ -120,7 +120,7 @@ class TestPrivacyRequestPerformance:
         ],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_list_view_eager_loading(
         self,
@@ -161,10 +161,10 @@ class TestPrivacyRequestPerformance:
         ],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.dispatch_message_task.apply_async"
+        "fides.service.messaging.message_dispatch_service.dispatch_message_task.apply_async"
     )
     def test_bulk_operations_query_count(
         self,
