@@ -28,7 +28,6 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.endpoints import health
 from fides.api.db.crud import get_resource
 from fides.api.db.system import create_system
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -43,6 +42,7 @@ from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
 from fides.api.schemas.taxonomy_extensions import DataCategory, DataSubject, DataUse
 from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
+from fides.api.v1.endpoints import health
 from fides.common.api.scope_registry import (
     CREATE,
     DELETE,

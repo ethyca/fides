@@ -8,7 +8,6 @@ from fideslang.models import Dataset
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_api_session
 from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -33,6 +32,7 @@ from fides.api.util.saas_util import (
     replace_version,
 )
 from fides.api.util.unsafe_file_util import verify_svg, verify_zip
+from fides.common.session_management import get_api_session
 
 
 class ConnectorTemplateLoader(ABC):

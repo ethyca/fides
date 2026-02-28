@@ -7,9 +7,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette.types import Message
 
-from fides.api.api import deps
 from fides.api.models.sql_models import AuditLogResource  # type: ignore[attr-defined]
 from fides.api.oauth.utils import extract_token_and_load_client
+from fides.common.session_management import get_api_session
 
 
 async def handle_audit_log_resource(request: Request) -> None:
@@ -33,7 +33,7 @@ async def handle_audit_log_resource(request: Request) -> None:
         "fides_keys": None,
         "extra_data": None,
     }
-    db: Session = deps.get_api_session()
+    db: Session = get_api_session()
 
     # get the user id associated with the request
     token = request.headers.get("authorization")

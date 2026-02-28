@@ -10,7 +10,6 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncProcessing,
@@ -64,6 +63,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
+from fides.common.session_management import get_autoclose_db_session as get_db
 from fides.config import CONFIG
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]

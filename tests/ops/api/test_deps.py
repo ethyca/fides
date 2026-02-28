@@ -5,9 +5,10 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 
-import fides.api.api.deps
-from fides.api.api.deps import get_api_session, get_cache
 from fides.api.common_exceptions import RedisNotConfigured
+from fides.api.deps import get_cache
+from fides.common import session_management
+from fides.common.session_management import get_api_session
 from fides.config import CONFIG
 
 
@@ -44,7 +45,7 @@ def test_get_api_session(config_fixture, request):
         request.getfixturevalue(
             config_fixture
         )  # used to invoke config fixture if provided
-    fides.api.api.deps._engine = None
+    session_management._engine = None
     pool_size = CONFIG.database.api_engine_pool_size
     max_overflow = CONFIG.database.api_engine_max_overflow
     session: Session = get_api_session()

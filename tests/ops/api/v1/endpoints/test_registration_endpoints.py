@@ -67,7 +67,7 @@ class TestUserRegistration:
         data = resp.json()
         assert data["opt_in"] == True
 
-    @mock.patch("fides.api.api.v1.endpoints.registration_endpoints.send_registration")
+    @mock.patch("fides.api.v1.endpoints.registration_endpoints.send_registration")
     def test_register_user(
         self,
         send_registration_mock,
@@ -94,7 +94,7 @@ class TestUserRegistration:
         assert len(UserRegistration.all(db)) == 1
         assert send_registration_mock.call_count == 1
 
-    @mock.patch("fides.api.api.v1.endpoints.registration_endpoints.send_registration")
+    @mock.patch("fides.api.v1.endpoints.registration_endpoints.send_registration")
     def test_register_user_upserts_locally(
         self,
         send_registration_mock,
@@ -136,7 +136,7 @@ class TestUserRegistration:
         assert resp.status_code == 422
         assert len(UserRegistration.all(db)) == 0
 
-    @mock.patch("fides.api.api.v1.endpoints.registration_endpoints.send_registration")
+    @mock.patch("fides.api.v1.endpoints.registration_endpoints.send_registration")
     def test_register_user_one_allowed(
         self,
         send_registration_mock,

@@ -2643,7 +2643,7 @@ class TestAcceptUserInvite:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "Invite code is invalid."
 
-    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
+    @mock.patch("fides.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
     def test_accept_invite_expired_code(self, mock_get_by, api_client: TestClient, url):
         # the expiration is based on the updated_at timestamp so we need to mock an expired FidesUserInvite to test this scenario
         mock_instance = mock.Mock(

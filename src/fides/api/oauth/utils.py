@@ -17,7 +17,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, selectinload
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
-from fides.api.api.deps import get_db
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.cryptography.cryptographic_util import generate_secure_random_string
 from fides.api.cryptography.schemas.jwt import (
@@ -28,6 +27,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fides.api.db.ctl_session import get_async_db
+from fides.api.deps import get_db
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions

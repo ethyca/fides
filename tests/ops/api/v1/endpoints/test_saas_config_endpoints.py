@@ -440,7 +440,7 @@ class TestAuthorizeConnection:
         assert 403 == response.status_code
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
     )
     def test_get_authorize_url(
         self,
