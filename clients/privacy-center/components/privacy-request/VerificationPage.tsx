@@ -1,7 +1,7 @@
 "use client";
 
 import { Flex } from "fidesui";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 import { decodePolicyKey, encodePolicyKey } from "~/common/policy-key";
@@ -15,6 +15,9 @@ type VerificationPageProps = {
 
 const VerificationPage = ({ actionKey }: VerificationPageProps) => {
   const router = useRouter();
+  const params = useParams();
+  const propertyPath = params?.propertyPath as string | undefined;
+  const basePath = propertyPath ? `/${propertyPath}` : "";
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
 
   const policyKey = decodePolicyKey(actionKey);
@@ -25,30 +28,31 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
       if (storedId) {
         setPrivacyRequestId(storedId);
       } else {
-        // If no request ID, redirect back to form
-        router.push(`/privacy-request/${encodePolicyKey(policyKey)}`);
+        router.push(
+          `${basePath}/privacy-request/${encodePolicyKey(policyKey)}`,
+        );
       }
     }
-  }, [policyKey, router]);
+  }, [policyKey, router, basePath]);
 
   if (!privacyRequestId) {
     return null;
   }
 
   const handleClose = () => {
-    router.push("/");
+    router.push(basePath || "/");
   };
 
   const handleSetCurrentView = (view: string) => {
-    // If going back to form, navigate to form page
     if (view === "privacyRequest") {
-      router.push(`/privacy-request/${encodePolicyKey(policyKey)}`);
+      router.push(`${basePath}/privacy-request/${encodePolicyKey(policyKey)}`);
     }
   };
 
   const handleSuccess = () => {
-    // Navigate to success page
-    router.push(`/privacy-request/${encodePolicyKey(policyKey)}/success`);
+    router.push(
+      `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/success`,
+    );
   };
 
   return (

@@ -1,4 +1,4 @@
-import { theme } from "antd";
+import { theme } from "antd/lib";
 import type { SVGProps } from "react";
 
 import { CHART_TYPOGRAPHY } from "./chart-constants";
