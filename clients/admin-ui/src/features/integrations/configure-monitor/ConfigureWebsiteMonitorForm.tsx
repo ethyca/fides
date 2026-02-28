@@ -161,9 +161,13 @@ const ConfigureWebsiteMonitorForm = ({
           llm_model_override: undefined,
         };
 
+    // Destructure form-only fields to exclude them from payload
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
+    const { use_llm_classifier, llm_model_override, ...restValues } = values;
+
     const payload: WebsiteMonitorConfig = {
       ...monitor,
-      ...values,
+      ...restValues,
       ...executionInfo,
       key: monitor?.key,
       classify_params: classifyParams,
