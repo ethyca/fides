@@ -463,10 +463,10 @@ def _handle_privacy_request_requeue(
 
 def _get_request_task_ids_in_progress(
     db: Session, privacy_request_id: str
-) -> List[str]:
-    """Get the IDs of request tasks that are currently in progress for a privacy request."""
+) -> List[tuple[str, ExecutionLogStatus]]:
+    """Get the IDs and statuses of request tasks that are currently in progress for a privacy request."""
     request_tasks_in_progress = (
-        db.query(RequestTask.id)
+        db.query(RequestTask.id, RequestTask.status)
         .filter(RequestTask.privacy_request_id == privacy_request_id)
         .filter(
             RequestTask.status.in_(
@@ -478,7 +478,7 @@ def _get_request_task_ids_in_progress(
         )
         .all()
     )
-    return [task[0] for task in request_tasks_in_progress]
+    return [(task[0], task[1]) for task in request_tasks_in_progress]
 
 
 def _has_async_tasks_awaiting_external_completion(
@@ -607,12 +607,12 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         )
                         should_requeue = True
 
-                    request_task_ids_in_progress = _get_request_task_ids_in_progress(
+                    request_tasks_in_progress = _get_request_task_ids_in_progress(
                         db, privacy_request.id
                     )
 
                     # Check each individual request task
-                    for request_task_id in request_task_ids_in_progress:
+                    for request_task_id, task_status in request_tasks_in_progress:
                         try:
                             subtask_id = get_cached_task_id(request_task_id)
                         except Exception as cache_exc:
@@ -655,6 +655,28 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 )
                                 should_requeue = False
                                 break
+
+                            # A pending task that hasn't been dispatched to Celery yet will
+                            # never have a cache key — this is not a stuck state. Only pending
+                            # tasks can legitimately lack a cache key; in_processing tasks
+                            # without one are genuinely stuck and should be canceled below.
+                            if task_status == ExecutionLogStatus.pending:
+                                request_task_obj = (
+                                    db.query(RequestTask)
+                                    .filter(RequestTask.id == request_task_id)
+                                    .first()
+                                )
+                                if request_task_obj is not None and (
+                                    not request_task_obj.upstream_tasks_complete(
+                                        db, should_log=False
+                                    )
+                                ):
+                                    logger.debug(
+                                        f"Request task {request_task_id} "
+                                        f"(privacy request {privacy_request.id}) is pending and "
+                                        f"waiting for upstream tasks to complete - not stuck"
+                                    )
+                                    continue
 
                             # For other statuses, cancel the entire privacy request
                             _cancel_interrupted_tasks_and_error_privacy_request(
