@@ -181,17 +181,18 @@ describe("LlmModelSelector", () => {
       expect(switchElement).toBeDisabled();
     });
 
-    it("shows disabled model override field when useLlmClassifier is true", () => {
-      // This can happen if the value was set before and server config changed
+    it("hides model override field even when useLlmClassifier prop is true", () => {
+      // When server doesn't support LLM, we don't show the model field
+      // even if the prop says it should be on (the component resets the form value)
       render(
         <TestWrapper initialValues={{ use_llm_classifier: true }}>
           <LlmModelSelector useLlmClassifier />
         </TestWrapper>,
       );
 
-      const input = screen.getByTestId("input-llm_model_override");
-      expect(input).toBeInTheDocument();
-      expect(input).toBeDisabled();
+      expect(
+        screen.queryByTestId("input-llm_model_override"),
+      ).not.toBeInTheDocument();
     });
   });
 

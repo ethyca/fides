@@ -1,4 +1,5 @@
 import { Form, Input, Switch, Tooltip } from "fidesui";
+import { useEffect } from "react";
 
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 
@@ -63,25 +64,42 @@ export const LlmModelSelector = ({
   modelOverridePlaceholder,
   modelOverrideTestId,
 }: LlmModelSelectorProps) => {
+  const form = Form.useFormInstance();
+
   // Fetch server configuration to check LLM capability
-  const { data: appConfig } = useGetConfigurationSettingsQuery(
+  const { data: appConfig, isLoading } = useGetConfigurationSettingsQuery(
     { api_set: false },
     { skip },
   );
 
-  // Server-side LLM classifier capability
   const serverSupportsLlmClassifier =
     !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
-  // Don't render if skip is true
+  // Reset switch to false if server doesn't support LLM classifier
+  // This ensures we don't show a checked toggle for an unavailable feature
+  useEffect(() => {
+    if (!skip && !isLoading && !serverSupportsLlmClassifier && showSwitch) {
+      form?.setFieldValue(switchName, false);
+    }
+  }, [
+    skip,
+    isLoading,
+    serverSupportsLlmClassifier,
+    showSwitch,
+    form,
+    switchName,
+  ]);
+
   if (skip) {
     return null;
   }
 
-  // Determine if model field should be shown
-  // - With switch: only show when switch is on
+  // Model field visibility:
+  // - With switch: show when switch is on AND server supports LLM
   // - Without switch: always show
-  const showModelField = showSwitch ? useLlmClassifier : true;
+  const showModelField = showSwitch
+    ? useLlmClassifier && serverSupportsLlmClassifier
+    : true;
 
   const modelFieldTestId = modelOverrideTestId
     ? `input-${modelOverrideTestId}`
