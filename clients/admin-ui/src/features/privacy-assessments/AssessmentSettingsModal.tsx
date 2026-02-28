@@ -16,7 +16,7 @@ import NextLink from "next/link";
 import { useEffect, useMemo } from "react";
 
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
-import { LlmModelOverrideField } from "~/features/common/form/LlmModelOverrideField";
+import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
@@ -162,20 +162,22 @@ const AssessmentSettingsModal = ({
               <Title level={5}>LLM model configuration</Title>
             </div>
 
-            <LlmModelOverrideField
-              name="assessment_model_override"
-              label="Assessment model"
-              tooltip="Custom LLM model for running privacy assessments. Leave empty to use the default."
-              placeholder={defaults?.default_assessment_model}
-              testId="assessment-model"
+            <LlmModelSelector
+              showSwitch={false}
+              modelOverrideName="assessment_model_override"
+              modelOverrideLabel="Assessment model"
+              modelOverrideTooltip="Custom LLM model for running privacy assessments. Leave empty to use the default."
+              modelOverridePlaceholder={defaults?.default_assessment_model}
+              modelOverrideTestId="assessment-model"
             />
 
-            <LlmModelOverrideField
-              name="chat_model_override"
-              label="Chat model"
-              tooltip="Custom LLM model for questionnaire chat conversations. Leave empty to use the default."
-              placeholder={defaults?.default_chat_model}
-              testId="chat-model"
+            <LlmModelSelector
+              showSwitch={false}
+              modelOverrideName="chat_model_override"
+              modelOverrideLabel="Chat model"
+              modelOverrideTooltip="Custom LLM model for questionnaire chat conversations. Leave empty to use the default."
+              modelOverridePlaceholder={defaults?.default_chat_model}
+              modelOverrideTestId="chat-model"
             />
           </Flex>
 

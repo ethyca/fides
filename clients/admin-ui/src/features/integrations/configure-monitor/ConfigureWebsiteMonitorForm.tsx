@@ -17,11 +17,10 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { useFlags } from "~/features/common/features/features.slice";
-import { LlmModelOverrideField } from "~/features/common/form/LlmModelOverrideField";
+import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { formatUser } from "~/features/common/utils";
-import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
@@ -40,7 +39,6 @@ interface WebsiteMonitorConfig
   extends Omit<EditableMonitorConfig, "datasource_params"> {
   datasource_params?: WebsiteMonitorParams;
   url: string;
-  llm_model_override?: string;
 }
 
 interface WebsiteMonitorConfigFormValues {
@@ -51,6 +49,7 @@ interface WebsiteMonitorConfigFormValues {
   execution_start_date: Dayjs;
   shared_config_id?: string;
   stewards?: string[];
+  use_llm_classifier: boolean;
   llm_model_override?: string;
 }
 const FORM_COPY = `This monitor allows you to simulate and verify user consent actions, such as 'accept,' 'reject,' or 'opt-out,' on consent experiences. For each detected activity, the monitor will record whether it occurred before or after the configured user actions, ensuring compliance with user consent choices.`;
@@ -82,15 +81,6 @@ const ConfigureWebsiteMonitorForm = ({
 
   // Feature flag for LLM classification in website monitors
   const llmClassifierFeatureEnabled = !!flags.alphaWebMonitorLlmClassification;
-
-  const { data: appConfig } = useGetConfigurationSettingsQuery(
-    { api_set: false },
-    { skip: !llmClassifierFeatureEnabled },
-  );
-
-  // Server-side LLM classifier capability
-  const serverSupportsLlmClassifier =
-    !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
   const integrationId = Array.isArray(router.query.id)
     ? router.query.id[0]
@@ -124,6 +114,10 @@ const ConfigureWebsiteMonitorForm = ({
     label: PRIVACY_NOTICE_REGION_RECORD[region],
   }));
 
+  // Check if monitor currently uses LLM classifier
+  const monitorUsesLlmClassifier =
+    !!monitor?.classify_params?.llm_model_override;
+
   const initialValues: WebsiteMonitorConfigFormValues = {
     name: monitor?.name || "",
     shared_config_id: monitor?.shared_config_id ?? undefined,
@@ -137,6 +131,7 @@ const ConfigureWebsiteMonitorForm = ({
     },
     stewards:
       monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
+    use_llm_classifier: monitorUsesLlmClassifier,
     llm_model_override: monitor?.classify_params?.llm_model_override ?? "",
   };
 
@@ -155,13 +150,16 @@ const ConfigureWebsiteMonitorForm = ({
             execution_start_date: undefined,
           };
 
-    // Build classify_params with llm_model_override if provided
-    const classifyParams = {
-      ...(monitor?.classify_params || {}),
-      ...(values.llm_model_override
-        ? { llm_model_override: values.llm_model_override }
-        : { llm_model_override: undefined }),
-    };
+    // Build classify_params based on LLM classifier toggle
+    const classifyParams = values.use_llm_classifier
+      ? {
+          ...(monitor?.classify_params || {}),
+          llm_model_override: values.llm_model_override || undefined,
+        }
+      : {
+          ...(monitor?.classify_params || {}),
+          llm_model_override: undefined,
+        };
 
     const payload: WebsiteMonitorConfig = {
       ...monitor,
@@ -259,14 +257,11 @@ const ConfigureWebsiteMonitorForm = ({
           onChange={(value) => form.setFieldValue("shared_config_id", value)}
           value={form.getFieldValue("shared_config_id")}
         />
-        {llmClassifierFeatureEnabled && (
-          <LlmModelOverrideField
-            disabled={!serverSupportsLlmClassifier}
-            disabledTooltip="LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
-            tooltip="Optionally specify a custom model to use for LLM classification of website assets"
-            placeholder="e.g., openrouter/google/gemini-2.5-flash"
-          />
-        )}
+        <LlmModelSelector
+          skip={!llmClassifierFeatureEnabled}
+          useLlmClassifier={!!form.getFieldValue("use_llm_classifier")}
+          modelOverridePlaceholder="e.g., openrouter/google/gemini-2.5-flash"
+        />
         <Form.Item
           label="Automatic execution frequency"
           name="execution_frequency"
