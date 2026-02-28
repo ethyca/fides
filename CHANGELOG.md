@@ -96,6 +96,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed Manual Process (manual_webhook) from available connection types [#7369](https://github.com/ethyca/fides/pull/7369)
 - Removed Drill tests from CI [#7417](https://github.com/ethyca/fides/pull/7417)
 
+### Added
+- Added `--opt-out` flag to `fides init` command to allow non-interactive analytics opt-out for CI/CD and scripted deployments [#4703](https://github.com/ethyca/fides/issues/4703)
+
 ## [2.79.0](https://github.com/ethyca/fides/compare/2.78.2..2.79.0)
 
 ### Added

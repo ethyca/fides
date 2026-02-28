@@ -251,9 +251,9 @@ def create_and_update_config_file(
     config: FidesConfig,
     fides_directory_location: str = ".",
     opt_in: bool = False,
+    opt_out: bool = False,
 ) -> Tuple[FidesConfig, str]:
-    # request explicit consent for analytics collection
-    config = request_analytics_consent(config=config, opt_in=opt_in)
+    config = request_analytics_consent(config=config, opt_in=opt_in, opt_out=opt_out)
 
     # create the config file as needed
     config_path = create_config_file(
