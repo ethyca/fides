@@ -676,8 +676,8 @@ class TestConnectionService:
 
         # Verify connection secrets masking (should use HTTPS schema, not OAuth schema)
         connection_secrets = connection_event.event_details["secrets"]
-        # Since there's no HTTPS connection schema, all secrets are masked for security
-        assert connection_secrets["url"] == "**********"
+        # HttpsSchema marks authorization as sensitive but url is not sensitive
+        assert connection_secrets["url"] == "https://new-api.example.com/webhook"
         assert connection_secrets["authorization"] == "**********"
 
         # Clean up
