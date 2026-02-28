@@ -25,12 +25,12 @@ from fides.api.util.memory_watchdog import (
     _capture_heap_dump,
     get_memory_watchdog_enabled,
 )
-from fides.api.v1.endpoints import API_PREFIX
 from fides.common import scope_registry
 from fides.common.scope_registry import BACKFILL_EXEC, HEAP_DUMP_EXEC
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG
 
-ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
+ADMIN_ROUTER = APIRouter(prefix=V1_URL_PREFIX, tags=["Admin"])
 
 
 class DBActions(StrEnum):

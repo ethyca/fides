@@ -25,7 +25,7 @@ from starlette.status import (
 )
 
 from fides.api import deps
-from fides.api.deps import get_dataset_config_service
+from fides.api.deps import get_dataset_config_service, get_db
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
@@ -82,7 +82,7 @@ class DatasetConfigParams(Params):
 
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_connection_config(
-    connection_key: FidesKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, db: Session = Depends(get_db)
 ) -> ConnectionConfig:
     logger.debug("Finding connection config with key '{}'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
