@@ -52,9 +52,7 @@ const PoliciesPage: NextPage = () => {
 
   const allPolicies = useMemo(() => {
     const items = policiesData?.items ?? [];
-    const defaults = items.filter(
-      (p) => p.key && defaultPolicyKeys.has(p.key),
-    );
+    const defaults = items.filter((p) => p.key && defaultPolicyKeys.has(p.key));
     const rest = items
       .filter((p) => !p.key || !defaultPolicyKeys.has(p.key))
       .sort((a, b) => a.name.localeCompare(b.name));
