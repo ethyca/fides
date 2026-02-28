@@ -1,0 +1,3 @@
+type: feature
+description: Add LLM classification support for website monitor assets behind alpha feature flag
+pr: 7527
