@@ -21,10 +21,7 @@ describe("Policy detail page", () => {
 
   it("disables delete button for default policy", () => {
     cy.getByTestId("delete-policy-btn").should("be.disabled");
-  });
-
-  it("shows tooltip on disabled delete button hover", () => {
-    cy.getByTestId("delete-policy-btn").trigger("mouseover", { force: true });
+    cy.getByTestId("delete-policy-btn").focus();
     cy.contains("Default policies cannot be deleted").should("be.visible");
   });
 
