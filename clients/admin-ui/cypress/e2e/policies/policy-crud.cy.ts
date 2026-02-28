@@ -95,36 +95,63 @@ describe("Policy CRUD", () => {
     });
 
     it("shows delete button on each policy row", () => {
-      cy.getByTestId("delete-policy-default_consent_policy-btn").should(
+      cy.getByTestId("delete-policy-custom_erasure_policy-btn").should(
         "be.visible",
       );
     });
 
     it("opens delete confirmation modal", () => {
-      cy.getByTestId("delete-policy-default_consent_policy-btn").click();
+      cy.getByTestId("delete-policy-custom_erasure_policy-btn").click();
       cy.getAntModal().should("be.visible");
       cy.contains("Are you sure you want to delete").should("be.visible");
-      cy.contains("Default Consent Policy").should("be.visible");
+      cy.contains("Custom Erasure Policy").should("be.visible");
       cy.getAntModalConfirmButtons().contains("Delete").click();
       cy.wait("@deleteDSRPolicy");
     });
 
     it("cancels delete without calling API", () => {
-      cy.getByTestId("delete-policy-default_consent_policy-btn").click();
+      cy.getByTestId("delete-policy-custom_erasure_policy-btn").click();
       cy.getAntModalConfirmButtons().contains("Cancel").click();
       cy.getAntModal().should("not.exist");
     });
   });
 
   describe("Delete policy from detail page", () => {
-    beforeEach(() => {
+    it("disables delete button on default policy detail page", () => {
       cy.login();
       stubDSRPolicies();
       cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "default_erasure_policy"));
       cy.wait("@getDSRPolicy");
+
+      cy.getByTestId("delete-policy-btn").should("be.disabled");
     });
 
-    it("opens delete confirmation modal from detail page", () => {
+    it("opens delete confirmation modal for non-default policy", () => {
+      cy.login();
+      stubDSRPolicies();
+      cy.intercept("GET", "/api/v1/dsr/policy/*", {
+        body: {
+          name: "Custom Erasure Policy",
+          key: "custom_erasure_policy",
+          drp_action: "deletion",
+          execution_timeframe: 30,
+          rules: [
+            {
+              name: "Custom Erasure Rule",
+              key: "custom_erasure_rule",
+              action_type: "erasure",
+              storage_destination: null,
+              masking_strategy: {
+                strategy: "null_rewrite",
+              },
+            },
+          ],
+        },
+      }).as("getDSRPolicy");
+      cy.visit(POLICY_DETAIL_ROUTE.replace("[key]", "custom_erasure_policy"));
+      cy.wait("@getDSRPolicy");
+
+      cy.getByTestId("delete-policy-btn").should("not.be.disabled");
       cy.getByTestId("delete-policy-btn").click();
       cy.contains("Delete policy").should("be.visible");
       cy.contains("Are you sure you want to delete").should("be.visible");
