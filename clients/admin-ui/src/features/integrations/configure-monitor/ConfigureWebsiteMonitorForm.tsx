@@ -12,12 +12,12 @@ import {
   LocationSelect,
   Select,
   Text,
-  Tooltip,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { useFlags } from "~/features/common/features/features.slice";
+import { LlmModelOverrideField } from "~/features/common/form/LlmModelOverrideField";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { formatUser } from "~/features/common/utils";
@@ -260,26 +260,12 @@ const ConfigureWebsiteMonitorForm = ({
           value={form.getFieldValue("shared_config_id")}
         />
         {llmClassifierFeatureEnabled && (
-          <Form.Item
-            label={
-              <Tooltip
-                title={
-                  !serverSupportsLlmClassifier
-                    ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
-                    : "Optionally specify a custom model to use for LLM classification of website assets"
-                }
-              >
-                <span>LLM model override</span>
-              </Tooltip>
-            }
-            name="llm_model_override"
-          >
-            <Input
-              data-testid="input-llm_model_override"
-              placeholder="e.g., openrouter/google/gemini-2.5-flash"
-              disabled={!serverSupportsLlmClassifier}
-            />
-          </Form.Item>
+          <LlmModelOverrideField
+            disabled={!serverSupportsLlmClassifier}
+            disabledTooltip="LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
+            tooltip="Optionally specify a custom model to use for LLM classification of website assets"
+            placeholder="e.g., openrouter/google/gemini-2.5-flash"
+          />
         )}
         <Form.Item
           label="Automatic execution frequency"

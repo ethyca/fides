@@ -16,6 +16,7 @@ import NextLink from "next/link";
 import { useEffect, useMemo } from "react";
 
 import { useGetChatChannelsQuery } from "~/features/chat-provider/chatProvider.slice";
+import { LlmModelOverrideField } from "~/features/common/form/LlmModelOverrideField";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { parseCronExpression } from "~/features/digests/helpers/cronHelpers";
@@ -161,27 +162,21 @@ const AssessmentSettingsModal = ({
               <Title level={5}>LLM model configuration</Title>
             </div>
 
-            <Form.Item
+            <LlmModelOverrideField
               name="assessment_model_override"
               label="Assessment model"
               tooltip="Custom LLM model for running privacy assessments. Leave empty to use the default."
-            >
-              <Input
-                placeholder={defaults?.default_assessment_model}
-                data-testid="input-assessment-model"
-              />
-            </Form.Item>
+              placeholder={defaults?.default_assessment_model}
+              testId="assessment-model"
+            />
 
-            <Form.Item
+            <LlmModelOverrideField
               name="chat_model_override"
               label="Chat model"
               tooltip="Custom LLM model for questionnaire chat conversations. Leave empty to use the default."
-            >
-              <Input
-                placeholder={defaults?.default_chat_model}
-                data-testid="input-chat-model"
-              />
-            </Form.Item>
+              placeholder={defaults?.default_chat_model}
+              testId="chat-model"
+            />
           </Flex>
 
           <Divider className="mt-2" />

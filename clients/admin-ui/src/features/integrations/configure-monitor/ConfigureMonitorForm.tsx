@@ -6,6 +6,7 @@ import { Button, DatePicker, Form, Input, Select, Switch } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { LlmModelOverrideField } from "~/features/common/form/LlmModelOverrideField";
 import { enumToOptions } from "~/features/common/helpers";
 import { formatUser } from "~/features/common/utils";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
@@ -306,13 +307,10 @@ const ConfigureMonitorForm = ({
             />
           </Form.Item>
           {form.getFieldValue("use_llm_classifier") && (
-            <Form.Item
-              name="llm_model_override"
+            <LlmModelOverrideField
               label="Model override"
               tooltip="Optionally specify a custom model to use for LLM classification"
-            >
-              <Input data-testid="input-llm_model_override" />
-            </Form.Item>
+            />
           )}
         </>
       )}
