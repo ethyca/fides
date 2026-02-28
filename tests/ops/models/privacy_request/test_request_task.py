@@ -1,10 +1,9 @@
 import pytest
-from sqlalchemy.orm import Query
+from sqlalchemy.orm import Query, Session
 
 from fides.api.models.privacy_request.request_task import RequestTask, TraversalDetails
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import ActionType
-from fides.api.util.cache import cache_task_tracking_key
 
 
 @pytest.fixture
@@ -75,9 +74,11 @@ class TestGetCeleryTaskRequestTaskIds:
 
         assert privacy_request.get_request_task_celery_task_ids() == []
 
-        cache_task_tracking_key(request_task.id, "test_celery_task_key")
+        db = Session.object_session(request_task)
+        request_task.celery_id = "test_celery_task_key"
         root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        cache_task_tracking_key(root_task.id, "test_root_task_celery_key")
+        root_task.celery_id = "test_root_task_celery_key"
+        db.commit()
 
         assert set(privacy_request.get_request_task_celery_task_ids()) == {
             "test_celery_task_key",
@@ -160,13 +161,13 @@ def test_request_task_upstream_tasks_complete(db, request_task):
 def test_request_task_running(request_task, monkeypatch):
     assert request_task.request_task_running() is False
 
-    def mock_task_id(self):
-        return "mock_celery_task_id"
+    db = Session.object_session(request_task)
+    request_task.celery_id = "mock_celery_task_id"
+    db.commit()
 
     def mock_in_flight(task_ids):
         return task_ids == ["mock_celery_task_id"]
 
-    monkeypatch.setattr(RequestTask, "get_cached_task_id", mock_task_id)
     monkeypatch.setattr(
         "fides.api.models.privacy_request.request_task.celery_tasks_in_flight",
         mock_in_flight,

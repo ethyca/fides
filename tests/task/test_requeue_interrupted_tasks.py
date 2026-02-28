@@ -13,7 +13,13 @@ from fides.api.service.privacy_request.request_service import (
     REQUEUE_INTERRUPTED_TASKS_LOCK,
     requeue_interrupted_tasks,
 )
-from fides.api.util.cache import cache_task_tracking_key, get_cache
+from fides.api.util.cache import (
+    get_cache,
+    get_privacy_request_retry_count,
+    increment_privacy_request_retry_count,
+    reset_privacy_request_retry_count,
+)
+from fides.config import CONFIG
 
 
 @pytest.fixture
@@ -33,8 +39,8 @@ def in_progress_privacy_request(db, policy):
         },
     )
 
-    # Cache the task ID for the privacy request
-    cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+    privacy_request.celery_id = "privacy_request_task_id"
+    db.commit()
 
     yield privacy_request
 
@@ -60,8 +66,8 @@ def in_progress_request_task(db, in_progress_privacy_request):
         },
     )
 
-    # Cache the task ID for the request task
-    cache_task_tracking_key(request_task.id, "request_task_id")
+    request_task.celery_id = "request_task_id"
+    db.commit()
 
     yield request_task
 
@@ -186,8 +192,8 @@ class TestRequeueInterruptedTasks:
             },
         )
 
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+        privacy_request.celery_id = "privacy_request_task_id"
+        db.commit()
 
         # Create a request task that is not active (not in in_processing status)
         request_task = RequestTask.create(
@@ -204,8 +210,8 @@ class TestRequeueInterruptedTasks:
             },
         )
 
-        # Cache the task ID for the request task
-        cache_task_tracking_key(request_task.id, "request_task_id")
+        request_task.celery_id = "request_task_id"
+        db.commit()
 
         try:
             requeue_interrupted_tasks.apply().get()
@@ -229,7 +235,7 @@ class TestRequeueInterruptedTasks:
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
-    def test_privacy_request_with_no_cached_task_id_is_skipped(
+    def test_privacy_request_with_no_celery_id_is_requeued(
         self,
         mock_celery_tasks_in_flight,
         mock_get_task_ids_from_dsr_queue,
@@ -238,11 +244,11 @@ class TestRequeueInterruptedTasks:
         db,
         policy,
     ):
-        """Test that privacy requests without cached task IDs are canceled.
+        """Test that privacy requests without a celery_id are requeued.
 
-        When a privacy request doesn't have a cached task ID, it should be canceled.
+        When a privacy request doesn't have a celery_id (NULL), it should be
+        treated as interrupted and requeued.
         """
-        # Create a privacy request without caching a task ID
         privacy_request = PrivacyRequest.create(
             db=db,
             data={
@@ -258,12 +264,9 @@ class TestRequeueInterruptedTasks:
 
         try:
             requeue_interrupted_tasks.apply().get()
-            # Should not requeue since there's no cached task ID
-            mock_requeue_privacy_request.assert_not_called()
-            # Should cancel the privacy request instead
-            mock_cancel_interrupted_tasks.assert_called_once()
+            mock_requeue_privacy_request.assert_called_once()
+            mock_cancel_interrupted_tasks.assert_not_called()
         finally:
-            # Clean up
             privacy_request.delete(db)
 
     @mock.patch(
@@ -276,7 +279,7 @@ class TestRequeueInterruptedTasks:
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
-    def test_request_task_with_no_cached_subtask_id_is_skipped(
+    def test_request_task_with_no_celery_id_is_requeued(
         self,
         mock_celery_tasks_in_flight,
         mock_requeue_privacy_request,
@@ -284,11 +287,11 @@ class TestRequeueInterruptedTasks:
         db,
         policy,
     ):
-        """Test that request tasks without cached subtask IDs cause cancellation.
+        """Test that request tasks without a celery_id cause requeue.
 
-        When a request task doesn't have a cached subtask ID, the privacy request should be canceled.
+        When a request task doesn't have a celery_id (NULL), the privacy request
+        should be treated as interrupted and requeued.
         """
-        # Create a privacy request and request task without caching subtask IDs
         privacy_request = PrivacyRequest.create(
             db=db,
             data={
@@ -302,8 +305,8 @@ class TestRequeueInterruptedTasks:
             },
         )
 
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+        privacy_request.celery_id = "privacy_request_task_id"
+        db.commit()
 
         request_task = RequestTask.create(
             db,
@@ -318,16 +321,13 @@ class TestRequeueInterruptedTasks:
                 "downstream_tasks": [],
             },
         )
-        # Do NOT cache the subtask ID for the request task
+        # Do NOT set celery_id on the request task
 
         try:
             requeue_interrupted_tasks.apply().get()
-            # Should not requeue since there's no cached subtask ID
-            mock_requeue_privacy_request.assert_not_called()
-            # Should cancel the privacy request instead
-            mock_cancel_interrupted_tasks.assert_called_once()
+            mock_requeue_privacy_request.assert_called_once()
+            mock_cancel_interrupted_tasks.assert_not_called()
         finally:
-            # Clean up
             request_task.delete(db)
             privacy_request.delete(db)
 
@@ -351,10 +351,9 @@ class TestRequeueInterruptedTasks:
     ):
         """Test that requires_input privacy requests with stuck subtasks are not automatically canceled.
 
-        When a privacy request is in requires_input status and has a stuck subtask (no cached subtask ID),
+        When a privacy request is in requires_input status and has a stuck subtask (no celery_id),
         it should NOT be automatically moved to error status since it's intentionally waiting for user input.
         """
-        # Create a privacy request in requires_input status
         privacy_request = PrivacyRequest.create(
             db=db,
             data={
@@ -368,8 +367,8 @@ class TestRequeueInterruptedTasks:
             },
         )
 
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+        privacy_request.celery_id = "privacy_request_task_id"
+        db.commit()
 
         request_task = RequestTask.create(
             db,
@@ -423,7 +422,7 @@ class TestRequeueInterruptedTasks:
         """Request with callback (webhook) async task and stuck subtask is not canceled.
 
         When a privacy request is in_processing and has a request task with async_type
-        callback (awaiting webhook), a pending request task with no cached subtask ID
+        callback (awaiting webhook), a pending request task with no celery_id
         should NOT cause cancellation since we may be awaiting external callback.
         """
         privacy_request = PrivacyRequest.create(
@@ -438,7 +437,8 @@ class TestRequeueInterruptedTasks:
                 "client_id": policy.client_id,
             },
         )
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+        privacy_request.celery_id = "privacy_request_task_id"
+        db.commit()
 
         # Stuck-looking task (pending, no subtask ID) plus callback async_type so we skip erroring
         request_task = RequestTask.create(
@@ -490,7 +490,7 @@ class TestRequeueInterruptedTasks:
         """Request with polling async task and stuck subtask is not canceled.
 
         When a privacy request is in_processing and has a request task with async_type
-        polling, a pending request task with no cached subtask ID should NOT cause
+        polling, a pending request task with no celery_id should NOT cause
         cancellation (unified helper preserves existing polling behavior).
         """
         privacy_request = PrivacyRequest.create(
@@ -505,7 +505,8 @@ class TestRequeueInterruptedTasks:
                 "client_id": policy.client_id,
             },
         )
-        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+        privacy_request.celery_id = "privacy_request_task_id"
+        db.commit()
 
         request_task = RequestTask.create(
             db,
@@ -597,8 +598,6 @@ class TestEnhancedRequeueInterruptedTasks:
     @pytest.fixture
     def privacy_request_with_high_retry_count(self, db, policy):
         """Create a privacy request that has already been retried multiple times."""
-        from fides.api.util.cache import increment_privacy_request_retry_count
-
         # Create the privacy request
         privacy_request = PrivacyRequest.create(
             db=db,
@@ -613,8 +612,8 @@ class TestEnhancedRequeueInterruptedTasks:
             },
         )
 
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "high_retry_task_id")
+        privacy_request.celery_id = "high_retry_task_id"
+        db.commit()
 
         # Increment retry count to near the limit (2 is near limit of 3)
         for _ in range(2):  # Set to 2, limit is 3
@@ -628,8 +627,6 @@ class TestEnhancedRequeueInterruptedTasks:
     @pytest.fixture
     def privacy_request_over_retry_limit(self, db, policy):
         """Create a privacy request that has exceeded the retry limit."""
-        from fides.api.util.cache import increment_privacy_request_retry_count
-
         # Create the privacy request
         privacy_request = PrivacyRequest.create(
             db=db,
@@ -644,8 +641,8 @@ class TestEnhancedRequeueInterruptedTasks:
             },
         )
 
-        # Cache the task ID for the privacy request
-        cache_task_tracking_key(privacy_request.id, "over_limit_task_id")
+        privacy_request.celery_id = "over_limit_task_id"
+        db.commit()
 
         # Increment retry count beyond the limit (4 is over limit of 3)
         for _ in range(4):  # Set to 4, limit is 3
@@ -731,9 +728,6 @@ class TestEnhancedRequeueInterruptedTasks:
         policy,
     ):
         """Test that retry count is logged during requeue operations."""
-        from fides.api.util.cache import cache_task_tracking_key
-
-        # Create a privacy request to test with
         privacy_request = PrivacyRequest.create(
             db=db,
             data={
@@ -747,8 +741,8 @@ class TestEnhancedRequeueInterruptedTasks:
             },
         )
 
-        # Cache the task ID so it gets processed
-        cache_task_tracking_key(privacy_request.id, "task_id_123")
+        privacy_request.celery_id = "task_id_123"
+        db.commit()
 
         try:
             requeue_interrupted_tasks.apply().get()
@@ -763,8 +757,6 @@ class TestEnhancedRequeueInterruptedTasks:
 
     def test_retry_limit_configuration(self):
         """Test that retry limit configuration changes are respected."""
-        from fides.config import CONFIG
-
         # Test default value
         original_value = CONFIG.execution.privacy_request_requeue_retry_count
         assert original_value == 3
@@ -785,12 +777,6 @@ class TestEnhancedRequeueInterruptedTasks:
 
     def test_integration_privacy_request_retry_workflow(self, db, policy):
         """Test the complete workflow of privacy request retry management."""
-        from fides.api.util.cache import (
-            get_privacy_request_retry_count,
-            increment_privacy_request_retry_count,
-            reset_privacy_request_retry_count,
-        )
-
         # Create a privacy request
         privacy_request = PrivacyRequest.create(
             db=db,

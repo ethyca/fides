@@ -27,7 +27,6 @@ from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
-    get_async_task_tracking_cache_key,
     get_cache,
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
@@ -325,20 +324,6 @@ def initiate_polling_task_requeue() -> None:
     )
 
 
-def get_cached_task_id(entity_id: str) -> Optional[str]:
-    """Gets the cached task ID for a privacy request or request task by ID.
-
-    Raises Exception if cache operations fail, allowing callers to handle cache failures appropriately.
-    """
-    cache: FidesopsRedis = get_cache()
-    try:
-        task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
-        return task_id
-    except Exception as exc:
-        logger.error(f"Failed to get cached task ID for entity {entity_id}: {exc}")
-        raise
-
-
 def _get_task_ids_from_dsr_queue(
     redis_client: FidesopsRedis, chunk_size: int = 100
 ) -> Set[str]:
@@ -461,12 +446,12 @@ def _handle_privacy_request_requeue(
         )
 
 
-def _get_request_task_ids_in_progress(
+def _get_request_tasks_in_progress(
     db: Session, privacy_request_id: str
-) -> List[str]:
-    """Get the IDs of request tasks that are currently in progress for a privacy request."""
-    request_tasks_in_progress = (
-        db.query(RequestTask.id)
+) -> Dict[str, Optional[str]]:
+    """Get a mapping of {request_task_id: celery_id} for in-progress request tasks."""
+    rows = (
+        db.query(RequestTask.id, RequestTask.celery_id)
         .filter(RequestTask.privacy_request_id == privacy_request_id)
         .filter(
             RequestTask.status.in_(
@@ -478,7 +463,7 @@ def _get_request_task_ids_in_progress(
         )
         .all()
     )
-    return [task[0] for task in request_tasks_in_progress]
+    return {task_id: celery_id for task_id, celery_id in rows}
 
 
 def _has_async_tasks_awaiting_external_completion(
@@ -511,16 +496,13 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     """
     Requeue interrupted tasks for privacy requests that are in progress.
 
-    This function checks for privacy requests that are currently pending or in progress and
-    verifies if their associated tasks are still in the queue or running. If any
-    task is found to be interrupted (i.e., not in the queue and not running), the
-    privacy request is requeued to ensure its completion.
+    Checks whether the Celery tasks backing each in-progress privacy request
+    are still alive.  Task IDs are read from the `celery_id` DB column
+    (durable) rather than Redis cache keys.
 
-    The function performs the following steps:
-    1. Retrieves all task IDs currently in the queue.
-    2. Fetches all in-progress privacy requests from the database.
-    3. Checks each privacy request to determine if its tasks are still active.
-    4. Requeues the privacy request if any of its tasks are found to be interrupted.
+    When `celery_id` is NULL (e.g. after a schema upgrade with in-flight
+    requests), the request is treated as requeue-worthy rather than errored,
+    because completed work is idempotent and will be skipped on re-execution.
     """
     redis_conn: FidesopsRedis = get_cache()
 
@@ -530,8 +512,6 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
         with self.get_new_session() as db:
             logger.debug("Starting check for interrupted tasks to requeue")
 
-            # Get all in-progress privacy requests that haven't been updated in the last 5 minutes
-            # Use query_without_large_columns to prevent OOM errors when processing many privacy requests
             in_progress_requests = (
                 PrivacyRequest.query_without_large_columns(db)
                 .filter(
@@ -555,7 +535,6 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 f"Found {in_progress_requests.count()} privacy requests to check"
             )
 
-            # Get task IDs from the queue in a memory-efficient way
             try:
                 queued_tasks_ids = _get_task_ids_from_dsr_queue(redis_conn)
             except Exception as queue_exc:
@@ -564,36 +543,23 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 )
                 return
 
-            # Check each privacy request
             for privacy_request in in_progress_requests:
                 should_requeue = False
                 logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
 
-                try:
-                    task_id = get_cached_task_id(privacy_request.id)
-                except Exception as cache_exc:
-                    # If we can't get the task ID due to cache failure, fail safe by canceling
-                    _cancel_interrupted_tasks_and_error_privacy_request(
-                        db,
-                        privacy_request,
-                        f"Cache failure when getting task ID for privacy request {privacy_request.id}, "
-                        f"failing safe by canceling tasks: {cache_exc}",
-                    )
-                    continue
+                task_id = privacy_request.celery_id
 
-                # If the task ID is not cached, we can't check if it's running
-                # This means the request is stuck - cancel it
                 if not task_id:
-                    _cancel_interrupted_tasks_and_error_privacy_request(
-                        db,
-                        privacy_request,
-                        f"No task ID found for privacy request {privacy_request.id}, "
-                        f"request is stuck without a running task - canceling",
+                    # NULL celery_id means the request was never dispatched or
+                    # the column hasn't been populated yet (e.g. upgrade path).
+                    # Requeue so completed work is skipped and incomplete work
+                    # is retried.
+                    logger.warning(
+                        f"No celery_id on privacy request {privacy_request.id}, "
+                        f"requeueing to recover"
                     )
-                    continue
-
-                # Check if the main privacy request task is active
-                if task_id not in queued_tasks_ids and not celery_tasks_in_flight(
+                    should_requeue = True
+                elif task_id not in queued_tasks_ids and not celery_tasks_in_flight(
                     [task_id]
                 ):
                     request_tasks_count = (
@@ -607,68 +573,47 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         )
                         should_requeue = True
 
-                    request_task_ids_in_progress = _get_request_task_ids_in_progress(
+                    tasks_in_progress = _get_request_tasks_in_progress(
                         db, privacy_request.id
                     )
 
-                    # Check each individual request task
-                    for request_task_id in request_task_ids_in_progress:
-                        try:
-                            subtask_id = get_cached_task_id(request_task_id)
-                        except Exception as cache_exc:
-                            # If we can't get the subtask ID due to cache failure, fail safe by canceling
-                            _cancel_interrupted_tasks_and_error_privacy_request(
-                                db,
-                                privacy_request,
-                                f"Cache failure when getting subtask ID for request task {request_task_id} "
-                                f"(privacy request {privacy_request.id}), failing safe by canceling tasks: {cache_exc}",
-                            )
-                            should_requeue = False
-                            break
-
-                        # If the task ID is not cached, we can't check if it's running
-                        # This means the subtask is stuck - but we need to handle this differently
-                        # based on the privacy request status
-                        if not subtask_id:
+                    for request_task_id, subtask_celery_id in tasks_in_progress.items():
+                        if not subtask_celery_id:
+                            # Same NULL logic: treat as interrupted and requeue,
+                            # unless the request is waiting on external input.
                             if (
                                 privacy_request.status
                                 == PrivacyRequestStatus.requires_input
                             ):
-                                # For requires_input status, don't automatically error the request
-                                # as it's intentionally waiting for user input
                                 logger.warning(
-                                    f"No task ID found for request task {request_task_id} "
+                                    f"No celery_id for request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) in requires_input status - "
-                                    f"keeping request in current status as it may be waiting for manual input"
+                                    f"keeping request in current status"
                                 )
                                 should_requeue = False
                                 break
 
-                            # Check if the request has async tasks awaiting external completion
                             if _has_async_tasks_awaiting_external_completion(
                                 db, privacy_request.id
                             ):
                                 logger.warning(
-                                    f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) contains async tasks awaiting "
+                                    f"No celery_id for request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) has async tasks awaiting "
                                     f"external completion - keeping request in current status"
                                 )
                                 should_requeue = False
                                 break
 
-                            # For other statuses, cancel the entire privacy request
-                            _cancel_interrupted_tasks_and_error_privacy_request(
-                                db,
-                                privacy_request,
-                                f"No task ID found for request task {request_task_id} "
-                                f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
+                            logger.warning(
+                                f"No celery_id for request task {request_task_id} "
+                                f"(privacy request {privacy_request.id}), requeueing"
                             )
-                            should_requeue = False
+                            should_requeue = True
                             break
 
                         if (
-                            subtask_id not in queued_tasks_ids
-                            and not celery_tasks_in_flight([subtask_id])
+                            subtask_celery_id not in queued_tasks_ids
+                            and not celery_tasks_in_flight([subtask_celery_id])
                         ):
                             logger.warning(
                                 f"Request task {request_task_id} is not in the queue or running, requeueing privacy request"
@@ -676,7 +621,6 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             should_requeue = True
                             break
 
-                # Requeue the privacy request if needed
                 if should_requeue:
                     _handle_privacy_request_requeue(db, privacy_request)
 

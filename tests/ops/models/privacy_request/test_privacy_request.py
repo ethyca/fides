@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from time import sleep
 from typing import Any, Dict, List
+from unittest import mock
 from uuid import uuid4
 
 import pytest
@@ -33,9 +34,11 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
+    RequestTask,
     can_run_checkpoint,
 )
-from fides.api.schemas.policy import CurrentStep
+from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     CustomPrivacyRequestField,
@@ -43,6 +46,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
+from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
     get_cache,
@@ -1778,11 +1782,6 @@ class TestCancelCeleryTasks:
     @pytest.fixture
     def privacy_request_with_cached_tasks(self, db, policy):
         """Create a privacy request with cached task IDs."""
-        from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-        from fides.api.models.worker_task import ExecutionLogStatus
-        from fides.api.schemas.policy import ActionType
-        from fides.api.util.cache import cache_task_tracking_key
-
         # Create the privacy request
         privacy_request = PrivacyRequest.create(
             db=db,
@@ -1826,10 +1825,11 @@ class TestCancelCeleryTasks:
             },
         )
 
-        # Cache task IDs
-        cache_task_tracking_key(privacy_request.id, "main_task_abc123")
-        cache_task_tracking_key(request_task_1.id, "sub_task_def456")
-        cache_task_tracking_key(request_task_2.id, "sub_task_ghi789")
+        # Set celery IDs on models
+        privacy_request.celery_id = "main_task_abc123"
+        request_task_1.celery_id = "sub_task_def456"
+        request_task_2.celery_id = "sub_task_ghi789"
+        db.commit()
 
         yield privacy_request
 
@@ -1864,10 +1864,6 @@ class TestCancelCeleryTasks:
         self, privacy_request_with_cached_tasks
     ):
         """Test canceling celery tasks when main and sub-tasks exist."""
-        from unittest import mock
-
-        from fides.api.tasks import celery_app
-
         privacy_request = privacy_request_with_cached_tasks
 
         with mock.patch.object(celery_app.control, "revoke") as mock_revoke:
@@ -1894,15 +1890,11 @@ class TestCancelCeleryTasks:
         self, privacy_request_no_cached_tasks
     ):
         """Test canceling celery tasks when only main task exists."""
-        from unittest import mock
-
-        from fides.api.tasks import celery_app
-        from fides.api.util.cache import cache_task_tracking_key
-
         privacy_request = privacy_request_no_cached_tasks
 
-        # Cache only the main task
-        cache_task_tracking_key(privacy_request.id, "only_main_task_123")
+        db = Session.object_session(privacy_request)
+        privacy_request.celery_id = "only_main_task_123"
+        db.commit()
 
         with mock.patch.object(celery_app.control, "revoke") as mock_revoke:
             privacy_request.cancel_celery_tasks()
@@ -1914,10 +1906,6 @@ class TestCancelCeleryTasks:
     @pytest.mark.unit
     def test_cancel_celery_tasks_no_cached_tasks(self, privacy_request_no_cached_tasks):
         """Test canceling celery tasks when no cached tasks exist."""
-        from unittest import mock
-
-        from fides.api.tasks import celery_app
-
         privacy_request = privacy_request_no_cached_tasks
 
         with mock.patch.object(celery_app.control, "revoke") as mock_revoke:
@@ -1931,10 +1919,6 @@ class TestCancelCeleryTasks:
         self, privacy_request_with_cached_tasks
     ):
         """Test that revoke failures are handled gracefully."""
-        from unittest import mock
-
-        from fides.api.tasks import celery_app
-
         privacy_request = privacy_request_with_cached_tasks
 
         # Mock revoke to raise exception for the batch
@@ -1956,10 +1940,6 @@ class TestCancelCeleryTasks:
     @pytest.mark.unit
     def test_cancel_celery_tasks_logging(self, privacy_request_with_cached_tasks):
         """Test that cancel_celery_tasks logs task revocations."""
-        from unittest import mock
-
-        from fides.api.tasks import celery_app
-
         privacy_request = privacy_request_with_cached_tasks
 
         with mock.patch.object(celery_app.control, "revoke"):
@@ -2009,8 +1989,6 @@ class TestCancelCeleryTasks:
         self, privacy_request_no_cached_tasks
     ):
         """Test that cancel_celery_tasks is called when cancel_processing is invoked."""
-        from unittest import mock
-
         privacy_request = privacy_request_no_cached_tasks
 
         with mock.patch.object(
