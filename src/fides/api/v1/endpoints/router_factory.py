@@ -31,7 +31,7 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_any_is_default,
     forbid_if_editing_is_default,
 )
-from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
+from fides.common.scope_registry import CREATE, DELETE, READ, UPDATE
 
 
 def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:

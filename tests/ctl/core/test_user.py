@@ -2,7 +2,7 @@ from os import environ
 
 import pytest
 
-from fides.core.user import (
+from fides.cli.core.user import (
     Credentials,
     get_auth_header,
     get_credentials_path,

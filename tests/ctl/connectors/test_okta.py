@@ -5,9 +5,9 @@ from typing import Generator, List
 import pytest
 from fideslang.models import System, SystemMetadata
 
-import fides.connectors.okta as okta_connector
+import fides.cli.connectors.okta as okta_connector
 from fides.api.service.connectors.okta_http_client import OktaApplication
-from fides.connectors.models import OktaConfig
+from fides.config.schemas.credentials import OktaConfig
 
 
 @pytest.fixture()

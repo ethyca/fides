@@ -21,8 +21,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api import deps
-from fides.api.deps import get_connection_service
+from fides.api.deps import get_connection_service, get_db
 from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.event_audit import EventAuditType
@@ -50,12 +49,12 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     update_connection_secrets,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_BY_KEY,
     CONNECTION_OAUTH,
     CONNECTION_SECRETS,
@@ -80,7 +79,7 @@ router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 )
 def get_connections(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     params: Params = Depends(),
     search: Optional[str] = None,
     disabled: Optional[bool] = None,
@@ -186,7 +185,7 @@ def get_connections(
     response_model=ConnectionConfigurationResponseWithSystemKey,
 )
 def get_connection_detail(
-    connection_key: FidesKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, db: Session = Depends(get_db)
 ) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
     connection_config = (
@@ -213,7 +212,7 @@ def get_connection_detail(
 )
 def patch_connections(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     configs: Annotated[
         List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)
     ],  # type: ignore
@@ -235,7 +234,7 @@ def patch_connections(
     response_model=None,
 )
 def delete_connection(
-    connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, *, db: Session = Depends(get_db)
 ) -> None:
     delete_connection_config(db, connection_key)
 
@@ -301,7 +300,7 @@ def patch_connection_config_secrets(
 def test_connection_config_secrets(
     connection_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
 ) -> TestStatusMessage:
     """
     Endpoint to test a connection at any time using the saved configuration secrets.
@@ -320,7 +319,7 @@ def put_connection_oauth_config(
     connection_key: FidesKey,
     *,
     oauth_config: OAuthConfigSchema,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
@@ -369,7 +368,7 @@ def put_connection_oauth_config(
 def delete_connection_oauth_config(
     connection_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
 ) -> None:
     """
     Delete the OAuth2 configuration for a given connection.
@@ -402,7 +401,7 @@ def patch_connection_oauth_config(
     connection_key: FidesKey,
     *,
     oauth_config: OAuthConfigSchema,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """

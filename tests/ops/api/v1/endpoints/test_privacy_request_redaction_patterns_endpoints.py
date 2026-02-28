@@ -12,8 +12,8 @@ from fides.api.oauth.roles import (
     VIEWER,
     VIEWER_AND_APPROVER,
 )
-from fides.common.api import scope_registry as scopes
-from fides.common.api.v1.urn_registry import (
+from fides.common import scope_registry as scopes
+from fides.common.urn_registry import (
     PRIVACY_REQUEST_REDACTION_PATTERNS,
     V1_URL_PREFIX,
 )

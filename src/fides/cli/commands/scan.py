@@ -2,6 +2,8 @@
 
 import rich_click as click
 
+from fides.cli.core import dataset as _dataset
+from fides.cli.core import system as _system
 from fides.cli.options import (
     aws_access_key_id_option,
     aws_region_option,
@@ -22,8 +24,6 @@ from fides.cli.utils import (
     handle_okta_credentials_options,
     with_analytics,
 )
-from fides.core import dataset as _dataset
-from fides.core import system as _system
 
 
 @click.group(name="scan")

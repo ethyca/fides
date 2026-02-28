@@ -69,13 +69,13 @@ from fides.api.service.messaging.messaging_crud_service import (
     update_messaging_config,
 )
 from fides.api.util.api_router import APIRouter
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
     MESSAGING_TEMPLATE_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     BASIC_MESSAGING_TEMPLATES,
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,

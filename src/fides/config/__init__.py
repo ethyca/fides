@@ -27,7 +27,6 @@ from .database_settings import DatabaseSettings
 from .duplicate_detection_settings import DuplicateDetectionSettings
 from .execution_settings import ExecutionSettings
 from .fides_settings import FidesSettings
-from .helpers import handle_deprecated_env_variables, handle_deprecated_fields
 from .logging_settings import LoggingSettings
 from .notification_settings import NotificationSettings
 from .privacy_center_settings import PrivacyCenterSettings
@@ -39,6 +38,8 @@ from .utils import (
     DEFAULT_CONFIG_PATH,
     DEFAULT_CONFIG_PATH_ENV_VAR,
     get_test_mode,
+    handle_deprecated_env_variables,
+    handle_deprecated_fields,
 )
 
 

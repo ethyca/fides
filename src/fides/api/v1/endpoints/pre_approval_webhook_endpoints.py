@@ -19,8 +19,8 @@ from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import pre_approval_webhooks as schemas
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import get_connection_config_or_error
-from fides.common.api import scope_registry as scopes
-from fides.common.api.v1 import urn_registry as urls
+from fides.common import scope_registry as scopes
+from fides.common import urn_registry as urls
 
 router = APIRouter(tags=["Pre Approval Webhooks"], prefix=urls.V1_URL_PREFIX)
 

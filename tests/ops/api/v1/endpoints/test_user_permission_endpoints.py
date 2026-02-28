@@ -19,7 +19,7 @@ from fides.api.oauth.roles import (
     VIEWER,
     VIEWER_AND_APPROVER,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     PRIVACY_REQUEST_READ,
     SAAS_CONFIG_READ,
     SCOPE_REGISTRY,
@@ -28,7 +28,7 @@ from fides.common.api.scope_registry import (
     USER_PERMISSION_READ,
     USER_PERMISSION_UPDATE,
 )
-from fides.common.api.v1.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
+from fides.common.urn_registry import USER_PERMISSIONS, V1_URL_PREFIX
 from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user, generate_role_header_for_user
 

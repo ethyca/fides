@@ -8,8 +8,8 @@ from starlette.testclient import TestClient
 from fides.api.common_exceptions import MalisciousUrlException
 from fides.api.main import sanitise_url_path
 from fides.api.models.client import ClientDetail
-from fides.common.api.scope_registry import PRIVACY_REQUEST_READ
-from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
+from fides.common.scope_registry import PRIVACY_REQUEST_READ
+from fides.common.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 
 
 class TestApiRouter:

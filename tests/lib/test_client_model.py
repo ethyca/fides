@@ -21,7 +21,7 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.models.client import ClientDetail, _get_root_client_detail
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
-from fides.common.api.scope_registry import DATASET_CREATE_OR_UPDATE, SCOPE_REGISTRY
+from fides.common.scope_registry import DATASET_CREATE_OR_UPDATE, SCOPE_REGISTRY
 
 
 def test_create_client_and_secret(db, config):

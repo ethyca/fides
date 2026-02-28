@@ -17,7 +17,7 @@ from loguru import logger as log
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
 )
-from fides.core.parse import parse
+from fides.cli.core.parse import parse
 
 
 def load_sample_resources_from_project() -> Taxonomy:

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CLI_OBJECTS_READ,
     CLIENT_READ,
     CONNECTION_READ,

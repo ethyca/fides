@@ -36,13 +36,13 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.common.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.config import CONFIG
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService

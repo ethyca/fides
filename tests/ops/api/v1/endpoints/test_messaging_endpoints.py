@@ -22,13 +22,13 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
     MessagingTemplateDefault,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
     MESSAGING_TEMPLATE_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     BASIC_MESSAGING_TEMPLATES,
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,

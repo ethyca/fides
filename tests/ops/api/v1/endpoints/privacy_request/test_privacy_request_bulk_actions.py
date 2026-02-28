@@ -4,11 +4,11 @@ import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_REVIEW,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_BULK_FINALIZE,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,

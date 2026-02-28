@@ -1,4 +1,4 @@
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,

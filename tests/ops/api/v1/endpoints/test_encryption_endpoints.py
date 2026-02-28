@@ -10,8 +10,8 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     decrypt,
     encrypt_verify_secret_length,
 )
-from fides.common.api.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
-from fides.common.api.v1.urn_registry import (
+from fides.common.scope_registry import ENCRYPTION_EXEC, STORAGE_CREATE_OR_UPDATE
+from fides.common.urn_registry import (
     DECRYPT_AES,
     ENCRYPT_AES,
     ENCRYPTION_KEY,

@@ -10,7 +10,7 @@ from starlette.testclient import TestClient
 
 from fides.api.db.seed import get_client_id, load_default_access_policy
 from fides.api.util.data_category import get_user_data_categories
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_READ,
     DATASET_TEST,

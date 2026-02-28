@@ -18,8 +18,8 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
-from fides.common.api.scope_registry import CONNECTION_READ, CONSENT_READ
-from fides.common.api.v1.urn_registry import (
+from fides.common.scope_registry import CONNECTION_READ, CONSENT_READ
+from fides.common.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
     CONSENT_REQUEST_PREFERENCES_WITH_ID,

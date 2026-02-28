@@ -6,15 +6,15 @@ from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 
-from fides.api import deps
+from fides.api.deps import get_db
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.application_config import (
     ApplicationConfig as ApplicationConfigSchema,
 )
 from fides.api.util.api_router import APIRouter
-from fides.common.api import scope_registry as scopes
-from fides.common.api.v1 import urn_registry as urls
+from fides.common import scope_registry as scopes
+from fides.common import urn_registry as urls
 from fides.config import censor_config
 from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
@@ -28,7 +28,7 @@ router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
     response_model=Dict[str, Any],
 )
 def get_config(
-    *, db: Session = Depends(deps.get_db), api_set: bool = False
+    *, db: Session = Depends(get_db), api_set: bool = False
 ) -> Dict[str, Any]:
     """Returns the current API exposable Fides configuration."""
     logger.info("Getting the exposable Fides configuration")
@@ -48,7 +48,7 @@ def get_config(
 )
 def patch_settings(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     request: Request,
     data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
@@ -79,7 +79,7 @@ def patch_settings(
 )
 def put_settings(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     request: Request,
     data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
@@ -108,7 +108,7 @@ def put_settings(
 )
 def reset_settings(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     request: Request,
 ) -> dict:
     """

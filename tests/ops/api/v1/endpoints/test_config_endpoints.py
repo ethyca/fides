@@ -15,8 +15,8 @@ from fides.api.util.cors_middleware_utils import (
     find_cors_middleware,
     update_cors_middleware,
 )
-from fides.common.api import scope_registry as scopes
-from fides.common.api.v1 import urn_registry as urls
+from fides.common import scope_registry as scopes
+from fides.common import urn_registry as urls
 from fides.config import CONFIG
 
 

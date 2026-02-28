@@ -23,12 +23,12 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     STORAGE_ACTIVE_DEFAULT,
     STORAGE_BY_KEY,
     STORAGE_CONFIG,

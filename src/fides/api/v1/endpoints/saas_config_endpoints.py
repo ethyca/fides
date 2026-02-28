@@ -48,14 +48,14 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,

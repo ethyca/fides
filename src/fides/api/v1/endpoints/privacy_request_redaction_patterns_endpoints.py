@@ -13,11 +13,11 @@ from fides.api.schemas.privacy_request_redaction_patterns import (
     PrivacyRequestRedactionPatternsRequest,
     PrivacyRequestRedactionPatternsResponse,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     PRIVACY_REQUEST_REDACTION_PATTERNS_READ,
     PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     PRIVACY_REQUEST_REDACTION_PATTERNS,
     V1_URL_PREFIX,
 )

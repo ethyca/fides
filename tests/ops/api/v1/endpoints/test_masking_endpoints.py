@@ -21,8 +21,8 @@ from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite i
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fides.common.api.scope_registry import MASKING_EXEC, MASKING_READ
-from fides.common.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
+from fides.common.scope_registry import MASKING_EXEC, MASKING_READ
+from fides.common.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 
 
 class TestGetMaskingStrategies:
