@@ -87,6 +87,40 @@ describe("Policies list page", () => {
     });
   });
 
+  describe("default policy delete protection", () => {
+    beforeEach(() => {
+      cy.login();
+      stubDSRPolicies();
+      cy.visit(POLICIES_ROUTE);
+      cy.wait("@getDSRPolicies");
+    });
+
+    it("disables delete button on default policies", () => {
+      cy.getByTestId("delete-policy-default_consent_policy-btn").should(
+        "be.disabled",
+      );
+      cy.getByTestId("delete-policy-default_erasure_policy-btn").should(
+        "be.disabled",
+      );
+      cy.getByTestId("delete-policy-default_access_policy-btn").should(
+        "be.disabled",
+      );
+    });
+
+    it("enables delete button on non-default policies", () => {
+      cy.getByTestId("delete-policy-custom_erasure_policy-btn").should(
+        "not.be.disabled",
+      );
+    });
+
+    it("shows tooltip on hover of disabled default policy delete button", () => {
+      cy.getByTestId("delete-policy-default_consent_policy-btn").trigger(
+        "mouseover",
+      );
+      cy.contains("Default policies cannot be deleted").should("be.visible");
+    });
+  });
+
   describe("empty state", () => {
     it("shows empty message when no policies exist", () => {
       cy.login();

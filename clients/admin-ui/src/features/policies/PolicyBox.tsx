@@ -1,12 +1,14 @@
-import { Button, Card, Flex, Typography, useModal } from "fidesui";
+import { Button, Card, Flex, Tooltip, Typography, useModal } from "fidesui";
 
 import { confirmDeletePolicy } from "~/features/policies/confirmDeletePolicy";
+import { DEFAULT_POLICY_TOOLTIP } from "~/features/policies/constants";
 import { PolicyResponse } from "~/types/api";
 
 const { Title, Text } = Typography;
 
 interface PolicyBoxProps {
   policy: PolicyResponse;
+  isDefault?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
   isDeleting?: boolean;
@@ -14,6 +16,7 @@ interface PolicyBoxProps {
 
 export const PolicyBox = ({
   policy,
+  isDefault = false,
   onEdit,
   onDelete,
   isDeleting = false,
@@ -41,14 +44,19 @@ export const PolicyBox = ({
             </Button>
           )}
           {onDelete && (
-            <Button
-              danger
-              onClick={() => confirmDeletePolicy(modal, policy.name, onDelete)}
-              loading={isDeleting}
-              data-testid="delete-policy-btn"
-            >
-              Delete
-            </Button>
+            <Tooltip title={isDefault ? DEFAULT_POLICY_TOOLTIP : undefined}>
+              <Button
+                danger
+                disabled={isDefault}
+                onClick={() =>
+                  confirmDeletePolicy(modal, policy.name, onDelete)
+                }
+                loading={isDeleting}
+                data-testid="delete-policy-btn"
+              >
+                Delete
+              </Button>
+            </Tooltip>
           )}
         </Flex>
       </Flex>

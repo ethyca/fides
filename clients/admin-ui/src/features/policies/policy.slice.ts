@@ -48,6 +48,11 @@ const policyApi = baseApi.injectEndpoints({
       invalidatesTags: ["Policies"],
     }),
 
+    getDefaultPolicies: build.query<Record<string, string>, void>({
+      query: () => ({ url: `/plus/dsr/policy/default` }),
+      providesTags: ["Policies"],
+    }),
+
     getMaskingStrategies: build.query<MaskingStrategyDescription[], void>({
       query: () => ({ url: `/masking/strategy` }),
     }),
@@ -72,6 +77,7 @@ const policyApi = baseApi.injectEndpoints({
 export const {
   useGetPoliciesQuery,
   useGetPolicyQuery,
+  useGetDefaultPoliciesQuery,
   useCreateOrUpdatePoliciesMutation,
   useDeletePolicyMutation,
   useGetMaskingStrategiesQuery,

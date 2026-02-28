@@ -117,18 +117,15 @@ const MonitorConfigTab = ({
       <Flex justify="space-between" className="py-3">
         <SharedConfigModal />
         <Tooltip title={addMonitorButtonTooltip}>
-          <span>
-            {/* This span wrapper is needed to ensure the tooltip works when the button is disabled */}
-            <Button
-              onClick={modal.onOpen}
-              icon={<MonitorIcon />}
-              iconPosition="end"
-              data-testid="add-monitor-btn"
-              disabled={isAddMonitorButtonDisabled}
-            >
-              Add monitor
-            </Button>
-          </span>
+          <Button
+            onClick={modal.onOpen}
+            icon={<MonitorIcon />}
+            iconPosition="end"
+            data-testid="add-monitor-btn"
+            disabled={isAddMonitorButtonDisabled}
+          >
+            Add monitor
+          </Button>
         </Tooltip>
       </Flex>
       <Table {...tableProps} loading={isLoading} columns={columns} />
