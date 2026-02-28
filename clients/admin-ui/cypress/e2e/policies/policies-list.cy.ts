@@ -116,6 +116,7 @@ describe("Policies list page", () => {
     it("shows tooltip on hover of disabled default policy delete button", () => {
       cy.getByTestId("delete-policy-default_consent_policy-btn").trigger(
         "mouseover",
+        { force: true },
       );
       cy.contains("Default policies cannot be deleted").should("be.visible");
     });
