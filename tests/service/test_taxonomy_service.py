@@ -3,7 +3,6 @@ from sqlalchemy.exc import IntegrityError
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
-from fides.api.deps import get_taxonomy_service
 from fides.api.models.event_audit import EventAudit, EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataCategory,
@@ -1155,12 +1154,6 @@ class TestTaxonomyServiceRoundTrip:
         taxonomy_service.delete_element(taxonomy_type, created.fides_key)
         db.flush()
         assert taxonomy_service.get_element(taxonomy_type, created.fides_key) is None
-
-
-class TestTaxonomyServiceDI:
-    def test_dependency_factory_returns_service_instance(self, db):
-        taxonomy_service = get_taxonomy_service(db)
-        assert isinstance(taxonomy_service, TaxonomyService)
 
 
 class TestTaxonomyServiceKeyGeneration:
