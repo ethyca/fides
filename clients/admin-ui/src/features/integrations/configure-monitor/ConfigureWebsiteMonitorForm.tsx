@@ -260,7 +260,6 @@ const ConfigureWebsiteMonitorForm = ({
         <LlmModelSelector
           skip={!llmClassifierFeatureEnabled}
           useLlmClassifier={!!form.getFieldValue("use_llm_classifier")}
-          modelOverridePlaceholder="e.g., openrouter/google/gemini-2.5-flash"
         />
         <Form.Item
           label="Automatic execution frequency"

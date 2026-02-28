@@ -279,6 +279,7 @@ const ConfigureMonitorForm = ({
       <LlmModelSelector
         skip={!showLLMOption}
         useLlmClassifier={!!form.getFieldValue("use_llm_classifier")}
+        modelOverridePlaceholder=""
       />
       <div className="flex w-full justify-between">
         <Button

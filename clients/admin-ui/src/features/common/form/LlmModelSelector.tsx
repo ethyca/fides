@@ -42,6 +42,8 @@ const SWITCH_TOOLTIP_DISABLED =
 const DEFAULT_MODEL_OVERRIDE_LABEL = "Model override";
 const DEFAULT_MODEL_OVERRIDE_TOOLTIP =
   "Optionally specify a custom model to use for LLM classification";
+const DEFAULT_MODEL_OVERRIDE_PLACEHOLDER =
+  "e.g., openrouter/google/gemini-2.5-flash";
 
 /**
  * Shared component for LLM classification settings.
@@ -61,7 +63,7 @@ export const LlmModelSelector = ({
   modelOverrideName = "llm_model_override",
   modelOverrideLabel = DEFAULT_MODEL_OVERRIDE_LABEL,
   modelOverrideTooltip = DEFAULT_MODEL_OVERRIDE_TOOLTIP,
-  modelOverridePlaceholder,
+  modelOverridePlaceholder = DEFAULT_MODEL_OVERRIDE_PLACEHOLDER,
   modelOverrideTestId,
 }: LlmModelSelectorProps) => {
   const form = Form.useFormInstance();
