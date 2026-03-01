@@ -62,6 +62,45 @@ export interface ExecutionLog {
   updated_at: string;
 }
 
+export type ExecutionGraphNodeStatus =
+  | "pending"
+  | "executing"
+  | "complete"
+  | "error"
+  | "skipped"
+  | "retrying"
+  | "paused"
+  | "polling";
+
+export interface ExecutionGraphNode {
+  id: string;
+  collection_address: string;
+  dataset_name: string;
+  collection_name: string;
+  status: ExecutionGraphNodeStatus;
+  action_type: string;
+  created_at: string;
+  updated_at: string;
+  upstream_tasks: string[];
+  downstream_tasks: string[];
+  message: string | null;
+}
+
+export interface ExecutionGraphResponse {
+  privacy_request_id: string;
+  action_type: string;
+  nodes: ExecutionGraphNode[];
+}
+
+export interface DatasetGraphNodeData {
+  datasetName: string;
+  status: ExecutionGraphNodeStatus;
+  totalCollections: number;
+  completedCollections: number;
+  errorCount: number;
+  executingCount: number;
+}
+
 export type GetUploadedManualWebhookDataRequest = {
   connection_key: string;
   privacy_request_id: string;

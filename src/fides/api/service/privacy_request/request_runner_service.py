@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+import os
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -28,7 +29,11 @@ from fides.api.db.session import get_db_session
 from fides.api.graph.graph import DatasetGraph, apply_dataset_graph_filters
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -398,6 +403,28 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     return download_urls
 
 
+def _ensure_mock_connection_config(session: Session) -> None:
+    """Create a ConnectionConfig for the mock connector if it doesn't already exist."""
+    from fides.api.graph.mock_datasets import MOCK_CONNECTION_KEY
+
+    existing = (
+        session.query(ConnectionConfig)
+        .filter(ConnectionConfig.key == MOCK_CONNECTION_KEY)
+        .first()
+    )
+    if not existing:
+        ConnectionConfig.create_or_update(
+            session,
+            data={
+                "key": MOCK_CONNECTION_KEY,
+                "name": "Mock Connector (Scale Test)",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+
 @celery_app.task(base=DatabaseTask, bind=True)
 @memory_limiter
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
@@ -551,6 +578,20 @@ def run_privacy_request(
                             f"Excluded: {excluded}"
                         ),
                         action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    )
+
+                mock_count = int(os.getenv("FIDES__MOCK_GRAPH_DATASETS", "0"))
+                if mock_count > 0:
+                    from fides.api.graph.mock_datasets import (
+                        MOCK_CONNECTION_KEY,
+                        generate_mock_datasets,
+                    )
+
+                    dataset_graphs = generate_mock_datasets(mock_count)
+                    _ensure_mock_connection_config(session)
+                    logger.info(
+                        "Replaced real datasets with {} mock datasets for scale testing",
+                        mock_count,
                     )
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
