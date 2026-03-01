@@ -37,8 +37,6 @@ services:
       FIDES__SECURITY__BASTION_SERVER_SSH_PRIVATE_KEY: ${FIDES__SECURITY__BASTION_SERVER_SSH_PRIVATE_KEY-}
       SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${SAAS_OP_SERVICE_ACCOUNT_TOKEN-}
       SAAS_SECRETS_OP_VAULT_ID: ${SAAS_SECRETS_OP_VAULT_ID-}
-      FIDES__TASK_DELAY_SECONDS: ${FIDES__TASK_DELAY_SECONDS:-5}
-      FIDES__TASK_ERROR_RATE: ${FIDES__TASK_ERROR_RATE:-0}
     volumes:
       - type: bind
         source: .
@@ -138,6 +136,8 @@ services:
       interval: 20s
       timeout: 20s
       retries: 10
+    env_file:
+      - .env
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
@@ -145,8 +145,6 @@ services:
       # The default HTTP health check port is 9000, override it here to ensure that
       # the override works as expected.
       FIDES__CELERY__HEALTHCHECK_PORT: "9001"
-      FIDES__TASK_DELAY_SECONDS: ${FIDES__TASK_DELAY_SECONDS:-5}
-      FIDES__TASK_ERROR_RATE: ${FIDES__TASK_ERROR_RATE:-0}
     expose:
         - 9001
     volumes:
