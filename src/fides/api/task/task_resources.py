@@ -54,6 +54,12 @@ class Connections:
         connection_config: ConnectionConfig,
     ) -> Union[BaseConnector, BaseEmailConnector]:
         """Factory method to build the appropriately typed connector from the config."""
+        from fides.api.graph.mock_datasets import MOCK_CONNECTION_KEY
+
+        if connection_config.key == MOCK_CONNECTION_KEY:
+            from fides.api.service.connectors.mock_connector import MockConnector
+
+            return MockConnector(connection_config)
         if connection_config.connection_type == ConnectionType.postgres:
             return PostgreSQLConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mongodb:

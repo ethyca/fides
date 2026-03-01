@@ -491,15 +491,24 @@ def logger_method(request_task: RequestTask) -> Callable:
 
 
 def _maybe_artificial_delay(request_task: RequestTask) -> None:
-    """Sleep if FIDES__TASK_DELAY_SECONDS is set. For QA/demo use only."""
+    """Sleep if FIDES__TASK_DELAY_SECONDS is set. For QA/demo use only.
+
+    Supports a random range when FIDES__TASK_DELAY_MAX_SECONDS is also set
+    (e.g. min=1, max=5 gives each task a random 1-5s delay).
+    """
     delay = float(os.getenv("FIDES__TASK_DELAY_SECONDS", "0"))
+    max_delay = float(os.getenv("FIDES__TASK_DELAY_MAX_SECONDS", "0"))
+    if max_delay > delay:
+        delay = random.uniform(delay, max_delay)
     if (
         delay > 0
         and not request_task.is_root_task
         and not request_task.is_terminator_task
     ):
         logger.debug(
-            "Artificial delay of {}s for {}", delay, request_task.collection_address
+            "Artificial delay of {:.1f}s for {}",
+            delay,
+            request_task.collection_address,
         )
         time.sleep(delay)
 

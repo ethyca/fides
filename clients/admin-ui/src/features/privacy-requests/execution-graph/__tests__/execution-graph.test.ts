@@ -14,7 +14,7 @@ const makeNode = (
   collection_address: "test_dataset:test_collection",
   dataset_name: "test_dataset",
   collection_name: "test_collection",
-  status: "queued",
+  status: "pending",
   action_type: "access",
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
@@ -62,7 +62,7 @@ describe("isTerminatorNode", () => {
 
 describe("EXECUTION_GRAPH_STATUS_LABELS", () => {
   const expectedLabels: Record<ExecutionGraphNodeStatus, string> = {
-    queued: "Queued",
+    pending: "Pending",
     executing: "Executing",
     complete: "Complete",
     error: "Error",

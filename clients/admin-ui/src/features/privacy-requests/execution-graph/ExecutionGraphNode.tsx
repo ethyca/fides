@@ -1,6 +1,6 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { Tooltip } from "fidesui";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 import { ExecutionGraphNode as ExecutionGraphNodeData } from "../types";
@@ -34,7 +34,7 @@ function formatElapsed(updatedAt: string): string {
   return `${hours}h ${remainingMinutes}m`;
 }
 
-const ExecutionGraphNodeComponent = ({
+const ExecutionGraphNodeComponent = React.memo(({
   data,
 }: NodeProps<ExecutionGraphNodeType>) => {
   const { graphNode } = data;
@@ -144,6 +144,8 @@ const ExecutionGraphNodeComponent = ({
   }
 
   return nodeContent;
-};
+});
+
+ExecutionGraphNodeComponent.displayName = "ExecutionGraphNodeComponent";
 
 export default ExecutionGraphNodeComponent;

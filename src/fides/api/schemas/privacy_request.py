@@ -211,7 +211,7 @@ class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
 
 
 EXECUTION_STATUS_DISPLAY_MAP: dict[ExecutionLogStatus, str] = {
-    ExecutionLogStatus.pending: "queued",
+    ExecutionLogStatus.pending: "pending",
     ExecutionLogStatus.in_processing: "executing",
     ExecutionLogStatus.complete: "complete",
     ExecutionLogStatus.error: "error",

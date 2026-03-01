@@ -1,12 +1,13 @@
-import { Flex, Segmented, Space, Tag, Typography } from "fidesui";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Breadcrumb, Flex, Segmented, Space, Tag, Typography } from "fidesui";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
 import { useGetExecutionGraphQuery } from "../privacy-requests.slice";
-import { ExecutionGraphNodeStatus } from "../types";
+import { ExecutionGraphNode, ExecutionGraphNodeStatus } from "../types";
 import { isInternalNode } from "./execution-graph.constants";
 import ExecutionGraphView from "./ExecutionGraphView";
+import { useExecutionGraphNavigation } from "./useExecutionGraphNavigation";
 
 const ACTION_TYPE_OPTIONS = [
   { label: "Access", value: "access" },
@@ -15,7 +16,7 @@ const ACTION_TYPE_OPTIONS = [
 ];
 
 const STATUS_TAG_COLORS: Record<ExecutionGraphNodeStatus, string> = {
-  queued: "default",
+  pending: "default",
   executing: "processing",
   complete: "success",
   error: "error",
@@ -46,7 +47,7 @@ const ExecutionGraphTab = ({
 
   const { data, isLoading, refetch } = useGetExecutionGraphQuery(
     { privacy_request_id: privacyRequestId, action_type: actionType },
-    { pollingInterval: isTerminal ? 0 : 2000 },
+    { pollingInterval: 2000 },
   );
 
   const prevIsTerminal = useRef(isTerminal);
@@ -57,44 +58,53 @@ const ExecutionGraphTab = ({
     prevIsTerminal.current = isTerminal;
   }, [isTerminal, refetch]);
 
+  const visibleNodes = useMemo(
+    () =>
+      data?.nodes?.filter((n) => !isInternalNode(n.collection_address)) ?? [],
+    [data?.nodes],
+  );
+
+  const { viewMode, selectedDataset, selectDataset, goBack } =
+    useExecutionGraphNavigation(visibleNodes.length);
+
   const statusCounts = useMemo(() => {
-    if (!data?.nodes) {
-      return {};
-    }
     const counts: Partial<Record<ExecutionGraphNodeStatus, number>> = {};
-    data.nodes
-      .filter((n) => !isInternalNode(n.collection_address))
-      .forEach((n) => {
-        counts[n.status] = (counts[n.status] || 0) + 1;
-      });
+    visibleNodes.forEach((n) => {
+      counts[n.status] = (counts[n.status] || 0) + 1;
+    });
     return counts;
-  }, [data?.nodes]);
+  }, [visibleNodes]);
 
-  const visibleNodeCount = data?.nodes
-    ? data.nodes.filter((n) => !isInternalNode(n.collection_address)).length
-    : 0;
+  const executingNodes = useMemo(
+    () =>
+      visibleNodes.filter(
+        (n) => n.status === "executing" || n.status === "retrying",
+      ),
+    [visibleNodes],
+  );
 
-  const workerStatus = useMemo(() => {
-    if (!data?.nodes) {
-      return null;
+
+  const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
+
+  const handleExecutingClick = useCallback(() => {
+    if (executingNodes.length > 0) {
+      const node = executingNodes[0];
+      selectDataset(node.dataset_name);
+      setFocusNodeId(null);
+      requestAnimationFrame(() => {
+        setFocusNodeId(node.collection_address);
+      });
     }
-    const visible = data.nodes.filter(
-      (n) => !isInternalNode(n.collection_address),
-    );
-    const executing = visible.find((n) => n.status === "executing");
-    if (executing) {
-      return `Currently executing: ${executing.collection_address}`;
-    }
-    const hasQueued = visible.some((n) => n.status === "queued");
-    if (!hasQueued) {
-      return null;
-    }
-    const hasCompleted = visible.some((n) => n.status === "complete");
-    if (hasCompleted) {
-      return "Waiting for next task to start...";
-    }
-    return "Queued \u2014 waiting for worker";
-  }, [data?.nodes]);
+  }, [executingNodes, selectDataset]);
+
+  const handleGoBack = useCallback(() => {
+    const dataset = selectedDataset;
+    goBack();
+    setFocusNodeId(null);
+    requestAnimationFrame(() => {
+      setFocusNodeId(dataset);
+    });
+  }, [selectedDataset, goBack]);
 
   return (
     <Flex vertical gap={16}>
@@ -119,12 +129,35 @@ const ExecutionGraphTab = ({
         </Space>
       </Flex>
 
-      {!isTerminal && !isLoading && visibleNodeCount > 0 && workerStatus && (
+      {viewMode === "collections" && selectedDataset && (
+        <Breadcrumb
+          items={[
+            { title: "All datasets", onClick: handleGoBack, className: "cursor-pointer" },
+            { title: selectedDataset },
+          ]}
+        />
+      )}
+
+      {!isLoading && visibleNodes.length > 0 && (
         <Typography.Text
           type="secondary"
           style={{ fontSize: 12, fontStyle: "italic" }}
         >
-          {workerStatus}
+          {executingNodes.length > 0 ? (
+            <>
+              Currently executing{" "}
+              <Typography.Link
+                style={{ fontSize: 12, fontStyle: "italic" }}
+                onClick={handleExecutingClick}
+              >
+                {executingNodes[0].collection_address}
+              </Typography.Link>
+            </>
+          ) : isTerminal ? (
+            "No tasks executing for this request"
+          ) : (
+            "Waiting for worker to pick up next task"
+          )}
         </Typography.Text>
       )}
 
@@ -132,15 +165,21 @@ const ExecutionGraphTab = ({
         <Typography.Text type="secondary">Loading graph...</Typography.Text>
       )}
 
-      {!isLoading && visibleNodeCount === 0 && (
+      {!isLoading && visibleNodes.length === 0 && (
         <Typography.Text type="secondary">
           No execution tasks found for this action type.
         </Typography.Text>
       )}
 
-      {data && visibleNodeCount > 0 && (
+      {data && visibleNodes.length > 0 && (
         <div style={{ height: 500, width: "100%" }}>
-          <ExecutionGraphView graphNodes={data.nodes} />
+          <ExecutionGraphView
+            graphNodes={data.nodes}
+            viewMode={viewMode}
+            selectedDataset={selectedDataset}
+            onDatasetClick={selectDataset}
+            focusNodeId={focusNodeId}
+          />
         </div>
       )}
     </Flex>

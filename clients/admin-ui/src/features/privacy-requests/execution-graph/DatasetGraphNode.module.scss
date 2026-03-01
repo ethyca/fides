@@ -1,20 +1,27 @@
 .container {
   position: relative;
-  min-width: 180px;
+  min-width: 220px;
+  cursor: pointer;
 }
 
 .node {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--fidesui-neutral-200);
+  gap: 4px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--fidesui-neutral-200);
   background: var(--fidesui-bg-white);
   font-size: 12px;
   transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
 
   &--pending {
     border-color: var(--fidesui-neutral-300);
@@ -24,7 +31,7 @@
   &--executing {
     border-color: var(--fidesui-info);
     background: rgba(74, 144, 226, 0.08);
-    animation: executing-glow 2s ease-in-out infinite;
+    animation: dataset-glow 2s ease-in-out infinite;
   }
 
   &--complete {
@@ -58,33 +65,14 @@
   &--polling {
     border-color: var(--fidesui-warning);
     background: rgba(250, 173, 20, 0.06);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  &--root {
-    border-color: var(--fidesui-neutral-400);
-    background: var(--fidesui-neutral-50);
-    text-align: center;
-    border-style: dashed;
-    min-height: 56px;
-    justify-content: center;
-    align-items: center;
   }
 }
 
-.label {
+.dataset-name {
   font-weight: 600;
+  font-size: 13px;
   color: var(--fidesui-minos);
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dataset-label {
-  font-size: 10px;
-  color: var(--fidesui-neutral-500);
-  max-width: 200px;
+  max-width: 230px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -94,7 +82,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 2px;
 }
 
 .status-dot {
@@ -141,42 +128,36 @@
   color: var(--fidesui-neutral-600);
 }
 
-.elapsed {
-  font-size: 10px;
-  color: var(--fidesui-info);
-}
-
-.error-message {
-  font-size: 10px;
-  color: var(--fidesui-error-text);
-  max-width: 200px;
+.progress-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--fidesui-neutral-100);
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-top: 2px;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--fidesui-success);
+  transition: width 0.3s ease;
 }
 
-@keyframes executing-glow {
+.progress-text {
+  font-size: 10px;
+  color: var(--fidesui-neutral-500);
+}
+
+@keyframes dataset-glow {
   0%,
   100% {
     box-shadow:
       0 0 0 1px var(--fidesui-info),
       0 1px 4px rgba(74, 144, 226, 0.25);
-    background: rgba(74, 144, 226, 0.08);
   }
   50% {
     box-shadow:
       0 0 0 2px var(--fidesui-info),
       0 2px 8px rgba(74, 144, 226, 0.35);
-    background: rgba(74, 144, 226, 0.14);
   }
 }

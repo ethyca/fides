@@ -63,7 +63,7 @@ export interface ExecutionLog {
 }
 
 export type ExecutionGraphNodeStatus =
-  | "queued"
+  | "pending"
   | "executing"
   | "complete"
   | "error"
@@ -90,6 +90,15 @@ export interface ExecutionGraphResponse {
   privacy_request_id: string;
   action_type: string;
   nodes: ExecutionGraphNode[];
+}
+
+export interface DatasetGraphNodeData {
+  datasetName: string;
+  status: ExecutionGraphNodeStatus;
+  totalCollections: number;
+  completedCollections: number;
+  errorCount: number;
+  executingCount: number;
 }
 
 export type GetUploadedManualWebhookDataRequest = {
