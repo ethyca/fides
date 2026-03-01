@@ -131,6 +131,8 @@ services:
       interval: 20s
       timeout: 5s
       retries: 10
+    env_file:
+      - .env
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
