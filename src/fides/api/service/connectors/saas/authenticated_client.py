@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 # 3.05s per requests library recommendation to avoid TCP retransmission boundary edge cases.
 DEFAULT_CONNECT_TIMEOUT: float = 3.05
-DEFAULT_READ_TIMEOUT: float = 60
+DEFAULT_READ_TIMEOUT: float = 60  # 60s allows generous time for slow API responses while preventing indefinite worker stalls.
 
 
 class AuthenticatedClient:
