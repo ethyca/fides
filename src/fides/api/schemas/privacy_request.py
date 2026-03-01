@@ -210,6 +210,44 @@ class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
     action_type: ActionType
 
 
+EXECUTION_STATUS_DISPLAY_MAP: dict[ExecutionLogStatus, str] = {
+    ExecutionLogStatus.pending: "queued",
+    ExecutionLogStatus.in_processing: "executing",
+    ExecutionLogStatus.complete: "complete",
+    ExecutionLogStatus.error: "error",
+    ExecutionLogStatus.skipped: "skipped",
+    ExecutionLogStatus.retrying: "retrying",
+    ExecutionLogStatus.awaiting_processing: "paused",
+    ExecutionLogStatus.polling: "polling",
+}
+
+
+class ExecutionGraphNodeResponse(FidesSchema):
+    """A single node in the execution graph representing a collection task."""
+
+    id: str
+    collection_address: str
+    dataset_name: str
+    collection_name: str
+    status: str
+    action_type: str
+    created_at: datetime
+    updated_at: datetime
+    upstream_tasks: list[str]
+    downstream_tasks: list[str]
+    message: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ExecutionGraphResponse(FidesSchema):
+    """Response schema for the execution graph endpoint."""
+
+    privacy_request_id: str
+    action_type: str
+    nodes: list[ExecutionGraphNodeResponse]
+
+
 class ExecutionLogDetailResponse(ExecutionLogResponse):
     """Schema for the detailed ExecutionLogs when accessed directly"""
 

@@ -5,6 +5,7 @@ import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import ActivityTab from "./events-and-logs/ActivityTab";
+import ExecutionGraphTab from "./execution-graph/ExecutionGraphTab";
 import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
 import RequestDetails from "./RequestDetails";
 import { PrivacyRequestEntity } from "./types";
@@ -52,6 +53,16 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
         children: <ActivityTab subjectRequest={subjectRequest} />,
       },
       {
+        key: "execution-graph",
+        label: "Execution graph",
+        children: (
+          <ExecutionGraphTab
+            privacyRequestId={subjectRequest.id}
+            privacyRequestStatus={subjectRequest.status}
+          />
+        ),
+      },
+      {
         key: "manual-tasks",
         label: "Manual tasks",
         children: (
@@ -66,6 +77,8 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
     [showManualTasks, subjectRequest],
   );
 
+  const showDetails = activeTabKey !== "execution-graph";
+
   return (
     <div className="flex gap-8">
       <div className="w-0 grow">
@@ -75,12 +88,14 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
           onChange={setActiveTabKey}
         />
       </div>
-      <div
-        className="w-1/3 2xl:w-[432px]"
-        data-testid="privacy-request-details"
-      >
-        <RequestDetails subjectRequest={subjectRequest} />
-      </div>
+      {showDetails && (
+        <div
+          className="w-1/3 2xl:w-[432px]"
+          data-testid="privacy-request-details"
+        >
+          <RequestDetails subjectRequest={subjectRequest} />
+        </div>
+      )}
     </div>
   );
 };
