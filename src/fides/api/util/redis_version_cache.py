@@ -81,20 +81,22 @@ def redis_version_cached(
             # Read the current version from Redis
             try:
                 current_version = _get_redis_version(redis_key)
-            except Exception:
+            except Exception as e:
                 # Redis is down – prefer stale data over a DB round-trip
                 with _cache_lock:
                     cached = _cache_store.get(cache_key)
                     if cached is not None:
                         cached["version"] = _UNVERIFIED
-                        logger.debug(
-                            "redis_version_cache '{}': Redis unavailable, returning stale cached value",
+                        logger.exception(
+                            "redis_version_cache '{}': Redis unavailable, returning stale cached value. Exception: {}",
                             cache_key,
+                            e,
                         )
                         return cached["value"]
-                logger.debug(
-                    "redis_version_cache '{}': Redis unavailable and no cached value, calling function directly",
+                logger.exception(
+                    "redis_version_cache '{}': Redis unavailable and no cached value, calling function directly. Exception: {}",
                     cache_key,
+                    e,
                 )
                 value = func(*args, **kwargs)
 
