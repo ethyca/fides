@@ -267,18 +267,16 @@ export interface ReminderResponse {
 }
 
 export interface CreatePrivacyAssessmentRequest {
-  assessment_type: string;
-  system_fides_key?: string;
-  declaration_id?: string;
+  assessment_types: string[];
+  system_fides_keys?: string[] | null;
   use_llm?: boolean;
   model?: string;
 }
 
-export interface CreatePrivacyAssessmentResponse {
-  assessments: PrivacyAssessmentResponse[];
-  assessment_type: string;
-  assessment_name: string;
-  total_created: number;
+export interface CreateAssessmentTaskResponse {
+  task_id: string;
+  status: string;
+  message: string;
 }
 
 export interface UpdatePrivacyAssessmentRequest {
