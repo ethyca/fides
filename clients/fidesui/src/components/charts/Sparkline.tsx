@@ -1,9 +1,10 @@
-import { theme } from "antd";
+import { theme } from "antd/lib";
 import { useId } from "react";
 import { Area, AreaChart, ResponsiveContainer, YAxis } from "recharts";
 
 import type { AntColorTokenKey } from "./chart-constants";
 import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
+import { useChartAnimation } from "./chart-utils";
 import { ChartGradient } from "./ChartGradient";
 
 const EMPTY_PLACEHOLDER_DATA = [5, 15, 10, 20, 25];
@@ -27,6 +28,9 @@ export const Sparkline = ({
   const chartColor = empty ? token.colorBorder : activeColor;
 
   const gradientId = `sparkline-gradient-${useId()}`;
+
+  const animationActive = useChartAnimation(animationDuration);
+
   const chartData = (empty ? EMPTY_PLACEHOLDER_DATA : data).map((v) => ({
     value: v,
   }));
@@ -50,7 +54,7 @@ export const Sparkline = ({
           fill={`url(#${gradientId})`}
           dot={false}
           activeDot={false}
-          isAnimationActive={!empty && animationDuration > 0}
+          isAnimationActive={!empty && animationDuration > 0 && animationActive}
           animationDuration={animationDuration}
           animationEasing={CHART_ANIMATION.easing}
         />
