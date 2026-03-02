@@ -90,7 +90,6 @@ class ManualTaskGraphTask(GraphTask):
     def erasure_request(
         self,
         retrieved_data: list[Row],  # This is not used for manual tasks.
-        *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument # TODO Remove when we stop support for DSR 2.0
         inputs: Optional[list[list[Row]]] = None,
     ) -> int:
         """Execute manual-task-driven erasure logic.

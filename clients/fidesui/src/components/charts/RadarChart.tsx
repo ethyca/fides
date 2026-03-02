@@ -1,5 +1,5 @@
 import { theme } from "antd/lib";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useId, useMemo } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -11,6 +11,7 @@ import {
 
 import type { AntColorTokenKey } from "./chart-constants";
 import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
+import { useChartAnimation } from "./chart-utils";
 import { ChartGradient } from "./ChartGradient";
 import { ChartText } from "./ChartText";
 
@@ -111,18 +112,13 @@ export const RadarChart = ({
   animationDuration = CHART_ANIMATION.defaultDuration,
   aspect = 1,
 }: RadarChartProps) => {
-  const { token, hashId } = theme.useToken();
+  const { token } = theme.useToken();
   const empty = !data?.length;
   const chartColor = color ? token[color] : token.colorText;
 
   const gradientId = `radar-gradient-${useId()}`;
 
-  const [animationActive, setAnimationActive] = useState(true);
-  useEffect(() => {
-    if (animationDuration <= 0) return;
-    const timer = setTimeout(() => setAnimationActive(false), animationDuration);
-    return () => clearTimeout(timer);
-  }, [animationDuration]);
+  const animationActive = useChartAnimation(animationDuration);
 
   const STATUS_COLORS = useMemo<Record<RadarPointStatus, string>>(
     () => ({
@@ -138,11 +134,10 @@ export const RadarChart = ({
     <div className="w-full pointer-events-none">
       <ResponsiveContainer width="100%" aspect={aspect}>
         <RechartsRadarChart
-          key={hashId}
           data={empty ? EMPTY_PLACEHOLDER_DATA : data}
           cx="50%"
           cy="50%"
-          outerRadius="70%"
+          outerRadius="80%"
         >
           <ChartGradient
             id={gradientId}

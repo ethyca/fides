@@ -4,7 +4,7 @@ from typing import Any, Optional, Union
 
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import ConfigDict, field_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -103,6 +103,12 @@ class RuleCreate(RuleBase):
     masking_strategy: Optional[PolicyMaskingSpec] = None
 
 
+class RuleCreateWithTargets(RuleCreate):
+    """RuleCreate extended with inline targets for policy creation."""
+
+    targets: Optional[list[RuleTarget]] = None
+
+
 class RuleResponse(RuleBase):
     """
     The schema to use when returning a Rule via the API. This schema uses a censored version
@@ -137,15 +143,24 @@ class Policy(FidesSchema):
 
     name: str
     key: Optional[FidesKey] = None
+    action_type: Optional[ActionType] = None
+    rules: Optional[list[RuleCreateWithTargets]] = None
     drp_action: Optional[DrpAction] = None
     execution_timeframe: Optional[int] = None
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)
+
+    @model_validator(mode="after")
+    def action_type_or_rules_not_both(self) -> "Policy":
+        if self.action_type is not None and self.rules is not None:
+            raise ValueError("Provide either 'action_type' or 'rules', not both.")
+        return self
 
 
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
 
-    rules: Optional[list[RuleResponse]] = None
+    action_type: Optional[ActionType] = Field(None, exclude=True)  # type: ignore[assignment]
+    rules: Optional[list[RuleResponse]] = None  # type: ignore[assignment]
     drp_action: Optional[DrpAction] = None
     conditions: Optional[Union[ConditionLeaf, ConditionGroup]] = None
 
