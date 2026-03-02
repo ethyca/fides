@@ -281,6 +281,8 @@ def _build_redis_client(
         ssl=CONFIG.redis.ssl,
         ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
         ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
+        socket_connect_timeout=10.0,
+        socket_timeout=10.0,
     )
 
 

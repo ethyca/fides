@@ -7,12 +7,14 @@ Covers:
 - Manual cache_clear() forcing reload
 - bump_version() incrementing Redis and clearing local cache
 - Graceful fallback when Redis is unavailable
+- Circuit breaker prevents repeated slow Redis timeouts
 """
 
 from unittest.mock import MagicMock, patch
 
 import pytest
 
+from fides.api.util import redis_version_cache
 from fides.api.util.redis_version_cache import _cache_store, redis_version_cached
 
 CACHE_KEY = "test_cache"
@@ -21,10 +23,12 @@ REDIS_KEY = "test_redis_key"
 
 @pytest.fixture(autouse=True)
 def clear_cache():
-    """Ensure each test starts with a clean cache and cleans up after."""
+    """Ensure each test starts with a clean cache/circuit breaker state and cleans up after."""
     _cache_store.pop(CACHE_KEY, None)
+    redis_version_cache._redis_last_failure = 0.0
     yield
     _cache_store.pop(CACHE_KEY, None)
+    redis_version_cache._redis_last_failure = 0.0
 
 
 @pytest.fixture
@@ -421,3 +425,101 @@ class TestRedisUnavailable:
         assert decorated() == 2  # cache miss: sentinel != None
         assert decorated() == 2  # cache hit
         assert call_count == 2
+
+
+class TestCircuitBreaker:
+    """The circuit breaker in _get_redis_version should prevent repeated
+    slow timeouts when Redis is down."""
+
+    def test_circuit_opens_after_failure(self):
+        """After a Redis failure, the circuit breaker opens and subsequent
+        calls raise immediately without contacting Redis."""
+        mock_cache = MagicMock()
+        mock_cache.get.side_effect = ConnectionError("Redis down")
+
+        with patch(
+            "fides.api.util.redis_version_cache.get_cache", return_value=mock_cache
+        ):
+            with pytest.raises(ConnectionError):
+                redis_version_cache._get_redis_version("some_key")
+
+            # Circuit is now open — second call raises without hitting get_cache
+            with patch(
+                "fides.api.util.redis_version_cache.get_cache"
+            ) as mock_get_cache:
+                with pytest.raises(ConnectionError, match="circuit breaker"):
+                    redis_version_cache._get_redis_version("some_key")
+                mock_get_cache.assert_not_called()
+
+    def test_circuit_resets_after_success(self):
+        """After the cooldown expires and the next Redis call succeeds,
+        the circuit breaker resets so it can detect future failures."""
+        mock_cache = MagicMock()
+        mock_cache.get.side_effect = ConnectionError("Redis down")
+
+        with patch(
+            "fides.api.util.redis_version_cache.get_cache", return_value=mock_cache
+        ):
+            with pytest.raises(ConnectionError):
+                redis_version_cache._get_redis_version("some_key")
+
+        assert redis_version_cache._redis_circuit_open()
+
+        # Simulate cooldown expiring
+        redis_version_cache._redis_last_failure -= (
+            redis_version_cache._REDIS_CIRCUIT_BREAKER_COOLDOWN + 1
+        )
+        assert not redis_version_cache._redis_circuit_open()
+
+        # Successful call resets the circuit fully (timestamp back to 0)
+        mock_cache.get.side_effect = None
+        mock_cache.get.return_value = "1"
+        with patch(
+            "fides.api.util.redis_version_cache.get_cache", return_value=mock_cache
+        ):
+            result = redis_version_cache._get_redis_version("some_key")
+
+        assert result == "1"
+        assert redis_version_cache._redis_last_failure == 0.0
+
+    def test_circuit_closes_after_cooldown(self):
+        """After the cooldown period expires, the circuit breaker closes
+        and allows another Redis attempt."""
+        mock_cache = MagicMock()
+        mock_cache.get.side_effect = ConnectionError("Redis down")
+
+        with patch(
+            "fides.api.util.redis_version_cache.get_cache", return_value=mock_cache
+        ):
+            with pytest.raises(ConnectionError):
+                redis_version_cache._get_redis_version("some_key")
+
+        assert redis_version_cache._redis_circuit_open()
+
+        # Simulate the cooldown elapsing by backdating the failure timestamp
+        redis_version_cache._redis_last_failure -= (
+            redis_version_cache._REDIS_CIRCUIT_BREAKER_COOLDOWN + 1
+        )
+
+        assert not redis_version_cache._redis_circuit_open()
+
+    def test_circuit_breaker_prevents_repeated_calls_during_startup_loop(self):
+        """Simulates the startup scenario: many calls in a tight loop when
+        Redis is down. Only the first call should actually contact Redis;
+        subsequent calls should fail fast via the circuit breaker."""
+        real_get_cache_calls = 0
+
+        def counting_get_cache():
+            nonlocal real_get_cache_calls
+            real_get_cache_calls += 1
+            raise ConnectionError("Redis down")
+
+        with patch(
+            "fides.api.util.redis_version_cache.get_cache",
+            side_effect=counting_get_cache,
+        ):
+            for _ in range(50):
+                with pytest.raises(ConnectionError):
+                    redis_version_cache._get_redis_version("some_key")
+
+        assert real_get_cache_calls == 1
