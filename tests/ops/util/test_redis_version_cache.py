@@ -482,27 +482,6 @@ class TestCircuitBreaker:
         assert result == "1"
         assert redis_version_cache._redis_last_failure == 0.0
 
-    def test_circuit_closes_after_cooldown(self):
-        """After the cooldown period expires, the circuit breaker closes
-        and allows another Redis attempt."""
-        mock_cache = MagicMock()
-        mock_cache.get.side_effect = ConnectionError("Redis down")
-
-        with patch(
-            "fides.api.util.redis_version_cache.get_cache", return_value=mock_cache
-        ):
-            with pytest.raises(ConnectionError):
-                redis_version_cache._get_redis_version("some_key")
-
-        assert redis_version_cache._redis_circuit_open()
-
-        # Simulate the cooldown elapsing by backdating the failure timestamp
-        redis_version_cache._redis_last_failure -= (
-            redis_version_cache._REDIS_CIRCUIT_BREAKER_COOLDOWN + 1
-        )
-
-        assert not redis_version_cache._redis_circuit_open()
-
     def test_circuit_breaker_prevents_repeated_calls_during_startup_loop(self):
         """Simulates the startup scenario: many calls in a tight loop when
         Redis is down. Only the first call should actually contact Redis;

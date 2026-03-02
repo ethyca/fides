@@ -355,8 +355,13 @@ class ConnectorRegistry:
         }
 
     @classmethod
-    def get_all_templates(cls) -> Dict[str, ConnectorTemplate]:
-        """Returns the full map of connector type -> template, loaded once."""
+    def get_all_templates(cls) -> dict[str, ConnectorTemplate]:
+        """Returns the full map of connector type -> template.
+
+        Callers that need to iterate over all templates should call this once
+        and loop over the result rather than calling get_connector_template()
+        per type, which would trigger repeated Redis version checks.
+        """
         return cls._get_combined_templates()
 
     @classmethod

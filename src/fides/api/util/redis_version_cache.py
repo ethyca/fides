@@ -17,8 +17,19 @@ from threading import Lock
 from typing import Any, Callable, Dict, Optional, TypeVar
 
 from loguru import logger
+from redis.exceptions import RedisError
 
+from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
 from fides.api.util.cache import get_cache
+
+_REDIS_INFRASTRUCTURE_ERRORS = (
+    RedisConnectionError,
+    RedisNotConfigured,
+    RedisError,
+    ConnectionError,
+    TimeoutError,
+    OSError,
+)
 
 R = TypeVar("R")
 
@@ -71,7 +82,7 @@ def _get_redis_version(redis_key: str) -> Optional[str]:
     try:
         cache = get_cache()
         value = cache.get(redis_key)
-    except Exception:
+    except _REDIS_INFRASTRUCTURE_ERRORS:
         _record_redis_failure()
         raise
     _reset_redis_circuit()
@@ -84,10 +95,12 @@ def _bump_redis_version(redis_key: str) -> None:
     If the key does not exist yet, ``INCR`` creates it with value ``1``.
     Resets the circuit breaker on success since Redis is reachable.
     """
+    if _redis_circuit_open():
+        raise ConnectionError("Redis circuit breaker is open")
     try:
         cache = get_cache()
         cache.incr(redis_key)
-    except Exception:
+    except _REDIS_INFRASTRUCTURE_ERRORS:
         _record_redis_failure()
         raise
     _reset_redis_circuit()
