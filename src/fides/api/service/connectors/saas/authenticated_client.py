@@ -71,7 +71,8 @@ class AuthenticatedClient:
         """One-time extraction of allowed host patterns from the SaaS config.
 
         Returns None when validation should be skipped (disabled, no SaaS
-        config, or no endpoint params with allowed_values).  A non-None list
+        config, no endpoint params with allowed_values, or any endpoint param
+        is self-hosted with an empty allowed_values list).  A non-None list
         means every outbound host must match at least one entry.
         """
         if is_domain_validation_disabled():
@@ -81,12 +82,23 @@ class AuthenticatedClient:
         if not saas_config:
             return None
 
-        allowed = [
-            v
+        endpoint_params = [
+            cp
             for cp in saas_config.connector_params
-            if cp.type == "endpoint" and cp.allowed_values
-            for v in cp.allowed_values
+            if cp.type == "endpoint" and cp.allowed_values is not None
         ]
+        if not endpoint_params:
+            return None
+
+        # If any endpoint param is self-hosted (empty list), we cannot
+        # distinguish at runtime which param a request targets, so skip.
+        if any(
+            cp.allowed_values is not None and len(cp.allowed_values) == 0
+            for cp in endpoint_params
+        ):
+            return None
+
+        allowed = [v for cp in endpoint_params for v in (cp.allowed_values or [])]
         return allowed if allowed else None
 
     def _validate_request_domain(self, host: str) -> None:
