@@ -322,7 +322,7 @@ def get_cache() -> FidesopsRedis:
 
     if not connected:
         raise common_exceptions.RedisConnectionError(
-            "Unable to establish Redis connection. Fides redis cache is not available."
+            "Unable to establish Redis connection. Fides Redis cache is not available."
         )
 
     return _connection
