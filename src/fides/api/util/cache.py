@@ -255,9 +255,8 @@ def _build_redis_client(
             "ssl": CONFIG.redis.ssl,
             "ssl_ca_certs": CONFIG.redis.ssl_ca_certs or None,
             "ssl_cert_reqs": CONFIG.redis.ssl_cert_reqs,
-            # Avoid blocking indefinitely on connect or topology discovery
-            "socket_connect_timeout": 10.0,
-            "socket_timeout": 10.0,
+            "socket_connect_timeout": CONFIG.redis.socket_connect_timeout,
+            "socket_timeout": CONFIG.redis.socket_timeout,
         }
         # Only send password when set; in test mode skip default "testpassword" so
         # no AUTH is sent to a cluster with no password (avoids "AUTH without password" error).
@@ -281,6 +280,8 @@ def _build_redis_client(
         ssl=CONFIG.redis.ssl,
         ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
         ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
+        socket_connect_timeout=CONFIG.redis.socket_connect_timeout,
+        socket_timeout=CONFIG.redis.socket_timeout,
     )
 
 
