@@ -339,15 +339,20 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
 
 class ConnectorRegistry:
     @classmethod
-    def _get_combined_templates(cls) -> Dict[str, ConnectorTemplate]:
-        """
-        Returns a combined map of connector templates from all registered loaders.
-        The resulting map is an aggregation of templates from the file loader and the custom loader,
-        with custom loader templates taking precedence in case of conflicts.
+    def get_combined_templates(cls) -> dict[str, ConnectorTemplate]:
+        """Returns a combined map of connector templates from all registered loaders.
+
+        The resulting map is an aggregation of templates from the file loader
+        and the custom loader, with custom loader templates taking precedence
+        in case of conflicts.
 
         The custom loader's ``get_connector_templates()`` is backed by the
         ``@redis_version_cached`` decorator, so it only reloads from the
         database when the Redis version counter has changed.
+
+        Callers that need to iterate over all templates should call this once
+        and loop over the result rather than calling get_connector_template()
+        per type, which would trigger repeated Redis version checks.
         """
         return {
             **FileConnectorTemplateLoader.get_connector_templates(),  # type: ignore
@@ -355,26 +360,16 @@ class ConnectorRegistry:
         }
 
     @classmethod
-    def get_all_templates(cls) -> dict[str, ConnectorTemplate]:
-        """Returns the full map of connector type -> template.
-
-        Callers that need to iterate over all templates should call this once
-        and loop over the result rather than calling get_connector_template()
-        per type, which would trigger repeated Redis version checks.
-        """
-        return cls._get_combined_templates()
-
-    @classmethod
     def connector_types(cls) -> List[str]:
         """List of registered SaaS connector types"""
-        return list(cls._get_combined_templates().keys())
+        return list(cls.get_combined_templates().keys())
 
     @classmethod
     def get_connector_template(cls, connector_type: str) -> Optional[ConnectorTemplate]:
         """
         Returns an object containing the various SaaS connector artifacts
         """
-        return cls._get_combined_templates().get(connector_type)
+        return cls.get_combined_templates().get(connector_type)
 
     @classmethod
     def get_all_connector_templates_summary(cls) -> List[ConnectorTemplateListResponse]:
@@ -383,7 +378,7 @@ class ConnectorRegistry:
         Includes connector_type, name, supported_actions, category, whether it's custom,
         and whether a default connector is available.
         """
-        combined_templates = cls._get_combined_templates()
+        combined_templates = cls.get_combined_templates()
 
         summaries: List[ConnectorTemplateListResponse] = []
         for connector_type, template in combined_templates.items():

@@ -27,7 +27,7 @@ def update_saas_configs(db: Session) -> None:
     """
     event_audit_service = EventAuditService(db)
     saas_connection_service = ConnectionService(db, event_audit_service)
-    all_templates = ConnectorRegistry.get_all_templates()
+    all_templates = ConnectorRegistry.get_combined_templates()
     for connector_type, template in all_templates.items():
         logger.debug(
             "Determining if any updates are needed for connectors of type {} based on templates...",
