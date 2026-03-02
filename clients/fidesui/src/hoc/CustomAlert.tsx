@@ -1,9 +1,6 @@
-import { Alert, AlertProps, Button, ConfigProvider, theme } from "antd/lib";
+import { Alert, AlertProps, Button, ConfigProvider, Flex, theme } from "antd/lib";
 import type { AlertRef } from "antd/lib/alert/Alert";
-import classNames from "classnames";
 import React from "react";
-
-import styles from "./CustomAlert.module.scss";
 
 const ALERT_TYPE_TOKEN_MAP = {
   success: "colorSuccess",
@@ -47,7 +44,7 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
         <>
           {description}
           <ConfigProvider theme={{ token: { colorPrimary } }}>
-            <div className={styles.actions}>
+            <Flex gap="small" style={{ marginTop: token.marginSM }}>
               {primaryAction && (
                 <Button
                   type="primary"
@@ -62,7 +59,7 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
                   {secondaryAction.label}
                 </Button>
               )}
-            </div>
+            </Flex>
           </ConfigProvider>
         </>
       ) : (
@@ -73,10 +70,7 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
         <WrappedComponent
           ref={ref}
           type={type}
-          className={classNames(
-            { [styles.withActions]: hasActions },
-            className,
-          )}
+          className={className}
           description={augmentedDescription}
           {...props}
         />
