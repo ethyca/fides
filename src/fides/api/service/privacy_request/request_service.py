@@ -484,7 +484,7 @@ def _get_request_task_ids_in_progress(
 
     # Build lookup for upstream completion checks
     status_by_address: dict[tuple[str, str], ExecutionLogStatus] = {
-        (t.collection_address, t.action_type): t.status for t in all_tasks
+        (task.collection_address, task.action_type): task.status for task in all_tasks
     }
 
     for task in all_tasks:

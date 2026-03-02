@@ -637,14 +637,9 @@ class TestRequeueInterruptedTasks:
             "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
             return_value=["upstream_task_celery_id"],
         ):
-            try:
-                requeue_interrupted_tasks.apply().get()
-                mock_cancel_interrupted_tasks.assert_not_called()
-                mock_requeue_privacy_request.assert_not_called()
-            finally:
-                downstream_task.delete(db)
-                upstream_task.delete(db)
-                privacy_request.delete(db)
+            requeue_interrupted_tasks.apply().get()
+            mock_cancel_interrupted_tasks.assert_not_called()
+            mock_requeue_privacy_request.assert_not_called()
 
     @pytest.mark.parametrize(
         "has_upstream",
@@ -731,14 +726,8 @@ class TestRequeueInterruptedTasks:
         )
         # Do NOT cache a subtask ID
 
-        try:
-            requeue_interrupted_tasks.apply().get()
-            mock_cancel_interrupted_tasks.assert_called_once()
-        finally:
-            stuck_task.delete(db)
-            if upstream_task:
-                upstream_task.delete(db)
-            privacy_request.delete(db)
+        requeue_interrupted_tasks.apply().get()
+        mock_cancel_interrupted_tasks.assert_called_once()
 
     def test_aquired_locks_prevent_duplicate_runs(self, loguru_caplog):
         """Test that multiple instances of the task do not run simultaneously.
