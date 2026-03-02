@@ -308,7 +308,7 @@ def get_cache() -> FidesopsRedis:
     except ConnectionErrorFromRedis as e:
         logger.exception("Unable to establish Redis connection. Exception: {}", e)
         # Log only essential connection details (host, port, db), exclude sensitive info
-        conn_kwargs = _connection._client.connection_kwargs
+        conn_kwargs = _connection._client.connection_kwargs # type: ignore
         minimal_details = {
             "host": conn_kwargs.get("host"),
             "port": conn_kwargs.get("port"),
