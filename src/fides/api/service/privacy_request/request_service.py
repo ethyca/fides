@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Generator, List, Optional, Set
 
 from httpx import AsyncClient
 from loguru import logger
@@ -12,6 +12,7 @@ from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.privacy_request import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
     RequestTask,
@@ -463,33 +464,45 @@ def _handle_privacy_request_requeue(
 
 def _get_request_task_ids_in_progress(
     db: Session, privacy_request_id: str
-) -> List[tuple[str, ExecutionLogStatus, bool]]:
-    """Get IDs, statuses, and upstream-waiting flag for in-progress request tasks.
+) -> Generator[tuple[str, ExecutionLogStatus, bool], None, None]:
+    """Yield (task_id, status, awaiting_upstream) for in-progress request tasks.
 
-    Returns tuples of (task_id, status, awaiting_upstream) where awaiting_upstream
-    is True for pending tasks whose upstream dependencies are not yet complete.
+    Loads only the columns needed (avoiding large JSON blobs) and computes
+    upstream completion from a single query rather than per-task DB lookups.
     """
-    request_tasks = (
-        db.query(RequestTask)
-        .filter(
-            RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.status.in_(
-                [
-                    ExecutionLogStatus.in_processing,
-                    ExecutionLogStatus.pending,
-                ]
-            ),
+    all_tasks = (
+        db.query(
+            RequestTask.id,
+            RequestTask.status,
+            RequestTask.collection_address,
+            RequestTask.action_type,
+            RequestTask.upstream_tasks,
         )
+        .filter(RequestTask.privacy_request_id == privacy_request_id)
         .all()
     )
-    result = []
-    for task in request_tasks:
-        awaiting_upstream = (
-            task.status == ExecutionLogStatus.pending
-            and not task.upstream_tasks_complete(db, should_log=False)
-        )
-        result.append((task.id, task.status, awaiting_upstream))
-    return result
+
+    # Build lookup for upstream completion checks
+    status_by_address: dict[tuple[str, str], ExecutionLogStatus] = {
+        (t.collection_address, t.action_type): t.status for t in all_tasks
+    }
+
+    for task in all_tasks:
+        if task.status not in (
+            ExecutionLogStatus.in_processing,
+            ExecutionLogStatus.pending,
+        ):
+            continue
+        awaiting_upstream = False
+        if task.status == ExecutionLogStatus.pending:
+            upstream_addrs = task.upstream_tasks or []
+            if upstream_addrs:
+                awaiting_upstream = not all(
+                    status_by_address.get((addr, task.action_type))
+                    in COMPLETED_EXECUTION_LOG_STATUSES
+                    for addr in upstream_addrs
+                )
+        yield (task.id, task.status, awaiting_upstream)
 
 
 def _has_async_tasks_awaiting_external_completion(
