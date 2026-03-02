@@ -501,9 +501,9 @@ def _get_request_task_ids_in_progress(
                 # upstream record returns None from the lookup, which is not
                 # in COMPLETED_EXECUTION_LOG_STATUSES, so it's treated as
                 # incomplete (same safe default as the model method).
-                awaiting_upstream = not all(
+                awaiting_upstream = any(
                     status_by_address.get((addr, task.action_type))
-                    in COMPLETED_EXECUTION_LOG_STATUSES
+                    not in COMPLETED_EXECUTION_LOG_STATUSES
                     for addr in upstream_addrs
                 )
         yield (task.id, task.status, awaiting_upstream)
