@@ -2258,7 +2258,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">559</span>
 <span class="normal">560</span>
 <span class="normal">561</span>
-<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2305,7 +2311,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;f4237b70c6cf8e473e28bd7bc44298b5&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;12f379923f9b8bcea47494e40ad1a737&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2784,6 +2790,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># The number of seconds that a pre-signed download URL when using S3</span>
 <span class="c1"># storage will be valid. The default is equal to 5 days.</span>
 <span class="n">subject_request_download_link_ttl_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">432000</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># When true, disables domain validation for SaaS connector params</span>
+<span class="c1"># globally. Domain validation restricts connector endpoints to allowed</span>
+<span class="c1"># values defined in the connector template. Set via</span>
+<span class="c1"># FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION.</span>
+<span class="n">disable_domain_validation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># Either enables the collection of audit log resource data or bypasses</span>
 <span class="c1"># the middleware</span>
