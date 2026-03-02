@@ -152,7 +152,7 @@ class TestGetReadOnlyCache:
                 db=ANY,
                 username=config.redis.read_only_user,
                 password=config.redis.read_only_password,
-                ssl=config.redis.read_only_ssl,
+                ssl=config.redis.read_only_ssl or None,
                 ssl_ca_certs=config.redis.read_only_ssl_ca_certs,
                 ssl_cert_reqs=config.redis.read_only_ssl_cert_reqs,
             )
