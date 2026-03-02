@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { GetProps } from "antd";
 
-import { Typography } from "../../index";
+import { GetProps, Typography } from "../../index";
 import { PARAGRAPH_LOREM } from "../../stories/utils/content";
 
 const { Paragraph } = Typography;

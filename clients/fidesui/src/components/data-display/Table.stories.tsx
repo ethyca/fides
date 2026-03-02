@@ -73,7 +73,7 @@ export const Empty: Story = {
         title: "Email",
       },
       {
-        dataIndex: "",
+        dataIndex: "username",
         title: "Username",
       },
       {
