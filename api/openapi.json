@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.0"
+    "version": "2.80.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2136,8 +2136,9 @@
           "System"
         ],
         "summary": "Instantiate Connection From Template",
-        "description": "Instantiates a SaaS connection from the available template and the template values.\nAssociates the newly instantiated connection with the provided system.",
+        "description": "Instantiates a SaaS connection from the available template and the template values.\nAssociates the newly instantiated connection with the provided system.\n\nDeprecated: Use the connection config and system-links APIs to create\nconnections and link them to systems independently.",
         "operationId": "instantiate_connection_from_template_api_v1_system__fides_key__connection_instantiate__connector_template_type__post",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2205,8 +2206,9 @@
           "System"
         ],
         "summary": "Get System Connections",
-        "description": "Return all the connection configs related to a system.",
+        "description": "Return all the connection configs related to a system.\n\nDeprecated: Use GET /connection with `linked_systems` in the response,\nor GET /connection/{connection_key}/system-links to manage links directly.",
         "operationId": "get_system_connections_api_v1_system__fides_key__connection_get",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2276,8 +2278,9 @@
           "System"
         ],
         "summary": "Patch Connections",
-        "description": "Given a valid System fides key, a list of connection config data elements, optionally\ncontaining the secrets, create or update corresponding ConnectionConfig objects or report\nfailure.\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.",
+        "description": "Given a valid System fides key, a list of connection config data elements, optionally\ncontaining the secrets, create or update corresponding ConnectionConfig objects or report\nfailure.\n\nIf the key in the payload exists, it will be used to update an existing ConnectionConfiguration.\nOtherwise, a new ConnectionConfiguration will be created for you.\n\nDeprecated: Use PATCH /connection to create/update connection configs, then\nPUT /connection/{connection_key}/system-links to link them to a system.",
         "operationId": "patch_connections_api_v1_system__fides_key__connection_patch",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2339,7 +2342,9 @@
           "System"
         ],
         "summary": "Delete Connection",
+        "description": "Delete the connection config linked to this system.\n\nDeprecated: Use DELETE /connection/{connection_key} to delete a connection\nconfig, or DELETE /connection/{connection_key}/system-links/{system_fides_key}\nto unlink it from a system without deleting it.",
         "operationId": "delete_connection_api_v1_system__fides_key__connection_delete",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2381,8 +2386,9 @@
           "System"
         ],
         "summary": "Patch Connection Secrets",
-        "description": "Patch secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.",
+        "description": "Patch secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.\n\nDeprecated: Use PATCH /connection/{connection_key}/secret instead.",
         "operationId": "patch_connection_secrets_api_v1_system__fides_key__connection_secrets_patch",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -2787,6 +2793,69 @@
                     ],
                     "title": "GoogleCloudSQLPostgresDocsSchema",
                     "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "access_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Token"
+                      },
+                      "refresh_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Refresh Token"
+                      },
+                      "token_expiry": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Token Expiry"
+                      },
+                      "cloud_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Cloud Id"
+                      },
+                      "site_url": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Site Url"
+                      }
+                    },
+                    "title": "JiraTicketDocsSchema",
+                    "description": "Jira Ticket Secrets Schema for API Docs"
                   },
                   {
                     "type": "object",
@@ -5536,6 +5605,69 @@
                   },
                   {
                     "type": "object",
+                    "properties": {
+                      "access_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Token"
+                      },
+                      "refresh_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Refresh Token"
+                      },
+                      "token_expiry": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Token Expiry"
+                      },
+                      "cloud_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Cloud Id"
+                      },
+                      "site_url": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Site Url"
+                      }
+                    },
+                    "title": "JiraTicketDocsSchema",
+                    "description": "Jira Ticket Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
                     "properties": {},
                     "title": "ManualWebhookDocsSchema",
                     "description": "Manual Webhooks Secrets Schema for API Docs"
@@ -6884,6 +7016,69 @@
                     ],
                     "title": "GoogleCloudSQLPostgresDocsSchema",
                     "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "access_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Access Token"
+                      },
+                      "refresh_token": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Refresh Token"
+                      },
+                      "token_expiry": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Token Expiry"
+                      },
+                      "cloud_id": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Cloud Id"
+                      },
+                      "site_url": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "title": "Site Url"
+                      }
+                    },
+                    "title": "JiraTicketDocsSchema",
+                    "description": "Jira Ticket Secrets Schema for API Docs"
                   },
                   {
                     "type": "object",
@@ -10646,6 +10841,47 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "DSR Policy"
+        ],
+        "summary": "Delete Policy",
+        "description": "Delete a policy by key. Returns 409 if the policy is referenced by any privacy requests.",
+        "operationId": "delete_policy_api_v1_dsr_policy__policy_key__delete",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "policy:delete"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "policy_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Policy Key"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/dsr/policy/{policy_key}/rule": {
@@ -12750,6 +12986,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Page_ExecutionLogDetailResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/diagnostics": {
+      "get": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Get Privacy Request Diagnostics Report",
+        "description": "Return a diagnostics snapshot for a single privacy request.\n\nThis report intentionally excludes any fields that could contain PII.",
+        "operationId": "get_privacy_request_diagnostics_report_api_v1_privacy_request__privacy_request_id__diagnostics_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestDiagnostics"
                 }
               }
             }
@@ -18243,6 +18529,171 @@
         ]
       }
     },
+    "/api/v1/connection/{connection_key}/system-links": {
+      "get": {
+        "tags": [
+          "System Integration Links"
+        ],
+        "summary": "Get System Links",
+        "operationId": "get_system_links_api_v1_connection__connection_key__system_links_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system_integration_link:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SystemLinkResponse"
+                  },
+                  "title": "Response Get System Links Api V1 Connection  Connection Key  System Links Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "System Integration Links"
+        ],
+        "summary": "Set System Links",
+        "operationId": "set_system_links_api_v1_connection__connection_key__system_links_put",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system_integration_link:create_or_update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSystemLinksRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SystemLinkResponse"
+                  },
+                  "title": "Response Set System Links Api V1 Connection  Connection Key  System Links Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connection/{connection_key}/system-links/{system_fides_key}": {
+      "delete": {
+        "tags": [
+          "System Integration Links"
+        ],
+        "summary": "Delete System Link",
+        "operationId": "delete_system_link_api_v1_connection__connection_key__system_links__system_fides_key__delete",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system_integration_link:delete"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          },
+          {
+            "name": "system_fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "System Fides Key"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/db/{action}": {
       "post": {
         "tags": [
@@ -18823,6 +19274,18 @@
               "default": false,
               "title": "Minimal"
             }
+          },
+          {
+            "name": "skip_validation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "[Troubleshooting only] Skip pydantic response validation. Use this to retrieve datasets that contain data failing validation.",
+              "default": false,
+              "title": "Skip Validation"
+            },
+            "description": "[Troubleshooting only] Skip pydantic response validation. Use this to retrieve datasets that contain data failing validation."
           }
         ],
         "responses": {
@@ -18884,6 +19347,18 @@
               "type": "string",
               "title": "Fides Key"
             }
+          },
+          {
+            "name": "skip_validation",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "[Troubleshooting only] Skip pydantic response validation. Use this to retrieve a dataset that contains data failing validation.",
+              "default": false,
+              "title": "Skip Validation"
+            },
+            "description": "[Troubleshooting only] Skip pydantic response validation. Use this to retrieve a dataset that contains data failing validation."
           }
         ],
         "responses": {
@@ -19566,6 +20041,27 @@
                 "type": "null"
               }
             ]
+          },
+          "default_policies": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Policies"
           }
         },
         "additionalProperties": false,
@@ -19595,16 +20091,152 @@
         "title": "AssignStewardRequest",
         "description": "Request schema for assigning a data steward to one or more systems."
       },
+      "AttachmentReferenceSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "attachment_id": {
+            "type": "string",
+            "title": "Attachment Id"
+          },
+          "reference_id": {
+            "type": "string",
+            "title": "Reference Id"
+          },
+          "reference_type": {
+            "type": "string",
+            "title": "Reference Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "attachment_id",
+          "reference_id",
+          "reference_type"
+        ],
+        "title": "AttachmentReferenceSnapshot",
+        "description": "Diagnostics projection of a single `attachment_reference` row.\n\nNon-PII only: these are internal IDs + reference type."
+      },
+      "AttachmentSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "attachment_type": {
+            "type": "string",
+            "title": "Attachment Type"
+          },
+          "storage_key": {
+            "type": "string",
+            "title": "Storage Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "attachment_type",
+          "storage_key"
+        ],
+        "title": "AttachmentSnapshot",
+        "description": "Diagnostics projection of a single `attachment` row.\n\nNon-PII only: excludes `file_name`, `user_id`, and any download URLs / file contents."
+      },
       "AuditLogAction": {
         "type": "string",
         "enum": [
           "approved",
           "denied",
           "email_sent",
-          "finished"
+          "finished",
+          "policy_evaluated"
         ],
         "title": "AuditLogAction",
         "description": "Enum for audit log actions, reflecting what a user did."
+      },
+      "AuditLogSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "action"
+        ],
+        "title": "AuditLogSnapshot",
+        "description": "Diagnostics projection of a single `auditlog` row.\n\nNon-PII only: excludes `message` (free text) and `user_id` (operator identifier)."
       },
       "BackfillRequest": {
         "properties": {
@@ -20770,6 +21402,180 @@
         ],
         "title": "ColumnSort"
       },
+      "CommentReferenceSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "comment_id": {
+            "type": "string",
+            "title": "Comment Id"
+          },
+          "reference_id": {
+            "type": "string",
+            "title": "Reference Id"
+          },
+          "reference_type": {
+            "type": "string",
+            "title": "Reference Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "comment_id",
+          "reference_id",
+          "reference_type"
+        ],
+        "title": "CommentReferenceSnapshot",
+        "description": "Diagnostics projection of a single `comment_reference` row.\n\nNon-PII only: internal IDs + reference type."
+      },
+      "CommentSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "comment_type": {
+            "type": "string",
+            "title": "Comment Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "comment_type"
+        ],
+        "title": "CommentSnapshot",
+        "description": "Diagnostics projection of a single `comment` row.\n\nNon-PII only: excludes `comment_text` (free text) and `user_id` (operator identifier)."
+      },
+      "ConditionGroup": {
+        "properties": {
+          "logical_operator": {
+            "$ref": "#/components/schemas/GroupOperator",
+            "description": "Logical operator: 'and' or 'or'"
+          },
+          "conditions": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ConditionLeaf"
+                },
+                {
+                  "$ref": "#/components/schemas/ConditionGroup"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Conditions",
+            "description": "List of conditions or nested groups"
+          }
+        },
+        "type": "object",
+        "required": [
+          "logical_operator",
+          "conditions"
+        ],
+        "title": "ConditionGroup"
+      },
+      "ConditionLeaf": {
+        "properties": {
+          "field_address": {
+            "type": "string",
+            "title": "Field Address",
+            "description": "Field path to check (e.g., 'user.name', 'billing.subscription.status')"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/Operator",
+            "description": "Operator to apply"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value",
+            "description": "Expected value for comparison"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_address",
+          "operator"
+        ],
+        "title": "ConditionLeaf"
+      },
       "ConnectionCategory": {
         "type": "string",
         "enum": [
@@ -20922,6 +21728,14 @@
               }
             ],
             "title": "Enabled Actions"
+          },
+          "linked_systems": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedSystemInfo"
+            },
+            "type": "array",
+            "title": "Linked Systems",
+            "default": []
           }
         },
         "type": "object",
@@ -21068,6 +21882,14 @@
             ],
             "title": "Enabled Actions"
           },
+          "linked_systems": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedSystemInfo"
+            },
+            "type": "array",
+            "title": "Linked Systems",
+            "default": []
+          },
           "system_key": {
             "anyOf": [
               {
@@ -21088,7 +21910,7 @@
           "created_at"
         ],
         "title": "ConnectionConfigurationResponseWithSystemKey",
-        "description": "Describes the full returned schema for a ConnectionConfiguration."
+        "description": "Extended response that includes the legacy ``system_key`` field."
       },
       "ConnectionSystemTypeMap": {
         "properties": {
@@ -21237,6 +22059,7 @@
           "manual",
           "manual_webhook",
           "manual_task",
+          "jira_ticket",
           "mariadb",
           "mongodb",
           "mssql",
@@ -22211,6 +23034,69 @@
                 "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
               },
               {
+                "properties": {
+                  "access_token": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Access Token"
+                  },
+                  "refresh_token": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Refresh Token"
+                  },
+                  "token_expiry": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Token Expiry"
+                  },
+                  "cloud_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Cloud Id"
+                  },
+                  "site_url": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Site Url"
+                  }
+                },
+                "type": "object",
+                "title": "JiraTicketDocsSchema",
+                "description": "Jira Ticket Secrets Schema for API Docs"
+              },
+              {
                 "properties": {},
                 "type": "object",
                 "title": "ManualWebhookDocsSchema",
@@ -23146,6 +24032,37 @@
         "title": "CreateConnectionConfigurationWithSecrets",
         "description": "Schema for creating a connection configuration including secrets."
       },
+      "CtlDatasetSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "fides_key": {
+            "type": "string",
+            "title": "Fides Key"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "fides_key"
+        ],
+        "title": "CtlDatasetSnapshot",
+        "description": "Diagnostics projection of a single CTL `ctl_datasets` row.\n\nNon-PII only: excludes full dataset JSON (collections/meta)."
+      },
       "CurrentStep": {
         "type": "string",
         "enum": [
@@ -23200,6 +24117,76 @@
         ],
         "title": "CustomPrivacyRequestField",
         "description": "Schema for custom privacy request fields."
+      },
+      "CustomPrivacyRequestFieldSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "field_name": {
+            "type": "string",
+            "title": "Field Name"
+          },
+          "field_label": {
+            "type": "string",
+            "title": "Field Label"
+          },
+          "encrypted_value_present": {
+            "type": "boolean",
+            "title": "Encrypted Value Present"
+          },
+          "hashed_value_present": {
+            "type": "boolean",
+            "title": "Hashed Value Present"
+          },
+          "is_hash_migrated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Hash Migrated"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "field_name",
+          "field_label",
+          "encrypted_value_present",
+          "hashed_value_present"
+        ],
+        "title": "CustomPrivacyRequestFieldSnapshot",
+        "description": "Diagnostics projection of a single `custom_privacy_request_field` row.\n\nNon-PII only: excludes encrypted values and hashes; includes only metadata and presence flags."
       },
       "DBActions": {
         "type": "string",
@@ -24355,6 +25342,20 @@
           "ctl_dataset_fides_key": {
             "type": "string",
             "title": "Ctl Dataset Fides Key"
+          },
+          "property_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Ids"
           }
         },
         "type": "object",
@@ -24381,6 +25382,60 @@
         ],
         "title": "DatasetConfigSchema",
         "description": "Returns the DatasetConfig fides key and the linked Ctl Dataset"
+      },
+      "DatasetConfigSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "fides_key": {
+            "type": "string",
+            "title": "Fides Key"
+          },
+          "connection_config_id": {
+            "type": "string",
+            "title": "Connection Config Id"
+          },
+          "ctl_dataset_id": {
+            "type": "string",
+            "title": "Ctl Dataset Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "fides_key",
+          "connection_config_id",
+          "ctl_dataset_id"
+        ],
+        "title": "DatasetConfigSnapshot",
+        "description": "Diagnostics projection of a single `datasetconfig` row.\n\nNon-PII only: includes identifiers and linkage to CTL dataset."
       },
       "DatasetField": {
         "properties": {
@@ -25480,6 +26535,110 @@
         "title": "ExecutionLogDetailResponse",
         "description": "Schema for the detailed ExecutionLogs when accessed directly"
       },
+      "ExecutionLogSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "action_type": {
+            "type": "string",
+            "title": "Action Type"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "connection_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Connection Key"
+          },
+          "dataset_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Name"
+          },
+          "collection_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collection Name"
+          },
+          "fields_affected_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fields Affected Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "action_type"
+        ],
+        "title": "ExecutionLogSnapshot",
+        "description": "Diagnostics projection of a single `executionlog` row."
+      },
       "ExecutionLogStatus": {
         "type": "string",
         "enum": [
@@ -26099,6 +27258,14 @@
         "title": "GoogleCloudSQLPostgresDocsSchema",
         "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
       },
+      "GroupOperator": {
+        "type": "string",
+        "enum": [
+          "and",
+          "or"
+        ],
+        "title": "GroupOperator"
+      },
       "HTTPMethod": {
         "type": "string",
         "enum": [
@@ -26357,6 +27524,69 @@
         "title": "IntegrationFeature",
         "description": "Features that can be enabled for different integration types.\nThese control which tabs and functionality are available in the integration detail view."
       },
+      "JiraTicketDocsSchema": {
+        "properties": {
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          },
+          "token_expiry": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Expiry"
+          },
+          "cloud_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cloud Id"
+          },
+          "site_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site Url"
+          }
+        },
+        "type": "object",
+        "title": "JiraTicketDocsSchema",
+        "description": "Jira Ticket Secrets Schema for API Docs"
+      },
       "LegalBasisForProcessingEnum": {
         "type": "string",
         "enum": [
@@ -26379,6 +27609,31 @@
         ],
         "title": "LegalBasisForProfilingEnum",
         "description": "The model for describing the legal basis under which profiling is performed"
+      },
+      "LinkedSystemInfo": {
+        "properties": {
+          "fides_key": {
+            "type": "string",
+            "title": "Fides Key"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fides_key"
+        ],
+        "title": "LinkedSystemInfo",
+        "description": "Minimal system info embedded in connection config list responses."
       },
       "LogEntry": {
         "properties": {
@@ -26510,6 +27765,473 @@
         ],
         "title": "ManualAction",
         "description": "Surface how to retrieve or mask data in a database-agnostic way\n\n- 'locators' are similar to the SQL \"WHERE\" information.\n- 'get' contains a list of fields that should be retrieved from the source\n- 'update' is a dictionary of fields and the replacement value/masking strategy"
+      },
+      "ManualTaskConditionalDependencySnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "manual_task_id": {
+            "type": "string",
+            "title": "Manual Task Id"
+          },
+          "config_field_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Field Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "manual_task_id"
+        ],
+        "title": "ManualTaskConditionalDependencySnapshot",
+        "description": "Diagnostics projection of a single `manual_task_conditional_dependency` row.\n\nNon-PII only: excludes condition tree contents."
+      },
+      "ManualTaskConfigFieldSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "config_id": {
+            "type": "string",
+            "title": "Config Id"
+          },
+          "field_key": {
+            "type": "string",
+            "title": "Field Key"
+          },
+          "field_type": {
+            "type": "string",
+            "title": "Field Type"
+          },
+          "execution_timing": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Timing"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "config_id",
+          "field_key",
+          "field_type"
+        ],
+        "title": "ManualTaskConfigFieldSnapshot",
+        "description": "Diagnostics projection of a single `manual_task_config_field` row.\n\nNon-PII only: excludes `field_metadata` contents."
+      },
+      "ManualTaskConfigSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "config_type": {
+            "type": "string",
+            "title": "Config Type"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          },
+          "execution_timing": {
+            "type": "string",
+            "title": "Execution Timing"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "config_type",
+          "version",
+          "is_current",
+          "execution_timing"
+        ],
+        "title": "ManualTaskConfigSnapshot",
+        "description": "Diagnostics projection of a single `manual_task_config` row (metadata only)."
+      },
+      "ManualTaskInstanceSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "config_id": {
+            "type": "string",
+            "title": "Config Id"
+          },
+          "entity_id": {
+            "type": "string",
+            "title": "Entity Id"
+          },
+          "entity_type": {
+            "type": "string",
+            "title": "Entity Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "config_id",
+          "entity_id",
+          "entity_type",
+          "status"
+        ],
+        "title": "ManualTaskInstanceSnapshot",
+        "description": "Diagnostics projection of a single `manual_task_instance` row.\n\nNon-PII only: excludes `completed_by_id`."
+      },
+      "ManualTaskReferenceSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "reference_type": {
+            "type": "string",
+            "title": "Reference Type"
+          },
+          "reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Id"
+          },
+          "config_field_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Field Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "task_id",
+          "reference_type"
+        ],
+        "title": "ManualTaskReferenceSnapshot",
+        "description": "Diagnostics projection of a single `manual_task_reference` row.\n\nNon-PII only: assigned user reference IDs are omitted."
+      },
+      "ManualTaskSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "task_type": {
+            "type": "string",
+            "title": "Task Type"
+          },
+          "parent_entity_id": {
+            "type": "string",
+            "title": "Parent Entity Id"
+          },
+          "parent_entity_type": {
+            "type": "string",
+            "title": "Parent Entity Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "task_type",
+          "parent_entity_id",
+          "parent_entity_type"
+        ],
+        "title": "ManualTaskSnapshot",
+        "description": "Diagnostics projection of a single `manual_task` row.\n\nNon-PII only: excludes assigned user references."
+      },
+      "ManualTaskSubmissionSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "config_id": {
+            "type": "string",
+            "title": "Config Id"
+          },
+          "field_id": {
+            "type": "string",
+            "title": "Field Id"
+          },
+          "instance_id": {
+            "type": "string",
+            "title": "Instance Id"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "config_id",
+          "field_id",
+          "instance_id",
+          "submitted_at"
+        ],
+        "title": "ManualTaskSubmissionSnapshot",
+        "description": "Diagnostics projection of a single `manual_task_submission` row.\n\nNon-PII only: excludes `data` and `submitted_by`."
       },
       "ManualWebhookData": {
         "properties": {
@@ -27116,6 +28838,60 @@
         ],
         "title": "MessagingConfigResponse",
         "description": "Messaging Config Response Schema"
+      },
+      "MessagingConfigSnapshot": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "service_type": {
+            "type": "string",
+            "title": "Service Type"
+          },
+          "last_test_timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Timestamp"
+          },
+          "last_test_succeeded": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Succeeded"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "service_type"
+        ],
+        "title": "MessagingConfigSnapshot",
+        "description": "Diagnostics projection of a single `messagingconfig` row.\n\nNon-PII only: excludes `details` and `secrets`."
       },
       "MessagingConfigStatus": {
         "type": "string",
@@ -27922,6 +29698,29 @@
         ],
         "title": "OktaDocsSchema",
         "description": "Okta Secrets Schema for API Docs"
+      },
+      "Operator": {
+        "type": "string",
+        "enum": [
+          "eq",
+          "neq",
+          "lt",
+          "lte",
+          "gt",
+          "gte",
+          "exists",
+          "not_exists",
+          "list_contains",
+          "not_in_list",
+          "list_intersects",
+          "list_subset",
+          "list_superset",
+          "list_disjoint",
+          "starts_with",
+          "ends_with",
+          "contains"
+        ],
+        "title": "Operator"
       },
       "Organization": {
         "properties": {
@@ -28920,6 +30719,20 @@
               }
             ],
             "title": "Rules"
+          },
+          "conditions": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConditionLeaf"
+              },
+              {
+                "$ref": "#/components/schemas/ConditionGroup"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conditions"
           }
         },
         "type": "object",
@@ -30001,6 +31814,244 @@
         "title": "PrivacyRequestDRPStatusResponse",
         "description": "A Fidesops PrivacyRequest updated to fit the Data Rights Protocol specification."
       },
+      "PrivacyRequestDiagnostics": {
+        "properties": {
+          "privacy_request": {
+            "$ref": "#/components/schemas/PrivacyRequestSnapshot"
+          },
+          "privacy_request_error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrivacyRequestErrorSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "custom_privacy_request_fields": {
+            "items": {
+              "$ref": "#/components/schemas/CustomPrivacyRequestFieldSnapshot"
+            },
+            "type": "array",
+            "title": "Custom Privacy Request Fields"
+          },
+          "provided_identities": {
+            "items": {
+              "$ref": "#/components/schemas/ProvidedIdentitySnapshot"
+            },
+            "type": "array",
+            "title": "Provided Identities"
+          },
+          "execution_logs": {
+            "items": {
+              "$ref": "#/components/schemas/ExecutionLogSnapshot"
+            },
+            "type": "array",
+            "title": "Execution Logs"
+          },
+          "audit_logs": {
+            "items": {
+              "$ref": "#/components/schemas/AuditLogSnapshot"
+            },
+            "type": "array",
+            "title": "Audit Logs"
+          },
+          "request_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/RequestTaskSnapshot"
+            },
+            "type": "array",
+            "title": "Request Tasks"
+          },
+          "request_task_sub_requests": {
+            "items": {
+              "$ref": "#/components/schemas/RequestTaskSubRequestSnapshot"
+            },
+            "type": "array",
+            "title": "Request Task Sub Requests"
+          },
+          "dataset_configs": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetConfigSnapshot"
+            },
+            "type": "array",
+            "title": "Dataset Configs"
+          },
+          "ctl_datasets": {
+            "items": {
+              "$ref": "#/components/schemas/CtlDatasetSnapshot"
+            },
+            "type": "array",
+            "title": "Ctl Datasets"
+          },
+          "storage_configs": {
+            "items": {
+              "$ref": "#/components/schemas/StorageConfigSnapshot"
+            },
+            "type": "array",
+            "title": "Storage Configs"
+          },
+          "messaging_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MessagingConfigSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "manual_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/ManualTaskSnapshot"
+            },
+            "type": "array",
+            "title": "Manual Tasks"
+          },
+          "manual_task_instances": {
+            "items": {
+              "$ref": "#/components/schemas/ManualTaskInstanceSnapshot"
+            },
+            "type": "array",
+            "title": "Manual Task Instances"
+          },
+          "manual_task_references": {
+            "items": {
+              "$ref": "#/components/schemas/ManualTaskReferenceSnapshot"
+            },
+            "type": "array",
+            "title": "Manual Task References"
+          },
+          "manual_task_configs": {
+            "items": {
+              "$ref": "#/components/schemas/ManualTaskConfigSnapshot"
+            },
+            "type": "array",
+            "title": "Manual Task Configs"
+          },
+          "manual_task_config_fields": {
+            "items": {
+              "$ref": "#/components/schemas/ManualTaskConfigFieldSnapshot"
+            },
+            "type": "array",
+            "title": "Manual Task Config Fields"
+          },
+          "manual_task_submissions": {
+            "items": {
+              "$ref": "#/components/schemas/ManualTaskSubmissionSnapshot"
+            },
+            "type": "array",
+            "title": "Manual Task Submissions"
+          },
+          "manual_task_conditional_dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/ManualTaskConditionalDependencySnapshot"
+            },
+            "type": "array",
+            "title": "Manual Task Conditional Dependencies"
+          },
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentSnapshot"
+            },
+            "type": "array",
+            "title": "Attachments"
+          },
+          "attachment_references": {
+            "items": {
+              "$ref": "#/components/schemas/AttachmentReferenceSnapshot"
+            },
+            "type": "array",
+            "title": "Attachment References"
+          },
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/CommentSnapshot"
+            },
+            "type": "array",
+            "title": "Comments"
+          },
+          "comment_references": {
+            "items": {
+              "$ref": "#/components/schemas/CommentReferenceSnapshot"
+            },
+            "type": "array",
+            "title": "Comment References"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "privacy_request",
+          "custom_privacy_request_fields",
+          "provided_identities",
+          "execution_logs",
+          "audit_logs",
+          "request_tasks",
+          "request_task_sub_requests",
+          "dataset_configs",
+          "ctl_datasets",
+          "storage_configs",
+          "manual_tasks",
+          "manual_task_instances",
+          "manual_task_references",
+          "manual_task_configs",
+          "manual_task_config_fields",
+          "manual_task_submissions",
+          "manual_task_conditional_dependencies",
+          "attachments",
+          "attachment_references",
+          "comments",
+          "comment_references"
+        ],
+        "title": "PrivacyRequestDiagnostics",
+        "description": "Top-level diagnostics export model (non-PII only)."
+      },
+      "PrivacyRequestErrorSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "message_sent": {
+            "type": "boolean",
+            "title": "Message Sent"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "message_sent"
+        ],
+        "title": "PrivacyRequestErrorSnapshot",
+        "description": "Diagnostics projection of a single `privacyrequesterror` row.\n\nNon-PII only: this table is just tracking email/message dispatch state."
+      },
       "PrivacyRequestFilter": {
         "properties": {
           "request_id": {
@@ -30680,6 +32731,156 @@
         "title": "PrivacyRequestResumeFormat",
         "description": "Expected request body to resume a privacy request after it was paused by a webhook"
       },
+      "PrivacyRequestSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "requested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested At"
+          },
+          "started_processing_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started Processing At"
+          },
+          "finished_processing_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished Processing At"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "finalized_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized At"
+          },
+          "policy_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Id"
+          },
+          "property_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Property Id"
+          },
+          "canceled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canceled At"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "status"
+        ],
+        "title": "PrivacyRequestSnapshot",
+        "description": "Diagnostics projection of a single `privacyrequest` row.\n\nThis model intentionally contains **non-PII fields only**."
+      },
       "PrivacyRequestSource": {
         "type": "string",
         "enum": [
@@ -30706,6 +32907,7 @@
           "paused",
           "awaiting_email_send",
           "requires_manual_finalization",
+          "pending_external",
           "canceled",
           "error",
           "duplicate"
@@ -31137,6 +33339,82 @@
         ],
         "title": "PrivacyRule",
         "description": "The PrivacyRule resource model.\n\nA list of privacy data types and what match method to use."
+      },
+      "ProvidedIdentitySnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "field_name": {
+            "type": "string",
+            "title": "Field Name"
+          },
+          "field_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Label"
+          },
+          "encrypted_value_present": {
+            "type": "boolean",
+            "title": "Encrypted Value Present"
+          },
+          "hashed_value_present": {
+            "type": "boolean",
+            "title": "Hashed Value Present"
+          },
+          "is_hash_migrated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Hash Migrated"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "field_name",
+          "encrypted_value_present",
+          "hashed_value_present"
+        ],
+        "title": "ProvidedIdentitySnapshot",
+        "description": "Diagnostics projection of a single `providedidentity` row.\n\nNon-PII only: excludes encrypted identity values and hashed identity values."
       },
       "QueryParam": {
         "properties": {
@@ -31744,6 +34022,227 @@
         "title": "RequestTaskCallbackRequest",
         "description": "Request body for Async Callback"
       },
+      "RequestTaskSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "action_type": {
+            "type": "string",
+            "title": "Action Type"
+          },
+          "privacy_request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Privacy Request Id"
+          },
+          "collection_address": {
+            "type": "string",
+            "title": "Collection Address"
+          },
+          "dataset_name": {
+            "type": "string",
+            "title": "Dataset Name"
+          },
+          "collection_name": {
+            "type": "string",
+            "title": "Collection Name"
+          },
+          "async_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Async Type"
+          },
+          "callback_succeeded": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Callback Succeeded"
+          },
+          "rows_masked": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rows Masked"
+          },
+          "consent_sent": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Sent"
+          },
+          "upstream_tasks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upstream Tasks"
+          },
+          "downstream_tasks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Downstream Tasks"
+          },
+          "all_descendant_tasks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "All Descendant Tasks"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "action_type",
+          "collection_address",
+          "dataset_name",
+          "collection_name"
+        ],
+        "title": "RequestTaskSnapshot",
+        "description": "Diagnostics projection of a single `requesttask` row.\n\nNon-PII only: excludes any access/erasure payloads and other large JSON blobs."
+      },
+      "RequestTaskSubRequestSnapshot": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "request_task_id": {
+            "type": "string",
+            "title": "Request Task Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "rows_masked": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rows Masked"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "request_task_id",
+          "status"
+        ],
+        "title": "RequestTaskSubRequestSnapshot",
+        "description": "Diagnostics projection of a single `request_task_sub_request` row.\n\nNon-PII only: excludes param values and access data payloads."
+      },
       "ResourceFilter": {
         "properties": {
           "type": {
@@ -31797,11 +34296,12 @@
           "viewer",
           "approver",
           "contributor",
+          "data_steward",
           "respondent",
           "external_respondent"
         ],
         "title": "RoleRegistryEnum",
-        "description": "Enum of available roles\n\nOwner - Full admin\nViewer - Can view everything\nApprover - Limited viewer but can approve Privacy Requests\nViewer + Approver = Full View and can approve Privacy Requests\nContributor - Can't configure storage and messaging\nRespondent - Internal user who can respond to manual steps\nExternal Respondent - External user who can only respond to assigned manual steps"
+        "description": "Enum of available roles\n\nOwner - Full admin\nViewer - Can view everything\nApprover - Limited viewer but can approve Privacy Requests\nViewer + Approver = Full View and can approve Privacy Requests\nContributor - Can't configure storage and messaging\nData Steward - Viewer + can manage system-integration links\nRespondent - Internal user who can respond to manual steps\nExternal Respondent - External user who can only respond to assigned manual steps"
       },
       "RuleCreate": {
         "properties": {
@@ -32948,6 +35448,69 @@
                 "description": "Google Cloud SQL Postgres Secrets Schema for API Docs"
               },
               {
+                "properties": {
+                  "access_token": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Access Token"
+                  },
+                  "refresh_token": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Refresh Token"
+                  },
+                  "token_expiry": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Token Expiry"
+                  },
+                  "cloud_id": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Cloud Id"
+                  },
+                  "site_url": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "title": "Site Url"
+                  }
+                },
+                "type": "object",
+                "title": "JiraTicketDocsSchema",
+                "description": "Jira Ticket Secrets Schema for API Docs"
+              },
+              {
                 "properties": {},
                 "type": "object",
                 "title": "ManualWebhookDocsSchema",
@@ -33982,6 +36545,9 @@
           "system:read",
           "system:delete",
           "system:update",
+          "system_integration_link:create_or_update",
+          "system_integration_link:delete",
+          "system_integration_link:read",
           "system_manager:read",
           "system_manager:delete",
           "system_manager:update",
@@ -34072,6 +36638,22 @@
         "additionalProperties": false,
         "type": "object",
         "title": "SecurityApplicationConfig"
+      },
+      "SetSystemLinksRequest": {
+        "properties": {
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/SystemLinkRequest"
+            },
+            "type": "array",
+            "title": "Links"
+          }
+        },
+        "type": "object",
+        "required": [
+          "links"
+        ],
+        "title": "SetSystemLinksRequest"
       },
       "SnowflakeDocsSchema": {
         "properties": {
@@ -34266,6 +36848,53 @@
           "active_default_storage_type"
         ],
         "title": "StorageApplicationConfig"
+      },
+      "StorageConfigSnapshot": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "type",
+          "is_default"
+        ],
+        "title": "StorageConfigSnapshot",
+        "description": "Diagnostics projection of a single `storageconfig` row.\n\nNon-PII only: excludes `details` and `secrets`."
       },
       "StorageConfigStatus": {
         "type": "string",
@@ -35123,6 +37752,49 @@
         ],
         "title": "System",
         "description": "The System resource model.\n\nDescribes an application and includes a list of PrivacyDeclaration resources."
+      },
+      "SystemLinkRequest": {
+        "properties": {
+          "system_fides_key": {
+            "type": "string",
+            "title": "System Fides Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "system_fides_key"
+        ],
+        "title": "SystemLinkRequest"
+      },
+      "SystemLinkResponse": {
+        "properties": {
+          "system_fides_key": {
+            "type": "string",
+            "title": "System Fides Key"
+          },
+          "system_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "system_fides_key",
+          "created_at"
+        ],
+        "title": "SystemLinkResponse"
       },
       "SystemMetadata": {
         "properties": {
