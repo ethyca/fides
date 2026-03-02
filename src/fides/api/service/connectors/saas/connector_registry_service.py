@@ -355,6 +355,11 @@ class ConnectorRegistry:
         }
 
     @classmethod
+    def get_all_templates(cls) -> Dict[str, ConnectorTemplate]:
+        """Returns the full map of connector type -> template, loaded once."""
+        return cls._get_combined_templates()
+
+    @classmethod
     def connector_types(cls) -> List[str]:
         """List of registered SaaS connector types"""
         return list(cls._get_combined_templates().keys())
