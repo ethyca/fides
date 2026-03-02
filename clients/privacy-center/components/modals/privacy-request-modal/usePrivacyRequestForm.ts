@@ -175,7 +175,7 @@ const usePrivacyRequestForm = ({
           policy_key: action.policy_key,
           property_id: property?.id || null,
           source: PrivacyRequestSource.PRIVACY_CENTER,
-          location: values?.location,
+          location: values?.location ? values.location : undefined,
         },
       ];
 
@@ -184,14 +184,14 @@ const usePrivacyRequestForm = ({
         error,
       }: {
         title: string;
-        error?: any;
+        error?: unknown;
       }) => {
+        const errorMessage = typeof error === "string" && error;
         toast({
           title,
-          description: error,
+          description: errorMessage,
           ...ErrorToastOptions,
         });
-        onExit();
       };
 
       try {
