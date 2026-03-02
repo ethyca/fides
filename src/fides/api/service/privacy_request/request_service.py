@@ -672,6 +672,22 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
+                            # A pending task that hasn't been dispatched to Celery yet will
+                            # never have a cache key — this is not a stuck state. Only pending
+                            # tasks can legitimately lack a cache key; in_processing tasks
+                            # without one are genuinely stuck and should be canceled below.
+                            # Checked before the async query to avoid an unnecessary DB hit.
+                            if (
+                                task_status == ExecutionLogStatus.pending
+                                and awaiting_upstream
+                            ):
+                                logger.debug(
+                                    f"Request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is pending and "
+                                    f"waiting for upstream tasks to complete - not stuck"
+                                )
+                                continue
+
                             # Check if the request has async tasks awaiting external completion
                             if _has_async_tasks_awaiting_external_completion(
                                 db, privacy_request.id
@@ -683,21 +699,6 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 )
                                 should_requeue = False
                                 break
-
-                            # A pending task that hasn't been dispatched to Celery yet will
-                            # never have a cache key — this is not a stuck state. Only pending
-                            # tasks can legitimately lack a cache key; in_processing tasks
-                            # without one are genuinely stuck and should be canceled below.
-                            if (
-                                task_status == ExecutionLogStatus.pending
-                                and awaiting_upstream
-                            ):
-                                logger.debug(
-                                    f"Request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) is pending and "
-                                    f"waiting for upstream tasks to complete - not stuck"
-                                )
-                                continue
 
                             # For other statuses, cancel the entire privacy request
                             _cancel_interrupted_tasks_and_error_privacy_request(

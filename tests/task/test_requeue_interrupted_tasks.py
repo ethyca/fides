@@ -646,6 +646,13 @@ class TestRequeueInterruptedTasks:
                 upstream_task.delete(db)
                 privacy_request.delete(db)
 
+    @pytest.mark.parametrize(
+        "has_upstream",
+        [
+            pytest.param(True, id="complete_upstream"),
+            pytest.param(False, id="root_task_no_upstream"),
+        ],
+    )
     @mock.patch(
         "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
@@ -660,7 +667,7 @@ class TestRequeueInterruptedTasks:
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
-    def test_pending_task_with_complete_upstream_and_no_cache_key_is_canceled(
+    def test_pending_task_with_no_cache_key_is_canceled(
         self,
         mock_celery_tasks_in_flight,
         mock_get_task_ids_from_dsr_queue,
@@ -668,12 +675,14 @@ class TestRequeueInterruptedTasks:
         mock_cancel_interrupted_tasks,
         db,
         policy,
+        has_upstream,
     ):
-        """Pending task whose upstream is done but has no cache key is truly stuck.
+        """Pending task with no cache key is canceled when not legitimately waiting.
 
-        If upstream tasks are complete but the task is still pending with no Celery
-        cache key, it should have been dispatched but wasn't — this IS a stuck state
-        and should trigger cancellation.
+        Covers two stuck scenarios:
+        - A task whose upstream deps are all complete but it was never dispatched
+        - A root task (no upstream deps) that was never dispatched
+        Both should trigger cancellation.
         """
         privacy_request = PrivacyRequest.create(
             db=db,
@@ -689,21 +698,22 @@ class TestRequeueInterruptedTasks:
         )
         cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
 
-        upstream_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.complete,
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "test_dataset:upstream",
-                "dataset_name": "test_dataset",
-                "collection_name": "upstream",
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-            },
-        )
+        upstream_task = None
+        if has_upstream:
+            upstream_task = RequestTask.create(
+                db,
+                data={
+                    "action_type": ActionType.access,
+                    "status": ExecutionLogStatus.complete,
+                    "privacy_request_id": privacy_request.id,
+                    "collection_address": "test_dataset:upstream",
+                    "dataset_name": "test_dataset",
+                    "collection_name": "upstream",
+                    "upstream_tasks": [],
+                    "downstream_tasks": [],
+                },
+            )
 
-        # Upstream is complete but this task is still pending with no cache key — truly stuck
         stuck_task = RequestTask.create(
             db,
             data={
@@ -713,7 +723,7 @@ class TestRequeueInterruptedTasks:
                 "collection_address": "test_dataset:stuck",
                 "dataset_name": "test_dataset",
                 "collection_name": "stuck",
-                "upstream_tasks": [upstream_task.collection_address],
+                "upstream_tasks": [upstream_task.collection_address] if has_upstream else [],
                 "downstream_tasks": [],
             },
         )
@@ -724,7 +734,8 @@ class TestRequeueInterruptedTasks:
             mock_cancel_interrupted_tasks.assert_called_once()
         finally:
             stuck_task.delete(db)
-            upstream_task.delete(db)
+            if upstream_task:
+                upstream_task.delete(db)
             privacy_request.delete(db)
 
     def test_aquired_locks_prevent_duplicate_runs(self, loguru_caplog):
