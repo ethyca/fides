@@ -1,7 +1,12 @@
-import { formatDistanceToNow } from "date-fns";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { useEffect, useState } from "react";
 
+dayjs.extend(relativeTime);
+
 const MINUTE_S = 60;
+
+const getRelativeTime = (date: Date) => dayjs(date).fromNow();
 
 /**
  * Returns a human-readable relative time string (e.g. "5 minutes ago") for
@@ -12,23 +17,23 @@ export const useRelativeTime = (
   date: Date | null | undefined,
   intervalSeconds: number = MINUTE_S,
 ): string => {
-  const [relativeTime, setRelativeTime] = useState(() =>
-    date ? formatDistanceToNow(date, { addSuffix: true }) : "",
+  const [timeAgo, setTimeAgo] = useState(() =>
+    date ? getRelativeTime(date) : "",
   );
 
   useEffect(() => {
     if (!date) {
-      setRelativeTime("");
+      setTimeAgo("");
       return undefined;
     }
-    setRelativeTime(formatDistanceToNow(date, { addSuffix: true }));
+    setTimeAgo(getRelativeTime(date));
     const interval = setInterval(() => {
-      setRelativeTime(formatDistanceToNow(date, { addSuffix: true }));
+      setTimeAgo(getRelativeTime(date));
     }, intervalSeconds * 1000);
     return () => {
       clearInterval(interval);
     };
   }, [date, intervalSeconds]);
 
-  return relativeTime;
+  return timeAgo;
 };
