@@ -76,5 +76,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaDashboard": {
+    "label": "Alpha new dashboard",
+    "description": "Enable the new Ant Design-only home dashboard",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }

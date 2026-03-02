@@ -136,7 +136,6 @@ export const WithRadarChart: Story = {
             valueStyle={{ fontSize: token.fontSize }}
           />
           <div
-            className="h-48"
             style={{
               marginLeft: -token.paddingLG,
               marginRight: -token.paddingLG,

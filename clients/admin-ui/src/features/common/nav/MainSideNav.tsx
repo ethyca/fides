@@ -119,7 +119,7 @@ export const UnconnectedMainSideNav = ({
       minWidth={NAV_WIDTH}
       maxWidth={NAV_WIDTH}
       backgroundColor={NAV_BACKGROUND_COLOR}
-      height="100%"
+      minHeight="100vh"
       overflow="auto"
     >
       <VStack
@@ -189,7 +189,7 @@ const MainSideNav = () => {
         minWidth={NAV_WIDTH}
         maxWidth={NAV_WIDTH}
         backgroundColor={NAV_BACKGROUND_COLOR}
-        height="100%"
+        minHeight="100vh"
       />
     );
   }
