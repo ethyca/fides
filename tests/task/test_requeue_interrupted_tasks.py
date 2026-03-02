@@ -723,7 +723,9 @@ class TestRequeueInterruptedTasks:
                 "collection_address": "test_dataset:stuck",
                 "dataset_name": "test_dataset",
                 "collection_name": "stuck",
-                "upstream_tasks": [upstream_task.collection_address] if has_upstream else [],
+                "upstream_tasks": [upstream_task.collection_address]
+                if has_upstream
+                else [],
                 "downstream_tasks": [],
             },
         )
