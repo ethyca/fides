@@ -1,7 +1,6 @@
 import { saveAs } from "file-saver";
 
 import { baseApi } from "~/features/common/api.slice";
-import { getFileNameFromContentDisposition } from "~/features/common/utils";
 import type {
   CreateAssessmentRequest,
   Page_TemplateResponse_,
@@ -213,17 +212,28 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
     // PDF Report Download
     downloadAssessmentReport: build.mutation<void, string>({
       query: (id) => ({
-        url: `plus/privacy-assessments/${id}/pdf`,
+        url: `plus/privacy-assessments/${id}/pdf?export_mode=external`,
         method: "GET",
         responseHandler: async (response) => {
-          const filename = await getFileNameFromContentDisposition(
-            response.headers.get("content-disposition"),
+          const contentDisposition = response.headers.get(
+            "content-disposition",
           );
+          let filename = "assessment-report.pdf";
+
+          if (contentDisposition) {
+            // Try to extract filename from content-disposition header
+            // Handles both: filename="name.pdf" and filename=name.pdf
+            const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+            if (match && match[1]) {
+              filename = match[1].trim();
+            }
+          }
+
           const arrayBuffer = await response.arrayBuffer();
           const blob = new Blob([arrayBuffer], {
             type: response.headers.get("content-type") || "application/pdf",
           });
-          saveAs(blob, filename || "assessment-report.pdf");
+          saveAs(blob, filename);
           return { data: undefined };
         },
       }),
