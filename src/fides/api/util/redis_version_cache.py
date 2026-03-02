@@ -11,7 +11,6 @@ infrequently (e.g. connector templates), where the per-request staleness
 check must be as cheap as possible.
 """
 
-import time
 from functools import wraps
 from threading import Lock
 from typing import Any, Callable, Dict, Optional, TypeVar
@@ -26,24 +25,6 @@ _cache_store: Dict[str, Dict[str, Any]] = {}
 _cache_lock = Lock()
 _UNVERIFIED = object()
 
-_perf_redis_call_count: int = 0
-_perf_redis_total_ms: float = 0.0
-_perf_lock = Lock()
-
-
-def perf_reset_redis_counters() -> None:
-    """Reset the per-request Redis call counters."""
-    global _perf_redis_call_count, _perf_redis_total_ms
-    with _perf_lock:
-        _perf_redis_call_count = 0
-        _perf_redis_total_ms = 0.0
-
-
-def perf_get_redis_counters() -> tuple[int, float]:
-    """Return (call_count, total_ms) since last reset."""
-    with _perf_lock:
-        return _perf_redis_call_count, _perf_redis_total_ms
-
 
 def _get_redis_version(redis_key: str) -> Optional[str]:
     """Read the current version counter from Redis.
@@ -52,15 +33,8 @@ def _get_redis_version(redis_key: str) -> Optional[str]:
     exist.  Raises on connection failure so the caller can decide how to
     handle it.
     """
-    global _perf_redis_call_count, _perf_redis_total_ms
-    t0 = time.perf_counter()
     cache = get_cache()
-    result = cache.get(redis_key)
-    elapsed_ms = (time.perf_counter() - t0) * 1000
-    with _perf_lock:
-        _perf_redis_call_count += 1
-        _perf_redis_total_ms += elapsed_ms
-    return result
+    return cache.get(redis_key)
 
 
 def _bump_redis_version(redis_key: str) -> None:
@@ -107,20 +81,22 @@ def redis_version_cached(
             # Read the current version from Redis
             try:
                 current_version = _get_redis_version(redis_key)
-            except Exception:
+            except Exception as e:
                 # Redis is down – prefer stale data over a DB round-trip
                 with _cache_lock:
                     cached = _cache_store.get(cache_key)
                     if cached is not None:
                         cached["version"] = _UNVERIFIED
-                        logger.debug(
-                            "redis_version_cache '{}': Redis unavailable, returning stale cached value",
+                        logger.exception(
+                            "redis_version_cache '{}': Redis unavailable, returning stale cached value. Exception: {}",
                             cache_key,
+                            e,
                         )
                         return cached["value"]
-                logger.debug(
-                    "redis_version_cache '{}': Redis unavailable and no cached value, calling function directly",
+                logger.exception(
+                    "redis_version_cache '{}': Redis unavailable and no cached value, calling function directly. Exception: {}",
                     cache_key,
+                    e,
                 )
                 value = func(*args, **kwargs)
 

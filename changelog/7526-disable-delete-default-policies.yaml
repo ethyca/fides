@@ -1,0 +1,4 @@
+type: Added
+description: Disabled delete button on default DSR policies with tooltip explanation
+pr: 7526
+labels: []
