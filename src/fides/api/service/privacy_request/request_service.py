@@ -463,22 +463,33 @@ def _handle_privacy_request_requeue(
 
 def _get_request_task_ids_in_progress(
     db: Session, privacy_request_id: str
-) -> List[tuple[str, ExecutionLogStatus]]:
-    """Get the IDs and statuses of request tasks that are currently in progress for a privacy request."""
-    request_tasks_in_progress = (
-        db.query(RequestTask.id, RequestTask.status)
-        .filter(RequestTask.privacy_request_id == privacy_request_id)
+) -> List[tuple[str, ExecutionLogStatus, bool]]:
+    """Get IDs, statuses, and upstream-waiting flag for in-progress request tasks.
+
+    Returns tuples of (task_id, status, awaiting_upstream) where awaiting_upstream
+    is True for pending tasks whose upstream dependencies are not yet complete.
+    """
+    request_tasks = (
+        db.query(RequestTask)
         .filter(
+            RequestTask.privacy_request_id == privacy_request_id,
             RequestTask.status.in_(
                 [
                     ExecutionLogStatus.in_processing,
                     ExecutionLogStatus.pending,
                 ]
-            )
+            ),
         )
         .all()
     )
-    return [(task[0], task[1]) for task in request_tasks_in_progress]
+    result = []
+    for task in request_tasks:
+        awaiting_upstream = (
+            task.status == ExecutionLogStatus.pending
+            and not task.upstream_tasks_complete(db, should_log=False)
+        )
+        result.append((task.id, task.status, awaiting_upstream))
+    return result
 
 
 def _has_async_tasks_awaiting_external_completion(
@@ -612,7 +623,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                     )
 
                     # Check each individual request task
-                    for request_task_id, task_status in request_tasks_in_progress:
+                    for request_task_id, task_status, awaiting_upstream in request_tasks_in_progress:
                         try:
                             subtask_id = get_cached_task_id(request_task_id)
                         except Exception as cache_exc:
@@ -660,23 +671,13 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             # never have a cache key — this is not a stuck state. Only pending
                             # tasks can legitimately lack a cache key; in_processing tasks
                             # without one are genuinely stuck and should be canceled below.
-                            if task_status == ExecutionLogStatus.pending:
-                                request_task_obj = (
-                                    db.query(RequestTask)
-                                    .filter(RequestTask.id == request_task_id)
-                                    .first()
+                            if task_status == ExecutionLogStatus.pending and awaiting_upstream:
+                                logger.debug(
+                                    f"Request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is pending and "
+                                    f"waiting for upstream tasks to complete - not stuck"
                                 )
-                                if request_task_obj is not None and (
-                                    not request_task_obj.upstream_tasks_complete(
-                                        db, should_log=False
-                                    )
-                                ):
-                                    logger.debug(
-                                        f"Request task {request_task_id} "
-                                        f"(privacy request {privacy_request.id}) is pending and "
-                                        f"waiting for upstream tasks to complete - not stuck"
-                                    )
-                                    continue
+                                continue
 
                             # For other statuses, cancel the entire privacy request
                             _cancel_interrupted_tasks_and_error_privacy_request(
