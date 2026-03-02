@@ -347,6 +347,9 @@ const Preview = ({
               ? "padding-bottom: 3rem;"
               : ""
           }
+        }
+        .fides-sr-only {
+          display: none !important;
         }`}
         </style>
       ) : null}
