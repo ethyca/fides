@@ -87,12 +87,12 @@ def redis_version_cached(
                     cached = _cache_store.get(cache_key)
                     if cached is not None:
                         cached["version"] = _UNVERIFIED
-                        logger.debug(
+                        logger.exception(
                             "redis_version_cache '{}': Redis unavailable, returning stale cached value",
                             cache_key,
                         )
                         return cached["value"]
-                logger.debug(
+                logger.exception(
                     "redis_version_cache '{}': Redis unavailable and no cached value, calling function directly",
                     cache_key,
                 )
