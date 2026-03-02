@@ -66,6 +66,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated system-integration linking from ConnectionConfig.system_id FK to dedicated join table [#7432](https://github.com/ethyca/fides/pull/7432) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 - Updated connector registry to use Redis version counter for cross-server cache invalidation [#7392](https://github.com/ethyca/fides/pull/7392)
 - Updated privacy request and ID verification flow to use separate pages instead of a modal [#7238](https://github.com/ethyca/fides/pull/7238)
+- Updated dataset select options to display the fides key alongside the name when they differ [#7512](https://github.com/ethyca/fides/pull/7512)
+- Updated policy condition builder with multiselect support for location fields and refactored field constants [#7495](https://github.com/ethyca/fides/pull/7495)
 
 ### Developer Experience
 - Added Prompt Explorer UI for testing LLM prompts used in assessments and questionnaires [#7420](https://github.com/ethyca/fides/pull/7420)
@@ -90,6 +92,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removing code causing storybook to run and updating deps [#7444](https://github.com/ethyca/fides/pull/7444)
 - Fixed PyPI package build to include admin UI assets (src/fides/ui-build) when using hatchling/uv. [#7372](https://github.com/ethyca/fides/pull/7372)
 - Fixed Chakra theme which cause checkboxes and other components to not render correctly. [#7379](https://github.com/ethyca/fides/pull/7379)
+- Replaced 500 errors with 422 responses for dataset validation failures and added skip_validation query param for troubleshooting [#7475](https://github.com/ethyca/fides/pull/7475)
+- Fixed performance regression in connection config list endpoint caused by cascading eager-loads [#7501](https://github.com/ethyca/fides/pull/7501)
 
 ### Removed
 - Removed standalone connection manager page and components [#7473](https://github.com/ethyca/fides/pull/7473)
