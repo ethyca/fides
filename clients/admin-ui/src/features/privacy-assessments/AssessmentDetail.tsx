@@ -116,13 +116,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     });
   };
 
-  const handleRequestInput = () => {
-    if (!slackChannelName) {
-      return;
-    }
-    setIsRequestInputOpen(true);
-  };
-
   const handleSendReminder = async () => {
     try {
       await createReminder({ id: assessment.id }).unwrap();
@@ -240,7 +233,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
             <Button
               icon={<SlackIcon size={14} />}
               size="small"
-              onClick={handleRequestInput}
+              onClick={() => setIsRequestInputOpen(true)}
               disabled={!slackChannelName}
             >
               Request input from team
