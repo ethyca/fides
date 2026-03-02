@@ -497,6 +497,10 @@ def _get_request_task_ids_in_progress(
         if task.status == ExecutionLogStatus.pending:
             upstream_addrs = task.upstream_tasks or []
             if upstream_addrs:
+                # Mirrors RequestTask.upstream_tasks_complete() — a missing
+                # upstream record returns None from the lookup, which is not
+                # in COMPLETED_EXECUTION_LOG_STATUSES, so it's treated as
+                # incomplete (same safe default as the model method).
                 awaiting_upstream = not all(
                     status_by_address.get((addr, task.action_type))
                     in COMPLETED_EXECUTION_LOG_STATUSES
