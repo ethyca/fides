@@ -1,0 +1,4 @@
+type: Added
+description: Added auto-population of rules and targets on DSR policy creation
+pr: 7494
+labels: []

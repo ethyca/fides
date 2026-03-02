@@ -27,7 +27,6 @@ const PrivacyRequestSuccessPage = async ({
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <AuthFormLayout
-        showTitleOnDesktop
         title="Request submitted"
         dataTestId="privacy-request-success-layout"
       >

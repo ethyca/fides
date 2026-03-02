@@ -37,6 +37,11 @@ if TYPE_CHECKING:
     from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 
 
+# 3.05s per requests library recommendation to avoid TCP retransmission boundary edge cases.
+DEFAULT_CONNECT_TIMEOUT: float = 3.05
+DEFAULT_READ_TIMEOUT: float = 60  # 60s allows generous time for slow API responses while preventing indefinite worker stalls.
+
+
 class AuthenticatedClient:
     """
     A helper class to build authenticated HTTP requests based on
@@ -49,6 +54,8 @@ class AuthenticatedClient:
         configuration: ConnectionConfig,
         client_config: ClientConfig,
         rate_limit_config: Optional[RateLimitConfig] = None,
+        connect_timeout: float = DEFAULT_CONNECT_TIMEOUT,
+        read_timeout: float = DEFAULT_READ_TIMEOUT,
     ):
         self.session = Session()
         self.session.verify = certifi.where()
@@ -56,6 +63,8 @@ class AuthenticatedClient:
         self.configuration = configuration
         self.client_config = client_config
         self.rate_limit_config = rate_limit_config
+        self.connect_timeout = connect_timeout
+        self.read_timeout = read_timeout
         self._allowed_hosts: Optional[List[str]] = self._extract_allowed_hosts()
 
     def _extract_allowed_hosts(self) -> Optional[List[str]]:
@@ -263,7 +272,9 @@ class AuthenticatedClient:
         if isinstance(prepared_request.body, str):
             prepared_request.body = prepared_request.body.encode("utf-8")
 
-        response = self.session.send(prepared_request)
+        response = self.session.send(
+            prepared_request, timeout=(self.connect_timeout, self.read_timeout)
+        )
         ignore_error = self._should_ignore_error(
             status_code=response.status_code, errors_to_ignore=ignore_errors
         )
