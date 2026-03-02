@@ -286,6 +286,14 @@ def test_get_connection_type_secret_schemas_test_website():
     assert test_website_schema["properties"]["url"]["format"] == "uri"
 
 
+def test_single_exact_allowed_domain_hidden_from_schema():
+    """A connector param with a single exact allowed_domain should be excluded from the schema response."""
+    schema = get_connection_type_secret_schema(connection_type="stripe")
+    assert "domain" not in schema["properties"]
+    assert "domain" not in schema.get("required", [])
+    assert "api_key" in schema["properties"]
+
+
 def test_get_saas_connection_types_with_display_info(monkeypatch):
     """Test SaaS connection type extraction with display_info containing category, tags, and enabled_features."""
     from unittest.mock import Mock, patch
