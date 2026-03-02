@@ -20,7 +20,7 @@ jobs:
       has_fidesui_changes: ${{ steps.filter.outputs.fidesui }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check for fidesUI file changes
         uses: dorny/paths-filter@v3
