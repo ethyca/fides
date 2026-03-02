@@ -163,10 +163,18 @@ const pushConsentToGtag = (
 
   // Check if gtag is available
   if (typeof window.gtag !== "function") {
-    fidesDebugger(
-      "[Fides GCM] gtag() not found. Ensure Google Tag Manager or gtag.js is loaded.",
-    );
-    return;
+
+    const dataLayer = window.dataLayer = window.dataLayer || [];
+
+    function gtag(){
+      dataLayer.push(arguments);
+    }
+
+    window.gtag = gtag;
+
+    // fidesDebugger(
+    //   "[Fides GCM] gtag() not found. Ensure Google Tag Manager or gtag.js is loaded.",
+    // );
   }
 
   // Build Google consent object
