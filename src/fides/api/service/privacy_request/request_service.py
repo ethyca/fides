@@ -623,7 +623,11 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                     )
 
                     # Check each individual request task
-                    for request_task_id, task_status, awaiting_upstream in request_tasks_in_progress:
+                    for (
+                        request_task_id,
+                        task_status,
+                        awaiting_upstream,
+                    ) in request_tasks_in_progress:
                         try:
                             subtask_id = get_cached_task_id(request_task_id)
                         except Exception as cache_exc:
@@ -671,7 +675,10 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             # never have a cache key — this is not a stuck state. Only pending
                             # tasks can legitimately lack a cache key; in_processing tasks
                             # without one are genuinely stuck and should be canceled below.
-                            if task_status == ExecutionLogStatus.pending and awaiting_upstream:
+                            if (
+                                task_status == ExecutionLogStatus.pending
+                                and awaiting_upstream
+                            ):
                                 logger.debug(
                                     f"Request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) is pending and "
