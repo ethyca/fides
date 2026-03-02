@@ -137,7 +137,7 @@ export const RadarChart = ({
           data={empty ? EMPTY_PLACEHOLDER_DATA : data}
           cx="50%"
           cy="50%"
-          outerRadius="70%"
+          outerRadius="80%"
         >
           <ChartGradient
             id={gradientId}

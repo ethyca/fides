@@ -23,6 +23,7 @@ import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
 import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
@@ -233,6 +234,7 @@ export const PrivacyDeclarationFormComponents = ({
           name="dataset_references"
           label="Dataset references"
           options={datasetSelectOptions}
+          optionRender={DatasetSelectOption}
           tooltip="Is there a dataset configured for this system?"
           mode="multiple"
           layout="stacked"
