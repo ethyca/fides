@@ -45,7 +45,7 @@ healthcheck_ping_timeout = 2.0 # number
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "e6b52650d80b3cc911a3c5bde283cab0" # string
+analytics_id = "de909aea045e587daf735fce54117d8b" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -427,6 +427,13 @@ ssl_cert_reqs = "required" # string
 # If using TLS encryption rooted with a custom Certificate Authority,
 # set this to the path of the CA certificate.
 ssl_ca_certs = "" # string
+
+# Timeout in seconds for establishing a connection to Redis.
+socket_connect_timeout = 10.0 # number
+
+# Timeout in seconds for reading/writing to an established Redis
+# connection.
+socket_timeout = 10.0 # number
 
 # The user with which to login to the Redis cache.
 user = "" # string

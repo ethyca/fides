@@ -2251,7 +2251,14 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">552</span>
 <span class="normal">553</span>
 <span class="normal">554</span>
-<span class="normal">555</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2298,7 +2305,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;e6b52650d80b3cc911a3c5bde283cab0&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;de909aea045e587daf735fce54117d8b&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2680,6 +2687,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># If using TLS encryption rooted with a custom Certificate Authority,</span>
 <span class="c1"># set this to the path of the CA certificate.</span>
 <span class="n">ssl_ca_certs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Timeout in seconds for establishing a connection to Redis.</span>
+<span class="n">socket_connect_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10.0</span><span class="w"> </span><span class="c1"># number</span>
+
+<span class="c1"># Timeout in seconds for reading/writing to an established Redis</span>
+<span class="c1"># connection.</span>
+<span class="n">socket_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">10.0</span><span class="w"> </span><span class="c1"># number</span>
 
 <span class="c1"># The user with which to login to the Redis cache.</span>
 <span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
