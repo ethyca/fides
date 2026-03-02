@@ -305,12 +305,24 @@ def get_cache() -> FidesopsRedis:
 
     try:
         connected = _connection.ping()
-    except ConnectionErrorFromRedis:
+    except ConnectionErrorFromRedis as e:
+        logger.exception("Unable to establish Redis connection. Exception: {}", e)
+        # Log only essential connection details (host, port, db), exclude sensitive info
+        conn_kwargs = _connection._client.connection_kwargs  # type: ignore
+        minimal_details = {
+            "host": conn_kwargs.get("host"),
+            "port": conn_kwargs.get("port"),
+            "db": conn_kwargs.get("db"),
+            "read_from_replicas": conn_kwargs.get("read_from_replicas"),
+            "username": conn_kwargs.get("username"),
+            "ssl": conn_kwargs.get("ssl"),
+        }
+        logger.debug("Redis connection details: {}", minimal_details)
         connected = False
 
     if not connected:
         raise common_exceptions.RedisConnectionError(
-            "Unable to establish Redis connection. Fides is unable to accept PrivacyRequests."
+            "Unable to establish Redis connection. Fides Redis cache is not available."
         )
 
     return _connection
