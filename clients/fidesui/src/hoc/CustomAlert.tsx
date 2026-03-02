@@ -1,4 +1,11 @@
-import { Alert, AlertProps, Button, ConfigProvider, Flex, theme } from "antd/lib";
+import {
+  Alert,
+  AlertProps,
+  Button,
+  ConfigProvider,
+  Flex,
+  theme,
+} from "antd/lib";
 import type { AlertRef } from "antd/lib/alert/Alert";
 import React from "react";
 
@@ -37,8 +44,7 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
       const { token } = theme.useToken();
       const hasActions = primaryAction || secondaryAction;
 
-      const colorPrimary =
-        token[ALERT_TYPE_TOKEN_MAP[type ?? "info"]];
+      const colorPrimary = token[ALERT_TYPE_TOKEN_MAP[type ?? "info"]];
 
       const augmentedDescription = hasActions ? (
         <>
