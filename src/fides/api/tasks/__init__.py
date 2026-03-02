@@ -121,6 +121,15 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
 
     celery_config.update(config.celery)
 
+    # CelerySettings includes broker_url and result_backend (default None)
+    # which overwrite the valid Redis URLs above. Restore unless explicitly set.
+    celery_config["broker_url"] = (
+        config.celery.broker_url or config.redis.connection_url
+    )
+    celery_config["result_backend"] = (
+        config.celery.result_backend or config.redis.connection_url
+    )
+
     app.conf.update(celery_config)
 
     app.autodiscover_tasks(autodiscover_task_locations)
