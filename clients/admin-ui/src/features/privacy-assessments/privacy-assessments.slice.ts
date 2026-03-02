@@ -1,4 +1,7 @@
+import { saveAs } from "file-saver";
+
 import { baseApi } from "~/features/common/api.slice";
+import { getFileNameFromContentDisposition } from "~/features/common/utils";
 import type {
   CreateAssessmentRequest,
   Page_TemplateResponse_,
@@ -206,6 +209,25 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         url: "plus/privacy-assessments/config/defaults",
       }),
     }),
+
+    // PDF Report Download
+    downloadAssessmentReport: build.mutation<void, string>({
+      query: (id) => ({
+        url: `plus/privacy-assessments/${id}/pdf`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const filename = await getFileNameFromContentDisposition(
+            response.headers.get("content-disposition"),
+          );
+          const arrayBuffer = await response.arrayBuffer();
+          const blob = new Blob([arrayBuffer], {
+            type: response.headers.get("content-type") || "application/pdf",
+          });
+          saveAs(blob, filename || "assessment-report.pdf");
+          return { data: undefined };
+        },
+      }),
+    }),
   }),
 });
 
@@ -226,6 +248,8 @@ export const {
   useGetAssessmentConfigQuery,
   useUpdateAssessmentConfigMutation,
   useGetAssessmentConfigDefaultsQuery,
+  // PDF Report
+  useDownloadAssessmentReportMutation,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };

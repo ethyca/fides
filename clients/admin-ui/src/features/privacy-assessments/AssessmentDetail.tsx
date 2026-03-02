@@ -14,7 +14,7 @@ import {
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -22,7 +22,10 @@ import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
-import { useDeletePrivacyAssessmentMutation } from "./privacy-assessments.slice";
+import {
+  useDeletePrivacyAssessmentMutation,
+  useDownloadAssessmentReportMutation,
+} from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { SlackIcon } from "./SlackIcon";
@@ -42,6 +45,9 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
+
+  const [downloadReport, { isLoading: isDownloading }] =
+    useDownloadAssessmentReportMutation();
 
   const isComplete = useMemo(
     () =>
@@ -82,6 +88,19 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
       },
     });
   };
+
+  const handleDownloadReport = useCallback(async () => {
+    try {
+      await downloadReport(assessment.id).unwrap();
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Failed to download report. Please try again.",
+        ),
+      );
+    }
+  }, [assessment.id, downloadReport, message]);
 
   const collapseItems = useMemo(
     () =>
@@ -163,12 +182,17 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           <Tooltip
             title={
               !isComplete
-                ? "Assessment must be complete before generating a report"
+                ? "Assessment must be complete before downloading a report"
                 : undefined
             }
           >
-            <Button type="primary" disabled={!isComplete}>
-              Generate report
+            <Button
+              type="primary"
+              disabled={!isComplete}
+              loading={isDownloading}
+              onClick={handleDownloadReport}
+            >
+              Download report
             </Button>
           </Tooltip>
         </Space>
