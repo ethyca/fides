@@ -136,6 +136,7 @@ export const WithRadarChart: Story = {
             valueStyle={{ fontSize: token.fontSize }}
           />
           <div
+            className="aspect-square"
             style={{
               marginLeft: -token.paddingLG,
               marginRight: -token.paddingLG,

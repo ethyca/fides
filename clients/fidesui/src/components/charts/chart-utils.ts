@@ -6,13 +6,17 @@ export const useChartAnimation = (animationDuration: number): boolean => {
     if (animationDuration <= 0) {
       return undefined;
     }
-    const timer = setTimeout(
-      () => setAnimationActive(false),
-      animationDuration,
-    );
-    return () => {
-      clearTimeout(timer);
+    const startTime = performance.now();
+    let animationId: number;
+    const tick = (now: number) => {
+      if (now - startTime >= animationDuration) {
+        setAnimationActive(false);
+      } else {
+        animationId = requestAnimationFrame(tick);
+      }
     };
+    animationId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationId);
   }, [animationDuration]);
   return animationActive;
 };

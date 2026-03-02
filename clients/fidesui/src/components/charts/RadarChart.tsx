@@ -131,13 +131,13 @@ export const RadarChart = ({
 
   return (
     // The chart is not interactive, so pointer events are turned off to avoid rendering a misleading outline
-    <div className="w-full pointer-events-none">
-      <ResponsiveContainer width="100%" aspect={aspect}>
+    <div className="w-full h-full pointer-events-none">
+      <ResponsiveContainer width="100%" height="100%">
         <RechartsRadarChart
           data={empty ? EMPTY_PLACEHOLDER_DATA : data}
           cx="50%"
           cy="50%"
-          outerRadius="80%"
+          outerRadius="70%"
         >
           <ChartGradient
             id={gradientId}
@@ -175,7 +175,9 @@ export const RadarChart = ({
               )
             }
             activeDot={false}
-            isAnimationActive={!empty && animationDuration > 0 && animationActive}
+            isAnimationActive={
+              !empty && animationDuration > 0 && animationActive
+            }
             animationDuration={animationDuration}
             animationEasing={CHART_ANIMATION.easing}
           />
