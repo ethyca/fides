@@ -11,6 +11,7 @@ import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { PolicyConditionsTab } from "~/features/policies/conditions/PolicyConditionsTab";
 import {
   useDeletePolicyMutation,
+  useGetDefaultPoliciesQuery,
   useGetPolicyQuery,
 } from "~/features/policies/policy.slice";
 import { PolicyBox } from "~/features/policies/PolicyBox";
@@ -37,7 +38,15 @@ const PolicyDetailPage: NextPage = () => {
     skip: !policyKey,
   });
 
+  const { data: defaultPoliciesData } = useGetDefaultPoliciesQuery();
   const [deletePolicy, { isLoading: isDeleting }] = useDeletePolicyMutation();
+
+  const isDefault = useMemo(() => {
+    if (!defaultPoliciesData || !policyKey) {
+      return false;
+    }
+    return Object.values(defaultPoliciesData).includes(policyKey);
+  }, [defaultPoliciesData, policyKey]);
 
   const handleDelete = useCallback(async () => {
     if (!policyKey) {
@@ -113,6 +122,7 @@ const PolicyDetailPage: NextPage = () => {
         <Flex vertical gap="large">
           <PolicyBox
             policy={policy}
+            isDefault={isDefault}
             onEdit={() => setIsEditModalOpen(true)}
             onDelete={handleDelete}
             isDeleting={isDeleting}
