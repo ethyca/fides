@@ -1,5 +1,5 @@
-import { theme } from "antd";
-import { useId, useMemo } from "react";
+import { theme } from "antd/lib";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -35,6 +35,7 @@ export interface RadarChartProps {
   data?: RadarChartDataPoint[] | null;
   color?: AntColorTokenKey;
   animationDuration?: number;
+  aspect?: number;
 }
 
 interface RadarTickProps {
@@ -108,12 +109,20 @@ export const RadarChart = ({
   data,
   color,
   animationDuration = CHART_ANIMATION.defaultDuration,
+  aspect = 1,
 }: RadarChartProps) => {
-  const { token } = theme.useToken();
+  const { token, hashId } = theme.useToken();
   const empty = !data?.length;
   const chartColor = color ? token[color] : token.colorText;
 
   const gradientId = `radar-gradient-${useId()}`;
+
+  const [animationActive, setAnimationActive] = useState(true);
+  useEffect(() => {
+    if (animationDuration <= 0) return;
+    const timer = setTimeout(() => setAnimationActive(false), animationDuration);
+    return () => clearTimeout(timer);
+  }, [animationDuration]);
 
   const STATUS_COLORS = useMemo<Record<RadarPointStatus, string>>(
     () => ({
@@ -126,9 +135,10 @@ export const RadarChart = ({
 
   return (
     // The chart is not interactive, so pointer events are turned off to avoid rendering a misleading outline
-    <div className="h-full w-full pointer-events-none">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full pointer-events-none">
+      <ResponsiveContainer width="100%" aspect={aspect}>
         <RechartsRadarChart
+          key={hashId}
           data={empty ? EMPTY_PLACEHOLDER_DATA : data}
           cx="50%"
           cy="50%"
@@ -170,7 +180,7 @@ export const RadarChart = ({
               )
             }
             activeDot={false}
-            isAnimationActive={!empty && animationDuration > 0}
+            isAnimationActive={!empty && animationDuration > 0 && animationActive}
             animationDuration={animationDuration}
             animationEasing={CHART_ANIMATION.easing}
           />
