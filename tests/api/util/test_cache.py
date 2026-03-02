@@ -153,7 +153,7 @@ class TestGetReadOnlyCache:
                 username=config.redis.read_only_user,
                 password=config.redis.read_only_password,
                 ssl=config.redis.read_only_ssl,
-                ssl_ca_certs=config.redis.read_only_ssl_ca_certs,
+                ssl_ca_certs=config.redis.read_only_ssl_ca_certs or None,
                 ssl_cert_reqs=config.redis.read_only_ssl_cert_reqs,
             )
             # FidesopsRedis(client) wraps the Redis client
@@ -248,7 +248,7 @@ class TestGetReadOnlyCache:
                 username="test-writer-user",
                 password="test-writer-password",
                 ssl=config.redis.ssl,
-                ssl_ca_certs=config.redis.ssl_ca_certs,
+                ssl_ca_certs=config.redis.ssl_ca_certs or None,
                 ssl_cert_reqs=config.redis.ssl_cert_reqs,
             )
             MockFidesopsRedis.assert_called_once()
