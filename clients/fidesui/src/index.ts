@@ -239,7 +239,6 @@ export {
   Badge,
   Breadcrumb,
   Button,
-  Card,
   Cascader,
   Checkbox,
   Col,
@@ -290,17 +289,22 @@ export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 // Higher-order components
 export type {
   CustomAvatarProps as AvatarProps,
+  CustomCardProps as CardProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
+  CustomStatisticProps as StatisticProps,
+  StatisticTrend,
 } from "./hoc";
 export {
   CustomAvatar as Avatar,
+  CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
+  CustomStatistic as Statistic,
   CustomTable as Table,
   CustomTag as Tag,
   CustomTooltip as Tooltip,
@@ -325,6 +329,21 @@ export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
+export type { AntColorTokenKey } from "./components/charts/chart-constants";
+export {
+  CHART_ANIMATION,
+  CHART_GRADIENT,
+  CHART_STROKE,
+  CHART_TYPOGRAPHY,
+} from "./components/charts/chart-constants";
+export type { ChartTextProps } from "./components/charts/ChartText";
+export { ChartText } from "./components/charts/ChartText";
+export type {
+  RadarChartDataPoint,
+  RadarChartProps,
+  RadarPointStatus,
+} from "./components/charts/RadarChart";
+export { RadarChart } from "./components/charts/RadarChart";
 export type { SparklineProps } from "./components/charts/Sparkline";
 export { Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";

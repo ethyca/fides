@@ -29,7 +29,7 @@ const PrivacyRequestPage = async ({
 
   return (
     <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <AuthFormLayout showTitleOnDesktop dataTestId="privacy-request-layout">
+      <AuthFormLayout dataTestId="privacy-request-layout">
         <PrivacyRequestFormPage actionKey={actionKey} />
       </AuthFormLayout>
     </LoadServerEnvironmentIntoStores>

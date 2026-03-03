@@ -11,22 +11,14 @@ class TestStripeConnector:
     def test_stripe_connection_test(self, stripe_runner: ConnectorRunner) -> None:
         stripe_runner.test_connection()
 
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_stripe_access_request_task_with_email(
         self,
         stripe_runner: ConnectorRunner,
         policy: Policy,
-        dsr_version,
-        request,
         stripe_identity_email,
         stripe_create_data,
     ) -> None:
         """Full access request based on the Stripe SaaS config"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         dataset_name = stripe_runner.dataset_config.fides_key
 
         access_results = await stripe_runner.access_request(
@@ -92,22 +84,15 @@ class TestStripeConnector:
         for tax_id in access_results[f"{dataset_name}:tax_id"]:
             assert tax_id["customer"] == customer_id
 
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_stripe_access_request_task_with_phone_number(
         self,
         stripe_runner: ConnectorRunner,
         policy: Policy,
-        dsr_version,
-        request,
         stripe_identity_email,
         stripe_identity_phone_number,
         stripe_create_data,
     ) -> None:
         """Full access request based on the Stripe SaaS config"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
         # The Privacy request fixture we're using already has an email/phone cached
         # so I'm clearing that first
         dataset_name = stripe_runner.dataset_config.fides_key
@@ -132,24 +117,16 @@ class TestStripeConnector:
 
     @pytest.mark.integration_saas
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_stripe_erasure_request_with_email(
         self,
         stripe_runner: ConnectorRunner,
         policy: Policy,
-        dsr_version,
-        request,
         erasure_policy_all_categories,
         stripe_identity_email,
         stripe_test_client,
         stripe_create_data,
     ) -> None:
         """Full erasure request based on the Stripe SaaS config"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         dataset_name = stripe_runner.dataset_config.fides_key
 
         generated_customer = stripe_create_data

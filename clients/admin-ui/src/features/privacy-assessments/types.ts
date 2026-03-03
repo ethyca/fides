@@ -267,18 +267,16 @@ export interface ReminderResponse {
 }
 
 export interface CreatePrivacyAssessmentRequest {
-  assessment_type: string;
-  system_fides_key?: string;
-  declaration_id?: string;
+  assessment_types: string[];
+  system_fides_keys?: string[] | null;
   use_llm?: boolean;
   model?: string;
 }
 
-export interface CreatePrivacyAssessmentResponse {
-  assessments: PrivacyAssessmentResponse[];
-  assessment_type: string;
-  assessment_name: string;
-  total_created: number;
+export interface CreateAssessmentTaskResponse {
+  task_id: string;
+  status: string;
+  message: string;
 }
 
 export interface UpdatePrivacyAssessmentRequest {
@@ -353,4 +351,52 @@ export interface GetAssessmentEvidenceParams {
   question_id?: string;
   type?: EvidenceType;
   group_by?: "question" | "type";
+}
+
+// =============================================================================
+// Assessment Configuration Types
+// =============================================================================
+
+export interface PrivacyAssessmentConfigResponse {
+  id: string;
+
+  // LLM Configuration
+  assessment_model_override: string | null;
+  chat_model_override: string | null;
+
+  // Computed effective models (what will actually be used)
+  effective_assessment_model: string;
+  effective_chat_model: string;
+
+  // Re-assessment Scheduling
+  reassessment_enabled: boolean;
+  reassessment_cron: string;
+
+  // Slack Configuration
+  slack_channel_id: string | null;
+  slack_channel_name: string | null;
+
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PrivacyAssessmentConfigUpdate {
+  // LLM Configuration
+  assessment_model_override?: string | null;
+  chat_model_override?: string | null;
+
+  // Re-assessment Scheduling
+  reassessment_enabled?: boolean;
+  reassessment_cron?: string;
+
+  // Slack Configuration
+  slack_channel_id?: string | null;
+  slack_channel_name?: string | null;
+}
+
+export interface PrivacyAssessmentConfigDefaults {
+  default_assessment_model: string;
+  default_chat_model: string;
+  default_reassessment_cron: string;
 }

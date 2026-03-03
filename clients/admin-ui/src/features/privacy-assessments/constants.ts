@@ -1,6 +1,11 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 
-import { AnswerSource, AssessmentStatus, RiskLevel } from "./types";
+import {
+  AnswerSource,
+  AnswerStatus,
+  AssessmentStatus,
+  RiskLevel,
+} from "./types";
 
 export const ASSESSMENT_STATUS_LABELS: Record<AssessmentStatus, string> = {
   [AssessmentStatus.IN_PROGRESS]: "In progress",
@@ -35,8 +40,28 @@ export const ANSWER_SOURCE_TAG_COLORS: Record<AnswerSource, CUSTOM_TAG_COLOR> =
     [AnswerSource.SLACK]: CUSTOM_TAG_COLOR.DEFAULT,
   };
 
+export const ANSWER_STATUS_LABELS: Record<AnswerStatus, string> = {
+  [AnswerStatus.COMPLETE]: "Complete",
+  [AnswerStatus.PARTIAL]: "System derivable",
+  [AnswerStatus.NEEDS_INPUT]: "Needs input",
+};
+
+export const ANSWER_STATUS_TAG_COLORS: Record<AnswerStatus, CUSTOM_TAG_COLOR> =
+  {
+    [AnswerStatus.COMPLETE]: CUSTOM_TAG_COLOR.SUCCESS,
+    [AnswerStatus.PARTIAL]: CUSTOM_TAG_COLOR.WARNING,
+    [AnswerStatus.NEEDS_INPUT]: CUSTOM_TAG_COLOR.WARNING,
+  };
+
 export const RISK_LEVEL_DOT_COLORS: Record<RiskLevel, string> = {
   [RiskLevel.HIGH]: "var(--fidesui-error)",
   [RiskLevel.MEDIUM]: "var(--fidesui-warning)",
   [RiskLevel.LOW]: "var(--fidesui-success)",
 };
+
+export const FREQUENCY_OPTIONS = [
+  { label: "Daily", value: "daily", cron: "0 9 * * *" },
+  { label: "Weekly (Mondays)", value: "weekly", cron: "0 9 * * 1" },
+  { label: "Monthly (1st)", value: "monthly", cron: "0 9 1 * *" },
+  { label: "Yearly (Jan 1st)", value: "yearly", cron: "0 9 1 1 *" },
+];

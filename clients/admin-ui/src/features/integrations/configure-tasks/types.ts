@@ -1,4 +1,8 @@
+import { Dayjs } from "dayjs";
+
 import { ManualFieldResponse } from "~/types/api";
+
+export type FieldValue = string | number | boolean | Dayjs | string[] | null;
 
 export interface Task {
   id: string;

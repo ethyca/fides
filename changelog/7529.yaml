@@ -1,0 +1,4 @@
+type: Fixed
+description: Added default connect and read timeouts to AuthenticatedClient to prevent unbounded HTTP waits
+pr: 7529
+labels: []

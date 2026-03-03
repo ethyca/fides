@@ -455,6 +455,8 @@ const ConfigureIntegrationForm = ({
                       layout="stacked"
                       options={systemOptions}
                       onSearch={onSystemSearch}
+                      // Refetch systems on search; disable client-side filtering
+                      filterOption={false}
                       loading={isFetchingSystems}
                       allowClear
                       placeholder="Search for a system..."
