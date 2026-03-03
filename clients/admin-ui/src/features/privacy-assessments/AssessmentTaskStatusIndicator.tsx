@@ -20,7 +20,7 @@ import {
 } from "./privacy-assessments.slice";
 import { TaskStatus } from "./types";
 
-const ACTIVE_POLL_INTERVAL = 30_000;
+const ACTIVE_POLL_INTERVAL = 15_000;
 
 interface AssessmentTaskStatusIndicatorProps {
   onTaskFinish?: () => void;
