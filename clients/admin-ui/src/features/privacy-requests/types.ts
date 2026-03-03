@@ -121,6 +121,13 @@ export interface PrivacyRequestResponse {
   size?: number;
 }
 
+export interface PrivacyRequestDiagnosticsExportResponse {
+  download_url: string;
+  storage_type: string;
+  object_key: string;
+  created_at: string;
+}
+
 export interface PrivacyRequestParams {
   status?: PrivacyRequestStatus[];
   action_type?: ActionType[];
