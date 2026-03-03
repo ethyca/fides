@@ -11,6 +11,7 @@ import {
   Select,
   SelectProps,
   Space,
+  Tooltip,
 } from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
@@ -25,6 +26,7 @@ const ScrollableListItem = <T extends unknown>({
   onDeleteItem,
   onEditItem,
   tooltip,
+  warningTooltip,
   onRowClick,
   maxH = 10,
   rowTestId,
@@ -35,6 +37,7 @@ const ScrollableListItem = <T extends unknown>({
   onDeleteItem?: (item: T) => void;
   onEditItem?: (item: T) => void;
   tooltip?: string;
+  warningTooltip?: string;
   onRowClick?: (item: T) => void;
   maxH?: number;
   rowTestId: string;
@@ -79,6 +82,15 @@ const ScrollableListItem = <T extends unknown>({
         overflow="clip"
         data-testid={rowTestId}
       >
+        {warningTooltip && (
+          <Tooltip
+            title={warningTooltip}
+            trigger={["hover", "focus"]}
+            placement="right"
+          >
+            <Icons.WarningAltFilled fill="var(--fidesui-warning)" />
+          </Tooltip>
+        )}
         <Text
           fontSize="sm"
           userSelect="none"
@@ -190,6 +202,7 @@ const ScrollableList = <T extends unknown>({
   setValues,
   canDeleteItem,
   getTooltip,
+  getWarningTooltip,
   onRowClick,
   onEditItem,
   selectOnAdd,
@@ -212,6 +225,7 @@ const ScrollableList = <T extends unknown>({
   setValues: (newOrder: T[]) => void;
   canDeleteItem?: (item: T) => boolean;
   getTooltip?: (item: T) => string | undefined;
+  getWarningTooltip?: (item: T) => string | undefined;
   onRowClick?: (item: T) => void;
   onEditItem?: (item: T) => void;
   selectOnAdd?: boolean;
@@ -316,6 +330,11 @@ const ScrollableList = <T extends unknown>({
               tooltip={
                 getTooltip && getTooltip(item) ? getTooltip(item) : undefined
               }
+              warningTooltip={
+                getWarningTooltip && getWarningTooltip(item)
+                  ? getWarningTooltip(item)
+                  : undefined
+              }
             />
           );
         })}
@@ -335,6 +354,11 @@ const ScrollableList = <T extends unknown>({
               onDeleteItem={handleDeleteItem}
               tooltip={
                 getTooltip && getTooltip(item) ? getTooltip(item) : undefined
+              }
+              warningTooltip={
+                getWarningTooltip && getWarningTooltip(item)
+                  ? getWarningTooltip(item)
+                  : undefined
               }
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
