@@ -200,11 +200,12 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfigChildren = findGroup(
-        navGroups,
-        "Core configuration",
-      ).children.map((c) => c.title);
-      expect(coreConfigChildren).not.toContain("Domains");
+      const coreConfig = navGroups.find(
+        (g) => g.title === "Core configuration",
+      );
+      expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
+        "Domains",
+      );
     });
 
     it("hide domain management when scopes are wrong", () => {
@@ -222,7 +223,9 @@ describe("configureNavGroups", () => {
       const coreConfig = navGroups.find(
         (g) => g.title === "Core configuration",
       );
-      expect(coreConfig?.children.map((c) => c.title)).not.toContain("Domains");
+      expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
+        "Domains",
+      );
     });
   });
 
