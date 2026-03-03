@@ -657,12 +657,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
         }}
         okText="Generate assessments"
         width={600}
+        styles={{ footer: { padding: "16px 24px" } }}
       >
-        <Space
-          direction="vertical"
-          size="middle"
-          style={{ width: "100%", marginTop: 16 }}
-        >
+        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
           <div
             style={{
               padding: "12px 16px",
