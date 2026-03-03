@@ -3,6 +3,7 @@ export * from "./AssessmentCard";
 export * from "./AssessmentDetail";
 export * from "./AssessmentGroup";
 export { default as AssessmentSettingsModal } from "./AssessmentSettingsModal";
+export * from "./AssessmentTaskPopoverContent";
 export * from "./AssessmentTaskStatusIndicator";
 export * from "./constants";
 export * from "./EditableTextBlock";
