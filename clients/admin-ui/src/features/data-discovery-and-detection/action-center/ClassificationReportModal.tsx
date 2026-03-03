@@ -12,6 +12,7 @@ import {
   Tooltip,
   Typography,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import {
   useGetClassificationReportQuery,
@@ -94,7 +95,7 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
           <div>
             <Text type="secondary">Classified by Compass</Text>
             <div>
-              <Text strong style={{ fontSize: 24, color: "#52c41a" }}>
+              <Text strong type="success" style={{ fontSize: 24 }}>
                 {coverage.classified_by_compass}
               </Text>
             </div>
@@ -102,7 +103,10 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
           <div>
             <Text type="secondary">Classified by LLM</Text>
             <div>
-              <Text strong style={{ fontSize: 24, color: "#1890ff" }}>
+              <Text
+                strong
+                style={{ fontSize: 24, color: palette.FIDESUI_INFO }}
+              >
                 {coverage.classified_by_llm}
               </Text>
             </div>
@@ -112,10 +116,8 @@ const ReportContent = ({ report }: { report: WebsiteClassificationReport }) => {
             <div>
               <Text
                 strong
-                style={{
-                  fontSize: 24,
-                  color: coverage.unclassified > 0 ? "#faad14" : undefined,
-                }}
+                type={coverage.unclassified > 0 ? "warning" : undefined}
+                style={{ fontSize: 24 }}
               >
                 {coverage.unclassified}
               </Text>
