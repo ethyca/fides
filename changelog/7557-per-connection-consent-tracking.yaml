@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed consent status tracking to key per-connection instead of per-system
+pr: 7557
+labels: ["high-risk"]
