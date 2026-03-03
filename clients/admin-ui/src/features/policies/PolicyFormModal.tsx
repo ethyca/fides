@@ -8,6 +8,7 @@ import {
   useCreateOrUpdatePoliciesMutation,
   useGetPolicyQuery,
 } from "~/features/policies/policy.slice";
+import { capitalize } from "~/features/common/utils";
 import { ActionType } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -163,10 +164,10 @@ export const PolicyFormModal = ({
               placeholder="Select a request type"
               data-testid="policy-type-select"
               options={[
-                { value: ActionType.ACCESS, label: "Access" },
-                { value: ActionType.ERASURE, label: "Erasure" },
-                { value: ActionType.CONSENT, label: "Consent" },
-              ]}
+                ActionType.ACCESS,
+                ActionType.ERASURE,
+                ActionType.CONSENT,
+              ].map((type) => ({ value: type, label: capitalize(type) }))}
             />
           </Form.Item>
         )}
