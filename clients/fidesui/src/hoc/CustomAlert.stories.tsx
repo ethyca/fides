@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { Alert, GetProps } from "../../index";
+import { Alert, GetProps } from "../index";
 
 const ALERT_TYPE: Record<
   NonNullable<GetProps<typeof Alert>["type"]>,
@@ -73,7 +73,7 @@ export const Warning: Story = {
   },
 };
 
-export const WithActions: Story = {
+export const HOCWithActions: Story = {
   args: {
     type: "info",
     message: "BRIEFING \u00b7 FEB 17, 2026",
