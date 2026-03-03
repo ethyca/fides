@@ -11,7 +11,6 @@ from fides.api.graph.config import (
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.util.collection_util import unflatten_dict
 from fides.api.util.domain_util import validate_value_against_allowed_list
-from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.api.util.saas_util import (
     assign_placeholders,
     check_dataset_missing_reference_values,
