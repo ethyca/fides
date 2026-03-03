@@ -1,4 +1,5 @@
 import {
+  Button,
   Descriptions,
   Flex,
   Icons,
@@ -8,8 +9,9 @@ import {
   Spin,
   Tag,
   Text,
+  notification,
 } from "fidesui";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 
@@ -19,21 +21,44 @@ interface AssessmentTaskStatusIndicatorProps {
   activeTask: AssessmentTaskResponse | null;
   lastCompletedTask: AssessmentTaskResponse | null;
   lastAssessmentDate: Date | null;
+  systemNamesMap?: Record<string, string>;
+  templateNamesMap?: Record<string, string>;
+  onTaskFinish?: () => void;
   className?: string;
 }
 
-const formatSystems = (systemFidesKeys: string[] | null): string =>
-  systemFidesKeys && systemFidesKeys.length > 0
-    ? systemFidesKeys.join(", ")
-    : "All systems";
+const formatSystems = (
+  systemFidesKeys: string[] | null,
+  namesMap?: Record<string, string>,
+): string => {
+  if (!systemFidesKeys || systemFidesKeys.length === 0) {
+    return "All systems";
+  }
+  return systemFidesKeys
+    .map((key) => namesMap?.[key] ?? key)
+    .join(", ");
+};
 
-const formatTypes = (assessmentTypes: string[]): string =>
-  assessmentTypes.join(", ") || "—";
+const formatTypes = (
+  assessmentTypes: string[],
+  namesMap?: Record<string, string>,
+): string => {
+  if (assessmentTypes.length === 0) {
+    return "—";
+  }
+  return assessmentTypes
+    .map((t) => namesMap?.[t] ?? t)
+    .join(", ");
+};
 
 const ActiveTaskPopoverContent = ({
   task,
+  systemNamesMap,
+  templateNamesMap,
 }: {
   task: AssessmentTaskResponse;
+  systemNamesMap?: Record<string, string>;
+  templateNamesMap?: Record<string, string>;
 }) => {
   const startedAgo = useRelativeTime(
     task.created_at ? new Date(task.created_at) : null,
@@ -57,10 +82,10 @@ const ActiveTaskPopoverContent = ({
           </Space>
         </Descriptions.Item>
         <Descriptions.Item label="Assessment types">
-          {formatTypes(task.assessment_types)}
+          {formatTypes(task.assessment_types, templateNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Systems">
-          {formatSystems(task.system_fides_keys)}
+          {formatSystems(task.system_fides_keys, systemNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Started">{startedAgo}</Descriptions.Item>
         {task.status === TaskStatus.ERROR && task.message && (
@@ -77,8 +102,12 @@ const ActiveTaskPopoverContent = ({
 
 const CompletedTaskPopoverContent = ({
   task,
+  systemNamesMap,
+  templateNamesMap,
 }: {
   task: AssessmentTaskResponse;
+  systemNamesMap?: Record<string, string>;
+  templateNamesMap?: Record<string, string>;
 }) => {
   const completedAgo = useRelativeTime(
     task.updated_at ? new Date(task.updated_at) : null,
@@ -91,10 +120,10 @@ const CompletedTaskPopoverContent = ({
           <Tag color="success">Completed</Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Assessment types">
-          {formatTypes(task.assessment_types)}
+          {formatTypes(task.assessment_types, templateNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Systems">
-          {formatSystems(task.system_fides_keys)}
+          {formatSystems(task.system_fides_keys, systemNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Completed">{completedAgo}</Descriptions.Item>
       </Descriptions>
@@ -104,8 +133,12 @@ const CompletedTaskPopoverContent = ({
 
 const ErrorTaskPopoverContent = ({
   task,
+  systemNamesMap,
+  templateNamesMap,
 }: {
   task: AssessmentTaskResponse;
+  systemNamesMap?: Record<string, string>;
+  templateNamesMap?: Record<string, string>;
 }) => {
   const failedAgo = useRelativeTime(
     task.updated_at ? new Date(task.updated_at) : null,
@@ -118,10 +151,10 @@ const ErrorTaskPopoverContent = ({
           <Tag color="error">Failed</Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Assessment types">
-          {formatTypes(task.assessment_types)}
+          {formatTypes(task.assessment_types, templateNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Systems">
-          {formatSystems(task.system_fides_keys)}
+          {formatSystems(task.system_fides_keys, systemNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Failed">{failedAgo}</Descriptions.Item>
         {task.message && (
@@ -140,26 +173,71 @@ export const AssessmentTaskStatusIndicator = ({
   activeTask,
   lastCompletedTask,
   lastAssessmentDate,
+  systemNamesMap,
+  templateNamesMap,
+  onTaskFinish,
   className,
 }: AssessmentTaskStatusIndicatorProps) => {
   const lastAssessmentAgo = useRelativeTime(lastAssessmentDate);
+  const [notificationApi, notificationHolder] = notification.useNotification();
+
+  // Detect active → idle transition and fire the completion notification
+  const hadActiveTaskRef = useRef(false);
+  useEffect(() => {
+    if (hadActiveTaskRef.current && !activeTask) {
+      notificationApi.success({
+        message: "New assessment results are available",
+        btn: onTaskFinish ? (
+          <Button
+            size="small"
+            onClick={() => {
+              onTaskFinish();
+              notificationApi.destroy();
+            }}
+          >
+            Reload results
+          </Button>
+        ) : undefined,
+        duration: 0,
+      });
+    }
+    hadActiveTaskRef.current = activeTask !== null;
+  }, [activeTask, notificationApi, onTaskFinish]);
 
   const popoverContent = useMemo(() => {
     if (activeTask) {
-      return <ActiveTaskPopoverContent task={activeTask} />;
+      return (
+        <ActiveTaskPopoverContent
+          task={activeTask}
+          systemNamesMap={systemNamesMap}
+          templateNamesMap={templateNamesMap}
+        />
+      );
     }
     if (lastCompletedTask?.status === TaskStatus.ERROR) {
-      return <ErrorTaskPopoverContent task={lastCompletedTask} />;
+      return (
+        <ErrorTaskPopoverContent
+          task={lastCompletedTask}
+          systemNamesMap={systemNamesMap}
+          templateNamesMap={templateNamesMap}
+        />
+      );
     }
     if (lastCompletedTask) {
-      return <CompletedTaskPopoverContent task={lastCompletedTask} />;
+      return (
+        <CompletedTaskPopoverContent
+          task={lastCompletedTask}
+          systemNamesMap={systemNamesMap}
+          templateNamesMap={templateNamesMap}
+        />
+      );
     }
     return (
       <Text type="secondary" size="sm">
         No evaluation history.
       </Text>
     );
-  }, [activeTask, lastCompletedTask]);
+  }, [activeTask, lastCompletedTask, systemNamesMap, templateNamesMap]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;
@@ -203,15 +281,18 @@ export const AssessmentTaskStatusIndicator = ({
   }
 
   return (
-    <Popover
-      content={popoverContent}
-      title="Evaluation details"
-      trigger="hover"
-      placement="bottom"
-    >
-      <div className={`cursor-pointer${className ? ` ${className}` : ""}`}>
-        {inlineContent}
-      </div>
-    </Popover>
+    <>
+      {notificationHolder}
+      <Popover
+        content={popoverContent}
+        title="Evaluation details"
+        trigger="hover"
+        placement="bottom"
+      >
+        <div className={`cursor-pointer${className ? ` ${className}` : ""}`}>
+          {inlineContent}
+        </div>
+      </Popover>
+    </>
   );
 };

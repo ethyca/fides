@@ -90,7 +90,7 @@ const EvaluateAssessmentPage: NextPage = () => {
 
   const handleSubmit = async (values: FormValues) => {
     try {
-      await createAssessment({
+      const result = await createAssessment({
         assessment_types: values.assessment_types,
         system_fides_keys:
           values.system_fides_keys && values.system_fides_keys.length > 0
@@ -103,7 +103,10 @@ const EvaluateAssessmentPage: NextPage = () => {
         "Assessment evaluation queued. Results will appear on the assessments page shortly.",
       );
 
-      router.push(PRIVACY_ASSESSMENTS_ROUTE);
+      router.push({
+        pathname: PRIVACY_ASSESSMENTS_ROUTE,
+        query: { taskId: result.task_id },
+      });
     } catch (error) {
       message.error(
         `Failed to queue assessment: ${getErrorMessage(error as RTKErrorResult["error"])}`,

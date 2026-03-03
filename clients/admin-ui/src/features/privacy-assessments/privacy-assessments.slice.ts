@@ -6,6 +6,7 @@ import type {
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentTaskResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
   CreateAssessmentTaskResponse,
@@ -82,6 +83,15 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         params: params ?? undefined,
       }),
       providesTags: ["Privacy Assessment Tasks"],
+    }),
+
+    getAssessmentTask: build.query<AssessmentTaskResponse, string>({
+      query: (taskId) => ({
+        url: `plus/privacy-assessments/tasks/${taskId}`,
+      }),
+      providesTags: (_result, _error, taskId) => [
+        { type: "Privacy Assessment Tasks", id: taskId },
+      ],
     }),
 
     updatePrivacyAssessment: build.mutation<
@@ -240,6 +250,7 @@ export const {
   useGetAssessmentConfigDefaultsQuery,
   // Assessment Tasks
   useGetAssessmentTasksQuery,
+  useGetAssessmentTaskQuery,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };
