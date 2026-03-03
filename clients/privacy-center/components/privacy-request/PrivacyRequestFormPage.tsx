@@ -1,9 +1,10 @@
 "use client";
 
 import { useMessage } from "fidesui";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
+import { decodePolicyKey, encodePolicyKey } from "~/common/policy-key";
 import { useConfig } from "~/features/common/config.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { PrivacyRequestOption } from "~/types/config";
@@ -17,13 +18,16 @@ type PrivacyRequestFormPageProps = {
 const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   const config = useConfig();
   const router = useRouter();
+  const params = useParams();
+  const propertyPath = params?.propertyPath as string | undefined;
+  const basePath = propertyPath ? `/${propertyPath}` : "";
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
   const messageApi = useMessage();
 
-  const policyKey = decodeURIComponent(actionKey);
+  const policyKey = decodePolicyKey(actionKey);
 
   const action = config.actions.find((a) => a.policy_key === policyKey) as
     | PrivacyRequestOption
@@ -41,31 +45,32 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   useEffect(() => {
     if (!action) {
       messageApi.error(`Invalid action key "${policyKey}" for privacy request`);
-      router.push("/");
+      router.push(basePath || "/");
     }
-  }, [action, policyKey, messageApi, router]);
+  }, [action, policyKey, messageApi, router, basePath]);
 
   const handleExit = () => {
-    router.push("/");
+    router.push(basePath || "/");
   };
 
   const handleSetCurrentView = (view: string) => {
-    // Navigate to verification page
     if (view === "identityVerification") {
-      router.push(`/privacy-request/${encodeURIComponent(policyKey)}/verify`);
+      router.push(
+        `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/verify`,
+      );
     }
   };
 
   const handleSetPrivacyRequestId = (id: string) => {
-    // Store the request ID in sessionStorage for the verification page
     if (typeof window !== "undefined") {
       sessionStorage.setItem("privacyRequestId", id);
     }
   };
 
   const handleSuccessWithoutVerification = () => {
-    // Navigate to success page when verification is not required
-    router.push(`/privacy-request/${encodeURIComponent(policyKey)}/success`);
+    router.push(
+      `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/success`,
+    );
   };
 
   return (

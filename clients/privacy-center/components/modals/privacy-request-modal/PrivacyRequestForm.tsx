@@ -78,7 +78,6 @@ const PrivacyRequestForm = ({
             }
             help={touched.name && errors.name}
             required={nameInput === "required"}
-            hasFeedback={touched.name && !!errors.name}
             label="Name"
             htmlFor="name"
           >
@@ -99,7 +98,6 @@ const PrivacyRequestForm = ({
             }
             help={touched.email && errors.email}
             required={emailInput === "required"}
-            hasFeedback={touched.email && !!errors.email}
             label="Email"
             htmlFor="email"
           >
@@ -121,7 +119,6 @@ const PrivacyRequestForm = ({
             }
             help={touched.phone && errors.phone}
             required={phoneInput === "required"}
-            hasFeedback={touched.phone && !!errors.phone}
             label="Phone"
             htmlFor="phone"
           >
@@ -183,9 +180,6 @@ const PrivacyRequestForm = ({
                 }
                 help={touched[key] && errors[key]}
                 required={item.required !== false}
-                hasFeedback={
-                  item.field_type === "text" && touched[key] && !!errors[key]
-                }
                 label={item.label}
                 htmlFor={key}
               >

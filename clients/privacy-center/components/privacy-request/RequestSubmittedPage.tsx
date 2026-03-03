@@ -1,14 +1,17 @@
 "use client";
 
 import { Button, Flex, Image, Text } from "fidesui";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React from "react";
 
 const RequestSubmittedPage = () => {
   const router = useRouter();
+  const params = useParams();
+  const propertyPath = params?.propertyPath as string | undefined;
+  const basePath = propertyPath ? `/${propertyPath}` : "";
 
   const handleContinue = () => {
-    router.push("/");
+    router.push(basePath || "/");
   };
 
   return (
@@ -18,6 +21,7 @@ const RequestSubmittedPage = () => {
         alt="green-checkmark"
         width="48px"
         height="48px"
+        preview={false}
       />
       <Text style={{ textAlign: "center" }}>
         Thanks for your request. A member of our team will review and be in
@@ -29,7 +33,7 @@ const RequestSubmittedPage = () => {
         block
         style={{ marginTop: "24px" }}
       >
-        Continue
+        Return home
       </Button>
     </Flex>
   );
