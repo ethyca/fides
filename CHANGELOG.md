@@ -19,7 +19,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.80.0..main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.80.1..main)
+
+## [2.80.1](https://github.com/ethyca/fides/compare/2.80.0..2.80.1)
+
+### Fixed
+- Fixed certain errors on submission causing privacy center request flow to crash [#7544](https://github.com/ethyca/fides/pull/7544)
+- Fixed privacy request flow routing issue with multiple privacy centers [#7549](https://github.com/ethyca/fides/pull/7549)
 
 ## [2.80.0](https://github.com/ethyca/fides/compare/2.79.0..2.80.0)
 
