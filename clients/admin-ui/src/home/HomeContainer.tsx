@@ -1,4 +1,5 @@
 import {
+  Alert,
   ConfigProvider,
   darkAntTheme,
   defaultAntTheme,
@@ -15,10 +16,9 @@ import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
 
-import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
 
-const HomeDashboardMockup = dynamic(() => import("./HomeDashboardMockup"), {
+const HomeDashboardMockup = dynamic(() => import("./HomeDashboard"), {
   ssr: false,
 });
 
@@ -37,23 +37,13 @@ const HomeContainerInner = () => {
   if (alphaDashboard) {
     return (
       <ConfigProvider theme={activeTheme}>
-        <AntLayout style={{ height: "100vh" }}>
+        <AntLayout className="h-screen">
           {alphaDarkMode && (
-            <AntLayout.Header
-              style={{
-                background: "transparent",
-                padding: "0 40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                height: 48,
-                lineHeight: "48px",
-              }}
-            >
+            <AntLayout.Header className="flex items-center justify-end px-10 h-12">
               <ThemeModeSegmented />
             </AntLayout.Header>
           )}
-          <AntLayout.Content style={{ overflow: "auto" }}>
+          <AntLayout.Content className="overflow-auto">
             <HomeDashboardMockup />
           </AntLayout.Content>
         </AntLayout>
@@ -64,6 +54,15 @@ const HomeContainerInner = () => {
   return (
     <ConfigProvider theme={activeTheme}>
       <div className="min-h-full w-full" style={{ backgroundColor: bgColor }}>
+        <Alert
+          banner
+          type="warning"
+          message="BRIEFING · FEB 17, 2026"
+          description="Helios scanned 3 systems overnight. 12 fields classified, 4 need review — 2 flagged as biometric in US systems. DSR-4892 SLA deadline tomorrow, pending Marketing."
+          showIcon
+          primaryAction={{ label: "View actions →", onClick: () => {} }}
+          secondaryAction={{ label: "Dismiss", onClick: () => {} }}
+        />
         <Layout title="Home" padded={false}>
           <Flex vertical gap={40} className="pb-6">
             {alphaDarkMode && (
@@ -71,7 +70,6 @@ const HomeContainerInner = () => {
                 <ThemeModeSegmented />
               </Flex>
             )}
-            <HomeBanner />
             <HomeContent />
           </Flex>
         </Layout>

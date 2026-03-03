@@ -1,8 +1,13 @@
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
-import { Card, Col, Flex, Row, Statistic } from "fidesui";
+import { Alert, Card, Col, Flex, Row, Statistic } from "fidesui";
 import { RadarChart, Sparkline } from "fidesui";
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import {
+  useGetDashboardPostureQuery,
+  useResetDashboardMutation,
+} from "~/features/dashboard/dashboard.slice";
 
 const upwardTrendData = [12, 18, 15, 22, 28, 25, 34, 30, 38, 42, 39, 47];
 const downwardTrendData = [47, 42, 45, 38, 34, 36, 28, 24, 26, 18, 15, 12];
@@ -11,43 +16,72 @@ const steadyTrendData = [20, 22, 21, 23, 22, 24, 23, 25, 24, 26, 25, 27];
 
 const SMALL_FONT = { fontSize: 14 };
 
+const BAND_STATUS: Record<string, "warning" | "error" | undefined> = {
+  at_risk: "warning",
+  critical: "error",
+};
+
 const HomeDashboardMockup = () => {
   const [activeTab, setActiveTab] = useState("overdue");
 
+  const [resetDashboard, { isSuccess: resetDone }] =
+    useResetDashboardMutation();
+  const { data: posture } = useGetDashboardPostureQuery(undefined, {
+    skip: !resetDone,
+  });
+
+  useEffect(() => {
+    resetDashboard();
+  }, [resetDashboard]);
+
+  const radarData = posture?.dimensions.map((d) => ({
+    subject: d.label,
+    value: d.score,
+    status: BAND_STATUS[d.band],
+  })) ?? [
+    { subject: "Coverage", value: 80 },
+    { subject: "Classification", value: 65 },
+    { subject: "Consent", value: 50, status: "warning" as const },
+    { subject: "DSR", value: 30, status: "error" as const },
+    { subject: "Enforcement", value: 70 },
+    { subject: "Assessments", value: 45, status: "warning" as const },
+  ];
+
+  const postureScore = posture?.score ?? 67;
+  const postureDiff = posture?.diff ?? 4;
+  const diffDirection = posture?.diff_direction ?? "up";
+
   return (
     <Flex vertical gap={24} className="px-10 pb-6 pt-6">
-      {/* Top banner placeholder */}
-      <Card variant="borderless" style={{ minHeight: 120 }}>
-        <Flex align="center" justify="center" style={{ minHeight: 80 }}>
-          Welcome banner placeholder
-        </Flex>
-      </Card>
-
       {/* Middle row: Posture + Priority actions */}
       <Row gutter={24}>
         {/* Posture card */}
         <Col xs={24} md={8} lg={8} xxl={5}>
           <Card title="Posture" variant="borderless" className="h-full">
             <>
-              <Statistic value="67" />
+              <Statistic value={postureScore} />
               <Statistic
-                trend="up"
-                value="4"
-                prefix={<ArrowUpOutlined />}
+                trend={diffDirection === "down" ? "down" : "up"}
+                value={postureDiff}
+                prefix={
+                  diffDirection === "down" ? (
+                    <ArrowDownOutlined />
+                  ) : (
+                    <ArrowUpOutlined />
+                  )
+                }
                 valueStyle={SMALL_FONT}
               />
-              <div>
-                <RadarChart
-                  data={[
-                    { subject: "Coverage", value: 80 },
-                    { subject: "Classification", value: 65 },
-                    { subject: "Consent", value: 50, status: "warning" },
-                    { subject: "DSR", value: 30, status: "error" },
-                    { subject: "Enforcement", value: 70 },
-                    { subject: "Assessments", value: 45, status: "warning" },
-                  ]}
-                />
+              <div
+                className="aspect-square"
+                style={{ marginLeft: -12, marginRight: -12 }}
+              >
+                <RadarChart data={radarData} />
               </div>
+              <Alert
+                type="error"
+                message="Helios scanned 3 systems overnight"
+              />
             </>
           </Card>
         </Col>
