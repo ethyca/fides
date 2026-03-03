@@ -43,9 +43,11 @@ describe("Policy CRUD", () => {
       cy.getByTestId("policy-type-select").antSelect("Access");
 
       cy.getAntModalFooter().contains("Create").click();
-      cy.wait("@patchDSRPolicy").its("request.body").should((body) => {
-        expect(body[0]).to.have.property("action_type", "access");
-      });
+      cy.wait("@patchDSRPolicy")
+        .its("request.body")
+        .should((body) => {
+          expect(body[0]).to.have.property("action_type", "access");
+        });
     });
 
     it("shows validation error when request type is not selected", () => {

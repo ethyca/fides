@@ -3,12 +3,12 @@ import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
 
 import { POLICY_DETAIL_ROUTE } from "~/features/common/nav/routes";
+import { capitalize } from "~/features/common/utils";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   useCreateOrUpdatePoliciesMutation,
   useGetPolicyQuery,
 } from "~/features/policies/policy.slice";
-import { capitalize } from "~/features/common/utils";
 import { ActionType } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -160,6 +160,7 @@ export const PolicyFormModal = ({
             rules={[{ required: true, message: "Request type is required" }]}
             tooltip="Determines the request type and auto-generates a default rule."
           >
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <Select
               placeholder="Select a request type"
               data-testid="policy-type-select"
