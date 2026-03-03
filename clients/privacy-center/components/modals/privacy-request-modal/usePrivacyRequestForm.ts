@@ -2,6 +2,7 @@ import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
@@ -72,6 +73,7 @@ const usePrivacyRequestForm = ({
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
+  const [isSubmitPending, setIsSubmitPending] = useState(false);
   const searchParams = useSearchParams();
 
   const property = useProperty();
@@ -107,6 +109,7 @@ const usePrivacyRequestForm = ({
         // somehow we've reached a broken state, return
         return;
       }
+      setIsSubmitPending(true);
 
       // extract identity input values
       const identityInputValues = Object.fromEntries(
@@ -175,7 +178,7 @@ const usePrivacyRequestForm = ({
           policy_key: action.policy_key,
           property_id: property?.id || null,
           source: PrivacyRequestSource.PRIVACY_CENTER,
-          location: values?.location,
+          location: values?.location ? values.location : undefined,
         },
       ];
 
@@ -184,14 +187,15 @@ const usePrivacyRequestForm = ({
         error,
       }: {
         title: string;
-        error?: any;
+        error?: unknown;
       }) => {
+        setIsSubmitPending(false);
+        const errorMessage = typeof error === "string" && error;
         toast({
           title,
-          description: error,
+          description: errorMessage,
           ...ErrorToastOptions,
         });
-        onExit();
       };
 
       try {
@@ -284,6 +288,7 @@ const usePrivacyRequestForm = ({
 
   return {
     ...formik,
+    isSubmitting: formik.isSubmitting || isSubmitPending,
     legacyIdentityFields,
     customIdentityFields,
     customPrivacyRequestFields,
