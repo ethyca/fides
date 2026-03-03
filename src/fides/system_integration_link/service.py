@@ -56,14 +56,14 @@ class SystemIntegrationLinkService:
 
         Currently limited to MAX_LINKS_PER_CONNECTION total links per integration.
         """
-        if len(links) > MAX_LINKS_PER_CONNECTION:
-            raise TooManyLinksError(connection_key, MAX_LINKS_PER_CONNECTION)
-
         connection_config = self._repo.resolve_connection_config(
             connection_key, session=session
         )
         if not connection_config:
             raise ConnectionConfigNotFoundError(connection_key)
+
+        if len(links) > MAX_LINKS_PER_CONNECTION:
+            raise TooManyLinksError(connection_key, MAX_LINKS_PER_CONNECTION)
 
         system_map: dict = {}
         for link_spec in links:
