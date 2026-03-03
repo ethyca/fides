@@ -1,6 +1,7 @@
 import {
   CloudUploadOutlined,
   FileTextOutlined,
+  MoreOutlined,
   SearchOutlined,
   SettingOutlined,
   SlackOutlined,
@@ -10,6 +11,7 @@ import {
   Card,
   Checkbox,
   CUSTOM_TAG_COLOR,
+  Dropdown,
   Flex,
   Input,
   Modal,
@@ -30,145 +32,15 @@ import { useEffect, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
+import {
+  PRIVACY_ASSESSMENTS_NEW_ROUTE,
+  PRIVACY_ASSESSMENTS_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
+import { frameworks, mockAssessments, mockSystemNames } from "./constants";
+
 const { Title, Text } = Typography;
-
-// Mock data for assessments
-const mockAssessments = {
-  gdpr: {
-    templateId: "GDPR-DPIA-2024",
-    title: "GDPR Data Protection Impact Assessment",
-    assessments: [
-      {
-        id: "1",
-        name: "Customer Insight AI Module",
-        status: "updated",
-        statusTime: "2h ago",
-        riskLevel: "High",
-        completeness: 75,
-        owner: "SJ",
-      },
-      {
-        id: "2",
-        name: "Employee Monitoring Tool",
-        status: "outdated",
-        riskLevel: "Med",
-        completeness: 40,
-        owner: "MP",
-      },
-      {
-        id: "3",
-        name: "Marketing Analytics Platform",
-        status: "completed",
-        statusTime: "Jan 15, 2024",
-        riskLevel: "Low",
-        completeness: 100,
-        owner: "AL",
-      },
-      {
-        id: "4",
-        name: "Customer Support Chat System",
-        status: "updated",
-        statusTime: "3h ago",
-        riskLevel: "Med",
-        completeness: 65,
-        owner: "SJ",
-      },
-      {
-        id: "5",
-        name: "HR Payroll Processing",
-        status: "outdated",
-        riskLevel: "High",
-        completeness: 30,
-        owner: "MP",
-      },
-      {
-        id: "6",
-        name: "E-commerce Recommendation Engine",
-        status: "completed",
-        statusTime: "Jan 12, 2024",
-        riskLevel: "Med",
-        completeness: 100,
-        owner: "AL",
-      },
-    ],
-  },
-  ccpa: {
-    templateId: "CCPA-PIA-2024",
-    title: "CCPA Privacy Impact Assessment",
-    assessments: [
-      {
-        id: "7",
-        name: "Consumer Data Collection System",
-        status: "updated",
-        statusTime: "1h ago",
-        riskLevel: "High",
-        completeness: 70,
-        owner: "SJ",
-      },
-      {
-        id: "8",
-        name: "Third-Party Data Sharing Platform",
-        status: "outdated",
-        riskLevel: "Med",
-        completeness: 45,
-        owner: "MP",
-      },
-      {
-        id: "9",
-        name: "Opt-Out Request Handler",
-        status: "completed",
-        statusTime: "Jan 10, 2024",
-        riskLevel: "Low",
-        completeness: 100,
-        owner: "AL",
-      },
-      {
-        id: "10",
-        name: "Data Broker Integration",
-        status: "outdated",
-        riskLevel: "High",
-        completeness: 25,
-        owner: "SJ",
-      },
-    ],
-  },
-};
-
-const frameworks = [
-  {
-    id: "gdpr",
-    label: "GDPR",
-    description: "General Data Protection Regulation (EU)",
-  },
-  {
-    id: "ccpa",
-    label: "CCPA / CPRA",
-    description: "California Consumer Privacy Act",
-  },
-  {
-    id: "hipaa",
-    label: "HIPAA",
-    description: "Health Insurance Portability Act",
-  },
-  {
-    id: "nist",
-    label: "NIST AI RMF",
-    description: "AI Risk Management Framework",
-  },
-  {
-    id: "eu-ai",
-    label: "EU AI Act",
-    description: "Artificial Intelligence Act",
-  },
-  {
-    id: "iso",
-    label: "ISO 42001",
-    description: "AI Management System Standard",
-  },
-];
 
 const regions = [
   "United States",
@@ -176,13 +48,6 @@ const regions = [
   "United Kingdom",
   "Canada",
   "Brazil",
-];
-
-const dpoOptions = [
-  { id: "jd", name: "Jane Doe", role: "Data Protection Officer" },
-  { id: "sj", name: "Sarah Johnson", role: "Privacy Lead" },
-  { id: "mp", name: "Michael Park", role: "Compliance Manager" },
-  { id: "al", name: "Anna Lee", role: "Legal Counsel" },
 ];
 
 const VIEWED_ASSESSMENTS_KEY = "privacy-assessments-viewed";
@@ -206,15 +71,13 @@ const PrivacyAssessmentsPage: NextPage = () => {
     new Set(),
   );
 
-  // Create assessment modal state
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [newAssessment, setNewAssessment] = useState({
-    name: "",
-    framework: "gdpr",
-    dpo: "",
-    description: "",
-    systemName: "",
-  });
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [generateTargetTemplates, setGenerateTargetTemplates] = useState<
+    string[]
+  >([]);
+  const [generateTargetSystems, setGenerateTargetSystems] = useState<string[]>(
+    [],
+  );
   const [assessments, setAssessments] = useState(mockAssessments);
 
   // Load viewed assessments from localStorage on mount
@@ -305,54 +168,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
       region.toLowerCase().includes(regionSearch.toLowerCase()),
   );
 
-  const handleCreateNew = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const handleCreateAssessment = () => {
-    if (!newAssessment.name || !newAssessment.dpo) {
-      return;
-    }
-
-    const newId = String(Date.now());
-    const dpoInfo = dpoOptions.find((d) => d.id === newAssessment.dpo);
-    const newAssessmentData = {
-      id: newId,
-      name: newAssessment.name,
-      status: "updated" as const,
-      statusTime: "Just now",
-      riskLevel: "TBD",
-      completeness: 0,
-      owner:
-        dpoInfo?.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("") ?? "??",
-    };
-
-    // Add to the selected framework's assessments
-    setAssessments((prev) => ({
-      ...prev,
-      [newAssessment.framework]: {
-        ...prev[newAssessment.framework as keyof typeof prev],
-        assessments: [
-          newAssessmentData,
-          ...prev[newAssessment.framework as keyof typeof prev].assessments,
-        ],
-      },
-    }));
-
-    setIsCreateModalOpen(false);
-    // Reset form
-    setNewAssessment({
-      name: "",
-      framework: "gdpr",
-      dpo: "",
-      description: "",
-      systemName: "",
-    });
-  };
-
   const handleAssessmentClick = (id: string) => {
     // Mark assessment as viewed
     const newViewed = new Set(viewedAssessments);
@@ -410,13 +225,27 @@ const PrivacyAssessmentsPage: NextPage = () => {
         breadcrumbItems={[{ title: "Privacy assessments" }]}
         rightContent={
           <Space>
-            <Button
+            <Dropdown.Button
               type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleCreateNew}
+              icon={<MoreOutlined />}
+              onClick={() => router.push(PRIVACY_ASSESSMENTS_NEW_ROUTE)}
+              menu={{
+                items: [
+                  {
+                    label: "Create assessment manually",
+                    key: "manual",
+                    onClick: () => router.push(PRIVACY_ASSESSMENTS_NEW_ROUTE),
+                  },
+                  {
+                    label: "Generate and evaluate assessments",
+                    key: "generate",
+                    onClick: () => setIsGenerateModalOpen(true),
+                  },
+                ],
+              }}
             >
-              Create new assessment
-            </Button>
+              Create assessment
+            </Dropdown.Button>
             <Button
               icon={<SettingOutlined />}
               onClick={() => setIsSettingsModalOpen(true)}
@@ -793,7 +622,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
                     minHeight: 200,
                     cursor: "pointer",
                   }}
-                  onClick={handleCreateNew}
+                  onClick={() =>
+                    router.push(
+                      `${PRIVACY_ASSESSMENTS_NEW_ROUTE}?framework=${key}`,
+                    )
+                  }
                 >
                   <Flex vertical align="center" gap="small">
                     <PlusOutlined style={{ fontSize: 32, color: "#9ca3af" }} />
@@ -808,122 +641,80 @@ const PrivacyAssessmentsPage: NextPage = () => {
         </Space>
       </div>
 
-      {/* Create Assessment Modal */}
+      {/* Generate and Evaluate Assessments Modal */}
       <Modal
-        title="Create new assessment"
-        open={isCreateModalOpen}
+        title="Generate and evaluate assessments"
+        open={isGenerateModalOpen}
         onCancel={() => {
-          setIsCreateModalOpen(false);
-          setNewAssessment({
-            name: "",
-            framework: "gdpr",
-            dpo: "",
-            description: "",
-            systemName: "",
-          });
+          setIsGenerateModalOpen(false);
+          setGenerateTargetTemplates([]);
+          setGenerateTargetSystems([]);
         }}
-        onOk={handleCreateAssessment}
-        okText="Create assessment"
-        okButtonProps={{ disabled: !newAssessment.name || !newAssessment.dpo }}
+        onOk={() => {
+          setIsGenerateModalOpen(false);
+          setGenerateTargetTemplates([]);
+          setGenerateTargetSystems([]);
+        }}
+        okText="Generate assessments"
         width={600}
       >
-        <div
-          style={{
-            padding: "12px 16px",
-            backgroundColor: palette.FIDESUI_BG_CORINTH,
-            borderRadius: 8,
-            marginBottom: 16,
-          }}
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ width: "100%", marginTop: 16 }}
         >
-          <Text style={{ fontSize: 13, color: palette.FIDESUI_MINOS }}>
-            Your assessment will be pre-populated with data from your Fides data
-            map, including system details, data categories, and processing
-            purposes to give you a head start.
-          </Text>
-        </div>
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-          <div>
-            <Text strong style={{ display: "block", marginBottom: 8 }}>
-              Assessment name <span style={{ color: "red" }}>*</span>
+          <div
+            style={{
+              padding: "12px 16px",
+              backgroundColor: palette.FIDESUI_BG_CORINTH,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ fontSize: 13, color: palette.FIDESUI_MINOS }}>
+              Fides will scan your data map and automatically generate new
+              assessments based on your systems and data processing activities.
+              Any existing assessments will also be refreshed with the latest
+              available data.
             </Text>
-            <Input
-              placeholder="e.g., Customer Data Processing Assessment"
-              value={newAssessment.name}
-              onChange={(e) =>
-                setNewAssessment((prev) => ({ ...prev, name: e.target.value }))
-              }
-            />
           </div>
-
           <div>
             <Text strong style={{ display: "block", marginBottom: 8 }}>
-              Framework / Template <span style={{ color: "red" }}>*</span>
+              Target templates
             </Text>
             <Select
+              mode="multiple"
               style={{ width: "100%" }}
-              aria-label="Select framework"
-              value={newAssessment.framework}
-              onChange={(value) =>
-                setNewAssessment((prev) => ({ ...prev, framework: value }))
-              }
+              placeholder="All templates"
+              aria-label="Target templates"
+              value={generateTargetTemplates}
+              onChange={setGenerateTargetTemplates}
               options={frameworks.map((f) => ({
                 value: f.id,
                 label: `${f.label} - ${f.description}`,
               }))}
             />
           </div>
-
           <div>
             <Text strong style={{ display: "block", marginBottom: 8 }}>
-              Assigned DPO / Owner <span style={{ color: "red" }}>*</span>
+              Target systems
             </Text>
             <Select
+              mode="multiple"
               style={{ width: "100%" }}
-              aria-label="Select DPO or owner"
-              placeholder="Select a DPO or owner"
-              value={newAssessment.dpo || undefined}
-              onChange={(value) =>
-                setNewAssessment((prev) => ({ ...prev, dpo: value }))
-              }
-              options={dpoOptions.map((d) => ({
-                value: d.id,
-                label: `${d.name} - ${d.role}`,
+              placeholder="All systems"
+              aria-label="Target systems"
+              value={generateTargetSystems}
+              onChange={setGenerateTargetSystems}
+              options={mockSystemNames.map((name) => ({
+                value: name,
+                label: name,
               }))}
             />
           </div>
-
-          <div>
-            <Text strong style={{ display: "block", marginBottom: 8 }}>
-              System or processing activity
-            </Text>
-            <Input
-              placeholder="e.g., Marketing Analytics Platform"
-              value={newAssessment.systemName}
-              onChange={(e) =>
-                setNewAssessment((prev) => ({
-                  ...prev,
-                  systemName: e.target.value,
-                }))
-              }
-            />
-          </div>
-
-          <div>
-            <Text strong style={{ display: "block", marginBottom: 8 }}>
-              Description
-            </Text>
-            <Input.TextArea
-              placeholder="Brief description of the assessment purpose..."
-              rows={3}
-              value={newAssessment.description}
-              onChange={(e) =>
-                setNewAssessment((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-            />
-          </div>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Leave blank to generate and update assessments across all templates
+            and systems.
+          </Text>
         </Space>
       </Modal>
 
