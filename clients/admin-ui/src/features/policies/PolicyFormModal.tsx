@@ -1,4 +1,4 @@
-import { Form, Input, InputNumber, Modal, useMessage } from "fidesui";
+import { Form, Input, InputNumber, Modal, Select, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
 
@@ -8,12 +8,14 @@ import {
   useCreateOrUpdatePoliciesMutation,
   useGetPolicyQuery,
 } from "~/features/policies/policy.slice";
+import { ActionType } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 interface PolicyFormValues {
   name: string;
   key: string;
   execution_timeframe?: number | null;
+  action_type?: ActionType;
 }
 
 interface PolicyFormModalProps {
@@ -58,6 +60,7 @@ export const PolicyFormModal = ({
           name: values.name,
           key: values.key,
           execution_timeframe: values.execution_timeframe ?? null,
+          ...(isEditing ? {} : { action_type: values.action_type }),
         },
       ]);
 
@@ -148,6 +151,25 @@ export const PolicyFormModal = ({
             data-testid="policy-key-input"
           />
         </Form.Item>
+
+        {!isEditing && (
+          <Form.Item
+            name="action_type"
+            label="Request type"
+            rules={[{ required: true, message: "Request type is required" }]}
+            tooltip="Determines the request type and auto-generates a default rule."
+          >
+            <Select
+              placeholder="Select a request type"
+              data-testid="policy-type-select"
+              options={[
+                { value: ActionType.ACCESS, label: "Access" },
+                { value: ActionType.ERASURE, label: "Erasure" },
+                { value: ActionType.CONSENT, label: "Consent" },
+              ]}
+            />
+          </Form.Item>
+        )}
 
         <Form.Item
           name="execution_timeframe"
