@@ -1,5 +1,4 @@
 import {
-  CloudUploadOutlined,
   FileTextOutlined,
   MoreOutlined,
   SearchOutlined,
@@ -9,7 +8,6 @@ import {
 import {
   Button,
   Card,
-  Checkbox,
   CUSTOM_TAG_COLOR,
   Dropdown,
   Flex,
@@ -19,10 +17,10 @@ import {
   Result,
   Select,
   Space,
+  Switch,
   Tag,
   Tooltip,
   Typography,
-  Upload,
 } from "fidesui";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -31,6 +29,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import Layout from "~/features/common/Layout";
 import {
   PRIVACY_ASSESSMENTS_NEW_ROUTE,
@@ -42,12 +41,11 @@ import { frameworks, mockAssessments, mockSystemNames } from "./constants";
 
 const { Title, Text } = Typography;
 
-const regions = [
-  "United States",
-  "European Union",
-  "United Kingdom",
-  "Canada",
-  "Brazil",
+const mockSlackChannels = [
+  { value: "#privacy-team", label: "#privacy-team" },
+  { value: "#compliance", label: "#compliance" },
+  { value: "#dpo-alerts", label: "#dpo-alerts" },
+  { value: "#security", label: "#security" },
 ];
 
 const VIEWED_ASSESSMENTS_KEY = "privacy-assessments-viewed";
@@ -57,15 +55,10 @@ const PrivacyAssessmentsPage: NextPage = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [selectedRegions, setSelectedRegions] = useState<string[]>([
-    "United States",
-    "European Union",
-  ]);
-  const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>([
-    "gdpr",
-    "ccpa",
-  ]);
-  const [regionSearch, setRegionSearch] = useState("");
+  const [assessmentModel, setAssessmentModel] = useState("");
+  const [chatModel, setChatModel] = useState("");
+  const [autoReassessment, setAutoReassessment] = useState(false);
+  const [slackChannel, setSlackChannel] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewedAssessments, setViewedAssessments] = useState<Set<string>>(
     new Set(),
@@ -132,41 +125,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
       </Layout>
     );
   }
-
-  const handleAddRegion = (region: string) => {
-    if (!selectedRegions.includes(region)) {
-      setSelectedRegions([...selectedRegions, region]);
-    }
-    setRegionSearch("");
-  };
-
-  const handleRemoveRegion = (region: string) => {
-    setSelectedRegions(selectedRegions.filter((r) => r !== region));
-  };
-
-  const handleSelectAllFrameworks = () => {
-    if (selectedFrameworks.length === frameworks.length) {
-      setSelectedFrameworks([]);
-    } else {
-      setSelectedFrameworks(frameworks.map((f) => f.id));
-    }
-  };
-
-  const handleToggleFramework = (frameworkId: string) => {
-    if (selectedFrameworks.includes(frameworkId)) {
-      setSelectedFrameworks(
-        selectedFrameworks.filter((f) => f !== frameworkId),
-      );
-    } else {
-      setSelectedFrameworks([...selectedFrameworks, frameworkId]);
-    }
-  };
-
-  const filteredRegions = regions.filter(
-    (region) =>
-      !selectedRegions.includes(region) &&
-      region.toLowerCase().includes(regionSearch.toLowerCase()),
-  );
 
   const handleAssessmentClick = (id: string) => {
     // Mark assessment as viewed
@@ -721,181 +679,53 @@ const PrivacyAssessmentsPage: NextPage = () => {
         onCancel={() => setIsSettingsModalOpen(false)}
         onOk={() => setIsSettingsModalOpen(false)}
         okText="Save"
-        width={800}
+        width={520}
+        styles={{ footer: { padding: "16px 24px" } }}
       >
         <Space
           direction="vertical"
-          size="large"
-          style={{ width: "100%", marginTop: 24 }}
+          size="middle"
+          style={{ width: "100%", paddingTop: 8 }}
         >
-          <div
-            style={{
-              padding: "16px",
-              backgroundColor: palette.FIDESUI_BG_CORINTH,
-              borderRadius: 8,
-              marginBottom: 8,
-            }}
-          >
-            <Text style={{ fontSize: 14, lineHeight: 1.6 }}>
-              The selections you make here and any historical assessments you
-              upload will be used to train our LLM to understand your
-              organization&apos;s specific compliance needs, risk profile, and
-              processing patterns. This enables the AI to generate more accurate
-              and tailored privacy assessments.
-            </Text>
-          </div>
           <div>
-            <Title level={4} style={{ marginBottom: 12 }}>
-              Operational regions
-            </Title>
-            <Text
-              type="secondary"
-              style={{ marginBottom: 20, display: "block", fontSize: 12 }}
-            >
-              These regions determine jurisdictional priorities for AI risk
-              analysis.
-            </Text>
-            {selectedRegions.length > 0 && (
-              <Flex gap="small" wrap style={{ marginBottom: 16 }}>
-                {selectedRegions.map((region) => (
-                  <Tag
-                    key={region}
-                    closable
-                    onClose={() => handleRemoveRegion(region)}
-                  >
-                    {region}
-                  </Tag>
-                ))}
-              </Flex>
-            )}
-            <Input
-              placeholder="Search or add countries..."
-              prefix={<SearchOutlined />}
-              value={regionSearch}
-              onChange={(e) => setRegionSearch(e.target.value)}
-              onPressEnter={() => {
-                if (filteredRegions.length > 0) {
-                  handleAddRegion(filteredRegions[0]);
-                } else if (
-                  regionSearch.trim() &&
-                  !selectedRegions.includes(regionSearch.trim())
-                ) {
-                  handleAddRegion(regionSearch.trim());
-                }
-              }}
-              style={{ marginBottom: 8 }}
-            />
-            {regionSearch && filteredRegions.length > 0 && (
-              <div style={{ marginTop: 8 }}>
-                {filteredRegions.slice(0, 5).map((region) => (
-                  <div
-                    key={region}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => handleAddRegion(region)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        handleAddRegion(region);
-                      }
-                    }}
-                    style={{
-                      padding: "8px 12px",
-                      cursor: "pointer",
-                      borderBottom: "1px solid #f0f0f0",
-                    }}
-                  >
-                    {region}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <Flex
-              justify="space-between"
-              align="center"
-              style={{ marginBottom: 12 }}
-            >
-              <Title level={4} style={{ margin: 0 }}>
-                Target frameworks & regulations
-              </Title>
-              <Button
-                type="link"
-                onClick={handleSelectAllFrameworks}
-                style={{ padding: 0 }}
-              >
-                {selectedFrameworks.length === frameworks.length
-                  ? "Deselect all"
-                  : "Select all"}
-              </Button>
+            <Flex align="center" gap={4} style={{ marginBottom: 8 }}>
+              <Text strong>Assessment model</Text>
+              <InfoTooltip label="Custom LLM model for running privacy assessments. Leave empty to use the default." />
             </Flex>
-            <Text
-              type="secondary"
-              style={{ marginBottom: 20, display: "block", fontSize: 12 }}
-            >
-              Select the privacy frameworks and regulations that apply to your
-              organization.
-            </Text>
-            <Space direction="vertical" size="small" style={{ width: "100%" }}>
-              {frameworks.map((framework) => (
-                <Card
-                  key={framework.id}
-                  hoverable
-                  style={{
-                    border: selectedFrameworks.includes(framework.id)
-                      ? `2px solid ${palette.FIDESUI_MINOS}`
-                      : "1px solid #d9d9d9",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => handleToggleFramework(framework.id)}
-                >
-                  <Flex justify="space-between" align="center">
-                    <div>
-                      <Text strong>{framework.label}</Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        {framework.description}
-                      </Text>
-                    </div>
-                    <Checkbox
-                      checked={selectedFrameworks.includes(framework.id)}
-                    />
-                  </Flex>
-                </Card>
-              ))}
-            </Space>
+            <Input
+              placeholder="openrouter/anthropic/claude-opus-4"
+              value={assessmentModel}
+              onChange={(e) => setAssessmentModel(e.target.value)}
+            />
           </div>
-
           <div>
-            <Title level={4} style={{ marginBottom: 12 }}>
-              Upload historical assessments
-            </Title>
-            <Text
-              type="secondary"
-              style={{ marginBottom: 20, display: "block", fontSize: 12 }}
-            >
-              Upload previous privacy assessments to help the AI understand your
-              existing compliance posture.
-            </Text>
-            <Upload.Dragger
-              multiple
-              beforeUpload={() => false}
-              style={{ padding: 20 }}
-            >
-              <p>
-                <CloudUploadOutlined
-                  style={{ fontSize: 48, color: "#1890ff" }}
-                />
-              </p>
-              <Text type="secondary" style={{ display: "block", marginTop: 8 }}>
-                Click or drag files to this area to upload
-              </Text>
-              <Text type="secondary" style={{ fontSize: 12, marginTop: 4 }}>
-                Support for PDF, DOCX, or CSV files
-              </Text>
-            </Upload.Dragger>
+            <Flex align="center" gap={4} style={{ marginBottom: 8 }}>
+              <Text strong>Chat model</Text>
+              <InfoTooltip label="Custom LLM model for questionnaire chat conversations. Leave empty to use the default." />
+            </Flex>
+            <Input
+              placeholder="openrouter/google/gemini-2.5-flash"
+              value={chatModel}
+              onChange={(e) => setChatModel(e.target.value)}
+            />
           </div>
+          <div>
+            <Flex align="center" gap={4} style={{ marginBottom: 8 }}>
+              <Text strong>Notifications channel</Text>
+              <InfoTooltip label="Select the Slack channel where questionnaire notifications will be sent" />
+            </Flex>
+            <Select
+              style={{ width: "100%" }}
+              placeholder="Select a channel"
+              value={slackChannel || undefined}
+              onChange={setSlackChannel}
+              options={mockSlackChannels}
+            />
+          </div>
+          <Flex justify="space-between" align="center" style={{ marginTop: 8 }}>
+            <Text strong>Enable automatic reassessment</Text>
+            <Switch checked={autoReassessment} onChange={setAutoReassessment} />
+          </Flex>
         </Space>
       </Modal>
     </Layout>
