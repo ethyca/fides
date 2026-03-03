@@ -179,11 +179,15 @@ def cache_initial_status_and_identities_for_consent_reporting(
         if pref in relevant_preferences:
             pref.update_secondary_user_ids(db, relevant_user_identities)
             pref.cache_system_status(
-                db, connection_config.system_key, ExecutionLogStatus.pending
+                db,
+                connection_config.consent_tracking_key,
+                ExecutionLogStatus.pending,
             )
         else:
             pref.cache_system_status(
-                db, connection_config.system_key, ExecutionLogStatus.skipped
+                db,
+                connection_config.consent_tracking_key,
+                ExecutionLogStatus.skipped,
             )
 
 
@@ -200,12 +204,12 @@ def add_complete_system_status_for_consent_reporting(
     for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
         if (
             pref.affected_system_status
-            and pref.affected_system_status.get(connection_config.system_key)
+            and pref.affected_system_status.get(connection_config.consent_tracking_key)
             == ExecutionLogStatus.pending.value
         ):
             pref.cache_system_status(
                 db,
-                connection_config.system_key,
+                connection_config.consent_tracking_key,
                 ExecutionLogStatus.complete,
             )
 
@@ -242,12 +246,14 @@ def add_errored_system_status_for_consent_reporting_on_preferences(
     for preference in privacy_preferences:
         if (
             preference.affected_system_status
-            and preference.affected_system_status.get(connection_config.system_key)
+            and preference.affected_system_status.get(
+                connection_config.consent_tracking_key
+            )
             == ExecutionLogStatus.pending.value
         ):
             preference.cache_system_status(
                 db,
-                connection_config.system_key,  # type: ignore[arg-type]
+                connection_config.consent_tracking_key,
                 ExecutionLogStatus.error,
             )
 
