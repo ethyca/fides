@@ -1,4 +1,0 @@
-type: Added
-description: Added support for custom default policy configuration per action type via ApplicationConfig
-pr: 7323
-labels: []

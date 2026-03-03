@@ -33,6 +33,33 @@ export const fillInDefaults = (
 };
 
 /**
+ * Fill in default values based off of a schema (flat structure).
+ * Use schema defaults if they exist, otherwise use passed-in defaults.
+ */
+export const fillInDefaultsFlat = (
+  defaultValues: Record<string, unknown>,
+  connectionSchema: {
+    properties: ConnectionTypeSecretSchemaResponse["properties"];
+  },
+) => {
+  const filledInValues: Record<string, unknown> = { ...defaultValues };
+  Object.entries(connectionSchema.properties).forEach((key) => {
+    const [name, schema] = key;
+
+    if (schema.type === "integer") {
+      const defaultValue = schema.default
+        ? Number(schema.default)
+        : defaultValues[name];
+      filledInValues[name] = defaultValue ?? 0;
+    } else {
+      const defaultValue = schema.default ?? defaultValues[name];
+      filledInValues[name] = defaultValue ?? null;
+    }
+  });
+  return filledInValues;
+};
+
+/**
  *
  * Auto-generate an integration key based on the system name
  *

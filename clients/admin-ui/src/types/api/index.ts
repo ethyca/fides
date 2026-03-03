@@ -450,6 +450,8 @@ export type { PartialPrivacyRequestOption } from "./models/PartialPrivacyRequest
 export { PeriodicIntegrationFrequency } from "./models/PeriodicIntegrationFrequency";
 export type { PlusApplicationConfig } from "./models/PlusApplicationConfig";
 export type { PlusConsentSettingsApplicationConfig } from "./models/PlusConsentSettingsApplicationConfig";
+export type { PolicyConditionRequest } from "./models/PolicyConditionRequest";
+export type { PolicyConditionResponse } from "./models/PolicyConditionResponse";
 export type { PolicyMaskingSpec } from "./models/PolicyMaskingSpec";
 export type { PolicyMaskingSpecResponse } from "./models/PolicyMaskingSpecResponse";
 export type { PolicyResponse } from "./models/PolicyResponse";
@@ -530,6 +532,7 @@ export type { ResourceFilter } from "./models/ResourceFilter";
 export { ResourceTypes } from "./models/ResourceTypes";
 export { ResponseFormat } from "./models/ResponseFormat";
 export type { ResponseWithMessage } from "./models/ResponseWithMessage";
+export type { RevertAnswerRequest } from "./models/RevertAnswerRequest";
 export type { ReviewPrivacyRequestIds } from "./models/ReviewPrivacyRequestIds";
 export { RoleRegistryEnum } from "./models/RoleRegistryEnum";
 export type { RuleCreate } from "./models/RuleCreate";
@@ -646,6 +649,7 @@ export { TreeResourceChangeIndicator } from "./models/TreeResourceChangeIndicato
 export type { UnlabeledIdentities } from "./models/UnlabeledIdentities";
 export type { UnverifiedIdentity } from "./models/UnverifiedIdentity";
 export type { UnverifiedPrivacyPreferencesRequest } from "./models/UnverifiedPrivacyPreferencesRequest";
+export type { UpdateAnswerRequest } from "./models/UpdateAnswerRequest";
 export { UserConsentPreference } from "./models/UserConsentPreference";
 export type { UserCreateExtended } from "./models/UserCreateExtended";
 export type { UserCreateResponse } from "./models/UserCreateResponse";

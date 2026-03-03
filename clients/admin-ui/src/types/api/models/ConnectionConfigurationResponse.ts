@@ -5,6 +5,7 @@
 import type { AccessLevel } from "./AccessLevel";
 import type { ActionType } from "./ActionType";
 import type { ConnectionType } from "./ConnectionType";
+import type { LinkedSystemInfo } from "./LinkedSystemInfo";
 import type { SaaSConfigBase } from "./SaaSConfigBase";
 
 /**
@@ -25,4 +26,6 @@ export type ConnectionConfigurationResponse = {
   last_test_succeeded?: boolean | null;
   authorized?: boolean | null;
   enabled_actions?: Array<ActionType> | null;
+  system?: any;
+  linked_systems?: Array<LinkedSystemInfo>;
 };

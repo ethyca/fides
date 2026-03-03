@@ -60,6 +60,7 @@ from fides.api.models.privacy_assessment import (
     AssessmentTemplate,
     PrivacyAssessment,
 )
+from fides.api.models.privacy_assessment_config import PrivacyAssessmentConfig
 from fides.api.models.privacy_center_config import PrivacyCenterConfig
 from fides.api.models.privacy_experience import (
     ExperienceConfigTemplate,
@@ -108,3 +109,4 @@ from fides.api.models.tcf_publisher_restrictions import (
 )
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.models.v3.privacy_preferences import PrivacyPreferences
+from fides.system_integration_link.models import SystemConnectionConfigLink

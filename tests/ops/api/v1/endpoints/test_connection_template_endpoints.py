@@ -1647,12 +1647,20 @@ class TestGetConnectionSecretSchema:
                     "description": "Your HubSpot domain",
                     "default": "api.hubapi.com",
                     "sensitive": False,
+                    "options": None,
+                    "multiselect": False,
+                    "param_type": None,
+                    "allowed_values": None,
                     "type": "string",
                 },
                 "private_app_token": {
                     "title": "Private app token",
                     "description": "Your HubSpot Private Apps access token",
                     "sensitive": True,
+                    "options": None,
+                    "multiselect": False,
+                    "param_type": None,
+                    "allowed_values": None,
                     "type": "string",
                 },
             },
@@ -1666,11 +1674,10 @@ class TestGetConnectionSecretSchema:
         resp = api_client.get(
             base_url.format(connection_type="manual_webhook"), headers=auth_header
         )
-        assert resp.status_code == 404
-        assert (
-            resp.json()["detail"]
-            == "No connection type found with name 'manual_webhook'."
-        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["type"] == "object"
+        assert body["properties"] == {}
 
     def test_get_connection_secrets_attentive(
         self, api_client: TestClient, generate_auth_header, base_url

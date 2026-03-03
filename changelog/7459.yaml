@@ -1,4 +1,0 @@
-type: Added
-description: Added DELETE /dsr/policy/{policy_key} endpoint with in-use guard
-pr: 7459
-labels: []

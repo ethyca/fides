@@ -65,6 +65,10 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import (
+    SystemIntegrationLinkRepository,
+    linked_system_load_options,
+)
 
 router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 
@@ -140,10 +144,13 @@ def get_connections(
         )
 
     if orphaned_from_system is not None:
+        has_system_link = (
+            SystemIntegrationLinkRepository.has_system_link_exists_clause()
+        )
         if orphaned_from_system:
-            query = query.filter(ConnectionConfig.system_id.is_(null()))
+            query = query.filter(~has_system_link)
         else:
-            query = query.filter(ConnectionConfig.system_id.is_not(null()))  # type: ignore
+            query = query.filter(has_system_link)
 
     if system_type:
         if system_type == SystemType.saas:
@@ -162,8 +169,14 @@ def get_connections(
             )
 
     return paginate(
-        query.order_by(ConnectionConfig.name.asc()),
+        query.order_by(ConnectionConfig.name.asc()).options(
+            linked_system_load_options()
+        ),
         params=params,
+        transformer=lambda items: [
+            ConnectionConfigurationResponse.from_connection_config(item)
+            for item in items
+        ],
     )
 
 
@@ -176,19 +189,20 @@ def get_connection_detail(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
-    connection_config = get_connection_config_or_error(db, connection_key)
-
-    # Convert to Pydantic model with all fields
-    response = ConnectionConfigurationResponseWithSystemKey.model_validate(
+    connection_config = (
+        db.query(ConnectionConfig)
+        .filter(ConnectionConfig.key == connection_key)
+        .options(linked_system_load_options())
+        .first()
+    )
+    if not connection_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No connection configuration found with key '{connection_key}'.",
+        )
+    return ConnectionConfigurationResponseWithSystemKey.from_connection_config(
         connection_config
     )
-
-    # Override just the system_key field to use only the system's fides_key without fallback
-    response.system_key = (
-        connection_config.system.fides_key if connection_config.system else None
-    )
-
-    return response
 
 
 @router.patch(

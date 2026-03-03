@@ -32,7 +32,7 @@ describe("Policies list page", () => {
     });
 
     it("displays execution timeframe for each policy", () => {
-      cy.contains("Timeframe: 45 days").should("exist");
+      cy.contains("45 days").should("exist");
     });
 
     it("displays action type tags from policy rules", () => {
@@ -84,6 +84,38 @@ describe("Policies list page", () => {
     it("is not case sensitive", () => {
       cy.getByTestId("search-bar").type("consent");
       cy.contains("Default Consent Policy").should("be.visible");
+    });
+  });
+
+  describe("default policy delete protection", () => {
+    beforeEach(() => {
+      cy.login();
+      stubDSRPolicies();
+      cy.visit(POLICIES_ROUTE);
+      cy.wait("@getDSRPolicies");
+    });
+
+    it("disables delete button on default policies", () => {
+      cy.getByTestId("delete-policy-default_consent_policy-btn").should(
+        "be.disabled",
+      );
+      cy.getByTestId("delete-policy-default_erasure_policy-btn").should(
+        "be.disabled",
+      );
+      cy.getByTestId("delete-policy-default_access_policy-btn").should(
+        "be.disabled",
+      );
+    });
+
+    it("enables delete button on non-default policies", () => {
+      cy.getByTestId("delete-policy-custom_erasure_policy-btn").should(
+        "not.be.disabled",
+      );
+    });
+
+    it("shows tooltip on hover of disabled default policy delete button", () => {
+      cy.getByTestId("delete-policy-default_consent_policy-btn").realHover();
+      cy.contains("Default policies cannot be deleted").should("be.visible");
     });
   });
 

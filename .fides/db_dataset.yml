@@ -1142,9 +1142,6 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
-    - name: system_id
-      description: 'The identifier of the system to locate this data within'
-      data_categories: [system.operations]
     - name: enabled_actions
       description: 'The privacy actions that are enabled for this connection'
       data_categories: [system.operations]
@@ -1588,6 +1585,87 @@ dataset:
       data_categories:
       - system.operations
     - name: updated_at
+      data_categories:
+      - system.operations
+    - name: privacy_assessment_task_id
+      data_categories:
+      - system.operations
+  - name: privacy_assessment_config
+    description: 'Global configuration for privacy assessments (single-row table)'
+    fields:
+    - name: assessment_model_override
+      data_categories:
+      - system.operations
+    - name: chat_model_override
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: reassessment_cron
+      data_categories:
+      - system.operations
+    - name: reassessment_enabled
+      data_categories:
+      - system.operations
+    - name: reassessment_timezone
+      data_categories:
+      - system.operations
+    - name: slack_channel_id
+      data_categories:
+      - system.operations
+    - name: slack_channel_name
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+  - name: privacy_assessment_task
+    description: 'Tracks async Celery task execution for privacy assessment generation'
+    fields:
+    - name: id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: action_type
+      data_categories:
+      - system.operations
+    - name: status
+      data_categories:
+      - system.operations
+    - name: celery_id
+      data_categories:
+      - system.operations
+    - name: total_count
+      data_categories:
+      - system.operations
+    - name: completed_count
+      data_categories:
+      - system.operations
+    - name: message
+      data_categories:
+      - system.operations
+    - name: assessment_types
+      data_categories:
+      - system.operations
+    - name: system_fides_keys
+      data_categories:
+      - system.operations
+    - name: created_by
+      data_categories:
+      - system.operations
+    - name: use_llm
+      data_categories:
+      - system.operations
+    - name: llm_model
       data_categories:
       - system.operations
   - name: policy
@@ -2435,6 +2513,19 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
     - name: updated_systems
+      data_categories: [system.operations]
+  - name: system_connection_config_link
+    description: 'Join table linking systems to connection configurations'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: system_id
+      data_categories: [system.operations]
+    - name: connection_config_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
       data_categories: [system.operations]
   - name: tcf_purpose_overrides
     fields:

@@ -7,6 +7,28 @@ from sqlalchemy.orm import Session
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.common.api.scope_registry import CTL_DATASET_READ
 
+INVALID_FIELD_COLLECTIONS = [
+    {
+        "name": "test_collection",
+        "fields": [
+            {
+                "name": "valid_field",
+                "fides_meta": {"data_type": "string"},
+            },
+            {
+                "name": "bad_field",
+                "fides_meta": {"data_type": "string"},
+                "fields": [
+                    {
+                        "name": "child",
+                        "fides_meta": {"data_type": "string"},
+                    }
+                ],
+            },
+        ],
+    }
+]
+
 
 @pytest.fixture
 def minimal_dataset(db: Session) -> Generator[CtlDataset, None, None]:
@@ -233,3 +255,142 @@ class TestGenericOverrides:
         assert (
             response.status_code == 422
         )  # Unprocessable Entity for invalid enum value
+
+
+@pytest.fixture
+def dataset_with_invalid_field(db: Session) -> Generator[CtlDataset, None, None]:
+    """A dataset whose field has data_type='string' but also has subfields.
+
+    This is invalid per fideslang validation and will trigger a ValidationError
+    when deserialized through pydantic, but can exist in the DB because the
+    collections column is unvalidated JSON.
+    """
+    dataset = CtlDataset(
+        fides_key="invalid_field_dataset",
+        name="Invalid Field Dataset",
+        organization_fides_key="default_organization",
+        collections=INVALID_FIELD_COLLECTIONS,
+    )
+    db.add(dataset)
+    db.commit()
+    yield dataset
+
+    db.delete(dataset)
+    db.commit()
+
+
+class TestDatasetSkipValidation:
+    """Tests for the skip_validation query parameter on dataset endpoints."""
+
+    def test_list_datasets_skip_validation_returns_invalid_data(
+        self,
+        api_client: TestClient,
+        dataset_with_invalid_field: CtlDataset,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([CTL_DATASET_READ])
+        response = api_client.get(
+            "/api/v1/dataset?skip_validation=true", headers=auth_header
+        )
+        assert response.status_code == 200
+        data = response.json()
+        keys = [d["fides_key"] for d in data]
+        assert "invalid_field_dataset" in keys
+
+    def test_list_datasets_paginated_skip_validation(
+        self,
+        api_client: TestClient,
+        dataset_with_invalid_field: CtlDataset,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([CTL_DATASET_READ])
+        response = api_client.get(
+            "/api/v1/dataset?page=1&size=50&skip_validation=true",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        keys = [item["fides_key"] for item in data["items"]]
+        assert "invalid_field_dataset" in keys
+
+    def test_get_dataset_skip_validation_returns_invalid_data(
+        self,
+        api_client: TestClient,
+        dataset_with_invalid_field: CtlDataset,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([CTL_DATASET_READ])
+        response = api_client.get(
+            "/api/v1/dataset/invalid_field_dataset?skip_validation=true",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["fides_key"] == "invalid_field_dataset"
+        bad_field = data["collections"][0]["fields"][1]
+        assert bad_field["name"] == "bad_field"
+        assert bad_field["fides_meta"]["data_type"] == "string"
+        assert len(bad_field["fields"]) == 1
+
+    def test_skip_validation_defaults_to_false(
+        self,
+        api_client: TestClient,
+        minimal_dataset: CtlDataset,
+        generate_auth_header,
+    ):
+        """Normal requests without skip_validation still validate."""
+        auth_header = generate_auth_header([CTL_DATASET_READ])
+        response = api_client.get("/api/v1/dataset", headers=auth_header)
+        assert response.status_code == 200
+
+        response = api_client.get(
+            f"/api/v1/dataset/{minimal_dataset.fides_key}", headers=auth_header
+        )
+        assert response.status_code == 200
+
+
+class TestDatasetValidationErrorHandlers:
+    """Tests that validation errors on dataset retrieval return 422, not 500."""
+
+    def test_list_datasets_returns_422_for_invalid_data(
+        self,
+        api_client: TestClient,
+        dataset_with_invalid_field: CtlDataset,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([CTL_DATASET_READ])
+        response = api_client.get("/api/v1/dataset", headers=auth_header)
+        assert response.status_code == 422
+        body = response.json()
+        assert "detail" in body
+        assert "errors" in body
+        assert any("bad_field" in err.get("msg", "") for err in body["errors"])
+
+    def test_list_datasets_paginated_returns_422_for_invalid_data(
+        self,
+        api_client: TestClient,
+        dataset_with_invalid_field: CtlDataset,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([CTL_DATASET_READ])
+        response = api_client.get("/api/v1/dataset?page=1&size=50", headers=auth_header)
+        assert response.status_code == 422
+        body = response.json()
+        assert "detail" in body
+        assert "errors" in body
+
+    def test_get_dataset_returns_422_for_invalid_data(
+        self,
+        api_client: TestClient,
+        dataset_with_invalid_field: CtlDataset,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([CTL_DATASET_READ])
+        response = api_client.get(
+            "/api/v1/dataset/invalid_field_dataset", headers=auth_header
+        )
+        assert response.status_code == 422
+        body = response.json()
+        assert "detail" in body
+        assert "errors" in body
+        assert any("bad_field" in err.get("msg", "") for err in body["errors"])

@@ -691,6 +691,7 @@ class TestReadRoleMapping:
         assert set(response_body.keys()) == {
             "approver",
             "contributor",
+            "data_steward",
             "external_respondent",
             "owner",
             "respondent",

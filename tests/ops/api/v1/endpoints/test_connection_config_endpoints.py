@@ -46,6 +46,7 @@ from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PR
 from fides.config import CONFIG
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -952,6 +953,7 @@ class TestGetConnections:
             "description",
             "authorized",
             "enabled_actions",
+            "linked_systems",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -963,6 +965,44 @@ class TestGetConnections:
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    def test_get_connections_linked_systems_empty(
+        self, api_client: TestClient, generate_auth_header, connection_config, url
+    ) -> None:
+        """Connection config without a linked system returns an empty list."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        connection = resp.json()["items"][0]
+        assert connection["linked_systems"] == []
+
+    def test_get_connections_linked_systems_populated(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        connection_config,
+        system_with_cleanup,
+        url,
+    ) -> None:
+        """Connection config linked to a system returns the system in linked_systems."""
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system_with_cleanup.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        connection = resp.json()["items"][0]
+        assert connection["linked_systems"] == [
+            {
+                "fides_key": system_with_cleanup.fides_key,
+                "name": system_with_cleanup.name,
+            }
+        ]
 
     def test_filter_connections_disabled_and_type(
         self,
@@ -1284,14 +1324,17 @@ class TestGetConnections:
                 "secrets": integration_secrets["postgres_example"],
                 "description": "Read-only connection config",
             }
-            data["system_id"] = system.id
-
-            configs.append(
-                ConnectionConfig.create(
-                    db=db,
-                    data=data,
-                )
+            connection = ConnectionConfig.create(
+                db=db,
+                data=data,
             )
+            SystemIntegrationLinkRepository().create_or_update_link(
+                system_id=system.id,
+                connection_config_id=connection.id,
+                session=db,
+            )
+            configs.append(connection)
+        db.commit()
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
 
         resp = api_client.get(url, headers=auth_header)
@@ -1365,6 +1408,7 @@ class TestGetConnection:
             "authorized",
             "enabled_actions",
             "system_key",
+            "linked_systems",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
@@ -1372,6 +1416,44 @@ class TestGetConnection:
         assert response_body["access"] == "write"
         assert response_body["updated_at"] is not None
         assert response_body["last_test_timestamp"] is None
+
+    def test_get_connection_detail_linked_systems_empty(
+        self, url, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        """Detail endpoint returns empty linked_systems for unlinked config."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert resp.json()["linked_systems"] == []
+
+    def test_get_connection_detail_linked_systems_populated(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        connection_config,
+        system_with_cleanup,
+    ) -> None:
+        """Detail endpoint returns system info in linked_systems when linked."""
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system_with_cleanup.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["linked_systems"] == [
+            {
+                "fides_key": system_with_cleanup.fides_key,
+                "name": system_with_cleanup.name,
+            }
+        ]
+        assert body["system_key"] == system_with_cleanup.fides_key
 
 
 class TestDeleteConnection:

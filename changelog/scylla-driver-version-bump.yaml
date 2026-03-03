@@ -1,4 +1,0 @@
-type: Changed
-description: Bumped scylla-driver from 3.26.8 to 3.29.7 and refreshed lockfile
-pr: 7446
-labels: []

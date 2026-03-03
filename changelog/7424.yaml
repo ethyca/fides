@@ -1,0 +1,4 @@
+type: Security
+description: Added domain restriction support for SaaS connector params
+pr: 7424
+labels: []

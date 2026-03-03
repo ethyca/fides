@@ -598,9 +598,9 @@ class System(Base, FidesBase):
 
     connection_configs = relationship(
         "ConnectionConfig",
-        back_populates="system",
-        cascade="all, delete",
+        secondary="system_connection_config_link",
         uselist=False,
+        viewonly=True,
         lazy="selectin",
     )
 

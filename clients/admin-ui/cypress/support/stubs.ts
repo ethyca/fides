@@ -1208,6 +1208,13 @@ export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
       ? "policies/empty-list.json"
       : "policies/list.json",
   }).as("getDSRPolicies");
+  cy.intercept("GET", "/api/v1/plus/dsr/policy/default", {
+    body: {
+      access: "default_access_policy",
+      erasure: "default_erasure_policy",
+      consent: "default_consent_policy",
+    },
+  }).as("getDefaultPolicies");
   cy.intercept("GET", "/api/v1/dsr/policy/*", {
     body: {
       name: "Default Erasure Policy",
@@ -1242,4 +1249,22 @@ export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
       },
     ],
   }).as("getMaskingStrategies");
+  cy.intercept("PATCH", "/api/v1/dsr/policy", {
+    body: {
+      succeeded: [
+        {
+          name: "Test Policy",
+          key: "test_policy",
+          drp_action: null,
+          execution_timeframe: null,
+          rules: [],
+        },
+      ],
+      failed: [],
+    },
+  }).as("patchDSRPolicy");
+  cy.intercept("DELETE", "/api/v1/dsr/policy/*", {
+    statusCode: 200,
+    body: {},
+  }).as("deleteDSRPolicy");
 };

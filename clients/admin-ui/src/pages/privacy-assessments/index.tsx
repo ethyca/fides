@@ -1,18 +1,22 @@
-import { Button, Flex, Result, Space, Spin } from "fidesui";
+import { Button, Flex, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
+import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_EVALUATE_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   AssessmentGroup,
+  AssessmentSettingsModal,
   EmptyState,
   useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
 const PrivacyAssessmentsPage: NextPage = () => {
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+
   // Fetch assessments from API
   const {
     data: assessmentsData,
@@ -77,11 +81,19 @@ const PrivacyAssessmentsPage: NextPage = () => {
       <PageHeader
         heading="Privacy assessments"
         rightContent={
-          hasAssessments ? (
-            <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
-              <Button type="primary">Evaluate assessments</Button>
-            </NextLink>
-          ) : undefined
+          <Space>
+            {hasAssessments && (
+              <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
+                <Button type="primary">Evaluate assessments</Button>
+              </NextLink>
+            )}
+            <Button
+              aria-label="Assessment settings"
+              icon={<Icons.Settings />}
+              onClick={() => setSettingsModalOpen(true)}
+              data-testid="btn-assessment-settings"
+            />
+          </Space>
         }
         isSticky
       />
@@ -102,6 +114,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
           </Space>
         </div>
       )}
+
+      <AssessmentSettingsModal
+        open={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+      />
     </Layout>
   );
 };

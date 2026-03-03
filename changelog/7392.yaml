@@ -1,4 +1,0 @@
-type: Changed
-description: Updated connector registry to use Redis version counter for cross-server cache invalidation
-pr: 7392
-labels: []
