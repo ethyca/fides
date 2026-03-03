@@ -8,7 +8,6 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
-import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import { FidesCookie, isNewFidesCookie } from "./fides";
@@ -54,12 +53,6 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 declare global {
   interface Window {
     __tcfapiLocator?: Window;
-    __tcfapi?: (
-      command: string,
-      version: number,
-      callback: (tcData: TCData, success: boolean) => void,
-      parameter?: number | string,
-    ) => void;
     __gpp?: GppFunction;
     __gppLocator?: Window;
   }
