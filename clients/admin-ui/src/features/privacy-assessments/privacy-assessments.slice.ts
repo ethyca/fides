@@ -8,7 +8,7 @@ import {
   AssessmentEvidenceResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
-  CreatePrivacyAssessmentResponse,
+  CreateAssessmentTaskResponse,
   CreateQuestionnaireRequest,
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
@@ -61,7 +61,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
     }),
 
     createPrivacyAssessment: build.mutation<
-      CreatePrivacyAssessmentResponse,
+      CreateAssessmentTaskResponse,
       CreateAssessmentRequest
     >({
       query: (body) => ({
@@ -69,7 +69,6 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Privacy Assessment"],
     }),
 
     updatePrivacyAssessment: build.mutation<

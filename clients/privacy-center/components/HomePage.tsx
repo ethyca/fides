@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { encodePolicyKey } from "~/common/policy-key";
 import sanitizeHTML from "~/common/sanitize-html";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 import BrandLink from "~/components/BrandLink";
@@ -131,9 +132,10 @@ const HomePage: NextPage = () => {
   const handlePrivacyRequestOpen = (policyKey: string) => {
     // Preserve search params when navigating to privacy request page
     const currentSearchParams = searchParams?.toString();
+    const encoded = encodePolicyKey(policyKey);
     const url = currentSearchParams
-      ? `/privacy-request/${encodeURIComponent(policyKey)}?${currentSearchParams}`
-      : `/privacy-request/${encodeURIComponent(policyKey)}`;
+      ? `/privacy-request/${encoded}?${currentSearchParams}`
+      : `/privacy-request/${encoded}`;
     router.push(url);
   };
 
