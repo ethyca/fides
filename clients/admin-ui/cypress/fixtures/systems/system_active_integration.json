@@ -44,7 +44,7 @@
   "dpo": "Derek P. Officer",
   "data_security_practices": [],
   "cookies": [],
-  "connection_configs": {
+  "connection_configs": [{
     "name": null,
     "key": "fidesctl_system_iterable_api",
     "description": "",
@@ -66,5 +66,5 @@
     },
     "authorized": false,
     "enabled_actions": ["erasure"]
-  }
+  }]
 }

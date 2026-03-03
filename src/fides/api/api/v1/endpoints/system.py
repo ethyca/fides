@@ -199,9 +199,14 @@ def patch_connection_secrets(
     """
 
     system = get_system(db, fides_key)
+    if not system.connection_configs:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="No integration found linked to this system",
+        )
     return update_connection_secrets(
         connection_service,
-        system.connection_configs.key,
+        system.connection_configs[0].key,
         unvalidated_secrets,
         verify,
         merge_with_existing=True,
@@ -227,15 +232,13 @@ def delete_connection(fides_key: str, *, db: Session = Depends(deps.get_db)) -> 
     to unlink it from a system without deleting it.
     """
     system = get_system(db, fides_key)
-    if system.connection_configs is None:
+    if not system.connection_configs:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail="No integration found linked to this system",
         )
 
-    # system.connection_configs will temporarily only have one config
-    # it will be updated to have multiple configs in the future
-    delete_connection_config(db, system.connection_configs.key)
+    delete_connection_config(db, system.connection_configs[0].key)
 
 
 @SYSTEM_ROUTER.put(

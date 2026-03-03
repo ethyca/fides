@@ -94,7 +94,7 @@ const CatalogSystemsTable = () => {
   const handleRowClicked = async (row: SystemWithMonitorKeys) => {
     // if there are projects, go to project view; otherwise go to datasets view
     const projectsResponse = await getProjects({
-      connection_config_key: row.connection_configs!.key,
+      connection_config_key: row.connection_configs?.[0]?.key,
       page: 1,
       size: 1,
     });
@@ -117,7 +117,7 @@ const CatalogSystemsTable = () => {
           <DefaultCell
             value={getValue()}
             fontWeight={
-              row.original.connection_configs?.key ? "semibold" : "normal"
+              row.original.connection_configs?.[0]?.key ? "semibold" : "normal"
             }
           />
         ),
@@ -179,7 +179,7 @@ const CatalogSystemsTable = () => {
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyCatalogTableNotice />}
         onRowClick={handleRowClicked}
-        getRowIsClickable={(row) => !!row.connection_configs?.key}
+        getRowIsClickable={(row) => !!row.connection_configs?.[0]?.key}
       />
       <PaginationBar
         totalRows={totalRows || 0}

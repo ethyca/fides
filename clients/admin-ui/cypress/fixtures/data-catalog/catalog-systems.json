@@ -5,18 +5,18 @@
       "name": "BigQuery System",
       "description": "A system used for storing and analyzing large datasets.",
       "monitor_config_keys": ["bigquery_monitor"],
-      "connection_configs": {
+      "connection_configs": [{
         "key": "bq_integration"
-      }
+      }]
     },
     {
       "fides_key": "dynamo_system",
       "name": "Dynamo System",
       "description": "A system used for storing and analyzing large datasets.",
       "monitor_config_keys": ["dynamo_monitor"],
-      "connection_configs": {
+      "connection_configs": [{
         "key": "dynamo_integration"
-      }
+      }]
     },
     {
       "fides_key": "system_with_dataset",

@@ -39,7 +39,7 @@
   "legitimate_interest_disclosure_url": null,
   "cookies": [],
   "created_at": "2024-12-03T15:21:25.496095Z",
-  "connection_configs": {
+  "connection_configs": [{
     "name": "asdasd_postgres",
     "key": "asdasd_postgres",
     "description": "",
@@ -62,6 +62,6 @@
     },
     "authorized": false,
     "enabled_actions": null
-  },
+  }],
   "data_stewards": []
 }
