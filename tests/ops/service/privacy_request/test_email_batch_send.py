@@ -253,7 +253,7 @@ class TestConsentEmailBatchSend:
         # Sovrn error status and identities added to affected systems and secondary user ids because this preference is relevant
         assert (
             privacy_preference_history.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "error"
         )
@@ -265,7 +265,7 @@ class TestConsentEmailBatchSend:
         # Sovrn error status and identities not added to affected systems and secondary user ids for irrelevant preference
         assert (
             privacy_preference_history_us_ca_provide.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "skipped"
         )
@@ -464,7 +464,7 @@ class TestConsentEmailBatchSend:
         # some preferences are propagated and others are not.
         assert (
             privacy_preference_history_us_ca_provide.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "skipped"
         )
@@ -582,7 +582,7 @@ class TestConsentEmailBatchSend:
         # Sovrn complete status and identities added to affected systems and secondary user ids because this preference is relevant
         assert (
             privacy_preference_history.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "complete"
         )
@@ -594,7 +594,7 @@ class TestConsentEmailBatchSend:
         db.refresh(privacy_preference_history_us_ca_provide)
         assert (
             privacy_preference_history_us_ca_provide.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "skipped"
         )
@@ -712,7 +712,7 @@ class TestConsentEmailBatchSend:
         # Sovrn complete status and identities added to affected systems and secondary user ids because this preference is relevant
         assert (
             privacy_preference_history.affected_system_status[
-                generic_consent_email_connection_config.system_key
+                generic_consent_email_connection_config.consent_tracking_key
             ]
             == "complete"
         )
@@ -724,7 +724,7 @@ class TestConsentEmailBatchSend:
         db.refresh(privacy_preference_history_us_ca_provide)
         assert (
             privacy_preference_history_us_ca_provide.affected_system_status[
-                generic_consent_email_connection_config.system_key
+                generic_consent_email_connection_config.consent_tracking_key
             ]
             == "skipped"
         )

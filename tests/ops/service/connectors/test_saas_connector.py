@@ -891,7 +891,7 @@ class TestSaasConnectorRunConsentRequest:
 
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            system.fides_key: "pending"
+            saas_example_connection_config.consent_tracking_key: "pending"
         }, "Updated to error in graph task, not updated here"
 
     def test_missing_identity_data_skipped(
@@ -936,7 +936,7 @@ class TestSaasConnectorRunConsentRequest:
         assert "Missing needed values to propagate request" in str(exc)
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            system.fides_key: "pending"
+            saas_example_connection_config.consent_tracking_key: "pending"
         }, "Updated to skipped in graph task, not updated here"
 
     def test_no_requests_of_that_type_defined(
@@ -1014,7 +1014,7 @@ class TestSaasConnectorRunConsentRequest:
         assert mock_send.called
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            saas_example_consent_preferences_connection_config.system_key: "complete"
+            saas_example_consent_preferences_connection_config.consent_tracking_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
 
     def test_preferences_executable_notice_based_consent(
@@ -1085,7 +1085,7 @@ class TestSaasConnectorRunConsentRequest:
         spy.assert_called_once_with(name, SaaSRequestType.UPDATE_CONSENT)
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            saas_example_connection_config.system_key: "complete"
+            saas_example_connection_config.consent_tracking_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
 
         # Cleanup
