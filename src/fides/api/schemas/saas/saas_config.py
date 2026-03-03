@@ -1,3 +1,4 @@
+import re
 from typing import Any, Dict, List, Optional, Set, Union
 
 from fideslang.models import FidesCollectionKey, FidesDatasetReference
@@ -327,6 +328,13 @@ class ConnectorParam(BaseModel):
     multiselect: Optional[bool] = False
     description: Optional[str] = None
     sensitive: Optional[bool] = False
+    type: Optional[str] = None
+    allowed_values: Optional[List[str]] = None
+    # type="endpoint" marks this param as a URL endpoint/domain param.
+    # When type is set, allowed_values controls value restrictions:
+    #   None = no validation. [] = any value permitted (self-hosted).
+    #   ["api.stripe.com", "*.salesforce.com"] = only values matching listed patterns are allowed.
+    # Use "*" as a wildcard that matches any sequence of characters (including dots).
 
     @model_validator(mode="before")
     @classmethod
@@ -420,6 +428,69 @@ class SaaSConfig(SaaSConfigBase):
     consent_requests: Optional[ConsentRequestMap] = None
     user_guide: Optional[str] = None
     display_info: Optional[SaaSDisplayInfo] = None
+
+    @model_validator(mode="after")
+    def validate_host_domain_restrictions(self) -> "SaaSConfig":
+        """
+        Rule B: If any connector param of type "endpoint" defines allowed_values
+        (non-None), then all client_config.host placeholders must reference
+        connector params that are also of type "endpoint" with allowed_values defined.
+
+        This ensures that domain-restricted connectors cannot be circumvented
+        by pointing client_config.host to an unrestricted param.
+        """
+        has_restrictions = any(
+            p.type == "endpoint" and p.allowed_values is not None
+            for p in self.connector_params
+        )
+        if not has_restrictions:
+            return self
+
+        params_by_name = {p.name: p for p in self.connector_params}
+
+        config_dict = self.model_dump()
+        all_hosts = self._collect_client_config_hosts(config_dict)
+
+        for host_value in all_hosts:
+            placeholders = re.findall(r"<([^<>]+)>", host_value)
+            if not placeholders:
+                raise ValueError(
+                    f"client_config.host value '{host_value}' does not reference any "
+                    f"connector param. When domain restrictions are defined, the host "
+                    f"must reference a connector param with allowed_values."
+                )
+            for placeholder in placeholders:
+                param = params_by_name.get(placeholder)
+                if param is None:
+                    raise ValueError(
+                        f"client_config.host references '{placeholder}' which is not a "
+                        f"known connector param. When domain restrictions are defined, all "
+                        f"host placeholders must reference connector params with allowed_values."
+                    )
+                if param.type != "endpoint" or param.allowed_values is None:
+                    raise ValueError(
+                        f"client_config.host references connector param '{placeholder}' "
+                        f"which does not have allowed_values defined. All host-referenced "
+                        f"params must be of type 'endpoint' with allowed_values set "
+                        f"(use an empty list for self-hosted services)."
+                    )
+
+        return self
+
+    @staticmethod
+    def _collect_client_config_hosts(obj: Any) -> List[str]:
+        """Recursively walk a dict/list structure and collect every client_config.host value."""
+        hosts: List[str] = []
+        if isinstance(obj, dict):
+            cc = obj.get("client_config")
+            if isinstance(cc, dict) and "host" in cc:
+                hosts.append(cc["host"])
+            for value in obj.values():
+                hosts.extend(SaaSConfig._collect_client_config_hosts(value))
+        elif isinstance(obj, list):
+            for item in obj:
+                hosts.extend(SaaSConfig._collect_client_config_hosts(item))
+        return hosts
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
