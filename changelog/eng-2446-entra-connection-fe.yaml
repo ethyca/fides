@@ -1,0 +1,4 @@
+type: Added
+description: Added Entra ID connection type and entraMonitor flag to admin UI.
+pr: 7428
+labels: []
