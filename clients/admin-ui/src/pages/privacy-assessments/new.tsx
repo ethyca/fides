@@ -17,7 +17,7 @@ import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
-import { dpoOptions, frameworks } from "./constants";
+import { dpoOptions, frameworks, mockSystemNames } from "./constants";
 
 const { Text } = Typography;
 
@@ -78,7 +78,13 @@ const NewAssessmentPage: NextPage = () => {
             marginBottom: 24,
           }}
         >
-          <Text style={{ fontSize: 14, lineHeight: 1.6, color: palette.FIDESUI_MINOS }}>
+          <Text
+            style={{
+              fontSize: 14,
+              lineHeight: 1.6,
+              color: palette.FIDESUI_MINOS,
+            }}
+          >
             Your assessment will be pre-populated with data from your Fides data
             map, including system details, data categories, and processing
             purposes to give you a head start.
@@ -136,17 +142,20 @@ const NewAssessmentPage: NextPage = () => {
 
           <div>
             <Text strong style={{ display: "block", marginBottom: 8 }}>
-              System or processing activity
+              System
             </Text>
-            <Input
-              placeholder="e.g., Marketing Analytics Platform"
-              value={form.systemName}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  systemName: e.target.value,
-                }))
+            <Select
+              style={{ width: "100%" }}
+              aria-label="Select system"
+              placeholder="Select a system"
+              value={form.systemName || undefined}
+              onChange={(value) =>
+                setForm((prev) => ({ ...prev, systemName: value }))
               }
+              options={mockSystemNames.map((name) => ({
+                value: name,
+                label: name,
+              }))}
             />
           </div>
 
