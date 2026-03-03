@@ -10,6 +10,7 @@ from fides.core.repository.session_management import (
 from fides.system_integration_link.entities import (
     SystemIntegrationLinkEntity,
     SystemLinkInput,
+    SystemRef,
 )
 from fides.system_integration_link.exceptions import (
     ConnectionConfigNotFoundError,
@@ -65,7 +66,7 @@ class SystemIntegrationLinkService:
         if len(links) > MAX_LINKS_PER_CONNECTION:
             raise TooManyLinksError(connection_key, MAX_LINKS_PER_CONNECTION)
 
-        system_map: dict = {}
+        system_map: dict[str, "SystemRef"] = {}
         for link_spec in links:
             system = self._repo.resolve_system(
                 link_spec.system_fides_key, session=session
