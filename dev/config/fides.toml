@@ -45,7 +45,7 @@ healthcheck_ping_timeout = 2.0 # number
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "442498c6d741c93f3a2007ae94e9dd30" # string
+analytics_id = "d6cfd98255c982c0f06c5fe7f58cf581" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
