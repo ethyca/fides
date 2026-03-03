@@ -68,7 +68,7 @@ export const AssessmentTaskPopoverContent = ({
               />
             </Space>
           </Descriptions.Item>
-          <Descriptions.Item label="Assessment types">
+          <Descriptions.Item label="Types">
             {formatTypes(activeTask.assessment_types, templateNamesMap)}
           </Descriptions.Item>
           <Descriptions.Item label="Systems">
