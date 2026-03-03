@@ -18,7 +18,10 @@
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
-  transition: min-width 0.35s ease, max-width 0.35s ease, padding 0.35s ease;
+  transition:
+    min-width 0.35s ease,
+    max-width 0.35s ease,
+    padding 0.35s ease;
 }
 
 .navContainerExpanded {

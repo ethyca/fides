@@ -96,7 +96,9 @@ describe("configureNavGroups", () => {
       ]);
 
       // Data inventory should not exist when user has irrelevant scopes
-      expect(navGroups.find((g) => g.title === "Data inventory")).toBeUndefined();
+      expect(
+        navGroups.find((g) => g.title === "Data inventory"),
+      ).toBeUndefined();
     });
 
     it("conditionally shows request manager using scopes", () => {
@@ -220,9 +222,7 @@ describe("configureNavGroups", () => {
       const coreConfig = navGroups.find(
         (g) => g.title === "Core configuration",
       );
-      expect(
-        coreConfig?.children.map((c) => c.title),
-      ).not.toContain("Domains");
+      expect(coreConfig?.children.map((c) => c.title)).not.toContain("Domains");
     });
   });
 
