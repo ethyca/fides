@@ -190,7 +190,7 @@ const usePrivacyRequestForm = ({
         error?: unknown;
       }) => {
         setIsSubmitPending(false);
-        const errorMessage = typeof error === "string" && error;
+        const errorMessage = typeof error === "string" ? error : undefined;
         toast({
           title,
           description: errorMessage,
