@@ -37,7 +37,6 @@ export const AssessmentTaskPopoverContent = ({
   systemNamesMap,
   templateNamesMap,
 }: AssessmentTaskPopoverContentProps) => {
-  const task = activeTask ?? lastCompletedTask;
   const activeRelativeTime = useRelativeTime(
     activeTask?.created_at ? new Date(activeTask.created_at) : null,
   );
@@ -47,17 +46,9 @@ export const AssessmentTaskPopoverContent = ({
       : null,
   );
 
-  if (!task) {
-    return (
-      <Text type="secondary" size="sm">
-        No evaluation history.
-      </Text>
-    );
-  }
-
   if (activeTask) {
     return (
-      <div style={{ width: 320 }}>
+      <div className="w-80">
         <Descriptions column={1} size="small">
           <Descriptions.Item label="Status">
             <Flex align="center" gap="small">
@@ -66,7 +57,7 @@ export const AssessmentTaskPopoverContent = ({
             </Flex>
           </Descriptions.Item>
           <Descriptions.Item label="Progress">
-            <Space direction="vertical" size={4} className="w-full">
+            <Space direction="vertical" size="small" className="w-full">
               <Text size="sm">
                 {activeTask.completed_count} of {activeTask.total_count}{" "}
                 assessments
@@ -91,10 +82,18 @@ export const AssessmentTaskPopoverContent = ({
     );
   }
 
-  const isError = lastCompletedTask!.status === TaskStatus.ERROR;
+  if (!lastCompletedTask) {
+    return (
+      <Text type="secondary" size="sm">
+        No evaluation history.
+      </Text>
+    );
+  }
+
+  const isError = lastCompletedTask.status === TaskStatus.ERROR;
 
   return (
-    <div style={{ width: 320 }}>
+    <div className="w-80">
       <Descriptions column={1} size="small">
         <Descriptions.Item label="Status">
           {isError ? (
@@ -104,10 +103,10 @@ export const AssessmentTaskPopoverContent = ({
           )}
         </Descriptions.Item>
         <Descriptions.Item label="Assessment types">
-          {formatTypes(lastCompletedTask!.assessment_types, templateNamesMap)}
+          {formatTypes(lastCompletedTask.assessment_types, templateNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Systems">
-          {formatSystems(lastCompletedTask!.system_fides_keys, systemNamesMap)}
+          {formatSystems(lastCompletedTask.system_fides_keys, systemNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label={isError ? "Failed" : "Completed"}>
           {completedRelativeTime}

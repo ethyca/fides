@@ -6,6 +6,7 @@ import type {
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentTaskPage,
   AssessmentTaskResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
@@ -14,7 +15,6 @@ import {
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
   GetPrivacyAssessmentsParams,
-  Page_AssessmentTaskResponse_,
   Page_PrivacyAssessmentResponse_,
   PrivacyAssessmentConfigDefaults,
   PrivacyAssessmentConfigResponse,
@@ -75,7 +75,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
     }),
 
     getAssessmentTasks: build.query<
-      Page_AssessmentTaskResponse_,
+      AssessmentTaskPage,
       { page?: number; size?: number; status?: string } | void
     >({
       query: (params) => ({

@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import {
   Button,
   Flex,
@@ -7,7 +8,7 @@ import {
   Spin,
   Text,
 } from "fidesui";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import { useGetSystemsQuery } from "~/features/system/system.slice";
@@ -31,10 +32,11 @@ export const AssessmentTaskStatusIndicator = ({
   className,
 }: AssessmentTaskStatusIndicatorProps) => {
   const [notificationApi, notificationHolder] = notification.useNotification();
+  const [pollInterval, setPollInterval] = useState(ACTIVE_POLL_INTERVAL);
 
   const { data: tasksData } = useGetAssessmentTasksQuery(
     { page: 1, size: 10 },
-    { pollingInterval: ACTIVE_POLL_INTERVAL },
+    { pollingInterval: pollInterval },
   );
 
   const activeTask = useMemo(
@@ -42,7 +44,8 @@ export const AssessmentTaskStatusIndicator = ({
       (tasksData?.items ?? []).find(
         (t) =>
           t.status === TaskStatus.IN_PROCESSING ||
-          t.status === TaskStatus.PENDING,
+          t.status === TaskStatus.PENDING ||
+          t.status === TaskStatus.RETRYING,
       ) ?? null,
     [tasksData],
   );
@@ -95,6 +98,11 @@ export const AssessmentTaskStatusIndicator = ({
       ),
     [systemsData],
   );
+
+  // Slow down polling when no active task; resume fast polling when one appears
+  useEffect(() => {
+    setPollInterval(activeTask ? ACTIVE_POLL_INTERVAL : 60_000);
+  }, [activeTask]);
 
   // Detect active → idle transition and fire the completion notification
   const hadActiveTaskRef = useRef(false);
@@ -176,7 +184,7 @@ export const AssessmentTaskStatusIndicator = ({
         trigger="hover"
         placement="bottom"
       >
-        <div className={`cursor-pointer${className ? ` ${className}` : ""}`}>
+        <div className={classNames("cursor-pointer", className)}>
           {inlineContent}
         </div>
       </Popover>

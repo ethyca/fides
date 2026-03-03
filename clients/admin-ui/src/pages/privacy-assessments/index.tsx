@@ -1,7 +1,7 @@
 import { Button, Flex, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_EVALUATE_ROUTE } from "~/features/common/nav/routes";
@@ -25,20 +25,14 @@ const PrivacyAssessmentsPage: NextPage = () => {
     refetch: refetchAssessments,
   } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
 
-  const assessments = useMemo(
-    () => assessmentsData?.items ?? [],
-    [assessmentsData?.items],
-  );
+  const assessments = assessmentsData?.items ?? [];
 
   const { data: templatesData } = useGetAssessmentTemplatesQuery({
     page: 1,
     size: 100,
   });
 
-  const templates = useMemo(
-    () => templatesData?.items ?? [],
-    [templatesData?.items],
-  );
+  const templates = templatesData?.items ?? [];
 
   const hasAssessments = assessments.length > 0;
 

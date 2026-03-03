@@ -431,8 +431,7 @@ export interface AssessmentTaskResponse {
   updated_at: string | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export interface Page_AssessmentTaskResponse_ {
+export interface AssessmentTaskPage {
   items: AssessmentTaskResponse[];
   total: number;
   page: number;
