@@ -3,13 +3,13 @@ import {
   Descriptions,
   Flex,
   Icons,
+  notification,
   Popover,
   Progress,
   Space,
   Spin,
   Tag,
   Text,
-  notification,
 } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
@@ -34,9 +34,7 @@ const formatSystems = (
   if (!systemFidesKeys || systemFidesKeys.length === 0) {
     return "All systems";
   }
-  return systemFidesKeys
-    .map((key) => namesMap?.[key] ?? key)
-    .join(", ");
+  return systemFidesKeys.map((key) => namesMap?.[key] ?? key).join(", ");
 };
 
 const formatTypes = (
@@ -46,9 +44,7 @@ const formatTypes = (
   if (assessmentTypes.length === 0) {
     return "—";
   }
-  return assessmentTypes
-    .map((t) => namesMap?.[t] ?? t)
-    .join(", ");
+  return assessmentTypes.map((t) => namesMap?.[t] ?? t).join(", ");
 };
 
 const ActiveTaskPopoverContent = ({
