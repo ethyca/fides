@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "chromatic --exit-zero-on-changes"
   },
   "dependencies": {
     "@carbon/icons-react": "^11.51.0",
@@ -41,6 +42,7 @@
     "@typescript-eslint/eslint-plugin": "^7.17.0",
     "@typescript-eslint/parser": "^7.17.0",
     "autoprefixer": "^10.4.14",
+    "chromatic": "^15.2.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
