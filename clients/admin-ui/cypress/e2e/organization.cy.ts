@@ -11,7 +11,7 @@ describe("Organization page", () => {
   });
 
   it("can navigate to the Organization page", () => {
-    cy.visitWithExpandedNav("/");
+    cy.visit("/");
     cy.getByTestId("Settings-nav-group").click();
     cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("Organization-nav-link").click();

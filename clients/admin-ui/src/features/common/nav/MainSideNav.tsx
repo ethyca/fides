@@ -1,9 +1,4 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraVStack as VStack,
-  Icons,
-} from "fidesui";
+import { Button, ChakraBox as Box, ChakraVStack as VStack, Icons } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -21,7 +16,7 @@ import AccountDropdownMenu from "./AccountDropdownMenu";
 import { useNav } from "./hooks";
 import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
-import navStyles from "./NavMenu.module.scss";
+import styles from "./NavMenu.module.scss";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
 const NAV_WIDTH = "240px";
@@ -54,26 +49,38 @@ export const UnconnectedMainSideNav = ({
     .map((group) => ({
       key: group.title,
       icon: group.icon,
-      popupClassName: navStyles.flyout,
+      popupClassName: styles.flyout,
       popupOffset: [12, 0],
       label: (
         <span data-testid={`${group.title}-nav-group`}>{group.title}</span>
       ),
-      children: group.children
-        .filter((child) => !child.hidden) // Filter out hidden routes from UI
-        .map((child) => ({
-          key: child.path,
-          // child label needs left margin/padding to align with group title
-          label: (
-            <NextLink
-              href={child.path}
-              data-testid={`${child.title}-nav-link`}
-              className="ml-4 pl-0.5"
-            >
-              {child.title}
-            </NextLink>
-          ),
-        })),
+      children: [
+        ...(collapsed
+          ? [
+              {
+                key: `${group.title}-header`,
+                label: (
+                  <span className={styles.flyoutHeader}>{group.title}</span>
+                ),
+                disabled: true,
+              },
+            ]
+          : []),
+        ...group.children
+          .filter((child) => !child.hidden)
+          .map((child) => ({
+            key: child.path,
+            label: (
+              <NextLink
+                href={child.path}
+                data-testid={`${child.title}-nav-link`}
+                className="ml-4 pl-0.5"
+              >
+                {child.title}
+              </NextLink>
+            ),
+          })),
+      ],
     }));
 
   const getActiveKeyFromUrl = () => {
@@ -130,19 +137,12 @@ export const UnconnectedMainSideNav = ({
   const navWidth = collapsed ? COLLAPSED_WIDTH : NAV_WIDTH;
 
   return (
-    <Box
-      px={collapsed ? 0 : 2}
-      pb={0}
-      pt={4}
-      minWidth={navWidth}
-      maxWidth={navWidth}
-      backgroundColor={NAV_BACKGROUND_COLOR}
-      height="100%"
-      overflowX="hidden"
-      overflowY="auto"
-      sx={{
-        transition:
-          "min-width 0.35s ease, max-width 0.35s ease, padding 0.35s ease",
+    <div
+      className={`${styles.navContainer} ${collapsed ? styles.navContainerCollapsed : styles.navContainerExpanded}`}
+      style={{
+        minWidth: navWidth,
+        maxWidth: navWidth,
+        backgroundColor: NAV_BACKGROUND_COLOR,
       }}
     >
       <VStack
@@ -153,19 +153,12 @@ export const UnconnectedMainSideNav = ({
         justifyContent="space-between"
       >
         <Box width="100%">
-          <Box
-            pb={6}
-            pr={4}
-            display="flex"
-            justifyContent="flex-start"
-            sx={{
-              paddingInlineStart: collapsed ? "28px" : "16px",
-              transition: "padding-inline-start 0.35s ease",
-            }}
+          <div
+            className={`${styles.logoWrapper} ${collapsed ? styles.logoWrapperCollapsed : styles.logoWrapperExpanded}`}
           >
             <button
               type="button"
-              className={`inline-flex cursor-pointer p-0 ${navStyles.collapseToggle}`}
+              className={`inline-flex cursor-pointer p-0 ${styles.collapseToggle}`}
               onClick={onCollapseToggle}
               aria-label={
                 collapsed
@@ -174,25 +167,17 @@ export const UnconnectedMainSideNav = ({
               }
               data-testid="nav-collapse-toggle"
             >
-              <Box
-                position="relative"
-                overflow="hidden"
-                width={
-                  collapsed ? `${LOGO_ICON_SIZE}px` : `${LOGO_FULL_WIDTH}px`
-                }
-                height={`${LOGO_HEIGHT}px`}
-                sx={{
-                  transition: "width 0.35s ease",
+              <div
+                className={styles.logoContainer}
+                style={{
+                  width: collapsed
+                    ? `${LOGO_ICON_SIZE}px`
+                    : `${LOGO_FULL_WIDTH}px`,
+                  height: `${LOGO_HEIGHT}px`,
                 }}
               >
-                <Box
-                  position="absolute"
-                  inset={0}
-                  opacity={collapsed ? 0 : 1}
-                  sx={{
-                    transition: "opacity 0.3s ease-in-out",
-                    pointerEvents: collapsed ? "none" : "auto",
-                  }}
+                <div
+                  className={`${styles.logoImage} ${collapsed ? styles.logoImageHidden : styles.logoImageVisible}`}
                 >
                   <Image
                     src={logoExpanded}
@@ -201,15 +186,9 @@ export const UnconnectedMainSideNav = ({
                     height={LOGO_HEIGHT}
                     priority
                   />
-                </Box>
-                <Box
-                  position="absolute"
-                  inset={0}
-                  opacity={collapsed ? 1 : 0}
-                  sx={{
-                    transition: "opacity 0.3s ease-in-out",
-                    pointerEvents: collapsed ? "auto" : "none",
-                  }}
+                </div>
+                <div
+                  className={`${styles.logoImage} ${collapsed ? styles.logoImageVisible : styles.logoImageHidden}`}
                 >
                   <Image
                     src={logoCollapsed}
@@ -218,10 +197,10 @@ export const UnconnectedMainSideNav = ({
                     height={LOGO_ICON_SIZE}
                     priority
                   />
-                </Box>
-              </Box>
+                </div>
+              </div>
             </button>
-          </Box>
+          </div>
           <NavMenu
             items={navMenuItems}
             selectedKeys={activeKey ? [activeKey] : []}
@@ -230,30 +209,23 @@ export const UnconnectedMainSideNav = ({
             inlineCollapsed={collapsed}
           />
         </Box>
-        <Box
-          alignItems="center"
-          justifyContent={collapsed ? "center" : "flex-start"}
-          pb={4}
-          px={4}
-          width="100%"
-          display="flex"
-          flexDirection={collapsed ? "column" : "row"}
-          gap={collapsed ? 2 : 0}
+        <div
+          className={`${styles.bottomBar} ${collapsed ? styles.bottomBarCollapsed : styles.bottomBarExpanded}`}
         >
           <Button
             type="primary"
             href="https://docs.ethyca.com"
             target="_blank"
-            className={navStyles.helpButton}
+            className={styles.helpButton}
             icon={<Icons.Help />}
             aria-label="Help"
           />
           <div className="inline-block">
             <AccountDropdownMenu onLogout={handleLogout} />
           </div>
-        </Box>
+        </div>
       </VStack>
-    </Box>
+    </div>
   );
 };
 
@@ -297,11 +269,13 @@ const MainSideNav = () => {
   // version of the nav during load, so that when the nav does load, it is fully featured.
   if (plusQuery.isLoading) {
     return (
-      <Box
-        minWidth={NAV_WIDTH}
-        maxWidth={NAV_WIDTH}
-        backgroundColor={NAV_BACKGROUND_COLOR}
-        height="100%"
+      <div
+        style={{
+          minWidth: NAV_WIDTH,
+          maxWidth: NAV_WIDTH,
+          backgroundColor: NAV_BACKGROUND_COLOR,
+          height: "100%",
+        }}
       />
     );
   }

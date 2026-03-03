@@ -143,16 +143,6 @@ export type Features = {
   flags: FlagsFor<FlagConfig>;
 };
 
-/**
- * When true in development, nav shows all items (Plus + Fides Cloud) so you can
- * see the full menu when running against a plain Fides API. Set in .env.local:
- * NEXT_PUBLIC_DEV_SHOW_PLUS_NAV=true
- * Plus-only pages may 404 or error when the backend is not Plus.
- */
-export const devShowPlusNav =
-  process.env.NODE_ENV === "development" &&
-  process.env.NEXT_PUBLIC_DEV_SHOW_PLUS_NAV === "true";
-
 export const useFeatures = (): Features => {
   const health = useAppSelector(selectHealth);
   const plusHealth = useAppSelector(selectPlusHealth);
@@ -161,8 +151,7 @@ export const useFeatures = (): Features => {
 
   const version = health?.version;
 
-  const plusFromApi = plusHealth !== undefined;
-  const plus = devShowPlusNav ? true : plusFromApi;
+  const plus = plusHealth !== undefined;
   const plusVersion = plusHealth?.fidesplus_version;
   const dataFlowScanning = plusHealth
     ? !!plusHealth.system_scanner.enabled
@@ -170,10 +159,7 @@ export const useFeatures = (): Features => {
   const dictionaryService = plusHealth
     ? !!plusHealth.dictionary.enabled
     : false;
-  const fidesCloudFromApi = plusHealth
-    ? !!plusHealth?.fides_cloud?.enabled
-    : false;
-  const fidesCloud = devShowPlusNav ? true : fidesCloudFromApi;
+  const fidesCloud = plusHealth ? !!plusHealth?.fides_cloud?.enabled : false;
 
   const tcf = plusHealth ? !!plusHealth.tcf.enabled : false;
 

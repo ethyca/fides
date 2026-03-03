@@ -6,7 +6,7 @@ describe("Nav Bar", () => {
   });
 
   it("renders all navigation groups with links inside", () => {
-    cy.visitWithExpandedNav("/");
+    cy.visit("/");
 
     // Without Plus: Overview, Data inventory, Privacy requests, Core configuration, Settings (Compliance hidden)
     cy.get(".ant-menu-submenu-title").should("have.length", 5);
@@ -50,7 +50,7 @@ describe("Nav Bar", () => {
 
   it("renders the Consent and Detection & Discovery navs with Plus", () => {
     stubPlus(true);
-    cy.visitWithExpandedNav("/");
+    cy.visit("/");
 
     // With Plus: Overview, Detection & Discovery, Data inventory, Privacy requests, Consent, Core configuration, Compliance, Settings
     cy.get(".ant-menu-submenu-title").should("have.length", 8);
@@ -66,7 +66,7 @@ describe("Nav Bar", () => {
 
   it("styles the active navigation link based on the current route", () => {
     const ACTIVE_COLOR = "rgb(43, 46, 53)";
-    cy.visitWithExpandedNav("/");
+    cy.visit("/");
 
     // The nav should reflect the active page.
     cy.getByTestId("Overview-nav-group").click();
@@ -93,7 +93,7 @@ describe("Nav Bar", () => {
   });
 
   it("can collapse nav groups and persist across page views", () => {
-    cy.visitWithExpandedNav("/");
+    cy.visit("/");
     cy.getByTestId("Privacy requests-nav-group").click();
     cy.getByTestId("Request manager-nav-link").should("be.visible");
     cy.getByTestId("Privacy requests-nav-group").click();

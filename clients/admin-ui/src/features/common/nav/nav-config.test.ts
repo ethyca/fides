@@ -96,10 +96,7 @@ describe("configureNavGroups", () => {
       ]);
 
       // Data inventory should not exist when user has irrelevant scopes
-      const dataInventoryGroup = navGroups.find(
-        (g) => g.title === "Data inventory",
-      );
-      expect(dataInventoryGroup).toBeUndefined();
+      expect(navGroups.find((g) => g.title === "Data inventory")).toBeUndefined();
     });
 
     it("conditionally shows request manager using scopes", () => {
@@ -141,11 +138,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: true,
       });
 
-      expect(
-        findGroup(navGroups, "Core configuration")
-          .children.map((c) => c.title)
-          .find((title) => title === "Domain verification"),
-      ).toBeDefined();
+      const coreConfigChildren = findGroup(
+        navGroups,
+        "Core configuration",
+      ).children.map((c) => c.title);
+      expect(coreConfigChildren).toContain("Domain verification");
     });
 
     it("does not show domain verification page when fides cloud is disabled", () => {
@@ -157,11 +154,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      expect(
-        findGroup(navGroups, "Core configuration")
-          .children.map((c) => c.title)
-          .find((title) => title === "Domain verification"),
-      ).toBeUndefined();
+      const coreConfigChildren = findGroup(
+        navGroups,
+        "Core configuration",
+      ).children.map((c) => c.title);
+      expect(coreConfigChildren).not.toContain("Domain verification");
     });
   });
 
@@ -178,11 +175,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      expect(
-        findGroup(navGroups, "Core configuration")
-          .children.map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains"),
-      ).toEqual({
+      const coreConfigChildren = findGroup(
+        navGroups,
+        "Core configuration",
+      ).children.map((c) => ({ title: c.title, path: c.path }));
+      expect(coreConfigChildren).toContainEqual({
         title: "Domains",
         path: routes.DOMAIN_MANAGEMENT_ROUTE,
       });
@@ -201,14 +198,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      const coreConfig = navGroups.find(
-        (g) => g.title === "Core configuration",
-      );
-      expect(
-        coreConfig?.children
-          .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains"),
-      ).toBeUndefined();
+      const coreConfigChildren = findGroup(
+        navGroups,
+        "Core configuration",
+      ).children.map((c) => c.title);
+      expect(coreConfigChildren).not.toContain("Domains");
     });
 
     it("hide domain management when scopes are wrong", () => {
@@ -227,10 +221,8 @@ describe("configureNavGroups", () => {
         (g) => g.title === "Core configuration",
       );
       expect(
-        coreConfig?.children
-          .map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains"),
-      ).toBeUndefined();
+        coreConfig?.children.map((c) => c.title),
+      ).not.toContain("Domains");
     });
   });
 
