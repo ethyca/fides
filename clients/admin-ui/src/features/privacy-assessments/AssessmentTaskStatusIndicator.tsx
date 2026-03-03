@@ -8,7 +8,7 @@ import {
   Spin,
   Text,
 } from "fidesui";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import { useGetSystemsQuery } from "~/features/system/system.slice";
@@ -20,7 +20,7 @@ import {
 } from "./privacy-assessments.slice";
 import { TaskStatus } from "./types";
 
-const ACTIVE_POLL_INTERVAL = 5000;
+const ACTIVE_POLL_INTERVAL = 30_000;
 
 interface AssessmentTaskStatusIndicatorProps {
   onTaskFinish?: () => void;
@@ -32,12 +32,10 @@ export const AssessmentTaskStatusIndicator = ({
   className,
 }: AssessmentTaskStatusIndicatorProps) => {
   const [notificationApi, notificationHolder] = notification.useNotification();
-  const [pollInterval, setPollInterval] = useState(ACTIVE_POLL_INTERVAL);
 
-  const { data: tasksData } = useGetAssessmentTasksQuery(
-    { page: 1, size: 10 },
-    { pollingInterval: pollInterval },
-  );
+  // Fetch once on mount; derive activeTask first without polling so we can
+  // use it to gate the polling interval on the same query subscription.
+  const { data: tasksData } = useGetAssessmentTasksQuery({ page: 1, size: 10 });
 
   const activeTask = useMemo(
     () =>
@@ -48,6 +46,12 @@ export const AssessmentTaskStatusIndicator = ({
           t.status === TaskStatus.RETRYING,
       ) ?? null,
     [tasksData],
+  );
+
+  // Poll every 30s only while a task is in progress; stop when idle.
+  useGetAssessmentTasksQuery(
+    { page: 1, size: 10 },
+    { pollingInterval: ACTIVE_POLL_INTERVAL, skip: !activeTask },
   );
 
   const lastCompletedTask = useMemo(
@@ -98,11 +102,6 @@ export const AssessmentTaskStatusIndicator = ({
       ),
     [systemsData],
   );
-
-  // Slow down polling when no active task; resume fast polling when one appears
-  useEffect(() => {
-    setPollInterval(activeTask ? ACTIVE_POLL_INTERVAL : 60_000);
-  }, [activeTask]);
 
   // Detect active → idle transition and fire the completion notification
   const hadActiveTaskRef = useRef(false);
