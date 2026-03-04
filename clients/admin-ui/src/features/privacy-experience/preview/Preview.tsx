@@ -348,7 +348,7 @@ const Preview = ({
               : ""
           }
         }
-        .fides-sr-only {
+        #preview-container .fides-sr-only {
           display: none !important;
         }`}
         </style>

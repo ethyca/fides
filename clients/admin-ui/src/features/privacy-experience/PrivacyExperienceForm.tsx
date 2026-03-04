@@ -481,7 +481,7 @@ export const PrivacyExperienceForm = ({
             }}
             getWarningTooltip={(id: string): string | undefined => {
               const notice = allPrivacyNoticesWithTcfPlaceholder.find(
-                (n) => n.id === id,
+                (item) => item.id === id,
               );
               return notice?.disabled ? DISABLED_NOTICE_TOOLTIP : undefined;
             }}
@@ -522,7 +522,7 @@ export const PrivacyExperienceForm = ({
             return notice?.disabled ?? false;
           }}
           getWarningTooltip={(id: string): string | undefined => {
-            const notice = allPrivacyNotices.find((n) => n.id === id);
+            const notice = allPrivacyNotices.find((item) => item.id === id);
             return notice?.disabled ? DISABLED_NOTICE_TOOLTIP : undefined;
           }}
         />

@@ -466,10 +466,9 @@ describe("Experience editor", () => {
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
         cy.wait("@getExperienceDetail");
         // The preview container should not contain the disabled notice's name
-        cy.get(`#${PREVIEW_CONTAINER_ID}`).should(
-          "not.contain",
-          "Example Notice",
-        );
+        cy.get(`#${PREVIEW_CONTAINER_ID}`)
+          .should("contain", "Manage your consent preferences")
+          .and("not.contain", "Example Notice");
       });
     });
   });

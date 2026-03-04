@@ -91,6 +91,7 @@ const ScrollableListItem = <T extends unknown>({
             <span
               // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- tooltip makes it interactive
               tabIndex={0}
+              aria-label="Warning"
             >
               <Icons.WarningAltFilled fill="var(--fidesui-warning)" />
             </span>
@@ -332,14 +333,8 @@ const ScrollableList = <T extends unknown>({
               draggable
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
-              tooltip={
-                getTooltip && getTooltip(item) ? getTooltip(item) : undefined
-              }
-              warningTooltip={
-                getWarningTooltip && getWarningTooltip(item)
-                  ? getWarningTooltip(item)
-                  : undefined
-              }
+              tooltip={getTooltip?.(item) || undefined}
+              warningTooltip={getWarningTooltip?.(item) || undefined}
             />
           );
         })}
@@ -350,6 +345,8 @@ const ScrollableList = <T extends unknown>({
       <List>
         {values.map((item) => {
           const itemId = getItemId(item);
+          const tooltipText = getTooltip?.(item) || undefined;
+          const warningTooltipText = getWarningTooltip?.(item) || undefined;
           return (
             <ScrollableListItem
               key={itemId}
@@ -357,14 +354,8 @@ const ScrollableList = <T extends unknown>({
               label={getItemDisplayName(item)}
               onRowClick={onRowClick}
               onDeleteItem={handleDeleteItem}
-              tooltip={
-                getTooltip && getTooltip(item) ? getTooltip(item) : undefined
-              }
-              warningTooltip={
-                getWarningTooltip && getWarningTooltip(item)
-                  ? getWarningTooltip(item)
-                  : undefined
-              }
+              tooltip={tooltipText}
+              warningTooltip={warningTooltipText}
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
             />
