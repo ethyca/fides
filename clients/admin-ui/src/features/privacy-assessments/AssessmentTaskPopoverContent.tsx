@@ -3,40 +3,13 @@ import { Descriptions, Flex, Progress, Space, Spin, Tag, Text } from "fidesui";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 
 import { AssessmentTaskResponse, TaskStatus } from "./types";
+import { formatSystems, formatTypes } from "./utils";
 
 interface AssessmentTaskPopoverContentProps {
   activeTask: AssessmentTaskResponse | null;
   lastCompletedTask: AssessmentTaskResponse | null;
   templateNamesMap?: Record<string, string>;
 }
-
-const formatSystems = (task: AssessmentTaskResponse | null): string => {
-  if (!task) {
-    return "—";
-  }
-
-  // Prefer system_names if available
-  if (task.system_names && task.system_names.length > 0) {
-    return task.system_names.join(", ");
-  }
-
-  // Fall back to system_fides_keys
-  if (task.system_fides_keys && task.system_fides_keys.length > 0) {
-    return task.system_fides_keys.join(", ");
-  }
-
-  return "All systems";
-};
-
-const formatTypes = (
-  assessmentTypes: string[],
-  namesMap?: Record<string, string>,
-): string => {
-  if (assessmentTypes.length === 0) {
-    return "—";
-  }
-  return assessmentTypes.map((t) => namesMap?.[t] ?? t).join(", ");
-};
 
 export const AssessmentTaskPopoverContent = ({
   activeTask,
