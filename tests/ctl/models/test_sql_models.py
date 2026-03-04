@@ -69,8 +69,6 @@ class TestOrganizationEncryptedFields:
         assert reloaded.data_protection_officer == contact_details
         assert reloaded.representative == contact_details
 
-        reloaded.delete(db)
-
     def test_null_encrypted_fields(self, db):
         org = Organization.create(
             db=db,
@@ -92,5 +90,3 @@ class TestOrganizationEncryptedFields:
         assert reloaded.controller is None
         assert reloaded.data_protection_officer is None
         assert reloaded.representative is None
-
-        reloaded.delete(db)

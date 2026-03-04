@@ -75,6 +75,7 @@ def upgrade() -> None:
         {"key": CONFIG.user.encryption_key},
     ).fetchall()
 
+    migrated = 0
     for row in rows:
         mapping = dict(row._mapping)
         updates: dict[str, str] = {}
@@ -88,12 +89,12 @@ def upgrade() -> None:
             bind.execute(
                 text(
                     f"UPDATE ctl_organizations SET {set_clause} "
-                    f"WHERE fides_key = :fk"
+                    f"WHERE fides_key = :fides_key"
                 ),
-                {"fk": mapping["fides_key"], **updates},
+                {"fides_key": mapping["fides_key"], **updates},
             )
+            migrated += 1
 
-    migrated = sum(1 for r in rows if any(dict(r._mapping)[c] for c in COLUMNS))
     logger.info("Migrated {} organization row(s) from pgcrypto to AES-GCM", migrated)
 
     for col in COLUMNS:
@@ -141,10 +142,10 @@ def downgrade() -> None:
             bind.execute(
                 text(
                     f"UPDATE ctl_organizations SET {set_clauses} "
-                    f"WHERE fides_key = :fk"
+                    f"WHERE fides_key = :fides_key"
                 ),
                 {
-                    "fk": mapping["fides_key"],
+                    "fides_key": mapping["fides_key"],
                     "key": CONFIG.user.encryption_key,
                     **updates,
                 },
