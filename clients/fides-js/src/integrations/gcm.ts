@@ -151,6 +151,33 @@ const buildGoogleConsent = (
 };
 
 /**
+ * Set Consent Defaults for Google Consent Mode v2
+ * /
+ */
+
+const setGoogleConsentDefaults = (
+  consent: NoticeConsent,
+  mapping: GcmConsentMapping,
+): void => {
+
+   if (typeof window.gtag !== "function") {
+    // define dataLayer if it doesn't exist yet so that we can push to it in the gtag function fallback
+    const dataLayer = window.dataLayer = window.dataLayer ?? [];
+    // define gtag if it doesn't exist and push to dataLayer
+    window.gtag = window.gtag ?? function gtag(){
+      dataLayer.push(arguments)
+    }
+
+    fidesDebugger(
+      "[Fides GCM] gtag() not found. Adding fallback gtag function that pushes to dataLayer.",
+    );
+  }
+
+  window.gtag("consent", "default", buildGoogleConsent(consent, mapping));
+
+}
+/**
+ *
  * Push consent to Google Consent Mode v2
  */
 const pushConsentToGtag = (
@@ -163,18 +190,16 @@ const pushConsentToGtag = (
 
   // Check if gtag is available
   if (typeof window.gtag !== "function") {
-
-    const dataLayer = window.dataLayer = window.dataLayer || [];
-
-    function gtag(){
-      dataLayer.push(arguments);
+    // define dataLayer if it doesn't exist yet so that we can push to it in the gtag function fallback
+    const dataLayer = window.dataLayer = window.dataLayer ?? [];
+    // define gtag if it doesn't exist and push to dataLayer
+    window.gtag = window.gtag ?? function gtag(){
+      dataLayer.push(arguments)
     }
 
-    window.gtag = gtag;
-
-    // fidesDebugger(
-    //   "[Fides GCM] gtag() not found. Ensure Google Tag Manager or gtag.js is loaded.",
-    // );
+    fidesDebugger(
+      "[Fides GCM] gtag() not found. Adding fallback gtag function that pushes to dataLayer.",
+    );
   }
 
   // Build Google consent object
@@ -257,6 +282,7 @@ export const gcm = (options?: Partial<GcmOptions>): GcmIntegration => {
         ? options.purposeMapping
         : DEFAULT_CONSENT_MAPPING,
   };
+
 
   // Subscribe to Fides consent events
   subscribeToConsent((consent) => {
