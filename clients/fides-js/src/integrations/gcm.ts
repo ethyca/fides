@@ -26,6 +26,7 @@ type GtagFunction = GtagConsentCommand & ((...args: unknown[]) => void);
 
 declare global {
   interface Window {
+    dataLayer?: any[];
     gtag?: GtagFunction;
   }
 }
@@ -150,32 +151,7 @@ const buildGoogleConsent = (
   return googleConsent as Record<GoogleConsentType, GoogleConsentState>;
 };
 
-/**
- * Set Consent Defaults for Google Consent Mode v2
- * /
- */
 
-const setGoogleConsentDefaults = (
-  consent: NoticeConsent,
-  mapping: GcmConsentMapping,
-): void => {
-
-   if (typeof window.gtag !== "function") {
-    // define dataLayer if it doesn't exist yet so that we can push to it in the gtag function fallback
-    const dataLayer = window.dataLayer = window.dataLayer ?? [];
-    // define gtag if it doesn't exist and push to dataLayer
-    window.gtag = window.gtag ?? function gtag(){
-      dataLayer.push(arguments)
-    }
-
-    fidesDebugger(
-      "[Fides GCM] gtag() not found. Adding fallback gtag function that pushes to dataLayer.",
-    );
-  }
-
-  window.gtag("consent", "default", buildGoogleConsent(consent, mapping));
-
-}
 /**
  *
  * Push consent to Google Consent Mode v2
@@ -193,7 +169,7 @@ const pushConsentToGtag = (
     // define dataLayer if it doesn't exist yet so that we can push to it in the gtag function fallback
     const dataLayer = window.dataLayer = window.dataLayer ?? [];
     // define gtag if it doesn't exist and push to dataLayer
-    window.gtag = window.gtag ?? function gtag(){
+    window.gtag = function gtag(){
       dataLayer.push(arguments)
     }
 
@@ -225,6 +201,7 @@ const pushConsentToGtag = (
     fidesDebugger("[Fides GCM] Error calling gtag():", error);
   }
 };
+
 
 /**
  * Get current Google consent state
