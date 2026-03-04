@@ -12,14 +12,16 @@ type ModalMethodProps = {
     keyof ModalAPI,
     "info" | "success" | "warning" | "error" | "confirm"
   >;
+  hideIcon?: boolean;
 };
 
-const ModalMethod = ({ type, title, content }: ModalMethodProps) => {
+const ModalMethod = ({ type, title, content, hideIcon }: ModalMethodProps) => {
   const modalApi = useModal();
   useEffect(() => {
     modalApi[type]({
       title,
       content,
+      ...(hideIcon ? { icon: null } : {}),
     });
   }, []);
 
@@ -67,5 +69,12 @@ export const Error: Story = {
 export const Confirm: Story = {
   args: {
     type: "confirm",
+  },
+};
+
+export const NoIcon: Story = {
+  args: {
+    type: "confirm",
+    hideIcon: true,
   },
 };
