@@ -88,6 +88,18 @@ jest.mock("~/features/common/hooks", () => ({
   useAPIHelper: () => ({ handleError: jest.fn() }),
 }));
 
+// Mock config settings for LlmModelSelector
+jest.mock("~/features/config-settings/config-settings.slice", () => ({
+  useGetConfigurationSettingsQuery: () => ({
+    data: {
+      detection_discovery: {
+        llm_classifier_enabled: true,
+      },
+    },
+    isLoading: false,
+  }),
+}));
+
 describe("AssessmentSettingsModal", () => {
   const mockOnClose = jest.fn();
 
