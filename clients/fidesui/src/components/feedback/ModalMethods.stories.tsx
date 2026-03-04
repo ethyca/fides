@@ -35,6 +35,7 @@ const meta = {
   args: {
     title: TITLE_LOREM,
     content: PARAGRAPH_LOREM,
+    hideIcon: false,
   },
   tags: ["autodocs"],
 } satisfies Meta<typeof ModalMethod>;
@@ -69,12 +70,6 @@ export const Error: Story = {
 export const Confirm: Story = {
   args: {
     type: "confirm",
-  },
-};
-
-export const NoIcon: Story = {
-  args: {
-    type: "confirm",
-    hideIcon: true,
+    hideIcon: false,
   },
 };
