@@ -8,11 +8,10 @@ import {
   Input,
   InputNumber,
   Row,
-  Space,
   Typography,
   useMessage,
 } from "fidesui";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import {
@@ -57,7 +56,7 @@ const DEFAULT_PARAMS: Omit<FormValues, "monitor_name"> = {
   vendor_match_percentage: 60,
 };
 
-function randomizeParams(): FormValues {
+function randomizeParams(): Omit<FormValues, "monitor_name"> {
   return {
     num_cookies: randInt(5, 50),
     num_javascript_requests: randInt(5, 30),
@@ -71,7 +70,7 @@ function randomizeParams(): FormValues {
 }
 
 const TestWebsiteMonitor = () => {
-  const [initialKey] = useState(() => generateDefaultKey("test-website"));
+  const currentAutoKey = useRef(generateDefaultKey("test-website"));
   const [form] = Form.useForm<FormValues>();
   const [isRunning, setIsRunning] = useState(false);
   const message = useMessage();
@@ -95,7 +94,8 @@ const TestWebsiteMonitor = () => {
       vendor_match_percentage: vendorMatchPct / 100,
     };
     const name = monitorName!;
-    const key = name === initialKey ? name : generateDefaultKey("test-website");
+    const key =
+      name === currentAutoKey.current ? name : generateDefaultKey("test-website");
     setIsRunning(true);
 
     const connResult = await patchConnection({
@@ -140,20 +140,22 @@ const TestWebsiteMonitor = () => {
       return;
     }
 
-    const executionId = (execResult.data as any)?.monitor_execution_id;
+    const executionId = execResult.data?.monitor_execution_id;
     message.success(
       `Monitor running${executionId ? ` — execution ID: ${executionId}` : ""}`,
     );
-    form.setFieldsValue({ monitor_name: generateDefaultKey("test-website") });
+    const nextKey = generateDefaultKey("test-website");
+    currentAutoKey.current = nextKey;
+    form.setFieldsValue({ monitor_name: nextKey });
     setIsRunning(false);
   };
 
   return (
-    <Card title="Website Monitor">
+    <Card title="Website monitor">
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ ...DEFAULT_PARAMS, monitor_name: initialKey }}
+        initialValues={{ ...DEFAULT_PARAMS, monitor_name: currentAutoKey.current }}
         className="mb-2"
       >
         <Form.Item
@@ -230,33 +232,31 @@ const TestWebsiteMonitor = () => {
         </Row>
       </Form>
 
-      <Space direction="vertical" className="w-full">
-        <Flex gap="small">
-          <Button
-            onClick={() => form.setFieldsValue(randomizeParams())}
-            icon={<Icons.Shuffle />}
-            block
-          >
-            Randomize params
-          </Button>
-          <Button
-            onClick={() => form.setFieldsValue({ ...DEFAULT_PARAMS })}
-            icon={<Icons.Undo />}
-            block
-          >
-            Reset to default
-          </Button>
-          <Button
-            type="primary"
-            onClick={handleRun}
-            block
-            loading={isRunning}
-            disabled={isRunning}
-          >
-            Create and run
-          </Button>
-        </Flex>
-      </Space>
+      <Flex gap="small">
+        <Button
+          onClick={() => form.setFieldsValue(randomizeParams())}
+          icon={<Icons.Shuffle />}
+          block
+        >
+          Randomize params
+        </Button>
+        <Button
+          onClick={() => form.setFieldsValue({ ...DEFAULT_PARAMS })}
+          icon={<Icons.Undo />}
+          block
+        >
+          Reset to default
+        </Button>
+        <Button
+          type="primary"
+          onClick={handleRun}
+          block
+          loading={isRunning}
+          disabled={isRunning}
+        >
+          Create and run
+        </Button>
+      </Flex>
     </Card>
   );
 };

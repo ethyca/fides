@@ -8,10 +8,9 @@ import {
   Input,
   InputNumber,
   Row,
-  Space,
   useMessage,
 } from "fidesui";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import {
@@ -50,7 +49,7 @@ const DEFAULT_PARAMS: Omit<FormValues, "monitor_name"> = {
   nested_field_percentage: 20,
 };
 
-function randomizeParams(): FormValues {
+function randomizeParams(): Omit<FormValues, "monitor_name"> {
   return {
     num_databases: randInt(1, 10),
     num_schemas_per_db: randInt(1, 5),
@@ -62,7 +61,7 @@ function randomizeParams(): FormValues {
 }
 
 const TestDatastoreMonitor = () => {
-  const [initialKey] = useState(() => generateDefaultKey("test-datastore"));
+  const currentAutoKey = useRef(generateDefaultKey("test-datastore"));
   const [form] = Form.useForm<FormValues>();
   const [isRunning, setIsRunning] = useState(false);
   const message = useMessage();
@@ -83,7 +82,7 @@ const TestDatastoreMonitor = () => {
     };
     const name = monitorName!;
     const key =
-      name === initialKey ? name : generateDefaultKey("test-datastore");
+      name === currentAutoKey.current ? name : generateDefaultKey("test-datastore");
     setIsRunning(true);
 
     const connResult = await patchConnection({
@@ -127,11 +126,13 @@ const TestDatastoreMonitor = () => {
       return;
     }
 
-    const executionId = (execResult.data as any)?.monitor_execution_id;
+    const executionId = execResult.data?.monitor_execution_id;
     message.success(
       `Monitor running${executionId ? ` — execution ID: ${executionId}` : ""}`,
     );
-    form.setFieldsValue({ monitor_name: generateDefaultKey("test-datastore") });
+    const nextKey = generateDefaultKey("test-datastore");
+    currentAutoKey.current = nextKey;
+    form.setFieldsValue({ monitor_name: nextKey });
     setIsRunning(false);
   };
 
@@ -140,7 +141,7 @@ const TestDatastoreMonitor = () => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ ...DEFAULT_PARAMS, monitor_name: initialKey }}
+        initialValues={{ ...DEFAULT_PARAMS, monitor_name: currentAutoKey.current }}
         className="mb-2"
       >
         <Form.Item
@@ -190,33 +191,31 @@ const TestDatastoreMonitor = () => {
         </Row>
       </Form>
 
-      <Space className="w-full" direction="vertical">
-        <Flex gap="small">
-          <Button
-            onClick={() => form.setFieldsValue(randomizeParams())}
-            icon={<Icons.Shuffle />}
-            block
-          >
-            Randomize params
-          </Button>
-          <Button
-            onClick={() => form.setFieldsValue({ ...DEFAULT_PARAMS })}
-            icon={<Icons.Undo />}
-            block
-          >
-            Reset to default
-          </Button>
-          <Button
-            type="primary"
-            onClick={handleRun}
-            loading={isRunning}
-            disabled={isRunning}
-            block
-          >
-            Create and run
-          </Button>
-        </Flex>
-      </Space>
+      <Flex gap="small">
+        <Button
+          onClick={() => form.setFieldsValue(randomizeParams())}
+          icon={<Icons.Shuffle />}
+          block
+        >
+          Randomize params
+        </Button>
+        <Button
+          onClick={() => form.setFieldsValue({ ...DEFAULT_PARAMS })}
+          icon={<Icons.Undo />}
+          block
+        >
+          Reset to default
+        </Button>
+        <Button
+          type="primary"
+          onClick={handleRun}
+          loading={isRunning}
+          disabled={isRunning}
+          block
+        >
+          Create and run
+        </Button>
+      </Flex>
     </Card>
   );
 };
