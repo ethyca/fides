@@ -39,5 +39,7 @@ export const formatTypes = (
   if (assessmentTypes.length === 0) {
     return "—";
   }
-  return assessmentTypes.map((t) => namesMap?.[t] ?? t).join(", ");
+  return assessmentTypes
+    .map((assessmentType) => namesMap?.[assessmentType] ?? assessmentType)
+    .join(", ");
 };
