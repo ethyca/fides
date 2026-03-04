@@ -6,7 +6,7 @@ import {
   ANSWER_STATUS_LABELS,
   ANSWER_STATUS_TAG_COLORS,
 } from "./constants";
-import { AnswerStatus, AssessmentQuestion } from "./types";
+import { AnswerStatus, AssessmentQuestion, AnswerSource } from "./types";
 
 interface AnswerStatusTagsProps {
   question: AssessmentQuestion;
@@ -19,7 +19,10 @@ export const AnswerStatusTags = ({ question }: AnswerStatusTagsProps) => {
         <Tag color={ANSWER_STATUS_TAG_COLORS[question.answer_status]}>
           {ANSWER_STATUS_LABELS[question.answer_status]}
         </Tag>
-        <Tag color={ANSWER_SOURCE_TAG_COLORS[question.answer_source]}>
+        <Tag
+          color={ANSWER_SOURCE_TAG_COLORS[question.answer_source]}
+          hasSparkle={!!AnswerSource.AI_ANALYSIS}
+        >
           {ANSWER_SOURCE_LABELS[question.answer_source]}
         </Tag>
       </Space>

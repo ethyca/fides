@@ -27,17 +27,17 @@ export const RISK_TAG_COLORS: Record<RiskLevel, CUSTOM_TAG_COLOR> = {
 
 export const ANSWER_SOURCE_LABELS: Record<AnswerSource, string> = {
   [AnswerSource.SYSTEM]: "System derived",
-  [AnswerSource.AI_ANALYSIS]: "AI derived",
+  [AnswerSource.AI_ANALYSIS]: "Agent",
   [AnswerSource.USER_INPUT]: "Team input",
   [AnswerSource.SLACK]: "Team input",
 };
 
 export const ANSWER_SOURCE_TAG_COLORS: Record<AnswerSource, CUSTOM_TAG_COLOR> =
   {
-    [AnswerSource.SYSTEM]: CUSTOM_TAG_COLOR.SUCCESS,
-    [AnswerSource.AI_ANALYSIS]: CUSTOM_TAG_COLOR.SUCCESS,
-    [AnswerSource.USER_INPUT]: CUSTOM_TAG_COLOR.DEFAULT,
-    [AnswerSource.SLACK]: CUSTOM_TAG_COLOR.DEFAULT,
+    [AnswerSource.SYSTEM]: CUSTOM_TAG_COLOR.SANDSTONE,
+    [AnswerSource.AI_ANALYSIS]: CUSTOM_TAG_COLOR.SANDSTONE,
+    [AnswerSource.USER_INPUT]: CUSTOM_TAG_COLOR.SANDSTONE,
+    [AnswerSource.SLACK]: CUSTOM_TAG_COLOR.SANDSTONE,
   };
 
 export const ANSWER_STATUS_LABELS: Record<AnswerStatus, string> = {
