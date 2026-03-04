@@ -41,8 +41,7 @@ type FormValues = Required<
   >
 > & { monitor_name?: string };
 
-const DEFAULT_PARAMS: FormValues = {
-  monitor_name: generateDefaultKey("test-datastore"),
+const DEFAULT_PARAMS: Omit<FormValues, "monitor_name"> = {
   num_databases: 2,
   num_schemas_per_db: 2,
   num_tables_per_schema: 2,
@@ -63,6 +62,7 @@ function randomizeParams(): FormValues {
 }
 
 const TestDatastoreMonitor = () => {
+  const [initialKey] = useState(() => generateDefaultKey("test-datastore"));
   const [form] = Form.useForm<FormValues>();
   const [isRunning, setIsRunning] = useState(false);
   const message = useMessage();
@@ -82,7 +82,8 @@ const TestDatastoreMonitor = () => {
       nested_field_percentage: nestedFieldPct / 100,
     };
     const name = monitorName!;
-    const key = generateDefaultKey("test-datastore");
+    const key =
+      name === initialKey ? name : generateDefaultKey("test-datastore");
     setIsRunning(true);
 
     const connResult = await patchConnection({
@@ -139,7 +140,7 @@ const TestDatastoreMonitor = () => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={DEFAULT_PARAMS}
+        initialValues={{ ...DEFAULT_PARAMS, monitor_name: initialKey }}
         className="mb-2"
       >
         <Form.Item
@@ -149,7 +150,7 @@ const TestDatastoreMonitor = () => {
         >
           <Input />
         </Form.Item>
-        <Row gutter={[12, 0]}>
+        <Row gutter={12}>
           <Col span={8}>
             <Form.Item label="Databases" name="num_databases">
               <InputNumber min={1} className="w-full" />

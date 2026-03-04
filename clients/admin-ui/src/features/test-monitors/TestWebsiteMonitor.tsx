@@ -46,8 +46,7 @@ type FormValues = Required<
   >
 > & { monitor_name?: string };
 
-const DEFAULT_PARAMS: FormValues = {
-  monitor_name: generateDefaultKey("test-website"),
+const DEFAULT_PARAMS: Omit<FormValues, "monitor_name"> = {
   num_cookies: 15,
   num_javascript_requests: 10,
   num_image_requests: 5,
@@ -72,6 +71,7 @@ function randomizeParams(): FormValues {
 }
 
 const TestWebsiteMonitor = () => {
+  const [initialKey] = useState(() => generateDefaultKey("test-website"));
   const [form] = Form.useForm<FormValues>();
   const [isRunning, setIsRunning] = useState(false);
   const message = useMessage();
@@ -95,7 +95,7 @@ const TestWebsiteMonitor = () => {
       vendor_match_percentage: vendorMatchPct / 100,
     };
     const name = monitorName!;
-    const key = generateDefaultKey("test-website");
+    const key = name === initialKey ? name : generateDefaultKey("test-website");
     setIsRunning(true);
 
     const connResult = await patchConnection({
@@ -153,7 +153,7 @@ const TestWebsiteMonitor = () => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={DEFAULT_PARAMS}
+        initialValues={{ ...DEFAULT_PARAMS, monitor_name: initialKey }}
         className="mb-2"
       >
         <Form.Item
@@ -164,7 +164,7 @@ const TestWebsiteMonitor = () => {
           <Input />
         </Form.Item>
         <Title level={5}>Assets</Title>
-        <Row gutter={[12, 0]} className="mt-2">
+        <Row gutter={12} className="mt-2">
           <Col span={8}>
             <Form.Item label="Cookies" name="num_cookies">
               <InputNumber min={0} className="w-full" />
@@ -193,7 +193,7 @@ const TestWebsiteMonitor = () => {
         </Row>
 
         <Title level={5}>Consent and vendors</Title>
-        <Row gutter={[12, 0]} className="mt-2">
+        <Row gutter={12} className="mt-2">
           <Col span={8}>
             <Form.Item label="Granted %" name="consent_granted_percentage">
               <InputNumber
