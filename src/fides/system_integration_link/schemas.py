@@ -18,7 +18,7 @@ class SetSystemLinksRequest(BaseModel):
 
 
 class SystemLinkResponse(BaseModel):
-    system_fides_key: str
+    system_fides_key: Optional[str] = None
     system_name: Optional[str] = None
     created_at: datetime
 
