@@ -88,7 +88,12 @@ const ScrollableListItem = <T extends unknown>({
             trigger={["hover", "focus"]}
             placement="right"
           >
-            <Icons.WarningAltFilled fill="var(--fidesui-warning)" />
+            <span
+              // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- tooltip makes it interactive
+              tabIndex={0}
+            >
+              <Icons.WarningAltFilled fill="var(--fidesui-warning)" />
+            </span>
           </Tooltip>
         )}
         <Text
