@@ -4,7 +4,7 @@ import {
   Misuse,
   WarningFilled,
 } from "@carbon/icons-react";
-import type { CarbonIconType } from "@carbon/icons-react/lib/CarbonIcon";
+import type { CarbonIconType } from "@carbon/icons-react";
 import { Flex } from "antd/lib";
 import { ReactNode } from "react";
 
