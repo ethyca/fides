@@ -13,6 +13,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 import { defaultAntTheme } from "./ant-theme";
 import { theme as defaultTheme } from "./FidesUITheme";
+import { getDefaultModalIcon } from "./lib/carbon-icon-defaults";
 
 interface ComponentAPIExports {
   messageApi: ReturnType<typeof message.useMessage>[0];
@@ -40,9 +41,26 @@ export const FidesUIProvider = ({
   const [modalApi, modalContextHolder] = Modal.useModal();
   const [notificationApi, notificationContextHolder] =
     notification.useNotification();
+  const wrappedModalApi = useMemo(
+    () => ({
+      ...modalApi,
+      info: (props: Parameters<typeof modalApi.info>[0]) =>
+        modalApi.info({ icon: getDefaultModalIcon("info"), ...props }),
+      success: (props: Parameters<typeof modalApi.success>[0]) =>
+        modalApi.success({ icon: getDefaultModalIcon("success"), ...props }),
+      error: (props: Parameters<typeof modalApi.error>[0]) =>
+        modalApi.error({ icon: getDefaultModalIcon("error"), ...props }),
+      warning: (props: Parameters<typeof modalApi.warning>[0]) =>
+        modalApi.warning({ icon: getDefaultModalIcon("warning"), ...props }),
+      confirm: (props: Parameters<typeof modalApi.confirm>[0]) =>
+        modalApi.confirm({ icon: getDefaultModalIcon("confirm"), ...props }),
+    }),
+    [modalApi],
+  );
+
   const value = useMemo(
-    () => ({ messageApi, modalApi, notificationApi }),
-    [messageApi, modalApi, notificationApi],
+    () => ({ messageApi, modalApi: wrappedModalApi, notificationApi }),
+    [messageApi, wrappedModalApi, notificationApi],
   );
 
   return (
