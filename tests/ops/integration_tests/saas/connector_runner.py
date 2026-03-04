@@ -42,8 +42,6 @@ from fides.api.task.create_request_tasks import (
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
 )
-from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
 from fides.api.util.saas_util import (
@@ -121,22 +119,16 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        # cache external dataset data
+        # Mock external dataset data on the Request Tasks
         if self.external_references:
-            self.cache.set_encoded_object(
-                f"{privacy_request.id}__access_request__{self.connector_type}_external_dataset:{self.connector_type}_external_collection",
-                [self.external_references],
+            mock_external_results_3_0(
+                privacy_request,
+                dataset_graph,
+                identities,
+                self.connector_type,
+                self.external_references,
+                is_erasure=False,
             )
-            # Check if this request uses DSR 3.0
-            if use_dsr_3_0_scheduler(privacy_request, ActionType.access):
-                mock_external_results_3_0(
-                    privacy_request,
-                    dataset_graph,
-                    identities,
-                    self.connector_type,
-                    self.external_references,
-                    is_erasure=False,
-                )
 
         access_results = access_runner_tester(
             privacy_request,
@@ -287,25 +279,16 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        # cache external dataset data
+        # Mock external dataset data on the Request Tasks
         if self.erasure_external_references:
-            # DSR 2.0
-            self.cache.set_encoded_object(
-                f"{privacy_request.id}__access_request__{self.connector_type}_external_dataset:{self.connector_type}_external_collection",
-                [self.erasure_external_references],
+            mock_external_results_3_0(
+                privacy_request,
+                dataset_graph,
+                identities,
+                self.connector_type,
+                self.erasure_external_references,
+                is_erasure=True,
             )
-            # DSR 3.0
-            if use_dsr_3_0_scheduler(privacy_request, ActionType.erasure):
-                # DSR 3.0 does not pull its results out of the cache, but rather
-                # off of the Request Tasks -
-                mock_external_results_3_0(
-                    privacy_request,
-                    dataset_graph,
-                    identities,
-                    self.connector_type,
-                    self.erasure_external_references,
-                    is_erasure=True,
-                )
 
         access_results = access_runner_tester(
             privacy_request,
@@ -333,7 +316,7 @@ class ConnectorRunner:
             dataset_graph,
             connection_config_list,
             identities,
-            get_cached_data_for_erasures(privacy_request.id),
+            {},
             self.db,
         )
 

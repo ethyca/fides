@@ -93,16 +93,6 @@ dataset:
                       data_type: string[]
                     - name: update  # Applicable if we're paused on the "erasure" step
                       data_type: object # Field names mapped to the values that should be used to mask
-          - name: EN_PLACEHOLDER_RESULTS__<privacy_request_id>__access_request__<dataset_name>:<collection_name>  # Usage: Saves the access data that we should use to perform the erasure request.  Access request data is a prerequisite to running an erasure.
-            fidesops_meta:
-              data_type: object[]  # A list of encrypted rows. This separate representation of access results is stored to indicate which array elements are not applicable to the given data subject.
-          - name: EN_<privacy_request_id>__access_request__<dataset_name>:<collection_name>  # Usage: These are the results of the access request for a given collection.  These rows are used to find data in dependent collections downstream and are later filtered by data category and returned to the user.
-            fidesops_meta:
-              data_type: object[]  # A list of encrypted rows retrieved from the given collection in an access request.
-          - name: EN_<privacy_request_id>__erasure_request__<dataset_name>:<collection_name> # Usage: For retrying a privacy request after pause or failure, lets us know that an erasure was already performed on this collection, so we don't attempt again.
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: integer  # An encrypted count of records masked on the given collection
           - name: EN_WEBHOOK_MANUAL_INPUT__<privacy_request_id>__<access_manual_webhook_id>  # Usage: Stores fields manually uploaded for a *webhook* to be returned directly to the user at the end of the privacy request.  Manual webhooks run before the graph, as opposed to manual connectors which collect manual data as *part* of the graph.
             fidesops_meta:
               data_type: object  # A single record that was manually uploaded for the given manual webhook (all dynamic fields may be user-related)

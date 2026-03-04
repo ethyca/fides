@@ -1,0 +1,4 @@
+type: Changed
+description: Updated policy condition builder with multiselect support for location fields and refactored field constants
+pr: 7495
+labels: []

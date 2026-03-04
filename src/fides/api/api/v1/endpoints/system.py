@@ -10,7 +10,7 @@ from loguru import logger
 from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import (
     HTTP_200_OK,
@@ -82,6 +82,7 @@ from fides.common.api.v1.urn_registry import (
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.system.system_service import SystemService
 from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import linked_system_load_options
 
 SYSTEM_ROUTER = APIRouter(tags=["System"], prefix=f"{V1_URL_PREFIX}/system")
 SYSTEM_CONNECTIONS_ROUTER = APIRouter(
@@ -121,7 +122,7 @@ def get_system_connections(
             SystemConnectionConfigLink.connection_config_id == ConnectionConfig.id,
         )
         .filter(SystemConnectionConfigLink.system_id == system.id)
-        .options(selectinload(ConnectionConfig.system))
+        .options(linked_system_load_options())
     )
 
     return paginate(

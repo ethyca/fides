@@ -19,9 +19,17 @@ const config: StorybookConfig = {
     const { mergeConfig } = await import("vite");
 
     return mergeConfig(config, {
-      // Add dependencies to pre-optimization
       plugins: [],
       esbuild: { jsx: "automatic" },
+      resolve: {
+        alias: [
+          // Route antd/lib/* deep imports to the ESM build (antd/es/*).
+          // Prevents two separate antd instances (CJS lib + ESM es) from coexisting in
+          // Vite's module graph, which would break ConfigProvider-based theming.
+          { find: /^antd\/lib\/(.+)$/, replacement: "antd/es/$1" },
+          { find: "antd/lib", replacement: "antd/es" },
+        ],
+      },
       // @chakra-ui/react@2.10.6 has an incomplete ESM distribution — several
       // internal .mjs files referenced by the package are missing from dist/esm/
       // (e.g. toast.store.mjs, transition-utils.mjs, use-style-config.mjs).

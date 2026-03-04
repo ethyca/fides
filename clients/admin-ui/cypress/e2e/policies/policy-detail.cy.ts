@@ -19,6 +19,12 @@ describe("Policy detail page", () => {
     });
   });
 
+  it("disables delete button for default policy", () => {
+    cy.getByTestId("delete-policy-btn").should("be.disabled");
+    cy.getByTestId("delete-policy-btn").focus();
+    cy.contains("Default policies cannot be deleted").should("be.visible");
+  });
+
   it("shows the tabs with rule count", () => {
     cy.findByRole("tablist").should("be.visible");
     cy.findByRole("tab", { name: /Rules \(1\)/ }).should("be.visible");
@@ -270,7 +276,7 @@ describe("Policy condition builder", () => {
     cy.getByTestId("add-condition-btn").click();
     cy.getAntModal().should("be.visible");
 
-    cy.getByTestId("field-select").antSelect("Location country");
+    cy.getByTestId("field-select").antSelect("Country/Territory");
     cy.getByTestId("operator-select").antSelect("Equals");
 
     cy.getByTestId("save-condition-btn").click();

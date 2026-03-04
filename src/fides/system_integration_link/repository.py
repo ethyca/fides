@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from sqlalchemy import and_, delete, exists
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Load, Session, joinedload, load_only, noload, selectinload
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
@@ -16,6 +16,16 @@ from fides.system_integration_link.entities import (
 from fides.system_integration_link.models import (
     SystemConnectionConfigLink,
 )
+
+
+def linked_system_load_options() -> Load:
+    """Eager-load only the System columns needed for LinkedSystemInfo,
+    suppressing all of System's default selectin relationships to avoid
+    a cascade of unnecessary queries."""
+    return selectinload(ConnectionConfig.system).options(
+        load_only(System.fides_key, System.name),
+        noload("*"),
+    )
 
 
 class SystemIntegrationLinkRepository:
