@@ -11,7 +11,6 @@ import {
 import { useEffect, useMemo, useRef } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
-import { useGetSystemsQuery } from "~/features/system/system.slice";
 
 import { AssessmentTaskPopoverContent } from "./AssessmentTaskPopoverContent";
 import {
@@ -91,18 +90,6 @@ export const AssessmentTaskStatusIndicator = ({
     );
   }, [templatesData]);
 
-  const { data: systemsData } = useGetSystemsQuery({ page: 1, size: 100 });
-
-  const systemNamesMap = useMemo(
-    () =>
-      Object.fromEntries(
-        (systemsData?.items ?? [])
-          .filter((s) => s.name !== null && s.name !== undefined)
-          .map((s) => [s.fides_key, s.name as string]),
-      ),
-    [systemsData],
-  );
-
   // Detect active → idle transition and fire the completion notification
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
@@ -175,7 +162,6 @@ export const AssessmentTaskStatusIndicator = ({
           <AssessmentTaskPopoverContent
             activeTask={activeTask}
             lastCompletedTask={lastCompletedTask}
-            systemNamesMap={systemNamesMap}
             templateNamesMap={templateNamesMap}
           />
         }

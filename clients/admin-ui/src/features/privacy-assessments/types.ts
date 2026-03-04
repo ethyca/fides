@@ -423,6 +423,7 @@ export interface AssessmentTaskResponse {
   message: string | null;
   assessment_types: string[];
   system_fides_keys: string[] | null;
+  system_names: string[] | null;
   created_by: string | null;
   use_llm: boolean;
   llm_model: string | null;

@@ -7,18 +7,25 @@ import { AssessmentTaskResponse, TaskStatus } from "./types";
 interface AssessmentTaskPopoverContentProps {
   activeTask: AssessmentTaskResponse | null;
   lastCompletedTask: AssessmentTaskResponse | null;
-  systemNamesMap?: Record<string, string>;
   templateNamesMap?: Record<string, string>;
 }
 
-const formatSystems = (
-  systemFidesKeys: string[] | null,
-  namesMap?: Record<string, string>,
-): string => {
-  if (!systemFidesKeys || systemFidesKeys.length === 0) {
-    return "All systems";
+const formatSystems = (task: AssessmentTaskResponse | null): string => {
+  if (!task) {
+    return "—";
   }
-  return systemFidesKeys.map((key) => namesMap?.[key] ?? key).join(", ");
+
+  // Prefer system_names if available
+  if (task.system_names && task.system_names.length > 0) {
+    return task.system_names.join(", ");
+  }
+
+  // Fall back to system_fides_keys
+  if (task.system_fides_keys && task.system_fides_keys.length > 0) {
+    return task.system_fides_keys.join(", ");
+  }
+
+  return "All systems";
 };
 
 const formatTypes = (
@@ -34,7 +41,6 @@ const formatTypes = (
 export const AssessmentTaskPopoverContent = ({
   activeTask,
   lastCompletedTask,
-  systemNamesMap,
   templateNamesMap,
 }: AssessmentTaskPopoverContentProps) => {
   const activeRelativeTime = useRelativeTime(
@@ -72,7 +78,7 @@ export const AssessmentTaskPopoverContent = ({
             {formatTypes(activeTask.assessment_types, templateNamesMap)}
           </Descriptions.Item>
           <Descriptions.Item label="Systems">
-            {formatSystems(activeTask.system_fides_keys, systemNamesMap)}
+            {formatSystems(activeTask)}
           </Descriptions.Item>
           <Descriptions.Item label="Started">
             {activeRelativeTime}
@@ -106,7 +112,7 @@ export const AssessmentTaskPopoverContent = ({
           {formatTypes(lastCompletedTask.assessment_types, templateNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Systems">
-          {formatSystems(lastCompletedTask.system_fides_keys, systemNamesMap)}
+          {formatSystems(lastCompletedTask)}
         </Descriptions.Item>
         <Descriptions.Item label={isError ? "Failed" : "Completed"}>
           {completedRelativeTime}
