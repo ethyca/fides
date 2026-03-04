@@ -1,10 +1,10 @@
+import type { CarbonIconType } from "@carbon/icons-react";
 import {
   CheckmarkFilled,
   InformationFilled,
   Misuse,
   WarningFilled,
 } from "@carbon/icons-react";
-import type { CarbonIconType } from "@carbon/icons-react";
 import { Flex } from "antd/lib";
 import { ReactNode } from "react";
 
