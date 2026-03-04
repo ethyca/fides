@@ -94,6 +94,18 @@ export const AssessmentTaskStatusIndicator = ({
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
+      const isError = lastCompletedTask?.status === TaskStatus.ERROR;
+
+      if (isError) {
+        notificationApi.error({
+          message: "Assessment evaluation failed",
+          description: "An error occurred during evaluation",
+          duration: 0,
+        });
+        hadActiveTaskRef.current = false;
+        return;
+      }
+
       notificationApi.success({
         message: "New assessment results are available",
         btn: onTaskFinish ? (
@@ -111,7 +123,7 @@ export const AssessmentTaskStatusIndicator = ({
       });
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, notificationApi, onTaskFinish]);
+  }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;
