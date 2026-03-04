@@ -17,7 +17,6 @@ from fides.common.api.scope_registry import (
     SYSTEM_INTEGRATION_LINK_READ,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
-from fides.system_integration_link.models import SystemConnectionConfigLink
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
@@ -68,19 +67,6 @@ def connection_config(db: Session):
     )
     yield config
     config.delete(db)
-
-
-@pytest.fixture(autouse=True)
-def cleanup_links(db: Session):
-    yield
-    db.query(SystemConnectionConfigLink).filter(
-        SystemConnectionConfigLink.connection_config_id.in_(
-            db.query(ConnectionConfig.id).filter(
-                ConnectionConfig.key.like("route_test_%")
-            )
-        )
-    ).delete(synchronize_session=False)
-    db.commit()
 
 
 class TestGetSystemLinks:
