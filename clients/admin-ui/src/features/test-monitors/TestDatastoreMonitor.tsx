@@ -63,7 +63,6 @@ function randomizeParams(): FormValues {
 }
 
 const TestDatastoreMonitor = () => {
-  // const [initialName] = useState(() => generateDefaultKey("test-datastore"));
   const [form] = Form.useForm<FormValues>();
   const [isRunning, setIsRunning] = useState(false);
   const message = useMessage();
