@@ -413,6 +413,11 @@ export enum TaskStatus {
   RETRYING = "retrying",
 }
 
+export interface TaskSystem {
+  fides_key: string;
+  name: string | null;
+}
+
 export interface AssessmentTaskResponse {
   id: string;
   action_type: string;
@@ -423,7 +428,7 @@ export interface AssessmentTaskResponse {
   message: string | null;
   assessment_types: string[];
   system_fides_keys: string[] | null;
-  system_names: string[] | null;
+  systems: TaskSystem[] | null;
   created_by: string | null;
   use_llm: boolean;
   llm_model: string | null;
