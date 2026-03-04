@@ -110,7 +110,7 @@ def test_validate_postgres_with_invalid_namespace():
         collections=[],
         fides_meta={
             "namespace": {
-                "database_name": "ramp_prod",  # Missing required schema
+                "database_name": "example_db",  # Missing required schema
             }
         },
     )
