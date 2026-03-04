@@ -30,6 +30,7 @@ import {
 } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import { errorToastParams } from "~/features/common/toast";
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import {
   selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
@@ -535,6 +536,7 @@ const SystemInformationForm = ({
                 tooltip="Is there a dataset configured for this system?"
                 mode="multiple"
                 layout="stacked"
+                optionRender={DatasetSelectOption}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">
