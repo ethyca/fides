@@ -1,13 +1,18 @@
-import { Flex, Space, Text, useMessage } from "fidesui";
+import { Flex, Tag, Text, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { RTKErrorResult } from "~/types/errors/api";
 
-import { AnswerStatusTags } from "./AnswerStatusTags";
+import {
+  ANSWER_SOURCE_LABELS,
+  ANSWER_SOURCE_TAG_COLORS,
+  ANSWER_STATUS_LABELS,
+  ANSWER_STATUS_TAG_COLORS,
+} from "./constants";
 import { EditableTextBlock } from "./EditableTextBlock";
 import { useUpdateAssessmentAnswerMutation } from "./privacy-assessments.slice";
 import styles from "./QuestionCard.module.scss";
-import { AssessmentQuestion } from "./types";
+import { AnswerStatus, AnswerSource, AssessmentQuestion } from "./types";
 
 interface QuestionCardProps {
   assessmentId: string;
@@ -42,9 +47,18 @@ export const QuestionCard = ({ assessmentId, question }: QuestionCardProps) => {
         <Text strong>
           {question.id}. {question.question_text}
         </Text>
-        <Space size="small">
-          <AnswerStatusTags question={question} />
-        </Space>
+        {question.answer_status === AnswerStatus.COMPLETE ? (
+          <Tag
+            color={ANSWER_SOURCE_TAG_COLORS[question.answer_source]}
+            hasSparkle={question.answer_source === AnswerSource.AI_ANALYSIS}
+          >
+            {ANSWER_SOURCE_LABELS[question.answer_source]}
+          </Tag>
+        ) : (
+          <Tag color={ANSWER_STATUS_TAG_COLORS[question.answer_status]}>
+            {ANSWER_STATUS_LABELS[question.answer_status]}
+          </Tag>
+        )}
       </Flex>
       <EditableTextBlock
         value={question.answer_text}
