@@ -57,8 +57,9 @@ this must split into `add_link()` (idempotent insert) and `remove_link()`
 
 ## Callsite Inventory
 
-18 locations across fides + fidesplus access `connection_config.system` as a
-scalar. They fall into three categories:
+~20 production callsites across fides + fidesplus access
+`connection_config.system` as a scalar (or use the `system_key` property
+that delegates to it). They fall into four categories:
 
 ### Category A: Core Logic (consent, data use filtering)
 
@@ -70,13 +71,13 @@ scalar. They fall into three categories:
 | `consent_email_connector.py` | 163, 235 | Passes `self.configuration.system` to consent filtering |
 | `create_request_tasks.py` | 68-76 | Resolves data uses from `connection_config.system` |
 | `request_runner_service.py` | 130 | `manual_webhook.connection_config.system.name` |
-| `datastore_discovery_monitor.py` (fidesplus) | 92 | `self.system = self.connection_config.system` |
+| `datastore_discovery_monitor.py` (fidesplus) | 92, 1205-1210 | `self.system = self.connection_config.system`; also uses `self.system.fides_key` and `self.system.dataset_references` for dataset linking |
 
 ### Category B: API / Schema / Display
 
 | File | Lines | What it does |
 |------|-------|-------------|
-| `connection_config.py` (schema) | 127-137 | Populates `linked_systems` list in API response |
+| `connection_config.py` (schema) | 127-137 | Populates `linked_systems` list in API response via `config.system` |
 | `oauth_endpoints.py` | 304-308 | OAuth callback redirect to system page |
 | `dataset_service.py` | 89-99 | Display string: "in system 'X'" |
 | `saas_connector.py` | 83-91 | Log context: `system_key` for structured logging |
@@ -89,6 +90,21 @@ scalar. They fall into three categories:
 | `repository.py` | 20-28 | Eager loading (returns more rows, works as-is) |
 | `repository.py` | 84-113 | `create_or_update_link` (needs split, see above) |
 | `manual_webhook.py` | 141-157 | `selectinload(ConnectionConfig.system)` |
+| `seed.py` | 468-488 | Reads `system_key` from seed YAML, links via `create_or_update_link` (compatible) |
+
+### Category D: Addressed by PR #7557 (consent tracking key)
+
+These callsites use `connection_config.system_key` (or
+`self.configuration.system_key` / `self.connector.configuration.system_key`)
+for consent status tracking. PR #7557 changed them to use
+`consent_tracking_key` (keyed by `connection_config.key` instead of
+`system.fides_key`), so they no longer depend on the `.system` relationship:
+
+| File | Lines | What it does |
+|------|-------|-------------|
+| `consent_util.py` | 182, 186, 203, 208, 245, 250 | Consent status caching per connection |
+| `graph_task.py` | 893 | Consent status in graph task execution |
+| `consent_email_connector.py` | 193 | Consent status for email connectors |
 
 ---
 
@@ -165,9 +181,11 @@ the `upload()` function in `storage_uploader_service.py`.
 **The key finding: this is effectively dead code.**
 
 The `upload()` function accepts `data_use_map` as a parameter but **never
-passes it** to any of the underlying uploader implementations (`_s3_uploader`,
-`_local_uploader`, `_gcs_uploader`). The `DSRReportBuilder`, JSON encryption,
-and CSV generation paths also do not consume it.
+passes it** to any of the underlying uploader implementations. At
+`storage_uploader_service.py:81`, the call is simply
+`uploader(db, config, data, privacy_request)` — the `data_use_map` argument
+is silently dropped. The `DSRReportBuilder`, JSON encryption, and CSV
+generation paths also do not consume it.
 
 Access request _filtering_ is done by **data categories** (via
 `filter_data_categories()` in `filter_results.py`), not data uses. The data
@@ -281,3 +299,27 @@ design doc.
 4. **Migration of existing data** — No data migration needed (existing rows
    stay as-is), but the behavioral change means a connector previously
    linked to 1 system could now be linked to N systems by users.
+
+---
+
+## Verification Notes
+
+All findings verified via codegraph knowledge graph and targeted grep
+(2026-03-04):
+
+- **Callsite inventory:** Confirmed all Category A/B/C callsites via
+  `graph_callers`, `graph_context`, and grep for `connection_config.system`,
+  `self.configuration.system`, and `system_key`. Added `seed.py` (Category C)
+  and Category D (consent tracking callsites addressed by PR #7557).
+- **Dead code (`format_data_use_map_for_caching`):** Confirmed via
+  `graph_callers` (3-hop trace) that the chain terminates at
+  `upload()` which drops `data_use_map` at line 81 of
+  `storage_uploader_service.py`.
+- **Consent filtering callers:** `graph_callers` confirms 3 direct callers
+  (`batch_email_send`, `build_user_consent_and_filtered_preferences_for_service`,
+  `needs_email`) and 1 transitive caller (`SaaSConnector.run_consent_request`).
+  All pass a single `system` — union would widen the filter.
+- **OAuth redirect:** `graph_flow` trace from `oauth_callback` route confirms
+  the redirect logic at lines 304-308 is the sole system-dependent redirect.
+- **Discovery monitor (fidesplus):** Confirmed scalar assignment at line 92
+  and downstream usage at lines 1205-1210 for dataset reference linking.
