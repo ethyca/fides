@@ -3,7 +3,6 @@ from typing import Dict, Generator, List
 
 import pytest
 from fideslang.models import Dataset
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import CollectionAddress
@@ -128,11 +127,12 @@ class TestPostgresQueryConfig:
     def test_generate_query_with_invalid_namespace_meta(
         self, execution_node: ExecutionNode
     ):
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(ValueError) as exc:
             PostgresQueryConfig(
-                execution_node, PostgresNamespaceMeta(database_name="some_db")
+                execution_node,
+                {"database_name": "some_db"},  # missing required 'schema'
             )
-        assert "Field required" in str(exc)
+        assert "Invalid namespace_meta" in str(exc.value)
 
     def test_generate_update_stmt(
         self,

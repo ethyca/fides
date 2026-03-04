@@ -54,9 +54,9 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             # connector and should not be validated here.
             if not meta_connection_type:
                 schema_field_names = {
-                    f
-                    for f in namespace_meta_class.model_fields
-                    if f != "connection_type"
+                    field_name
+                    for field_name in namespace_meta_class.model_fields
+                    if field_name != "connection_type"
                 }
                 if schema_field_names and not schema_field_names.intersection(
                     namespace_meta.keys()
