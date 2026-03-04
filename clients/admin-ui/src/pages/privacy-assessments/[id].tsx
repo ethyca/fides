@@ -1,10 +1,21 @@
-import { Button, Flex, Icons, Result, Space, Spin, Text, Tooltip, useMessage, useModal } from "fidesui";
+import {
+  Button,
+  Flex,
+  Icons,
+  Result,
+  Space,
+  Spin,
+  Text,
+  Tooltip,
+  useMessage,
+  useModal,
+} from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 
-import { getErrorMessage } from "~/features/common/helpers";
 import { useFeatures } from "~/features/common/features";
+import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -56,7 +67,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
       centered: true,
       onOk: async () => {
         try {
-          await deleteAssessment(assessment.id).unwrap();
+          await deleteAssessment(assessment!.id).unwrap();
           message.success("Assessment deleted.");
           router.push(PRIVACY_ASSESSMENTS_ROUTE);
         } catch (error) {
