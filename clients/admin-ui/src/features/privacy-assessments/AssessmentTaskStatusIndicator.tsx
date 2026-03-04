@@ -91,7 +91,7 @@ export const AssessmentTaskStatusIndicator = ({
     );
   }, [templatesData]);
 
-  const { data: systemsData } = useGetSystemsQuery({ page: 1, size: 1000 });
+  const { data: systemsData } = useGetSystemsQuery({ page: 1, size: 100 });
 
   const systemNamesMap = useMemo(
     () =>
