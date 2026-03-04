@@ -37,8 +37,8 @@ class SystemIntegrationLinkEntity:
     id: str
     system_id: str
     connection_config_id: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
     system_fides_key: Optional[str] = None
     system_name: Optional[str] = None
 
@@ -53,8 +53,8 @@ class SystemIntegrationLinkEntity:
             id=obj.id,
             system_id=obj.system_id,
             connection_config_id=obj.connection_config_id,
-            created_at=obj.created_at,
-            updated_at=obj.updated_at,
+            created_at=obj.created_at,  # type: ignore[arg-type]
+            updated_at=obj.updated_at,  # type: ignore[arg-type]
             system_fides_key=system_fides_key,
             system_name=system_name,
         )
