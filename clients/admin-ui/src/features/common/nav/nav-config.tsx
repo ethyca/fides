@@ -334,6 +334,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         requiresPlus: true,
       },
       {
+        title: "Test Monitors",
+        path: routes.TEST_MONITORS_ROUTE,
+        scopes: [],
+      },
+      {
         title: "Ant Design POC",
         path: routes.ANT_POC_ROUTE,
         scopes: [],
