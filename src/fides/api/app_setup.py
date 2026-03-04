@@ -227,6 +227,8 @@ async def run_database_startup(app: FastAPI) -> None:
         except Exception as e:
             error_log = f"Error occurred during database configuration: {str(e)}"
             logger.exception(error_log)
+            # Intentionally re-raise to abort server startup — a failed migration
+            # should never result in a running server in an unknown state.
             raise FidesError(error_log) from e
     else:
         logger.info("Skipping auto-migration due to 'automigrate' configuration value.")
