@@ -2,6 +2,7 @@ import { Button, Icons, Space, Tooltip, useMessage } from "fidesui";
 import React from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { DiffStatus } from "~/types/api";
 
 import {
   useMuteIdentityProviderMonitorResultMutation,
@@ -15,6 +16,7 @@ interface InfrastructureSystemActionsCellProps {
   system: {
     urn?: string;
     name?: string | null;
+    diff_status?: DiffStatus | null;
   };
   allowIgnore?: boolean;
   allowRestore?: boolean;
@@ -116,6 +118,27 @@ export const InfrastructureSystemActionsCell = ({
 
   const isActionInProgress = isPromoting || isMuting || isUnmuting;
   const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
+  const isIgnored = system.diff_status === DiffStatus.MUTED;
+
+  const addTooltip = () => {
+    if (!system.urn) {
+      return "This system cannot be promoted: URN is missing.";
+    }
+    if (isIgnored) {
+      return "Restore systems before adding to the inventory";
+    }
+    return "Add";
+  };
+
+  const restoreTooltip = () => {
+    if (!system.urn) {
+      return "This system cannot be restored: URN is missing.";
+    }
+    if (!isIgnored) {
+      return "You can only restore ignored systems";
+    }
+    return "Restore";
+  };
 
   return (
     <Space>
@@ -135,18 +158,12 @@ export const InfrastructureSystemActionsCell = ({
         </Tooltip>
       )}
       {(isIgnoredTab || allowRestore) && (
-        <Tooltip
-          title={
-            !system.urn
-              ? `This system cannot be restored: URN is missing.`
-              : "Restore"
-          }
-        >
+        <Tooltip title={restoreTooltip()}>
           <Button
             data-testid="restore-btn"
             size="small"
             onClick={handleRestore}
-            disabled={!system.urn || isActionInProgress}
+            disabled={!system.urn || !isIgnored || isActionInProgress}
             loading={isUnmuting}
             icon={<Icons.View />}
             aria-label="Restore"
@@ -154,18 +171,12 @@ export const InfrastructureSystemActionsCell = ({
         </Tooltip>
       )}
 
-      <Tooltip
-        title={
-          !system.urn
-            ? `This system cannot be promoted: URN is missing.`
-            : "Add"
-        }
-      >
+      <Tooltip title={addTooltip()}>
         <Button
           data-testid="add-btn"
           size="small"
           onClick={handleAdd}
-          disabled={!system.urn || isActionInProgress}
+          disabled={!system.urn || isIgnored || isActionInProgress}
           loading={isPromoting}
           icon={addIcon}
           aria-label="Add"
