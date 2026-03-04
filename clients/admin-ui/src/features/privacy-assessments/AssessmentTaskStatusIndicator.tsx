@@ -47,7 +47,7 @@ export const AssessmentTaskStatusIndicator = ({
     [tasksData],
   );
 
-  // Poll every 30s only while a task is in progress; stop when idle.
+  // Poll every 15s only while a task is in progress; stop when idle.
   useGetAssessmentTasksQuery(
     { page: 1, size: 10 },
     { pollingInterval: ACTIVE_POLL_INTERVAL, skip: !activeTask },
