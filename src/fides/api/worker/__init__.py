@@ -4,6 +4,8 @@ from celery import VERSION_BANNER
 from celery.apps.worker import Worker
 from celery.signals import celeryd_after_setup
 from loguru import logger
+from watchfiles import run_process
+from watchfiles.filters import DefaultFilter
 
 from fides.api.db.base import Base  # type: ignore
 from fides.api.service.saas_request.override_implementations import *
@@ -19,6 +21,17 @@ from fides.api.tasks import (
     PRIVACY_PREFERENCES_QUEUE_NAME,
     celery_app,
 )
+
+
+class _PythonAndYamlFilter(DefaultFilter):
+    """Extends DefaultFilter to only trigger on Python and YAML file changes."""
+
+    allowed_extensions = (".py", ".yml", ".yaml")
+
+    def __call__(self, change: Any, path: str) -> bool:
+        if not super().__call__(change, path):
+            return False
+        return path.endswith(self.allowed_extensions)
 
 
 def _run_celery_worker(worker_queues: str) -> None:
@@ -46,8 +59,8 @@ def start_worker(
     If no queues are provided, the worker will consume from all queues: the default queue,
     the messaging queue, and the privacy preferences queue.
 
-    If reload is True, the worker will automatically restart when Python files change
-    in the watched directories (similar to uvicorn --reload).
+    If reload is True, the worker will automatically restart when Python or YAML files
+    change in the watched directories (similar to uvicorn --reload).
     """
 
     assert not queues or not exclude_queues, (
@@ -88,19 +101,6 @@ def start_worker(
     logger.info(f"Running Celery worker for queues: {worker_queues}")
 
     if reload:
-        from watchfiles import run_process
-        from watchfiles.filters import DefaultFilter
-
-        class _PythonAndYamlFilter(DefaultFilter):
-            """Extends DefaultFilter to only trigger on Python and YAML file changes."""
-
-            allowed_extensions = (".py", ".yml", ".yaml")
-
-            def __call__(self, change: Any, path: str) -> bool:
-                if not super().__call__(change, path):
-                    return False
-                return path.endswith(self.allowed_extensions)
-
         watch_dirs = reload_dirs or ["src", "data"]
         logger.info(f"Hot-reload enabled, watching directories: {watch_dirs}")
         run_process(
