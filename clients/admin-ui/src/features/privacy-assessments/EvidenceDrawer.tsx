@@ -1,15 +1,4 @@
-import {
-  Button,
-  Drawer,
-  DrawerProps,
-  Flex,
-  Icons,
-  Input,
-  Space,
-  Text,
-  Title,
-  useMessage,
-} from "fidesui";
+import { Drawer, DrawerProps, Icons, Input, Space, Text, Title } from "fidesui";
 
 import styles from "./EvidenceDrawer.module.scss";
 import { EvidenceSection } from "./EvidenceSection";
@@ -35,34 +24,18 @@ export const EvidenceDrawer = ({
   onSearchChange,
   ...props
 }: EvidenceDrawerProps) => {
-  const message = useMessage();
-
   return (
     <Drawer
       {...props}
       title={
-        <Flex
-          justify="space-between"
-          align="center"
-          className={styles.drawerTitle}
-        >
-          <div>
-            <Title level={5} className={styles.drawerHeading}>
-              Evidence
-            </Title>
-            <Text type="secondary" size="sm">
-              Complete evidence trail organized by question
-            </Text>
-          </div>
-          <Button
-            type="text"
-            icon={<Icons.Download size={16} />}
-            size="small"
-            onClick={() => message.success("Evidence report exported")}
-          >
-            Export
-          </Button>
-        </Flex>
+        <div className={styles.drawerTitle}>
+          <Title level={5} className={styles.drawerHeading}>
+            Evidence
+          </Title>
+          <Text type="secondary" size="sm">
+            Complete evidence trail organized by question
+          </Text>
+        </div>
       }
       placement="right"
       onClose={onClose}
