@@ -69,4 +69,3 @@ const useDownloadPrivacyRequestDiagnostics = ({
 };
 
 export default useDownloadPrivacyRequestDiagnostics;
-
