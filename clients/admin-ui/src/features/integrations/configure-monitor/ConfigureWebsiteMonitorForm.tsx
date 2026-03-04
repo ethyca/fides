@@ -185,10 +185,15 @@ const ConfigureWebsiteMonitorForm = ({
   };
 
   useEffect(() => {
-    form
-      .validateFields({ validateOnly: true })
-      .then(() => setSubmittable(true))
-      .catch(() => setSubmittable(false));
+    // Defer validation to allow dynamically mounted Form.Items (e.g. LlmModelSelector)
+    // to finish registering with the form before validateFields runs.
+    const timer = setTimeout(() => {
+      form
+        .validateFields({ validateOnly: true })
+        .then(() => setSubmittable(true))
+        .catch(() => setSubmittable(false));
+    }, 0);
+    return () => clearTimeout(timer);
   }, [form, formValues]);
 
   // TODO: build better pattern for async form initialization
