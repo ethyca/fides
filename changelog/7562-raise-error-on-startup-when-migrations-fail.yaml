@@ -1,0 +1,4 @@
+type: Changed
+description: Raise an error on startup when database migrations fail to apply
+pr: 7562
+labels: []

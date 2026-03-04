@@ -60,6 +60,132 @@ def is_domain_validation_disabled() -> bool:
     return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
 
 
+def validate_connector_param_constraints_not_modified(
+    original_connector_params: List[Dict[str, Any]],
+    incoming_connector_params: List[Dict[str, Any]],
+) -> None:
+    """
+    Rule A: Verify that type and allowed_values have not been modified via the API.
+
+    Compares incoming connector params against the original stored config.
+    If any connector_param's type or allowed_values value differs (added, removed,
+    or modified), raises a ValueError.
+    """
+    original_by_name = {p["name"]: p for p in original_connector_params}
+    incoming_by_name = {p["name"]: p for p in incoming_connector_params}
+
+    for name, original_param in original_by_name.items():
+        original_type = original_param.get("type")
+        original_allowed = original_param.get("allowed_values")
+        incoming_param = incoming_by_name.get(name)
+        if incoming_param is None:
+            if original_type is not None or original_allowed is not None:
+                raise ValueError(
+                    f"Cannot remove connector param '{name}' that has type or allowed_values defined."
+                )
+            continue
+        incoming_type = incoming_param.get("type")
+        incoming_allowed = incoming_param.get("allowed_values")
+        if original_type != incoming_type:
+            raise ValueError(
+                f"Cannot modify type for connector param '{name}'. "
+                f"type is immutable once defined in the connector template."
+            )
+        if original_allowed != incoming_allowed:
+            raise ValueError(
+                f"Cannot modify allowed_values for connector param '{name}'. "
+                f"allowed_values is immutable once defined in the connector template."
+            )
+
+    for name, incoming_param in incoming_by_name.items():
+        if name not in original_by_name:
+            if incoming_param.get("type") is not None:
+                raise ValueError(
+                    f"Cannot set type on new connector param '{name}' via the API."
+                )
+            if incoming_param.get("allowed_values") is not None:
+                raise ValueError(
+                    f"Cannot set allowed_values on new connector param '{name}' via the API."
+                )
+
+
+def validate_host_references_domain_restricted_params(
+    original_connector_params: List[Dict[str, Any]],
+    incoming_connector_params: List[Dict[str, Any]],
+    incoming_saas_config: Dict[str, Any],
+) -> None:
+    """
+    Rule B: Verify that client_config.host placeholders reference connector params
+    of type "endpoint" with allowed_values defined.
+
+    Walks the ENTIRE incoming SaaS config (top-level, endpoints, test_request,
+    auth strategy configs, etc.) to find all client_config.host values.
+
+    If the original config had any connector param with type="endpoint" and
+    allowed_values (non-None), then every host placeholder in the incoming config
+    must reference a connector param that also has allowed_values (non-None,
+    including empty list).
+    """
+    if not any(
+        p.get("type") == "endpoint" and p.get("allowed_values") is not None
+        for p in original_connector_params
+    ):
+        return
+
+    incoming_by_name = {p["name"]: p for p in incoming_connector_params}
+
+    all_hosts = SaaSConfig._collect_client_config_hosts(incoming_saas_config)
+
+    for host_value in all_hosts:
+        placeholders = re.findall(r"<([^<>]+)>", host_value)
+        if not placeholders:
+            raise ValueError(
+                f"client_config.host value '{host_value}' does not reference any "
+                f"connector param. When domain restrictions are defined, the host "
+                f"must reference a connector param with allowed_values."
+            )
+        for placeholder in placeholders:
+            incoming_param = incoming_by_name.get(placeholder)
+            if incoming_param is None:
+                raise ValueError(
+                    f"client_config.host references '{placeholder}' which is not a "
+                    f"known connector param. When domain restrictions are defined, all "
+                    f"host placeholders must reference connector params with allowed_values."
+                )
+            if (
+                incoming_param.get("type") != "endpoint"
+                or incoming_param.get("allowed_values") is None
+            ):
+                raise ValueError(
+                    f"client_config.host references connector param '{placeholder}' which does not "
+                    f"have allowed_values defined. All host-referenced params must be of type "
+                    f"'endpoint' with allowed_values set (use an empty list for self-hosted services)."
+                )
+
+
+def validate_connector_param_restrictions(
+    existing_saas_config: SaaSConfig,
+    incoming_saas_config: SaaSConfig,
+) -> None:
+    """
+    Validate that an incoming SaaS config does not violate connector param
+    domain restriction rules.
+
+    Raises ValueError if:
+    - type or allowed_values were modified (Rule A)
+    - client_config.host placeholders don't reference domain-restricted params (Rule B)
+    """
+    original_params = [p.model_dump() for p in existing_saas_config.connector_params]
+    incoming_params = [p.model_dump() for p in incoming_saas_config.connector_params]
+
+    validate_connector_param_constraints_not_modified(original_params, incoming_params)
+    validate_host_references_domain_restricted_params(
+        original_params,
+        incoming_params,
+        incoming_saas_config.model_dump(mode="json"),
+    )
+
+
 def load_yaml_as_string(filename: str) -> str:
     yaml_file = load_file([filename])
     with open(yaml_file, "r", encoding="utf-8") as file:
