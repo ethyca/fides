@@ -10,9 +10,11 @@ import {
   Row,
   Space,
   Typography,
+  useMessage,
 } from "fidesui";
 import { useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import {
   useExecuteDiscoveryMonitorMutation,
   usePutDiscoveryMonitorMutation,
@@ -24,9 +26,9 @@ import {
   MonitorFrequency,
   TestWebsiteMonitorParams,
 } from "~/types/api";
+import { isErrorResult } from "~/types/errors/api";
 
-import StatusTag from "./StatusTag";
-import { makeKey, randInt, RunStatus } from "./types";
+import { generateDefaultKey, randInt } from "./utils";
 
 const { Title } = Typography;
 
@@ -45,6 +47,7 @@ type FormValues = Required<
 > & { monitor_name?: string };
 
 const DEFAULT_PARAMS: FormValues = {
+  monitor_name: generateDefaultKey("test-website"),
   num_cookies: 15,
   num_javascript_requests: 10,
   num_image_requests: 5,
@@ -54,8 +57,6 @@ const DEFAULT_PARAMS: FormValues = {
   consent_denied_percentage: 10,
   vendor_match_percentage: 60,
 };
-
-const RUNNING_STEPS = ["creating-connection", "creating-monitor", "executing"];
 
 function randomizeParams(): FormValues {
   return {
@@ -71,15 +72,13 @@ function randomizeParams(): FormValues {
 }
 
 const TestWebsiteMonitor = () => {
-  const [initialName] = useState(() => makeKey("test-website"));
   const [form] = Form.useForm<FormValues>();
-  const [runStatus, setRunStatus] = useState<RunStatus>({ step: "idle" });
+  const [isRunning, setIsRunning] = useState(false);
+  const message = useMessage();
 
   const [patchConnection] = usePatchDatastoreConnectionMutation();
   const [putMonitor] = usePutDiscoveryMonitorMutation();
   const [executeMonitor] = useExecuteDiscoveryMonitorMutation();
-
-  const isRunning = RUNNING_STEPS.includes(runStatus.step);
 
   const handleRun = async () => {
     const {
@@ -96,8 +95,8 @@ const TestWebsiteMonitor = () => {
       vendor_match_percentage: vendorMatchPct / 100,
     };
     const name = monitorName!;
-    const key = makeKey("test-website");
-    setRunStatus({ step: "creating-connection" });
+    const key = generateDefaultKey("test-website");
+    setIsRunning(true);
 
     const connResult = await patchConnection({
       key,
@@ -106,15 +105,17 @@ const TestWebsiteMonitor = () => {
       access: AccessLevel.READ,
       secrets: { url: "https://example.com" },
     });
-    if ("error" in connResult) {
-      setRunStatus({
-        step: "error",
-        message: "Failed to create connection. Is dev mode enabled?",
-      });
+    if (isErrorResult(connResult)) {
+      message.error(
+        getErrorMessage(
+          connResult.error,
+          "Failed to create connection. Is dev mode enabled?",
+        ),
+      );
+      setIsRunning(false);
       return;
     }
 
-    setRunStatus({ step: "creating-monitor" });
     const monitorResult = await putMonitor({
       name,
       key,
@@ -122,22 +123,29 @@ const TestWebsiteMonitor = () => {
       execution_frequency: MonitorFrequency.NOT_SCHEDULED,
       datasource_params: params,
     });
-    if ("error" in monitorResult) {
-      setRunStatus({ step: "error", message: "Failed to create monitor." });
+    if (isErrorResult(monitorResult)) {
+      message.error(
+        getErrorMessage(monitorResult.error, "Failed to create monitor."),
+      );
+      setIsRunning(false);
       return;
     }
 
-    setRunStatus({ step: "executing" });
     const execResult = await executeMonitor({ monitor_config_id: key });
-    if ("error" in execResult) {
-      setRunStatus({ step: "error", message: "Failed to execute monitor." });
+    if (isErrorResult(execResult)) {
+      message.error(
+        getErrorMessage(execResult.error, "Failed to execute monitor."),
+      );
+      setIsRunning(false);
       return;
     }
 
-    setRunStatus({
-      step: "done",
-      executionId: (execResult.data as any)?.monitor_execution_id,
-    });
+    const executionId = (execResult.data as any)?.monitor_execution_id;
+    message.success(
+      `Monitor running${executionId ? ` — execution ID: ${executionId}` : ""}`,
+    );
+    form.setFieldsValue({ monitor_name: generateDefaultKey("test-website") });
+    setIsRunning(false);
   };
 
   return (
@@ -145,7 +153,7 @@ const TestWebsiteMonitor = () => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ ...DEFAULT_PARAMS, monitor_name: initialName }}
+        initialValues={DEFAULT_PARAMS}
         className="mb-2"
       >
         <Form.Item
@@ -248,12 +256,6 @@ const TestWebsiteMonitor = () => {
             Create and run
           </Button>
         </Flex>
-        <StatusTag status={runStatus} />
-        {runStatus.step === "done" && (
-          <Button size="small" onClick={() => setRunStatus({ step: "idle" })}>
-            Run Another
-          </Button>
-        )}
       </Space>
     </Card>
   );

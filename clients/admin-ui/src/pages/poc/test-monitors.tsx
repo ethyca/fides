@@ -10,24 +10,22 @@ const { Text, Paragraph } = Typography;
 
 const TestMonitors: NextPage = () => {
   return (
-    <Layout className="h-screen">
-      <Content className="overflow-auto px-10 py-6">
-        <PageHeader heading="Test Monitors" />
-        <Paragraph type="secondary" className="mb-6">
-          Developer tool for seeding test data via the configurable test
-          monitors. Requires <Text code>FIDES__DEV_MODE=true</Text>.
-        </Paragraph>
+    <Content className="overflow-auto px-10 py-6">
+      <PageHeader heading="Test Monitors" />
+      <Paragraph type="secondary">
+        Developer tool for seeding test data via the configurable test monitors.
+        Requires <Text code>FIDES__DEV_MODE=true</Text>.
+      </Paragraph>
 
-        <Flex gap={16} align="start" wrap="wrap">
-          <div className="min-w-80 flex-1">
-            <TestDatastoreMonitor />
-          </div>
-          <div className="min-w-80 flex-1">
-            <TestWebsiteMonitor />
-          </div>
-        </Flex>
-      </Content>
-    </Layout>
+      <Flex gap={16} align="start" wrap="wrap" className="mt-4">
+        <div className="min-w-80 flex-1">
+          <TestDatastoreMonitor />
+        </div>
+        <div className="min-w-80 flex-1">
+          <TestWebsiteMonitor />
+        </div>
+      </Flex>
+    </Content>
   );
 };
 
