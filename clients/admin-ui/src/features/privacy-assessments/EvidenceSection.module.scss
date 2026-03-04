@@ -4,6 +4,11 @@
   margin-bottom: 20px;
 }
 
+.sourceTypeLabel {
+  display: block;
+  margin-bottom: 8px;
+}
+
 .evidenceGroup {
   margin-bottom: 20px;
 }
@@ -43,23 +48,4 @@
 
 .cardMeta {
   display: block;
-}
-
-.threadCollapse {
-  margin-top: 8px;
-}
-
-.message {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--ant-color-border-secondary);
-}
-
-.lastMessage {
-  padding: 8px 0;
-  border-bottom: none;
-}
-
-.messageText {
-  font-size: 13px;
-  margin-top: 4px;
 }

@@ -1,7 +1,8 @@
-import { Flex, Space, Tag, Text } from "fidesui";
+import { Badge, Collapse, Flex, Space, Tag, Text } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import styles from "./EvidenceSection.module.scss";
-import { EvidenceItem, QuestionGroup } from "./types";
+import { EvidenceItem, EvidenceType, QuestionGroup } from "./types";
 
 const SOURCE_TYPE_LABELS: Record<string, string> = {
   system: "System",
@@ -41,6 +42,60 @@ const getSourceTypeLabel = (sourceType: string) =>
 const getFieldNameLabel = (fieldName: string) =>
   FIELD_NAME_LABELS[fieldName] ?? fieldName.replace(/_/g, " ");
 
+const groupBySourceType = (items: EvidenceItem[]) =>
+  items.reduce<Record<string, EvidenceItem[]>>(
+    (acc, item) => ({
+      ...acc,
+      [item.source_type]: [...(acc[item.source_type] ?? []), item],
+    }),
+    {},
+  );
+
+interface EvidenceCardGroupProps {
+  items: EvidenceItem[];
+}
+
+const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => {
+  const bySourceType = groupBySourceType(items);
+
+  return (
+    <Space direction="vertical" size="middle" className={styles.itemList}>
+      {Object.entries(bySourceType).map(([sourceType, sourceItems]) => (
+        <div key={sourceType}>
+          <Text strong size="sm" className={styles.sourceTypeLabel}>
+            {getSourceTypeLabel(sourceType)}
+          </Text>
+          <Space direction="vertical" size="small" className={styles.itemList}>
+            {sourceItems.map((item) => (
+              <div key={item.id} className={styles.evidenceCard}>
+                <Flex
+                  justify="space-between"
+                  align="flex-start"
+                  className={styles.cardHeader}
+                >
+                  <Text strong size="sm">
+                    {item.source_key}
+                  </Text>
+                  {item.citation_number && <Tag>#{item.citation_number}</Tag>}
+                </Flex>
+                <Text className={styles.cardValue}>
+                  <Text type="secondary">
+                    {getFieldNameLabel(item.field_name)}:{" "}
+                  </Text>
+                  {item.value}
+                </Text>
+                <Text type="secondary" size="sm" className={styles.cardMeta}>
+                  {formatTimestamp(item.created_at)}
+                </Text>
+              </div>
+            ))}
+          </Space>
+        </div>
+      ))}
+    </Space>
+  );
+};
+
 export interface EvidenceSectionProps {
   groupId: string;
   group: QuestionGroup | undefined;
@@ -69,55 +124,82 @@ export const EvidenceSection = ({
     );
   }
 
-  const bySourceType = evidence.reduce<Record<string, EvidenceItem[]>>(
-    (acc, item) => {
-      const key = item.source_type;
-      return {
-        ...acc,
-        [key]: [...(acc[key] ?? []), item],
-      };
-    },
-    {},
+  const systemItems = evidence.filter(
+    (e) => e.type === EvidenceType.AI_ANALYSIS,
   );
+  const humanItems = evidence.filter(
+    (e) =>
+      e.type === EvidenceType.MANUAL_ENTRY ||
+      e.type === EvidenceType.SLACK_COMMUNICATION,
+  );
+
+  const collapseItems = [
+    ...(systemItems.length > 0
+      ? [
+          {
+            key: "system",
+            label: (
+              <Flex align="center" gap="small">
+                <Text strong>System-derived data</Text>
+                <Badge
+                  count={systemItems.length}
+                  color={palette.FIDESUI_MINOS}
+                />
+              </Flex>
+            ),
+            children: (
+              <>
+                <Text
+                  type="secondary"
+                  size="sm"
+                  className={styles.groupDescription}
+                >
+                  Automated data points extracted from system inventory,
+                  classifications, policies, and monitoring systems.
+                </Text>
+                <EvidenceCardGroup items={systemItems} />
+              </>
+            ),
+          },
+        ]
+      : []),
+    ...(humanItems.length > 0
+      ? [
+          {
+            key: "human",
+            label: (
+              <Flex align="center" gap="small">
+                <Text strong>Human input</Text>
+                <Badge
+                  count={humanItems.length}
+                  color={palette.FIDESUI_MINOS}
+                />
+              </Flex>
+            ),
+            children: (
+              <>
+                <Text
+                  type="secondary"
+                  size="sm"
+                  className={styles.groupDescription}
+                >
+                  Manual entries and stakeholder communications that inform this
+                  assessment.
+                </Text>
+                <EvidenceCardGroup items={humanItems} />
+              </>
+            ),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div data-group-id={groupId}>
       <Text strong className={styles.sectionTitle}>
         {group.id}. {group.title}
       </Text>
-
-      {Object.entries(bySourceType).map(([sourceType, items]) => (
-        <div key={sourceType} className={styles.evidenceGroup}>
-          <Text strong className={styles.groupHeading}>
-            {getSourceTypeLabel(sourceType)}
-          </Text>
-          <Space direction="vertical" size="small" className={styles.itemList}>
-            {items.map((item) => (
-              <div key={item.id} className={styles.evidenceCard}>
-                <Flex
-                  justify="space-between"
-                  align="flex-start"
-                  className={styles.cardHeader}
-                >
-                  <Text strong size="sm">
-                    {item.source_key}
-                  </Text>
-                  {item.citation_number && <Tag>#{item.citation_number}</Tag>}
-                </Flex>
-                <Text className={styles.cardValue}>
-                  <Text type="secondary">
-                    {getFieldNameLabel(item.field_name)}:{" "}
-                  </Text>
-                  {item.value}
-                </Text>
-                <Text type="secondary" size="sm" className={styles.cardMeta}>
-                  {formatTimestamp(item.created_at)}
-                </Text>
-              </div>
-            ))}
-          </Space>
-        </div>
-      ))}
+      <Collapse items={collapseItems} ghost />
     </div>
   );
 };
