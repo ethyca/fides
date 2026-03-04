@@ -139,27 +139,21 @@ export const EvidenceSection = ({
           {
             key: "system",
             label: (
-              <Flex align="center" gap="small">
-                <Text strong>System-derived data</Text>
-                <Badge
-                  count={systemItems.length}
-                  color={palette.FIDESUI_MINOS}
-                />
-              </Flex>
-            ),
-            children: (
-              <>
-                <Text
-                  type="secondary"
-                  size="sm"
-                  className={styles.groupDescription}
-                >
+              <div>
+                <Flex align="center" gap="small" className="mb-1">
+                  <Text strong>System-derived data</Text>
+                  <Badge
+                    count={systemItems.length}
+                    color={palette.FIDESUI_MINOS}
+                  />
+                </Flex>
+                <Text type="secondary" size="sm">
                   Automated data points extracted from system inventory,
                   classifications, policies, and monitoring systems.
                 </Text>
-                <EvidenceCardGroup items={systemItems} />
-              </>
+              </div>
             ),
+            children: <EvidenceCardGroup items={systemItems} />,
           },
         ]
       : []),
@@ -168,27 +162,21 @@ export const EvidenceSection = ({
           {
             key: "human",
             label: (
-              <Flex align="center" gap="small">
-                <Text strong>Human input</Text>
-                <Badge
-                  count={humanItems.length}
-                  color={palette.FIDESUI_MINOS}
-                />
-              </Flex>
-            ),
-            children: (
-              <>
-                <Text
-                  type="secondary"
-                  size="sm"
-                  className={styles.groupDescription}
-                >
+              <div>
+                <Flex align="center" gap="small" className="mb-1">
+                  <Text strong>Human input</Text>
+                  <Badge
+                    count={humanItems.length}
+                    color={palette.FIDESUI_MINOS}
+                  />
+                </Flex>
+                <Text type="secondary" size="sm">
                   Manual entries and stakeholder communications that inform this
                   assessment.
                 </Text>
-                <EvidenceCardGroup items={humanItems} />
-              </>
+              </div>
             ),
+            children: <EvidenceCardGroup items={humanItems} />,
           },
         ]
       : []),
