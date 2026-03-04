@@ -18,12 +18,13 @@ type ModalMethodProps = {
 const ModalMethod = ({ type, title, content, hideIcon }: ModalMethodProps) => {
   const modalApi = useModal();
   useEffect(() => {
-    modalApi[type]({
+    const ref = modalApi[type]({
       title,
       content,
       ...(hideIcon ? { icon: null } : {}),
     });
-  }, []);
+    return () => ref?.destroy?.();
+  }, [modalApi, type, title, content, hideIcon]);
 
   // eslint-disable-next-line react/jsx-no-useless-fragment
   return <></>;
