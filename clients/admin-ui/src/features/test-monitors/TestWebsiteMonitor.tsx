@@ -95,7 +95,9 @@ const TestWebsiteMonitor = () => {
     };
     const name = monitorName!;
     const key =
-      name === currentAutoKey.current ? name : generateDefaultKey("test-website");
+      name === currentAutoKey.current
+        ? name
+        : generateDefaultKey("test-website");
     setIsRunning(true);
 
     const connResult = await patchConnection({
@@ -155,7 +157,10 @@ const TestWebsiteMonitor = () => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ ...DEFAULT_PARAMS, monitor_name: currentAutoKey.current }}
+        initialValues={{
+          ...DEFAULT_PARAMS,
+          monitor_name: currentAutoKey.current,
+        }}
         className="mb-2"
       >
         <Form.Item

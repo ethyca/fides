@@ -6,7 +6,7 @@ import TestDatastoreMonitor from "~/features/test-monitors/TestDatastoreMonitor"
 import TestWebsiteMonitor from "~/features/test-monitors/TestWebsiteMonitor";
 
 const { Content } = Layout;
-const { Text, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
 const TestMonitors: NextPage = () => {
   return (
@@ -14,7 +14,6 @@ const TestMonitors: NextPage = () => {
       <PageHeader heading="Test Monitors" />
       <Paragraph type="secondary">
         Developer tool for seeding test data via the configurable test monitors.
-        Requires <Text code>FIDES__DEV_MODE=true</Text>.
       </Paragraph>
 
       <Flex gap={16} align="start" wrap="wrap" className="mt-4">

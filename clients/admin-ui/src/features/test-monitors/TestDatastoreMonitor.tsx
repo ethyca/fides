@@ -82,7 +82,9 @@ const TestDatastoreMonitor = () => {
     };
     const name = monitorName!;
     const key =
-      name === currentAutoKey.current ? name : generateDefaultKey("test-datastore");
+      name === currentAutoKey.current
+        ? name
+        : generateDefaultKey("test-datastore");
     setIsRunning(true);
 
     const connResult = await patchConnection({
@@ -141,7 +143,10 @@ const TestDatastoreMonitor = () => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ ...DEFAULT_PARAMS, monitor_name: currentAutoKey.current }}
+        initialValues={{
+          ...DEFAULT_PARAMS,
+          monitor_name: currentAutoKey.current,
+        }}
         className="mb-2"
       >
         <Form.Item
