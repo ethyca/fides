@@ -24,19 +24,17 @@ const useDownloadPrivacyRequestDiagnostics = ({
     useLazyGetPrivacyRequestDiagnosticsQuery();
 
   const downloadTroubleshootingData = async () => {
-    const result = await fetchDiagnostics(
-      { privacy_request_id: privacyRequest.id },
-      true,
-    );
+    const result = await fetchDiagnostics({
+      privacy_request_id: privacyRequest.id,
+    });
 
     if ("error" in result) {
-      if (result.error) {
-        message.error(
-          getErrorMessage(result.error, "Unable to resolve download URL"),
-        );
-      } else {
-        message.error("Unable to resolve download URL");
-      }
+      message.error(
+        getErrorMessage(
+          result.error as NonNullable<typeof result.error>,
+          "Unable to resolve download URL",
+        ),
+      );
       return;
     }
 
