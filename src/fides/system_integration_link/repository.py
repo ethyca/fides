@@ -55,7 +55,7 @@ class SystemIntegrationLinkRepository:
     ) -> list[SystemIntegrationLinkEntity]:
         stmt = (
             select(SystemConnectionConfigLink, System.fides_key, System.name)
-            .outerjoin(System, SystemConnectionConfigLink.system_id == System.id)
+            .join(System, SystemConnectionConfigLink.system_id == System.id)
             .where(
                 SystemConnectionConfigLink.connection_config_id == connection_config_id
             )
@@ -79,7 +79,7 @@ class SystemIntegrationLinkRepository:
     ) -> Optional[SystemIntegrationLinkEntity]:
         stmt = (
             select(SystemConnectionConfigLink, System.fides_key, System.name)
-            .outerjoin(System, SystemConnectionConfigLink.system_id == System.id)
+            .join(System, SystemConnectionConfigLink.system_id == System.id)
             .where(
                 SystemConnectionConfigLink.connection_config_id == connection_config_id,
                 SystemConnectionConfigLink.system_id == system_id,
@@ -156,11 +156,11 @@ class SystemIntegrationLinkRepository:
     ) -> SystemIntegrationLinkEntity:
         """Convert an ORM link to an entity, fetching system info via a join."""
         stmt = select(System.fides_key, System.name).where(System.id == link.system_id)
-        row = session.execute(stmt).first()
+        row = session.execute(stmt).one()
         return SystemIntegrationLinkEntity.from_orm(
             link,
-            system_fides_key=row.fides_key if row else None,
-            system_name=row.name if row else None,
+            system_fides_key=row.fides_key,
+            system_name=row.name,
         )
 
     @with_optional_sync_session

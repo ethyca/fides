@@ -39,14 +39,14 @@ class SystemIntegrationLinkEntity:
     connection_config_id: str
     created_at: datetime
     updated_at: datetime
-    system_fides_key: Optional[str] = None
+    system_fides_key: str
     system_name: Optional[str] = None
 
     @classmethod
     def from_orm(
         cls,
         obj: SystemConnectionConfigLink,
-        system_fides_key: Optional[str] = None,
+        system_fides_key: str,
         system_name: Optional[str] = None,
     ) -> "SystemIntegrationLinkEntity":
         return cls(
