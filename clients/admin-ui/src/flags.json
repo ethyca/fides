@@ -56,6 +56,13 @@
     "test": false,
     "production": false
   },
+  "alphaWebMonitorClassifierDemoUI": {
+    "label": "Web monitor classifier demo UI",
+    "description": "Enable demo UI for LLM classification of website assets (Classify with AI button and classification reports)",
+    "development": true,
+    "test": false,
+    "production": false
+  },
   "alphaDataProtectionAssessments": {
     "label": "Alpha data protection assessments",
     "description": "Enable data protection impact assessments feature",
