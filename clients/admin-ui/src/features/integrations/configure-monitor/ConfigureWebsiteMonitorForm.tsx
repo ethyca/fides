@@ -151,19 +151,19 @@ const ConfigureWebsiteMonitorForm = ({
           };
 
     // Build classify_params based on LLM classifier toggle
-    const classifyParams = values.use_llm_classifier
-      ? {
-          ...(monitor?.classify_params || {}),
-          llm_model_override: values.llm_model_override || undefined,
-        }
-      : {
-          ...(monitor?.classify_params || {}),
-          llm_model_override: undefined,
-        };
-
+    const classifyParams = {
+      ...(monitor?.classify_params || {}),
+      llm_model_override: values.use_llm_classifier
+        ? values.llm_model_override
+        : undefined,
+    };
     // Destructure form-only fields to exclude them from payload
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
-    const { use_llm_classifier, llm_model_override, ...restValues } = values;
+    const {
+      use_llm_classifier: useLLMClassifier,
+      llm_model_override: llmModelOverride,
+      ...restValues
+    } = values;
 
     const payload: WebsiteMonitorConfig = {
       ...monitor,

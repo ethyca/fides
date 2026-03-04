@@ -32,10 +32,13 @@ jest.mock(
 );
 
 // Wrapper component to provide Form context
-const TestWrapper: React.FC<{
+const TestWrapper = ({
+  children,
+  initialValues = {},
+}: {
   children: React.ReactNode;
   initialValues?: Record<string, unknown>;
-}> = ({ children, initialValues = {} }) => {
+}) => {
   const [form] = Form.useForm();
   return (
     <Form form={form} initialValues={initialValues}>
