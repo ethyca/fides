@@ -3,7 +3,6 @@ from typing import Dict, Generator, List
 
 import pytest
 from fideslang.models import Dataset
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import CollectionAddress
@@ -68,7 +67,7 @@ class TestGoogleCloudSQLPostgresQueryConfig:
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
         yield traversal.traversal_node_dict[
-            CollectionAddress("postgres_example_test_dataset", "customer")
+            CollectionAddress(dataset_config.fides_key, "customer")
         ].to_mock_execution_node()
 
     @pytest.fixture
@@ -85,7 +84,7 @@ class TestGoogleCloudSQLPostgresQueryConfig:
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
         yield traversal.traversal_node_dict[
-            CollectionAddress("postgres_example_test_dataset", "address")
+            CollectionAddress(dataset_config.fides_key, "address")
         ].to_mock_execution_node()
 
     @pytest.mark.parametrize(
@@ -133,12 +132,12 @@ class TestGoogleCloudSQLPostgresQueryConfig:
     def test_generate_query_with_invalid_namespace_meta(
         self, execution_node: ExecutionNode
     ):
-        with pytest.raises(ValidationError) as exc:
+        with pytest.raises(ValueError) as exc:
             GoogleCloudSQLPostgresQueryConfig(
                 execution_node,
-                GoogleCloudSQLPostgresNamespaceMeta(database_name="some_db"),
+                {"database_name": "some_db"},
             )
-        assert "Field required" in str(exc)
+        assert "schema" in str(exc.value)
 
     def test_generate_update_stmt(
         self,
