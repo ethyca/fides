@@ -27,6 +27,7 @@ export class OneTrustProvider implements ConsentMigrationProvider {
     if (!options.otFidesMapping) {
       return undefined;
     }
+    return {}
 
     try {
       const decodedString = decodeURIComponent(options.otFidesMapping);
