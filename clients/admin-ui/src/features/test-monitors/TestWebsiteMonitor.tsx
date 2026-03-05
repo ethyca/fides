@@ -11,7 +11,7 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import {
@@ -57,20 +57,21 @@ const DEFAULT_PARAMS: Omit<FormValues, "monitor_name"> = {
 };
 
 function randomizeParams(): Omit<FormValues, "monitor_name"> {
+  const grantedPct = randInt(30, 90);
   return {
     num_cookies: randInt(5, 50),
     num_javascript_requests: randInt(5, 30),
     num_image_requests: randInt(1, 20),
     num_iframe_requests: randInt(0, 10),
     num_browser_requests: randInt(2, 20),
-    consent_granted_percentage: randInt(30, 90),
-    consent_denied_percentage: randInt(0, 30),
+    consent_granted_percentage: grantedPct,
+    consent_denied_percentage: randInt(0, 100 - grantedPct),
     vendor_match_percentage: randInt(20, 90),
   };
 }
 
 const TestWebsiteMonitor = () => {
-  const currentAutoKey = useRef(generateDefaultKey("test-website"));
+  const [key] = useState(() => generateDefaultKey("test-website"));
   const [form] = Form.useForm<FormValues>();
   const [isRunning, setIsRunning] = useState(false);
   const message = useMessage();
@@ -80,6 +81,11 @@ const TestWebsiteMonitor = () => {
   const [executeMonitor] = useExecuteDiscoveryMonitorMutation();
 
   const handleRun = async () => {
+    try {
+      await form.validateFields();
+    } catch {
+      return;
+    }
     const {
       monitor_name: monitorName,
       consent_granted_percentage: grantedPct,
@@ -94,62 +100,55 @@ const TestWebsiteMonitor = () => {
       vendor_match_percentage: vendorMatchPct / 100,
     };
     const name = monitorName!;
-    const key =
-      name === currentAutoKey.current
-        ? name
-        : generateDefaultKey("test-website");
     setIsRunning(true);
 
-    const connResult = await patchConnection({
-      key,
-      name: key,
-      connection_type: ConnectionType.TEST_WEBSITE,
-      access: AccessLevel.READ,
-      secrets: { url: "https://example.com" },
-    });
-    if (isErrorResult(connResult)) {
-      message.error(
-        getErrorMessage(
-          connResult.error,
-          "Failed to create connection. Is dev mode enabled?",
-        ),
-      );
-      setIsRunning(false);
-      return;
-    }
+    try {
+      const connResult = await patchConnection({
+        key,
+        name: key,
+        connection_type: ConnectionType.TEST_WEBSITE,
+        access: AccessLevel.READ,
+        secrets: { url: "https://example.com" },
+      });
+      if (isErrorResult(connResult)) {
+        message.error(
+          getErrorMessage(
+            connResult.error,
+            "Failed to create connection. Is dev mode enabled?",
+          ),
+        );
+        return;
+      }
 
-    const monitorResult = await putMonitor({
-      name,
-      key,
-      connection_config_key: key,
-      execution_frequency: MonitorFrequency.NOT_SCHEDULED,
-      datasource_params: params,
-    });
-    if (isErrorResult(monitorResult)) {
-      message.error(
-        getErrorMessage(monitorResult.error, "Failed to create monitor."),
-      );
-      setIsRunning(false);
-      return;
-    }
+      const monitorResult = await putMonitor({
+        name,
+        key,
+        connection_config_key: key,
+        execution_frequency: MonitorFrequency.NOT_SCHEDULED,
+        datasource_params: params,
+      });
+      if (isErrorResult(monitorResult)) {
+        message.error(
+          getErrorMessage(monitorResult.error, "Failed to create monitor."),
+        );
+        return;
+      }
 
-    const execResult = await executeMonitor({ monitor_config_id: key });
-    if (isErrorResult(execResult)) {
-      message.error(
-        getErrorMessage(execResult.error, "Failed to execute monitor."),
-      );
-      setIsRunning(false);
-      return;
-    }
+      const execResult = await executeMonitor({ monitor_config_id: key });
+      if (isErrorResult(execResult)) {
+        message.error(
+          getErrorMessage(execResult.error, "Failed to execute monitor."),
+        );
+        return;
+      }
 
-    const executionId = execResult.data?.monitor_execution_id;
-    message.success(
-      `Monitor running${executionId ? ` — execution ID: ${executionId}` : ""}`,
-    );
-    const nextKey = generateDefaultKey("test-website");
-    currentAutoKey.current = nextKey;
-    form.setFieldsValue({ monitor_name: nextKey });
-    setIsRunning(false);
+      const executionId = execResult.data?.monitor_execution_id;
+      message.success(
+        `Monitor running${executionId ? ` — execution ID: ${executionId}` : ""}`,
+      );
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -157,10 +156,7 @@ const TestWebsiteMonitor = () => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{
-          ...DEFAULT_PARAMS,
-          monitor_name: currentAutoKey.current,
-        }}
+        initialValues={{ ...DEFAULT_PARAMS, monitor_name: key }}
         className="mb-2"
       >
         <Form.Item

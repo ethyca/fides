@@ -16,7 +16,7 @@ const TestMonitors: NextPage = () => {
         Developer tool for seeding test data via the configurable test monitors.
       </Paragraph>
 
-      <Flex gap={16} align="start" wrap="wrap" className="mt-4">
+      <Flex gap="large" align="start" wrap="wrap" className="mt-4">
         <div className="min-w-80 flex-1">
           <TestDatastoreMonitor />
         </div>

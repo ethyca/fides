@@ -10,7 +10,7 @@ import {
   Row,
   useMessage,
 } from "fidesui";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import {
@@ -61,7 +61,7 @@ function randomizeParams(): Omit<FormValues, "monitor_name"> {
 }
 
 const TestDatastoreMonitor = () => {
-  const currentAutoKey = useRef(generateDefaultKey("test-datastore"));
+  const [key] = useState(() => generateDefaultKey("test-datastore"));
   const [form] = Form.useForm<FormValues>();
   const [isRunning, setIsRunning] = useState(false);
   const message = useMessage();
@@ -71,6 +71,11 @@ const TestDatastoreMonitor = () => {
   const [executeMonitor] = useExecuteDiscoveryMonitorMutation();
 
   const handleRun = async () => {
+    try {
+      await form.validateFields();
+    } catch {
+      return;
+    }
     const {
       monitor_name: monitorName,
       nested_field_percentage: nestedFieldPct,
@@ -81,61 +86,54 @@ const TestDatastoreMonitor = () => {
       nested_field_percentage: nestedFieldPct / 100,
     };
     const name = monitorName!;
-    const key =
-      name === currentAutoKey.current
-        ? name
-        : generateDefaultKey("test-datastore");
     setIsRunning(true);
 
-    const connResult = await patchConnection({
-      key,
-      name: key,
-      connection_type: ConnectionType.TEST_DATASTORE,
-      access: AccessLevel.WRITE,
-    });
-    if (isErrorResult(connResult)) {
-      message.error(
-        getErrorMessage(
-          connResult.error,
-          "Failed to create connection. Is dev mode enabled?",
-        ),
-      );
-      setIsRunning(false);
-      return;
-    }
+    try {
+      const connResult = await patchConnection({
+        key,
+        name: key,
+        connection_type: ConnectionType.TEST_DATASTORE,
+        access: AccessLevel.WRITE,
+      });
+      if (isErrorResult(connResult)) {
+        message.error(
+          getErrorMessage(
+            connResult.error,
+            "Failed to create connection. Is dev mode enabled?",
+          ),
+        );
+        return;
+      }
 
-    const monitorResult = await putMonitor({
-      name,
-      key,
-      connection_config_key: key,
-      execution_frequency: MonitorFrequency.NOT_SCHEDULED,
-      datasource_params: params,
-    });
-    if (isErrorResult(monitorResult)) {
-      message.error(
-        getErrorMessage(monitorResult.error, "Failed to create monitor."),
-      );
-      setIsRunning(false);
-      return;
-    }
+      const monitorResult = await putMonitor({
+        name,
+        key,
+        connection_config_key: key,
+        execution_frequency: MonitorFrequency.NOT_SCHEDULED,
+        datasource_params: params,
+      });
+      if (isErrorResult(monitorResult)) {
+        message.error(
+          getErrorMessage(monitorResult.error, "Failed to create monitor."),
+        );
+        return;
+      }
 
-    const execResult = await executeMonitor({ monitor_config_id: key });
-    if (isErrorResult(execResult)) {
-      message.error(
-        getErrorMessage(execResult.error, "Failed to execute monitor."),
-      );
-      setIsRunning(false);
-      return;
-    }
+      const execResult = await executeMonitor({ monitor_config_id: key });
+      if (isErrorResult(execResult)) {
+        message.error(
+          getErrorMessage(execResult.error, "Failed to execute monitor."),
+        );
+        return;
+      }
 
-    const executionId = execResult.data?.monitor_execution_id;
-    message.success(
-      `Monitor running${executionId ? ` — execution ID: ${executionId}` : ""}`,
-    );
-    const nextKey = generateDefaultKey("test-datastore");
-    currentAutoKey.current = nextKey;
-    form.setFieldsValue({ monitor_name: nextKey });
-    setIsRunning(false);
+      const executionId = execResult.data?.monitor_execution_id;
+      message.success(
+        `Monitor running${executionId ? ` — execution ID: ${executionId}` : ""}`,
+      );
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -143,10 +141,7 @@ const TestDatastoreMonitor = () => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{
-          ...DEFAULT_PARAMS,
-          monitor_name: currentAutoKey.current,
-        }}
+        initialValues={{ ...DEFAULT_PARAMS, monitor_name: key }}
         className="mb-2"
       >
         <Form.Item

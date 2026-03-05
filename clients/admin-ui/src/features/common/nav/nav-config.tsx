@@ -336,7 +336,7 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Test Monitors",
         path: routes.TEST_MONITORS_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DEVELOPER_READ],
       },
       {
         title: "Ant Design POC",
