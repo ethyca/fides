@@ -65,3 +65,24 @@ export const FREQUENCY_OPTIONS = [
   { label: "Monthly (1st)", value: "monthly", cron: "0 9 1 * *" },
   { label: "Yearly (Jan 1st)", value: "yearly", cron: "0 9 1 1 *" },
 ];
+
+export const SOURCE_TYPE_LABELS: Record<string, string> = {
+  system: "System",
+  privacy_declaration: "Privacy declaration",
+  data_category: "Data category",
+  data_use: "Data use",
+  data_subject: "Data subject",
+  dataset: "Dataset",
+  data_flow: "Data flow",
+  connection: "Connection",
+};
+
+export const FIELD_NAME_LABELS: Record<string, string> = {
+  name: "Name",
+  description: "Description",
+  data_use: "Data use",
+  data_categories: "Data categories",
+  data_subjects: "Data subjects",
+  retention_period: "Retention period",
+  third_parties: "Third parties",
+};

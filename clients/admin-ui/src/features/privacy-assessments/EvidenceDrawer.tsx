@@ -3,6 +3,7 @@ import { Drawer, DrawerProps, Icons, Input, Space, Text, Title } from "fidesui";
 import styles from "./EvidenceDrawer.module.scss";
 import { EvidenceSection } from "./EvidenceSection";
 import { EvidenceItem, QuestionGroup } from "./types";
+import { filterEvidence } from "./utils";
 
 interface EvidenceDrawerProps extends Omit<DrawerProps, "onClose"> {
   open: boolean;
@@ -58,7 +59,8 @@ export const EvidenceDrawer = ({
             <EvidenceSection
               groupId={focusedGroupId}
               group={questionGroups.find((g) => g.id === focusedGroupId)}
-              evidence={evidence}
+              evidence={filterEvidence(evidence, searchQuery)}
+              searchQuery={searchQuery}
             />
           )}
         </Space>

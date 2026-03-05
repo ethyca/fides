@@ -1,29 +1,9 @@
 import { Badge, Collapse, Flex, Space, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
+import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
 import styles from "./EvidenceSection.module.scss";
 import { EvidenceItem, EvidenceType, QuestionGroup } from "./types";
-
-const SOURCE_TYPE_LABELS: Record<string, string> = {
-  system: "System",
-  privacy_declaration: "Privacy declaration",
-  data_category: "Data category",
-  data_use: "Data use",
-  data_subject: "Data subject",
-  dataset: "Dataset",
-  data_flow: "Data flow",
-  connection: "Connection",
-};
-
-const FIELD_NAME_LABELS: Record<string, string> = {
-  name: "Name",
-  description: "Description",
-  data_use: "Data use",
-  data_categories: "Data categories",
-  data_subjects: "Data subjects",
-  retention_period: "Retention period",
-  third_parties: "Third parties",
-};
 
 const formatTimestamp = (timestamp: string) => {
   const date = new Date(timestamp);
@@ -69,12 +49,14 @@ export interface EvidenceSectionProps {
   groupId: string;
   group: QuestionGroup | undefined;
   evidence: EvidenceItem[];
+  searchQuery?: string;
 }
 
 export const EvidenceSection = ({
   groupId,
   group,
   evidence,
+  searchQuery,
 }: EvidenceSectionProps) => {
   if (!group) {
     return null;
@@ -87,7 +69,9 @@ export const EvidenceSection = ({
           {group.id}. {group.title}
         </Text>
         <Text type="secondary" size="sm">
-          No evidence collected yet for this section.
+          {searchQuery
+            ? `No evidence matches "${searchQuery}".`
+            : "No evidence collected yet for this section."}
         </Text>
       </div>
     );
