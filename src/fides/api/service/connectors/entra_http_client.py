@@ -5,6 +5,7 @@ Used by the Entra connector for IDP discovery (list service principals).
 
 import time
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -115,9 +116,11 @@ class EntraHttpClient:
         token = self._get_token()
         select = select or SERVICE_PRINCIPALS_SELECT
         if next_link:
-            if not next_link.startswith(GRAPH_BASE_URL):
+            parsed = urlparse(next_link)
+            expected = urlparse(GRAPH_BASE_URL)
+            if (parsed.scheme, parsed.netloc) != (expected.scheme, expected.netloc):
                 raise ConnectionException(
-                    f"Invalid pagination URL: next_link must start with {GRAPH_BASE_URL}"
+                    f"Invalid pagination URL: next_link must be under {GRAPH_BASE_URL}"
                 )
             url = next_link
         else:
