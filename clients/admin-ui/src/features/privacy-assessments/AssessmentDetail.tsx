@@ -11,7 +11,7 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -21,7 +21,6 @@ import { RTKErrorResult } from "~/types/errors/api";
 import styles from "./AssessmentDetail.module.scss";
 import {
   useCreateQuestionnaireReminderMutation,
-  useDownloadAssessmentReportMutation,
   useGetAssessmentConfigQuery,
 } from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
@@ -46,9 +45,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const { data: config } = useGetAssessmentConfigQuery();
   const [createReminder, { isLoading: isSendingReminder }] =
     useCreateQuestionnaireReminderMutation();
-
-  const [downloadReport, { isLoading: isDownloading }] =
-    useDownloadAssessmentReportMutation();
 
   const slackChannelName = config?.slack_channel_name
     ? `#${config.slack_channel_name}`
@@ -92,19 +88,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
       );
     }
   };
-
-  const handleDownloadReport = useCallback(async () => {
-    try {
-      await downloadReport(assessment.id).unwrap();
-    } catch (error) {
-      message.error(
-        getErrorMessage(
-          error as RTKErrorResult["error"],
-          "Failed to download report. Please try again.",
-        ),
-      );
-    }
-  }, [assessment.id, downloadReport, message]);
 
   const collapseItems = useMemo(
     () =>
@@ -172,32 +155,22 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
             maxTags={1}
           />
         </Text>
-        {isComplete ? (
+        <Tooltip
+          title={
+            !slackChannelName
+              ? "Configure a Slack channel in assessment settings to enable this feature"
+              : undefined
+          }
+        >
           <Button
-            type="primary"
-            loading={isDownloading}
-            onClick={handleDownloadReport}
+            icon={<SlackIcon size={14} />}
+            size="small"
+            onClick={() => setIsRequestInputOpen(true)}
+            disabled={!slackChannelName}
           >
-            Download report
+            Request input from team
           </Button>
-        ) : (
-          <Tooltip
-            title={
-              !slackChannelName
-                ? "Configure a Slack channel in assessment settings to enable this feature"
-                : undefined
-            }
-          >
-            <Button
-              icon={<SlackIcon size={14} />}
-              size="small"
-              onClick={() => setIsRequestInputOpen(true)}
-              disabled={!slackChannelName}
-            >
-              Request input from team
-            </Button>
-          </Tooltip>
-        )}
+        </Tooltip>
       </Flex>
 
       {!isComplete && questionnaireSentAt && (
