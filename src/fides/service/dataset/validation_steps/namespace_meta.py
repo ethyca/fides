@@ -44,7 +44,7 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             # match this connection. This happens when datasets of mixed types
             # (e.g. BigQuery, Snowflake) are linked to a single connection.
             meta_connection_type = namespace_meta.get("connection_type")
-            if meta_connection_type and meta_connection_type != connection_type:
+            if not meta_connection_type or meta_connection_type != connection_type:
                 return
 
             try:
