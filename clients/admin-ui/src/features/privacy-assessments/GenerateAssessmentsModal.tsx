@@ -40,15 +40,14 @@ interface TemplateOptionData {
 const renderTemplateOption = (option: { data: TemplateOptionData }) => {
   const { template } = option.data;
   return (
-    <div>
+    <Flex align="center">
       <Text strong>{template.name}</Text>
       {template.region && (
         <Text type="secondary" className="ml-2" size="sm">
           {template.region}
         </Text>
       )}
-    </div>
-  );
+    </Flex>
 };
 
 interface GenerateAssessmentsModalProps {
