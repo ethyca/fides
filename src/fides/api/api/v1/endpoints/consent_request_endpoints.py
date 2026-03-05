@@ -18,7 +18,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.api.deps import get_config_proxy, get_db
@@ -609,7 +609,7 @@ def _get_or_create_provided_identity(
 
     else:
         raise HTTPException(
-            HTTP_422_UNPROCESSABLE_ENTITY,
+            HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Identity type not found in identity data",
         )
     return identity

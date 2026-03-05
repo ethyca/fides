@@ -5,7 +5,7 @@ from fastapi.exceptions import ResponseValidationError
 from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.status import (
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
@@ -35,7 +35,7 @@ async def response_validation_error_handler(
         f"{len(field_errors)} validation error(s): {field_errors}"
     )
     return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=HTTP_422_UNPROCESSABLE_CONTENT,
         content={
             "detail": "The requested resource contains data that fails validation "
             "when serializing the response.",
