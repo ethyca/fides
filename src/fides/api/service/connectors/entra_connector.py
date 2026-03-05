@@ -110,4 +110,3 @@ class EntraConnector(BaseConnector):
 
     def close(self) -> None:
         """Release any held resources. No-op for Entra client."""
-        self.db_client = None

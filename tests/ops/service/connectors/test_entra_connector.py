@@ -29,7 +29,6 @@ def entra_connection_config(db):
     )
     config.save(db)
     yield config
-    config.delete(db)
 
 
 class TestEntraConnector:
