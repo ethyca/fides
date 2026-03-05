@@ -13,8 +13,8 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 
-# Azure tenant ID: 32 hex chars, optionally with hyphens (UUID format)
-ENTRA_TENANT_ID_PATTERN = re.compile(
+# UUID format: 32 hex chars optionally with hyphens (used for tenant_id and client_id)
+ENTRA_UUID_PATTERN = re.compile(
     r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$"
 )
 
@@ -49,7 +49,7 @@ class EntraSchema(ConnectionConfigSecretsSchema):
         if not value or not value.strip():
             raise ValueError("Tenant ID cannot be empty")
         cleaned = value.strip()
-        if not ENTRA_TENANT_ID_PATTERN.match(cleaned):
+        if not ENTRA_UUID_PATTERN.match(cleaned):
             raise ValueError(
                 "Tenant ID must be a valid Azure AD tenant ID (UUID format). "
                 "Find it in Azure Portal: Microsoft Entra ID > Overview > Tenant ID"
@@ -63,7 +63,7 @@ class EntraSchema(ConnectionConfigSecretsSchema):
         if not value or not value.strip():
             raise ValueError("Client ID cannot be empty")
         cleaned = value.strip()
-        if not ENTRA_TENANT_ID_PATTERN.match(cleaned):
+        if not ENTRA_UUID_PATTERN.match(cleaned):
             raise ValueError(
                 "Client ID must be a valid application (client) ID (UUID format). "
                 "Find it in Azure Portal: App registrations > Your app > Overview > Application (client) ID"
@@ -77,13 +77,13 @@ class EntraSchema(ConnectionConfigSecretsSchema):
         if not value or not value.strip():
             raise ValueError("Client secret cannot be empty")
         cleaned = value.strip()
-        if ENTRA_TENANT_ID_PATTERN.match(cleaned):
+        if ENTRA_UUID_PATTERN.match(cleaned):
             raise ValueError(
                 "Client secret must be the secret value, not the secret ID. "
                 "In Azure Portal: App registrations > Your app > Certificates & secrets: "
                 "create or copy the secret's Value (long string), not the Secret ID (GUID)."
             )
-        return value
+        return cleaned
 
 
 class EntraDocsSchema(EntraSchema, NoValidationSchema):
