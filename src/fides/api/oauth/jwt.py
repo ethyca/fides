@@ -1,7 +1,7 @@
-from jose import jwe
-from jose.constants import ALGORITHMS
+from joserfc import jwe
+from joserfc.jwk import OctKey
 
-_JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
+_JWT_ENCRYPTION_ALGORITHM = "A256GCM"
 
 
 def generate_jwe(payload: str, encryption_key: str, encoding: str = "UTF-8") -> str:
@@ -9,11 +9,17 @@ def generate_jwe(payload: str, encryption_key: str, encoding: str = "UTF-8") -> 
 
     Returns a string representation.
     """
-    return jwe.encrypt(
-        payload,
-        encryption_key,
-        encryption=_JWT_ENCRYPTION_ALGORITHM,
-    ).decode(encoding)
+    key_bytes = (
+        encryption_key.encode("utf-8")
+        if isinstance(encryption_key, str)
+        else encryption_key
+    )
+    key = OctKey.import_key(key_bytes)
+    return jwe.encrypt_compact(
+        {"alg": "dir", "enc": _JWT_ENCRYPTION_ALGORITHM},
+        payload.encode(encoding),
+        key,
+    )
 
 
 def decrypt_jwe(token: str, encryption_key: str, encoding: str = "UTF-8") -> str:
@@ -27,8 +33,11 @@ def decrypt_jwe(token: str, encryption_key: str, encoding: str = "UTF-8") -> str
     Returns:
         The decrypted payload as a string.
     """
-    decrypted_payload = jwe.decrypt(
-        token,
-        encryption_key,
+    key_bytes = (
+        encryption_key.encode("utf-8")
+        if isinstance(encryption_key, str)
+        else encryption_key
     )
-    return decrypted_payload.decode(encoding)
+    key = OctKey.import_key(key_bytes)
+    result = jwe.decrypt_compact(token, key)
+    return result.plaintext.decode(encoding)

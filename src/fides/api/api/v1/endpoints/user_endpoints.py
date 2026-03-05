@@ -4,7 +4,7 @@ import time
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-import jose.exceptions
+from joserfc.errors import DecodeError
 from fastapi import Depends, HTTPException, Request, Response, Security
 from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
@@ -282,7 +282,7 @@ def logout_oauth_client(
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
-    except jose.exceptions.JWEParseError:
+    except DecodeError:
         return None
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)
