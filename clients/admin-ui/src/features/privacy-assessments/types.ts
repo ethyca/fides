@@ -27,7 +27,7 @@ export enum AnswerSource {
   SYSTEM = "system",
   AI_ANALYSIS = "ai_analysis",
   USER_INPUT = "user_input",
-  SLACK = "slack",
+  TEAM_INPUT = "team_input",
 }
 
 export enum EvidenceType {

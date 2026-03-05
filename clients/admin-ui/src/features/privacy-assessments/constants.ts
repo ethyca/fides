@@ -29,7 +29,7 @@ export const ANSWER_SOURCE_LABELS: Record<AnswerSource, string> = {
   [AnswerSource.SYSTEM]: "System derived",
   [AnswerSource.AI_ANALYSIS]: "Agent",
   [AnswerSource.USER_INPUT]: "Team input",
-  [AnswerSource.SLACK]: "Team input",
+  [AnswerSource.TEAM_INPUT]: "Team input",
 };
 
 export const ANSWER_STATUS_LABELS: Record<AnswerStatus, string> = {
