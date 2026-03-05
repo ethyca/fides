@@ -1,5 +1,4 @@
 import json
-import socket
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from typing import Any, Optional
@@ -98,14 +97,15 @@ class HealthCheckServer(bootsteps.StartStopStep):
     def start(self, parent: WorkController) -> None:
         # Ignore mypy hints here as the constructed object immediately handles the request
         # (if you look in the source code for SimpleHTTPRequestHandler, specifically the finalize request method)
+        # Enable socket reuse before bind() to prevent "Address already in use"
+        # during rapid restarts (hot-reload) and test cycling.
+        # HTTPServer.__init__ calls server_bind() -> socket.bind(), so
+        # SO_REUSEADDR must be set via allow_reuse_address before construction.
+        HTTPServer.allow_reuse_address = True
         self.http_server = HTTPServer(
             ("0.0.0.0", self.healthcheck_port),
             self.http_handler,  # type: ignore [arg-type]
         )
-
-        # Enable socket reuse to prevent port conflicts during rapid test cycling
-        # This is especially important for session-scoped test workers
-        self.http_server.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         # Set a socket timeout to prevent indefinite blocking on requests
         self.http_server.timeout = 5.0
