@@ -11,7 +11,7 @@ import {
   useChakraToast as useToast,
 } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -60,6 +60,9 @@ const TextOrHtml = ({
 const HomePage: NextPage = () => {
   const config = useConfig();
   const router = useRouter();
+  const params = useParams();
+  const propertyPath = params?.propertyPath as string | undefined;
+  const basePath = propertyPath ? `/${propertyPath}` : "";
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
   const [isConsentVerificationDisabled, setIsConsentVerificationDisabled] =
@@ -130,12 +133,12 @@ const HomePage: NextPage = () => {
   ]);
 
   const handlePrivacyRequestOpen = (policyKey: string) => {
-    // Preserve search params when navigating to privacy request page
+    // Preserve search params and property path prefix when navigating
     const currentSearchParams = searchParams?.toString();
     const encoded = encodePolicyKey(policyKey);
     const url = currentSearchParams
-      ? `/privacy-request/${encoded}?${currentSearchParams}`
-      : `/privacy-request/${encoded}`;
+      ? `${basePath}/privacy-request/${encoded}?${currentSearchParams}`
+      : `${basePath}/privacy-request/${encoded}`;
     router.push(url);
   };
 

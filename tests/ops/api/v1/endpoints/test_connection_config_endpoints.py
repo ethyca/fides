@@ -15,7 +15,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
@@ -2731,7 +2731,7 @@ class TestPutConnectionOAuthConfig:
             headers=auth_header,
             json=self.oauth_payload,
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be set for HTTPS connections"
             in response.json()["detail"]
@@ -2851,7 +2851,7 @@ class TestPatchConnectionOAuthConfig:
             headers=auth_header,
             json=self.patch_payload,
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be set for HTTPS connections"
             in response.json()["detail"]
@@ -2967,7 +2967,7 @@ class TestPatchConnectionOAuthConfig:
                 json=self.patch_payload,
             )
 
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
 
         # Verify new config was not created due to incomplete data
         db.refresh(https_connection_config)
@@ -3020,7 +3020,7 @@ class TestDeleteConnectionOAuthConfig:
         response = api_client.delete(
             self.url.format(connection_config.key), headers=auth_header
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be deleted for HTTPS connections"
             in response.json()["detail"]
