@@ -560,7 +560,7 @@ jobs:
 
   External-Datastores:
     needs: [Check-Backend-Changes, Check-Container-Startup]
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push')
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
     runs-on: ubuntu-latest
@@ -678,7 +678,7 @@ jobs:
 
   External-SaaS-Connectors:
     needs: [Check-Backend-Changes, Check-Container-Startup]
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push' || github.event_name == 'merge_group')
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && (contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
