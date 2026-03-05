@@ -19,6 +19,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
@@ -33,8 +34,8 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
+import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
 import { DatasetCollection } from "~/types/api";
 
@@ -44,7 +45,11 @@ const DatasetDetailPage: NextPage = () => {
   const router = useRouter();
   const datasetId = decodeURIComponent(router.query.datasetId as string);
 
-  const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
+  const {
+    isLoading,
+    data: dataset,
+    error,
+  } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
 
   const [isEditingCollection, setIsEditingCollection] = useState(false);
@@ -146,6 +151,15 @@ const DatasetDetailPage: NextPage = () => {
       },
     ];
   }, [datasetId]);
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching collections for the dataset ${datasetId}`}
+      />
+    );
+  }
 
   return (
     <Layout title={`Dataset - ${datasetId}`}>

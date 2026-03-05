@@ -2,9 +2,11 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fastapi import HTTPException
 from loguru import logger
 from sqlalchemy.orm import Query, Session, selectinload
 from starlette.responses import StreamingResponse
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.common_exceptions import (
     FidesopsException,
@@ -30,7 +32,10 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_center_config import LocationCustomPrivacyRequestField
+from fides.api.schemas.privacy_center_config import (
+    LocationCustomPrivacyRequestField,
+    reorder_custom_privacy_request_fields,
+)
 from fides.api.schemas.privacy_center_config import (
     PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
@@ -238,24 +243,35 @@ class PrivacyRequestService:
         1) The request's property config (if provided)
         2) The default property's config (if available)
         3) The single-row Privacy Center config table (legacy/global)
+
+        Returns a copy of the config with custom_privacy_request_fields key order
+        restored when custom_privacy_request_field_order is present (JSONB does
+        not preserve object key order).
         """
         # 1) Request's property config
         if property_id:
             prop = Property.get_by(self.db, field="id", value=property_id)
             if prop and getattr(prop, "privacy_center_config", None):
-                return prop.privacy_center_config  # type: ignore[return-value]
+                return reorder_custom_privacy_request_fields(
+                    prop.privacy_center_config  # type: ignore[arg-type]
+                )
 
         # 2) Default property config
         default_prop = Property.get_by(self.db, field="is_default", value=True)
         if default_prop and getattr(default_prop, "privacy_center_config", None):
-            return default_prop.privacy_center_config  # type: ignore[return-value]
+            return reorder_custom_privacy_request_fields(
+                default_prop.privacy_center_config  # type: ignore[arg-type]
+            )
 
         # 3) Single-row global config
         privacy_center_config_record = PrivacyCenterConfigModel.filter(
-            db=self.db, conditions=PrivacyCenterConfigModel.single_row  # type: ignore[arg-type]
+            db=self.db,
+            conditions=PrivacyCenterConfigModel.single_row,  # type: ignore[arg-type]
         ).first()
         if privacy_center_config_record:
-            return privacy_center_config_record.config  # type: ignore[return-value]
+            return reorder_custom_privacy_request_fields(
+                privacy_center_config_record.config  # type: ignore[arg-type]
+            )
         return None
 
     def _parse_privacy_center_config(
@@ -888,29 +904,115 @@ class PrivacyRequestService:
         return BulkReviewResponse(succeeded=succeeded, failed=failed)
 
 
+SCHEDULING_DATASET_NAME = "Privacy request scheduling"
+
+
+def _handle_scheduling_failure(
+    privacy_request_id: str,
+    error_message: str,
+) -> None:
+    """Handle a privacy request scheduling failure by setting it to error state.
+
+    Creates an ExecutionLog entry for visibility in the activity timeline and
+    marks the privacy request as errored with the detailed error message.
+    """
+    from fides.api.api.deps import (  # pylint: disable=cyclic-import
+        get_autoclose_db_session as get_db,
+    )
+
+    with get_db() as db:
+        privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+        if privacy_request:
+            # Add execution log for activity timeline visibility
+            privacy_request.add_error_execution_log(
+                db,
+                connection_key=None,
+                dataset_name=SCHEDULING_DATASET_NAME,
+                collection_name=None,
+                message=error_message,
+                action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
+            )
+            # Mark the privacy request as errored with the error message
+            privacy_request.error_processing(db)
+            logger.error(
+                "Privacy request {} failed to schedule: {}",
+                privacy_request_id,
+                error_message,
+            )
+
+
+def _clear_scheduling_failure_if_exists(privacy_request_id: str) -> None:
+    """Log a success only if there was a previous scheduling failure.
+
+    This clears the error styling in the UI activity timeline when a retry succeeds.
+    """
+    from fides.api.api.deps import (  # pylint: disable=cyclic-import
+        get_autoclose_db_session as get_db,
+    )
+
+    with get_db() as db:
+        # Check if the most recent scheduling log is an error
+        latest_scheduling_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request_id,
+                ExecutionLog.dataset_name == SCHEDULING_DATASET_NAME,
+            )
+            .order_by(ExecutionLog.created_at.desc())
+            .first()
+        )
+
+        if (
+            latest_scheduling_log
+            and latest_scheduling_log.status == ExecutionLogStatus.error
+        ):
+            privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+            if privacy_request:
+                privacy_request.add_success_execution_log(
+                    db,
+                    connection_key=None,
+                    dataset_name=SCHEDULING_DATASET_NAME,
+                    collection_name=None,
+                    message="Privacy request successfully queued for processing",
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
+                )
+
+
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def queue_privacy_request(
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
-) -> str:
+) -> Optional[str]:
+    """Queue a privacy request for processing.
+
+    Returns the task ID if successful, or None if scheduling fails.
+    On failure, the privacy request is marked as errored with the error message.
+    """
     logger.info("Queueing privacy request from step {}", from_step)
 
     from fides.api.service.privacy_request.request_runner_service import (
         run_privacy_request,
     )
 
-    task = run_privacy_request.apply_async(
-        queue=DSR_QUEUE_NAME,
-        kwargs={
-            "privacy_request_id": privacy_request_id,
-            "from_webhook_id": from_webhook_id,
-            "from_step": from_step,
-        },
-    )
-    cache_task_tracking_key(privacy_request_id, task.task_id)
+    try:
+        task = run_privacy_request.apply_async(
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_request_id,
+                "from_webhook_id": from_webhook_id,
+                "from_step": from_step,
+            },
+        )
+        cache_task_tracking_key(privacy_request_id, task.task_id)
 
-    return task.task_id
+        # Clear any previous scheduling failure in the activity timeline
+        _clear_scheduling_failure_if_exists(privacy_request_id)
+
+        return task.task_id
+    except Exception as exc:
+        _handle_scheduling_failure(privacy_request_id, str(exc))
+        raise
 
 
 def _create_or_update_custom_fields(
@@ -1008,7 +1110,7 @@ def _requeue_privacy_request(
             f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
 
-    # Both DSR 2.0 and 3.0 cache checkpoint details
+    # Checkpoint details are cached in Redis
     checkpoint_details: Optional[CheckpointActionRequired] = (
         privacy_request.get_failed_checkpoint_details()
     )
@@ -1067,10 +1169,24 @@ def _process_privacy_request_restart(
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
-    queue_privacy_request(
-        privacy_request_id=privacy_request.id,
-        from_step=failed_step.value if failed_step else None,
-    )
+    try:
+        queue_privacy_request(
+            privacy_request_id=privacy_request.id,
+            from_step=failed_step.value if failed_step else None,
+        )
+    except Exception as exc:
+        # queue_privacy_request handles setting error state in the DB,
+        # raise HTTP exception so the frontend can display the actual error message
+        logger.error(
+            "Failed to queue privacy request {} during restart: {}",
+            privacy_request.id,
+            exc,
+        )
+
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
 
     return privacy_request  # type: ignore[return-value]
 
@@ -1105,4 +1221,14 @@ def handle_approval(
                 "message": "",
             },
         )
-        queue_privacy_request(privacy_request.id)
+        try:
+            queue_privacy_request(privacy_request.id)
+        except Exception as exc:
+            # queue_privacy_request already handles setting the privacy request
+            # to error state, so we just log here and allow the request creation
+            # to complete (the request will be in error status)
+            logger.error(
+                "Failed to queue privacy request {} during approval: {}",
+                privacy_request.id,
+                exc,
+            )

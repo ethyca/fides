@@ -104,6 +104,7 @@ class NotificationSettingsProxy(ConfigProxyBase):
     send_request_review_notification: bool
     notification_service_type: Optional[str]
     enable_property_specific_messaging: Optional[str]
+    privacy_assessments_channel: Optional[str]
 
 
 class ExecutionSettingsProxy(ConfigProxyBase):

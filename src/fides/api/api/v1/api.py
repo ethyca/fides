@@ -27,6 +27,9 @@ from fides.api.api.v1.endpoints import (
     worker_endpoints,
 )
 from fides.api.util.api_router import APIRouter
+from fides.system_integration_link import (
+    routes as system_integration_link_routes,
+)
 
 api_router = APIRouter()
 api_router.include_router(config_endpoints.router)
@@ -55,3 +58,4 @@ api_router.include_router(user_permission_endpoints.router)
 api_router.include_router(manual_webhook_endpoints.router)
 api_router.include_router(registration_endpoints.router)
 api_router.include_router(worker_endpoints.router)
+api_router.include_router(system_integration_link_routes.router)

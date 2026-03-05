@@ -51,11 +51,43 @@ class PrivacyRequestConvenienceFields(Enum):
     location_regulations = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_regulations.value}"
 
 
+class ConsentPrivacyRequestConvenienceFields(Enum):
+    """Convenience fields available for consent privacy request conditions."""
+
+    # Policy convenience fields (all available for consent)
+    rule_action_types = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_action_types.value}"
+    has_access_rule = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_access_rule.value}"
+    has_erasure_rule = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_erasure_rule.value}"
+    has_consent_rule = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_consent_rule.value}"
+    has_update_rule = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_update_rule.value}"
+    rule_count = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_count.value}"
+    rule_names = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.rule_names.value}"
+    has_storage_destination = f"{PrivacyRequestTopLevelFields.policy.value}.{PrivacyRequestPolicyConvenienceFields.has_storage_destination.value}"
+    # Location hierarchy convenience fields (derived from user_geography)
+    location_country = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_country.value}"
+    location_groups = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_groups.value}"
+    location_regulations = f"{PrivacyRequestTopLevelFields.privacy_request.value}.{PrivacyRequestLocationConvenienceFields.location_regulations.value}"
+
+
 class PrivacyRequestFields(Enum):
     """Fields for privacy request."""
 
     created_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.created_at"
     due_date = f"{PrivacyRequestTopLevelFields.privacy_request.value}.due_date"
+    identity_verified_at = (
+        f"{PrivacyRequestTopLevelFields.privacy_request.value}.identity_verified_at"
+    )
+    location = f"{PrivacyRequestTopLevelFields.privacy_request.value}.location"
+    origin = f"{PrivacyRequestTopLevelFields.privacy_request.value}.origin"
+    requested_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.requested_at"
+    source = f"{PrivacyRequestTopLevelFields.privacy_request.value}.source"
+    submitted_by = f"{PrivacyRequestTopLevelFields.privacy_request.value}.submitted_by"
+
+
+class ConsentPrivacyRequestFields(Enum):
+    """Fields available for consent privacy request conditions."""
+
+    created_at = f"{PrivacyRequestTopLevelFields.privacy_request.value}.created_at"
     identity_verified_at = (
         f"{PrivacyRequestTopLevelFields.privacy_request.value}.identity_verified_at"
     )
@@ -76,6 +108,16 @@ class PolicyFields(Enum):
     execution_timeframe = (
         f"{PrivacyRequestTopLevelFields.policy.value}.execution_timeframe"
     )
+    rules = f"{PrivacyRequestTopLevelFields.policy.value}.rules"
+
+
+class ConsentPolicyFields(Enum):
+    """Policy fields available for consent privacy request conditions."""
+
+    id = "privacy_request.policy.id"
+    name = f"{PrivacyRequestTopLevelFields.policy.value}.name"
+    key = f"{PrivacyRequestTopLevelFields.policy.value}.key"
+    description = f"{PrivacyRequestTopLevelFields.policy.value}.description"
     rules = f"{PrivacyRequestTopLevelFields.policy.value}.rules"
 
 
@@ -151,6 +193,52 @@ ConditionalDependencyFieldPath = Union[
     PrivacyRequestConvenienceFields,
     str,  # Custom field paths (must match prefix pattern, validated below)
 ]
+
+# Union type for consent-specific field paths (subset of ConditionalDependencyFieldPath)
+ConsentConditionalDependencyFieldPath = Union[
+    ConsentPrivacyRequestFields,
+    ConsentPolicyFields,
+    IdentityFields,  # All identity fields are available for consent
+    ConsentPrivacyRequestConvenienceFields,
+    str,  # Custom field paths (still supported for consent)
+]
+
+
+# Fields that are NOT available for consent requests
+# Used for generating helpful error messages when conditions reference unavailable fields
+CONSENT_UNAVAILABLE_FIELDS: set[str] = {
+    # Direct fields
+    PrivacyRequestFields.due_date.value,
+    PolicyFields.execution_timeframe.value,
+}
+
+
+def get_consent_unavailable_field_message(field_path: str) -> Optional[str]:
+    """Get a human-readable message explaining why a field is unavailable for consent.
+
+    Args:
+        field_path: The field path that is unavailable
+
+    Returns:
+        A message explaining why the field is unavailable, or None if the field is available
+    """
+    field_messages = {
+        PrivacyRequestFields.due_date.value: "due_date is not available for consent requests (no execution timeframe)",
+        PolicyFields.execution_timeframe.value: "execution_timeframe is not applicable to consent requests",
+    }
+    return field_messages.get(field_path)
+
+
+def is_field_available_for_consent(field_path: str) -> bool:
+    """Check if a field is available for consent request conditions.
+
+    Args:
+        field_path: The field path to check
+
+    Returns:
+        True if the field is available for consent, False otherwise
+    """
+    return field_path not in CONSENT_UNAVAILABLE_FIELDS
 
 
 class ConditionalDependencyFieldInfo(BaseModel):

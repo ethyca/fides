@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from sqlalchemy import Column, String
 from sqlalchemy.orm import Session
@@ -16,7 +16,9 @@ class AuthenticationRequest(Base):
     referer = Column(String, index=False, unique=False, nullable=True)
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "AuthenticationRequest":  # type: ignore[override]
+    def create_or_update(
+        cls, db: Session, *, data: Dict[str, Any], check_name: Optional[bool] = True
+    ) -> "AuthenticationRequest":  # type: ignore[override]
         """
         Look up authentication request by connection_key. If found, update this authentication request, otherwise
         create a new one.

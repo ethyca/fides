@@ -128,7 +128,7 @@ def test_offset_with_unparsable_string_connector_param_reference(response_with_b
             request_params, connector_params, response_with_body, "conversations"
         )
     assert (
-        f"The value 'ten' of the 'limit' connector_param could not be cast to an int"
+        "The value 'ten' of the 'limit' connector_param could not be cast to an int"
         == str(exc.value)
     )
 
@@ -178,7 +178,7 @@ def test_offset_increment_by_zero():
         OffsetPaginationConfiguration(
             incremental_param="page", increment_by=0, limit=10
         )
-    assert f"'increment_by' cannot be zero" in str(exc.value)
+    assert "'increment_by' cannot be zero" in str(exc.value)
 
 
 def test_offset_increment_by_negative():
@@ -186,7 +186,7 @@ def test_offset_increment_by_negative():
         OffsetPaginationConfiguration(
             incremental_param="page", increment_by=-1, limit=10
         )
-    assert f"'increment_by' cannot be negative" in str(exc.value)
+    assert "'increment_by' cannot be negative" in str(exc.value)
 
 
 def test_offset_missing_start_value(response_with_body):

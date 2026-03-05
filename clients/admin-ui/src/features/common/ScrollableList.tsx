@@ -9,7 +9,9 @@ import {
   ChakraText as Text,
   Icons,
   Select,
+  SelectProps,
   Space,
+  Tooltip,
 } from "fidesui";
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
@@ -23,7 +25,8 @@ const ScrollableListItem = <T extends unknown>({
   draggable,
   onDeleteItem,
   onEditItem,
-  tooltip,
+  infoTooltip,
+  warningTooltip,
   onRowClick,
   maxH = 10,
   rowTestId,
@@ -33,7 +36,8 @@ const ScrollableListItem = <T extends unknown>({
   draggable?: boolean;
   onDeleteItem?: (item: T) => void;
   onEditItem?: (item: T) => void;
-  tooltip?: string;
+  infoTooltip?: string;
+  warningTooltip?: string;
   onRowClick?: (item: T) => void;
   maxH?: number;
   rowTestId: string;
@@ -78,6 +82,21 @@ const ScrollableListItem = <T extends unknown>({
         overflow="clip"
         data-testid={rowTestId}
       >
+        {warningTooltip && (
+          <Tooltip
+            title={warningTooltip}
+            trigger={["hover", "focus"]}
+            placement="right"
+          >
+            <span
+              // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- tooltip makes it interactive
+              tabIndex={0}
+              aria-label="Warning"
+            >
+              <Icons.WarningAltFilled fill="var(--fidesui-warning)" />
+            </span>
+          </Tooltip>
+        )}
         <Text
           fontSize="sm"
           userSelect="none"
@@ -87,7 +106,7 @@ const ScrollableListItem = <T extends unknown>({
         >
           {label}
         </Text>
-        <InfoTooltip label={tooltip} />
+        <InfoTooltip label={infoTooltip} />
       </Flex>
       <Space className="invisible absolute right-2 bg-white group-hover:visible">
         {onEditItem && (
@@ -126,11 +145,15 @@ const ScrollableListAdd = ({
   options,
   onOptionSelected,
   baseTestId,
+  popupMatchSelectWidth = true,
+  selectStyles,
 }: {
   label: string;
   options: Option[];
   onOptionSelected: (opt: Option) => void;
   baseTestId: string;
+  popupMatchSelectWidth?: boolean;
+  selectStyles?: SelectProps["styles"];
 }) => {
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectValue, setSelectValue] = useState<Option | undefined>(undefined);
@@ -155,6 +178,9 @@ const ScrollableListAdd = ({
         className="w-full"
         data-testid={`select-${baseTestId}`}
         aria-label={label}
+        optionFilterProp="label"
+        popupMatchSelectWidth={popupMatchSelectWidth}
+        styles={selectStyles}
       />
     </Box>
   ) : (
@@ -182,6 +208,7 @@ const ScrollableList = <T extends unknown>({
   setValues,
   canDeleteItem,
   getTooltip,
+  getWarningTooltip,
   onRowClick,
   onEditItem,
   selectOnAdd,
@@ -189,6 +216,9 @@ const ScrollableList = <T extends unknown>({
   createNewValue,
   maxHeight = 36,
   baseTestId,
+  isItemDisabled,
+  popupMatchSelectWidth,
+  selectStyles,
 }: {
   label?: string;
   tooltip?: string;
@@ -201,6 +231,7 @@ const ScrollableList = <T extends unknown>({
   setValues: (newOrder: T[]) => void;
   canDeleteItem?: (item: T) => boolean;
   getTooltip?: (item: T) => string | undefined;
+  getWarningTooltip?: (item: T) => string | undefined;
   onRowClick?: (item: T) => void;
   onEditItem?: (item: T) => void;
   selectOnAdd?: boolean;
@@ -208,6 +239,9 @@ const ScrollableList = <T extends unknown>({
   createNewValue?: (opt: Option) => T;
   maxHeight?: number;
   baseTestId: string;
+  isItemDisabled?: (item: T) => boolean;
+  popupMatchSelectWidth?: boolean;
+  selectStyles?: SelectProps["styles"];
 }) => {
   const getItemId = (item: T) =>
     item instanceof Object && idField && idField in item
@@ -240,7 +274,13 @@ const ScrollableList = <T extends unknown>({
       item instanceof Object && idField && idField in item
         ? (item[idField] as string)
         : (item as string);
-    return { label: getItemDisplayName(item), value };
+    const option: Option = { label: getItemDisplayName(item), value };
+
+    if (isItemDisabled) {
+      option.disabled = isItemDisabled(item);
+    }
+
+    return option;
   };
 
   const getValueFromOption = (opt: Option) =>
@@ -293,9 +333,8 @@ const ScrollableList = <T extends unknown>({
               draggable
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
-              tooltip={
-                getTooltip && getTooltip(item) ? getTooltip(item) : undefined
-              }
+              infoTooltip={getTooltip?.(item)}
+              warningTooltip={getWarningTooltip?.(item)}
             />
           );
         })}
@@ -306,6 +345,8 @@ const ScrollableList = <T extends unknown>({
       <List>
         {values.map((item) => {
           const itemId = getItemId(item);
+          const tooltipText = getTooltip?.(item);
+          const warningTooltipText = getWarningTooltip?.(item);
           return (
             <ScrollableListItem
               key={itemId}
@@ -313,9 +354,8 @@ const ScrollableList = <T extends unknown>({
               label={getItemDisplayName(item)}
               onRowClick={onRowClick}
               onDeleteItem={handleDeleteItem}
-              tooltip={
-                getTooltip && getTooltip(item) ? getTooltip(item) : undefined
-              }
+              infoTooltip={tooltipText}
+              warningTooltip={warningTooltipText}
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
             />
@@ -342,6 +382,8 @@ const ScrollableList = <T extends unknown>({
           )}
           onOptionSelected={handleAddNewValue}
           baseTestId={baseTestId}
+          selectStyles={selectStyles}
+          popupMatchSelectWidth={popupMatchSelectWidth}
         />
       ) : null}
     </Flex>
@@ -351,6 +393,8 @@ const ScrollableList = <T extends unknown>({
       options={unselectedValues.map((value) => createOptionFromValue(value))}
       onOptionSelected={handleAddNewValue}
       baseTestId={baseTestId}
+      selectStyles={selectStyles}
+      popupMatchSelectWidth={popupMatchSelectWidth}
     />
   );
 };

@@ -14,9 +14,11 @@ from fides.api.cryptography.cryptographic_util import (
     hash_credential_with_salt,
 )
 from fides.api.cryptography.schemas.jwt import (
+    JWE_EXPIRES_AT,
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_CONNECTIONS,
+    JWE_PAYLOAD_MONITORS,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
@@ -30,6 +32,7 @@ DEFAULT_SCOPES: list[str] = []
 DEFAULT_ROLES: list[str] = []
 DEFAULT_SYSTEMS: list[str] = []
 DEFAULT_CONNECTIONS: list[str] = []
+DEFAULT_MONITORS: list[str] = []
 
 
 class ClientDetail(Base):
@@ -47,6 +50,7 @@ class ClientDetail(Base):
     connections = Column(
         ARRAY(String), nullable=False, server_default="{}", default=dict
     )
+    monitors = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
     fides_key = Column(String, index=True, unique=True, nullable=True)
     user_id = Column(
         String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True
@@ -67,6 +71,7 @@ class ClientDetail(Base):
         roles: list[str] | None = None,
         systems: list[str] | None = None,
         connections: list[str] | None = None,
+        monitors: list[str] | None = None,
         in_memory: bool | None = False,
     ) -> tuple["ClientDetail", str]:
         """Creates a ClientDetail and returns that along with the unhashed secret
@@ -88,6 +93,9 @@ class ClientDetail(Base):
         if not connections:
             connections = DEFAULT_CONNECTIONS
 
+        if not monitors:
+            monitors = DEFAULT_MONITORS
+
         salt = generate_salt()
         hashed_secret = hash_credential_with_salt(
             secret.encode(encoding),
@@ -104,6 +112,7 @@ class ClientDetail(Base):
             "roles": roles,
             "systems": systems,
             "connections": connections,
+            "monitors": monitors,
         }
 
         if in_memory:
@@ -132,16 +141,24 @@ class ClientDetail(Base):
             return _get_root_client_detail(config, scopes=scopes, roles=roles)
         return super().get(db, object_id=object_id)
 
-    def create_access_code_jwe(self, encryption_key: str) -> str:
-        """Generates a JWE from the client detail provided"""
+    def create_access_code_jwe(
+        self, encryption_key: str, token_expire_minutes: int
+    ) -> str:
+        """Generates a JWE from the client detail provided.
+
+        Includes iat (issued-at) and exp (expires-at, Unix timestamp) for
+        server-side expiration enforcement and client-facing expiry info.
+        """
+        now = datetime.now()
         payload = {
-            # client id may not be necessary
             JWE_PAYLOAD_CLIENT_ID: self.id,
             JWE_PAYLOAD_SCOPES: self.scopes,
-            JWE_ISSUED_AT: datetime.now().isoformat(),
+            JWE_ISSUED_AT: now.isoformat(),
+            JWE_EXPIRES_AT: int(now.timestamp()) + (token_expire_minutes * 60),
             JWE_PAYLOAD_ROLES: self.roles,
             JWE_PAYLOAD_SYSTEMS: self.systems,
             JWE_PAYLOAD_CONNECTIONS: self.connections,
+            JWE_PAYLOAD_MONITORS: self.monitors,
         }
         return generate_jwe(json.dumps(payload), encryption_key)
 
@@ -176,6 +193,7 @@ def _get_root_client_detail(
             roles=roles,
             systems=[],
             connections=[],
+            monitors=[],
         )
 
     return ClientDetail(
@@ -186,4 +204,5 @@ def _get_root_client_detail(
         roles=DEFAULT_ROLES,
         systems=DEFAULT_SYSTEMS,
         connections=DEFAULT_CONNECTIONS,
+        monitors=DEFAULT_MONITORS,
     )

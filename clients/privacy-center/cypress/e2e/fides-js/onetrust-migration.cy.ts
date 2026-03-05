@@ -286,7 +286,7 @@ describe("OneTrust to Fides consent migration", () => {
         const expectedPreferences = [
           {
             privacy_notice_history_id: "pri_notice-history-essential-en-000",
-            preference: "opt_out",
+            preference: "acknowledge", // Essential (NOTICE_ONLY) is forced to true/acknowledge
           },
           {
             privacy_notice_history_id: "pri_notice-history-analytics-en-000",
@@ -331,11 +331,9 @@ describe("OneTrust to Fides consent migration", () => {
           expect(cookieKeyConsent.consent)
             .property(ADVERTISING_KEY)
             .is.eql(false);
-          // Edge case - we always match consent vals one-to-one from OT, even if it's "false" on a notice_only notice.
-          // However, the Fides UI won't let you re-save a "false" value for a notice_only notice.
-          expect(cookieKeyConsent.consent)
-            .property(ESSENTIAL_KEY)
-            .is.eql(false);
+          // NOTICE_ONLY mechanisms (like essential) are always forced to true,
+          // even when OneTrust migration provides false
+          expect(cookieKeyConsent.consent).property(ESSENTIAL_KEY).is.eql(true);
           expect(cookieKeyConsent.consent)
             .property(ANALYTICS_KEY)
             .is.eql(false);
@@ -351,7 +349,7 @@ describe("OneTrust to Fides consent migration", () => {
         .its("consent")
         .should("eql", {
           [ADVERTISING_KEY]: false,
-          [ESSENTIAL_KEY]: false,
+          [ESSENTIAL_KEY]: true, // NOTICE_ONLY always resolves to true
           [ANALYTICS_KEY]: false,
         });
     });

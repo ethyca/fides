@@ -88,7 +88,7 @@ def upload_to_s3_streaming(
 
 
 def _process_storage_secrets_input(
-    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]  # type: ignore[misc]
+    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]],  # type: ignore[misc]
 ) -> dict[str, Any]:
     """Process input and convert to string-keyed dictionary."""
     final_secrets: dict[str, Any] = {}
@@ -147,7 +147,7 @@ def _validate_aws_credentials(final_secrets: dict[str, Any]) -> None:
 
 
 def format_secrets(
-    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]]  # type: ignore[misc]
+    storage_secrets: Union[StorageSecretsS3, dict[StorageSecrets, Any]],  # type: ignore[misc]
 ) -> dict[str, Any]:
     """
     Returns the correct format for the S3StorageClient.

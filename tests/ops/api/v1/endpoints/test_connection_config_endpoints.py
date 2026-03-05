@@ -1,4 +1,5 @@
 import json
+from contextlib import asynccontextmanager
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
@@ -14,10 +15,11 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
+from fides.api.app_setup import create_fides_app
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -41,8 +43,10 @@ from fides.common.api.scope_registry import (
     STORAGE_DELETE,
 )
 from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.config import CONFIG
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import integration_secrets
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -432,9 +436,9 @@ class TestPatchConnections:
 
         assert 200 == response.status_code
 
-        assert (
-            mock_queue.called
-        ), "Disabling this last webhook caused 'requires_input' privacy requests to be queued"
+        assert mock_queue.called, (
+            "Disabling this last webhook caused 'requires_input' privacy requests to be queued"
+        )
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -672,20 +676,39 @@ class TestPatchConnections:
             "description": None,
         }
 
-    @mock.patch("fides.api.main.prepare_and_log_request")
+    @pytest.fixture
+    def analytics_enabled_client(self, monkeypatch):
+        """Create a TestClient with analytics middleware enabled."""
+        # Enable analytics before creating the app
+        monkeypatch.setattr(CONFIG.user, "analytics_opt_out", False)
+
+        @asynccontextmanager
+        async def test_lifespan(app):
+            yield
+
+        test_app = create_fides_app(lifespan=test_lifespan)
+        with TestClient(test_app) as client:
+            yield client
+
+    @mock.patch(
+        "fides.api.asgi_middleware.AnalyticsLoggingMiddleware._log_analytics",
+        new_callable=mock.AsyncMock,
+    )
     def test_patch_connections_incorrect_scope_analytics(
         self,
-        mocked_prepare_and_log_request,
-        api_client: TestClient,
+        mocked_log_analytics,
+        analytics_enabled_client: TestClient,
         generate_auth_header,
         payload,
     ) -> None:
         url = V1_URL_PREFIX + CONNECTIONS
         auth_header = generate_auth_header(scopes=[STORAGE_DELETE])
-        response = api_client.patch(url, headers=auth_header, json=payload)
+        response = analytics_enabled_client.patch(
+            url, headers=auth_header, json=payload
+        )
         assert 403 == response.status_code
-        assert mocked_prepare_and_log_request.called
-        call_args = mocked_prepare_and_log_request._mock_call_args[0]
+        assert mocked_log_analytics.called
+        call_args = mocked_log_analytics.call_args[0]
 
         assert call_args[0] == "PATCH: http://testserver/api/v1/connection"
         assert call_args[1] == "testserver"
@@ -694,11 +717,14 @@ class TestPatchConnections:
         assert call_args[4] is None
         assert call_args[5] == "HTTPException"
 
-    @mock.patch("fides.api.main.prepare_and_log_request")
+    @mock.patch(
+        "fides.api.asgi_middleware.AnalyticsLoggingMiddleware._log_analytics",
+        new_callable=mock.AsyncMock,
+    )
     def test_patch_http_connection_successful_analytics(
         self,
-        mocked_prepare_and_log_request,
-        api_client,
+        mocked_log_analytics,
+        analytics_enabled_client: TestClient,
         db: Session,
         generate_auth_header,
         url,
@@ -712,14 +738,17 @@ class TestPatchConnections:
                 "access": "read",
             }
         ]
-        response = api_client.patch(url, headers=auth_header, json=payload)
+        response = analytics_enabled_client.patch(
+            url, headers=auth_header, json=payload
+        )
         assert 200 == response.status_code
         body = json.loads(response.text)
         assert body["succeeded"][0]["connection_type"] == "https"
         http_config = ConnectionConfig.get_by(db, field="key", value="webhook_key")
         http_config.delete(db)
 
-        call_args = mocked_prepare_and_log_request._mock_call_args[0]
+        assert mocked_log_analytics.called
+        call_args = mocked_log_analytics.call_args[0]
 
         assert call_args[0] == f"PATCH: http://testserver{url}"
         assert call_args[1] == "testserver"
@@ -924,6 +953,7 @@ class TestGetConnections:
             "description",
             "authorized",
             "enabled_actions",
+            "linked_systems",
         }
 
         assert connection["key"] == "my_postgres_db_1"
@@ -935,6 +965,44 @@ class TestGetConnections:
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
+
+    def test_get_connections_linked_systems_empty(
+        self, api_client: TestClient, generate_auth_header, connection_config, url
+    ) -> None:
+        """Connection config without a linked system returns an empty list."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        connection = resp.json()["items"][0]
+        assert connection["linked_systems"] == []
+
+    def test_get_connections_linked_systems_populated(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        connection_config,
+        system_with_cleanup,
+        url,
+    ) -> None:
+        """Connection config linked to a system returns the system in linked_systems."""
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system_with_cleanup.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        connection = resp.json()["items"][0]
+        assert connection["linked_systems"] == [
+            {
+                "fides_key": system_with_cleanup.fides_key,
+                "name": system_with_cleanup.name,
+            }
+        ]
 
     def test_filter_connections_disabled_and_type(
         self,
@@ -1256,14 +1324,17 @@ class TestGetConnections:
                 "secrets": integration_secrets["postgres_example"],
                 "description": "Read-only connection config",
             }
-            data["system_id"] = system.id
-
-            configs.append(
-                ConnectionConfig.create(
-                    db=db,
-                    data=data,
-                )
+            connection = ConnectionConfig.create(
+                db=db,
+                data=data,
             )
+            SystemIntegrationLinkRepository().create_or_update_link(
+                system_id=system.id,
+                connection_config_id=connection.id,
+                session=db,
+            )
+            configs.append(connection)
+        db.commit()
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
 
         resp = api_client.get(url, headers=auth_header)
@@ -1337,6 +1408,7 @@ class TestGetConnection:
             "authorized",
             "enabled_actions",
             "system_key",
+            "linked_systems",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
@@ -1344,6 +1416,44 @@ class TestGetConnection:
         assert response_body["access"] == "write"
         assert response_body["updated_at"] is not None
         assert response_body["last_test_timestamp"] is None
+
+    def test_get_connection_detail_linked_systems_empty(
+        self, url, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        """Detail endpoint returns empty linked_systems for unlinked config."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert resp.json()["linked_systems"] == []
+
+    def test_get_connection_detail_linked_systems_populated(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+        connection_config,
+        system_with_cleanup,
+    ) -> None:
+        """Detail endpoint returns system info in linked_systems when linked."""
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system_with_cleanup.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.commit()
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["linked_systems"] == [
+            {
+                "fides_key": system_with_cleanup.fides_key,
+                "name": system_with_cleanup.name,
+            }
+        ]
+        assert body["system_key"] == system_with_cleanup.fides_key
 
 
 class TestDeleteConnection:
@@ -1432,9 +1542,9 @@ class TestDeleteConnection:
             .first()
             is None
         )
-        assert (
-            mock_queue.called
-        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        assert mock_queue.called, (
+            "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        )
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -1584,11 +1694,14 @@ class TestPutConnectionConfigSecrets:
             json.loads(resp.text)["detail"][0]["msg"]
             == "Input should be a valid integer, unable to parse string as an integer"
         )
-        assert set(resp.json()["detail"][0].keys()) == {
-            "loc",
-            "msg",
-            "type",
-        }  # Assert url, input, ctx keys have been removed to suppress sensitive information
+        assert (
+            set(resp.json()["detail"][0].keys())
+            == {
+                "loc",
+                "msg",
+                "type",
+            }
+        )  # Assert url, input, ctx keys have been removed to suppress sensitive information
 
     def test_put_connection_config_secrets(
         self,
@@ -2037,11 +2150,14 @@ class TestPutConnectionConfigSecrets:
             headers=auth_header,
             json=payload,
         )
-        assert set(resp.json()["detail"][0].keys()) == {
-            "type",
-            "loc",
-            "msg",
-        }  # url, input, and ctx have been removed to help suppress sensitive information
+        assert (
+            set(resp.json()["detail"][0].keys())
+            == {
+                "type",
+                "loc",
+                "msg",
+            }
+        )  # url, input, and ctx have been removed to help suppress sensitive information
 
     def test_put_connection_config_snowflake_secrets(
         self,
@@ -2097,7 +2213,11 @@ class TestPutConnectionConfigSecrets:
         """Note: HTTP Connection Configs don't attempt to test secrets"""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
-        payload = {"url": "example.com", "authorization": "test_authorization123"}
+        payload = {
+            "url": "example.com",
+            "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
+        }
 
         resp = api_client.put(
             url,
@@ -2115,6 +2235,7 @@ class TestPutConnectionConfigSecrets:
         assert https_connection_config.secrets == {
             "url": "example.com",
             "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
@@ -2367,7 +2488,7 @@ class TestPutConnectionConfigSecrets:
         body = json.loads(resp.text)
         assert (
             body["detail"]
-            == f"Unknown dataset 'non_existent_dataset' referenced by external reference"
+            == "Unknown dataset 'non_existent_dataset' referenced by external reference"
         )
 
         db.refresh(saas_example_connection_config)
@@ -2525,7 +2646,10 @@ class TestPatchConnectionConfigSecrets:
         """Note: HTTP Connection Configs don't attempt to test secrets"""
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
-        payload = {"authorization": "test_authorization123"}
+        payload = {
+            "authorization": "test_authorization123",
+            "headers": {"User-Agent": "fides"},
+        }
 
         resp = api_client.patch(
             url,
@@ -2542,7 +2666,8 @@ class TestPatchConnectionConfigSecrets:
         db.refresh(https_connection_config)
         assert https_connection_config.secrets == {
             "url": "http://example.com",  # original value
-            "authorization": "test_authorization123",  # new value
+            "authorization": "test_authorization123",  # new value,
+            "headers": {"User-Agent": "fides"},
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
@@ -2606,7 +2731,7 @@ class TestPutConnectionOAuthConfig:
             headers=auth_header,
             json=self.oauth_payload,
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be set for HTTPS connections"
             in response.json()["detail"]
@@ -2726,7 +2851,7 @@ class TestPatchConnectionOAuthConfig:
             headers=auth_header,
             json=self.patch_payload,
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be set for HTTPS connections"
             in response.json()["detail"]
@@ -2842,7 +2967,7 @@ class TestPatchConnectionOAuthConfig:
                 json=self.patch_payload,
             )
 
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
 
         # Verify new config was not created due to incomplete data
         db.refresh(https_connection_config)
@@ -2895,7 +3020,7 @@ class TestDeleteConnectionOAuthConfig:
         response = api_client.delete(
             self.url.format(connection_config.key), headers=auth_header
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be deleted for HTTPS connections"
             in response.json()["detail"]

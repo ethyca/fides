@@ -9,12 +9,14 @@ import { usePrivacyRequestBulkActions } from "./usePrivacyRequestBulkActions";
 const mockBulkApproveRequest = jest.fn();
 const mockBulkDenyRequest = jest.fn();
 const mockBulkSoftDeleteRequest = jest.fn();
+const mockBulkFinalizeRequest = jest.fn();
 const mockOpenDenyPrivacyRequestModal = jest.fn();
 
 jest.mock("../../privacy-requests.slice", () => ({
   useBulkApproveRequestMutation: () => [mockBulkApproveRequest],
   useBulkDenyRequestMutation: () => [mockBulkDenyRequest],
   useBulkSoftDeleteRequestMutation: () => [mockBulkSoftDeleteRequest],
+  useBulkFinalizeRequestMutation: () => [mockBulkFinalizeRequest],
 }));
 
 jest.mock("../../hooks/useDenyRequestModal", () => ({
@@ -45,6 +47,7 @@ jest.mock("fidesui", () => ({
     Checkmark: () => null,
     Close: () => null,
     TrashCan: () => null,
+    Stamp: () => null,
   },
 }));
 
@@ -63,6 +66,11 @@ describe("usePrivacyRequestBulkActions", () => {
   const completeRequest: PrivacyRequestResponse = {
     id: "3",
     status: PrivacyRequestStatus.COMPLETE,
+  } as PrivacyRequestResponse;
+
+  const requiresFinalizationRequest: PrivacyRequestResponse = {
+    id: "4",
+    status: PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
   } as PrivacyRequestResponse;
 
   const mockRequests: PrivacyRequestResponse[] = [
@@ -85,7 +93,7 @@ describe("usePrivacyRequestBulkActions", () => {
 
     const menuItems = result.current.bulkActionMenuItems;
 
-    expect(menuItems).toHaveLength(4);
+    expect(menuItems).toHaveLength(5);
     expect(menuItems[0]).toMatchObject({
       key: BulkActionType.APPROVE,
       label: "Approve",
@@ -96,11 +104,33 @@ describe("usePrivacyRequestBulkActions", () => {
       label: "Deny",
       disabled: false,
     });
-    expect(menuItems[3]).toMatchObject({
+    expect(menuItems[2]).toMatchObject({
+      key: BulkActionType.FINALIZE,
+      label: "Finalize",
+      disabled: true, // No requests in REQUIRES_MANUAL_FINALIZATION status
+    });
+    expect(menuItems[4]).toMatchObject({
       key: BulkActionType.DELETE,
       label: "Delete",
       disabled: false,
       danger: true,
+    });
+  });
+
+  it("enables finalize action when requests require manual finalization", () => {
+    const { result } = renderHook(() =>
+      usePrivacyRequestBulkActions({
+        requests: [requiresFinalizationRequest],
+        selectedIds: ["4"],
+      }),
+    );
+
+    const menuItems = result.current.bulkActionMenuItems;
+
+    expect(menuItems[2]).toMatchObject({
+      key: BulkActionType.FINALIZE,
+      label: "Finalize",
+      disabled: false,
     });
   });
 
@@ -162,7 +192,7 @@ describe("usePrivacyRequestBulkActions", () => {
         }),
       );
 
-      const deleteMenuItem = result.current.bulkActionMenuItems[3] as Extract<
+      const deleteMenuItem = result.current.bulkActionMenuItems[4] as Extract<
         MenuProps["items"],
         Array<any>
       >[number] & { onClick?: (e: any) => void };
@@ -185,6 +215,48 @@ describe("usePrivacyRequestBulkActions", () => {
 
       expect(mockBulkSoftDeleteRequest).toHaveBeenCalledWith({
         request_ids: ["1", "2"],
+      });
+    });
+
+    it("finalize: shows confirmation modal and calls API successfully", async () => {
+      mockBulkFinalizeRequest.mockResolvedValue({
+        data: {
+          succeeded: [{ id: "4" }],
+          failed: [],
+        },
+      });
+
+      const { result } = renderHook(() =>
+        usePrivacyRequestBulkActions({
+          requests: [requiresFinalizationRequest],
+          selectedIds: ["4"],
+        }),
+      );
+
+      const finalizeMenuItem = result.current.bulkActionMenuItems[2] as Extract<
+        MenuProps["items"],
+        Array<any>
+      >[number] & { onClick?: (e: any) => void };
+
+      await act(async () => {
+        finalizeMenuItem?.onClick?.({} as any);
+      });
+
+      expect(mockModalApi.confirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Finalize privacy requests",
+          content:
+            "You are about to finalize 1 privacy request. Are you sure you want to continue?",
+        }),
+      );
+
+      const confirmCall = mockModalApi.confirm.mock.calls[0][0];
+      await act(async () => {
+        await confirmCall.onOk();
+      });
+
+      expect(mockBulkFinalizeRequest).toHaveBeenCalledWith({
+        request_ids: ["4"],
       });
     });
 

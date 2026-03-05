@@ -106,7 +106,9 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
                     if self._matches(
                         self.exact,
                         self.case_sensitive,
-                        filter_value if isinstance(filter_value, list) else [filter_value],  # type: ignore
+                        filter_value
+                        if isinstance(filter_value, list)
+                        else [filter_value],  # type: ignore
                         self._get_nested_values(item, self.field),
                     )
                 ]

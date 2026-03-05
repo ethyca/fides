@@ -103,6 +103,53 @@ Defaults to `false`.
 
 ***
 
+### fides\_external\_id?
+
+> `optional` **fides\_external\_id**: `string`
+
+Provide a custom ID for the current user, to include as an `external_id`
+when saving their user consent preferences to the Fides API and the
+fides_consent cookie.
+
+This can be used to link a user's consent preferences to a saved profile on
+your site, such as a CRM ID, etc.
+
+Empty or whitespace-only values are treated as not set (same as omitting or
+undefined), consistent with [Fides.setIdentity](Fides.md#setidentity).
+
+Note that the `fides_user_device_id` is still always generated and included
+in the saved user consent preferences, to ensure that per-device
+preferences are properly stored for reporting.
+
+Defaults to `undefined`.
+
+#### Examples
+
+Set external ID at init via overrides (e.g. known before Fides loads):
+```html
+<head>
+  <script>
+    window.fides_overrides = { fides_external_id: "example-crm-id-123" };
+  </script>
+  <script src="path/to/fides.js"></script>
+</head>
+```
+
+Set external ID after init when the user logs in (see [Fides.setIdentity](Fides.md#setidentity)):
+```html
+<body>
+  <script src="path/to/fides.js"></script>
+  <script>
+    // When your app resolves the logged-in user, set their ID so consent is linked
+    function onUserLoggedIn(userId) {
+      Fides.setIdentity({ external_id: userId });
+    }
+  </script>
+</body>
+```
+
+***
+
 ### fides\_embed
 
 > **fides\_embed**: `boolean`
@@ -264,6 +311,33 @@ encodeURIComponent(JSON.stringify(otFidesMapping))
 
 To decode this field, use:
 JSON.parse(decodeURIComponent(ot_fides_mapping))
+
+Field defaults to `undefined`.
+
+***
+
+### transcend\_fides\_mapping
+
+> **transcend\_fides\_mapping**: `string`
+
+Given a Transcend → Fides notice mapping exists and the Transcend cookie exists,
+Fides will "migrate" those consents to Fides privacy notices, and write to the Fides cookie.
+
+This way, Fides customers that are migrating away from Transcend don't need to show
+their users new consent dialogues when switching to Fides.
+
+Example original transcendFidesMapping data:
+{
+   'Analytics': ['analytics_tracking'],
+   'SaleOfInfo': ['data_sales'],
+   'Advertising': ['advertising', 'targeted_ads']
+}
+
+To encode original data to the format expected by this field, use:
+encodeURIComponent(JSON.stringify(transcendFidesMapping))
+
+To decode this field, use:
+JSON.parse(decodeURIComponent(transcend_fides_mapping))
 
 Field defaults to `undefined`.
 

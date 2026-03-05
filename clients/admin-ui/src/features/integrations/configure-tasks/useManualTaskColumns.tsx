@@ -1,5 +1,7 @@
-import { Button, Flex, Icons, Typography } from "fidesui";
+import { Button, Flex, Icons } from "fidesui";
 import { useMemo } from "react";
+
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 
 import { FIELD_TYPE_LABELS, REQUEST_TYPE_LABELS } from "./constants";
 import { Task } from "./types";
@@ -23,12 +25,7 @@ export const useManualTaskColumns = ({
           showTitle: false,
         },
         render: (text: string) => (
-          <Typography.Text
-            ellipsis={{ tooltip: text }}
-            style={{ maxWidth: 200 }}
-          >
-            {text}
-          </Typography.Text>
+          <EllipsisCell style={{ maxWidth: 200 }}>{text}</EllipsisCell>
         ),
       },
       {
@@ -39,12 +36,7 @@ export const useManualTaskColumns = ({
           showTitle: false,
         },
         render: (text: string) => (
-          <Typography.Text
-            ellipsis={{ tooltip: text }}
-            style={{ maxWidth: 300 }}
-          >
-            {text}
-          </Typography.Text>
+          <EllipsisCell style={{ maxWidth: 300 }}>{text}</EllipsisCell>
         ),
       },
       {

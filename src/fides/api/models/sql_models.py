@@ -7,6 +7,7 @@ Contains all of the SqlAlchemy models for the Fides resources.
 from __future__ import annotations
 
 from enum import Enum as EnumType
+from enum import StrEnum
 from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
 from fideslang import MAPPED_PURPOSES_BY_DATA_USE
@@ -597,9 +598,9 @@ class System(Base, FidesBase):
 
     connection_configs = relationship(
         "ConnectionConfig",
-        back_populates="system",
-        cascade="all, delete",
+        secondary="system_connection_config_link",
         uselist=False,
+        viewonly=True,
         lazy="selectin",
     )
 
@@ -877,14 +878,14 @@ class ModelWithDefaultField(Protocol):
     is_default: bool
 
 
-class AllowedTypes(str, EnumType):
+class AllowedTypes(StrEnum):
     """Allowed types for custom field."""
 
     string = "string"
     string_list = "string[]"
 
 
-class ResourceTypes(str, EnumType):
+class ResourceTypes(StrEnum):
     """Resource types that can use custom fields."""
 
     system = "system"

@@ -1,8 +1,8 @@
 import os
+from pathlib import Path as LocalPath
 
 import pytest
 import toml
-from py._path.local import LocalPath
 
 from fides.config import FidesConfig
 from fides.config.create import (

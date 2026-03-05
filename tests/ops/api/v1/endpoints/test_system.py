@@ -38,6 +38,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -51,7 +52,7 @@ def url(system) -> str:
 
 @pytest.fixture(scope="function")
 def url_invalid_system() -> str:
-    return V1_URL_PREFIX + f"/system/not-a-real-system/connection"
+    return V1_URL_PREFIX + "/system/not-a-real-system/connection"
 
 
 @pytest.fixture(scope="function")
@@ -123,7 +124,7 @@ class TestPatchSystem:
         generate_auth_header,
         db: Session,
     ):
-        url = V1_URL_PREFIX + f"/system/hidden"
+        url = V1_URL_PREFIX + "/system/hidden"
         auth_header = generate_auth_header(
             scopes=[SYSTEM_UPDATE, SYSTEM_MANAGER_UPDATE]
         )
@@ -145,16 +146,26 @@ class TestPatchSystemConnections:
     def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, oauth2_authorization_code_connection_config, db: Session
     ):
-        system.connection_configs = oauth2_authorization_code_connection_config
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=oauth2_authorization_code_connection_config.id,
+            session=db,
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     @pytest.fixture(scope="function")
     def system_linked_with_oauth2_client_credentials_connection_config(
         self, system: System, oauth2_client_credentials_connection_config, db: Session
     ):
-        system.connection_configs = oauth2_client_credentials_connection_config
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=oauth2_client_credentials_connection_config.id,
+            session=db,
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     def test_patch_connections_valid_system(
@@ -364,6 +375,7 @@ class TestGetConnections:
             "description",
             "authorized",
             "enabled_actions",
+            "linked_systems",
         }
         connection_keys = [connection["key"] for connection in connections]
         assert response_body["items"][0]["key"] in connection_keys
@@ -500,8 +512,13 @@ class TestDeleteSystemConnectionConfig:
     def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, connection_config, db: Session
     ):
-        system.connection_configs = connection_config
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     def test_delete_connection_config_not_authenticated(
@@ -537,9 +554,7 @@ class TestDeleteSystemConnectionConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         # the key needs to be cached before the delete
-        key = (
-            system_linked_with_oauth2_authorization_code_connection_config.connection_configs.key
-        )
+        key = system_linked_with_oauth2_authorization_code_connection_config.connection_configs.key
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
         assert db.query(ConnectionConfig).filter_by(key=key).first() is None
@@ -559,7 +574,11 @@ class TestDeleteSystemConnectionConfig:
         """Assert both the connection config and its webhook are deleted"""
         access_manual_webhook_id = access_manual_webhook.id
         integration_manual_webhook_config_id = integration_manual_webhook_config.id
-        system.connection_configs = integration_manual_webhook_config
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=integration_manual_webhook_config.id,
+            session=db,
+        )
         db.commit()
         assert (
             db.query(AccessManualWebhook).filter_by(id=access_manual_webhook_id).first()
@@ -588,9 +607,9 @@ class TestDeleteSystemConnectionConfig:
             .first()
             is None
         )
-        assert (
-            mock_queue.called == True
-        ), "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        assert mock_queue.called == True, (
+            "Deleting this last webhook caused 'requires_input' privacy requests to be queued"
+        )
         assert (
             mock_queue.call_args.kwargs["privacy_request_id"]
             == privacy_request_requires_input.id
@@ -756,7 +775,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert resp.status_code == 404
         assert (
             resp.json()["detail"]
-            == f"SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
+            == "SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
         )
 
     def test_instance_key_already_exists(
@@ -1030,7 +1049,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert connection_config.disabled_at is None
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
-        assert connection_config.system_id is not None
+        assert connection_config.system is not None
 
         assert dataset_config.connection_config_id == connection_config.id
         assert dataset_config.ctl_dataset_id is not None
@@ -1103,7 +1122,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert connection_config.disabled_at is None
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
-        assert connection_config.system_id is not None
+        assert connection_config.system is not None
         assert connection_config.enabled_actions is None
 
         assert dataset_config.connection_config_id == connection_config.id

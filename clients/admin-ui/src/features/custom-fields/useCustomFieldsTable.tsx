@@ -1,16 +1,28 @@
-import { Button, ColumnsType, Flex, Typography } from "fidesui";
+import { Button, ColumnsType, Flex } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
 
 import { LegacyResourceTypes } from "~/features/common/custom-fields";
 import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
+import { LinkCell } from "~/features/common/table/cells/LinkCell";
+import TagCell from "~/features/common/table/cells/TagCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
-import { RESOURCE_TYPE_MAP } from "~/features/custom-fields/constants";
 import EnableCustomFieldCellV2 from "~/features/custom-fields/EnableCustomFieldCell";
 import { getCustomFieldTypeLabel } from "~/features/custom-fields/utils";
 import { useGetAllCustomFieldDefinitionsQuery } from "~/features/plus/plus.slice";
+import { useGetCustomTaxonomiesQuery } from "~/features/taxonomy/taxonomy.slice";
 import { CustomFieldDefinitionWithId, ScopeRegistryEnum } from "~/types/api";
+
+const LOCATION_LABEL_MAP = {
+  [LegacyResourceTypes.SYSTEM]: "System",
+  [LegacyResourceTypes.DATA_USE]: "Taxonomy data use",
+  [LegacyResourceTypes.DATA_CATEGORY]: "Data category",
+  [LegacyResourceTypes.DATA_SUBJECT]: "Data subject",
+  [LegacyResourceTypes.PRIVACY_DECLARATION]: "System data use",
+  "system group": "System group",
+};
 
 const useCustomFieldsTable = () => {
   const tableState = useTableState({
@@ -21,6 +33,8 @@ const useCustomFieldsTable = () => {
   const router = useRouter();
 
   const { data, isLoading } = useGetAllCustomFieldDefinitionsQuery();
+
+  const { data: customTaxonomies } = useGetCustomTaxonomiesQuery();
 
   const { tableProps } = useAntTable(tableState, {
     dataSource: data || [],
@@ -49,15 +63,16 @@ const useCustomFieldsTable = () => {
         filteredValue: tableState.searchQuery ? [tableState.searchQuery] : null,
         onFilter: (value, record) =>
           record.name.toLowerCase().includes(value.toString().toLowerCase()),
+        render: (_, { id, name }) => (
+          <LinkCell href={`${CUSTOM_FIELDS_ROUTE}/${id}`}>{name}</LinkCell>
+        ),
       },
       {
         title: "Description",
         dataIndex: "description",
         key: "description",
         render: (text: string) => (
-          <Typography.Text ellipsis={{ tooltip: text }} className="w-96">
-            {text}
-          </Typography.Text>
+          <EllipsisCell className="w-96">{text}</EllipsisCell>
         ),
         width: 384,
       },
@@ -65,15 +80,30 @@ const useCustomFieldsTable = () => {
         title: "Type",
         dataIndex: "field_type",
         key: "field_type",
-        render: (_: any, record: CustomFieldDefinitionWithId) =>
-          getCustomFieldTypeLabel(record),
+        render: (_, record) => {
+          const customTaxonomy = customTaxonomies?.find(
+            (taxonomy) => taxonomy.fides_key === record.field_type,
+          );
+          const label = customTaxonomy?.name ?? getCustomFieldTypeLabel(record);
+          return <TagCell value={label} />;
+        },
       },
       {
         title: "Applies to",
         dataIndex: "resource_type",
         key: "resource_type",
-        render: (value: LegacyResourceTypes) =>
-          RESOURCE_TYPE_MAP.get(value) || value,
+        render: (_, { resource_type }) => {
+          let label: string;
+          if (resource_type in LOCATION_LABEL_MAP) {
+            label = LOCATION_LABEL_MAP[resource_type as LegacyResourceTypes];
+          } else {
+            label =
+              customTaxonomies?.find(
+                (taxonomy) => taxonomy.fides_key === resource_type,
+              )?.name ?? resource_type;
+          }
+          return <TagCell value={label} />;
+        },
       },
       {
         title: "Enabled",
@@ -103,7 +133,13 @@ const useCustomFieldsTable = () => {
         width: 96,
       },
     ],
-    [router, showActions, tableState.searchQuery, userCanUpdate],
+    [
+      customTaxonomies,
+      router,
+      showActions,
+      tableState.searchQuery,
+      userCanUpdate,
+    ],
   );
 
   return {

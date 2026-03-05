@@ -93,10 +93,18 @@ export const useFieldActions = (
       const result = await mutationFn(urns, field);
 
       if (isErrorResult(result)) {
+        /** Our error messages are bad. * */
+        const errorReason =
+          "error" in result &&
+          "status" in result.error &&
+          result.error.status === 403
+            ? "insufficient permissions to perform action"
+            : "";
+
         messageApi.open({
           key,
           type: "error",
-          content: getActionErrorMessage(actionType),
+          content: getActionErrorMessage(errorReason),
           duration: 5,
         });
         return;

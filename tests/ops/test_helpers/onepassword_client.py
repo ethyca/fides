@@ -162,5 +162,5 @@ async def get_secrets_by_title(title: str) -> Dict[str, Any]:
         if field_title and field_value:
             secrets_map[field_title] = field_value
 
-    logger.info(f'Loading secrets for {title}: {", ".join(secrets_map.keys())}')
+    logger.info(f"Loading secrets for {title}: {', '.join(secrets_map.keys())}")
     return secrets_map

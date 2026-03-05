@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { CursorPaginationQueryParams } from "~/features/common/pagination";
 import {
   buildArrayQueryParams,
   getQueryParamsFromArray,
@@ -8,7 +9,6 @@ import {
   ConsentStatus,
   DiffStatus,
   MonitorConfig,
-  MonitorTaskInProgressResponse,
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
@@ -19,11 +19,12 @@ import {
 } from "~/types/api";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
+import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
 import { DatastoreMonitorResourcesDynamicFilters } from "~/types/api/models/DatastoreMonitorResourcesDynamicFilters";
 import { DatastoreStagedResourceTreeAPIResponse } from "~/types/api/models/DatastoreStagedResourceTreeAPIResponse";
 import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 import { MonitorActionResponse } from "~/types/api/models/MonitorActionResponse";
-import { Page_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/Page_DatastoreStagedResourceTreeAPIResponse_";
+import { MonitorTaskInProgressResponse } from "~/types/api/models/MonitorTaskInProgressResponse";
 import {
   PaginatedResponse,
   PaginationQueryParams,
@@ -58,9 +59,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       SearchQueryParams &
         PaginationQueryParams & {
           monitor_type?: MONITOR_TYPES[]; // defaults to all monitor types if not provided
+          steward_user_id?: string[];
         }
     >({
-      query: ({ page = 1, size = 20, search, monitor_type }) => {
+      query: ({
+        page = 1,
+        size = 20,
+        search,
+        monitor_type,
+        steward_user_id,
+      }) => {
         const params: SearchQueryParams &
           PaginationQueryParams & { diff_status: string } = {
           page,
@@ -68,9 +76,9 @@ const actionCenterApi = baseApi.injectEndpoints({
           search,
           diff_status: "addition",
         };
-
         const urlParams = buildArrayQueryParams({
           monitor_type,
+          steward_user_id,
         });
 
         return {
@@ -112,28 +120,39 @@ const actionCenterApi = baseApi.injectEndpoints({
       query: ({ monitor_config_id, staged_resource_urn }) => ({
         url: `/plus/filters/datastore_monitor_resources?monitor_config_id=${monitor_config_id}&${getQueryParamsFromArray(staged_resource_urn, "staged_resource_urn")}`,
       }),
+      providesTags: ["Datastore Filters"],
     }),
 
     getMonitorTree: build.query<
-      Page_DatastoreStagedResourceTreeAPIResponse_,
-      Partial<PaginationQueryParams> & {
+      CursorPage_DatastoreStagedResourceTreeAPIResponse_,
+      Partial<CursorPaginationQueryParams> & {
         monitor_config_id: string;
         staged_resource_urn?: string;
         include_descendant_details?: boolean;
+        diff_status?: DiffStatus[];
       }
     >({
       query: ({
-        page = 1,
+        cursor,
         size = 20,
         monitor_config_id,
         staged_resource_urn,
         include_descendant_details,
-      }) => ({
-        url: `/plus/discovery-monitor/${monitor_config_id}/tree`,
-        params: { staged_resource_urn, include_descendant_details, page, size },
-      }),
-    }),
+        diff_status,
+      }) => {
+        const urlParams = buildArrayQueryParams({ diff_status });
 
+        return {
+          url: `/plus/discovery-monitor/${monitor_config_id}/tree?${urlParams}`,
+          params: {
+            staged_resource_urn,
+            include_descendant_details,
+            cursor,
+            size,
+          },
+        };
+      },
+    }),
     getMonitorTreeAncestorsStatuses: build.query<
       Array<DatastoreStagedResourceTreeAPIResponse>,
       {
@@ -465,6 +484,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           task_types?: string[];
           statuses?: ExecutionLogStatus[];
           return_dismissed?: boolean;
+          monitor_config_key?: string;
         }
     >({
       query: ({
@@ -474,6 +494,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         task_types,
         statuses,
         return_dismissed = false,
+        monitor_config_key,
       }) => {
         const params = new URLSearchParams({
           page: page.toString(),
@@ -491,6 +512,10 @@ const actionCenterApi = baseApi.injectEndpoints({
 
         if (statuses?.length) {
           statuses.forEach((status) => params.append("status", status));
+        }
+
+        if (monitor_config_key) {
+          params.append("monitor_config_key", monitor_config_key);
         }
 
         return {

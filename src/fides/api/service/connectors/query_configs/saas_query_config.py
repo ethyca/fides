@@ -191,7 +191,7 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         for param_value in read_request.param_values or []:
             if param_value.unpack:
                 value = param_value.name
-                input_data[value] = pydash.flatten(input_data.get(value))
+                input_data[value] = pydash.flatten(input_data.get(value) or [])
 
         param_value_maps = []
         # we want to preserve the grouped_input relationships so we take each
@@ -466,7 +466,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, self.current_request, param_values  # type: ignore
+            self.action,  # type: ignore[arg-type]
+            self.collection_name,
+            self.current_request,
+            param_values,  # type: ignore
         )
 
         logger.debug("Populated request params for {}", self.current_request.path)
@@ -597,7 +600,10 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map param values to placeholders in path, headers, and query params
         saas_request_params: SaaSRequestParams = saas_util.map_param_values(
-            self.action, self.collection_name, update_request, param_values  # type: ignore
+            self.action,  # type: ignore[arg-type]
+            self.collection_name,
+            update_request,
+            param_values,  # type: ignore
         )
 
         logger.debug("Populated request params for {}", update_request.path)

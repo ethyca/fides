@@ -1,17 +1,17 @@
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String, func, orm
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Index, String, func, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
-from fides.api.models.attachment import Attachment, AttachmentReferenceType
+from fides.api.models.attachment import AttachmentReferenceType
+from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
-    from fides.api.models.attachment import AttachmentReference
+    from fides.api.models.attachment import Attachment, AttachmentReference
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
 
@@ -21,7 +21,7 @@ class CommentType(str, EnumType):
     Enum for comment types. Indicates comment usage.
 
     - notes are internal comments.
-    - reply comments are public and may cause an email or other communciation to be sent
+    - reply is reserved for future use and is not currently supported
     """
 
     note = "note"
@@ -127,9 +127,9 @@ class Comment(Base):
 
     def delete(self, db: Session) -> None:
         """Delete the comment and all associated references."""
-        # Delete the comment
-        Attachment.delete_attachments_for_reference_and_type(
-            db, self.id, AttachmentReferenceType.comment
+        # Delete attachments associated with this comment
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.comment
         )
         for reference in self.references:
             reference.delete(db)

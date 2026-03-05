@@ -63,7 +63,8 @@ class PollingSubRequestHandler:
         completed_sub_requests = [
             sub_request
             for sub_request in all_sub_requests
-            if sub_request.status == ExecutionLogStatus.complete.value
+            if sub_request.status
+            in [ExecutionLogStatus.complete.value, ExecutionLogStatus.skipped.value]
         ]
         failed_sub_requests = [
             sub_request
@@ -75,7 +76,7 @@ class PollingSubRequestHandler:
             len(completed_sub_requests) == len(all_sub_requests)
             and len(all_sub_requests) > 0
         ):
-            # All sub-requests completed successfully - aggregate results
+            # All sub-requests completed successfully (or skipped) - aggregate results
             logger.info(
                 f"All sub-requests completed successfully for task {polling_task.id}"
             )
@@ -105,7 +106,10 @@ class PollingSubRequestHandler:
         timed_out_sub_requests = []
 
         for sub_request in polling_task.sub_requests:
-            if sub_request.status != ExecutionLogStatus.complete.value:
+            if sub_request.status not in [
+                ExecutionLogStatus.complete.value,
+                ExecutionLogStatus.skipped.value,
+            ]:
                 # Check if this sub-request has timed out
                 if sub_request.created_at:
                     timeout_threshold = sub_request.created_at + timedelta(

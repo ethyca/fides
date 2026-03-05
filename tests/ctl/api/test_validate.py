@@ -86,9 +86,9 @@ EXTERNAL_FAILURE_CONFIG_BODY = {
     },
 }
 
-EXTERNAL_FAILURE_CONFIG_BODY["bigquery"]["keyfile_creds"][
-    "project_id"
-] = "INVALID_PROJECT_ID"
+EXTERNAL_FAILURE_CONFIG_BODY["bigquery"]["keyfile_creds"]["project_id"] = (
+    "INVALID_PROJECT_ID"
+)
 
 EXPECTED_FAILURE_MESSAGES = {
     "aws": "Authentication failed validating config. The security token included in the request is invalid.",

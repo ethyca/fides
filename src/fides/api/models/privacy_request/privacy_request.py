@@ -37,8 +37,10 @@ from fides.api.cryptography.cryptographic_util import (
     hash_value_with_salt,
 )
 from fides.api.cryptography.identity_salt import get_identity_salt
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
+from fides.api.db.base_class import (
+    Base,  # type: ignore[attr-defined]
+    JSONTypeOverride,
+)
 from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -60,7 +62,6 @@ from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskInstance,
 )
@@ -116,7 +117,7 @@ from fides.api.util.cache import (
     get_encryption_cache_key,
     get_identity_cache_key,
 )
-from fides.api.util.collection_util import Row, extract_key_for_address
+from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
 from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomatonMixin
@@ -124,6 +125,7 @@ from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.config import CONFIG
+from fides.service.attachment_service import AttachmentService
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.consent import (  # type: ignore[attr-defined]
@@ -468,7 +470,11 @@ class PrivacyRequest(
             "paused_at": self.paused_at.isoformat() if self.paused_at else None,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "days_left": self.days_left,
-            "custom_fields": self.get_persisted_custom_privacy_request_fields() if self.custom_fields else None,  # type: ignore[attr-defined]
+            "custom_fields": (
+                self.get_persisted_custom_privacy_request_fields()
+                if self.custom_fields  # type: ignore[attr-defined]
+                else None
+            ),
             "location": self.location,
         }
 
@@ -489,8 +495,8 @@ class PrivacyRequest(
         """
         self.clear_cached_values()
         self.cleanup_external_storage()
-        Attachment.delete_attachments_for_reference_and_type(
-            db, self.id, AttachmentReferenceType.privacy_request
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.privacy_request
         )
         Comment.delete_comments_for_reference_and_type(
             db, self.id, CommentReferenceType.privacy_request
@@ -557,6 +563,9 @@ class PrivacyRequest(
         """
         Stores the identity provided with the privacy request in a secure way, compatible with
         blind indexing for later searching and audit purposes.
+
+        If an identity field with the same field_name already exists for this privacy request,
+        it will be replaced with the new value to prevent duplicate records.
         """
 
         if isinstance(identity, dict):
@@ -575,6 +584,19 @@ class PrivacyRequest(
                         )
                 else:
                     label = None
+
+                # Delete any existing ProvidedIdentity records with the same field_name
+                # to prevent duplicates and ensure the latest value is used
+                existing_identities = (
+                    db.query(ProvidedIdentity)
+                    .filter(
+                        ProvidedIdentity.privacy_request_id == self.id,
+                        ProvidedIdentity.field_name == key,
+                    )
+                    .all()
+                )
+                for existing in existing_identities:
+                    existing.delete(db=db)
 
                 hashed_value = ProvidedIdentity.hash_value(value)
                 provided_identity_data = {
@@ -739,7 +761,7 @@ class PrivacyRequest(
         """Returns the prefix and cache keys for the identity data for this request"""
         prefix = f"id-{self.id}-identity-*"
         cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
+        keys = cache.get_keys_by_prefix(f"id-{self.id}-identity-")
         return prefix, cache, keys
 
     def verify_cache_for_identity_data(self) -> bool:
@@ -756,7 +778,7 @@ class PrivacyRequest(
             logger.debug(f"Cache miss for request {self.id}, falling back to DB")
             identity = self.get_persisted_identity()
             self.cache_identity(identity)
-            keys = cache.keys(prefix)
+            keys = cache.get_keys_by_prefix(f"id-{self.id}-identity-")
 
         for key in keys:
             value = cache.get(key)
@@ -776,10 +798,10 @@ class PrivacyRequest(
     def get_cached_custom_privacy_request_fields(self) -> Dict[str, Any]:
         """Retrieves any custom fields pertaining to this request from the cache"""
         result: Dict[str, Any] = {}
-        prefix = f"id-{self.id}-custom-privacy-request-field-*"
+        prefix = f"id-{self.id}-custom-privacy-request-field-"
 
         cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
+        keys = cache.get_keys_by_prefix(prefix)
 
         if not keys:
             logger.debug(f"Cache miss for request {self.id}, falling back to DB")
@@ -792,21 +814,13 @@ class PrivacyRequest(
                     for key, value in custom_privacy_request_fields.items()
                 }
             )
-            keys = cache.keys(prefix)
+            keys = cache.get_keys_by_prefix(prefix)
 
         for key in keys:
             value = cache.get(key)
             if value:
                 result[key.split("-")[-1]] = json.loads(value)
         return result
-
-    def get_results(self) -> Dict[str, Any]:
-        """Retrieves all cached identity data associated with this Privacy Request
-        Just used in testing
-        """
-        cache: FidesopsRedis = get_cache()
-        result_prefix = f"{self.id}__*"
-        return cache.get_encoded_objects_by_prefix(result_prefix)
 
     def cache_email_connector_template_contents(
         self,
@@ -1321,7 +1335,7 @@ class PrivacyRequest(
         """Delete the attachment associated with the privacy request"""
         attachment = self.get_attachment_by_id(db, attachment_id)
         if attachment:
-            attachment.delete(db)
+            AttachmentService(db).delete(attachment)
 
     def _get_manual_webhook_attachments(
         self, db: Session, manual_webhook_id: str, reference_type: str
@@ -1375,6 +1389,9 @@ class PrivacyRequest(
             ActionType.erasure: bool(
                 self.policy.get_rules_for_action(action_type=ActionType.erasure)
             ),
+            ActionType.consent: bool(
+                self.policy.get_rules_for_action(action_type=ActionType.consent)
+            ),
         }
 
         if not any(policy_rules.values()):
@@ -1382,13 +1399,7 @@ class PrivacyRequest(
 
         # Build configuration types using list comprehension
         config_types = [
-            (
-                ManualTaskConfigurationType.access_privacy_request
-                if action_type == ActionType.access
-                else ManualTaskConfigurationType.erasure_privacy_request
-            )
-            for action_type, has_rules in policy_rules.items()
-            if has_rules
+            action_type for action_type, has_rules in policy_rules.items() if has_rules
         ]
 
         # Get all relevant manual tasks and configs in one query
@@ -1489,51 +1500,38 @@ class PrivacyRequest(
 
         These shouldn't be returned to the user - they are not filtered by data category
         """
-        # For DSR 3.0, pull these off of the RequestTask.access_data fields
-        if self.access_tasks.count():
-            final_results: Dict = {}
-            for task in self.access_tasks.filter(
-                RequestTask.status == PrivacyRequestStatus.complete,
-                RequestTask.collection_address.notin_(
-                    [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
-                ),
+        final_results: Dict = {}
+        for task in self.access_tasks.filter(
+            RequestTask.status == PrivacyRequestStatus.complete,
+            RequestTask.collection_address.notin_(
+                [ROOT_COLLECTION_ADDRESS.value, TERMINATOR_ADDRESS.value]
+            ),
+        ):
+            if (
+                task.collection
+                and task.collection.get("property_scope") == "traversal_only"
             ):
-                final_results[task.collection_address] = task.get_access_data()
+                continue
+            final_results[task.collection_address] = task.get_access_data()
 
-            return final_results
-
-        # TODO Remove when we stop support for DSR 2.0
-        # We will no longer be pulling access results from the cache, but off of Request Tasks instead
-        cache: FidesopsRedis = get_cache()
-        value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__access_request")
-        # extract request id to return a map of address:value
-        number_of_leading_strings_to_exclude = 2
-        return {
-            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
-            for k, v in value_dict.items()
-        }
+        return final_results
 
     def get_raw_masking_counts(self) -> Dict[str, int]:
         """For parity, return the rows masked for an erasure request
 
         This is largely just used for testing
         """
-        if self.erasure_tasks.count():
-            # For DSR 3.0
-            return {
-                t.collection_address: t.rows_masked
-                for t in self.erasure_tasks.filter(
-                    RequestTask.status.in_(COMPLETED_EXECUTION_LOG_STATUSES)
-                )
-                if not t.is_root_task and not t.is_terminator_task
-            }
-
-        # TODO Remove when we stop support for DSR 2.0
-        cache: FidesopsRedis = get_cache()
-        value_dict = cache.get_encoded_objects_by_prefix(f"{self.id}__erasure_request")
-        # extract request id to return a map of address:value
-        number_of_leading_strings_to_exclude = 2
-        return {extract_key_for_address(k, number_of_leading_strings_to_exclude): v for k, v in value_dict.items()}  # type: ignore
+        # Defer large columns since we only need metadata (collection_address, rows_masked, status)
+        tasks_query = RequestTask.query_with_deferred_data(
+            self.erasure_tasks.filter(
+                RequestTask.status.in_(COMPLETED_EXECUTION_LOG_STATUSES)
+            )
+        )
+        return {
+            t.collection_address: t.rows_masked
+            for t in tasks_query
+            if not t.is_root_task and not t.is_terminator_task
+        }
 
     def get_consent_results(self) -> Dict[str, int]:
         """For parity, return whether a consent request was sent for third
@@ -1541,17 +1539,17 @@ class PrivacyRequest(
 
         This is largely just used for testing
         """
-        if self.consent_tasks.count():
-            # For DSR 3.0
-            return {
-                t.collection_address: t.consent_sent
-                for t in self.consent_tasks.filter(
-                    RequestTask.status.in_(EXITED_EXECUTION_LOG_STATUSES)
-                )
-                if not t.is_root_task and not t.is_terminator_task
-            }
-        # DSR 2.0 does not cache the results so nothing to do here
-        return {}
+        # Defer large columns since we only need metadata (collection_address, consent_sent, status)
+        tasks_query = RequestTask.query_with_deferred_data(
+            self.consent_tasks.filter(
+                RequestTask.status.in_(EXITED_EXECUTION_LOG_STATUSES)
+            )
+        )
+        return {
+            t.collection_address: t.consent_sent
+            for t in tasks_query
+            if not t.is_root_task and not t.is_terminator_task
+        }
 
     def cleanup_external_storage(self) -> None:
         """Clean up all external storage files for this privacy request"""

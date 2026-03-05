@@ -33,6 +33,7 @@ custom Fides events for real-time updates.
 ## Interfaces
 
 - [FidesEvent](interfaces/FidesEvent.md)
+- [FidesLocaleEvent](interfaces/FidesLocaleEvent.md)
 - [FidesExperienceConfig](interfaces/FidesExperienceConfig.md)
 - [FidesOptions](interfaces/FidesOptions.md)
 - [Fides](interfaces/Fides.md)

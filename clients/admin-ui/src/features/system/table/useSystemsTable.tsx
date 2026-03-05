@@ -4,7 +4,6 @@ import {
   Flex,
   FlexProps,
   Icons,
-  Typography,
   useMessage,
 } from "fidesui";
 import { uniq } from "lodash";
@@ -16,9 +15,10 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ListExpandableCell } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
-import { convertToAntFilters } from "~/features/common/utils";
+import { convertToAntFilters, formatUser } from "~/features/common/utils";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   useDeleteSystemMutation,
@@ -101,6 +101,7 @@ const useSystemsTable = () => {
 
   const {
     data: systemsResponse,
+    error,
     isLoading,
     isFetching,
   } = useGetSystemsQuery({
@@ -306,16 +307,25 @@ const useSystemsTable = () => {
         title: "Data stewards",
         dataIndex: "data_stewards",
         key: SystemColumnKeys.DATA_STEWARDS,
-        render: (dataStewards: string[] | null) => (
+        render: (_, { data_stewards }) => (
           <ListExpandableCell
-            values={dataStewards ?? []}
+            values={
+              data_stewards?.map((data_steward) => formatUser(data_steward)) ??
+              []
+            }
             valueSuffix="users"
             containerProps={{ className: "min-w-36" }}
           />
         ),
         width: 200,
         filters: convertToAntFilters(
-          allUsers?.items?.map((user) => user.username),
+          allUsers?.items?.map(({ username }) => username),
+          (username) =>
+            formatUser(
+              allUsers?.items?.find((u) => u.username === username) ?? {
+                username,
+              },
+            ),
         ),
         filteredValue: columnFilters?.data_stewards || null,
       },
@@ -325,9 +335,7 @@ const useSystemsTable = () => {
         key: SystemColumnKeys.DESCRIPTION,
         render: (description: string | null) => (
           <div className="max-w-96">
-            <Typography.Text ellipsis={{ tooltip: description }}>
-              {description}
-            </Typography.Text>
+            <EllipsisCell>{description}</EllipsisCell>
           </div>
         ),
         ellipsis: true,
@@ -385,6 +393,7 @@ const useSystemsTable = () => {
     tableProps,
     selectionProps,
     columns,
+    error,
     // search
     searchQuery,
     updateSearch,

@@ -9,7 +9,7 @@ import {
 } from "preact/hooks";
 
 import { FidesEvent } from "../../docs/fides-event";
-import { getConsentContext } from "../../lib/consent-context";
+import { getGpcContext } from "../../lib/consent-context";
 import {
   AssetType,
   ConsentMechanism,
@@ -196,7 +196,7 @@ const NoticeOverlay = () => {
   const noticeToggles: NoticeToggleProps[] = privacyNoticeItems.map((item) => {
     const checked =
       draftEnabledNoticeKeys.indexOf(item.notice.notice_key) !== -1;
-    const consentContext = getConsentContext();
+    const consentContext = getGpcContext();
     const gpcStatus = getGpcStatusFromNotice({
       value: checked,
       notice: item.notice,
@@ -448,7 +448,7 @@ const NoticeOverlay = () => {
       }) => {
         const layer1ButtonOption =
           experience.experience_config?.layer1_button_options;
-        const consentContext = getConsentContext();
+        const consentContext = getGpcContext();
         const isGpcConditional =
           layer1ButtonOption === Layer1ButtonOption.GPC_CONDITIONAL;
         const isAcknowledge =

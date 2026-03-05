@@ -40,9 +40,8 @@ import {
   DEFAULT_LOCALE,
   extractDefaultLocaleFromExperience,
   selectBestExperienceConfigTranslation,
-  selectBestNoticeTranslation,
 } from "./i18n";
-import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
+import { buildConsentPreferencesArray } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
 
 const EXTERNAL_CONSENT_METHODS = [
@@ -54,7 +53,7 @@ const EXTERNAL_CONSENT_METHODS = [
 /**
  * Helper function to transform save prefs and call API
  */
-async function savePreferencesApi(
+export async function savePreferencesApi(
   options: FidesInitOptions,
   cookie: FidesCookie,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
@@ -271,7 +270,7 @@ const validateConsent = (
       isNoticeOnly &&
       value !== true &&
       value !== UserConsentPreference.ACKNOWLEDGE &&
-      consentMethod !== ConsentMethod.EXTERNAL_PROVIDER
+      !window?.FidesPreview
     ) {
       return new Error(
         `Invalid consent value for notice-only notice key: '${key}'. Must be \`true\` or "acknowledge"`,
@@ -423,39 +422,15 @@ export const updateConsent = async (
     finalConsent = { ...cookie.consent, ...noticeConsent };
   }
 
-  // Prepare consentPreferencesToSave by mapping from finalConsent
-  const consentPreferencesToSave: SaveConsentPreference[] = [];
-
-  Object.entries(finalConsent).forEach(([key, value]) => {
-    const notice = privacyNotices?.find((n) => n.notice_key === key);
-    // non-applicable privacy notices are ignored
-    if (notice) {
-      const bestNoticeTranslation = selectBestNoticeTranslation(
-        locale,
-        defaultLocale,
-        notice,
-      );
-      const historyId = bestNoticeTranslation?.privacy_notice_history_id;
-      let consentPreference: UserConsentPreference;
-      if (typeof value === "boolean") {
-        consentPreference = transformConsentToFidesUserPreference(
-          value,
-          notice.consent_mechanism,
-        );
-      } else {
-        consentPreference = value;
-      }
-
-      if (historyId) {
-        const savedConsentPreference = new SaveConsentPreference(
-          notice,
-          consentPreference,
-          historyId,
-        );
-        consentPreferencesToSave.push(savedConsentPreference);
-      }
-    }
-  });
+  // Prepare consentPreferencesToSave using shared utility
+  // Filter to only include notices that exist in privacyNotices (non-applicable are ignored)
+  const consentPreferencesToSave = buildConsentPreferencesArray(
+    finalConsent,
+    privacyNotices || [],
+    locale,
+    defaultLocale,
+    true, // Return full SaveConsentPreference objects
+  );
 
   // Get privacy_experience_config_history_id from experience config translations
   let configHistoryId: string | undefined;

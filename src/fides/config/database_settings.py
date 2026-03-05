@@ -56,6 +56,8 @@ class DatabaseSettings(FidesSettings):
     )
 
     # Async Engine Settings
+    # Note: We purposely do not include async engine equivalents of the sync engine's
+    # keepalives_* settings as they are not supported by asyncpg.
     api_async_engine_pool_size: int = Field(
         default=5,
         description="Number of concurrent database connections Fides will use for async API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
@@ -63,18 +65,6 @@ class DatabaseSettings(FidesSettings):
     api_async_engine_max_overflow: int = Field(
         default=10,
         description="Number of additional 'overflow' concurrent database connections Fides will use for async API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
-    )
-    api_async_engine_keepalives_idle: Optional[int] = Field(
-        default=None,
-        description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
-    )
-    api_async_engine_keepalives_interval: Optional[int] = Field(
-        default=None,
-        description="Number of seconds between TCP keepalive retries if the initial keepalive packet receives no response. These are client-side retries.",
-    )
-    api_async_engine_keepalives_count: Optional[int] = Field(
-        default=None,
-        description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
     api_async_engine_pool_pre_ping: bool = Field(
         default=True,
@@ -197,14 +187,31 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created asynchronous connection string for the read-only application database.",
         exclude=True,
     )
-
-    @field_validator("password", mode="before")
-    @classmethod
-    def escape_password(cls, value: Optional[str]) -> Optional[str]:
-        """Escape password"""
-        if value and isinstance(value, str):
-            return quote_plus(value)
-        return value
+    async_readonly_database_pool_size: int = Field(
+        default=5,
+        description="Number of concurrent database connections Fides will use for read-only API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
+    )
+    async_readonly_database_max_overflow: int = Field(
+        default=10,
+        description="Number of additional 'overflow' concurrent database connections Fides will use for read-only API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
+    )
+    async_readonly_database_pre_ping: bool = Field(
+        default=True,
+        description="If true, the async engine will pre-ping connections to ensure they are still valid before using them.",
+    )
+    async_readonly_database_pool_skip_rollback: bool = Field(
+        default=False,
+        description="If true, the async engine will skip rolling back connections when they are returned to the pool.",
+    )
+    async_readonly_database_autocommit: bool = Field(
+        default=False,
+        description="If true, the async engine will autocommit transactions. This should effectively be a no-op because it's a readonly database.",
+    )
+    async_readonly_database_prewarm: bool = Field(
+        default=False,
+        description="Whether to warm the asynchronous read-only database pool on startup - this will cause the pool to open all possible connections on startup so make sure your database can handle the load.",
+        exclude=True,
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -221,9 +228,10 @@ class DatabaseSettings(FidesSettings):
             # Fall back to primary password if readonly_password not provided
             if values.get("readonly_password") is None:
                 values["readonly_password"] = values.get("password")
+
             # If readonly_password was provided directly, escape it
             elif isinstance(values.get("readonly_password"), str):
-                values["readonly_password"] = quote_plus(values["readonly_password"])
+                values["readonly_password"] = values["readonly_password"]
 
             # Fall back to primary port if readonly_port not provided
             if values.get("readonly_port") is None:
@@ -238,6 +246,14 @@ class DatabaseSettings(FidesSettings):
                 values["readonly_params"] = values.get("params", {})
 
         return values
+
+    @field_validator("password", "readonly_password", mode="before")
+    @classmethod
+    def escape_password(cls, value: Optional[str]) -> Optional[str]:
+        """Escape password"""
+        if value and isinstance(value, str):
+            return quote_plus(value)
+        return value
 
     @field_validator("sync_database_uri", mode="before")
     @classmethod

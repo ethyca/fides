@@ -9,7 +9,9 @@ import {
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -24,8 +26,11 @@ const Profile = () => {
   } else {
     profileId = "";
   }
-  const { data: existingUser, isLoading: isLoadingUser } =
-    useGetUserByIdQuery(profileId);
+  const {
+    data: existingUser,
+    isLoading: isLoadingUser,
+    error,
+  } = useGetUserByIdQuery(profileId);
 
   // Must have edit user permission or be the user's profile
   const loggedInUser = useAppSelector(selectUser);
@@ -46,6 +51,21 @@ const Profile = () => {
       router.push("/");
     }
   }, [router, canAccess, existingUser]);
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching the user profile"
+        actions={[
+          {
+            label: "Return to users",
+            onClick: () => router.push(USER_MANAGEMENT_ROUTE),
+          },
+        ]}
+      />
+    );
+  }
 
   return (
     <Layout title="Users - Edit a user">

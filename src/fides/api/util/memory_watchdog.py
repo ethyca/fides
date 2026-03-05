@@ -246,9 +246,7 @@ class MemoryWatchdog:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
-    def _signal_handler(
-        self, signum: int, frame: Optional[FrameType]
-    ) -> None:  # noqa: D401 – Celery uses signal handlers
+    def _signal_handler(self, signum: int, frame: Optional[FrameType]) -> None:  # noqa: D401 – Celery uses signal handlers
         """Convert the signal into an exception on the main thread."""
         current_percent = _system_memory_percent()
         logger.error("Memory limit exceeded: {}%", current_percent)

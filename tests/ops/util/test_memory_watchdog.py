@@ -37,9 +37,9 @@ class TestGetMemoryWatchdogEnabled:
 
         # Verify default setting without any configuration
         result = get_memory_watchdog_enabled()
-        assert (
-            result is False
-        ), "Memory watchdog should default to False for backward compatibility"
+        assert result is False, (
+            "Memory watchdog should default to False for backward compatibility"
+        )
 
     def test_enabled_when_config_is_true(self, db):
         """Test that get_memory_watchdog_enabled returns True when configured."""
@@ -51,9 +51,9 @@ class TestGetMemoryWatchdogEnabled:
         db.commit()
 
         result = get_memory_watchdog_enabled()
-        assert (
-            result is True
-        ), "Should return True when memory_watchdog_enabled is configured as True"
+        assert result is True, (
+            "Should return True when memory_watchdog_enabled is configured as True"
+        )
 
     def test_disabled_when_config_is_false(self, db):
         """Test that get_memory_watchdog_enabled returns False when explicitly disabled."""
@@ -65,9 +65,9 @@ class TestGetMemoryWatchdogEnabled:
         db.commit()
 
         result = get_memory_watchdog_enabled()
-        assert (
-            result is False
-        ), "Should return False when memory_watchdog_enabled is configured as False"
+        assert result is False, (
+            "Should return False when memory_watchdog_enabled is configured as False"
+        )
 
     def test_exception_handling_returns_false(self):
         """Test that exceptions in config access return False (default)."""
@@ -86,14 +86,14 @@ class TestMemoryWatchdog:
         watchdog = MemoryWatchdog()
 
         assert watchdog.threshold == 90, "Default threshold should be 90%"
-        assert (
-            watchdog.check_interval == 0.5
-        ), "Default check interval should be 0.5 seconds"
+        assert watchdog.check_interval == 0.5, (
+            "Default check interval should be 0.5 seconds"
+        )
         assert watchdog.grace_period == 0, "Default grace period should be 0"
         assert watchdog._thread is None, "Thread should be None before starting"
-        assert (
-            not watchdog._monitoring.is_set()
-        ), "Monitoring event should not be set initially"
+        assert not watchdog._monitoring.is_set(), (
+            "Monitoring event should not be set initially"
+        )
 
     def test_initialization_custom_values(self):
         """Test MemoryWatchdog initializes with custom values."""
@@ -134,15 +134,15 @@ class TestMemoryWatchdog:
             watchdog = MemoryWatchdog(check_interval=0.1)
 
             with watchdog:
-                assert (
-                    watchdog._monitoring.is_set()
-                ), "Should start monitoring in context"
+                assert watchdog._monitoring.is_set(), (
+                    "Should start monitoring in context"
+                )
                 assert watchdog._thread is not None, "Thread should exist in context"
 
             time.sleep(0.2)  # Give thread time to stop
-            assert (
-                not watchdog._monitoring.is_set()
-            ), "Should stop monitoring after context"
+            assert not watchdog._monitoring.is_set(), (
+                "Should stop monitoring after context"
+            )
 
     @patch("fides.api.util.memory_watchdog.os.kill")
     @patch("fides.api.util.memory_watchdog._system_memory_percent")
@@ -194,9 +194,9 @@ class TestMemoryLimiterDecorator:
             return "success"
 
         result = test_function()
-        assert (
-            result == "success"
-        ), "Function should execute normally when watchdog is disabled"
+        assert result == "success", (
+            "Function should execute normally when watchdog is disabled"
+        )
 
     def test_decorator_with_arguments(self, db):
         """Test memory_limiter decorator used with arguments."""
@@ -212,9 +212,9 @@ class TestMemoryLimiterDecorator:
             return "success"
 
         result = test_function()
-        assert (
-            result == "success"
-        ), "Function should execute normally when watchdog is disabled"
+        assert result == "success", (
+            "Function should execute normally when watchdog is disabled"
+        )
 
     @patch("fides.api.util.memory_watchdog.MemoryWatchdog")
     def test_decorator_when_enabled(self, mock_watchdog_class, db):
@@ -473,9 +473,9 @@ class TestHeapDumpFunctionality:
         _capture_heap_dump()
 
         # Verify logger.error was called exactly ONCE with the full report
-        assert (
-            mock_logger.error.call_count == 1
-        ), "Should log entire report as single message"
+        assert mock_logger.error.call_count == 1, (
+            "Should log entire report as single message"
+        )
 
         # Get the logged message
         logged_message = str(mock_logger.error.call_args[0][0])

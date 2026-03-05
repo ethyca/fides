@@ -601,10 +601,11 @@ class TestDrpRevoke:
             url, headers=auth_header, json={"request_id": privacy_request.id}
         )
         assert 400 == response.status_code
-        assert response.json()[
-            "detail"
-        ] == "Invalid revoke request. Can only revoke `pending` requests. Privacy request '{}' status = in_processing.".format(
-            privacy_request.id
+        assert (
+            response.json()["detail"]
+            == "Invalid revoke request. Can only revoke `pending` requests. Privacy request '{}' status = in_processing.".format(
+                privacy_request.id
+            )
         )
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.in_processing
@@ -644,9 +645,9 @@ class TestDrpRevoke:
         assert data["status"] == "revoked"
         assert data["reason"] == canceled_reason
 
-        assert (
-            not revoke_task_mock.called
-        ), "No celery task cached, so we don't attempt to revoke"
+        assert not revoke_task_mock.called, (
+            "No celery task cached, so we don't attempt to revoke"
+        )
 
     @mock.patch(
         "fides.api.models.privacy_request.privacy_request.celery_app.control.revoke"

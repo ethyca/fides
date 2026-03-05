@@ -3,9 +3,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import List, Optional
 
-from sqlalchemy import ARRAY, Boolean, Column
+from sqlalchemy import ARRAY, Boolean, Column, ForeignKey, String
 from sqlalchemy import Enum as SQLAlchemyEnum
-from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session, relationship
 

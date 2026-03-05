@@ -29,6 +29,6 @@ def test_system_privacy_declarations_in_alphabetical_order(db, system):
     privacy_declarations = updated_system.privacy_declarations
     sorted_privacy_declarations = sorted(privacy_declarations, key=lambda x: x.name)
 
-    assert (
-        privacy_declarations == sorted_privacy_declarations
-    ), "Privacy declarations are not in alphabetical order by name"
+    assert privacy_declarations == sorted_privacy_declarations, (
+        "Privacy declarations are not in alphabetical order by name"
+    )

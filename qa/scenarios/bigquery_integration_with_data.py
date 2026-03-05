@@ -6,11 +6,12 @@ QA scenario for testing BigQuery integration with the example test dataset and s
 import ast
 import json
 import os
-import yaml
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
+import yaml
 from utils import QATestScenario
+
 
 class BigQueryIntegrationWithData(QATestScenario):
     """QA scenario for testing BigQuery integration with bigquery_example_test_dataset and seeded data."""
@@ -56,7 +57,9 @@ class BigQueryIntegrationWithData(QATestScenario):
             self.step(7, "Linking dataset to connection")
             self._link_dataset_to_connection()
 
-            self.final_success("You can now run an access request for customer-1@example.com")
+            self.final_success(
+                "You can now run an access request for customer-1@example.com"
+            )
             return True
 
         except Exception as e:
@@ -69,7 +72,7 @@ class BigQueryIntegrationWithData(QATestScenario):
 
         print("Cleaning up BigQuery integration resources...")
         success = True
-        deleted_counts = {'connections': 0, 'systems': 0, 'datasets': 0}
+        deleted_counts = {"connections": 0, "systems": 0, "datasets": 0}
 
         try:
             # Step 1: Delete connection FIRST (cascades delete DatasetConfigs)
@@ -97,7 +100,9 @@ class BigQueryIntegrationWithData(QATestScenario):
                 self.already_cleaned("Dataset", self.dataset_key)
 
             # Note: We don't clean up the seeded BigQuery data as it may be shared across tests
-            self.info("Note: BigQuery test data tables are left intact for potential reuse")
+            self.info(
+                "Note: BigQuery test data tables are left intact for potential reuse"
+            )
 
             # Show results
             self.summary("Cleanup Summary", deleted_counts)
@@ -120,7 +125,7 @@ class BigQueryIntegrationWithData(QATestScenario):
 
         try:
             # Parse the keyfile credentials (could be JSON string or dict representation)
-            if keyfile_creds_str.startswith('{'):
+            if keyfile_creds_str.startswith("{"):
                 keyfile_creds = json.loads(keyfile_creds_str)
             else:
                 keyfile_creds = ast.literal_eval(keyfile_creds_str)
@@ -129,9 +134,13 @@ class BigQueryIntegrationWithData(QATestScenario):
 
         # Validate required fields in keyfile_creds
         required_fields = ["project_id", "client_email"]
-        missing_fields = [field for field in required_fields if field not in keyfile_creds]
+        missing_fields = [
+            field for field in required_fields if field not in keyfile_creds
+        ]
         if missing_fields:
-            raise ValueError(f"Missing required fields in BIGQUERY_KEYFILE_CREDS: {missing_fields}")
+            raise ValueError(
+                f"Missing required fields in BIGQUERY_KEYFILE_CREDS: {missing_fields}"
+            )
 
         # Load dataset (optional)
         dataset = os.environ.get("BIGQUERY_DATASET")
@@ -147,29 +156,42 @@ class BigQueryIntegrationWithData(QATestScenario):
     def _load_dataset_yaml(self) -> Dict[str, Any]:
         """Load the bigquery_example_test_dataset.yml file."""
         # Path relative to the repo root
-        dataset_path = Path(__file__).parents[2] / "data" / "dataset" / "bigquery_example_test_dataset.yml"
+        dataset_path = (
+            Path(__file__).parents[2]
+            / "data"
+            / "dataset"
+            / "bigquery_example_test_dataset.yml"
+        )
 
         if not dataset_path.exists():
             raise FileNotFoundError(f"Dataset file not found: {dataset_path}")
 
         try:
-            with open(dataset_path, 'r') as file:
+            with open(dataset_path, "r") as file:
                 dataset_data = yaml.safe_load(file)
 
             # Validate the structure
-            if 'dataset' not in dataset_data or not isinstance(dataset_data['dataset'], list):
-                raise ValueError("Invalid dataset YAML structure: expected 'dataset' key with list value")
+            if "dataset" not in dataset_data or not isinstance(
+                dataset_data["dataset"], list
+            ):
+                raise ValueError(
+                    "Invalid dataset YAML structure: expected 'dataset' key with list value"
+                )
 
-            if len(dataset_data['dataset']) == 0:
+            if len(dataset_data["dataset"]) == 0:
                 raise ValueError("Dataset YAML contains no datasets")
 
             # Get the first dataset (should be bigquery_example_test_dataset)
-            dataset_config = dataset_data['dataset'][0]
+            dataset_config = dataset_data["dataset"][0]
 
-            if dataset_config.get('fides_key') != self.dataset_key:
-                self.warning(f"Expected dataset key '{self.dataset_key}', got '{dataset_config.get('fides_key')}'")
+            if dataset_config.get("fides_key") != self.dataset_key:
+                self.warning(
+                    f"Expected dataset key '{self.dataset_key}', got '{dataset_config.get('fides_key')}'"
+                )
 
-            self.success(f"Loaded dataset with {len(dataset_config.get('collections', []))} collections")
+            self.success(
+                f"Loaded dataset with {len(dataset_config.get('collections', []))} collections"
+            )
             return dataset_config
 
         except yaml.YAMLError as e:
@@ -195,7 +217,7 @@ class BigQueryIntegrationWithData(QATestScenario):
                 "description": "Test system for BigQuery integration with example test dataset and seeded data.",
                 "system_type": "Service",
                 "privacy_declarations": [],
-                "system_dependencies": []
+                "system_dependencies": [],
             }
             self.api.create_system(system_data)
             self.success("BigQuery system created successfully")
@@ -204,7 +226,9 @@ class BigQueryIntegrationWithData(QATestScenario):
             self.error(f"Failed to create system: {e}")
             raise
 
-    def _create_bigquery_connection(self, keyfile_creds: Dict[str, Any], dataset: Optional[str]) -> bool:
+    def _create_bigquery_connection(
+        self, keyfile_creds: Dict[str, Any], dataset: Optional[str]
+    ) -> bool:
         """Create BigQuery connection linked to system."""
         try:
             # Prepare the connection secrets

@@ -16,7 +16,7 @@ from starlette.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
@@ -204,7 +204,7 @@ def put_config_secrets(
         )
     except KeyError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=exc.args[0],
         )
     except ValueError as exc:
@@ -215,7 +215,10 @@ def put_config_secrets(
 
     logger.info("Updating storage config secrets for config with key '{}'", config_key)
     try:
-        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
+        storage_config.set_secrets(
+            db=db,
+            storage_secrets=secrets_schema.model_dump(mode="json"),  # type: ignore[arg-type]
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -390,7 +393,9 @@ def get_storage_status(
         details = storage_config.details
         StorageDestinationBase.validate_details(details, storage_config.type.value)  # type: ignore
     except Exception as e:
-        logger.error(f"Invalid or unpopulated details on {storage_config.type.value} storage configuration: {Pii(str(e))}")  # type: ignore
+        logger.error(
+            f"Invalid or unpopulated details on {storage_config.type.value} storage configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
+        )
         return StorageConfigStatusMessage(
             config_status=StorageConfigStatus.not_configured,
             detail=f"Invalid or unpopulated details on {storage_config.type.value} storage configuration",  # type: ignore
@@ -410,7 +415,9 @@ def get_storage_status(
                 secrets=secrets,
             )
         except (ValueError, KeyError) as e:
-            logger.error(f"Invalid secrets found on {storage_config.type.value} storage configuration: {Pii(str(e))}")  # type: ignore
+            logger.error(
+                f"Invalid secrets found on {storage_config.type.value} storage configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
+            )
             return StorageConfigStatusMessage(
                 config_status=StorageConfigStatus.not_configured,
                 detail=f"Invalid secrets found on {storage_config.type.value} storage configuration",  # type: ignore
@@ -515,7 +522,7 @@ def put_default_config_secrets(
         )
     except KeyError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=exc.args[0],
         )
     except ValueError as exc:
@@ -529,7 +536,10 @@ def put_default_config_secrets(
         storage_type.value,
     )
     try:
-        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
+        storage_config.set_secrets(
+            db=db,
+            storage_secrets=secrets_schema.model_dump(mode="json"),  # type: ignore[arg-type]
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,

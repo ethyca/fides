@@ -1,4 +1,5 @@
 import { CopyTooltip, Flex, Tag, Typography } from "fidesui";
+import { uniqBy } from "lodash";
 import { useRouter } from "next/router";
 import React from "react";
 
@@ -16,6 +17,8 @@ interface HeaderProps {
 
 export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
   const router = useRouter();
+
+  const uniqueRules = uniqBy(privacyRequest.policy.rules ?? [], "action_type");
 
   return (
     <Flex gap={12} wrap align="center">
@@ -37,9 +40,9 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
         </Typography.Title>
       </div>
       <RequestStatusBadge status={privacyRequest.status} />
-      {privacyRequest.policy.rules && (
+      {uniqueRules.length > 0 && (
         <Flex gap={4}>
-          {privacyRequest.policy.rules.map((rule) => (
+          {uniqueRules.map((rule) => (
             <Tag key={rule.action_type}>
               {SubjectRequestActionTypeMap.get(rule.action_type)}
             </Tag>

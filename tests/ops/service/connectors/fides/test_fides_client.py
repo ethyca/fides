@@ -1,3 +1,4 @@
+import json
 from typing import Dict
 from unittest import mock
 
@@ -161,7 +162,8 @@ class TestFidesClientUnit:
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
         request.read()
-        assert request.content == b'{"field1": "value1"}'
+        dictionary = json.loads(request.content.decode("utf-8"))
+        assert dictionary == {"field1": "value1"}
 
         # test json body passed as a list
         request = test_fides_client.authenticated_request(
@@ -178,7 +180,8 @@ class TestFidesClientUnit:
             == test_fides_client.uri + "/testpath?param1=value1&param2=value2"
         )
         request.read()
-        assert request.content == b'[{"field1": "value1"}]'
+        result = json.loads(request.content.decode("utf-8"))
+        assert result == [{"field1": "value1"}]
 
     @pytest.mark.asyncio
     def test_poll_for_completion(

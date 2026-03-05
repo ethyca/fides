@@ -61,6 +61,10 @@ const AddManualTaskForm = ({
       label: REQUEST_TYPE_LABELS[ManualFieldRequestType.ERASURE],
       value: ManualFieldRequestType.ERASURE,
     },
+    {
+      label: REQUEST_TYPE_LABELS[ManualFieldRequestType.CONSENT],
+      value: ManualFieldRequestType.CONSENT,
+    },
   ];
 
   // Watch request type to determine available field type options
@@ -80,7 +84,10 @@ const AddManualTaskForm = ({
         },
       ];
     }
-    if (requestType === ManualFieldRequestType.ERASURE) {
+    if (
+      requestType === ManualFieldRequestType.ERASURE ||
+      requestType === ManualFieldRequestType.CONSENT
+    ) {
       return [
         {
           label: FIELD_TYPE_LABELS[ManualTaskFieldType.CHECKBOX],
@@ -94,7 +101,9 @@ const AddManualTaskForm = ({
 
   const fieldTypeOptions = getFieldTypeOptions();
   const isFieldTypeDisabled =
-    !requestType || requestType === ManualFieldRequestType.ERASURE;
+    !requestType ||
+    requestType === ManualFieldRequestType.ERASURE ||
+    requestType === ManualFieldRequestType.CONSENT;
 
   // Populate form with existing values when editing
   useEffect(() => {
@@ -118,8 +127,11 @@ const AddManualTaskForm = ({
 
   const handleValuesChange = (changedValues: Partial<TaskFormValues>) => {
     if (changedValues.requestType !== undefined) {
-      // When request type changes to erasure, automatically set field type to checkbox
-      if (changedValues.requestType === ManualFieldRequestType.ERASURE) {
+      // When request type changes to erasure or consent, automatically set field type to checkbox
+      if (
+        changedValues.requestType === ManualFieldRequestType.ERASURE ||
+        changedValues.requestType === ManualFieldRequestType.CONSENT
+      ) {
         form.setFieldsValue({ fieldType: ManualTaskFieldType.CHECKBOX });
       }
       // When request type changes to access, clear field type if it was checkbox
@@ -130,10 +142,7 @@ const AddManualTaskForm = ({
         }
       }
       // When request type is cleared, clear field type
-      else if (
-        changedValues.requestType === null ||
-        changedValues.requestType === ""
-      ) {
+      else if (changedValues.requestType === null) {
         form.setFieldsValue({ fieldType: undefined });
       }
     }

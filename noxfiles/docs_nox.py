@@ -49,6 +49,6 @@ def docs_check(session: nox.Session) -> None:
         "docs",
         "/bin/bash",
         "-c",
-        "pip install -e /fides && mkdocs build",
+        "uv pip install setuptools==80.10.2 wheel && uv pip install -e /fides && mkdocs build",
     )
     session.run(*run_shell, external=True)

@@ -87,8 +87,12 @@ def create_dsr_report_files_generator(
                 ) -> Generator[bytes, None, None]:
                     yield file_content
 
-                yield file_info.filename, datetime.now(), 0o644, _ZIP_32_TYPE(), content_generator(
-                    content
+                yield (
+                    file_info.filename,
+                    datetime.now(),
+                    0o644,
+                    _ZIP_32_TYPE(),
+                    content_generator(content),
                 )
 
     logger.debug("DSR report files extracted and ready for ZIP creation")

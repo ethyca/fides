@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Dict, Optional, Type
 
 from sqlalchemy import (
@@ -24,7 +24,7 @@ from fides.api.db.util import EnumColumn
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
-class ConsentStatus(str, Enum):
+class ConsentStatus(StrEnum):
     """
     Consent status of the asset
     """

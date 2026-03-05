@@ -1,12 +1,7 @@
-import {
-  ChakraBox as Box,
-  ChakraHStack as HStack,
-  ChakraVStack as VStack,
-} from "fidesui";
+import { Flex, PageSpinner } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -36,8 +31,8 @@ const TestDatasetPage: NextPage = () => {
 
   if (isLoading) {
     return (
-      <Layout title="Systems">
-        <FidesSpinner />
+      <Layout title="System inventory">
+        <PageSpinner />
       </Layout>
     );
   }
@@ -47,8 +42,6 @@ const TestDatasetPage: NextPage = () => {
       title="System inventory"
       mainProps={{
         height: "100vh",
-        display: "flex",
-        flexDirection: "column",
       }}
     >
       <PageHeader
@@ -62,27 +55,20 @@ const TestDatasetPage: NextPage = () => {
           { title: "Test datasets" },
         ]}
       />
-      <VStack
-        alignItems="stretch"
-        flex="1"
-        minHeight="0"
-        spacing="4"
-        padding="0"
-      >
-        <HStack
-          alignItems="stretch"
+      <Flex align="stretch" flex="1" gap="middle" vertical>
+        <Flex
+          align="stretch"
           flex="1"
-          minHeight="0"
-          spacing="4"
-          maxHeight="60vh"
+          gap="middle"
+          className="max-h-[60vh] min-h-0"
         >
           <EditorSection connectionKey={connectionKey} />
           <TestResultsSection connectionKey={connectionKey} />
-        </HStack>
-        <Box flex="0 0 auto">
+        </Flex>
+        <Flex vertical>
           <TestLogsSection />
-        </Box>
-      </VStack>
+        </Flex>
+      </Flex>
     </Layout>
   );
 };

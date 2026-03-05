@@ -10,13 +10,8 @@ from fides.api.common_exceptions import (
     StorageConfigNotFoundException,
 )
 from fides.api.models.client import ClientDetail
-from fides.api.models.policy import (
-    ActionType,
-    Policy,
-    Rule,
-    RuleTarget,
-    _is_ancestor_of_contained_categories,
-)
+from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
+from fides.api.models.policy.policy import _is_ancestor_of_contained_categories
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy

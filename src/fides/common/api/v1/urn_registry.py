@@ -96,6 +96,7 @@ PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
 PRIVACY_REQUEST_RESUBMIT = "/privacy-request/{privacy_request_id}/resubmit"
 REQUEST_TASK_CALLBACK = "/request-task/callback"
 PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-results"
+PRIVACY_REQUEST_DIAGNOSTICS = "/privacy-request/{privacy_request_id}/diagnostics"
 PRIVACY_REQUEST_FILTERED_RESULTS = (
     "/privacy-request/{privacy_request_id}/filtered-results"
 )
@@ -198,6 +199,7 @@ CONNECTOR_TEMPLATES = "/connector-templates"
 CONNECTOR_TEMPLATES_REGISTER = "/connector-templates/register"
 CONNECTOR_TEMPLATES_CONFIG = "/connector-templates/{connector_template_type}/config"
 CONNECTOR_TEMPLATES_DATASET = "/connector-templates/{connector_template_type}/dataset"
+DELETE_CUSTOM_TEMPLATE = "/connector-templates/{connector_template_type}"
 
 # Deprecated: Old connector template register URL
 REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"

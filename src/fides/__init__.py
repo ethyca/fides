@@ -1,6 +1,11 @@
 """The root module for the Fides package."""
 
-from ._version import get_versions
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as get_package_version
 
-__version__ = get_versions()["version"]
-del get_versions
+from .common.utils import clean_version
+
+try:
+    __version__ = clean_version(get_package_version("ethyca-fides"))
+except PackageNotFoundError:
+    __version__ = "0.0.0+dev"

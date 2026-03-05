@@ -20,6 +20,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
 import {
@@ -39,11 +40,11 @@ import {
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
 import TaxonomySelectCell from "~/features/common/table/v2/TaxonomySelectCell";
-import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
+import { DATA_BREADCRUMB_ICONS } from "~/features/dataset/datasetBreadcrumbIcons";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
 import { getDatasetPath } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
@@ -62,7 +63,11 @@ const FieldsDetailPage: NextPage = () => {
     decodeURIComponent,
   );
 
-  const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
+  const {
+    isLoading,
+    data: dataset,
+    error,
+  } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
   const collection = collections.find((c) => c.name === collectionName);
 
@@ -314,6 +319,15 @@ const FieldsDetailPage: NextPage = () => {
     });
     return baseBreadcrumbs;
   }, [datasetId, collectionName, subfieldNames]);
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage={`A problem occurred while fetching subfields for the collection ${collectionName}`}
+      />
+    );
+  }
 
   return (
     <Layout title={`Dataset - ${datasetId}`}>

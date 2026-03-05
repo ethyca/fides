@@ -34,7 +34,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.api import deps
@@ -48,6 +48,7 @@ from fides.api.common_exceptions import (
     ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
     PrivacyRequestError,
+    PrivacyRequestNotFound,
     TraversalError,
     ValidationError,
 )
@@ -144,6 +145,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_CANCEL,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_DIAGNOSTICS,
     PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_FINALIZE,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
@@ -173,6 +175,11 @@ from fides.service.dataset.dataset_config_service import (
     replace_references_with_identities,
 )
 from fides.service.messaging.messaging_service import MessagingService
+from fides.service.privacy_request.diagnostics import (
+    DefaultStorageNotConfiguredError,
+    PrivacyRequestDiagnosticsExportResponse,
+    export_privacy_request_diagnostics,
+)
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
     _process_privacy_request_restart,
@@ -183,7 +190,9 @@ from fides.service.privacy_request.privacy_request_service import (
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
-EMBEDDED_EXECUTION_LOG_LIMIT = 50
+# Heavely increasing the limit so the proper status of the request task is reflected
+# for long running requests like polling requests.
+EMBEDDED_EXECUTION_LOG_LIMIT = 1000
 
 
 def get_privacy_request_or_error(
@@ -204,7 +213,7 @@ def get_privacy_request_or_error(
 
     if error_if_deleted and privacy_request.deleted_at is not None:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Privacy request with id {privacy_request_id} has been deleted.",
         )
 
@@ -373,7 +382,9 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     if action_required_details:
         action_required_details.step = action_required_details.step.value  # type: ignore
         action_required_details.collection = (
-            action_required_details.collection.value if action_required_details.collection else None  # type: ignore
+            action_required_details.collection.value
+            if action_required_details.collection
+            else None  # type: ignore
         )
 
     privacy_request.action_required_details = action_required_details
@@ -433,7 +444,7 @@ def _shared_privacy_request_search(
     )
     if hasattr(PrivacyRequest, filters.sort_field) is False:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"{filters.sort_field} is not on PrivacyRequest",
         )
     query = privacy_request_service.sort_privacy_requests(
@@ -509,9 +520,7 @@ def get_request_status(
     params: Params = Depends(),
     request_id: Optional[str] = None,
     identity: Optional[str] = None,
-    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(
-        default=None
-    ),  # type:ignore
+    status: Optional[List[PrivacyRequestStatus]] = FastAPIQuery(default=None),  # type:ignore
     fuzzy_search_str: Optional[str] = None,
     created_lt: Optional[datetime] = None,
     created_gt: Optional[datetime] = None,
@@ -645,6 +654,37 @@ def get_request_status_logs(
         .order_by(ExecutionLog.updated_at.asc()),
         params,
     )
+
+
+@router.get(
+    PRIVACY_REQUEST_DIAGNOSTICS,
+    dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
+    response_model=PrivacyRequestDiagnosticsExportResponse,
+    status_code=HTTP_200_OK,
+)
+def get_privacy_request_diagnostics_report(
+    privacy_request_id: str,
+    *,
+    db: Session = Depends(deps.get_db),
+) -> PrivacyRequestDiagnosticsExportResponse:
+    """
+    Export a non-PII diagnostics snapshot for a single privacy request and return a download URL.
+
+    This report intentionally excludes any fields that could contain PII.
+    """
+
+    try:
+        return export_privacy_request_diagnostics(privacy_request_id, db)
+    except PrivacyRequestNotFound:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No privacy request found with id '{privacy_request_id}'.",
+        )
+    except DefaultStorageNotConfiguredError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=exc.detail,
+        )
 
 
 @router.get(
@@ -875,7 +915,7 @@ def validate_manual_input(
                 lambda f: f.name == field_name  # pylint: disable=W0640
             ):
                 raise HTTPException(
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    status_code=HTTP_422_UNPROCESSABLE_CONTENT,
                     detail=f"Cannot save manual rows. No '{field_name}' field defined on the '{collection.value}' collection.",
                 )
 
@@ -1354,7 +1394,7 @@ def _handle_manual_webhook_input(
         )
     except PydanticValidationError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(exc.errors(include_url=False, include_input=False)),
         )
 
@@ -1444,9 +1484,7 @@ def privacy_request_data_transfer(
             detail=f"No privacy request with id {privacy_request_id} found",
         )
 
-    rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key)
-    ).first()  # pylint: disable=superfluous-parens
+    rule = Rule.filter(db=db, conditions=(Rule.key == rule_key)).first()  # pylint: disable=superfluous-parens
     if not rule:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -1775,9 +1813,14 @@ def get_individual_privacy_request_tasks(
 
     logger.info(f"Getting Request Tasks for '{privacy_request_id}'")
 
-    return pr.request_tasks.order_by(
-        RequestTask.created_at.asc(), RequestTask.collection_address.asc()
-    ).all()
+    # Use deferred loading to avoid loading large JSON columns (_access_data, _data_for_erasures, etc.)
+    # which can cause OOM errors when listing many tasks
+    return (
+        RequestTask.query_with_deferred_data(db.query(RequestTask))
+        .filter(RequestTask.privacy_request_id == privacy_request_id)
+        .order_by(RequestTask.created_at.asc(), RequestTask.collection_address.asc())
+        .all()
+    )
 
 
 @router.post(
@@ -2057,7 +2100,10 @@ def get_test_privacy_request_results(
     results = json.loads(escaped_json)
 
     filtered_results: Dict[str, Any] = filter_access_results(
-        db, results, dataset_key, privacy_request.policy_id  # type: ignore[arg-type]
+        db,
+        results,
+        dataset_key,
+        privacy_request.policy_id,  # type: ignore[arg-type]
     )
 
     with logger.contextualize(
@@ -2095,7 +2141,7 @@ def resubmit_privacy_request(
         )
     except FidesopsException as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.message
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.message
         )
 
     if not privacy_request:

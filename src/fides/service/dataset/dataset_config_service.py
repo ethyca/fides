@@ -20,6 +20,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.property import Property
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
@@ -70,6 +71,10 @@ class DatasetConfigService:
                     "fides_key": dataset.fides_key,
                     "ctl_dataset_id": ctl_dataset.id,
                 }
+                if dataset.property_ids is not None:
+                    if dataset.property_ids:
+                        self._validate_property_ids(dataset.property_ids)
+                    data_dict["property_ids"] = dataset.property_ids
             else:
                 dataset_to_validate = dataset
                 data_dict = {
@@ -113,6 +118,18 @@ class DatasetConfigService:
             )
             return None, error
 
+    def _validate_property_ids(self, property_ids: List[str]) -> None:
+        """Validate that all property IDs reference existing properties."""
+        valid_ids = {
+            row[0]
+            for row in self.db.query(Property.id)
+            .filter(Property.id.in_(property_ids))
+            .all()
+        }
+        invalid = set(property_ids) - valid_ids
+        if invalid:
+            raise ValidationError(f"Unknown property IDs: {sorted(invalid)}")
+
     def bulk_create_or_update_dataset_configs(
         self,
         connection_config: ConnectionConfig,
@@ -143,7 +160,6 @@ class DatasetConfigService:
     def validate_dataset_config(
         self, connection_config: ConnectionConfig, dataset: FideslangDataset
     ) -> ValidateDatasetResponse:
-
         return DatasetValidator(self.db, dataset, connection_config).validate()
 
     def get_dataset_reachability(

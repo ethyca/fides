@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, List, Optional, Type
 
 from loguru import logger
-from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
+from sqlalchemy import Boolean, Column, DateTime, Enum, String, event
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
@@ -54,6 +54,7 @@ class ConnectionType(enum.Enum):
     manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
     manual_task = "manual_task"  # Manual task integration
+    jira_ticket = "jira_ticket"  # Jira ticket integration for DSR workflow
     mariadb = "mariadb"
     mongodb = "mongodb"
     mssql = "mssql"
@@ -93,6 +94,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual_webhook.value: "Manual Process",
             ConnectionType.manual_task.value: "Manual Task",
+            ConnectionType.jira_ticket.value: "Jira Ticket",
             ConnectionType.manual.value: "Manual Connector",
             ConnectionType.mariadb.value: "MariaDB",
             ConnectionType.mongodb.value: "MongoDB",
@@ -140,6 +142,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.https.value: SystemType.manual,
             ConnectionType.manual_webhook.value: SystemType.manual,
             ConnectionType.manual_task.value: SystemType.manual,
+            ConnectionType.jira_ticket.value: SystemType.manual,
             ConnectionType.manual.value: SystemType.manual,
             ConnectionType.mariadb.value: SystemType.database,
             ConnectionType.mongodb.value: SystemType.database,
@@ -214,10 +217,6 @@ class ConnectionConfig(Base):
         MutableDict.as_mutable(JSONB), index=False, unique=False, nullable=True
     )
 
-    system_id = Column(
-        String, ForeignKey(System.id_field_path), nullable=True, index=True
-    )
-
     datasets = relationship(  # type: ignore[misc]
         "DatasetConfig",
         back_populates="connection_config",
@@ -253,7 +252,14 @@ class ConnectionConfig(Base):
         cascade="delete",
     )
 
-    system = relationship(System, back_populates="connection_configs", uselist=False)
+    # system_id FK has been migrated to the system_connection_config_link join table;
+    # this relationship uses that table via secondary=.
+    system = relationship(
+        System,
+        secondary="system_connection_config_link",
+        uselist=False,
+        viewonly=True,
+    )
 
     consent_automation: RelationshipProperty[Optional[ConsentAutomation]] = (
         relationship(ConsentAutomation, uselist=False, cascade="all, delete-orphan")

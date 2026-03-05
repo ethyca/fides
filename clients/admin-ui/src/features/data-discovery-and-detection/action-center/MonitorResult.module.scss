@@ -1,9 +1,18 @@
 .monitor-result {
-  &__title {
-    white-space: nowrap;
-    font-weight: normal; // overrides Ant default title font weight
-    & a {
-      font-weight: 600; // only use font weight for links
-    }
+  :global(.ant-list-item-action-split) {
+    display: block;
+  }
+
+  &:global(.ant-list-item) :global(.ant-list-item-action) {
+    display: flex;
+    flex: 11rem;
+    flex-grow: initial;
+    justify-content: end;
+    margin-inline-start: 0px;
+    padding-left: var(--ant-padding-xs);
+  }
+
+  &:global(.ant-list-item) :global(.ant-list-item-action) li {
+    padding-left: var(--ant-padding-xs);
   }
 }

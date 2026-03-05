@@ -770,7 +770,7 @@ class TestMessagingTemplates:
     ):
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 8
+        assert len(all_templates) == 9
 
     def test_save_defaults_for_all_messaging_template_types_some_db_templates(
         self,
@@ -780,7 +780,7 @@ class TestMessagingTemplates:
     ):
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 8
+        assert len(all_templates) == 9
 
     def test_save_defaults_for_all_messaging_template_types_all_db_templates(
         self, db: Session, property_a
@@ -802,4 +802,4 @@ class TestMessagingTemplates:
             )
         save_defaults_for_all_messaging_template_types(db)
         all_templates = MessagingTemplate.query(db).all()
-        assert len(all_templates) == 8
+        assert len(all_templates) == 9

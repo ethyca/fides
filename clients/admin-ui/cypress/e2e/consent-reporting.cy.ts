@@ -2,7 +2,7 @@ import { stubPlus } from "cypress/support/stubs";
 
 import { CONSENT_REPORTING_ROUTE } from "~/features/common/nav/routes";
 
-describe("Consent reporting", () => {
+describe("Consent report", () => {
   beforeEach(() => {
     cy.login();
   });
@@ -31,7 +31,7 @@ describe("Consent reporting", () => {
         },
       });
       cy.visit(CONSENT_REPORTING_ROUTE);
-      cy.getByTestId("consent-reporting");
+      cy.getByTestId("consent-reporting-table").should("exist");
     });
     it("can't access without plus", () => {
       stubPlus(false);
@@ -91,8 +91,11 @@ describe("Consent reporting", () => {
 
       cy.wait("@lookupConsentPreferences");
       cy.get("#chakra-modal-consent-lookup-modal").within(() => {
-        cy.getByTestId("fidesTable-body").should("exist");
-        cy.getByTestId("fidesTable-body").find("tr").should("have.length", 5);
+        cy.getByTestId("privacy-notice-preferences-table").should("exist");
+        cy.getByTestId("privacy-notice-preferences-table")
+          .find("tbody")
+          .find("tr:not([aria-hidden='true'])")
+          .should("have.length", 5);
       });
     });
     it("shows TCF details table and filters out system and vendor records", () => {
@@ -111,10 +114,11 @@ describe("Consent reporting", () => {
       cy.getByTestId("subject-search-input").type("test@example.com{enter}");
 
       cy.wait("@lookupConsentPreferences");
-      cy.getByTestId("fidesTable").should("exist");
+      cy.getByTestId("tcf-consent-table").should("exist");
 
-      cy.getByTestId("fidesTable")
-        .find("tr")
+      cy.getByTestId("tcf-consent-table")
+        .find("tbody")
+        .find("tr:not([aria-hidden='true'])")
         .each(($row) => {
           const text = $row.text();
           expect(text).to.not.include("vendor_");
@@ -140,7 +144,9 @@ describe("Consent reporting", () => {
         expect(params.get("request_timestamp_lt")).to.be.null;
       });
 
-      cy.getByTestId("fidesTable-body").children().should("have.length", 22);
+      cy.getByTestId("consent-reporting-table")
+        .find("tr")
+        .should("have.length", 24);
     });
     it("loads the consent report table with date filters", () => {
       cy.intercept(
@@ -177,7 +183,9 @@ describe("Consent reporting", () => {
         );
       });
 
-      cy.getByTestId("fidesTable-body").children().should("have.length", 22);
+      cy.getByTestId("consent-reporting-table")
+        .find("tr")
+        .should("have.length", 24);
     });
   });
 
@@ -198,31 +206,30 @@ describe("Consent reporting", () => {
     });
 
     it("displays TCF badge and is clickable", () => {
-      cy.getByTestId("fidesTable-body")
+      cy.getByTestId("consent-reporting-table")
         .find("tr")
-        .each(($row) => {
-          if ($row.find("td").eq(3).text() === "TCF") {
-            cy.wrap($row).find("button").should("exist").and("be.visible");
-            return false;
-          }
+        .eq(3)
+        .findByTestId("tcf-badge")
+        .within(() => {
+          cy.get("button").should("exist");
         });
     });
 
     it("shows TCF details table and excludes system and vendor records", () => {
-      cy.getByTestId("fidesTable-body")
+      cy.getByTestId("consent-reporting-table")
         .find("tr")
-        .each(($row) => {
-          if ($row.find("td").eq(3).text() === "TCF") {
-            cy.wrap($row).find("button").click();
-            return false;
-          }
+        .eq(3)
+        .findByTestId("tcf-badge")
+        .within(() => {
+          cy.get("button").click();
         });
 
       cy.getByTestId("consent-tcf-detail-modal").should("exist");
-      cy.getByTestId("fidesTable").should("exist");
+      cy.getByTestId("tcf-consent-table").should("exist");
 
-      cy.getByTestId("fidesTable")
-        .find("tr")
+      cy.getByTestId("tcf-consent-table")
+        .find("tbody")
+        .find("tr:not([aria-hidden='true'])")
         .each(($row) => {
           const text = $row.text();
           expect(text).to.not.include("vendor_");

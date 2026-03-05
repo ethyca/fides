@@ -8,6 +8,8 @@ const CustomizableMessagingTemplatesLabelEnum: Record<
     "Access request completed",
   [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_COMPLETE_DELETION]:
     "Erasure request completed",
+  [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_COMPLETE_CONSENT]:
+    "Consent request completed",
   [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_RECEIPT]:
     "Privacy request received",
   [CustomizableMessagingTemplatesEnum.PRIVACY_REQUEST_REVIEW_APPROVE]:

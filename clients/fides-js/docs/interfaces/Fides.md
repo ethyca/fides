@@ -162,16 +162,65 @@ Get the link text in the default locale to match other links on the page:
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
 
-Apply the link text to a custom modal link element on Fides initialization:
+Apply the link text to a custom element using the `FidesLocaleUpdated` event (also see [FidesLocaleEvent](FidesLocaleEvent.md) and [Fides.showModal](Fides.md#showmodal)):
 ```html
-<button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
-<script id="fides-js">
-  function() {
-    addEventListener("FidesReady", ( function() {
-      document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
-    }));
-  }
+<button id="fides-modal-link" class="footer__link"></button>
+<script>
+  window.addEventListener("FidesLocaleUpdated", () => {
+    document.getElementById("fides-modal-link").textContent =
+      Fides.getModalLinkLabel();
+  });
 </script>
+```
+
+***
+
+### setIdentity()
+
+> **setIdentity**: (`identity`) => `Promise`\<`void`\>
+
+Set identity fields on the Fides consent cookie (e.g. a custom user ID).
+Call after [Fides.init](Fides.md#init); the values are persisted in the cookie and
+included in subsequent save/API requests (e.g. in `browser_identity.external_id`).
+Only `external_id` is supported today. Reserved keys (e.g. `fides_user_device_id`)
+and verified keys (e.g. `email`, `phone_number`) cannot be set and will throw; support for
+custom and verified identity keys is planned on the roadmap.
+Empty or whitespace-only `external_id` throws; omit the key to leave identity unchanged.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `identity` | \{ `external_id`: `string`; \} | Object with optional `external_id` string (trimmed before use; empty/whitespace-only throws) |
+| `identity.external_id`? | `string` | - |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+Promise that resolves when the cookie has been updated
+
+#### Throws
+
+If Fides is not initialized, if external_id is empty or whitespace-only, or if an unsupported/reserved/verified key is provided
+
+#### Examples
+
+Set a custom external ID after the user logs in:
+```ts
+await Fides.setIdentity({ external_id: "user-123" });
+```
+
+In HTML, call setIdentity when your app knows the user (e.g. after login):
+```html
+<body>
+  <script src="path/to/fides.js"></script>
+  <script>
+    function onUserLoggedIn(userId) {
+      Fides.setIdentity({ external_id: userId });
+    }
+  </script>
+</body>
 ```
 
 ***

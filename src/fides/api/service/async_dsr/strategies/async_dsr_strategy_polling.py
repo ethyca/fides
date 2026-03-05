@@ -24,7 +24,7 @@ from fides.api.schemas.saas.async_polling_configuration import (
     PollingResultType,
 )
 from fides.api.schemas.saas.saas_config import ReadSaaSRequest, SaaSRequest
-from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+from fides.api.schemas.saas.shared_schemas import PollingStatusResult, SaaSRequestParams
 from fides.api.service.async_dsr.handlers.polling_attachment_handler import (
     PollingAttachmentHandler,
 )
@@ -434,7 +434,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
 
     def _check_sub_request_status(
         self, client: AuthenticatedClient, param_values: Dict[str, Any]
-    ) -> bool:
+    ) -> PollingStatusResult:
         """
         Check the status of a sub-request using either override function or HTTP request.
 
@@ -443,7 +443,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             param_values: The parameter values for the request
 
         Returns:
-            bool: True if the request is complete, False if still in progress
+            PollingStatusResult: Result with completion status and skip indicator
 
         Raises:
             PrivacyRequestError: If status_path is required but not provided
@@ -456,15 +456,25 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 SaaSRequestType.POLLING_STATUS,
             )
 
-            # Override functions return boolean status directly
-            return cast(
-                bool,
-                override_function(
-                    client=client,
-                    param_values=param_values,
-                    request_config=self.status_request,
-                    secrets=client.configuration.secrets,
-                ),
+            result = override_function(
+                client=client,
+                param_values=param_values,
+                request_config=self.status_request,
+                secrets=client.configuration.secrets,
+            )
+
+            # Handle both legacy bool and new PollingStatusResult returns
+            if isinstance(result, bool):
+                return PollingStatusResult(
+                    is_complete=result, skip_result_request=False
+                )
+
+            if isinstance(result, PollingStatusResult):
+                return result
+
+            raise PrivacyRequestError(
+                f"Status override function must return bool or PollingStatusResult. "
+                f"Received type: {type(result).__name__}"
             )
 
         # Standard HTTP status request - create handler only when needed
@@ -481,11 +491,12 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 "status_path is required when request_override is not provided"
             )
 
-        return PollingResponseProcessor.evaluate_status_response(
+        is_complete = PollingResponseProcessor.evaluate_status_response(
             response,
             status_path,
             self.status_request.status_completed_value,
         )
+        return PollingStatusResult(is_complete=is_complete, skip_result_request=False)
 
     def _process_completed_sub_request(
         self,
@@ -577,6 +588,44 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
             f"Sub-request {sub_request.id} for task {polling_task.id} completed successfully"
         )
 
+    def _process_single_sub_request(
+        self,
+        client: AuthenticatedClient,
+        sub_request: RequestTaskSubRequest,
+        polling_task: RequestTask,
+    ) -> None:
+        """
+        Process a single sub-request by checking its status and handling completion.
+
+        Args:
+            client: The authenticated client
+            sub_request: The sub-request to process
+            polling_task: The parent polling task
+        """
+        param_values = sub_request.param_values
+        status_result = self._check_sub_request_status(client, param_values)
+
+        if status_result.is_complete:
+            if status_result.skip_result_request:
+                # Complete but no data to fetch - mark as skipped
+                logger.info(f"Sub-request {sub_request.id} skipped - no data to fetch")
+                if polling_task.action_type == ActionType.access:
+                    sub_request.access_data = []
+                if polling_task.action_type == ActionType.erasure:
+                    sub_request.rows_masked = 0
+                sub_request.update_status(
+                    self.session, ExecutionLogStatus.skipped.value
+                )
+            else:
+                # Complete with data - fetch results
+                self._process_completed_sub_request(
+                    client, param_values, sub_request, polling_task
+                )
+        else:
+            logger.debug(
+                f"Sub-request {sub_request.id} for task {polling_task.id} still not ready"
+            )
+
     def _process_sub_requests_for_request(
         self,
         client: AuthenticatedClient,
@@ -594,25 +643,15 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         sub_requests: List[RequestTaskSubRequest] = polling_task.sub_requests
 
         for sub_request in sub_requests:
-            # Skip already completed sub-requests
-            if sub_request.status == ExecutionLogStatus.complete.value:
+            # Skip already completed or skipped sub-requests
+            if sub_request.status in [
+                ExecutionLogStatus.complete.value,
+                ExecutionLogStatus.skipped.value,
+            ]:
                 continue
 
-            param_values = sub_request.param_values
-
             try:
-                # Check status of the sub-request
-                status = self._check_sub_request_status(client, param_values)
-
-                if status:
-                    self._process_completed_sub_request(
-                        client, param_values, sub_request, polling_task
-                    )
-                else:
-                    logger.debug(
-                        f"Sub-request {sub_request.id} for task {polling_task.id} still not ready"
-                    )
-
+                self._process_single_sub_request(client, sub_request, polling_task)
             except Exception as exc:
                 logger.error(
                     f"Error processing sub-request {sub_request.id} for task {polling_task.id}: {exc}"

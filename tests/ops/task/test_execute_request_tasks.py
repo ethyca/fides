@@ -36,9 +36,7 @@ from fides.api.task.execute_request_tasks import (
     run_prerequisite_task_checks,
 )
 from fides.api.task.graph_task import mark_current_and_downstream_nodes_as_failed
-from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.cache import FidesopsRedis, get_cache
 
 
 def _collect_task_resources(
@@ -493,33 +491,6 @@ class TestMarkCurrentAndDownstreamNodesAsFailed:
         assert erasure_request_task.status == ExecutionLogStatus.pending
 
 
-class TestGetDSRVersion:
-    @pytest.mark.usefixtures("use_dsr_2_0")
-    def test_use_dsr_2_0(self, privacy_request):
-        assert use_dsr_3_0_scheduler(privacy_request, ActionType.access) is False
-
-    @pytest.mark.usefixtures("use_dsr_3_0")
-    def test_use_dsr_3_0(self, privacy_request):
-        assert use_dsr_3_0_scheduler(privacy_request, ActionType.access) is True
-
-    @pytest.mark.usefixtures("use_dsr_3_0")
-    def test_use_dsr_2_0_override(
-        self,
-        privacy_request,
-    ):
-        cache: FidesopsRedis = get_cache()
-        key = f"access_request__test_dataset:test_collection"
-        cache.set_encoded_object(f"{privacy_request.id}__{key}", 2)
-
-        # Privacy request already started processing on DSR 2.0 so we continue on DSR 2.0
-        assert use_dsr_3_0_scheduler(privacy_request, ActionType.access) is False
-
-    @pytest.mark.usefixtures("use_dsr_2_0")
-    def test_use_dsr_3_0_override(self, privacy_request, request_task):
-        # Privacy Request already started processing on 3.0, but we allow it to be switched to 2.0
-        assert use_dsr_3_0_scheduler(privacy_request, ActionType.access) is False
-
-
 class TestGetUpstreamAccessDataForErasureTask:
     def test_get_upstream_access_data_success(
         self,
@@ -579,7 +550,6 @@ class TestGetUpstreamAccessDataForErasureTask:
             erasure_task,
             db,
         ) as resources:
-
             result = get_upstream_access_data_for_erasure_task(
                 erasure_task, db, resources
             )
@@ -615,7 +585,6 @@ class TestGetUpstreamAccessDataForErasureTask:
             erasure_task,
             db,
         ) as resources:
-
             with pytest.raises(Exception) as exc_info:
                 get_upstream_access_data_for_erasure_task(erasure_task, db, resources)
 

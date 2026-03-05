@@ -7,7 +7,11 @@ import { ExecutionLogStatus } from "~/types/api/models/ExecutionLogStatus";
 
 import { useGetInProgressMonitorTasksQuery } from "../action-center.slice";
 
-export const useInProgressMonitorTasksList = () => {
+export const useInProgressMonitorTasksList = ({
+  filters,
+}: {
+  filters?: { monitorKey?: string };
+}) => {
   const { resetPagination, pageIndex, pageSize, paginationProps } =
     useAntPagination();
 
@@ -42,9 +46,12 @@ export const useInProgressMonitorTasksList = () => {
     [setSearchQuery, resetPagination],
   );
 
-  const updateStatusFilters = useCallback((filters: ExecutionLogStatus[]) => {
-    setStagedStatusFilters(filters);
-  }, []);
+  const updateStatusFilters = useCallback(
+    (newStatusFilters: ExecutionLogStatus[]) => {
+      setStagedStatusFilters(newStatusFilters);
+    },
+    [],
+  );
 
   const updateShowDismissed = useCallback((show: boolean) => {
     setStagedShowDismissed(show);
@@ -86,6 +93,7 @@ export const useInProgressMonitorTasksList = () => {
       statuses:
         appliedStatusFilters.length > 0 ? appliedStatusFilters : undefined,
       return_dismissed: appliedShowDismissed,
+      monitor_config_key: filters?.monitorKey,
     },
     {
       pollingInterval: 3000,

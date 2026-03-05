@@ -47,6 +47,7 @@ from fides.api.task.create_request_tasks import (
     persist_new_access_request_tasks,
 )
 from fides.config import CONFIG
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.ops.graph.graph_test_util import generate_node
 
 
@@ -438,7 +439,9 @@ class TestSaasConnector:
         )
 
         #  Mock adding a new placeholder to the request body for which we don't have a value
-        connector.endpoints["data_management"].requests.update.body = (
+        connector.endpoints[
+            "data_management"
+        ].requests.update.body = (
             '{\n  "unique_id": "<privacy_request_id>", "email": "<test_val>"\n}\n'
         )
 
@@ -784,7 +787,11 @@ class TestSaasConnectorRunConsentRequest:
         privacy_preference_history_us_ca_provide,
     ):
         """System has an advertising data use and this privacy notice for the preference has a provide data use"""
-        saas_example_connection_config.system_id = system.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=saas_example_connection_config.id,
+            session=db,
+        )
         privacy_preference_history_us_ca_provide.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
@@ -820,9 +827,7 @@ class TestSaasConnectorRunConsentRequest:
         saas_example_connection_config,
     ):
         """Can only propagate preferences that have a system wide enforcement level"""
-        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
-            privacy_request_with_consent_policy.id
-        )
+        privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = privacy_request_with_consent_policy.id
         privacy_preference_history_fr_provide_service_frontend_only.save(db)
 
         connector = get_connector(saas_example_connection_config)
@@ -857,7 +862,11 @@ class TestSaasConnectorRunConsentRequest:
         """We need a matching identity for the connector in order to send the request
         saas_example set up to fail if no first_name supplied
         """
-        saas_example_connection_config.system_id = system.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=saas_example_connection_config.id,
+            session=db,
+        )
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
             status=PrivacyRequestStatus.pending,
@@ -896,7 +905,11 @@ class TestSaasConnectorRunConsentRequest:
         """We need a matching identity for the connector in order to send the saas_example_connection_config
         Saas_Example set up to skip instead of fail if we don't have the ga client id.
         """
-        saas_example_opt_out_only_connection_config.system_id = system.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=saas_example_opt_out_only_connection_config.id,
+            session=db,
+        )
 
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
@@ -935,7 +948,11 @@ class TestSaasConnectorRunConsentRequest:
         db,
     ):
         """User is expressing an opt in preference here but only has an opt out preference defined"""
-        saas_example_opt_out_only_connection_config.system_id = system.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=saas_example_opt_out_only_connection_config.id,
+            session=db,
+        )
 
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
@@ -963,9 +980,9 @@ class TestSaasConnectorRunConsentRequest:
 
         assert "No 'opt_in' requests defined" in str(exc)
         db.refresh(privacy_preference_history)
-        assert (
-            privacy_preference_history.affected_system_status == {}
-        ), "Updated to skipped in graph task, not updated here"
+        assert privacy_preference_history.affected_system_status == {}, (
+            "Updated to skipped in graph task, not updated here"
+        )
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_preferences_executable(

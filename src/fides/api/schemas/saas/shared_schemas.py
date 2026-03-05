@@ -59,3 +59,13 @@ class ConsentPropagationStatus(Enum):
     executed = "executed"
     no_update_needed = "no_update_needed"
     missing_data = "missing_data"
+
+
+class PollingStatusResult(BaseModel):
+    """
+    Result from polling status check.
+    Allows status overrides to signal completion AND whether to skip result fetching.
+    """
+
+    is_complete: bool
+    skip_result_request: bool = False  # True when status indicates no data to fetch

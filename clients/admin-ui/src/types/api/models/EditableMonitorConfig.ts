@@ -51,4 +51,8 @@ export type EditableMonitorConfig = {
    * Reference to a shared monitor configuration
    */
   shared_config_id?: string | null;
+  /**
+   * List of user IDs to set as stewards for this monitor
+   */
+  stewards?: Array<string>;
 };

@@ -199,7 +199,7 @@ export const FIELD_ACTION_CONFIRMATION_MESSAGE = {
   classify: (targetItemCount: number) =>
     `Are you sure you want to run the classifier and apply data categories to ${targetItemCount.toLocaleString()} unlabeled ${pluralize(targetItemCount, "resource", "resources")}?`,
   mute: (targetItemCount: number) =>
-    `Are you sure you want to ignore ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}? After ignoring, these resources may reappear in future scans.`,
+    `Are you sure you want to ignore ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}? After ignoring, these resources will not appear in future scans.`,
   promote: (targetItemCount: number) =>
     `Are you sure you want to approve ${targetItemCount.toLocaleString()} ${pluralize(targetItemCount, "resource", "resources")}? After approving this data can be used for policy automation and DSRs. `,
 } as const satisfies Readonly<

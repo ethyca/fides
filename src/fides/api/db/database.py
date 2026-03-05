@@ -27,6 +27,7 @@ DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
 
 # Tables to exclude from migration auto-generation (e.g., tables without SQLAlchemy models)
 EXCLUDED_TABLES = {
+    "backfill_history",
     "privacy_preferences_current",
     "privacy_preferences_historic",
 }

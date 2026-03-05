@@ -87,7 +87,7 @@ const monitorFieldApi = baseApi.injectEndpoints({
       query: ({
         path: { monitor_config_id },
         query: { search, diff_status, confidence_bucket, ...arrayQueryParams },
-        ...body
+        body,
       }) => {
         const queryParams = buildArrayQueryParams({
           ...arrayQueryParams,

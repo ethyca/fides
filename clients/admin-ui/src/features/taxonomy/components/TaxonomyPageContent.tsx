@@ -25,9 +25,9 @@ import PageHeader from "~/features/common/PageHeader";
 import { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import CreateCustomTaxonomyForm from "~/features/taxonomy/components/CreateCustomTaxonomyForm";
-import CustomTaxonomyEditDrawer from "~/features/taxonomy/components/CustomTaxonomyEditDrawer";
-import TaxonomyItemEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
+import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
+import TaxonomyItemEditDrawer from "~/features/taxonomy/components/TaxonomyItemEditDrawer";
 import {
   CoreTaxonomiesEnum,
   TAXONOMY_ROOT_NODE_ID,
@@ -56,10 +56,6 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
   const router = useRouter();
 
   const taxonomyType = initialTaxonomy ?? DEFAULT_TAXONOMY_TYPE;
-
-  const isCustomTaxonomy = !Object.values(TaxonomyTypeEnum).includes(
-    taxonomyType as TaxonomyTypeEnum,
-  );
 
   const features = useFeatures();
   const isPlusEnabled = features.plus;
@@ -232,13 +228,28 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
   };
 
   const handleTaxonomyRootItemClick = () => {
-    const typeFromKey = customTaxonomies?.find(
-      (t) => t.fides_key === taxonomyType,
+    // Check if it's a built-in taxonomy
+    const isBuiltIn = Object.values(TaxonomyTypeEnum).includes(
+      taxonomyType as TaxonomyTypeEnum,
     );
-    if (!typeFromKey) {
-      return;
+
+    let taxonomyResponse: TaxonomyResponse | undefined;
+
+    if (isBuiltIn) {
+      // Create TaxonomyResponse for built-in taxonomies
+      taxonomyResponse = {
+        fides_key: taxonomyType,
+        name: taxonomyTypeToLabel(taxonomyType as TaxonomyTypeEnum),
+        description: null,
+      };
+    } else {
+      // Find custom taxonomy
+      taxonomyResponse = customTaxonomies?.find(
+        (t) => t.fides_key === taxonomyType,
+      );
     }
-    setTaxonomyTypeToEdit(typeFromKey);
+
+    setTaxonomyTypeToEdit(taxonomyResponse ?? null);
   };
 
   return (
@@ -336,9 +347,7 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
             onTaxonomyItemClick={(taxonomyItem) => {
               setTaxonomyItemToEdit(taxonomyItem);
             }}
-            onRootItemClick={
-              isCustomTaxonomy ? handleTaxonomyRootItemClick : null
-            }
+            onRootItemClick={handleTaxonomyRootItemClick}
             onAddButtonClick={(taxonomyItem) => {
               const newItem = {
                 parent_key: taxonomyItem?.fides_key ?? null,
@@ -366,8 +375,8 @@ const TaxonomyPageContent = ({ initialTaxonomy }: TaxonomyPageContentProps) => {
           onClose={() => setTaxonomyItemToEdit(null)}
         />
       )}
-      {isPlusEnabled && taxonomyTypeToEdit && (
-        <CustomTaxonomyEditDrawer
+      {taxonomyTypeToEdit && (
+        <TaxonomyEditDrawer
           title={
             customTaxonomyLabel
               ? `Edit ${customTaxonomyLabel}`

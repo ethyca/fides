@@ -54,19 +54,30 @@ class SnowflakeConnector(SQLConnector):
         connect_args: Dict[str, Union[str, bytes]] = {}
         if config.private_key:
             config.private_key = config.private_key.replace("\\n", "\n")
-            connect_args["private_key"] = config.private_key
-            if config.private_key_passphrase:
-                private_key_encoded = serialization.load_pem_private_key(
-                    config.private_key.encode(),
-                    password=config.private_key_passphrase.encode(),  # pylint: disable=no-member
-                    backend=default_backend(),
-                )
-                private_key = private_key_encoded.private_bytes(
-                    encoding=serialization.Encoding.DER,
-                    format=serialization.PrivateFormat.PKCS8,
-                    encryption_algorithm=serialization.NoEncryption(),
-                )
-                connect_args["private_key"] = private_key
+
+            # Determine password (None if no passphrase)
+            password = (
+                config.private_key_passphrase.encode()
+                if config.private_key_passphrase
+                else None
+            )
+
+            # Load and convert the private key to DER/PKCS8 format
+            # This is required by Snowflake connector regardless of passphrase
+            private_key_encoded = serialization.load_pem_private_key(
+                config.private_key.encode(),
+                password=password,
+                # default_backend() is deprecated since cryptography 36.0 (2021-11-21);
+                # the backend argument is silently accepted but no longer required.
+                # https://cryptography.io/en/36.0.0/faq/#faq-missing-backend
+                backend=default_backend(),
+            )
+            private_key = private_key_encoded.private_bytes(
+                encoding=serialization.Encoding.DER,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption(),
+            )
+            connect_args["private_key"] = private_key
         return connect_args
 
     def query_config(self, node: ExecutionNode) -> SnowflakeQueryConfig:

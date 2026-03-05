@@ -13,25 +13,30 @@ import {
   Tooltip,
 } from "fidesui";
 import _ from "lodash";
-import { NextPage } from "next";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Key, useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import FixedLayout from "~/features/common/FixedLayout";
-import { useSearch } from "~/features/common/hooks";
-import {
-  ACTION_CENTER_ROUTE,
-  DATASET_ROUTE,
-} from "~/features/common/nav/routes";
-import PageHeader from "~/features/common/PageHeader";
+import ErrorPage from "~/features/common/errors/ErrorPage";
+import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import { useAntPagination } from "~/features/common/pagination/useAntPagination";
-import { useGetMonitorConfigQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  useGetDatastoreFiltersQuery,
+  useGetMonitorConfigQuery,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
+import {
+  MonitorFieldSearchForm,
+  MonitorFieldSearchFormQuerySchema,
+  MonitorFieldSearchFormQueryState,
+} from "../forms/MonitorFieldSearchForm.util";
+import MonitorFieldsSearchForm from "../forms/MonitorFieldsSearchForm";
+import useSearchForm from "../hooks/useSearchForm";
+import { DatastorePageSettings } from "../types";
 import {
   ACTION_ALLOWED_STATUSES,
   ACTIONS_DISABLED_MESSAGE,
@@ -45,13 +50,13 @@ import {
 } from "./FieldActions.const";
 import { HotkeysHelperModal } from "./HotkeysHelperModal";
 import { useLazyGetAllowedActionsQuery } from "./monitor-fields.slice";
-import { MonitorFieldFilters } from "./MonitorFieldFilters";
 import renderMonitorFieldListItem from "./MonitorFieldListItem";
 import {
+  DEFAULT_FILTER_STATUSES,
+  DIFF_TO_RESOURCE_STATUS,
   EXCLUDED_FILTER_STATUSES,
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
-  ResourceStatusLabel,
 } from "./MonitorFields.const";
 import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
@@ -60,51 +65,69 @@ import { useBulkActions } from "./useBulkActions";
 import { useBulkListSelect } from "./useBulkListSelect";
 import { useFieldActionHotkeys } from "./useFieldActionHotkeys";
 import { getAvailableActions, useFieldActions } from "./useFieldActions";
-import { useMonitorFieldsFilters } from "./useFilters";
 import useNormalizedResources from "./useNormalizedResources";
+import { intoDiffStatus } from "./utils";
 
-const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
-  Object.values(DiffStatus).flatMap((status) =>
-    MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[status].label ===
-    resourceStatusLabel
-      ? [status]
-      : [],
-  );
-
-const ActionCenterFields: NextPage = () => {
+const ActionCenterFields = ({
+  monitorId,
+  showApproved,
+  showIgnored,
+}: DatastorePageSettings & { monitorId: string }) => {
   const router = useRouter();
-  const monitorId = decodeURIComponent(router.query.monitorId as string);
   const monitorTreeRef = useRef<MonitorTreeRef>(null);
   const [hotkeysHelperModalOpen, setHotkeysHelperModalOpen] = useState(false);
+  const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
   const { paginationProps, pageIndex, pageSize, resetPagination } =
     useAntPagination({
       defaultPageSize: FIELD_PAGE_SIZE,
     });
-  const search = useSearch();
-  const {
-    resourceStatus,
-    confidenceBucket,
-    dataCategory,
-    ...restMonitorFieldsFilters
-  } = useMonitorFieldsFilters();
+
+  const { requestData, form, ...formProps } = useSearchForm<
+    {
+      path: {
+        monitor_config_id: string;
+      };
+      query: {
+        staged_resource_urn?: string[];
+        search?: string;
+        diff_status?: DiffStatus[];
+        confidence_bucket?: ConfidenceBucket[];
+        data_category?: string[];
+      };
+    },
+    MonitorFieldSearchForm
+  >({
+    queryState: MonitorFieldSearchFormQueryState,
+    initialValues: {},
+    translate: (query) => ({
+      path: { monitor_config_id: monitorId },
+      query: {
+        confidence_bucket: query.confidence_bucket ?? undefined,
+        data_category: query.data_category ?? undefined,
+        diff_status: [
+          ...(showIgnored ? intoDiffStatus("Ignored") : []),
+          ...(showApproved ? intoDiffStatus("Approved") : []),
+          ...(query.resource_status ?? DEFAULT_FILTER_STATUSES).flatMap(
+            intoDiffStatus,
+          ),
+        ],
+        search: query.search ?? undefined,
+        staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
+      },
+    }),
+    schema: MonitorFieldSearchFormQuerySchema,
+  });
+
   const { data: monitorConfigData } = useGetMonitorConfigQuery({
     monitor_config_id: monitorId,
   });
-  const [selectedNodeKeys, setSelectedNodeKeys] = useState<Key[]>([]);
-  const baseMonitorFilters = {
-    path: {
-      monitor_config_id: monitorId,
-    },
-    query: {
-      staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
-      search: search.searchProps.value,
-      diff_status: resourceStatus
-        ? resourceStatus.flatMap(intoDiffStatus)
-        : undefined,
-      confidence_bucket: confidenceBucket || undefined,
-      data_category: dataCategory || undefined,
-    },
-  };
+
+  const baseMonitorFilters = requestData;
+
+  const { data: availableFilters } = useGetDatastoreFiltersQuery({
+    monitor_config_id: monitorId,
+    staged_resource_urn: selectedNodeKeys.map((key) => key.toString()),
+  });
 
   const [detailsUrn, setDetailsUrn] = useState<string>();
   const [activeListItem, setActiveListItem] = useState<
@@ -217,13 +240,7 @@ const ActionCenterFields: NextPage = () => {
     resetPagination();
     resetListSelect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    resourceStatus,
-    confidenceBucket,
-    selectedNodeKeys,
-    search.searchQuery,
-    dataCategory,
-  ]);
+  }, [selectedNodeKeys]);
 
   // Set up keyboard shortcuts for field actions
   useFieldActionHotkeys(
@@ -235,20 +252,17 @@ const ActionCenterFields: NextPage = () => {
     () => listQueryMeta.refetch(),
   );
 
-  return (
-    <FixedLayout
-      title="Action center - Discovered assets by system"
-      mainProps={{ overflow: "hidden" }}
-      fullHeight
-    >
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId },
-        ]}
-        isSticky={false}
+  if (listQueryMeta.error) {
+    return (
+      <ErrorPage
+        error={listQueryMeta.error}
+        defaultMessage="A problem occurred while fetching your monitor results"
       />
+    );
+  }
+
+  return (
+    <>
       <Splitter className="h-[calc(100%-48px)] overflow-hidden">
         <Splitter.Panel
           defaultSize={250}
@@ -256,6 +270,8 @@ const ActionCenterFields: NextPage = () => {
           style={{ paddingRight: "var(--ant-padding-md)" }}
         >
           <MonitorTree
+            showIgnored={showIgnored}
+            showApproved={showApproved}
             ref={monitorTreeRef}
             setSelectedNodeKeys={setSelectedNodeKeys}
             selectedNodeKeys={selectedNodeKeys}
@@ -296,7 +312,9 @@ const ActionCenterFields: NextPage = () => {
           />
         </Splitter.Panel>
         {/** Note: style attr used here due to specificity of ant css. */}
-        <Splitter.Panel style={{ paddingLeft: "var(--ant-padding-md)" }}>
+        <Splitter.Panel
+          style={{ paddingLeft: "var(--ant-padding-md)", overflow: "hidden" }}
+        >
           <Flex vertical gap="middle" className="h-full">
             <Flex justify="space-between">
               <Title level={2} ellipsis>
@@ -314,31 +332,20 @@ const ActionCenterFields: NextPage = () => {
               </Flex>
             </Flex>
             <Flex justify="space-between" wrap="wrap" gap="small">
+              <MonitorFieldsSearchForm
+                form={form}
+                {...formProps}
+                onFinish={(...args) => {
+                  formProps.onFinish(...args);
+                  resetPagination();
+                  resetListSelect();
+                }}
+                availableFilters={{
+                  data_category: availableFilters?.data_category ?? undefined,
+                }}
+                shortcutCallback={() => setHotkeysHelperModalOpen(true)}
+              />
               <Flex gap="small">
-                <DebouncedSearchInput
-                  value={search.searchQuery}
-                  onChange={search.updateSearch}
-                  placeholder="Search"
-                />
-                <Tooltip title="Display keyboard shortcuts">
-                  <Button
-                    aria-label="Display keyboard shortcuts"
-                    icon={<Icons.Keyboard />}
-                    onClick={() => setHotkeysHelperModalOpen(true)}
-                  />
-                </Tooltip>
-              </Flex>
-              <Flex gap="small">
-                <MonitorFieldFilters
-                  resourceStatus={resourceStatus}
-                  confidenceBucket={confidenceBucket}
-                  dataCategory={dataCategory}
-                  {...restMonitorFieldsFilters}
-                  monitorId={monitorId}
-                  stagedResourceUrn={selectedNodeKeys.map((key) =>
-                    key.toString(),
-                  )}
-                />
                 <Dropdown
                   onOpenChange={onActionDropdownOpenChange}
                   menu={{
@@ -412,8 +419,12 @@ const ActionCenterFields: NextPage = () => {
               loading={listQueryMeta.isFetching}
               enableKeyboardShortcuts
               locale={
-                !search.searchProps.value &&
-                _(resourceStatus)
+                !baseMonitorFilters.query.search &&
+                _(
+                  baseMonitorFilters.query.diff_status?.map(
+                    (diffStatus) => DIFF_TO_RESOURCE_STATUS[diffStatus],
+                  ),
+                )
                   .intersection(EXCLUDED_FILTER_STATUSES)
                   .isEmpty()
                   ? {
@@ -422,14 +433,16 @@ const ActionCenterFields: NextPage = () => {
                           image={Empty.PRESENTED_IMAGE_SIMPLE}
                           description={
                             <>
-                              <div>All resources have been approved.</div>
                               <div>
-                                {`You'll now find this data in Managed Datasets
-                                view.`}
+                                All resources have been either approved or
+                                ignored.
                               </div>
                               <div>
-                                {`To see approved or ignored resources, adjust
-                                your filters`}
+                                Approved resources can be found in the manage
+                                datasets view.
+                              </div>
+                              <div>
+                                To see ignored resources, adjust your filters.
                               </div>
                             </>
                           }
@@ -446,7 +459,7 @@ const ActionCenterFields: NextPage = () => {
                               type="primary"
                               aria-label="Refresh page"
                               onClick={() => {
-                                restMonitorFieldsFilters.resetToInitialState();
+                                form.resetFields();
                                 router.reload();
                               }}
                             >
@@ -576,7 +589,7 @@ const ActionCenterFields: NextPage = () => {
         open={hotkeysHelperModalOpen}
         onCancel={() => setHotkeysHelperModalOpen(false)}
       />
-    </FixedLayout>
+    </>
   );
 };
 export default ActionCenterFields;

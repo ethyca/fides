@@ -8,13 +8,14 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from starlette.exceptions import HTTPException
 from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_409_CONFLICT,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.api import deps
@@ -28,14 +29,21 @@ from fides.api.common_exceptions import (
 )
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import DataCategory  # type: ignore
 from fides.api.models.storage import StorageConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas import policy as schemas
 from fides.api.schemas.api import BulkUpdateFailed
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import (
+    SUPPORTED_ACTION_TYPES,
+    ActionType,
+    RuleCreateWithTargets,
+)
 from fides.api.util.api_router import APIRouter
+from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.logger import Pii
+from fides.api.util.text import to_snake_case
 from fides.common.api import scope_registry
 from fides.common.api.v1 import urn_registry as urls
 
@@ -57,7 +65,14 @@ def get_policy_list(
     Return a paginated list of all Policy records in this system
     """
     logger.debug("Finding all policies with pagination params '{}'", params)
-    policies = Policy.query(db=db).order_by(Policy.created_at.desc())
+    policies = (
+        Policy.query(db=db)
+        .options(
+            selectinload(Policy.rules).joinedload(Rule.storage_destination),  # type: ignore[attr-defined] # backref
+            selectinload(Policy.conditions),
+        )
+        .order_by(Policy.created_at.desc())
+    )
     return paginate(policies, params=params)
 
 
@@ -91,6 +106,126 @@ def get_policy(
     return get_policy_or_error(db, policy_key)  # type: ignore[return-value]
 
 
+@router.delete(
+    urls.POLICY_DETAIL,
+    status_code=HTTP_204_NO_CONTENT,
+    dependencies=[Security(verify_oauth_client, scopes=[scope_registry.POLICY_DELETE])],
+)
+def delete_policy(
+    *,
+    policy_key: FidesKey,
+    db: Session = Depends(deps.get_db),
+) -> None:
+    """
+    Delete a policy by key. Returns 409 if the policy is referenced by any privacy requests.
+    """
+    policy = get_policy_or_error(db, policy_key)
+
+    has_privacy_requests = (
+        PrivacyRequest.query(db=db)
+        .filter(PrivacyRequest.policy_id == policy.id)
+        .limit(1)
+        .count()
+        > 0
+    )
+    if has_privacy_requests:
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT,
+            detail=f"Cannot delete policy {policy_key}: it is referenced by one or more privacy requests.",
+        )
+
+    logger.info("Deleting policy with key '{}'", policy_key)
+    policy.delete(db=db)
+
+
+DEFAULT_ERASURE_MASKING_STRATEGY = "hmac"
+
+
+def _create_rule_and_targets(
+    db: Session,
+    policy: Policy,
+    rule_schema: RuleCreateWithTargets,
+) -> Rule:
+    """Create a single Rule (and its RuleTargets) on a Policy from a RuleCreateWithTargets schema."""
+    associated_storage_config_id = None
+    if (
+        rule_schema.action_type == ActionType.access
+        and rule_schema.storage_destination_key
+    ):
+        storage_config: Optional[StorageConfig] = StorageConfig.get_by(
+            db=db, field="key", value=rule_schema.storage_destination_key
+        )
+        if not storage_config:
+            raise RuleValidationError(
+                f"A StorageConfig with key {rule_schema.storage_destination_key} does not exist"
+            )
+        associated_storage_config_id = storage_config.id
+
+    masking_strategy_data = None
+    if rule_schema.masking_strategy:
+        masking_strategy_data = rule_schema.masking_strategy.model_dump(mode="json")
+
+    rule = Rule.create_or_update(
+        db=db,
+        data={
+            "action_type": rule_schema.action_type,
+            "key": rule_schema.key,
+            "name": rule_schema.name,
+            "policy_id": policy.id,
+            "storage_destination_id": associated_storage_config_id,
+            "masking_strategy": masking_strategy_data,
+        },
+    )
+
+    if rule_schema.targets:
+        for target_schema in rule_schema.targets:
+            target_data: Dict[str, Any] = {
+                "data_category": target_schema.data_category,
+                "rule_id": rule.id,
+            }
+            if target_schema.name:
+                target_data["name"] = target_schema.name
+            if target_schema.key:
+                target_data["key"] = target_schema.key
+            else:
+                target_data["key"] = to_snake_case(
+                    RuleTarget.get_compound_key(data=target_data)
+                )
+            RuleTarget.create_or_update(db=db, data=target_data)
+
+    return rule  # type: ignore[return-value]
+
+
+def _auto_create_rule_and_targets(
+    db: Session,
+    policy: Policy,
+    action_type: ActionType,
+) -> None:
+    """Auto-generate a Rule and default RuleTargets for a newly created Policy."""
+    rule_name = f"{policy.name} Rule"
+    rule_key = f"{policy.key}_rule"
+
+    masking_strategy = None
+    if action_type == ActionType.erasure:
+        masking_strategy = schemas.PolicyMaskingSpec(
+            strategy=DEFAULT_ERASURE_MASKING_STRATEGY, configuration={}
+        )
+
+    targets = None
+    if action_type in (ActionType.access, ActionType.erasure):
+        default_categories = get_user_data_categories()
+        targets = [schemas.RuleTarget(data_category=cat) for cat in default_categories]
+
+    rule_schema = RuleCreateWithTargets(
+        name=rule_name,
+        key=rule_key,
+        action_type=action_type,
+        masking_strategy=masking_strategy,
+        targets=targets,
+    )
+    _create_rule_and_targets(db, policy, rule_schema)
+
+
 @router.patch(
     urls.POLICY_LIST,
     status_code=HTTP_200_OK,
@@ -107,7 +242,18 @@ def create_or_update_policies(
 ) -> schemas.BulkPutPolicyResponse:
     """
     Given a list of policy data elements, create or update corresponding Policy objects
-    or report failure
+    or report failure.
+
+    Optionally accepts ``action_type`` **or** ``rules`` on each policy element
+    to auto-populate rules and targets when the policy is newly created:
+
+    * ``action_type`` – auto-generates a rule (with HMAC masking for erasure)
+      and seeds default data-category targets for access/erasure policies.
+    * ``rules`` – creates the supplied rules (and their nested targets) exactly
+      as specified.
+
+    The two fields are mutually exclusive. Existing policies being updated
+    ignore both fields.
     """
     created_or_updated: List[Policy] = []
     failed: List[BulkUpdateFailed] = []
@@ -115,8 +261,23 @@ def create_or_update_policies(
 
     for policy_schema in data:
         policy_data: Dict[str, Any] = dict(policy_schema)
+        action_type = policy_schema.action_type
+        inline_rules = policy_schema.rules
+
+        if action_type and ActionType(action_type) not in SUPPORTED_ACTION_TYPES:
+            failed.append(
+                BulkUpdateFailed(
+                    message=f"Unsupported action_type '{action_type}'. Must be one of: {', '.join(sorted(a.value for a in SUPPORTED_ACTION_TYPES))}",
+                    data=policy_data,
+                )
+            )
+            continue
+
+        # Determine whether this will be a create or an update
+        is_new = Policy.get_by_key_or_id(db=db, data=policy_data) is None
+
         try:
-            policy = Policy.create_or_update(
+            policy: Policy = Policy.create_or_update(  # type: ignore[assignment]
                 db=db,
                 data={
                     "name": policy_data["name"],
@@ -145,8 +306,41 @@ def create_or_update_policies(
             }
             failed.append(BulkUpdateFailed(**failure))
             continue
-        else:
-            created_or_updated.append(policy)  # type: ignore[arg-type]
+
+        # Auto-create rules/targets only for newly created policies
+        if is_new:
+            try:
+                if action_type:
+                    _auto_create_rule_and_targets(db, policy, ActionType(action_type))
+                elif inline_rules:
+                    for rule_schema in inline_rules:
+                        _create_rule_and_targets(db, policy, rule_schema)
+            except (
+                KeyOrNameAlreadyExists,
+                RuleValidationError,
+                RuleTargetValidationError,
+                DataCategoryNotSupported,
+                PolicyValidationError,
+                IntegrityError,
+            ) as exc:
+                logger.warning(
+                    "Rule/target auto-creation failed for policy {}: {}",
+                    policy.key,
+                    Pii(str(exc)),
+                )
+                failure = {
+                    "message": exc.args[0],
+                    "data": policy_data,
+                }
+                failed.append(BulkUpdateFailed(**failure))
+                # Clean up the policy we just created since rule creation failed
+                policy.delete(db=db)
+                continue
+
+            # Refresh so the response includes newly created rules
+            db.refresh(policy)
+
+        created_or_updated.append(policy)  # type: ignore[arg-type]
 
     return schemas.BulkPutPolicyResponse(
         succeeded=created_or_updated,
@@ -360,7 +554,8 @@ def delete_rule(
     logger.info("Finding rule with key '{}'", rule_key)
 
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -466,7 +661,7 @@ def _validate_data_categories(
     invalid_categories = list(set(data_categories) - set(from_db))
     if invalid_categories:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Invalid data categories: {invalid_categories}",
         )
 
@@ -494,7 +689,8 @@ def create_or_update_rule_targets(
 
     logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(
@@ -593,7 +789,8 @@ def delete_rule_target(
 
     logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
-        db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
+        db=db,
+        conditions=(Rule.key == rule_key and Rule.policy_id == policy.id),  # type: ignore[arg-type]
     ).first()
     if not rule:
         raise HTTPException(

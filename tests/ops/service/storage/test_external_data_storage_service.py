@@ -227,7 +227,7 @@ class TestExternalDataStorageService:
         ]
 
         for i, test_data in enumerate(empty_data_cases):
-            storage_path = f"test/data/test_file"
+            storage_path = "test/data/test_file"
 
             metadata = ExternalDataStorageService.store_data(
                 db=db, storage_path=storage_path, data=test_data

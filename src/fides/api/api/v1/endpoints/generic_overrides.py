@@ -6,8 +6,9 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
-from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
+from fastapi_pagination.ext.sqlalchemy import paginate as async_paginate
 from fideslang.models import Dataset as FideslangDataset
+from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +18,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
@@ -71,6 +72,32 @@ data_category_router = APIRouter(tags=["DataCategory"], prefix=V1_URL_PREFIX)
 data_subject_router = APIRouter(tags=["DataSubject"], prefix=V1_URL_PREFIX)
 
 
+def _dataset_validation_error_response(
+    exc: PydanticValidationError,
+) -> JSONResponse:
+    """Return a structured 422 response for dataset validation failures.
+
+    Scoped to dataset endpoints to avoid masking unrelated pydantic errors
+    as 422s across the application.
+    """
+    errors = exc.errors()
+    field_errors = [
+        {"loc": e.get("loc"), "msg": e.get("msg"), "type": e.get("type")}
+        for e in errors
+    ]
+    logger.error(
+        "Dataset validation error: "
+        f"{len(field_errors)} validation error(s): {field_errors}"
+    )
+    return JSONResponse(
+        status_code=HTTP_422_UNPROCESSABLE_CONTENT,
+        content={
+            "detail": "The requested dataset contains data that fails validation.",
+            "errors": field_errors,
+        },
+    )
+
+
 @dataset_router.post(
     "/dataset",
     dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_CREATE])],
@@ -87,7 +114,7 @@ async def create_dataset(
         return dataset_service.create_dataset(dataset)
     except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(
                 exc.errors(include_url=False, include_input=False)
                 if isinstance(exc, PydanticValidationError)
@@ -96,7 +123,7 @@ async def create_dataset(
         )
     except KeyOrNameAlreadyExists as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         )
 
@@ -117,7 +144,7 @@ async def update_dataset(
         return dataset_service.update_dataset(dataset)
     except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(
                 exc.errors(include_url=False, include_input=False)
                 if isinstance(exc, PydanticValidationError)
@@ -147,7 +174,12 @@ async def list_dataset_paginated(
     only_unlinked_datasets: Optional[bool] = Query(False),
     connection_type: Optional[ConnectionType] = Query(None),
     minimal: Optional[bool] = Query(False),
-) -> Union[Page[DatasetResponse], List[DatasetResponse]]:
+    skip_validation: bool = Query(
+        False,
+        description="[Troubleshooting only] Skip pydantic response validation. "
+        "Use this to retrieve datasets that contain data failing validation.",
+    ),
+) -> Union[Page[DatasetResponse], List[DatasetResponse], Response]:
     """
     Get a list of all of the Datasets.
     If any pagination parameters (size or page) are provided, then the response will be paginated.
@@ -212,21 +244,41 @@ async def list_dataset_paginated(
 
     if not page and not size:
         results = await list_resource_query(db, filtered_query, CtlDataset)
-        response = [
-            DatasetResponse.model_validate(result.__dict__) for result in results
-        ]
+        if skip_validation:
+            return JSONResponse(content=jsonable_encoder(results))
+        try:
+            response = [
+                DatasetResponse.model_validate(result.__dict__) for result in results
+            ]
+        except PydanticValidationError as exc:
+            return _dataset_validation_error_response(exc)
         return response
 
     pagination_params = Params(page=page or 1, size=size or 50)
     results = await async_paginate(db, filtered_query, pagination_params)
 
-    validated_items = []
-    for result in results.items:  # type: ignore[attr-defined]
-        # run pydantic validation in a threadpool to avoid blocking the main thread
-        validated_item = await run_in_threadpool(
-            partial(DatasetResponse.model_validate, result.__dict__)
+    if skip_validation:
+        return JSONResponse(
+            content={
+                "items": jsonable_encoder(
+                    list(results.items)  # type: ignore[attr-defined]
+                ),
+                "total": results.total,  # type: ignore[attr-defined]
+                "page": results.page,  # type: ignore[attr-defined]
+                "size": results.size,  # type: ignore[attr-defined]
+                "pages": results.pages,  # type: ignore[attr-defined]
+            }
         )
-        validated_items.append(validated_item)
+
+    try:
+        validated_items = []
+        for result in results.items:  # type: ignore[attr-defined]
+            validated_item = await run_in_threadpool(
+                partial(DatasetResponse.model_validate, result.__dict__)
+            )
+            validated_items.append(validated_item)
+    except PydanticValidationError as exc:
+        return _dataset_validation_error_response(exc)
 
     results.items = validated_items  # type: ignore[attr-defined]
 
@@ -242,15 +294,23 @@ async def list_dataset_paginated(
 async def get_dataset(
     fides_key: str,
     dataset_service: DatasetService = Depends(get_dataset_service),
-) -> Dict:
+    skip_validation: bool = Query(
+        False,
+        description="[Troubleshooting only] Skip pydantic response validation. "
+        "Use this to retrieve a dataset that contains data failing validation.",
+    ),
+) -> Union[Dict, Response]:
     """Get a single dataset by fides key"""
     try:
-        return dataset_service.get_dataset(fides_key)
+        result = dataset_service.get_dataset(fides_key)
     except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=str(e),
         )
+    if skip_validation:
+        return JSONResponse(content=jsonable_encoder(result))
+    return result
 
 
 @dataset_router.delete(
@@ -320,7 +380,7 @@ async def upsert_datasets(
         }
     except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(
                 exc.errors(include_url=False, include_input=False)
                 if isinstance(exc, PydanticValidationError)
@@ -372,12 +432,12 @@ async def create_data_use(
         )
     except KeyOrNameAlreadyExists as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -403,12 +463,12 @@ async def create_data_category(
         )
     except KeyOrNameAlreadyExists as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -434,12 +494,12 @@ async def create_data_subject(
         )
     except KeyOrNameAlreadyExists as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -475,7 +535,7 @@ async def update_data_use(
         return result
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -511,7 +571,7 @@ async def update_data_category(
         return result
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -546,7 +606,7 @@ async def update_data_category_tagging_instructions(
         return result
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -580,7 +640,7 @@ async def delete_data_category_tagging_instructions(
         return result
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 

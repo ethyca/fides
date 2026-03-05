@@ -6,8 +6,10 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
+from fides.api.db.base_class import (
+    Base,  # type: ignore[attr-defined]
+    JSONTypeOverride,
+)
 from fides.config import CONFIG
 
 

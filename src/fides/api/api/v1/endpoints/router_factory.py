@@ -4,6 +4,7 @@ Contains all of the factory functions to generate generic CRUD endpoints.
 
 Mostly used for `ctl`-related objects.
 """
+
 from typing import Dict, List
 
 from fastapi import Depends, Response, Security, status

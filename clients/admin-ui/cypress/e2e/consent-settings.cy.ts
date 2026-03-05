@@ -83,7 +83,8 @@ describe("Consent settings", () => {
         cy.getByTestId("option-state").should("not.have.attr", "checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
           "have.attr",
-          "data-checked",
+          "checked",
+          "checked",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "have.attr",

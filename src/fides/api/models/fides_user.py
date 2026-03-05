@@ -5,9 +5,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, List
 
 from citext import CIText
-from sqlalchemy import Boolean, Column, DateTime
+from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import String
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
@@ -27,6 +26,7 @@ from fides.api.schemas.user import DisabledReason
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
+    from fides.api.models.detection_discovery import MonitorConfig
     from fides.api.models.fides_user_permissions import FidesUserPermissions
     from fides.api.models.fides_user_respondent_email_verification import (
         FidesUserRespondentEmailVerification,
@@ -75,7 +75,18 @@ class FidesUser(Base):
         "ClientDetail", backref="user", cascade="all, delete", uselist=False
     )
 
-    systems = relationship("System", secondary="systemmanager", back_populates="data_stewards")  # type: ignore
+    systems = relationship(
+        "System", secondary="systemmanager", back_populates="data_stewards"
+    )  # type: ignore
+
+    # Monitors for which this user is a steward
+    stewarded_monitors = relationship(
+        "MonitorConfig",
+        secondary="monitorsteward",
+        back_populates="stewards",
+        lazy="selectin",
+    )  # type: ignore
+
     # permissions relationship is defined via backref in FidesUserPermissions
     email_verifications = relationship(
         "FidesUserRespondentEmailVerification",
@@ -102,6 +113,11 @@ class FidesUser(Base):
     @property
     def system_ids(self) -> List[str]:
         return [system.id for system in self.systems]
+
+    @property
+    def stewarded_monitor_ids(self) -> List[str]:
+        """Returns list of monitor IDs for which this user is a steward."""
+        return [monitor.id for monitor in self.stewarded_monitors]  # type: ignore[attr-defined]
 
     @classmethod
     def hash_password(cls, password: str, encoding: str = "UTF-8") -> tuple[str, str]:

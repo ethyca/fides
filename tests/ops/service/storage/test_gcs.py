@@ -27,9 +27,7 @@ class TestGetGCSClient:
             "project_id": "test-project-123",
             "private_key_id": "test-key-id-456",
             "private_key": (
-                "-----BEGIN PRIVATE KEY-----\n"
-                "MIItest\n"
-                "-----END PRIVATE KEY-----\n"
+                "-----BEGIN PRIVATE KEY-----\nMIItest\n-----END PRIVATE KEY-----\n"
             ),
             "client_email": "test-service@test-project-123.iam.gserviceaccount.com",
             "client_id": "123456789",

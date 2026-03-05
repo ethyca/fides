@@ -7,6 +7,7 @@ from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
 from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
@@ -212,6 +213,102 @@ class TestGetPolicyDetail:
         assert rule["key"] == "access_request_rule"
         assert rule["action_type"] == "access"
         assert rule["storage_destination"]["type"] == "s3"
+
+
+class TestDeletePolicy:
+    @pytest.fixture(scope="function")
+    def url(self, policy) -> str:
+        return V1_URL_PREFIX + POLICY_DETAIL_URI.format(policy_key=policy.key)
+
+    def test_delete_policy_unauthenticated(self, url, api_client):
+        resp = api_client.delete(url)
+        assert resp.status_code == 401
+
+    def test_delete_policy_wrong_scope(
+        self, url, api_client: TestClient, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 403
+
+    def test_delete_policy_not_found(
+        self, api_client: TestClient, generate_auth_header
+    ):
+        url = V1_URL_PREFIX + POLICY_DETAIL_URI.format(policy_key="nonexistent_policy")
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 404
+
+    def test_delete_policy_in_use(
+        self, db, api_client: TestClient, generate_auth_header, policy, url
+    ):
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "status": "pending",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 409
+        assert "referenced by one or more privacy requests" in resp.json()["detail"]
+
+    def test_delete_policy_success(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        oauth_client,
+        storage_config,
+        default_data_categories,
+    ):
+        # Create a standalone policy with a rule and target for this test
+        test_policy = Policy.create(
+            db=db,
+            data={
+                "name": "delete test policy",
+                "key": "delete_test_policy",
+                "client_id": oauth_client.id,
+            },
+        )
+        rule = Rule.create(
+            db=db,
+            data={
+                "action_type": "access",
+                "client_id": oauth_client.id,
+                "name": "Delete Test Rule",
+                "policy_id": test_policy.id,
+                "storage_destination_id": storage_config.id,
+            },
+        )
+        target = RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": DataCategory("user").value,
+                "rule_id": rule.id,
+            },
+        )
+
+        policy_id = test_policy.id
+        rule_id = rule.id
+        target_id = target.id
+
+        url = V1_URL_PREFIX + POLICY_DETAIL_URI.format(policy_key=test_policy.key)
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_DELETE])
+        resp = api_client.delete(url, headers=auth_header)
+        assert resp.status_code == 204
+
+        # Expire cached objects so the session re-queries the database
+        db.expire_all()
+
+        # Verify policy, rule, and target are all deleted
+        assert Policy.get(db=db, object_id=policy_id) is None
+        assert Rule.get(db=db, object_id=rule_id) is None
+        assert RuleTarget.get(db=db, object_id=target_id) is None
 
 
 class TestGetRules:
@@ -900,6 +997,200 @@ class TestCreatePolicies:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
+
+
+class TestCreatePolicyWithAutoPopulatedRules:
+    """Tests for ENG-2784: auto-populate rules/targets on policy creation."""
+
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client) -> str:
+        return V1_URL_PREFIX + POLICY_CREATE_URI
+
+    @pytest.mark.parametrize(
+        "action_type,expected_masking,expects_targets",
+        [
+            ("access", None, True),
+            ("erasure", "hmac", True),
+            ("consent", None, False),
+        ],
+    )
+    def test_create_policy_auto_populates_rule_and_targets(
+        self,
+        db,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        action_type: str,
+        expected_masking: str,
+        expects_targets: bool,
+    ):
+        policy_name = f"Auto {action_type.title()} Policy"
+        data = [{"name": policy_name, "action_type": action_type}]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+
+        response_data = resp.json()
+        assert len(response_data["succeeded"]) == 1
+        assert len(response_data["failed"]) == 0
+
+        policy_resp = response_data["succeeded"][0]
+        assert "action_type" not in policy_resp  # should not leak into response
+        assert len(policy_resp["rules"]) == 1
+
+        rule = policy_resp["rules"][0]
+        assert rule["name"] == f"{policy_name} Rule"
+        assert rule["action_type"] == action_type
+        if expected_masking:
+            assert rule["masking_strategy"]["strategy"] == expected_masking
+        else:
+            assert rule["masking_strategy"] is None
+
+        # Verify targets in DB
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == policy_resp["key"])
+        ).first()
+        db_rule = Rule.filter(db=db, conditions=(Rule.policy_id == pol.id)).first()
+        targets = RuleTarget.filter(
+            db=db, conditions=(RuleTarget.rule_id == db_rule.id)
+        ).all()
+
+        if expects_targets:
+            assert len(targets) > 0
+            target_categories = {t.data_category for t in targets}
+            assert "user.contact" in target_categories
+            assert "user.name" in target_categories
+            # Excluded categories should not be present
+            assert "user.financial" not in target_categories
+            assert "user.payment" not in target_categories
+            assert "user.authorization" not in target_categories
+        else:
+            assert len(targets) == 0
+
+    def test_create_policy_without_action_type_no_auto_rules(
+        self, db, api_client: TestClient, generate_auth_header, url
+    ):
+        """Backward compatibility: no action_type means no rules are auto-created."""
+        data = [{"name": "Plain Policy No Rules"}]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+
+        response_data = resp.json()
+        assert len(response_data["succeeded"]) == 1
+
+        policy_resp = response_data["succeeded"][0]
+        assert policy_resp["rules"] == [] or policy_resp["rules"] is None
+
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == policy_resp["key"])
+        ).first()
+
+    def test_update_existing_policy_with_action_type_does_not_create_rules(
+        self, db, api_client: TestClient, generate_auth_header, url
+    ):
+        """Updating an existing policy should not auto-create rules even if action_type is passed."""
+        # First create a plain policy
+        data = [{"name": "Update Test Policy", "key": "update_test_policy"}]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["succeeded"]) == 1
+
+        # Now update with action_type — should not create rules
+        data = [
+            {
+                "name": "Update Test Policy",
+                "key": "update_test_policy",
+                "action_type": "access",
+            }
+        ]
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+        assert len(resp.json()["succeeded"]) == 1
+
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == "update_test_policy")
+        ).first()
+        rules = Rule.filter(db=db, conditions=(Rule.policy_id == pol.id)).all()
+        assert len(rules) == 0
+
+    def test_create_policy_with_explicit_rules_and_targets(
+        self, db, api_client: TestClient, generate_auth_header, url
+    ):
+        """Creating a policy with explicit rules and inline targets."""
+        data = [
+            {
+                "name": "Explicit Rules Policy",
+                "rules": [
+                    {
+                        "name": "My Custom Access Rule",
+                        "action_type": "access",
+                        "targets": [
+                            {"data_category": "user.name"},
+                            {"data_category": "user.contact"},
+                        ],
+                    }
+                ],
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+
+        response_data = resp.json()
+        assert len(response_data["succeeded"]) == 1
+
+        policy_resp = response_data["succeeded"][0]
+        assert len(policy_resp["rules"]) == 1
+        assert policy_resp["rules"][0]["name"] == "My Custom Access Rule"
+        assert policy_resp["rules"][0]["action_type"] == "access"
+
+        pol = Policy.filter(
+            db=db, conditions=(Policy.key == policy_resp["key"])
+        ).first()
+        db_rule = Rule.filter(db=db, conditions=(Rule.policy_id == pol.id)).first()
+        targets = RuleTarget.filter(
+            db=db, conditions=(RuleTarget.rule_id == db_rule.id)
+        ).all()
+        assert len(targets) == 2
+        target_categories = {t.data_category for t in targets}
+        assert target_categories == {"user.name", "user.contact"}
+
+    def test_create_policy_with_both_action_type_and_rules_fails(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        """action_type and rules are mutually exclusive."""
+        data = [
+            {
+                "name": "Both Fields Policy",
+                "action_type": "access",
+                "rules": [
+                    {
+                        "name": "Some Rule",
+                        "action_type": "access",
+                    }
+                ],
+            }
+        ]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 422
+
+    def test_create_policy_with_unsupported_action_type_fails(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        """Unsupported action_type (e.g. 'update') should fail early with a clear message."""
+        data = [{"name": "Unsupported Action Policy", "action_type": "update"}]
+        auth_header = generate_auth_header(scopes=[scopes.POLICY_CREATE_OR_UPDATE])
+        resp = api_client.patch(url, json=data, headers=auth_header)
+        assert resp.status_code == 200
+
+        response_data = resp.json()
+        assert len(response_data["succeeded"]) == 0
+        assert len(response_data["failed"]) == 1
+        assert "Unsupported action_type" in response_data["failed"][0]["message"]
+        assert "update" in response_data["failed"][0]["message"]
 
 
 class TestCreateRules:

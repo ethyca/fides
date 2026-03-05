@@ -25,24 +25,22 @@ In order to get started quickly with Fides, a sample project is bundled within t
 #### Minimum requirements (for all platforms)
 
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
-* [Python](https://www.python.org/downloads/) (version 3.9 through 3.10)
+* [Python](https://www.python.org/downloads/) (version 3.13)
+* [uv](https://docs.astral.sh/uv/)
 
 #### Download and install Fides
 
 > [!TIP]
-> We highly recommend setting up a Python virtual environment such as `venv` to install Fides into. For example:
+> We highly recommend using `uv` to install Fides and manage a virtual environment.
 >
-> ```sh
-> mkdir ~/fides
-> cd ~/fides
-> python3 -m venv venv
-> source venv/bin/activate
-> ```
+> To download `uv`:
+> - macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+> -  Windows: `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"`
 
-Once your virtual environment is ready, you can easily download and install Fides using `pip`. Run the following command to get started:
+You can then easily download and install Fides using `uv`. Run the following command to get started:
 
 ```
-pip install ethyca-fides
+uv pip install ethyca-fides
 ```
 
 #### Deploy the Fides sample project
@@ -50,7 +48,7 @@ pip install ethyca-fides
 By default, Fides ships with a small project belonging to a fictional e-commerce store. Running the `fides deploy up` command builds a Fides project with all you need to run your first Data Subject Request against real databases.
 
 ```sh
-fides deploy up
+uv run fides deploy up
 ```
 
 #### Explore the sample project
@@ -94,7 +92,7 @@ For more information on getting started with Fides, how to configure and set up 
 Join the conversation on:
 
 * [Slack](https://fid.es/join-slack)
-* [Twitter](https://twitter.com/ethyca)
+* [X](https://x.com/ethyca)
 * [Discussions](https://github.com/ethyca/fides/discussions)
 
 ### Contributing
@@ -145,5 +143,5 @@ export CFLAGS="-I/opt/homebrew/opt/freetds/include"
 ```
 3. Reinstall Fides with MSSQL support by including the `all` extra requirement:
 ```zsh
-pip install "ethyca-fides[all]"
+uv pip install "ethyca-fides[all]"
 ```

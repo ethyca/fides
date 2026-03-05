@@ -15,8 +15,10 @@ from fides.api.graph.config import (
     CollectionAddress,
     FieldPath,
     GraphDataset,
+    PropertyScope,
+    ScalarField,
 )
-from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.graph import DatasetGraph, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -29,11 +31,7 @@ from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.task.deprecated_graph_task import (
-    _evaluate_erasure_dependencies,
-    format_data_use_map_for_caching,
-    update_erasure_mapping_from_cache,
-)
+from fides.api.task.create_request_tasks import format_data_use_map_for_caching
 from fides.api.task.graph_task import (
     EMPTY_REQUEST,
     EMPTY_REQUEST_TASK,
@@ -47,6 +45,7 @@ from fides.api.task.task_resources import Connections
 from fides.api.util.consent_util import (
     cache_initial_status_and_identities_for_consent_reporting,
 )
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 from ..graph.graph_test_util import (
     MockMongoTask,
@@ -619,92 +618,6 @@ class TestBuildAffectedFieldLogs:
         ]
 
 
-class TestUpdateErasureMappingFromCache:
-    @pytest.fixture(scope="function")
-    def task_resource(self, privacy_request, policy, db, connection_config):
-        tr = TaskResources(privacy_request, policy, [], EMPTY_REQUEST_TASK, db)
-        tr.get_connector = lambda x: Connections.build_connector(connection_config)
-        return tr
-
-    @pytest.fixture(scope="function")
-    def collect_tasks_fn(self, task_resource):
-        def collect_tasks_fn(
-            tn: TraversalNode, data: Dict[CollectionAddress, GraphTask]
-        ) -> None:
-            """Run the traversal, as an action creating a GraphTask for each traversal_node."""
-            if not tn.is_root_node():
-                task_resource.privacy_request_task = tn.to_mock_request_task()
-                data[tn.address] = GraphTask(task_resource)
-
-        return collect_tasks_fn
-
-    @pytest.fixture(scope="function")
-    def dsk(self, collect_tasks_fn) -> Dict[str, Any]:
-        """
-        Creates a Dask graph representing a dataset containing three collections (ds_1, ds_2, ds_3)
-        where the erasure order is ds_3 -> ds_2 -> ds_1
-        """
-        t = [
-            GraphDataset(
-                name=f"dr_1",
-                collections=[
-                    Collection(name=f"ds_{i}", fields=generate_field_list(1))
-                    for i in range(1, 4)
-                ],
-                connection_key="mock_connection_config_key",
-            )
-        ]
-
-        # the collections are not dependent on each other for access
-        field(t, "dr_1", "ds_1", "f1").identity = "email"
-        field(t, "dr_1", "ds_2", "f1").identity = "email"
-        field(t, "dr_1", "ds_3", "f1").identity = "email"
-        collection(t, CollectionAddress("dr_1", "ds_2")).erase_after = [
-            CollectionAddress("dr_1", "ds_1")
-        ]
-        collection(t, CollectionAddress("dr_1", "ds_3")).erase_after = [
-            CollectionAddress("dr_1", "ds_2")
-        ]
-        graph: DatasetGraph = DatasetGraph(*t)
-        traversal: Traversal = Traversal(graph, {"email": {"test_user@example.com"}})
-        env: Dict[CollectionAddress, Any] = {}
-        traversal.traverse(env, collect_tasks_fn)
-        erasure_end_nodes = list(graph.nodes.keys())
-
-        # the [] and [[]] values don't matter for this test, we just need to verify that they are not modified
-        dsk: Dict[CollectionAddress, Any] = {
-            k: (
-                t.erasure_request,
-                [],
-                [[]],
-                *_evaluate_erasure_dependencies(t, erasure_end_nodes),
-            )
-            for k, t in env.items()
-        }
-        dsk[TERMINATOR_ADDRESS] = (lambda x: x, *erasure_end_nodes)
-        dsk[ROOT_COLLECTION_ADDRESS] = 0
-        return dsk
-
-    def test_update_erasure_mapping_from_cache_without_data(self, dsk, task_resource):
-        task_resource.get_all_cached_erasures = lambda: {}  # represents an empty cache
-        update_erasure_mapping_from_cache(dsk, task_resource)
-        (task, retrieved_data, input_list, *erasure_prereqs) = dsk[
-            CollectionAddress("dr_1", "ds_1")
-        ]
-        assert callable(task)
-        assert task.__name__ == "erasure_request"
-        assert retrieved_data == []
-        assert input_list == [[]]
-        assert erasure_prereqs == [ROOT_COLLECTION_ADDRESS]
-
-    def test_update_erasure_mapping_from_cache_with_data(self, dsk, task_resource):
-        task_resource.get_all_cached_erasures = lambda: {
-            "dr_1:ds_1": 1
-        }  # a cache with the results of the ds_1 collection erasure
-        update_erasure_mapping_from_cache(dsk, task_resource)
-        assert dsk[CollectionAddress("dr_1", "ds_1")] == 1
-
-
 class TestFormatDataUseMapForCaching:
     def create_dataset(self, db, fides_key, connection_config):
         """
@@ -777,9 +690,14 @@ class TestFormatDataUseMapForCaching:
                 "connection_type": ConnectionType.timescale,
                 "access": AccessLevel.write,
                 "disabled": False,
-                "system_id": system.id,
             },
         )
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.commit()
 
         ctl_dataset, dataset_config = self.create_dataset(
             db, "postgres_example_subscriptions_dataset", connection_config
@@ -804,9 +722,14 @@ class TestFormatDataUseMapForCaching:
                 "connection_type": ConnectionType.timescale,
                 "access": AccessLevel.write,
                 "disabled": False,
-                "system_id": system_multiple_decs.id,
             },
         )
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system_multiple_decs.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.commit()
 
         ctl_dataset, dataset_config = self.create_dataset(
             db,
@@ -1026,11 +949,8 @@ class TestGraphTaskAffectedConsentSystems:
             relevant_preferences=[privacy_preference_history_us_ca_provide],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
-        with pytest.raises(BaseException) as exc:
-            ret = mock_graph_task.consent_request({"email": "customer-1@example.com"})
-            assert ret is False
-
-        assert str(exc.value) == "Request failed"
+        ret = mock_graph_task.consent_request({"email": "customer-1@example.com"})
+        assert ret is False
 
         db.refresh(privacy_preference_history)
         db.refresh(privacy_preference_history_us_ca_provide)
@@ -1276,3 +1196,138 @@ class TestGraphTaskLogging:
         )
 
         assert execution_log.status == ExecutionLogStatus.complete
+
+
+class TestTraversalOnlyBehavior:
+    """Tests for TRAVERSAL_ONLY bridge node behavior in access and erasure requests."""
+
+    @pytest.fixture(scope="function")
+    def _make_traversal_only_task(self, privacy_request, policy, db):
+        """Factory that creates a GraphTask whose collection has the given property_scope."""
+
+        def _factory(property_scope: PropertyScope):
+            coll = Collection(
+                name="bridge_coll",
+                fields=[ScalarField(name="id"), ScalarField(name="fk_value")],
+                property_scope=property_scope,
+            )
+            ds = GraphDataset(
+                name="bridge_ds",
+                collections=[coll],
+                connection_key="mock_connection_config_key_bridge_ds",
+            )
+            node = Node(ds, coll)
+            tn = TraversalNode(node)
+            rq = tn.to_mock_request_task()
+            rq.action_type = ActionType.access
+            rq.status = ExecutionLogStatus.pending
+            rq.id = str(uuid.uuid4())
+            db.add(rq)
+            db.commit()
+
+            resources = TaskResources(
+                privacy_request,
+                policy,
+                [
+                    ConnectionConfig(
+                        key="mock_connection_config_key_bridge_ds",
+                        connection_type=ConnectionType.postgres,
+                        access=AccessLevel.write,
+                    )
+                ],
+                rq,
+                db,
+            )
+            return GraphTask(resources)
+
+        return _factory
+
+    @pytest.mark.parametrize(
+        "property_scope,expect_post_processing_skipped",
+        [
+            (PropertyScope.TRAVERSAL_ONLY, True),
+            (PropertyScope.IN_SCOPE, False),
+        ],
+    )
+    @mock.patch("fides.api.task.graph_task.GraphTask.access_results_post_processing")
+    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.retrieve_data")
+    def test_access_request_traversal_only_skips_post_processing(
+        self,
+        mock_retrieve,
+        mock_post_processing,
+        property_scope,
+        expect_post_processing_skipped,
+        _make_traversal_only_task,
+    ):
+        mock_output = [{"id": 1, "fk_value": "abc"}]
+        mock_retrieve.return_value = mock_output
+        mock_post_processing.return_value = mock_output
+
+        task = _make_traversal_only_task(property_scope)
+        result = task.access_request()
+
+        assert result == mock_output
+        if expect_post_processing_skipped:
+            mock_post_processing.assert_not_called()
+        else:
+            mock_post_processing.assert_called_once()
+
+    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.retrieve_data")
+    def test_access_request_traversal_only_caches_access_data(
+        self,
+        mock_retrieve,
+        _make_traversal_only_task,
+    ):
+        mock_output = [{"id": 1, "fk_value": "abc"}]
+        mock_retrieve.return_value = mock_output
+
+        task = _make_traversal_only_task(PropertyScope.TRAVERSAL_ONLY)
+        task.access_request()
+
+        assert task.request_task.access_data == mock_output
+
+    @pytest.mark.parametrize(
+        "property_scope,expected_masked_count",
+        [
+            (PropertyScope.TRAVERSAL_ONLY, 0),
+            (PropertyScope.IN_SCOPE, 1),
+        ],
+    )
+    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.mask_data")
+    def test_erasure_request_traversal_only_skips_masking(
+        self,
+        mock_mask,
+        property_scope,
+        expected_masked_count,
+        _make_traversal_only_task,
+        db,
+        privacy_request,
+    ):
+        mock_mask.return_value = 1
+
+        task = _make_traversal_only_task(property_scope)
+        result = task.erasure_request(
+            [{"id": 1, "fk_value": "abc"}],
+        )
+
+        assert result == expected_masked_count
+        if property_scope == PropertyScope.TRAVERSAL_ONLY:
+            mock_mask.assert_not_called()
+            assert task.request_task.rows_masked == 0
+
+            log = (
+                db.query(ExecutionLog)
+                .filter(
+                    ExecutionLog.privacy_request_id == privacy_request.id,
+                    ExecutionLog.dataset_name == "bridge_ds",
+                    ExecutionLog.collection_name == "bridge_coll",
+                    ExecutionLog.action_type == ActionType.erasure,
+                )
+                .order_by(ExecutionLog.created_at.desc())
+                .first()
+            )
+            assert log is not None
+            assert log.status == ExecutionLogStatus.complete
+            assert "traversal-only" in log.message.lower()
+        else:
+            mock_mask.assert_called_once()

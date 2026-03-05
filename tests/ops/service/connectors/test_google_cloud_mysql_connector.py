@@ -59,11 +59,11 @@ def connector(mock_config):
     autospec=True,
 )
 @patch(
-    "fides.api.service.connectors.google_cloud_mysql_connector" ".Connector",
+    "fides.api.service.connectors.google_cloud_mysql_connector.Connector",
     autospec=True,
 )
 @patch(
-    "fides.api.service.connectors.google_cloud_mysql_connector" ".create_engine",
+    "fides.api.service.connectors.google_cloud_mysql_connector.create_engine",
     autospec=True,
 )
 class TestGoogleCloudSQLMySQLConnectorCreateClient:

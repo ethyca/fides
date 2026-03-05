@@ -7,6 +7,7 @@ from fides.api.models.asset import Asset
 from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.authentication_request import AuthenticationRequest
+from fides.api.models.chat_config import ChatConfig
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connection_oauth_credentials import OAuthConfig
@@ -36,6 +37,7 @@ from fides.api.models.fides_user_respondent_email_verification import (
 )
 from fides.api.models.identity_definition import IdentityDefinition
 from fides.api.models.identity_salt import IdentitySalt
+from fides.api.models.jira_ticket_task import JiraTicketTask
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.manual_task import (
     ManualTask,
@@ -51,6 +53,14 @@ from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.openid_provider import OpenIDProvider
 from fides.api.models.policy import Policy, Rule, RuleTarget
+from fides.api.models.privacy_assessment import (
+    AnswerVersion,
+    AssessmentAnswer,
+    AssessmentQuestion,
+    AssessmentTemplate,
+    PrivacyAssessment,
+)
+from fides.api.models.privacy_assessment_config import PrivacyAssessmentConfig
 from fides.api.models.privacy_center_config import PrivacyCenterConfig
 from fides.api.models.privacy_experience import (
     ExperienceConfigTemplate,
@@ -79,6 +89,7 @@ from fides.api.models.property import (
     PrivacyExperienceConfigProperty,
     Property,
 )
+from fides.api.models.questionnaire import ChatMessage, Questionnaire
 from fides.api.models.registration import UserRegistration
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
 from fides.api.models.storage import StorageConfig
@@ -98,3 +109,4 @@ from fides.api.models.tcf_publisher_restrictions import (
 )
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.models.v3.privacy_preferences import PrivacyPreferences
+from fides.system_integration_link.models import SystemConnectionConfigLink

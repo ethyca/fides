@@ -3,7 +3,8 @@ from typing import Any, Dict, Optional, Set
 from fideslang.models import Dataset, DatasetField, FidesDatasetReference
 from fideslang.validation import FidesKey
 from loguru import logger
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.common_exceptions import ValidationError
@@ -42,6 +43,17 @@ class DatasetConfig(Base):
     fides_key = Column(String, index=True, unique=True, nullable=False)
     ctl_dataset_id = Column(
         String, ForeignKey(CtlDataset.id), index=True, nullable=False
+    )
+    property_ids = Column(
+        ARRAY(String), nullable=False, server_default="{}", default=list
+    )
+
+    __table_args__ = (
+        Index(
+            "ix_datasetconfig_property_ids_gin",
+            "property_ids",
+            postgresql_using="gin",
+        ),
     )
 
     connection_config = relationship(
@@ -129,7 +141,9 @@ class DatasetConfig(Base):
         the corresponding SaaS config is merged in as well
         """
         dataset_graph = convert_dataset_to_graph(
-            Dataset.model_validate(self.ctl_dataset), self.connection_config.key  # type: ignore
+            Dataset.model_validate(self.ctl_dataset),
+            self.connection_config.key,  # type: ignore
+            property_ids=self.property_ids or [],
         )
         if (
             self.connection_config.connection_type == ConnectionType.saas
@@ -138,7 +152,9 @@ class DatasetConfig(Base):
         ):
             dataset_graph = merge_datasets(
                 dataset_graph,
-                self.connection_config.get_saas_config().get_graph(self.connection_config.secrets),  # type: ignore
+                self.connection_config.get_saas_config().get_graph(
+                    self.connection_config.secrets
+                ),  # type: ignore
             )
         else:
             logger.debug(
@@ -284,7 +300,9 @@ def to_graph_field(
 
 
 def convert_dataset_to_graph(
-    dataset: Dataset, connection_key: FidesKey
+    dataset: Dataset,
+    connection_key: FidesKey,
+    property_ids: Optional[list[str]] = None,
 ) -> GraphDataset:
     """
     Converts the given Fides dataset into the concrete graph
@@ -360,6 +378,7 @@ def convert_dataset_to_graph(
         collections=graph_collections,
         connection_key=connection_key,
         after=after,
+        property_ids=property_ids or [],
     )
 
 
@@ -382,7 +401,8 @@ def validate_dataset_reference(
         )
 
     dataset: GraphDataset = convert_dataset_to_graph(
-        Dataset.model_validate(dataset_config.ctl_dataset), dataset_config.fides_key  # type: ignore[arg-type]
+        Dataset.model_validate(dataset_config.ctl_dataset),
+        dataset_config.fides_key,  # type: ignore[arg-type]
     )
     collection_name, *field_name = dataset_reference.field.split(".")
     if not field_name or not collection_name or not field_name[0]:

@@ -534,14 +534,14 @@ class TestPatchDatasetConfigs:
             db=db, field="fides_key", value="test_fides_key"
         )
         assert dataset_config.ctl_dataset_id == ctl_dataset.id
-        assert (
-            dataset_config.ctl_dataset.fides_key == ctl_dataset.fides_key
-        ), "Differs from datasetconfig.fides_key in this case"
+        assert dataset_config.ctl_dataset.fides_key == ctl_dataset.fides_key, (
+            "Differs from datasetconfig.fides_key in this case"
+        )
 
         succeeded = response.json()["succeeded"][0]
-        assert (
-            succeeded["fides_key"] == "postgres_example_subscriptions_dataset"
-        ), "Returns the fides_key of the ctl_dataset not the DatasetConfig"
+        assert succeeded["fides_key"] == "postgres_example_subscriptions_dataset", (
+            "Returns the fides_key of the ctl_dataset not the DatasetConfig"
+        )
         assert succeeded["collections"] == [
             coll.model_dump(mode="json")
             for coll in Dataset.model_validate(ctl_dataset).collections

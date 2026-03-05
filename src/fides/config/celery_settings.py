@@ -1,7 +1,7 @@
 import json
 import os
 from json import JSONDecodeError
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
@@ -26,6 +26,22 @@ class CelerySettings(FidesSettings):
         default=True,
         description="If true, tasks are executed locally instead of being sent to the queue.  "
         "If False, tasks are sent to the queue.",
+    )
+    healthcheck_port: int = Field(
+        default=9000, description="The port to use for the health check endpoint"
+    )
+    healthcheck_ping_timeout: float = Field(
+        default=2.0, description="The timeout in seconds for the health check ping"
+    )
+    broker_url: Optional[str] = Field(
+        default=None,
+        description="Celery broker URL. When set, overrides the default. With redis.cluster_enabled, "
+        "the default is redis+cluster:// (celery-redis-cluster). Set to a standalone redis:// URL to use a separate broker.",
+    )
+    result_backend: Optional[str] = Field(
+        default=None,
+        description="Celery result backend URL. When set, overrides the default. With redis.cluster_enabled, "
+        "the default is redis+cluster:// (celery-redis-cluster). Set to a standalone redis:// URL to override.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
 

@@ -266,7 +266,7 @@ describe("System management page", () => {
 
       // and can render a not found state
       cy.visit("/systems/configure/system-that-does-not-exist");
-      cy.getByTestId("system-not-found");
+      cy.getByTestId("error-page-result").should("exist");
     });
 
     it("Can persist fields not directly in the form", () => {

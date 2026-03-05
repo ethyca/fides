@@ -12,7 +12,7 @@ from fides.api.models.manual_task import (
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
 )
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 
 TEXT_FIELD_DATA = {
     "field_key": "test_field",
@@ -56,14 +56,14 @@ class TestManualTaskConfig:
             db,
             data={
                 "task_id": manual_task.id,
-                "config_type": "access_privacy_request",
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
         )
         assert config.id is not None
         assert config.task_id == manual_task.id
-        assert config.config_type == "access_privacy_request"
+        assert config.config_type == ActionType.access
         assert config.version == 1
         assert config.is_current == True
         assert config.field_definitions == []
@@ -95,7 +95,7 @@ class TestManualTaskConfig:
     ):
         data = {
             "task_id": manual_task.id,
-            "config_type": "access_privacy_request",
+            "config_type": ActionType.access,
             "version": 1,
             "is_current": True,
         }
@@ -109,7 +109,7 @@ class TestManualTaskConfig:
             db,
             data={
                 "task_id": manual_task.id,
-                "config_type": "access_privacy_request",
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
@@ -122,6 +122,7 @@ class TestManualTaskConfig:
         data["config_id"] = config.id
         ManualTaskConfigField.create(db, data=data)
 
+        # Verify field definitions and logs (logs created by ManualTaskConfigField.create)
         assert len(config.field_definitions) == 1
 
 
@@ -138,7 +139,6 @@ class TestManualTaskConfig:
     ],
 )
 class TestManualTaskConfigField:
-
     def test_create_field(
         self,
         db: Session,
@@ -234,7 +234,7 @@ class TestManualTaskConfigGetField:
             db,
             data={
                 "task_id": manual_task.id,
-                "config_type": "access_privacy_request",
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
@@ -253,7 +253,7 @@ class TestManualTaskConfigDeletion:
             db,
             data={
                 "task_id": manual_task.id,
-                "config_type": "access_privacy_request",
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },
@@ -322,7 +322,7 @@ class TestManualTaskConfigDeletion:
             db,
             data={
                 "task_id": manual_task.id,
-                "config_type": "access_privacy_request",
+                "config_type": ActionType.access,
                 "version": 1,
                 "is_current": True,
             },

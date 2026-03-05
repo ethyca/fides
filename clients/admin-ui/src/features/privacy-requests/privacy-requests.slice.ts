@@ -116,7 +116,7 @@ interface DateRangeParams {
   to?: string | null;
 }
 
-interface SearchFilterParams
+export interface SearchFilterParams
   extends Partial<PrivacyRequestFilter>,
     Partial<DateRangeParams> {}
 
@@ -375,6 +375,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkFinalizeRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[] }
+    >({
+      query: (body) => ({
+        url: `privacy-request/bulk/finalize`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
       Partial<PrivacyRequestParams>
@@ -610,6 +621,7 @@ export const {
   useBulkDenyRequestMutation,
   useBulkRetryMutation,
   useBulkSoftDeleteRequestMutation,
+  useBulkFinalizeRequestMutation,
   useDenyRequestMutation,
   useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,

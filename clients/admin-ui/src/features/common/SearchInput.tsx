@@ -11,7 +11,7 @@ export const SEARCH_INPUT_HOTKEY = "/";
 
 export interface SearchInputProps
   extends Omit<CustomInputProps, "onChange" | "variant"> {
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   withIcon?: boolean;
   variant?: "default" | "compact";
 }
@@ -24,7 +24,7 @@ const SearchInput = ({
   ...props
 }: SearchInputProps) => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
-    onChange(event.target.value);
+    onChange?.(event.target.value);
 
   const isCompact = variant === "compact";
   const inputRef = useRef<InputRef>(null);

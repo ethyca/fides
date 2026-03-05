@@ -1,10 +1,10 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from pathlib import Path as LocalPath
 from typing import Generator
 
 import pytest
 from fideslang.models import System, SystemMetadata
-from py._path.local import LocalPath
 
 import fides.connectors.aws as aws_connector
 from fides.config import FidesConfig

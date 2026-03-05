@@ -461,7 +461,7 @@ def test_check_required_webserver_config_values_success(test_config_path: str) -
 @pytest.mark.unit
 def test_check_required_webserver_config_values_error(capfd) -> None:
     config = get_config()
-    assert config.security.app_encryption_key is ""
+    assert config.security.app_encryption_key == ""
 
     with pytest.raises(SystemExit):
         check_required_webserver_config_values(config=config)

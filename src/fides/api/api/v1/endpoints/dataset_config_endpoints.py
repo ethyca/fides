@@ -21,7 +21,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.api import deps
@@ -127,7 +127,7 @@ def validate_dataset(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -139,7 +139,10 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def put_dataset_configs(
-    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM)],  # type: ignore
+    dataset_pairs: Annotated[
+        List[DatasetConfigCtlDataset],
+        Field(max_length=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM),
+    ],  # type: ignore
     db: Session = Depends(deps.get_db),
     dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -189,7 +192,10 @@ def put_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM)],  # type: ignore
+    dataset_pairs: Annotated[
+        List[DatasetConfigCtlDataset],
+        Field(max_length=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM),
+    ],  # type: ignore
     dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -213,7 +219,7 @@ def patch_dataset_configs(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -245,7 +251,7 @@ def patch_datasets(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -293,7 +299,7 @@ async def patch_yaml_datasets(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Dataset validation failed: {str(e)}",
         )
 
@@ -329,7 +335,8 @@ def get_datasets(
     # paginated query is handled by paginate()
     paginated_results = paginate(dataset_configs, params=params)
     paginated_results.items = [  # type: ignore
-        dataset_config.ctl_dataset for dataset_config in paginated_results.items  # type: ignore
+        dataset_config.ctl_dataset
+        for dataset_config in paginated_results.items  # type: ignore
     ]
     return paginated_results
 
@@ -597,7 +604,6 @@ def test_connection_datasets(
     dataset_key: FidesKey,
     test_request: DatasetTestRequest,
 ) -> Dict[str, Any]:
-
     if not CONFIG.security.dsr_testing_tools_enabled:
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,

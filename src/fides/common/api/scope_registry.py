@@ -64,6 +64,7 @@ SCOPE = "scope"
 SEND = "send"
 STORAGE = "storage"
 SYSTEM = "system"
+SYSTEM_INTEGRATION_LINK = "system_integration_link"
 SYSTEM_MANAGER = "system_manager"
 TAXONOMY = "taxonomy"
 TEST = "test"
@@ -77,6 +78,7 @@ VIEW_DATA = "view_data"
 WEBHOOK = "webhook"
 WORKER_STATS = "worker-stats"
 HEAP_DUMP = "heap_dump"
+BACKFILL = "backfill"
 
 ASSIGN_OWNERS = "assign_owners"
 
@@ -148,6 +150,8 @@ DATASET_TEST = f"{DATASET}:{TEST}"
 ENCRYPTION_EXEC = f"{ENCRYPTION}:{EXEC}"
 
 HEAP_DUMP_EXEC = f"{HEAP_DUMP}:{EXEC}"
+
+BACKFILL_EXEC = f"{BACKFILL}:{EXEC}"
 
 EVALUATION_CREATE = f"{EVALUATION}:{CREATE}"
 EVALUATION_READ = f"{EVALUATION}:{READ}"
@@ -226,6 +230,12 @@ SYSTEM_UPDATE = f"{SYSTEM}:{UPDATE}"
 SYSTEM_DELETE = f"{SYSTEM}:{DELETE}"
 
 
+SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE = (
+    f"{SYSTEM_INTEGRATION_LINK}:{CREATE_OR_UPDATE}"
+)
+SYSTEM_INTEGRATION_LINK_DELETE = f"{SYSTEM_INTEGRATION_LINK}:{DELETE}"
+SYSTEM_INTEGRATION_LINK_READ = f"{SYSTEM_INTEGRATION_LINK}:{READ}"
+
 SYSTEM_MANAGER_READ = f"{SYSTEM_MANAGER}:{READ}"
 SYSTEM_MANAGER_UPDATE = f"{SYSTEM_MANAGER}:{UPDATE}"
 SYSTEM_MANAGER_DELETE = f"{SYSTEM_MANAGER}:{DELETE}"
@@ -301,6 +311,7 @@ SCOPE_DOCS = {
     DATASET_TEST: "Run a standalone privacy request test for a dataset",
     ENCRYPTION_EXEC: "Encrypt data",
     HEAP_DUMP_EXEC: "Execute a heap dump for memory diagnostics",
+    BACKFILL_EXEC: "Execute database backfill operations",
     MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",
     EVALUATION_READ: "Read evaluations",
@@ -356,6 +367,9 @@ SCOPE_DOCS = {
     SYSTEM_READ: "Read systems",
     SYSTEM_DELETE: "Delete systems",
     SYSTEM_UPDATE: "Update systems",
+    SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE: "Create or update system-integration links",
+    SYSTEM_INTEGRATION_LINK_DELETE: "Delete system-integration links",
+    SYSTEM_INTEGRATION_LINK_READ: "Read system-integration links",
     SYSTEM_MANAGER_READ: "Read systems users can manage",
     SYSTEM_MANAGER_DELETE: "Delete systems user can manage",
     SYSTEM_MANAGER_UPDATE: "Update systems user can manage",
@@ -381,5 +395,6 @@ SCOPE_REGISTRY = list(SCOPE_DOCS.keys())
 # mypy doesn't like taking the dictionary to generate the enum
 # https://github.com/python/mypy/issues/5317
 ScopeRegistryEnum = Enum(  # type: ignore[misc]
-    "ScopeRegistryEnum", {scope: scope for scope in SCOPE_REGISTRY}  # type: ignore
+    "ScopeRegistryEnum",
+    {scope: scope for scope in SCOPE_REGISTRY},  # type: ignore
 )

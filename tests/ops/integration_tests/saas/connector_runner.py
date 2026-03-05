@@ -42,10 +42,9 @@ from fides.api.task.create_request_tasks import (
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
 )
-from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
+from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
@@ -121,22 +120,16 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        # cache external dataset data
+        # Mock external dataset data on the Request Tasks
         if self.external_references:
-            self.cache.set_encoded_object(
-                f"{privacy_request.id}__access_request__{self.connector_type}_external_dataset:{self.connector_type}_external_collection",
-                [self.external_references],
+            mock_external_results_3_0(
+                privacy_request,
+                dataset_graph,
+                identities,
+                self.connector_type,
+                self.external_references,
+                is_erasure=False,
             )
-            # Check if this request uses DSR 3.0
-            if use_dsr_3_0_scheduler(privacy_request, ActionType.access):
-                mock_external_results_3_0(
-                    privacy_request,
-                    dataset_graph,
-                    identities,
-                    self.connector_type,
-                    self.external_references,
-                    is_erasure=False,
-                )
 
         access_results = access_runner_tester(
             privacy_request,
@@ -150,9 +143,9 @@ class ConnectorRunner:
         if not skip_collection_verification:
             # verify we returned at least one row for each collection in the dataset
             for collection in self.dataset["collections"]:
-                assert len(
-                    access_results[f"{fides_key}:{collection['name']}"]
-                ), f"No rows returned for collection '{collection['name']}'"
+                assert len(access_results[f"{fides_key}:{collection['name']}"]), (
+                    f"No rows returned for collection '{collection['name']}'"
+                )
         return access_results
 
     async def erasure_request(
@@ -287,25 +280,16 @@ class ConnectorRunner:
         _process_external_references(self.db, graph_list, connection_config_list)
         dataset_graph = DatasetGraph(*graph_list)
 
-        # cache external dataset data
+        # Mock external dataset data on the Request Tasks
         if self.erasure_external_references:
-            # DSR 2.0
-            self.cache.set_encoded_object(
-                f"{privacy_request.id}__access_request__{self.connector_type}_external_dataset:{self.connector_type}_external_collection",
-                [self.erasure_external_references],
+            mock_external_results_3_0(
+                privacy_request,
+                dataset_graph,
+                identities,
+                self.connector_type,
+                self.erasure_external_references,
+                is_erasure=True,
             )
-            # DSR 3.0
-            if use_dsr_3_0_scheduler(privacy_request, ActionType.erasure):
-                # DSR 3.0 does not pull its results out of the cache, but rather
-                # off of the Request Tasks -
-                mock_external_results_3_0(
-                    privacy_request,
-                    dataset_graph,
-                    identities,
-                    self.connector_type,
-                    self.erasure_external_references,
-                    is_erasure=True,
-                )
 
         access_results = access_runner_tester(
             privacy_request,
@@ -323,9 +307,9 @@ class ConnectorRunner:
             ):
                 # verify we returned at least one row for each collection in the dataset
                 for collection in self.dataset["collections"]:
-                    assert len(
-                        access_results[f"{fides_key}:{collection['name']}"]
-                    ), f"No rows returned for collection '{collection['name']}'"
+                    assert len(access_results[f"{fides_key}:{collection['name']}"]), (
+                        f"No rows returned for collection '{collection['name']}'"
+                    )
 
         erasure_results = erasure_runner_tester(
             privacy_request,
@@ -333,7 +317,7 @@ class ConnectorRunner:
             dataset_graph,
             connection_config_list,
             identities,
-            get_cached_data_for_erasures(privacy_request.id),
+            {},
             self.db,
         )
 
@@ -394,6 +378,13 @@ def _dataset(connector_type: str) -> Dict[str, Any]:
 
 def _connection_config(db: Session, config, secrets) -> ConnectionConfig:
     fides_key = config["fides_key"]
+    for param in config.get("connector_params", []):
+        allowed_values = param.get("allowed_values")
+        param_type = param.get("type")
+        name = param.get("name")
+        value = secrets.get(name)
+        if param_type == "endpoint" and allowed_values and isinstance(value, str):
+            validate_value_against_allowed_list(value, allowed_values, name)
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -562,7 +553,7 @@ def generate_random_phone_number() -> str:
     """
     Generate a random phone number in the format of E.164, +1112223333
     """
-    return f"+{random.randrange(100,999)}555{random.randrange(1000,9999)}"
+    return f"+{random.randrange(100, 999)}555{random.randrange(1000, 9999)}"
 
 
 def mock_external_results_3_0(

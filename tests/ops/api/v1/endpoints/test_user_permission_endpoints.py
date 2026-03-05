@@ -5,7 +5,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.models.client import ClientDetail
@@ -130,9 +130,9 @@ class TestCreateUserPermissions:
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
         response_body = response.json()
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
-            "Input should be 'owner', 'viewer_and_approver', 'viewer', 'approver', 'contributor', 'respondent' or 'external_respondent'"
+            "Input should be 'owner', 'viewer_and_approver', 'viewer', 'approver', 'contributor', 'data_steward', 'respondent' or 'external_respondent'"
             in response_body["detail"][0]["msg"]
         )
 
@@ -171,7 +171,7 @@ class TestCreateUserPermissions:
         response = api_client.post(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
 
     def test_create_user_permissions_add_roles(
         self, db, api_client, generate_auth_header
@@ -398,9 +398,9 @@ class TestEditUserPermissions:
         assert response_body["roles"] == [OWNER]
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert (
-            client.scopes == []
-        ), "Assert client scopes are not updated via the user permissions update flow"
+        assert client.scopes == [], (
+            "Assert client scopes are not updated via the user permissions update flow"
+        )
         assert client.roles == [OWNER]
 
         db.refresh(permissions)
@@ -442,9 +442,9 @@ class TestEditUserPermissions:
         assert response_body["roles"] == [OWNER]
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert (
-            client.scopes == []
-        ), "Assert client scopes are not updated via the user permissions update flow"
+        assert client.scopes == [], (
+            "Assert client scopes are not updated via the user permissions update flow"
+        )
         assert client.roles == [OWNER]
 
         db.refresh(permissions)
@@ -488,9 +488,9 @@ class TestEditUserPermissions:
         assert response_body["roles"] == []
 
         client: ClientDetail = ClientDetail.get_by(db, field="user_id", value=user.id)
-        assert (
-            client.scopes == []
-        ), "Assert client scopes are not updated via the user permissions update flow"
+        assert client.scopes == [], (
+            "Assert client scopes are not updated via the user permissions update flow"
+        )
         assert client.roles == []
 
         db.refresh(permissions)
@@ -521,7 +521,7 @@ class TestEditUserPermissions:
         response = api_client.put(
             f"{V1_URL_PREFIX}/user/{user.id}/permission", headers=auth_header, json=body
         )
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
 
         db.refresh(permissions)
         assert permissions.roles == [OWNER]

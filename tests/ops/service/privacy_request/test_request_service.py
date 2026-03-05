@@ -887,7 +887,6 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
             with mock.patch(
                 "fides.api.service.privacy_request.request_service._handle_privacy_request_requeue"
             ) as mock_handle_requeue:
-
                 requeue_interrupted_tasks.apply().get()
 
                 # Should log warning and requeue
@@ -934,7 +933,9 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         mock_redis_lock.return_value.__enter__.return_value = True
         mock_get_queue_tasks.return_value = []
         mock_tasks_in_flight.return_value = False
-        mock_get_request_task_ids.return_value = ["request_task_id_1"]
+        mock_get_request_task_ids.return_value = [
+            ("request_task_id_1", ExecutionLogStatus.in_processing, False)
+        ]
 
         # Mock main task ID success, then cache exception for request task
         mock_get_cached_task_id.side_effect = [
@@ -986,7 +987,9 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         mock_redis_lock.return_value.__enter__.return_value = True
         mock_get_queue_tasks.return_value = []  # Tasks not in queue
         mock_tasks_in_flight.return_value = False  # Tasks not running
-        mock_get_request_task_ids.return_value = ["request_task_id_1"]
+        mock_get_request_task_ids.return_value = [
+            ("request_task_id_1", ExecutionLogStatus.in_processing, False)
+        ]
         mock_get_cached_task_id.side_effect = ["main_task_id", "subtask_id"]
 
         with mock.patch.object(
@@ -996,7 +999,6 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
             with mock.patch(
                 "fides.api.service.privacy_request.request_service._handle_privacy_request_requeue"
             ) as mock_handle_requeue:
-
                 requeue_interrupted_tasks.apply().get()
 
                 # Should log warning and requeue

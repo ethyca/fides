@@ -1,6 +1,7 @@
 import { ColumnsType, SelectInline, Tag, Typography } from "fidesui";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { formatUser } from "~/features/common/utils";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import {
@@ -58,9 +59,7 @@ export const useManualTaskColumns = ({
       dataIndex: "name",
       key: "name",
       minWidth: 100,
-      render: (name) => (
-        <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
-      ),
+      render: (name) => <EllipsisCell>{name}</EllipsisCell>,
     },
     {
       title: "Status",
@@ -83,11 +82,7 @@ export const useManualTaskColumns = ({
       dataIndex: ["system", "name"],
       key: "system_name",
       minWidth: 100,
-      render: (systemName: string) => (
-        <Typography.Text ellipsis={{ tooltip: systemName }}>
-          {systemName}
-        </Typography.Text>
-      ),
+      render: (systemName: string) => <EllipsisCell>{systemName}</EllipsisCell>,
       filters: systemFilters,
       filterMultiple: false,
     },
@@ -97,16 +92,18 @@ export const useManualTaskColumns = ({
       key: "request_type",
       width: 80,
       render: (type: ManualFieldRequestType) => {
-        const actionType =
-          type === ManualFieldRequestType.ACCESS
-            ? ActionType.ACCESS
-            : ActionType.ERASURE;
+        // Map request type to ActionType for display
+        const requestTypeToActionType: Record<
+          ManualFieldRequestType,
+          ActionType
+        > = {
+          [ManualFieldRequestType.ACCESS]: ActionType.ACCESS,
+          [ManualFieldRequestType.ERASURE]: ActionType.ERASURE,
+          [ManualFieldRequestType.CONSENT]: ActionType.CONSENT,
+        };
+        const actionType = requestTypeToActionType[type];
         const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
-        return (
-          <Typography.Text ellipsis={{ tooltip: displayName }}>
-            {displayName}
-          </Typography.Text>
-        );
+        return <EllipsisCell>{displayName}</EllipsisCell>;
       },
       filters: REQUEST_TYPE_FILTER_OPTIONS,
       filterMultiple: false,
@@ -169,11 +166,7 @@ export const useManualTaskColumns = ({
         // Display email or phone_number if available
         const identity =
           subjectIdentities.email || subjectIdentities.phone_number || "";
-        return (
-          <Typography.Text ellipsis={{ tooltip: identity }}>
-            {identity}
-          </Typography.Text>
-        );
+        return <EllipsisCell>{identity}</EllipsisCell>;
       },
     },
     {

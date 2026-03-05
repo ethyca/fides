@@ -15,6 +15,7 @@ import React, { useEffect, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import ConnectorTemplateUploadModal from "~/features/connector-templates/ConnectorTemplateUploadModal";
 import { ConnectorParameters } from "~/features/datastore-connections/system_portal_config/forms/ConnectorParameters";
+import { useRemoveCustomIntegration } from "~/features/integrations/hooks/useRemoveCustomIntegration";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -75,6 +76,8 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   }, [data]);
 
   const uploadTemplateModal = useDisclosure();
+  const { handleRemove: handleRemoveCustomIntegration, modalContext } =
+    useRemoveCustomIntegration(selectedConnectionOption);
 
   /* STEPS TO UNIFY the database and saas forms
   7. Get it working for manual connectors
@@ -84,7 +87,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
   return (
     <Box id="con-wrapper" px={6}>
       <Flex py={5}>
-        <Stack direction={{ base: "column", lg: "row" }}>
+        <Stack direction={{ base: "column", lg: "row" }} alignItems="center">
           <ConnectionListDropdown
             list={dropDownOptions}
             label="Integration type"
@@ -100,14 +103,27 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           ) : null}
 
           <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
-            <Button
-              htmlType="submit"
-              data-testid="upload-btn"
-              onClick={uploadTemplateModal.onOpen}
-              className="ml-2"
-            >
-              Upload integration
-            </Button>
+            <Flex gap={2}>
+              {connectionConfig &&
+                selectedConnectionOption?.custom &&
+                selectedConnectionOption?.default_connector_available && (
+                  <Button
+                    type="link"
+                    danger
+                    data-testid="delete-custom-integration-btn"
+                    onClick={handleRemoveCustomIntegration}
+                  >
+                    Remove
+                  </Button>
+                )}
+              <Button
+                htmlType="submit"
+                data-testid="upload-btn"
+                onClick={uploadTemplateModal.onOpen}
+              >
+                Upload integration
+              </Button>
+            </Flex>
           </Restrict>
         </Stack>
 
@@ -115,6 +131,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           isOpen={uploadTemplateModal.isOpen}
           onClose={uploadTemplateModal.onClose}
         />
+        {modalContext}
       </Flex>
       {selectedConnectionOption?.type &&
       [

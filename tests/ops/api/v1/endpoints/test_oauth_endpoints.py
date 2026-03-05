@@ -691,6 +691,7 @@ class TestReadRoleMapping:
         assert set(response_body.keys()) == {
             "approver",
             "contributor",
+            "data_steward",
             "external_respondent",
             "owner",
             "respondent",
@@ -881,9 +882,9 @@ class TestOAuthPrivilegeEscalationSecurity:
         contributor_scopes = ROLES_TO_SCOPES_MAPPING[CONTRIBUTOR]
         # Pick a safe scope that CONTRIBUTOR has
         allowed_scope = CLIENT_READ  # CONTRIBUTOR should have this
-        assert (
-            allowed_scope in contributor_scopes
-        ), f"{allowed_scope} should be in CONTRIBUTOR scopes"
+        assert allowed_scope in contributor_scopes, (
+            f"{allowed_scope} should be in CONTRIBUTOR scopes"
+        )
 
         # Create auth header using role-based authentication
         auth_header = generate_role_header_for_user(user, [CONTRIBUTOR])

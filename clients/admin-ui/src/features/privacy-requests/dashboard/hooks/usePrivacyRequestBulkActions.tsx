@@ -13,6 +13,7 @@ import { useDenyPrivacyRequestModal } from "../../hooks/useDenyRequestModal";
 import {
   useBulkApproveRequestMutation,
   useBulkDenyRequestMutation,
+  useBulkFinalizeRequestMutation,
   useBulkSoftDeleteRequestMutation,
 } from "../../privacy-requests.slice";
 
@@ -25,6 +26,7 @@ const ACTION_PAST_TENSE: Record<BulkActionType, string> = {
   [BulkActionType.APPROVE]: "approved",
   [BulkActionType.DENY]: "denied",
   [BulkActionType.DELETE]: "deleted",
+  [BulkActionType.FINALIZE]: "finalized",
 };
 
 const ACTION_CONFIG: Record<
@@ -43,6 +45,10 @@ const ACTION_CONFIG: Record<
     title: "Delete privacy requests",
     verb: "delete",
     okType: "danger",
+  },
+  [BulkActionType.FINALIZE]: {
+    title: "Finalize privacy requests",
+    verb: "finalize",
   },
 };
 
@@ -91,6 +97,7 @@ export const usePrivacyRequestBulkActions = ({
   // Mutation hooks for the actions
   const [bulkApproveRequest] = useBulkApproveRequestMutation();
   const [bulkDenyRequest] = useBulkDenyRequestMutation();
+  const [bulkFinalizeRequest] = useBulkFinalizeRequestMutation();
   const [bulkSoftDeleteRequest] = useBulkSoftDeleteRequestMutation();
 
   // Use the deny modal hook
@@ -172,6 +179,8 @@ export const usePrivacyRequestBulkActions = ({
               result = await bulkApproveRequest({ request_ids: requestIds });
             } else if (action === BulkActionType.DELETE) {
               result = await bulkSoftDeleteRequest({ request_ids: requestIds });
+            } else if (action === BulkActionType.FINALIZE) {
+              result = await bulkFinalizeRequest({ request_ids: requestIds });
             }
 
             hideLoading();
@@ -182,10 +191,8 @@ export const usePrivacyRequestBulkActions = ({
             }
 
             if ("error" in result) {
-              const actionVerb =
-                action === BulkActionType.APPROVE ? "approve" : "delete";
               messageApi.error(
-                `Failed to ${actionVerb} requests. Please try again.`,
+                `Failed to ${ACTION_CONFIG[action].verb} requests. Please try again.`,
                 5,
               );
             } else if ("data" in result) {
@@ -207,6 +214,7 @@ export const usePrivacyRequestBulkActions = ({
       openDenyPrivacyRequestModal,
       bulkDenyRequest,
       bulkApproveRequest,
+      bulkFinalizeRequest,
       bulkSoftDeleteRequest,
       messageApi,
       modalApi,
@@ -220,6 +228,10 @@ export const usePrivacyRequestBulkActions = ({
     );
     const canDeny = isActionSupportedByRequests(
       BulkActionType.DENY,
+      selectedRequests,
+    );
+    const canFinalize = isActionSupportedByRequests(
+      BulkActionType.FINALIZE,
       selectedRequests,
     );
     const canDelete = isActionSupportedByRequests(
@@ -241,6 +253,13 @@ export const usePrivacyRequestBulkActions = ({
         icon: <Icons.Close />,
         onClick: () => handleAction(BulkActionType.DENY),
         disabled: !canDeny,
+      },
+      {
+        key: BulkActionType.FINALIZE,
+        label: "Finalize",
+        icon: <Icons.Stamp />,
+        onClick: () => handleAction(BulkActionType.FINALIZE),
+        disabled: !canFinalize,
       },
       {
         type: "divider",

@@ -29,54 +29,61 @@ jest.mock("iso-3166", () => ({
   ],
 }));
 
-// Mock only Select to make it testable with native select interactions
-jest.mock(
-  "fidesui",
-  () =>
-    new Proxy(jest.requireActual("fidesui"), {
-      get(target, prop) {
-        if (prop === "Select") {
-          const MockAntSelect = ({
-            value,
-            onChange,
-            mode,
-            options,
-            ...props
-          }: any) => {
-            const isMultiple = mode === "multiple";
-            return (
-              <select
-                {...props}
-                multiple={isMultiple}
-                value={isMultiple ? value || [] : value || ""}
-                onChange={(e) => {
-                  if (isMultiple) {
-                    const selectedOptions = Array.from(
-                      e.target.selectedOptions,
-                    ).map((opt: any) => opt.value);
-                    // For multi-select, always pass an array (empty or with values)
-                    onChange?.(selectedOptions);
-                  } else {
-                    const selectedValue = e.target.value;
-                    onChange?.(selectedValue || null);
-                  }
-                }}
-              >
-                {options?.map((opt: any) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            );
-          };
-          MockAntSelect.displayName = "MockAntSelect";
-          return MockAntSelect;
+// Mock Select to make it testable with native select interactions.
+// Defined outside the jest.mock factory because hoisted factories lose JSX/TS support.
+// Only forward valid HTML attributes -- pick explicitly to avoid React unknown-prop warnings.
+const MockAntSelect = ({
+  value,
+  onChange,
+  mode,
+  options,
+  "data-testid": dataTestId,
+  "aria-label": ariaLabel,
+  className,
+  id,
+}: Record<string, any>) => {
+  const isMultiple = mode === "multiple";
+  return (
+    <select
+      data-testid={dataTestId}
+      aria-label={ariaLabel}
+      className={className}
+      id={id}
+      multiple={isMultiple}
+      value={isMultiple ? value || [] : value || ""}
+      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+        if (isMultiple) {
+          const selectedOptions = Array.from(e.target.selectedOptions).map(
+            (opt) => opt.value,
+          );
+          onChange?.(selectedOptions);
+        } else {
+          const selectedValue = e.target.value;
+          onChange?.(selectedValue || null);
         }
-        return target[prop as keyof typeof target];
-      },
-    }),
-);
+      }}
+    >
+      {options?.map((opt: { value: string; label: string }) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  );
+};
+MockAntSelect.displayName = "MockAntSelect";
+
+jest.mock("fidesui", () => {
+  const actual = jest.requireActual("fidesui");
+  return new Proxy(actual, {
+    get(target, prop) {
+      if (prop === "Select") {
+        return MockAntSelect;
+      }
+      return target[prop];
+    },
+  });
+});
 
 // Mock the privacy center config query
 const mockUseGetPrivacyCenterConfigQuery = jest.fn();

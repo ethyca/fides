@@ -46,9 +46,26 @@
           "masking_strategy": null
         }
       ]
+    },
+    {
+      "name": "Custom Erasure Policy",
+      "key": "custom_erasure_policy",
+      "drp_action": "deletion",
+      "execution_timeframe": 30,
+      "rules": [
+        {
+          "name": "Custom Erasure Rule",
+          "key": "custom_erasure_rule",
+          "action_type": "erasure",
+          "storage_destination": null,
+          "masking_strategy": {
+            "strategy": "null_rewrite"
+          }
+        }
+      ]
     }
   ],
-  "total": 3,
+  "total": 4,
   "page": 1,
   "size": 50,
   "pages": 1

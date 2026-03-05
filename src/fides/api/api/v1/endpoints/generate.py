@@ -2,7 +2,7 @@
 Contains all of the endpoints required to manage generating resources.
 """
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Security, status
@@ -37,7 +37,7 @@ from fides.core.utils import validate_db_engine
 GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
 
 
-class ValidTargets(str, Enum):
+class ValidTargets(StrEnum):
     """
     Validation of targets attempted to generate resources from
     """
@@ -50,7 +50,7 @@ class ValidTargets(str, Enum):
     SCYLLADB = "scylla"
 
 
-class GenerateTypes(str, Enum):
+class GenerateTypes(StrEnum):
     """
     Generate Type Enum to capture the discrete possible values
     for a valid type of resource to generate.

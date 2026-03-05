@@ -34,12 +34,77 @@
         color: var(--fides-overlay-font-color-dark);
         font-size: var(--fides-overlay-font-size-body);
         background-color: var(--fides-overlay-background-color);
+        margin: 0;
       }
 
       /* Allow the embedded consent modal to fill the width of the screen */
       .container {
         --fides-overlay-width: "auto";
       }
+
+      /* TCF Overlay first screen: fill viewport with sticky footer */
+      .fides-banner.fides-embedded {
+        height: 100vh;
+        display: flex;
+      }
+
+      .fides-banner.fides-embedded #fides-banner .fides-close-button {
+        display: none;
+      }
+
+      #fides-banner {
+        --fides-overlay-padding: 24px;
+        flex-direction: column !important;
+      }
+
+      #fides-banner-inner {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      #fides-banner-inner-container {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+        max-height: none !important;
+      }
+
+      #fides-button-group {
+        flex-shrink: 0;
+      }
+
+      /* Tablet & up: let content use full space */
+      @media (min-width: 768px) {
+        #fides-banner {
+          padding: 48px !important;
+        }
+
+        #fides-banner-inner-container {
+          flex: 1;
+        }
+
+        .fides-banner.fides-embedded .fides-banner__content {
+          max-height: none;
+        }
+      }
+
+      /* TCF Modal second screen: fix overflow */
+      #fides-overlay-wrapper {
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      /* Tablet & up: let content use full space */
+      @media (min-width: 768px) {
+        #fides-overlay-wrapper {
+          --fides-overlay-padding: 48px;
+        }
+      }
+
       .no-results {
         text-align: center;
         font-family: var(--fides-overlay-font-family);
@@ -81,7 +146,54 @@
       </h3>
     </main>
     <script>
+      /**
+       * Sanitize a string to be a valid CSS class name.
+       * - Replaces invalid characters with hyphens
+       * - Collapses multiple hyphens
+       * - Trims leading/trailing hyphens
+       * - Prefixes with underscore if starts with digit or hyphen+digit
+       */
+      const toValidClassName = (str) => {
+        let result = str
+          .replace(/[^A-Za-z0-9_-]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+        if (/^[0-9]/.test(result) || /^-[0-9]/.test(result)) {
+          result = "_" + result;
+        }
+        return result;
+      };
+
       const onInitialized = () => {
+        // Add experience config ID and property ID as classes to the body for per-brand CSS styling
+        const experienceConfigId =
+          window.Fides?.experience?.experience_config?.id;
+        if (experienceConfigId) {
+          try {
+            window.document.body.classList.add(
+              toValidClassName(experienceConfigId),
+            );
+          } catch (e) {
+            window.fidesDebugger?.(
+              "Failed to add experience config ID as class:",
+              experienceConfigId,
+              e,
+            );
+          }
+        }
+        const propertyId = window.Fides?.experience?.property_id;
+        if (propertyId) {
+          try {
+            window.document.body.classList.add(toValidClassName(propertyId));
+          } catch (e) {
+            window.fidesDebugger?.(
+              "Failed to add property ID as class:",
+              propertyId,
+              e,
+            );
+          }
+        }
+
         let fidesUIShown = false;
         window.addEventListener("FidesUIShown", () => {
           fidesUIShown = true;

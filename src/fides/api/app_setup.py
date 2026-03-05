@@ -7,6 +7,7 @@ from logging import DEBUG
 from typing import AsyncGenerator, List
 
 from fastapi import FastAPI
+from fastapi.exceptions import ResponseValidationError
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from loguru import logger
@@ -26,7 +27,16 @@ from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
-from fides.api.api.v1.exception_handlers import ExceptionHandlers
+from fides.api.api.v1.exception_handlers import (
+    ExceptionHandlers,
+    response_validation_error_handler,
+)
+from fides.api.asgi_middleware import (
+    AnalyticsLoggingMiddleware,
+    AuditLogMiddleware,
+    LogRequestMiddleware,
+    ProfileRequestMiddleware,
+)
 from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
 from fides.api.db import seed
 from fides.api.db.database import configure_db, seed_db
@@ -84,7 +94,12 @@ def create_fides_app(
         "Logger configuration options in use"
     )
 
-    fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False)  # type: ignore
+    fastapi_app = FastAPI(
+        title="fides",
+        version=app_version,
+        lifespan=lifespan,  # type: ignore[arg-type]
+        separate_input_output_schemas=False,
+    )
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
@@ -92,6 +107,11 @@ def create_fides_app(
     for handler in ExceptionHandlers.get_handlers():
         # Starlette bug causing this to fail mypy
         fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
+
+    fastapi_app.add_exception_handler(
+        ResponseValidationError,
+        response_validation_error_handler,  # type: ignore[arg-type]
+    )
 
     if is_rate_limit_enabled:
         # Validate header before SlowAPI processes the request
@@ -106,6 +126,19 @@ def create_fides_app(
     fastapi_app.add_middleware(
         GZipMiddleware, minimum_size=1000, compresslevel=5
     )  # minimum_size is in bytes
+
+    # Pure ASGI middleware for request logging, analytics, and audit logging
+    # These are high-performance replacements for BaseHTTPMiddleware-based versions
+    if CONFIG.dev_mode:
+        fastapi_app.add_middleware(ProfileRequestMiddleware)
+
+    if not CONFIG.user.analytics_opt_out:
+        fastapi_app.add_middleware(AnalyticsLoggingMiddleware)
+
+    fastapi_app.add_middleware(LogRequestMiddleware)
+
+    if CONFIG.security.enable_audit_log_resource_middleware:
+        fastapi_app.add_middleware(AuditLogMiddleware)
 
     for router in routers:
         fastapi_app.include_router(router)
@@ -192,7 +225,11 @@ async def run_database_startup(app: FastAPI) -> None:
                 async with get_async_autoclose_db_session() as async_session:
                     await seed.load_samples(async_session)
         except Exception as e:
-            logger.error("Error occurred during database configuration: {}", str(e))
+            error_log = f"Error occurred during database configuration: {str(e)}"
+            logger.exception(error_log)
+            # Intentionally re-raise to abort server startup — a failed migration
+            # should never result in a running server in an unknown state.
+            raise FidesError(error_log) from e
     else:
         logger.info("Skipping auto-migration due to 'automigrate' configuration value.")
 

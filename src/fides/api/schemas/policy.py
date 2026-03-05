@@ -1,15 +1,21 @@
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional
+from enum import StrEnum
+from typing import Any, Optional, Union
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict
+from loguru import logger
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.storage.storage import StorageDestinationResponse
+from fides.api.task.conditional_dependencies.schemas import (
+    ConditionGroup,
+    ConditionLeaf,
+)
 
 
-class ActionType(str, EnumType):
+class ActionType(StrEnum):
     """The purpose of a particular privacy request"""
 
     access = "access"
@@ -54,7 +60,7 @@ class PolicyMaskingSpec(FidesSchema):
     """Models the masking strategy definition"""
 
     strategy: str
-    configuration: Dict[str, Any]
+    configuration: dict[str, Any]
 
 
 class PolicyMaskingSpecResponse(FidesSchema):
@@ -97,6 +103,12 @@ class RuleCreate(RuleBase):
     masking_strategy: Optional[PolicyMaskingSpec] = None
 
 
+class RuleCreateWithTargets(RuleCreate):
+    """RuleCreate extended with inline targets for policy creation."""
+
+    targets: Optional[list[RuleTarget]] = None
+
+
 class RuleResponse(RuleBase):
     """
     The schema to use when returning a Rule via the API. This schema uses a censored version
@@ -114,7 +126,7 @@ class RuleResponseWithTargets(RuleBase):
     configuration to avoid exposing secrets.
     """
 
-    targets: Optional[List[RuleTarget]] = None
+    targets: Optional[list[RuleTarget]] = None
     storage_destination: Optional[StorageDestinationResponse] = None
     masking_strategy: Optional[PolicyMaskingSpecResponse] = None
 
@@ -131,34 +143,82 @@ class Policy(FidesSchema):
 
     name: str
     key: Optional[FidesKey] = None
+    action_type: Optional[ActionType] = None
+    rules: Optional[list[RuleCreateWithTargets]] = None
     drp_action: Optional[DrpAction] = None
     execution_timeframe: Optional[int] = None
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)
+
+    @model_validator(mode="after")
+    def action_type_or_rules_not_both(self) -> "Policy":
+        if self.action_type is not None and self.rules is not None:
+            raise ValueError("Provide either 'action_type' or 'rules', not both.")
+        return self
 
 
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
 
-    rules: Optional[List[RuleResponse]] = None
+    action_type: Optional[ActionType] = Field(None, exclude=True)  # type: ignore[assignment]
+    rules: Optional[list[RuleResponse]] = None  # type: ignore[assignment]
     drp_action: Optional[DrpAction] = None
+    conditions: Optional[Union[ConditionLeaf, ConditionGroup]] = None
+
+    @field_validator("conditions", mode="before")
+    @classmethod
+    def extract_conditions(
+        cls, v: Any
+    ) -> Optional[Union[dict[str, Any], ConditionLeaf, ConditionGroup]]:
+        """Extract the condition tree from the ORM conditions relationship.
+
+        With from_attributes=True, Pydantic passes the raw ORM relationship
+        (a list of PolicyCondition objects) for this field. This validator
+        transforms it into the condition_tree dict.
+
+        Each policy has at most one PolicyCondition row (enforced at creation).
+        """
+        if isinstance(v, (dict, ConditionLeaf, ConditionGroup)):
+            return v or None
+        if not v:
+            return None
+        if isinstance(v, list):
+            # Multiple rows per policy is prevented by the DB unique constraint
+            # `uq_policy_condition_policy_id` on policy_condition.policy_id
+            # (see PolicyCondition model and migration 6d5f70dd0ba5).
+            # PolicyCondition.get_condition_tree() also uses .one_or_none(),
+            # and PolicyEvaluator queries one row per policy — so the evaluation
+            # path is consistent with taking the first (only) row here.
+            # We log-and-continue rather than raise so that read endpoints
+            # never 500 on unexpected DB state.
+            if len(v) > 1:
+                logger.warning(
+                    "Policy has %d condition rows; expected at most 1. "
+                    "This indicates data corruption — the unique constraint on "
+                    "policy_id should prevent multiple condition rows. "
+                    "Using the first row.",
+                    len(v),
+                )
+            if hasattr(v[0], "condition_tree") and v[0].condition_tree:
+                return v[0].condition_tree
+        return None
 
 
 class BulkPutRuleTargetResponse(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of RuleTarget responses."""
 
-    succeeded: List[RuleTarget]
-    failed: List[BulkUpdateFailed]
+    succeeded: list[RuleTarget]
+    failed: list[BulkUpdateFailed]
 
 
 class BulkPutRuleResponse(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of Rule responses."""
 
-    succeeded: List[RuleResponse]
-    failed: List[BulkUpdateFailed]
+    succeeded: list[RuleResponse]
+    failed: list[BulkUpdateFailed]
 
 
 class BulkPutPolicyResponse(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of Policy responses."""
 
-    succeeded: List[PolicyResponse]
-    failed: List[BulkUpdateFailed]
+    succeeded: list[PolicyResponse]
+    failed: list[BulkUpdateFailed]

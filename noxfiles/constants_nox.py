@@ -45,9 +45,6 @@ PRERELEASE_TAG_SUFFIX = "prerelease"
 RC_TAG_SUFFIX = "rc"
 LATEST_TAG_SUFFIX = "latest"
 
-# Image names for 3rd party apps
-CYPRESS_IMAGE = "cypress/included:12.8.1"
-
 # Helpful paths
 CWD = getcwd()
 
@@ -75,6 +72,15 @@ LOGIN = (
     "Testpassword1!",
 )
 EXEC = (
+    "docker",
+    "exec",
+    *ANALYTICS_OPT_OUT,
+    *ANALYTICS_ID_OVERRIDE,
+    CI_ARGS_EXEC,
+    CONTAINER_NAME,
+)
+# Container already has HOME, UV_HOME, UV_PROJECT_ENVIRONMENT from Dockerfile and docker-compose.
+EXEC_UV = (
     "docker",
     "exec",
     *ANALYTICS_OPT_OUT,
@@ -143,21 +149,4 @@ START_APP_WITH_EXTERNAL_POSTGRES = (
     "--wait",
     "fides",
     "postgres_example",
-)
-RUN_CYPRESS_TESTS = (
-    "docker",
-    "run",
-    "-t",
-    "--network=host",
-    "-v",
-    f"{CWD}/clients/cypress-e2e:/cypress-e2e",
-    "-w",
-    "/cypress-e2e",
-    "--entrypoint=",
-    "-e",
-    "CYPRESS_VIDEO=false",
-    CYPRESS_IMAGE,
-    "/bin/bash",
-    "-c",
-    "npm install && cypress run",
 )

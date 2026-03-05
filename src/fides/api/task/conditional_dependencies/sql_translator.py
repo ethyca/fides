@@ -600,9 +600,7 @@ class SQLConditionTranslator:
             if field_addr.json_path is not None and len(field_addr.json_path) > 0:
                 # Build JSON path expression safely using SQLAlchemy's chained [] operators
                 json_path_components = field_addr.json_path
-                for (
-                    path_component
-                ) in json_path_components:  # pylint: disable=not-an-iterable
+                for path_component in json_path_components:  # pylint: disable=not-an-iterable
                     attr = attr[path_component]
                 attr = attr.astext
                 return self._apply_operator_to_column(

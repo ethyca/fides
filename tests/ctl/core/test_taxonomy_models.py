@@ -8,7 +8,6 @@ from fides.api.models.sql_models import DataUse
 
 
 class TestHierarchicalTaxonomy:
-
     @pytest.fixture(scope="function")
     def child_data_use_b(self, db: Session) -> Generator:
         payload_b = {
@@ -43,7 +42,6 @@ class TestHierarchicalTaxonomy:
 
     @pytest.fixture(scope="function")
     def parent_data_use_a(self, db) -> Generator:
-
         payload_a = {
             "name": "Data Use A",
             "fides_key": "data_use_a",

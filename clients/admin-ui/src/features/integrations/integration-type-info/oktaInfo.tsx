@@ -14,10 +14,10 @@ export const OKTA_INTEGRATION_PLACEHOLDER = {
 
 export const OKTA_DESCRIPTION = (
   <>
-    SSO providers manage user authentication and can help identify systems
-    within your infrastructure. Adding an SSO provider as a data source allows
-    you to detect connected systems, monitor access patterns, and enhance your
-    data map for better visibility and control.
+    Identity providers manage user authentication and can help identify systems
+    within your infrastructure. Adding an identity provider as a data source
+    allows you to detect connected systems, monitor access patterns, and enhance
+    your data map for better visibility and control.
   </>
 );
 
