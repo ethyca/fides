@@ -29,7 +29,6 @@ import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { RequestInputModal } from "./RequestInputModal";
 import { SlackIcon } from "./SlackIcon";
 import { PrivacyAssessmentDetailResponse } from "./types";
-import { getSlackQuestions } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -57,11 +56,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
   const isComplete = useMemo(
     () => allQuestions.every((q) => q.answer_text.trim().length > 0),
-    [allQuestions],
-  );
-
-  const { slackQuestions, answeredSlackQuestions } = useMemo(
-    () => getSlackQuestions(allQuestions),
     [allQuestions],
   );
 
@@ -179,8 +173,8 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         <QuestionnaireStatusBar
           channel={slackChannelName ?? ""}
           timeSinceSent={timeSinceSent}
-          answeredCount={answeredSlackQuestions.length}
-          totalCount={slackQuestions.length}
+          answeredCount={assessment.questionnaire!.answered_questions}
+          totalCount={assessment.questionnaire!.total_questions}
           isSendingReminder={isSendingReminder}
           onSendReminder={handleSendReminder}
         />
