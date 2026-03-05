@@ -33,7 +33,7 @@ export const AnswerStatusTags = ({ question }: AnswerStatusTagsProps) => {
     const tooltipTitle =
       question.missing_data && question.missing_data.length > 0
         ? `This answer can be automatically derived if you populate: ${question.missing_data.join(", ")}`
-        : "This answer can be derived from Fides data if the relevant field is populated";
+        : "This answer can be derived from system data if the relevant field is populated";
 
     return <Tooltip title={tooltipTitle}>{statusTag}</Tooltip>;
   }

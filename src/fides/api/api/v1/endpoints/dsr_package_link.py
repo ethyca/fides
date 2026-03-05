@@ -9,7 +9,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.api.deps import get_db
@@ -43,7 +43,7 @@ def get_privacy_request_or_error(
 
     if privacy_request.deleted_at is not None:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Privacy request with id {privacy_request_id} has been deleted.",
         )
 

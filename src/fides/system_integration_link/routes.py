@@ -53,14 +53,7 @@ def get_system_links(
             detail=f"Connection '{connection_key}' not found",
         ) from exc
 
-    return [
-        SystemLinkResponse(
-            system_fides_key=e.system_fides_key,
-            system_name=e.system_name,
-            created_at=e.created_at,
-        )
-        for e in entities
-    ]
+    return [SystemLinkResponse.from_entity(e) for e in entities]
 
 
 @router.put(
@@ -102,14 +95,7 @@ def set_system_links(
     except TooManyLinksError as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    return [
-        SystemLinkResponse(
-            system_fides_key=e.system_fides_key,
-            system_name=e.system_name,
-            created_at=e.created_at,
-        )
-        for e in entities
-    ]
+    return [SystemLinkResponse.from_entity(e) for e in entities]
 
 
 @router.delete(
