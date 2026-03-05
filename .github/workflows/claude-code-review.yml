@@ -1,0 +1,72 @@
+# Claude Code Review — Dispatcher
+#
+# Triggers an automated code review in ethyca/talos via repository_dispatch.
+# The review runs there (where all Claude config lives) and posts results back to this PR.
+#
+# Triggers:
+#   - PR opened (non-draft) or moved out of draft
+#   - PR reopened
+#   - Comment containing "/code-review" on a PR
+#
+# Required secrets:
+#   TALOS_DISPATCH_TOKEN — PAT or GitHub App token with write access to ethyca/talos
+#                          (repo scope, or fine-grained: contents:write on ethyca/talos)
+
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch-review:
+    runs-on: ubuntu-latest
+    if: >
+      (
+        github.event_name == 'pull_request'
+        && !github.event.pull_request.draft
+        && github.actor != 'dependabot[bot]'
+      )
+      || (
+        github.event_name == 'issue_comment'
+        && github.event.issue.pull_request
+        && contains(github.event.comment.body, '/code-review')
+      )
+    steps:
+      # For issue_comment events, we need to fetch PR metadata
+      - name: Get PR details (comment trigger)
+        id: pr
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
+          echo "head_ref=$(echo "$PR_JSON" | jq -r .head.ref)" >> "$GITHUB_OUTPUT"
+          echo "base_ref=$(echo "$PR_JSON" | jq -r .base.ref)" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(echo "$PR_JSON" | jq -r .head.sha)" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch code review to talos
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.TALOS_DISPATCH_TOKEN }}
+          repository: ethyca/talos
+          event-type: code-review
+          client-payload: >
+            {
+              "repository": "${{ github.repository }}",
+              "pr_number": "${{ github.event.pull_request.number || steps.pr.outputs.pr_number }}",
+              "head_ref": "${{ github.event.pull_request.head.ref || steps.pr.outputs.head_ref }}",
+              "base_ref": "${{ github.event.pull_request.base.ref || steps.pr.outputs.base_ref }}",
+              "head_sha": "${{ github.event.pull_request.head.sha || steps.pr.outputs.head_sha }}",
+              "sender": "${{ github.actor }}"
+            }
