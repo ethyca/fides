@@ -9,6 +9,7 @@ import {
   usePromoteIdentityProviderMonitorResultMutation,
   useUnmuteIdentityProviderMonitorResultMutation,
 } from "../../discovery-detection.slice";
+import { InfrastructureSystemBulkActionType } from "../constants";
 import { ActionCenterTabHash } from "../hooks/useActionCenterTabs";
 
 interface InfrastructureSystemActionsCellProps {
@@ -118,26 +119,26 @@ export const InfrastructureSystemActionsCell = ({
 
   const isActionInProgress = isPromoting || isMuting || isUnmuting;
   const isIgnoredTab = activeTab === ActionCenterTabHash.IGNORED;
-  const isIgnored = system.diff_status === DiffStatus.MUTED;
+  const isIgnored = system.diff_status
+    ? system.diff_status === DiffStatus.MUTED
+    : isIgnoredTab;
 
-  const addTooltip = () => {
+  const getActionTooltip = (
+    action:
+      | InfrastructureSystemBulkActionType.ADD
+      | InfrastructureSystemBulkActionType.RESTORE,
+  ) => {
+    const isAdd = action === InfrastructureSystemBulkActionType.ADD;
     if (!system.urn) {
-      return "This system cannot be promoted: URN is missing.";
+      return `This system cannot be ${isAdd ? "promoted" : "restored"}: URN is missing.`;
     }
-    if (isIgnored) {
+    if (isAdd && isIgnored) {
       return "Restore systems before adding to the inventory";
     }
-    return "Add";
-  };
-
-  const restoreTooltip = () => {
-    if (!system.urn) {
-      return "This system cannot be restored: URN is missing.";
-    }
-    if (!isIgnored) {
+    if (!isAdd && !isIgnored) {
       return "You can only restore ignored systems";
     }
-    return "Restore";
+    return isAdd ? "Add" : "Restore";
   };
 
   return (
@@ -158,7 +159,9 @@ export const InfrastructureSystemActionsCell = ({
         </Tooltip>
       )}
       {(isIgnoredTab || allowRestore) && (
-        <Tooltip title={restoreTooltip()}>
+        <Tooltip
+          title={getActionTooltip(InfrastructureSystemBulkActionType.RESTORE)}
+        >
           <Button
             data-testid="restore-btn"
             size="small"
@@ -171,7 +174,7 @@ export const InfrastructureSystemActionsCell = ({
         </Tooltip>
       )}
 
-      <Tooltip title={addTooltip()}>
+      <Tooltip title={getActionTooltip(InfrastructureSystemBulkActionType.ADD)}>
         <Button
           data-testid="add-btn"
           size="small"
