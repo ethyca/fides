@@ -61,8 +61,29 @@ class PostgresQueryConfig(SQLQueryConfig):
 
 class RDSPostgresQueryConfig(PostgresQueryConfig):
     """
-    Query config for RDS Postgres — identical to PostgresQueryConfig but
-    validates namespace metadata against RDSPostgresNamespaceMeta.
+    Query config for RDS Postgres.
+
+    The RDS engine already connects to the correct database, so
+    generate_table_name only needs schema qualification (not database).
     """
 
     namespace_meta_schema = RDSPostgresNamespaceMeta  # type: ignore[assignment]
+
+    def generate_table_name(self, quoted: bool = True) -> str:
+        """
+        Prepends the schema to the base table name if RDS namespace meta
+        is provided.  Unlike Postgres, RDS doesn't need database_name
+        qualification because the connection targets a specific database.
+        """
+        collection_name = self.node.collection.name
+        table_name = f'"{collection_name}"' if quoted else collection_name
+
+        if not self.namespace_meta:
+            return table_name
+
+        rds_meta = cast(RDSPostgresNamespaceMeta, self.namespace_meta)
+        if rds_meta.schema:
+            schema_name = f'"{rds_meta.schema}"' if quoted else rds_meta.schema
+            return f"{schema_name}.{table_name}"
+
+        return table_name

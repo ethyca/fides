@@ -8,6 +8,8 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (  # noqa: 
 )
 from fides.api.schemas.namespace_meta.google_cloud_sql_postgres_namespace_meta import (  # noqa: F401
     GoogleCloudSQLPostgresNamespaceMeta,
+from fides.api.schemas.namespace_meta.postgres_namespace_meta import (  # noqa: F401
+    PostgresNamespaceMeta,
 )
 from fides.api.schemas.namespace_meta.rds_postgres_namespace_meta import (  # noqa: F401
     RDSPostgresNamespaceMeta,
@@ -74,6 +76,7 @@ def test_validate_postgres_with_valid_namespace():
         collections=[],
         fides_meta={
             "namespace": {
+                "connection_type": "postgres",
                 "schema": "billing",
             }
         },
@@ -116,6 +119,7 @@ def test_validate_postgres_with_invalid_namespace():
         collections=[],
         fides_meta={
             "namespace": {
+                "connection_type": "postgres",
                 "database_name": "example_db",  # Missing required schema
             }
         },
@@ -490,6 +494,8 @@ def test_validate_rds_postgres_with_valid_namespace():
         fides_meta={
             "namespace": {
                 "connection_type": "rds_postgres",
+                "database_instance_id": "my-rds-instance",
+                "database_id": "mydb",
                 "schema": "billing",
             }
         },
@@ -509,14 +515,14 @@ def test_validate_rds_postgres_with_valid_namespace():
 
 
 def test_validate_rds_postgres_with_invalid_namespace():
-    """Test validation fails with invalid RDS Postgres namespace metadata (missing schema)"""
+    """Test validation fails with invalid RDS Postgres namespace metadata (missing required fields)"""
     dataset = FideslangDataset(
         fides_key="test_dataset",
         collections=[],
         fides_meta={
             "namespace": {
                 "connection_type": "rds_postgres",
-                "database_name": "example_db",  # Missing required schema
+                "schema": "billing",  # Missing required database_instance_id and database_id
             }
         },
     )
