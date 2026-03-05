@@ -1,4 +1,4 @@
-import { Flex, Tag, Text, useMessage } from "fidesui";
+import { Flex, Tag, Text, Tooltip, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { RTKErrorResult } from "~/types/errors/api";
@@ -54,6 +54,18 @@ export const QuestionCard = ({ assessmentId, question }: QuestionCardProps) => {
           >
             {ANSWER_SOURCE_LABELS[question.answer_source]}
           </Tag>
+        ) : question.answer_status === AnswerStatus.PARTIAL ? (
+          <Tooltip
+            title={
+              question.missing_data?.length > 0
+                ? `This answer can be automatically derived if you populate: ${question.missing_data.join(", ")}`
+                : "This answer can be derived from Fides data if the relevant field is populated"
+            }
+          >
+            <Tag color={ANSWER_STATUS_TAG_COLORS[question.answer_status]}>
+              {ANSWER_STATUS_LABELS[question.answer_status]}
+            </Tag>
+          </Tooltip>
         ) : (
           <Tag color={ANSWER_STATUS_TAG_COLORS[question.answer_status]}>
             {ANSWER_STATUS_LABELS[question.answer_status]}

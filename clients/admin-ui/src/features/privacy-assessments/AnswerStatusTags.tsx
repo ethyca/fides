@@ -21,7 +21,7 @@ export const AnswerStatusTags = ({ question }: AnswerStatusTagsProps) => {
         </Tag>
         <Tag
           color={ANSWER_SOURCE_TAG_COLORS[question.answer_source]}
-          hasSparkle={!!AnswerSource.AI_ANALYSIS}
+          hasSparkle={question.answer_source === AnswerSource.AI_ANALYSIS}
         >
           {ANSWER_SOURCE_LABELS[question.answer_source]}
         </Tag>
