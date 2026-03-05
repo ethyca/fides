@@ -7,6 +7,7 @@ import PageHeader from "~/features/common/PageHeader";
 import {
   AssessmentGroup,
   AssessmentSettingsModal,
+  AssessmentTaskStatusIndicator,
   EmptyState,
   GenerateAssessmentsModal,
   useGetAssessmentTemplatesQuery,
@@ -21,15 +22,19 @@ const PrivacyAssessmentsPage: NextPage = () => {
     data: assessmentsData,
     isLoading,
     isError,
+    refetch: refetchAssessments,
   } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
+
+  const assessments = assessmentsData?.items ?? [];
+
 
   const { data: templatesData } = useGetAssessmentTemplatesQuery({
     page: 1,
     size: 100,
   });
 
-  const assessments = assessmentsData?.items ?? [];
   const templates = templatesData?.items ?? [];
+
   const hasAssessments = assessments.length > 0;
 
   const groupedAssessments = templates
@@ -78,7 +83,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
       <PageHeader
         heading="Privacy assessments"
         rightContent={
-          <Space>
+          <Space align="center">
+            <AssessmentTaskStatusIndicator
+              onTaskFinish={refetchAssessments}
+              className="mr-2"
+            />
             {hasAssessments && (
               <Button type="primary" onClick={() => setGenerateModalOpen(true)}>
                 Generate assessments
