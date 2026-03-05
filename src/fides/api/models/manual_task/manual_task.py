@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 class ManualTaskExecutionTiming(StrEnum):
     """Enum for when a manual task should be executed in the privacy request DAG."""
 
+    test_new_enum = "test_new_enum"
     pre_execution = "pre_execution"  # Execute before the main DAG
     post_execution = "post_execution"  # Execute after the main DAG
     parallel = "parallel"  # Execute in parallel with the main DAG

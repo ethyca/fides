@@ -25,6 +25,13 @@ const CustomFieldsTable = () => {
         >
           Add custom field
         </Button>
+          <Button
+              onClick={onAddClick}
+              type="primary"
+              data-testid="add-custom-field-btn"
+          >
+              Hi I'm a new button
+          </Button>
       </Flex>
       <Table {...tableProps} columns={columns} className="-mt-4" />
     </Flex>
