@@ -225,7 +225,11 @@ async def run_database_startup(app: FastAPI) -> None:
                 async with get_async_autoclose_db_session() as async_session:
                     await seed.load_samples(async_session)
         except Exception as e:
-            logger.error("Error occurred during database configuration: {}", str(e))
+            error_log = f"Error occurred during database configuration: {str(e)}"
+            logger.exception(error_log)
+            # Intentionally re-raise to abort server startup — a failed migration
+            # should never result in a running server in an unknown state.
+            raise FidesError(error_log) from e
     else:
         logger.info("Skipping auto-migration due to 'automigrate' configuration value.")
 

@@ -10,7 +10,6 @@ from fides.system_integration_link.exceptions import (
     SystemNotFoundError,
     TooManyLinksError,
 )
-from fides.system_integration_link.models import SystemConnectionConfigLink
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from fides.system_integration_link.service import (
     SystemIntegrationLinkService,
@@ -65,19 +64,6 @@ def connection_config(db: Session):
     )
     yield config
     config.delete(db)
-
-
-@pytest.fixture(autouse=True)
-def cleanup_links(db: Session):
-    yield
-    db.query(SystemConnectionConfigLink).filter(
-        SystemConnectionConfigLink.connection_config_id.in_(
-            db.query(ConnectionConfig.id).filter(
-                ConnectionConfig.key.like("svc_test_%")
-            )
-        )
-    ).delete(synchronize_session=False)
-    db.commit()
 
 
 class TestGetLinksForConnection:
