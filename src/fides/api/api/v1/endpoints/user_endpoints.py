@@ -3,7 +3,7 @@ import random
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import jose.exceptions
 from fastapi import Depends, HTTPException, Request, Response, Security
@@ -632,15 +632,19 @@ def reinvite_user(
     logger.info("User with id '{}' has been reinvited", user_id)
 
 
-def populate_invite_status(db: Session, user: FidesUser) -> dict:
+def populate_invite_status(
+    db: Session, user: FidesUser, user_invite: Optional[FidesUserInvite] = None
+) -> dict:
     """Helper function to populate invite status fields for a user."""
     user_dict = user.__dict__.copy()
 
     if user.username:
-        user_invite = FidesUserInvite.get_by(db, field="username", value=user.username)
-        if user_invite:
+        user_invite_record = user_invite or FidesUserInvite.get_by(
+            db, field="username", value=user.username
+        )
+        if user_invite_record:
             user_dict["has_invite"] = True
-            user_dict["invite_expired"] = user_invite.is_expired()
+            user_dict["invite_expired"] = user_invite_record.is_expired()
         else:
             user_dict["has_invite"] = False
             user_dict["invite_expired"] = None
@@ -742,9 +746,33 @@ def get_users(
         query.order_by(FidesUser.created_at.desc()), params=params
     )
 
-    # Transform each user to include invite status
+    user_records = paginated_result.items
+    usernames = list(
+        {
+            user.username
+            for user in user_records
+            if user.username is not None and user.username != ""
+        }
+    )
+    invite_records_by_username: Dict[str, FidesUserInvite] = {}
+    if usernames:
+        invite_records = (
+            db.query(FidesUserInvite)
+            .filter(FidesUserInvite.username.in_(usernames))
+            .all()
+        )
+        invite_records_by_username = {
+            invite.username: invite for invite in invite_records
+        }
+
+    # Transform each user to include invite status without per-user invite queries.
     paginated_result.items = [
-        populate_invite_status(db, user) for user in paginated_result.items
+        populate_invite_status(
+            db,
+            user,
+            invite_records_by_username.get(user.username) if user.username else None,
+        )
+        for user in user_records
     ]
 
     return paginated_result
