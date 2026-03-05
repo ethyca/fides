@@ -151,17 +151,11 @@ const ConfigureWebsiteMonitorForm = ({
           };
 
     // Build classify_params based on LLM classifier toggle
-    const classifyParams = values.use_llm_classifier
-      ? {
-          ...(monitor?.classify_params || {}),
-          context_classifier: "llm",
-          llm_model_override: values.llm_model_override || undefined,
-        }
-      : {
-          ...(monitor?.classify_params || {}),
-          context_classifier: undefined,
-          llm_model_override: undefined,
-        };
+    const classifyParams = {
+      ...(monitor?.classify_params ?? {}),
+      context_classifier: values.use_llm_classifier ? "llm" : undefined,
+      llm_model_override: values.llm_model_override || undefined,
+    };
     // Destructure form-only fields to exclude them from payload
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
     const {
@@ -183,15 +177,10 @@ const ConfigureWebsiteMonitorForm = ({
   };
 
   useEffect(() => {
-    // Defer validation to allow dynamically mounted Form.Items (e.g. LlmModelSelector)
-    // to finish registering with the form before validateFields runs.
-    const timer = setTimeout(() => {
-      form
-        .validateFields({ validateOnly: true })
-        .then(() => setSubmittable(true))
-        .catch(() => setSubmittable(false));
-    }, 0);
-    return () => clearTimeout(timer);
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
   }, [form, formValues]);
 
   // TODO: build better pattern for async form initialization
