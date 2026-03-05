@@ -5,6 +5,7 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
+import { updateTcfStubGdprApplies } from "./lib/cmp-stubs";
 import { getConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
@@ -68,6 +69,10 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       this.config.experience?.gpp_settings?.enabled,
     tcfEnabled: this.config.options.tcfEnabled,
   });
+
+  // If a TCF stub exists on this page, set gdprApplies=false since the
+  // non-TCF bundle is loaded (indicating GDPR/TCF does not apply here).
+  updateTcfStubGdprApplies();
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
