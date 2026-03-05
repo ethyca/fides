@@ -25,7 +25,7 @@ const ScrollableListItem = <T extends unknown>({
   draggable,
   onDeleteItem,
   onEditItem,
-  tooltip,
+  infoTooltip,
   warningTooltip,
   onRowClick,
   maxH = 10,
@@ -36,7 +36,7 @@ const ScrollableListItem = <T extends unknown>({
   draggable?: boolean;
   onDeleteItem?: (item: T) => void;
   onEditItem?: (item: T) => void;
-  tooltip?: string;
+  infoTooltip?: string;
   warningTooltip?: string;
   onRowClick?: (item: T) => void;
   maxH?: number;
@@ -106,7 +106,7 @@ const ScrollableListItem = <T extends unknown>({
         >
           {label}
         </Text>
-        <InfoTooltip label={tooltip} />
+        <InfoTooltip label={infoTooltip} />
       </Flex>
       <Space className="invisible absolute right-2 bg-white group-hover:visible">
         {onEditItem && (
@@ -333,8 +333,8 @@ const ScrollableList = <T extends unknown>({
               draggable
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
-              tooltip={getTooltip?.(item) || undefined}
-              warningTooltip={getWarningTooltip?.(item) || undefined}
+              infoTooltip={getTooltip?.(item)}
+              warningTooltip={getWarningTooltip?.(item)}
             />
           );
         })}
@@ -345,8 +345,8 @@ const ScrollableList = <T extends unknown>({
       <List>
         {values.map((item) => {
           const itemId = getItemId(item);
-          const tooltipText = getTooltip?.(item) || undefined;
-          const warningTooltipText = getWarningTooltip?.(item) || undefined;
+          const tooltipText = getTooltip?.(item);
+          const warningTooltipText = getWarningTooltip?.(item);
           return (
             <ScrollableListItem
               key={itemId}
@@ -354,7 +354,7 @@ const ScrollableList = <T extends unknown>({
               label={getItemDisplayName(item)}
               onRowClick={onRowClick}
               onDeleteItem={handleDeleteItem}
-              tooltip={tooltipText}
+              infoTooltip={tooltipText}
               warningTooltip={warningTooltipText}
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
