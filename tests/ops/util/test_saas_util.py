@@ -765,8 +765,9 @@ class TestValidateValueAgainstAllowedList:
     """Tests for validate_value_against_allowed_list.
 
     Each allowed_values entry is a wildcard pattern where ``*`` matches
-    any sequence of characters (including dots).  Everything else is a
-    literal.  Matching is case-insensitive against the full value string.
+    one or more hostname-safe characters (``[a-zA-Z0-9._-]+``, as defined
+    by ``wildcard_to_regex``).  Everything else is treated as a literal.
+    Matching is case-insensitive against the full value string.
     """
 
     @pytest.mark.parametrize(
@@ -850,6 +851,30 @@ class TestValidateValueAgainstAllowedList:
                 ["api.stripe.com"],
                 False,
                 id="suffix_attack_rejected",
+            ),
+            pytest.param(
+                "www.badactor.com/fake.service.example.com",
+                ["*.service.example.com"],
+                False,
+                id="path_injection_rejected",
+            ),
+            pytest.param(
+                "https://badactor.com/fake.api.example.com",
+                ["*.api.example.com"],
+                False,
+                id="scheme_and_path_injection_rejected",
+            ),
+            pytest.param(
+                "badactor.com:8080/fake.api.example.com",
+                ["*.api.example.com"],
+                False,
+                id="port_and_path_injection_rejected",
+            ),
+            pytest.param(
+                "my_bucket.s3.example.com",
+                ["*.s3.example.com"],
+                True,
+                id="underscore_in_subdomain_allowed",
             ),
         ],
     )
