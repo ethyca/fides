@@ -1,20 +1,11 @@
 import { Badge, Collapse, Flex, Space, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
+import { formatDate } from "~/features/common/utils";
+
 import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
 import styles from "./EvidenceSection.module.scss";
 import { EvidenceItem, EvidenceType, QuestionGroup } from "./types";
-
-const formatTimestamp = (timestamp: string) => {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-};
 
 const getSourceTypeLabel = (sourceType: string) =>
   SOURCE_TYPE_LABELS[sourceType] ?? sourceType;
@@ -38,7 +29,7 @@ const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => (
           {item.value}
         </Text>
         <Text type="secondary" size="sm" className="block">
-          {formatTimestamp(item.created_at)}
+          {formatDate(item.created_at)}
         </Text>
       </div>
     ))}
