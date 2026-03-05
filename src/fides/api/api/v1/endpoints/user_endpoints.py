@@ -4,7 +4,6 @@ import time
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from joserfc.errors import DecodeError
 from fastapi import Depends, HTTPException, Request, Response, Security
 from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
@@ -12,6 +11,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
+from joserfc.errors import DecodeError
 from loguru import logger
 from sqlalchemy.orm import Query, Session
 from sqlalchemy_utils import escape_like
