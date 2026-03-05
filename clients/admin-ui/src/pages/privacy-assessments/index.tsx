@@ -9,6 +9,7 @@ import PageHeader from "~/features/common/PageHeader";
 import {
   AssessmentGroup,
   AssessmentSettingsModal,
+  AssessmentTaskStatusIndicator,
   EmptyState,
   useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
@@ -17,24 +18,24 @@ import {
 const PrivacyAssessmentsPage: NextPage = () => {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
-  // Fetch assessments from API
   const {
     data: assessmentsData,
     isLoading,
     isError,
+    refetch: refetchAssessments,
   } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
 
-  // Fetch templates from API
+  const assessments = assessmentsData?.items ?? [];
+
   const { data: templatesData } = useGetAssessmentTemplatesQuery({
     page: 1,
     size: 100,
   });
 
-  const assessments = assessmentsData?.items ?? [];
   const templates = templatesData?.items ?? [];
+
   const hasAssessments = assessments.length > 0;
 
-  // Group assessments by template_id dynamically
   const groupedAssessments = templates
     .map((template) => ({
       templateId: template.id,
@@ -81,7 +82,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
       <PageHeader
         heading="Privacy assessments"
         rightContent={
-          <Space>
+          <Space align="center">
+            <AssessmentTaskStatusIndicator
+              onTaskFinish={refetchAssessments}
+              className="mr-2"
+            />
             {hasAssessments && (
               <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
                 <Button type="primary">Evaluate assessments</Button>
