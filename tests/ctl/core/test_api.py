@@ -1080,7 +1080,6 @@ class TestSystemCreate:
         system = systems[0]
 
         expected_none = [
-            "connection_configs",
             "data_security_practices",
             "description",
             "dpa_location",
@@ -1115,6 +1114,7 @@ class TestSystemCreate:
             assert getattr(system, field) is False
 
         expected_empty_list = [
+            "connection_configs",
             "dataset_references",
             "data_stewards",
             "legal_basis_for_profiling",
