@@ -57,6 +57,8 @@ CI_ARGS_EXEC = "-t" if not getenv("CI") else "--user=fidesuser"
 # If FIDES__CLI__ANALYTICS_ID is set in the local environment, use its value as the analytics_id
 ANALYTICS_ID_OVERRIDE = ("-e", "FIDES__CLI__ANALYTICS_ID")
 ANALYTICS_OPT_OUT = ("-e", "ANALYTICS_OPT_OUT")
+# Disable Python 3.13 JIT in CI to avoid cold-cache overhead and resource contention
+PYTHON_JIT_OFF = ("-e", "PYTHON_JIT=0") if getenv("CI") else ()
 
 # Reusable Commands
 LOGIN = (
@@ -85,6 +87,7 @@ EXEC_UV = (
     "exec",
     *ANALYTICS_OPT_OUT,
     *ANALYTICS_ID_OVERRIDE,
+    *PYTHON_JIT_OFF,
     CI_ARGS_EXEC,
     CONTAINER_NAME,
 )

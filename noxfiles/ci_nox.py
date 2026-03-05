@@ -551,8 +551,12 @@ def pytest(session: nox.Session, test_group: str) -> None:
     session.notify("teardown")
 
     validate_test_matrix(session)
+    xdist_workers = os.environ.get("PYTEST_XDIST_WORKERS", "auto")
     pytest_config = PytestConfig(
-        xdist_config=XdistConfig(parallel_runners="auto"),
+        xdist_config=XdistConfig(
+            parallel_runners=xdist_workers,
+            dist_mode="loadfile",
+        ),
         coverage_config=CoverageConfig(
             report_format="xml",
             cov_name="fides",
