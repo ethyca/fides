@@ -103,6 +103,6 @@ async def verify_dataset_partitioning(
     except Exception as exc:
         logger.error("Partitioning verification failed", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         )

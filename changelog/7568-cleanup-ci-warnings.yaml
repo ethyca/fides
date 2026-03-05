@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Replace deprecated `HTTP_422_UNPROCESSABLE_ENTITY` with `HTTP_422_UNPROCESSABLE_CONTENT` and disable pytest output capture to fix buffered startup logs in CI
+pr: 7568
+labels: []

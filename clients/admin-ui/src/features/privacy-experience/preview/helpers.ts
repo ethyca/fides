@@ -183,5 +183,8 @@ export const generateMockNotices = (
       }
       return notice;
     })
-    .filter((notice): notice is PrivacyNoticeResponse => notice !== undefined);
+    .filter(
+      (notice): notice is PrivacyNoticeResponse =>
+        notice !== undefined && !notice.disabled,
+    );
 };

@@ -1,0 +1,4 @@
+type: Changed
+description: Reorganized nav menu Settings section into Core configuration, Compliance, and Settings groups with new Carbon icons, added collapsible sidebar with smooth transitions and logo crossfade, styled flyout menus, and fixed content width to expand when nav collapses
+pr: 7488
+labels: []
