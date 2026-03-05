@@ -35,7 +35,7 @@ import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { RequestInputModal } from "./RequestInputModal";
 import { SlackIcon } from "./SlackIcon";
 import { EvidenceItem, PrivacyAssessmentDetailResponse } from "./types";
-import { getSlackQuestions } from "./utils";
+import { deduplicateEvidence, getSlackQuestions } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -59,7 +59,10 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     const group = (assessment.question_groups ?? []).find(
       (g) => g.id === focusedGroupId,
     );
-    return group ? group.questions.flatMap((q) => q.evidence) : [];
+    if (!group) {
+      return [];
+    }
+    return deduplicateEvidence(group.questions.flatMap((q) => q.evidence));
   }, [focusedGroupId, assessment.question_groups]);
 
   const handleViewEvidence = useCallback((groupId: string) => {

@@ -1,4 +1,4 @@
-import type { AssessmentQuestion } from "./types";
+import type { AssessmentQuestion, EvidenceItem } from "./types";
 import { AnswerStatus } from "./types";
 
 export const getSlackQuestions = (
@@ -14,4 +14,16 @@ export const getSlackQuestions = (
     (q) => q.answer_text.trim().length > 0,
   );
   return { slackQuestions, answeredSlackQuestions };
+};
+
+export const deduplicateEvidence = (items: EvidenceItem[]): EvidenceItem[] => {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = `${item.source_type}|${item.source_key}|${item.field_name}|${item.value}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 };

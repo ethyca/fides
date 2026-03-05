@@ -1,4 +1,4 @@
-import { Badge, Collapse, Flex, Space, Tag, Text } from "fidesui";
+import { Badge, Collapse, Flex, Space, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 import styles from "./EvidenceSection.module.scss";
@@ -42,59 +42,28 @@ const getSourceTypeLabel = (sourceType: string) =>
 const getFieldNameLabel = (fieldName: string) =>
   FIELD_NAME_LABELS[fieldName] ?? fieldName.replace(/_/g, " ");
 
-const groupBySourceType = (items: EvidenceItem[]) =>
-  items.reduce<Record<string, EvidenceItem[]>>(
-    (acc, item) => ({
-      ...acc,
-      [item.source_type]: [...(acc[item.source_type] ?? []), item],
-    }),
-    {},
-  );
-
 interface EvidenceCardGroupProps {
   items: EvidenceItem[];
 }
 
-const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => {
-  const bySourceType = groupBySourceType(items);
-
-  return (
-    <Space direction="vertical" size="middle" className={styles.itemList}>
-      {Object.entries(bySourceType).map(([sourceType, sourceItems]) => (
-        <div key={sourceType}>
-          <Text strong size="sm" className={styles.sourceTypeLabel}>
-            {getSourceTypeLabel(sourceType)}
-          </Text>
-          <Space direction="vertical" size="small" className={styles.itemList}>
-            {sourceItems.map((item) => (
-              <div key={item.id} className={styles.evidenceCard}>
-                <Flex
-                  justify="space-between"
-                  align="flex-start"
-                  className={styles.cardHeader}
-                >
-                  <Text strong size="sm">
-                    {item.source_key}
-                  </Text>
-                  {item.citation_number && <Tag>#{item.citation_number}</Tag>}
-                </Flex>
-                <Text className={styles.cardValue}>
-                  <Text type="secondary">
-                    {getFieldNameLabel(item.field_name)}:{" "}
-                  </Text>
-                  {item.value}
-                </Text>
-                <Text type="secondary" size="sm" className={styles.cardMeta}>
-                  {formatTimestamp(item.created_at)}
-                </Text>
-              </div>
-            ))}
-          </Space>
-        </div>
-      ))}
-    </Space>
-  );
-};
+const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => (
+  <Space direction="vertical" size="small" className={styles.itemList}>
+    {items.map((item) => (
+      <div key={item.id} className={styles.evidenceCard}>
+        <Text strong size="sm" className={styles.cardHeader}>
+          {getSourceTypeLabel(item.source_type)}
+        </Text>
+        <Text className={styles.cardValue}>
+          <Text type="secondary">{getFieldNameLabel(item.field_name)}: </Text>
+          {item.value}
+        </Text>
+        <Text type="secondary" size="sm" className={styles.cardMeta}>
+          {formatTimestamp(item.created_at)}
+        </Text>
+      </div>
+    ))}
+  </Space>
+);
 
 export interface EvidenceSectionProps {
   groupId: string;
