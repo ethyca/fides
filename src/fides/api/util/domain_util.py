@@ -9,13 +9,14 @@ def wildcard_to_regex(pattern: str) -> str:
     Convert a wildcard pattern (using ``*``) into a regex string.
 
     The conversion escapes every regex-special character first, then
-    replaces the escaped ``\\*`` tokens with ``.+`` so that each ``*``
-    in the original pattern matches one or more characters (including
-    dots).  This prevents ``*.example.com`` from matching the bare
-    ``.example.com`` (leading dot, no subdomain).
+    replaces the escaped ``\\*`` tokens with ``[a-zA-Z0-9.-]+`` so that
+    each ``*`` in the original pattern matches one or more valid hostname
+    characters only.  This prevents ``*.example.com`` from matching the
+    bare ``.example.com`` (leading dot, no subdomain) and also prevents
+    path-injection attacks like ``badactor.com/fake.example.com``.
     """
     escaped = re.escape(pattern)
-    return escaped.replace(r"\*", ".+")
+    return escaped.replace(r"\*", "[a-zA-Z0-9.-]+")
 
 
 def validate_value_against_allowed_list(
@@ -26,8 +27,9 @@ def validate_value_against_allowed_list(
 
     Each entry in allowed_values is a wildcard pattern that is matched
     case-insensitively against the full value string.  The only special
-    character is ``*`` which matches any sequence of characters (including
-    dots).  Everything else is treated as a literal.
+    character is ``*`` which matches one or more valid hostname characters
+    (letters, digits, hyphens, dots).  Everything else is treated as a
+    literal.
 
     An empty ``allowed_values`` list means the param is self-hosted and any
     value is permitted.

@@ -851,6 +851,24 @@ class TestValidateValueAgainstAllowedList:
                 False,
                 id="suffix_attack_rejected",
             ),
+            pytest.param(
+                "www.badactor.com/fake.exponea.com",
+                ["*.exponea.com"],
+                False,
+                id="path_injection_rejected",
+            ),
+            pytest.param(
+                "https://badactor.com/fake.stripe.com",
+                ["*.stripe.com"],
+                False,
+                id="scheme_and_path_injection_rejected",
+            ),
+            pytest.param(
+                "badactor.com:8080/fake.stripe.com",
+                ["*.stripe.com"],
+                False,
+                id="port_and_path_injection_rejected",
+            ),
         ],
     )
     def test_value_validation(self, value, allowed, should_pass):
