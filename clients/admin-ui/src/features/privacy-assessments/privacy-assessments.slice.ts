@@ -69,6 +69,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["Privacy Assessment"],
     }),
 
     updatePrivacyAssessment: build.mutation<

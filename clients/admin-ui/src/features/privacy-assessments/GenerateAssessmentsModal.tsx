@@ -145,7 +145,6 @@ export const GenerateAssessmentsModal = ({
               onChange={(values: string[]) => setSelectedTemplateIds(values)}
               showSearch
               optionFilterProp="label"
-              aria-label="Assessment templates"
               options={activeTemplates.map((template) => ({
                 value: template.assessment_type || template.key,
                 label: template.name,
