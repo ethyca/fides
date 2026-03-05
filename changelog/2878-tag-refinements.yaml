@@ -1,0 +1,4 @@
+type: Changed
+description: Refined tag display in privacy assessment QuestionCard to show source tag when complete or status tag when incomplete
+pr: 7570
+labels: []

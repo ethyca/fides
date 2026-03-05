@@ -126,29 +126,26 @@ export const LlmModelSelector = ({
           />
         </Form.Item>
       )}
-      {showModelField && (
-        <Form.Item
-          name={modelOverrideName}
-          label={
-            !serverSupportsLlmClassifier ? (
-              <Tooltip title={SWITCH_TOOLTIP_DISABLED}>
-                <span>{modelOverrideLabel}</span>
-              </Tooltip>
-            ) : (
-              modelOverrideLabel
-            )
-          }
-          tooltip={
-            serverSupportsLlmClassifier ? modelOverrideTooltip : undefined
-          }
-        >
-          <Input
-            data-testid={modelFieldTestId}
-            placeholder={modelOverridePlaceholder}
-            disabled={!serverSupportsLlmClassifier}
-          />
-        </Form.Item>
-      )}
+      <Form.Item
+        name={modelOverrideName}
+        label={
+          !serverSupportsLlmClassifier ? (
+            <Tooltip title={SWITCH_TOOLTIP_DISABLED}>
+              <span>{modelOverrideLabel}</span>
+            </Tooltip>
+          ) : (
+            modelOverrideLabel
+          )
+        }
+        tooltip={serverSupportsLlmClassifier ? modelOverrideTooltip : undefined}
+        hidden={!showModelField}
+      >
+        <Input
+          data-testid={modelFieldTestId}
+          placeholder={modelOverridePlaceholder}
+          disabled={!serverSupportsLlmClassifier}
+        />
+      </Form.Item>
     </>
   );
 };
