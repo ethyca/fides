@@ -4,6 +4,7 @@ import {
   POLICIES_ROUTE,
   POLICY_DETAIL_ROUTE,
 } from "~/features/common/nav/routes";
+import { ActionType } from "~/types/api";
 
 describe("Policy CRUD", () => {
   describe("Create policy", () => {
@@ -32,12 +33,29 @@ describe("Policy CRUD", () => {
       cy.getByTestId("policy-key-input").should("have.value", "my_test_policy");
     });
 
-    it("submits the form and calls PATCH", () => {
+    it("shows the request type selector on create", () => {
+      cy.getByTestId("create-policy-btn").click();
+      cy.getByTestId("policy-type-select").should("be.visible");
+    });
+
+    it("submits the form and calls PATCH with action_type", () => {
       cy.getByTestId("create-policy-btn").click();
       cy.getByTestId("policy-name-input").type("Test Policy");
+      cy.getByTestId("policy-type-select").antSelect("Access");
 
       cy.getAntModalFooter().contains("Create").click();
-      cy.wait("@patchDSRPolicy");
+      cy.wait("@patchDSRPolicy")
+        .its("request.body")
+        .should((body) => {
+          expect(body[0]).to.have.property("action_type", ActionType.ACCESS);
+        });
+    });
+
+    it("shows validation error when request type is not selected", () => {
+      cy.getByTestId("create-policy-btn").click();
+      cy.getByTestId("policy-name-input").type("Test Policy");
+      cy.getAntModalFooter().contains("Create").click();
+      cy.contains("Request type is required").should("be.visible");
     });
 
     it("shows validation error when name is empty", () => {
@@ -58,6 +76,14 @@ describe("Policy CRUD", () => {
     it("shows edit and delete buttons on detail page", () => {
       cy.getByTestId("edit-policy-btn").should("be.visible");
       cy.getByTestId("delete-policy-btn").should("be.visible");
+    });
+
+    it("shows the request type selector as disabled on edit", () => {
+      cy.getByTestId("edit-policy-btn").click();
+      cy.getByTestId("policy-type-select").should("be.visible");
+      cy.getByTestId("policy-type-select")
+        .closest(".ant-select")
+        .should("have.class", "ant-select-disabled");
     });
 
     it("opens edit modal with pre-populated fields", () => {
