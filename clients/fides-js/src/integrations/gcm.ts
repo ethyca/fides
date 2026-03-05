@@ -151,7 +151,6 @@ const buildGoogleConsent = (
   return googleConsent as Record<GoogleConsentType, GoogleConsentState>;
 };
 
-
 /**
  *
  * Push consent to Google Consent Mode v2
@@ -168,11 +167,11 @@ const pushConsentToGtag = (
   if (typeof window.gtag !== "function") {
     // define dataLayer if it doesn't exist yet so that we can push to it in the gtag function fallback
     window.dataLayer ??= [];
-    const dataLayer = window.dataLayer;
+    const { dataLayer } = window;
     // define gtag if it doesn't exist and push to dataLayer
-    window.gtag = function gtag(){
-      dataLayer.push(arguments)
-    }
+    window.gtag = function gtag() {
+      dataLayer.push(arguments);
+    };
 
     fidesDebugger(
       "[Fides GCM] gtag() not found. Adding fallback gtag function that pushes to dataLayer.",
@@ -202,7 +201,6 @@ const pushConsentToGtag = (
     fidesDebugger("[Fides GCM] Error calling gtag():", error);
   }
 };
-
 
 /**
  * Get current Google consent state
@@ -260,7 +258,6 @@ export const gcm = (options?: Partial<GcmOptions>): GcmIntegration => {
         ? options.purposeMapping
         : DEFAULT_CONSENT_MAPPING,
   };
-
 
   // Subscribe to Fides consent events
   subscribeToConsent((consent) => {
