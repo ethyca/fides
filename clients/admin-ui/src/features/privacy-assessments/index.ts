@@ -14,4 +14,3 @@ export * from "./QuestionGroupPanel";
 export * from "./QuestionnaireStatusBar";
 export * from "./SlackIcon";
 export * from "./types";
-export * from "./utils";
