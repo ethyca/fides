@@ -3,10 +3,13 @@ from fideslang.models import Dataset as FideslangDataset
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
+from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (  # noqa: F401
     BigQueryNamespaceMeta,
 )
-from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
+from fides.api.schemas.namespace_meta.rds_postgres_namespace_meta import (  # noqa: F401
+    RDSPostgresNamespaceMeta,
+)
+from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (  # noqa: F401
     SnowflakeNamespaceMeta,
 )
 from fides.service.dataset.dataset_validator import DatasetValidationContext
@@ -288,14 +291,15 @@ def test_validate_mismatched_namespace_skipped():
     """Test that namespace_meta for a different connection type is silently skipped.
 
     When datasets of mixed types are linked to a single connection (e.g. a BigQuery
-    dataset linked to a Postgres connection), the namespace_meta belongs to a different
-    connector and should not be validated against the current connection's schema.
+    dataset linked to a Postgres connection), the namespace_meta's connection_type
+    discriminator routes validation to the correct schema.
     """
     dataset = FideslangDataset(
         fides_key="test_dataset",
         collections=[],
         fides_meta={
             "namespace": {
+                "connection_type": "bigquery",
                 "project_id": "my-project",
                 "dataset_id": "my_dataset",
             }
@@ -382,3 +386,58 @@ def test_validate_snowflake_with_missing_required_fields(field, falsy_value):
     ) in str(exc.value)
     assert "Database" in str(exc.value)
     assert "Schema" in str(exc.value)
+
+
+def test_validate_rds_postgres_with_valid_namespace():
+    """Test validation succeeds with valid RDS Postgres namespace metadata"""
+    dataset = FideslangDataset(
+        fides_key="test_dataset",
+        collections=[],
+        fides_meta={
+            "namespace": {
+                "connection_type": "rds_postgres",
+                "schema": "billing",
+            }
+        },
+    )
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.rds_postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    validator.validate(context)
+
+
+def test_validate_rds_postgres_with_invalid_namespace():
+    """Test validation fails with invalid RDS Postgres namespace metadata (missing schema)"""
+    dataset = FideslangDataset(
+        fides_key="test_dataset",
+        collections=[],
+        fides_meta={
+            "namespace": {
+                "connection_type": "rds_postgres",
+                "database_name": "example_db",  # Missing required schema
+            }
+        },
+    )
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.rds_postgres,
+        name="Test Connection",
+        secrets={},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    with pytest.raises(ValidationError) as exc:
+        validator.validate(context)
+
+    assert "Invalid namespace metadata for rds_postgres" in str(exc.value)

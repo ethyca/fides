@@ -1,5 +1,3 @@
-from typing import cast
-
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine, create_engine  # type: ignore
@@ -7,9 +5,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration import PostgreSQLSchema
-from fides.api.schemas.namespace_meta.postgres_namespace_meta import (
-    PostgresNamespaceMeta,
-)
 from fides.api.service.connectors.query_configs.postgres_query_config import (
     PostgresQueryConfig,
 )
@@ -105,12 +100,4 @@ class PostgreSQLConnector(SQLConnector):
         Returns unquoted names (e.g. schema.table) because the generic
         SQLConnector.table_exists() uses split(".") + inspector.has_table().
         """
-        query_config = self.query_config(node)
-        if not query_config.namespace_meta:
-            return node.collection.name
-
-        meta = cast(PostgresNamespaceMeta, query_config.namespace_meta)
-        qualified = f"{meta.schema}.{node.collection.name}"
-        if meta.database_name:
-            return f"{meta.database_name}.{qualified}"
-        return qualified
+        return self.query_config(node).generate_table_name(quoted=False)

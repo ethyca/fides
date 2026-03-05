@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Dict, List, Optional, cast
+from typing import Dict, List, Optional
 
 from botocore.exceptions import ClientError
 from loguru import logger
@@ -12,11 +12,8 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
     RDSPostgresSchema,
 )
-from fides.api.schemas.namespace_meta.postgres_namespace_meta import (
-    PostgresNamespaceMeta,
-)
 from fides.api.service.connectors.query_configs.postgres_query_config import (
-    PostgresQueryConfig,
+    RDSPostgresQueryConfig,
 )
 from fides.api.service.connectors.rds_connector_mixin import RDSConnectorMixin
 from fides.api.service.connectors.sql_connector import SQLConnector
@@ -86,10 +83,10 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
             db_name=db_name,
         )
 
-    def query_config(self, node: ExecutionNode) -> PostgresQueryConfig:
+    def query_config(self, node: ExecutionNode) -> RDSPostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         db: Session = Session.object_session(self.configuration)
-        return PostgresQueryConfig(
+        return RDSPostgresQueryConfig(
             node, SQLConnector.get_namespace_meta(db, node.address.dataset)
         )
 
@@ -138,12 +135,4 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         Returns unquoted names (e.g. schema.table) because the generic
         SQLConnector.table_exists() uses split(".") + inspector.has_table().
         """
-        query_config = self.query_config(node)
-        if not query_config.namespace_meta:
-            return node.collection.name
-
-        meta = cast(PostgresNamespaceMeta, query_config.namespace_meta)
-        qualified = f"{meta.schema}.{node.collection.name}"
-        if meta.database_name:
-            return f"{meta.database_name}.{qualified}"
-        return qualified
+        return self.query_config(node).generate_table_name(quoted=False)

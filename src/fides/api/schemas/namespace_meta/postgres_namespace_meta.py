@@ -1,9 +1,9 @@
-from typing import Literal, Optional, Set, Tuple
+from typing import Literal, Set, Tuple
 
-from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
+from fides.api.schemas.namespace_meta.sql_namespace_meta import SQLNamespaceMeta
 
 
-class PostgresNamespaceMeta(NamespaceMeta):
+class PostgresNamespaceMeta(SQLNamespaceMeta):
     """
     Represents the namespace structure for Postgres queries.
 
@@ -13,8 +13,6 @@ class PostgresNamespaceMeta(NamespaceMeta):
     """
 
     connection_type: Literal["postgres"] = "postgres"
-    database_name: Optional[str] = None
-    schema: str  # type: ignore[assignment]
 
     @classmethod
     def get_fallback_secret_fields(cls) -> Set[Tuple]:
