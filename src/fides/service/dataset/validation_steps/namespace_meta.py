@@ -1,3 +1,4 @@
+import fides.api.schemas.namespace_meta  # noqa: F401  — triggers __init_subclass__ registration
 from fides.api.common_exceptions import ValidationError
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 from fides.service.dataset.dataset_validator import (
@@ -44,12 +45,18 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             # match this connection. This happens when datasets of mixed types
             # (e.g. BigQuery, Snowflake) are linked to a single connection.
             meta_connection_type = namespace_meta.get("connection_type")
-            if not meta_connection_type or meta_connection_type != connection_type:
+            if meta_connection_type and meta_connection_type != connection_type:
                 return
 
+            # When no connection_type is specified in the namespace metadata,
+            # attempt validation but don't fail — the namespace may belong to
+            # a different connection type (e.g. a BigQuery dataset linked to a
+            # Postgres connection in a bulk upsert).
             try:
                 namespace_meta_class(**namespace_meta)
             except Exception as e:
+                if not meta_connection_type:
+                    return
                 raise ValidationError(
                     f"Invalid namespace metadata for {connection_type}: {str(e)}"
                 )
