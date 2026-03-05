@@ -70,7 +70,7 @@ export const EvidenceSection = ({
         </Text>
         <Text type="secondary" size="sm">
           {searchQuery
-            ? `No evidence matches "${searchQuery}".`
+            ? `No evidence matches "${searchQuery.length > 50 ? `${searchQuery.slice(0, 50)}…` : searchQuery}".`
             : "No evidence collected yet for this section."}
         </Text>
       </div>
@@ -78,7 +78,8 @@ export const EvidenceSection = ({
   }
 
   const systemItems = evidence.filter(
-    (e) => e.type === EvidenceType.AI_ANALYSIS,
+    (e) =>
+      e.type === EvidenceType.SYSTEM || e.type === EvidenceType.AI_ANALYSIS,
   );
   const humanItems = evidence.filter(
     (e) =>

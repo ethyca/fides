@@ -29,8 +29,12 @@ import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { RequestInputModal } from "./RequestInputModal";
 import { SlackIcon } from "./SlackIcon";
-import { EvidenceItem, PrivacyAssessmentDetailResponse } from "./types";
-import { deduplicateEvidence } from "./utils";
+import {
+  EvidenceItem,
+  PrivacyAssessmentDetailResponse,
+  QuestionGroup,
+} from "./types";
+import { deduplicateEvidence, filterEvidence } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -44,25 +48,40 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
   const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
+  const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
 
-  const focusedGroupEvidence = useMemo<EvidenceItem[]>(() => {
-    if (!focusedGroupId) {
-      return [];
-    }
-    const group = (assessment.question_groups ?? []).find(
-      (g) => g.id === focusedGroupId,
-    );
-    if (!group) {
-      return [];
-    }
-    return deduplicateEvidence(group.questions.flatMap((q) => q.evidence));
-  }, [focusedGroupId, assessment.question_groups]);
+  const focusedGroup = useMemo<QuestionGroup | undefined>(
+    () =>
+      focusedGroupId
+        ? (assessment.question_groups ?? []).find(
+            (g) => g.id === focusedGroupId,
+          )
+        : undefined,
+    [focusedGroupId, assessment.question_groups],
+  );
+
+  const focusedGroupEvidence = useMemo<EvidenceItem[]>(
+    () =>
+      focusedGroup
+        ? deduplicateEvidence(focusedGroup.questions.flatMap((q) => q.evidence))
+        : [],
+    [focusedGroup],
+  );
+
+  const filteredEvidence = useMemo(
+    () => filterEvidence(focusedGroupEvidence, evidenceSearchQuery),
+    [focusedGroupEvidence, evidenceSearchQuery],
+  );
 
   const handleViewEvidence = useCallback((groupId: string) => {
     setFocusedGroupId(groupId);
     setDrawerOpen(true);
   }, []);
-  const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    setEvidenceSearchQuery("");
+  }, []);
 
   const { data: config } = useGetAssessmentConfigQuery();
   const [createReminder, { isLoading: isSendingReminder }] =
@@ -219,10 +238,10 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
       <EvidenceDrawer
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={handleCloseDrawer}
         focusedGroupId={focusedGroupId}
-        questionGroups={assessment.question_groups ?? []}
-        evidence={focusedGroupEvidence}
+        group={focusedGroup}
+        evidence={filteredEvidence}
         searchQuery={evidenceSearchQuery}
         onSearchChange={setEvidenceSearchQuery}
       />
