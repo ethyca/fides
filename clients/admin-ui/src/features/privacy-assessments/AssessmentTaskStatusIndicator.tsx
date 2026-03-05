@@ -3,10 +3,10 @@ import {
   Button,
   Flex,
   Icons,
-  notification,
   Popover,
   Spin,
   Text,
+  useNotification,
 } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
@@ -30,7 +30,7 @@ export const AssessmentTaskStatusIndicator = ({
   onTaskFinish,
   className,
 }: AssessmentTaskStatusIndicatorProps) => {
-  const [notificationApi, notificationHolder] = notification.useNotification();
+  const notificationApi = useNotification();
 
   // Fetch once on mount; derive activeTask first without polling so we can
   // use it to gate the polling interval on the same query subscription.
@@ -167,24 +167,21 @@ export const AssessmentTaskStatusIndicator = ({
   }
 
   return (
-    <>
-      {notificationHolder}
-      <Popover
-        content={
-          <AssessmentTaskPopoverContent
-            activeTask={activeTask}
-            lastCompletedTask={lastCompletedTask}
-            templateNamesMap={templateNamesMap}
-          />
-        }
-        title="Evaluation details"
-        trigger="hover"
-        placement="bottom"
-      >
-        <div className={classNames("cursor-pointer", className)}>
-          {inlineContent}
-        </div>
-      </Popover>
-    </>
+    <Popover
+      content={
+        <AssessmentTaskPopoverContent
+          activeTask={activeTask}
+          lastCompletedTask={lastCompletedTask}
+          templateNamesMap={templateNamesMap}
+        />
+      }
+      title="Evaluation details"
+      trigger="hover"
+      placement="bottom"
+    >
+      <div className={classNames("cursor-pointer", className)}>
+        {inlineContent}
+      </div>
+    </Popover>
   );
 };
