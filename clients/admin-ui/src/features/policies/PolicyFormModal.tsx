@@ -49,10 +49,16 @@ export const PolicyFormModal = ({
             name: existingPolicy.name,
             key: existingPolicy.key ?? "",
             execution_timeframe: existingPolicy.execution_timeframe,
+            action_type: existingPolicy.rules?.[0]?.action_type,
           }
         : undefined,
     [isEditing, existingPolicy],
   );
+
+  const handleClose = useCallback(() => {
+    form.resetFields();
+    onClose();
+  }, [form, onClose]);
 
   const handleSubmit = useCallback(
     async (values: PolicyFormValues) => {
@@ -82,7 +88,7 @@ export const PolicyFormModal = ({
           ? "Policy updated successfully"
           : "Policy created successfully",
       );
-      onClose();
+      handleClose();
 
       if (!isEditing && result.data.succeeded.length > 0) {
         const newPolicy = result.data.succeeded[0];
@@ -92,7 +98,7 @@ export const PolicyFormModal = ({
         });
       }
     },
-    [createOrUpdatePolicy, isEditing, message, onClose, router],
+    [createOrUpdatePolicy, isEditing, message, handleClose, router],
   );
 
   const handleNameChange = useCallback(
@@ -108,7 +114,7 @@ export const PolicyFormModal = ({
     <Modal
       title={isEditing ? "Edit policy" : "Create policy"}
       open={isOpen}
-      onCancel={onClose}
+      onCancel={handleClose}
       onOk={() => form.submit()}
       okText={isEditing ? "Save" : "Create"}
       confirmLoading={isLoading}
@@ -137,7 +143,7 @@ export const PolicyFormModal = ({
           name="key"
           label="Key"
           rules={[
-            { required: true, message: "Key is required" },
+            { required: !isEditing, message: "Key is required" },
             {
               pattern: /^[a-z0-9_]+$/,
               message:
@@ -153,25 +159,26 @@ export const PolicyFormModal = ({
           />
         </Form.Item>
 
-        {!isEditing && (
-          <Form.Item
-            name="action_type"
-            label="Request type"
-            rules={[{ required: true, message: "Request type is required" }]}
-            tooltip="Determines the request type and auto-generates a default rule."
-          >
-            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-            <Select
-              placeholder="Select a request type"
-              data-testid="policy-type-select"
-              options={[
-                ActionType.ACCESS,
-                ActionType.ERASURE,
-                ActionType.CONSENT,
-              ].map((type) => ({ value: type, label: capitalize(type) }))}
-            />
-          </Form.Item>
-        )}
+        <Form.Item
+          name="action_type"
+          label="Request type"
+          rules={[
+            { required: !isEditing, message: "Request type is required" },
+          ]}
+          tooltip="Determines the request type and auto-generates a default rule."
+        >
+          <Select
+            placeholder="Select a request type"
+            data-testid="policy-type-select"
+            disabled={isEditing}
+            aria-label="Request type"
+            options={[
+              ActionType.ACCESS,
+              ActionType.ERASURE,
+              ActionType.CONSENT,
+            ].map((type) => ({ value: type, label: capitalize(type) }))}
+          />
+        </Form.Item>
 
         <Form.Item
           name="execution_timeframe"

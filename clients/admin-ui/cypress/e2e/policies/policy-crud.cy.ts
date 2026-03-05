@@ -4,6 +4,7 @@ import {
   POLICIES_ROUTE,
   POLICY_DETAIL_ROUTE,
 } from "~/features/common/nav/routes";
+import { ActionType } from "~/types/api";
 
 describe("Policy CRUD", () => {
   describe("Create policy", () => {
@@ -46,7 +47,7 @@ describe("Policy CRUD", () => {
       cy.wait("@patchDSRPolicy")
         .its("request.body")
         .should((body) => {
-          expect(body[0]).to.have.property("action_type", "access");
+          expect(body[0]).to.have.property("action_type", ActionType.ACCESS);
         });
     });
 
@@ -77,9 +78,12 @@ describe("Policy CRUD", () => {
       cy.getByTestId("delete-policy-btn").should("be.visible");
     });
 
-    it("does not show the request type selector on edit", () => {
+    it("shows the request type selector as disabled on edit", () => {
       cy.getByTestId("edit-policy-btn").click();
-      cy.getByTestId("policy-type-select").should("not.exist");
+      cy.getByTestId("policy-type-select").should("be.visible");
+      cy.getByTestId("policy-type-select")
+        .closest(".ant-select")
+        .should("have.class", "ant-select-disabled");
     });
 
     it("opens edit modal with pre-populated fields", () => {

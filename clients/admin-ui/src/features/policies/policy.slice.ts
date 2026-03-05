@@ -13,7 +13,7 @@ interface PolicyCreateUpdate {
   name: string;
   key?: string;
   execution_timeframe?: number | null;
-  action_type?: ActionType | null;
+  action_type?: ActionType;
 }
 
 const policyApi = baseApi.injectEndpoints({
