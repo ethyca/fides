@@ -3035,7 +3035,9 @@ class TestReinviteUser:
         invite = FidesUserInvite.get_by(
             db, field="username", value=invited_user.username
         )
-        invite.updated_at = datetime.now(timezone.utc) - timedelta(hours=25)
+        invite.updated_at = datetime.now(timezone.utc) - timedelta(
+            hours=INVITE_CODE_TTL_HOURS + 1
+        )
         invite.save(db)
 
         with mock.patch(
