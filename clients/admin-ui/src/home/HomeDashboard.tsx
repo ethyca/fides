@@ -16,6 +16,11 @@ const steadyTrendData = [20, 22, 21, 23, 22, 24, 23, 25, 24, 26, 25, 27];
 
 const SMALL_FONT = { fontSize: 14 };
 
+const CARD_STYLES = {
+  title: { color: "var(--ant-color-text-description)" },
+  body: { paddingTop: 0 },
+};
+
 const BAND_STATUS: Record<string, "warning" | "error" | undefined> = {
   at_risk: "warning",
   critical: "error",
@@ -57,9 +62,15 @@ const HomeDashboardMockup = () => {
       <Row gutter={24}>
         {/* Posture card */}
         <Col xs={24} md={8} lg={8} xxl={5}>
-          <Card title="Posture" variant="borderless" className="h-full">
+          <Card
+            title="Posture"
+            variant="borderless"
+            className="h-full"
+            showTitleDivider={false}
+            styles={CARD_STYLES}
+          >
             <>
-              <Statistic value={postureScore} />
+              <Statistic valueVariant="display" value={postureScore} />
               <Statistic
                 trend={diffDirection === "down" ? "down" : "up"}
                 value={postureDiff}
@@ -93,6 +104,8 @@ const HomeDashboardMockup = () => {
             variant="borderless"
             className="h-full"
             headerLayout="inline"
+            showTitleDivider={false}
+            styles={CARD_STYLES}
             tabList={[
               { key: "overdue", label: "Overdue" },
               { key: "upcoming", label: "Upcoming" },
@@ -117,6 +130,8 @@ const HomeDashboardMockup = () => {
             variant="borderless"
             title="Data sharing"
             className="overflow-clip h-full"
+            showTitleDivider={false}
+            styles={CARD_STYLES}
             cover={
               <div className="h-16">
                 <Sparkline data={upwardTrendData} />
@@ -124,7 +139,7 @@ const HomeDashboardMockup = () => {
             }
             coverPosition="bottom"
           >
-            <Statistic value="15,112,893" />
+            <Statistic valueVariant="display" value="15,112,893" />
             <Statistic
               trend="up"
               value="112,893"
@@ -138,6 +153,8 @@ const HomeDashboardMockup = () => {
             variant="borderless"
             title="Active users"
             className="overflow-clip h-full"
+            showTitleDivider={false}
+            styles={CARD_STYLES}
             cover={
               <div className="h-16">
                 <Sparkline data={downwardTrendData} />
@@ -145,7 +162,7 @@ const HomeDashboardMockup = () => {
             }
             coverPosition="bottom"
           >
-            <Statistic value="8,430" />
+            <Statistic valueVariant="display" value="8,430" />
             <Statistic
               trend="down"
               value="1,204"
@@ -159,6 +176,8 @@ const HomeDashboardMockup = () => {
             variant="borderless"
             title="Total requests"
             className="overflow-clip h-full"
+            showTitleDivider={false}
+            styles={CARD_STYLES}
             cover={
               <div className="h-16">
                 <Sparkline data={neutralTrendData} />
@@ -166,7 +185,7 @@ const HomeDashboardMockup = () => {
             }
             coverPosition="bottom"
           >
-            <Statistic value="3,201,554" />
+            <Statistic valueVariant="display" value="3,201,554" />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
@@ -174,6 +193,8 @@ const HomeDashboardMockup = () => {
             variant="borderless"
             title="Consent rate"
             className="overflow-clip h-full"
+            showTitleDivider={false}
+            styles={CARD_STYLES}
             cover={
               <div className="h-16">
                 <Sparkline data={steadyTrendData} />
@@ -181,7 +202,7 @@ const HomeDashboardMockup = () => {
             }
             coverPosition="bottom"
           >
-            <Statistic value="74.2%" />
+            <Statistic valueVariant="display" value="74.2%" />
             <Statistic
               trend="up"
               value="2.1%"
@@ -197,6 +218,8 @@ const HomeDashboardMockup = () => {
             variant="borderless"
             title="System Health"
             className="overflow-clip h-full"
+            showTitleDivider={false}
+            styles={CARD_STYLES}
           ></Card>
         </Col>
         <Col xs={24} sm={12} md={17}>
@@ -204,6 +227,8 @@ const HomeDashboardMockup = () => {
             variant="borderless"
             title="DSR Timeline"
             className="overflow-clip h-full"
+            showTitleDivider={false}
+            styles={CARD_STYLES}
           ></Card>
         </Col>
       </Row>

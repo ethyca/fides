@@ -12,6 +12,10 @@ import palette from "../palette/palette.module.scss";
  * 6. SCSS modules (for custom-component-specific styles)
  */
 
+/** Brand serif font stack — used for display-size statistic values. */
+export const FONT_FAMILY_SERIF =
+  '"Basier Square", Georgia, "Times New Roman", serif';
+
 export const defaultAntTheme: ThemeConfig = {
   cssVar: true,
   token: {
