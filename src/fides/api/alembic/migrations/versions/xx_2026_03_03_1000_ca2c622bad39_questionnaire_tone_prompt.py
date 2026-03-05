@@ -18,7 +18,12 @@ depends_on = None
 def upgrade():
     op.add_column(
         "privacy_assessment_config",
-        sa.Column("questionnaire_tone_prompt", sa.Text(), nullable=True),
+        sa.Column(
+            "questionnaire_tone_prompt",
+            sa.Text(),
+            nullable=True,
+            comment="Custom tone prompt for questionnaire messages. If null, uses default.",
+        ),
     )
 
 
