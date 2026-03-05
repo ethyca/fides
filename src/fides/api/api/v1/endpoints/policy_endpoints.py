@@ -15,7 +15,7 @@ from starlette.status import (
     HTTP_204_NO_CONTENT,
     HTTP_404_NOT_FOUND,
     HTTP_409_CONFLICT,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.api import deps
@@ -661,7 +661,7 @@ def _validate_data_categories(
     invalid_categories = list(set(data_categories) - set(from_db))
     if invalid_categories:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Invalid data categories: {invalid_categories}",
         )
 

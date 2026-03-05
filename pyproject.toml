@@ -383,6 +383,7 @@ log_level = "INFO"
 addopts = [
     "-ra",
     "-vv",
+    "-s",
     "--disable-pytest-warnings",
     "--junitxml=test_report.xml"
 ]
