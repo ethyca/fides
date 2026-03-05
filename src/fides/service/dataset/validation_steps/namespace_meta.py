@@ -48,15 +48,9 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             if meta_connection_type and meta_connection_type != connection_type:
                 return
 
-            # When no connection_type is specified in the namespace metadata,
-            # attempt validation but don't fail — the namespace may belong to
-            # a different connection type (e.g. a BigQuery dataset linked to a
-            # Postgres connection in a bulk upsert).
             try:
                 namespace_meta_class(**namespace_meta)
             except Exception as e:
-                if not meta_connection_type:
-                    return
                 raise ValidationError(
                     f"Invalid namespace metadata for {connection_type}: {str(e)}"
                 )
