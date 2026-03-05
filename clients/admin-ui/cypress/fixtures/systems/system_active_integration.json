@@ -44,27 +44,29 @@
   "dpo": "Derek P. Officer",
   "data_security_practices": [],
   "cookies": [],
-  "connection_configs": [{
-    "name": null,
-    "key": "fidesctl_system_iterable_api",
-    "description": "",
-    "connection_type": "saas",
-    "access": "write",
-    "created_at": "2024-08-01T20:38:51.953543+00:00",
-    "updated_at": "2024-08-02T16:07:57.769608+00:00",
-    "disabled": false,
-    "last_test_timestamp": "2024-08-02T16:07:58.452157+00:00",
-    "last_test_succeeded": true,
-    "saas_config": {
-      "fides_key": "fidesctl_system_iterable_api",
-      "name": "Iterable",
-      "type": "iterable"
-    },
-    "secrets": {
-      "api_key": "**********",
-      "domain": "api.iterable.com"
-    },
-    "authorized": false,
-    "enabled_actions": ["erasure"]
-  }]
+  "connection_configs": [
+    {
+      "name": null,
+      "key": "fidesctl_system_iterable_api",
+      "description": "",
+      "connection_type": "saas",
+      "access": "write",
+      "created_at": "2024-08-01T20:38:51.953543+00:00",
+      "updated_at": "2024-08-02T16:07:57.769608+00:00",
+      "disabled": false,
+      "last_test_timestamp": "2024-08-02T16:07:58.452157+00:00",
+      "last_test_succeeded": true,
+      "saas_config": {
+        "fides_key": "fidesctl_system_iterable_api",
+        "name": "Iterable",
+        "type": "iterable"
+      },
+      "secrets": {
+        "api_key": "**********",
+        "domain": "api.iterable.com"
+      },
+      "authorized": false,
+      "enabled_actions": ["erasure"]
+    }
+  ]
 }
