@@ -1,30 +1,28 @@
 import { Button, Flex, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { PRIVACY_ASSESSMENTS_EVALUATE_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   AssessmentGroup,
   AssessmentSettingsModal,
   EmptyState,
+  GenerateAssessmentsModal,
   useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
 const PrivacyAssessmentsPage: NextPage = () => {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [generateModalOpen, setGenerateModalOpen] = useState(false);
 
-  // Fetch assessments from API
   const {
     data: assessmentsData,
     isLoading,
     isError,
   } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
 
-  // Fetch templates from API
   const { data: templatesData } = useGetAssessmentTemplatesQuery({
     page: 1,
     size: 100,
@@ -34,7 +32,6 @@ const PrivacyAssessmentsPage: NextPage = () => {
   const templates = templatesData?.items ?? [];
   const hasAssessments = assessments.length > 0;
 
-  // Group assessments by template_id dynamically
   const groupedAssessments = templates
     .map((template) => ({
       templateId: template.id,
@@ -83,9 +80,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
         rightContent={
           <Space>
             {hasAssessments && (
-              <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
-                <Button type="primary">Evaluate assessments</Button>
-              </NextLink>
+              <Button type="primary" onClick={() => setGenerateModalOpen(true)}>
+                Generate assessments
+              </Button>
             )}
             <Button
               aria-label="Assessment settings"
@@ -99,7 +96,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
       />
 
       {!hasAssessments ? (
-        <EmptyState />
+        <EmptyState onRunAssessment={() => setGenerateModalOpen(true)} />
       ) : (
         <div className="py-6">
           <Space direction="vertical" size="large" className="w-full">
@@ -114,6 +111,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
           </Space>
         </div>
       )}
+
+      <GenerateAssessmentsModal
+        open={generateModalOpen}
+        onClose={() => setGenerateModalOpen(false)}
+      />
 
       <AssessmentSettingsModal
         open={settingsModalOpen}
