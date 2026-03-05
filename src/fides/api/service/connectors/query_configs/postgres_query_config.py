@@ -16,6 +16,14 @@ class PostgresQueryConfig(SQLQueryConfig):
 
     namespace_meta_schema = PostgresNamespaceMeta
 
+    @staticmethod
+    def _quote_identifier(identifier: str, quoted: bool = True) -> str:
+        """Wrap identifier in double quotes, escaping any embedded quotes."""
+        if not quoted:
+            return identifier
+        escaped = identifier.replace('"', '""')
+        return f'"{escaped}"'
+
     def generate_table_name(self, quoted: bool = True) -> str:
         """
         Prepends the schema and optionally the database name to the base table name
@@ -26,17 +34,17 @@ class PostgresQueryConfig(SQLQueryConfig):
                     If False, returns unquoted names for inspector/table_exists() checks.
         """
         collection_name = self.node.collection.name
-        table_name = f'"{collection_name}"' if quoted else collection_name
+        table_name = self._quote_identifier(collection_name, quoted)
 
         if not self.namespace_meta:
             return table_name
 
         postgres_meta = cast(PostgresNamespaceMeta, self.namespace_meta)
-        schema = f'"{postgres_meta.schema}"' if quoted else postgres_meta.schema
+        schema = self._quote_identifier(postgres_meta.schema, quoted)
         qualified_name = f"{schema}.{table_name}"
 
         if database_name := postgres_meta.database_name:
-            db = f'"{database_name}"' if quoted else database_name
+            db = self._quote_identifier(database_name, quoted)
             return f"{db}.{qualified_name}"
 
         return qualified_name
@@ -76,14 +84,14 @@ class RDSPostgresQueryConfig(PostgresQueryConfig):
         qualification because the connection targets a specific database.
         """
         collection_name = self.node.collection.name
-        table_name = f'"{collection_name}"' if quoted else collection_name
+        table_name = self._quote_identifier(collection_name, quoted)
 
         if not self.namespace_meta:
             return table_name
 
         rds_meta = cast(RDSPostgresNamespaceMeta, self.namespace_meta)
         if rds_meta.schema:
-            schema_name = f'"{rds_meta.schema}"' if quoted else rds_meta.schema
+            schema_name = self._quote_identifier(rds_meta.schema, quoted)
             return f"{schema_name}.{table_name}"
 
         return table_name
