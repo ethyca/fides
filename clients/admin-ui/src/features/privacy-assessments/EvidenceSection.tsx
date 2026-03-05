@@ -1,40 +1,9 @@
-import { Badge, Collapse, Flex, Space, Text } from "fidesui";
+import { Badge, Collapse, Flex, Text } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
-import { formatDate } from "~/features/common/utils";
-
-import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
+import { EvidenceCardGroup } from "./EvidenceCardGroup";
 import styles from "./EvidenceSection.module.scss";
 import { EvidenceItem, EvidenceType, QuestionGroup } from "./types";
-
-const getSourceTypeLabel = (sourceType: string) =>
-  SOURCE_TYPE_LABELS[sourceType] ?? sourceType;
-
-const getFieldNameLabel = (fieldName: string) =>
-  FIELD_NAME_LABELS[fieldName] ?? fieldName.replace(/_/g, " ");
-
-interface EvidenceCardGroupProps {
-  items: EvidenceItem[];
-}
-
-const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => (
-  <Space direction="vertical" size="small" className={styles.itemList}>
-    {items.map((item) => (
-      <div key={item.id} className={styles.evidenceCard}>
-        <Text strong size="sm" className="mb-2 block">
-          {getSourceTypeLabel(item.source_type)}
-        </Text>
-        <Text className={`mb-2 block ${styles.cardValue}`}>
-          <Text type="secondary">{getFieldNameLabel(item.field_name)}: </Text>
-          {item.value}
-        </Text>
-        <Text type="secondary" size="sm" className="block">
-          {formatDate(item.created_at)}
-        </Text>
-      </div>
-    ))}
-  </Space>
-);
 
 export interface EvidenceSectionProps {
   groupId: string;
