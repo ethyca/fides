@@ -1676,3 +1676,119 @@ class TestConnectionService:
 
         collection_names = {c["name"] for c in ctl_dataset.collections}
         assert "products" in collection_names
+
+    def test_update_existing_connection_configs_preserves_merge_baseline_across_multiple_configs(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+    ):
+        """
+        When multiple connection configs of the same type are updated in a batch,
+        every config must be merged against the same pre-update baseline snapshot.
+
+        Without the snapshot fix, the first iteration writes the new template back to
+        SaasTemplateDataset, so the second iteration reads the new template as its
+        baseline. Any field that changed between the old and new template then looks
+        like a customer change on the second config, and the template update never lands.
+        """
+        connector_type = "multi_config_connector"
+
+        # Build a v1 stored baseline with a known field value on the "products" collection
+        v1_stored = copy.deepcopy(stored_dataset)
+
+        # Two connection configs of the same type, each with their own DatasetConfig
+        # whose field values match v1 (customers never modified them)
+        for suffix in ("alpha", "beta"):
+            instance_key = f"multi_config_{suffix}"
+            connection_config = ConnectionConfig.create(
+                db=db,
+                data={
+                    "key": f"multi_config_connection_{suffix}",
+                    "name": f"Multi Config Connection {suffix}",
+                    "connection_type": ConnectionType.saas,
+                    "access": AccessLevel.write,
+                    "saas_config": {
+                        "fides_key": instance_key,
+                        "name": "Multi Config Connector",
+                        "type": connector_type,
+                        "description": "Test connector",
+                        "version": "0.1.0",
+                        "connector_params": [],
+                        "client_config": {
+                            "protocol": "https",
+                            "host": "api.example.com",
+                        },
+                        "test_request": {"method": "GET", "path": "/test"},
+                        "endpoints": [],
+                    },
+                },
+            )
+
+            customer_dataset = copy.deepcopy(v1_stored)
+            customer_dataset["fides_key"] = instance_key
+            DatasetConfig.create_or_update(
+                db=db,
+                data={
+                    "connection_config_id": connection_config.id,
+                    "fides_key": instance_key,
+                    "dataset": customer_dataset,
+                },
+            )
+
+        # Store v1 as the baseline template
+        SaasTemplateDataset.get_or_create(
+            db=db,
+            connector_type=connector_type,
+            dataset_json=v1_stored,
+        )
+
+        # v2 template adds a "products" collection (already present in _get_template_yaml)
+        connector_template = ConnectorTemplate(
+            config=dedent(
+                f"""
+                saas_config:
+                  fides_key: <instance_fides_key>
+                  name: Multi Config Connector
+                  type: {connector_type}
+                  description: Test connector
+                  version: 1.0.0
+                  connector_params: []
+                  client_config:
+                    protocol: https
+                    host: api.example.com
+                  test_request:
+                    method: GET
+                    path: /test
+                  endpoints: []
+            """
+            ).strip(),
+            dataset=self._get_template_yaml(),
+            human_readable="Multi Config Connector",
+            authorization_required=False,
+            supported_actions=[ActionType.access, ActionType.erasure],
+            category=ConnectionCategory.ANALYTICS,
+        )
+
+        connection_service.update_existing_connection_configs_for_connector_type(
+            connector_type,
+            connector_template,
+        )
+
+        # Both configs must reflect the v2 template update
+        for suffix in ("alpha", "beta"):
+            instance_key = f"multi_config_{suffix}"
+            dataset_config = DatasetConfig.filter(
+                db=db,
+                conditions=(DatasetConfig.fides_key == instance_key),
+            ).first()
+            assert dataset_config is not None, (
+                f"Missing DatasetConfig for {instance_key}"
+            )
+            ctl_dataset = dataset_config.ctl_dataset
+            assert ctl_dataset is not None
+            collection_names = {c["name"] for c in ctl_dataset.collections}
+            assert "products" in collection_names, (
+                f"Template update did not land on {instance_key}: "
+                f"collections={collection_names}"
+            )
