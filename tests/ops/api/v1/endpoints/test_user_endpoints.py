@@ -14,6 +14,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_500_INTERNAL_SERVER_ERROR,
     HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
@@ -3063,6 +3064,35 @@ class TestReinviteUser:
 
         db.refresh(invite)
         assert not invite.invite_code_valid("original_code")
+
+    def test_reinvite_rolls_back_on_message_failure(
+        self, db, api_client, generate_auth_header, invited_user
+    ):
+        """Test that invite rotation is rolled back if message dispatch fails."""
+        url = V1_URL_PREFIX + f"/user/{invited_user.id}/reinvite"
+        auth_header = generate_auth_header(scopes=[USER_CREATE])
+
+        invite = FidesUserInvite.get_by(
+            db, field="username", value=invited_user.username
+        )
+        assert invite.invite_code_valid("original_code")
+        original_hashed_code = invite.hashed_invite_code
+
+        with mock.patch(
+            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message",
+            side_effect=Exception("send failed"),
+        ):
+            response = api_client.post(url, headers=auth_header)
+
+        assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
+        assert (
+            response.json()["detail"]
+            == "Failed to send invitation email. Previous invitation remains valid. Please try again."
+        )
+
+        db.refresh(invite)
+        assert invite.hashed_invite_code == original_hashed_code
+        assert invite.invite_code_valid("original_code")
 
     def test_reinvite_sends_email(
         self, db, api_client, generate_auth_header, invited_user

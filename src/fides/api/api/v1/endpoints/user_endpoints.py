@@ -24,6 +24,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from fides.api.api import deps
@@ -604,17 +605,29 @@ def reinvite_user(
         )
 
     new_invite_code = str(uuid.uuid4())
-    user_invite.renew_invite(db, new_invite_code)
+    hashed_invite_code, salt = FidesUserInvite.hash_invite_code(new_invite_code)
+    user_invite.hashed_invite_code = hashed_invite_code
+    user_invite.salt = salt
 
-    dispatch_message(
-        db,
-        action_type=MessagingActionType.USER_INVITE,
-        to_identity=Identity(email=user.email_address),
-        service_type=config_proxy.notifications.notification_service_type,
-        message_body_params=UserInviteBodyParams(
-            username=user.username, invite_code=new_invite_code
-        ),
-    )
+    try:
+        dispatch_message(
+            db,
+            action_type=MessagingActionType.USER_INVITE,
+            to_identity=Identity(email=user.email_address),
+            service_type=config_proxy.notifications.notification_service_type,
+            message_body_params=UserInviteBodyParams(
+                username=user.username, invite_code=new_invite_code
+            ),
+        )
+    except Exception as exc:
+        db.rollback()
+        logger.exception("Failed to dispatch reinvite email for user '{}'", user_id)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send invitation email. Previous invitation remains valid. Please try again.",
+        ) from exc
+
+    user_invite.save(db)
 
     logger.info("User with id '{}' has been reinvited", user_id)
 
