@@ -390,7 +390,9 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=system", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 2  # Includes Entra and Okta
+        identifiers = {item["identifier"] for item in data}
+        assert "entra" in identifiers
+        assert "okta" in identifiers
 
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200

@@ -3,6 +3,7 @@
 Used by the Entra connector for IDP discovery (list service principals).
 """
 
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
@@ -44,6 +45,7 @@ class EntraHttpClient:
         self.client_id = client_id.strip()
         self.client_secret = client_secret
         self._token: Optional[str] = None
+        self._token_expiry: float = 0
         if session is not None:
             self._session = session
         else:
@@ -60,7 +62,7 @@ class EntraHttpClient:
 
     def _get_token(self) -> str:
         """Obtain OAuth2 access token via client credentials grant."""
-        if self._token:
+        if self._token and time.monotonic() < self._token_expiry:
             return self._token
         response = self._session.post(
             self._token_url(),
@@ -89,6 +91,8 @@ class EntraHttpClient:
         self._token = data.get("access_token")
         if not self._token:
             raise ConnectionException("Entra token response missing access_token")
+        # Cache with 10-minute buffer before the token actually expires (default 3600s)
+        self._token_expiry = time.monotonic() + data.get("expires_in", 3600) - 600
         return self._token
 
     def list_service_principals(
@@ -111,6 +115,10 @@ class EntraHttpClient:
         token = self._get_token()
         select = select or SERVICE_PRINCIPALS_SELECT
         if next_link:
+            if not next_link.startswith(GRAPH_BASE_URL):
+                raise ConnectionException(
+                    f"Invalid pagination URL: next_link must start with {GRAPH_BASE_URL}"
+                )
             url = next_link
         else:
             url = (
@@ -120,15 +128,10 @@ class EntraHttpClient:
             )
         response = self._session.get(
             url,
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-            },
+            headers={"Authorization": f"Bearer {token}"},
             timeout=DEFAULT_REQUEST_TIMEOUT,
         )
         if not response.ok:
-            if response.status_code == 401:
-                self._token = None
             msg = f"Microsoft Graph request failed: {response.status_code}. {response.text[:200]}"
             if response.status_code == 403:
                 try:
