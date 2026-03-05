@@ -32,14 +32,6 @@ export const ANSWER_SOURCE_LABELS: Record<AnswerSource, string> = {
   [AnswerSource.SLACK]: "Team input",
 };
 
-export const ANSWER_SOURCE_TAG_COLORS: Record<AnswerSource, CUSTOM_TAG_COLOR> =
-  {
-    [AnswerSource.SYSTEM]: CUSTOM_TAG_COLOR.SANDSTONE,
-    [AnswerSource.AI_ANALYSIS]: CUSTOM_TAG_COLOR.SANDSTONE,
-    [AnswerSource.USER_INPUT]: CUSTOM_TAG_COLOR.SANDSTONE,
-    [AnswerSource.SLACK]: CUSTOM_TAG_COLOR.SANDSTONE,
-  };
-
 export const ANSWER_STATUS_LABELS: Record<AnswerStatus, string> = {
   [AnswerStatus.COMPLETE]: "Complete",
   [AnswerStatus.PARTIAL]: "System derivable",
