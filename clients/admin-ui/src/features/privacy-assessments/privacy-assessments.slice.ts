@@ -250,7 +250,6 @@ export const {
   useGetAssessmentConfigDefaultsQuery,
   // Assessment Tasks
   useGetAssessmentTasksQuery,
-  useGetAssessmentTaskQuery,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };
