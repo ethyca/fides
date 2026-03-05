@@ -1,0 +1,4 @@
+type: Added
+description: Added warning indicators to disabled privacy notices in the experience config editor
+pr: 7558
+labels: []
