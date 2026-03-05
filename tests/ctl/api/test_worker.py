@@ -70,7 +70,7 @@ class TestStartWorker:
 class TestStartWorkerReload:
     """Tests for the --reload functionality of start_worker."""
 
-    @patch("watchfiles.run_process")
+    @patch("fides.api.worker.run_process")
     def test_reload_calls_run_process_with_defaults(
         self, run_process_mock: MagicMock, worker_main_mock: MagicMock
     ):
@@ -86,7 +86,7 @@ class TestStartWorkerReload:
         # worker_main should NOT be called directly (run_process handles it)
         worker_main_mock.assert_not_called()
 
-    @patch("watchfiles.run_process")
+    @patch("fides.api.worker.run_process")
     def test_reload_uses_custom_dirs(
         self, run_process_mock: MagicMock, worker_main_mock: MagicMock
     ):
@@ -96,7 +96,7 @@ class TestStartWorkerReload:
         call_args = run_process_mock.call_args
         assert call_args.args == ("/custom/src", "/other/data")
 
-    @patch("watchfiles.run_process")
+    @patch("fides.api.worker.run_process")
     def test_reload_filter_accepts_python_and_yaml(
         self, run_process_mock: MagicMock, worker_main_mock: MagicMock
     ):
@@ -112,7 +112,7 @@ class TestStartWorkerReload:
         assert watch_filter(Change.modified, "/app/src/readme.md") is False
         assert watch_filter(Change.modified, "/app/src/data.json") is False
 
-    @patch("watchfiles.run_process")
+    @patch("fides.api.worker.run_process")
     def test_reload_filter_ignores_noise_dirs(
         self, run_process_mock: MagicMock, worker_main_mock: MagicMock
     ):
