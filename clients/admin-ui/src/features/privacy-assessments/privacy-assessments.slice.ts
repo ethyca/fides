@@ -214,6 +214,20 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         url: `plus/privacy-assessments/${id}/pdf?export_mode=external`,
         method: "GET",
         responseHandler: async (response) => {
+          // Check for HTTP errors before treating response as PDF
+          if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+              const errorBody = await response.text();
+              const errorJson = JSON.parse(errorBody);
+              errorMessage =
+                errorJson.detail || errorJson.message || errorMessage;
+            } catch {
+              // If error body isn't JSON, use the default HTTP error message
+            }
+            throw new Error(errorMessage);
+          }
+
           const contentDisposition = response.headers.get(
             "content-disposition",
           );
