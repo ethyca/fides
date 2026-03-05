@@ -145,7 +145,7 @@ const TestDatastoreMonitor = () => {
         className="mb-2"
       >
         <Form.Item
-          label="Name"
+          label="Monitor name"
           name="monitor_name"
           rules={[{ required: true }]}
         >
