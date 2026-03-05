@@ -1,17 +1,12 @@
-.sectionTitle {
-  font-size: 15px;
-  display: block;
-  margin-bottom: 20px;
-}
-.evidenceGroup {
-  margin-bottom: 20px;
+.collapseWrapper {
+  --ant-collapse-content-padding: 0 !important;
+
+  :global(.ant-collapse-header) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
 }
 
-.groupHeading {
-  font-size: 14px;
-  display: block;
-  margin-bottom: 12px;
-}
 .itemList {
   width: 100%;
 }
@@ -23,16 +18,6 @@
   border: 1px solid var(--ant-color-border);
 }
 
-.cardHeader {
-  margin-bottom: 8px;
-}
-
 .cardValue {
-  display: block;
   line-height: 1.5;
-  margin-bottom: 8px;
-}
-
-.cardMeta {
-  display: block;
 }

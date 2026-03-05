@@ -30,14 +30,14 @@ const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => (
   <Space direction="vertical" size="small" className={styles.itemList}>
     {items.map((item) => (
       <div key={item.id} className={styles.evidenceCard}>
-        <Text strong size="sm" className={styles.cardHeader}>
+        <Text strong size="sm" className="mb-2 block">
           {getSourceTypeLabel(item.source_type)}
         </Text>
-        <Text className={styles.cardValue}>
+        <Text className={`mb-2 block ${styles.cardValue}`}>
           <Text type="secondary">{getFieldNameLabel(item.field_name)}: </Text>
           {item.value}
         </Text>
-        <Text type="secondary" size="sm" className={styles.cardMeta}>
+        <Text type="secondary" size="sm" className="block">
           {formatTimestamp(item.created_at)}
         </Text>
       </div>
@@ -65,7 +65,7 @@ export const EvidenceSection = ({
   if (evidence.length === 0) {
     return (
       <div data-group-id={groupId}>
-        <Text strong className={styles.sectionTitle}>
+        <Text strong className="mb-5 block">
           {group.id}. {group.title}
         </Text>
         <Text type="secondary" size="sm">
@@ -138,10 +138,12 @@ export const EvidenceSection = ({
 
   return (
     <div data-group-id={groupId}>
-      <Text strong className={styles.sectionTitle}>
+      <Text strong className="mb-5 block">
         {group.id}. {group.title}
       </Text>
-      <Collapse items={collapseItems} ghost />
+      <div className={styles.collapseWrapper}>
+        <Collapse items={collapseItems} ghost />
+      </div>
     </div>
   );
 };
