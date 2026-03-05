@@ -12,7 +12,7 @@ import {
 import { EditableTextBlock } from "./EditableTextBlock";
 import { useUpdateAssessmentAnswerMutation } from "./privacy-assessments.slice";
 import styles from "./QuestionCard.module.scss";
-import { AnswerStatus, AnswerSource, AssessmentQuestion } from "./types";
+import { AnswerSource, AnswerStatus, AssessmentQuestion } from "./types";
 
 interface QuestionCardProps {
   assessmentId: string;

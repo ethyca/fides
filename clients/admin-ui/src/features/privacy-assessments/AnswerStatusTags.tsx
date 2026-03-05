@@ -6,7 +6,7 @@ import {
   ANSWER_STATUS_LABELS,
   ANSWER_STATUS_TAG_COLORS,
 } from "./constants";
-import { AnswerStatus, AssessmentQuestion, AnswerSource } from "./types";
+import { AnswerSource, AnswerStatus, AssessmentQuestion } from "./types";
 
 interface AnswerStatusTagsProps {
   question: AssessmentQuestion;
