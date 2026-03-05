@@ -55,5 +55,3 @@ class SystemConnectionConfigLink(Base):
 
     system = relationship("System")  # type: ignore[misc]
     connection_config = relationship("ConnectionConfig")  # type: ignore[misc]
-
-    __table_args__: tuple = ()
