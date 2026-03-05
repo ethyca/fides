@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List
 
 import pg8000
 from google.cloud.sql.connector import Connector
@@ -19,9 +19,6 @@ from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_
 )
 from fides.api.schemas.connection_configuration.enums.google_cloud_sql_ip_type import (
     GoogleCloudSQLIPType,
-)
-from fides.api.schemas.namespace_meta.google_cloud_sql_postgres_namespace_meta import (
-    GoogleCloudSQLPostgresNamespaceMeta,
 )
 from fides.api.service.connectors.query_configs.google_cloud_postgres_query_config import (
     GoogleCloudSQLPostgresQueryConfig,
@@ -103,17 +100,5 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
         )
 
     def get_qualified_table_name(self, node: ExecutionNode) -> str:
-        """Get fully qualified table name for table_exists() checks.
-
-        Returns unquoted names (e.g. schema.table) because the generic
-        SQLConnector.table_exists() uses split(".") + inspector.has_table().
-        """
-        query_config = self.query_config(node)
-        if not query_config.namespace_meta:
-            return node.collection.name
-
-        meta = cast(GoogleCloudSQLPostgresNamespaceMeta, query_config.namespace_meta)
-        qualified = f"{meta.schema}.{node.collection.name}"
-        if meta.database_name:
-            return f"{meta.database_name}.{qualified}"
-        return qualified
+        """Get fully qualified table name for table_exists() checks."""
+        return self.query_config(node).generate_table_name(quoted=False)

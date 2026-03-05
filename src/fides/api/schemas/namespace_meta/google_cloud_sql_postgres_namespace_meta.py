@@ -1,20 +1,16 @@
-from typing import Literal, Optional, Set, Tuple
+from typing import Literal, Set, Tuple
 
-from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
+from fides.api.schemas.namespace_meta.sql_namespace_meta import SQLNamespaceMeta
 
 
-class GoogleCloudSQLPostgresNamespaceMeta(NamespaceMeta):
+class GoogleCloudSQLPostgresNamespaceMeta(SQLNamespaceMeta):
     """
     Represents the namespace structure for Google Cloud SQL Postgres queries.
 
-    Attributes:
-        database_name (str): Optional name of the specific database.
-        schema (str): The schema within the database.
+    Inherits database_name and schema from SQLNamespaceMeta.
     """
 
     connection_type: Literal["google_cloud_sql_postgres"] = "google_cloud_sql_postgres"
-    database_name: Optional[str] = None
-    schema: str  # type: ignore[assignment]
 
     @classmethod
     def get_fallback_secret_fields(cls) -> Set[Tuple]:
