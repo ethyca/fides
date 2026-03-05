@@ -167,7 +167,8 @@ const pushConsentToGtag = (
   // Check if gtag is available
   if (typeof window.gtag !== "function") {
     // define dataLayer if it doesn't exist yet so that we can push to it in the gtag function fallback
-    const dataLayer = window.dataLayer = window.dataLayer ?? [];
+    window.dataLayer ??= [];
+    const dataLayer = window.dataLayer;
     // define gtag if it doesn't exist and push to dataLayer
     window.gtag = function gtag(){
       dataLayer.push(arguments)
