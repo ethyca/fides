@@ -3,6 +3,7 @@ import {
   Collapse,
   CUSTOM_TAG_COLOR,
   Flex,
+  notification,
   Space,
   Tag,
   TagList,
@@ -11,7 +12,7 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -20,28 +21,37 @@ import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
 import {
+  useCreateQuestionnaireMutation,
   useCreateQuestionnaireReminderMutation,
   useGetAssessmentConfigQuery,
+  useGetPrivacyAssessmentQuery,
 } from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
-import { RequestInputModal } from "./RequestInputModal";
 import { SlackIcon } from "./SlackIcon";
-import { PrivacyAssessmentDetailResponse } from "./types";
+import {
+  AnswerSource,
+  AnswerStatus,
+  PrivacyAssessmentDetailResponse,
+} from "./types";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
 }
 
+const POLL_INTERVAL = 15_000;
+
 export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const message = useMessage();
+  const [notificationApi, notificationHolder] = notification.useNotification();
   const { getDataCategoryDisplayName } = useTaxonomies();
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
-  const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
 
   const { data: config } = useGetAssessmentConfigQuery();
+  const [createQuestionnaire, { isLoading: isSending }] =
+    useCreateQuestionnaireMutation();
   const [createReminder, { isLoading: isSendingReminder }] =
     useCreateQuestionnaireReminderMutation();
 
@@ -59,6 +69,38 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
     [allQuestions],
   );
 
+  const shouldPoll = !!assessment.questionnaire?.sent_at && !isComplete;
+  useGetPrivacyAssessmentQuery(assessment.id, {
+    pollingInterval: POLL_INTERVAL,
+    skip: !shouldPoll,
+  });
+
+  const teamInputIdsRef = useRef<Set<string> | null>(null);
+  if (teamInputIdsRef.current === null) {
+    teamInputIdsRef.current = new Set(
+      allQuestions
+        .filter((q) => q.answer_source === AnswerSource.TEAM_INPUT)
+        .map((q) => q.question_id),
+    );
+  }
+
+  useEffect(() => {
+    const currentIds = new Set(
+      allQuestions
+        .filter((q) => q.answer_source === AnswerSource.TEAM_INPUT)
+        .map((q) => q.question_id),
+    );
+    const prevIds = teamInputIdsRef.current!;
+    const hasNewAnswers = [...currentIds].some((id) => !prevIds.has(id));
+
+    if (hasNewAnswers) {
+      notificationApi.success({
+        message: "New answer from Slack",
+      });
+    }
+    teamInputIdsRef.current = currentIds;
+  }, [allQuestions, notificationApi]);
+
   const questionnaireSentAt = useMemo(
     () =>
       assessment.questionnaire?.sent_at
@@ -68,6 +110,34 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   );
 
   const timeSinceSent = useRelativeTime(questionnaireSentAt);
+
+  const handleRequestInput = async () => {
+    if (!slackChannelName) {
+      return;
+    }
+
+    const needsInputIds = allQuestions
+      .filter((q) => q.answer_status === AnswerStatus.NEEDS_INPUT)
+      .map((q) => q.question_id);
+
+    try {
+      await createQuestionnaire({
+        id: assessment.id,
+        body: {
+          channel: slackChannelName,
+          include_question_ids: needsInputIds,
+        },
+      }).unwrap();
+      message.success(`Questions sent to ${slackChannelName} on Slack.`);
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Failed to send questionnaire. Please try again.",
+        ),
+      );
+    }
+  };
 
   const handleSendReminder = async () => {
     try {
@@ -110,6 +180,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
 
   return (
     <Space direction="vertical" size="small" className="w-full">
+      {notificationHolder}
       <div>
         <Flex align="center" gap="small" className="mb-1">
           <Typography.Title level={4} className="m-0">
@@ -160,8 +231,9 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
             <Button
               icon={<SlackIcon size={14} />}
               size="small"
-              onClick={() => setIsRequestInputOpen(true)}
+              onClick={handleRequestInput}
               disabled={!slackChannelName}
+              loading={isSending}
             >
               Request input from team
             </Button>
@@ -188,7 +260,8 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         size="large"
       />
 
-      {slackChannelName && (
+      {/* Commented out because it does not fit demo needs at the moment */}
+      {/* {slackChannelName && (
         <RequestInputModal
           open={isRequestInputOpen}
           onClose={() => setIsRequestInputOpen(false)}
@@ -196,7 +269,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           questions={allQuestions}
           slackChannelName={slackChannelName}
         />
-      )}
+      )} */}
     </Space>
   );
 };
