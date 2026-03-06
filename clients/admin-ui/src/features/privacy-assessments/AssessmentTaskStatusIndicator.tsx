@@ -129,7 +129,7 @@ export const AssessmentTaskStatusIndicator = ({
       });
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, lastCompletedTask, notificationApi, dispatch]);
+  }, [activeTask, lastCompletedTask, notificationApi, dispatch, onTaskFinish]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;

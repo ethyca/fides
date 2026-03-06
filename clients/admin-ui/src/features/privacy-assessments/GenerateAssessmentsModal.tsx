@@ -100,7 +100,7 @@ export const GenerateAssessmentsModal = ({
       }).unwrap();
 
       message.success(
-        "Assessment evaluation queued. Results will appear on the assessments page shortly.",
+        "Assessments queued. Results will appear on the assessments page shortly.",
       );
 
       form.resetFields();
@@ -108,7 +108,7 @@ export const GenerateAssessmentsModal = ({
       onClose();
     } catch (error) {
       message.error(
-        `Failed to queue assessment: ${getErrorMessage(error as RTKErrorResult["error"])}`,
+        `Failed to queue assessments: ${getErrorMessage(error as RTKErrorResult["error"])}`,
       );
     }
   };
