@@ -1,0 +1,4 @@
+type: Changed
+description: Changed span to div in ExperienceDescription to expand the set of supported HTML tags in experience descriptions
+pr: 7502 # TODO: Update with actual PR number once created
+labels: []
