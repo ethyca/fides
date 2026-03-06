@@ -44,7 +44,7 @@ export const GenerateAssessmentsModal = ({
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
 
   const renderTemplateOption = useCallback(
-    (option: { data: { template: { name: string; region?: string } } }) => {
+    (option: { data: { template: { name: string; region?: string | null } } }) => {
       const { template } = option.data;
       return (
         <Flex align="center">
