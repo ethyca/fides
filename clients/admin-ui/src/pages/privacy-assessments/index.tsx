@@ -1,22 +1,22 @@
 import { Button, Flex, Icons, Result, Space, Spin } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { PRIVACY_ASSESSMENTS_EVALUATE_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   AssessmentGroup,
   AssessmentSettingsModal,
   AssessmentTaskStatusIndicator,
   EmptyState,
+  GenerateAssessmentsModal,
   useGetAssessmentTemplatesQuery,
   useGetPrivacyAssessmentsQuery,
 } from "~/features/privacy-assessments";
 
 const PrivacyAssessmentsPage: NextPage = () => {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [generateModalOpen, setGenerateModalOpen] = useState(false);
 
   const {
     data: assessmentsData,
@@ -88,9 +88,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
               className="mr-2"
             />
             {hasAssessments && (
-              <NextLink href={PRIVACY_ASSESSMENTS_EVALUATE_ROUTE} passHref>
-                <Button type="primary">Evaluate assessments</Button>
-              </NextLink>
+              <Button type="primary" onClick={() => setGenerateModalOpen(true)}>
+                Generate assessments
+              </Button>
             )}
             <Button
               aria-label="Assessment settings"
@@ -104,7 +104,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
       />
 
       {!hasAssessments ? (
-        <EmptyState />
+        <EmptyState onRunAssessment={() => setGenerateModalOpen(true)} />
       ) : (
         <div className="py-6">
           <Space direction="vertical" size="large" className="w-full">
@@ -119,6 +119,11 @@ const PrivacyAssessmentsPage: NextPage = () => {
           </Space>
         </div>
       )}
+
+      <GenerateAssessmentsModal
+        open={generateModalOpen}
+        onClose={() => setGenerateModalOpen(false)}
+      />
 
       <AssessmentSettingsModal
         open={settingsModalOpen}
