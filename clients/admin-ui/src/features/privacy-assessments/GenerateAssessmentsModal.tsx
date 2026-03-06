@@ -48,6 +48,7 @@ const renderTemplateOption = (option: { data: TemplateOptionData }) => {
         </Text>
       )}
     </Flex>
+  );
 };
 
 interface GenerateAssessmentsModalProps {
