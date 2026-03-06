@@ -14,8 +14,10 @@ import {
   Text,
   Typography,
 } from "fidesui";
+import NextLink from "next/link";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { formatDate } from "~/features/common/utils";
 
 import styles from "./AssessmentCard.module.scss";
@@ -71,7 +73,11 @@ export const AssessmentCard = ({
       })}
     >
       <Flex vertical gap="small" justify="space-between">
-        <Title level={5}>{assessment.name}</Title>
+        <Title level={5} className={`!m-0 ${styles.titleLink}`}>
+          <NextLink href={`${PRIVACY_ASSESSMENTS_ROUTE}/${assessment.id}`}>
+            {assessment.name}
+          </NextLink>
+        </Title>
         <Text type="secondary" size="sm" className={styles.textWithTags}>
           Processing{" "}
           {(assessment.data_categories ?? []).length > 0 ? (
