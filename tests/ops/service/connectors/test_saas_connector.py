@@ -936,7 +936,7 @@ class TestSaasConnectorRunConsentRequest:
         assert "Missing needed values to propagate request" in str(exc)
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            saas_example_connection_config.consent_tracking_key: "pending"
+            saas_example_opt_out_only_connection_config.consent_tracking_key: "pending"
         }, "Updated to skipped in graph task, not updated here"
 
     def test_no_requests_of_that_type_defined(
