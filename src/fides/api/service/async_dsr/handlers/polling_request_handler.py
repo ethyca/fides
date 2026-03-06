@@ -10,13 +10,15 @@ from typing import Any, Dict, Optional, Type, Union
 from loguru import logger
 from requests import Response
 
-from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.common_exceptions import ClientUnsuccessfulException, PrivacyRequestError
 from fides.api.schemas.saas.async_polling_configuration import (
     PollingResultRequest,
     PollingStatusRequest,
 )
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+)
 from fides.api.util.saas_util import map_param_values, should_ignore_error
 
 
@@ -34,22 +36,22 @@ def send_and_handle_errors(
     is logged and the response is returned without raising. Otherwise raises
     exception_cls (PrivacyRequestError by default; e.g. FidesopsException for strategy callers).
     """
-    response: Response = client.send(prepared_request, ignore_errors=True)
-
-    if not response.ok and should_ignore_error(response.status_code, ignore_errors):
-        logger.info(
-            "Ignoring errored response with status code {} for {} as configured.",
-            response.status_code,
-            request_label,
-        )
-        return response
-
-    if not response.ok:
+    try:
+        return client.send(prepared_request)
+    except (ClientUnsuccessfulException) as exc:
+        response = exc.response
+        if response is None:
+            raise exception_cls(f"{request_label} failed with no response")
+        if should_ignore_error(response.status_code, ignore_errors):
+            logger.info(
+                "Ignoring errored response with status code {} for {} as configured.",
+                response.status_code,
+                request_label,
+            )
+            return response
         raise exception_cls(
             f"{request_label} failed with status code {response.status_code}: {response.text}"
         )
-
-    return response
 
 
 class PollingRequestHandler:

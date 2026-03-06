@@ -9,7 +9,10 @@ from zipfile import ZipFile
 from requests import PreparedRequest, Request
 
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.service.connectors.saas.authenticated_client import (
+    AuthenticatedClient,
+    RequestFailureResponseException,
+)
 
 
 @dataclass
@@ -224,6 +227,8 @@ class MockAuthenticatedClient(Mock):
                     mock_response.text = json_text
                     mock_response.content = json_text.encode("utf-8")
 
+                if not mock_response.ok:
+                    raise RequestFailureResponseException(response=mock_response)
                 return mock_response
 
         raise ValueError(f"No mock response for {key}")

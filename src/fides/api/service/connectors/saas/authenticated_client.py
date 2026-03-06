@@ -176,7 +176,7 @@ class AuthenticatedClient:
                         response: Response = exc.response
                         status_code: int = response.status_code
                         last_exception = ClientUnsuccessfulException(
-                            status_code=status_code
+                            status_code=status_code, response=response
                         )
 
                         if status_code not in retry_status_codes:
