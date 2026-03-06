@@ -33,6 +33,12 @@ import type {
 
 export type EmptyExperience = Record<PropertyKey, never>;
 
+export interface AttributionOptions {
+  anchorText: string;
+  destinationUrl: string;
+  nofollow: boolean;
+}
+
 export interface FidesConfig {
   // Set the consent defaults from a "legacy" Privacy Center config.json.
   consent?: LegacyConsentConfig;
@@ -142,6 +148,9 @@ export interface FidesInitOptions {
 
   // Whether to render the brand link in the footer of the modal
   showFidesBrandLink: boolean;
+
+  // Attribution link options for SEO
+  attribution?: AttributionOptions;
 
   // Whether to reject all consent preferences by default
   fidesConsentOverride: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;

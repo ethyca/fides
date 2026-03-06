@@ -78,4 +78,8 @@ export interface PrivacyCenterSettings {
     | "disabled"; // (optional) controls handling of unsupported repeated script loading (defaults to "disabled")
   FIDES_COOKIE_SUFFIX: string | null; // (optional) attaches as suffix to the cookie fides.js uses to store consent preferences in the format `fides_consent_{FIDES_COOKIE_SUFFIX}`
   FIDES_COOKIE_COMPRESSION: "gzip" | "none"; // (optional) compression method to use for the consent cookie (defaults to "none")
+  ATTRIBUTION_ENABLED: boolean; // (optional) whether attribution link is enabled (defaults to false)
+  ATTRIBUTION_ANCHOR_TEXT: string; // (optional) anchor text for attribution link (defaults to "Consent powered by Ethyca")
+  ATTRIBUTION_DESTINATION_URL: string; // (optional) destination URL for attribution link (defaults to "https://ethyca.com/consent")
+  ATTRIBUTION_NOFOLLOW: boolean; // (optional) whether attribution link should have rel="nofollow" (defaults to false)
 }

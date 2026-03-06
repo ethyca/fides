@@ -188,6 +188,17 @@ const loadEnvironmentVariables = () => {
       (process.env.FIDES_PRIVACY_CENTER__FIDES_COOKIE_COMPRESSION as
         | "gzip"
         | "none") || "none",
+    // Attribution link options
+    ATTRIBUTION_ENABLED:
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED === "true", // default: false
+    ATTRIBUTION_ANCHOR_TEXT:
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ANCHOR_TEXT ||
+      "Consent powered by Ethyca",
+    ATTRIBUTION_DESTINATION_URL:
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_DESTINATION_URL ||
+      "https://ethyca.com/consent",
+    ATTRIBUTION_NOFOLLOW:
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_NOFOLLOW === "true", // default: false
   };
   return settings;
 };
