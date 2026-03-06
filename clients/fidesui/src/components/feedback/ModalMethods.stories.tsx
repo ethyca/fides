@@ -31,7 +31,7 @@ const ModalMethod = ({ type, title, content, hideIcon }: ModalMethodProps) => {
 };
 
 const meta = {
-  title: "Feedback/Modal Methods",
+  title: "Feedback/Modal/Methods",
   component: ModalMethod,
   args: {
     title: TITLE_LOREM,
@@ -48,11 +48,17 @@ export const Info: Story = {
   args: {
     type: "info",
   },
+  argTypes: {
+    type: { control: false },
+  },
 };
 
 export const Success: Story = {
   args: {
     type: "success",
+  },
+  argTypes: {
+    type: { control: false },
   },
 };
 
@@ -60,17 +66,25 @@ export const Warning: Story = {
   args: {
     type: "warning",
   },
+  argTypes: {
+    type: { control: false },
+  },
 };
 
 export const Error: Story = {
   args: {
     type: "error",
   },
+  argTypes: {
+    type: { control: false },
+  },
 };
 
 export const Confirm: Story = {
   args: {
     type: "confirm",
-    hideIcon: false,
+  },
+  argTypes: {
+    type: { control: false },
   },
 };

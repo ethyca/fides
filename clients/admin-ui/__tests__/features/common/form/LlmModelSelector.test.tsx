@@ -113,7 +113,7 @@ describe("LlmModelSelector", () => {
 
       expect(
         screen.queryByTestId("input-llm_model_override"),
-      ).not.toBeInTheDocument();
+      ).not.toBeVisible();
     });
 
     it("shows model override field when switch is on", () => {
@@ -195,7 +195,7 @@ describe("LlmModelSelector", () => {
 
       expect(
         screen.queryByTestId("input-llm_model_override"),
-      ).not.toBeInTheDocument();
+      ).not.toBeVisible();
     });
   });
 

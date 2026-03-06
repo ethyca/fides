@@ -160,6 +160,7 @@ class AssessmentTemplate(Base):
         back_populates="template",
         cascade="all, delete-orphan",
         passive_deletes=True,
+        order_by="AssessmentQuestion.group_order, AssessmentQuestion.question_order",
     )
     assessments = relationship(
         "PrivacyAssessment",

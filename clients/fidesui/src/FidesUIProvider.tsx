@@ -79,7 +79,6 @@ export const FidesUIProvider = ({
     notification.useNotification();
   const wrappedModalApi = useMemo(
     () => ({
-      ...modalApi,
       info: (props: Parameters<typeof modalApi.info>[0]) =>
         modalApi.info({ icon: getDefaultModalIcon("info"), ...props }),
       success: (props: Parameters<typeof modalApi.success>[0]) =>

@@ -1,5 +1,6 @@
 import { baseApi } from "~/features/common/api.slice";
 import type {
+  ActionType,
   BulkPutPolicyResponse,
   MaskingStrategyDescription,
   Page_PolicyResponse_,
@@ -12,6 +13,7 @@ interface PolicyCreateUpdate {
   name: string;
   key?: string;
   execution_timeframe?: number | null;
+  action_type?: ActionType;
 }
 
 const policyApi = baseApi.injectEndpoints({
