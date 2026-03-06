@@ -1,7 +1,7 @@
 import loadEnvironmentVariables, {
   DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
   DEFAULT_ATTRIBUTION_DESTINATION_URL,
-} from "~/app/server-utils/loadEnvironmentVariables";
+} from "../../app/server-utils/loadEnvironmentVariables";
 
 describe("loadEnvironmentVariables", () => {
   const originalEnv = process.env;
@@ -44,8 +44,7 @@ describe("loadEnvironmentVariables", () => {
     });
 
     it("can be overridden", () => {
-      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ANCHOR_TEXT =
-        "Custom text";
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ANCHOR_TEXT = "Custom text";
       const settings = loadEnvironmentVariables();
       expect(settings.ATTRIBUTION_ANCHOR_TEXT).toBe("Custom text");
     });
