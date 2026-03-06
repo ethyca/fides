@@ -13,7 +13,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
@@ -91,7 +91,7 @@ class TestCreateUser:
         }
 
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
 
     def test_username_exists(
         self,
@@ -129,7 +129,7 @@ class TestCreateUser:
             "email_address": "test.user@ethyca.com",
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
             == "Value error, Password must have at least eight characters."
@@ -141,7 +141,7 @@ class TestCreateUser:
             "email_address": "test.user@ethyca.com",
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
             == "Value error, Password must have at least one number."
@@ -153,7 +153,7 @@ class TestCreateUser:
             "email_address": "test.user@ethyca.com",
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
             == "Value error, Password must have at least one capital letter."
@@ -166,7 +166,7 @@ class TestCreateUser:
         }
 
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
             == "Value error, Password must have at least one symbol."
@@ -192,7 +192,7 @@ class TestCreateUser:
             "password": str_to_b64_str("TestP@ssword9"),
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
 
     def test_create_user_bad_email(
         self,
@@ -208,7 +208,7 @@ class TestCreateUser:
             "email_address": "not.an.email",
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
 
     def test_create_user(
         self,
@@ -1577,7 +1577,7 @@ class TestUpdateUserPassword:
             },
         )
 
-        assert resp.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert resp.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert expected_error in resp.json()["detail"][0]["msg"]
         db.expunge(user)
 

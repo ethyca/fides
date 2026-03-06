@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Query, Session
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_notice import (
@@ -295,7 +295,7 @@ def get_or_create_fides_user_device_id_provided_identity(
     """
     if not identity_data or not identity_data.fides_user_device_id:
         raise HTTPException(
-            HTTP_422_UNPROCESSABLE_ENTITY,
+            HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Fides user device id not found in identity data",
         )
 

@@ -73,7 +73,7 @@ describe("Action center", () => {
         cy.getByTestId(`monitor-result-${results[0].key}`).within(() => {
           cy.get("[data-testid='monitor-date']").realHover();
         });
-        cy.get(".ant-tooltip-inner").should("contain", "December");
+        cy.getAntTooltip().should("contain", "December");
       });
     });
     it("should have appropriate actions for monitors", () => {

@@ -24,7 +24,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_409_CONFLICT,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
@@ -1080,7 +1080,6 @@ class TestSystemCreate:
         system = systems[0]
 
         expected_none = [
-            "connection_configs",
             "data_security_practices",
             "description",
             "dpa_location",
@@ -1115,6 +1114,7 @@ class TestSystemCreate:
             assert getattr(system, field) is False
 
         expected_empty_list = [
+            "connection_configs",
             "dataset_references",
             "data_stewards",
             "legal_basis_for_profiling",
@@ -1280,7 +1280,7 @@ class TestSystemCreate:
             json_resource=system_create_request_body.json(exclude_none=True),
         )
 
-        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert len(System.all(db)) == 0  # ensure our system wasn't created
         assert (
             len(PrivacyDeclaration.all(db)) == 0
@@ -1315,7 +1315,7 @@ class TestSystemCreate:
             json_resource=system_create_request_body.json(exclude_none=True),
         )
 
-        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert result.json()["detail"][0]["loc"] == [
             "body",
             "legal_basis_for_profiling",
@@ -1399,6 +1399,69 @@ class TestSystemGet:
         assert len(privacy_declarations) == 2
         assert privacy_declarations[0]["name"] == "Another Declaration Name"
         assert privacy_declarations[1]["name"] == "Collect data for marketing"
+
+    def test_system_with_multiple_connection_configs(
+        self, test_config, system, db, generate_auth_header
+    ):
+        """Test that a system with multiple connection configs returns all of them,
+        ordered by created_at."""
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
+        # Create two connection configs and link them to the system
+        first_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "First Connection",
+                "key": f"first_conn_{uuid4().hex[:8]}",
+                "connection_type": "postgres",
+                "access": "write",
+            },
+        )
+        second_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "Second Connection",
+                "key": f"second_conn_{uuid4().hex[:8]}",
+                "connection_type": "postgres",
+                "access": "read",
+            },
+        )
+
+        link_repo = SystemIntegrationLinkRepository()
+        link_repo.create_or_update_link(
+            system_id=system.id,
+            connection_config_id=first_config.id,
+            session=db,
+        )
+        link_repo.create_or_update_link(
+            system_id=system.id,
+            connection_config_id=second_config.id,
+            session=db,
+        )
+        db.commit()
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            resource_id=system.fides_key,
+        )
+        assert result.status_code == 200
+
+        response = result.json()
+        assert len(response["connection_configs"]) == 2
+        returned_keys = [cc["key"] for cc in response["connection_configs"]]
+        assert first_config.key in returned_keys
+        assert second_config.key in returned_keys
+
+        # Verify ordering is by created_at (first-created comes first)
+        assert response["connection_configs"][0]["key"] == first_config.key
+        assert response["connection_configs"][1]["key"] == second_config.key
+
+        # Cleanup
+        second_config.delete(db)
+        first_config.delete(db)
 
 
 @pytest.mark.unit

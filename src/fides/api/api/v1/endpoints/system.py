@@ -196,6 +196,9 @@ def patch_connection_secrets(
     will differ from Dynamo DB.
 
     Deprecated: Use PATCH /connection/{connection_key}/secret instead.
+
+    Note: if multiple integrations are linked to this system, this operates on
+    the one with the earliest created_at timestamp (i.e. the oldest integration).
     """
 
     system = get_system(db, fides_key)
@@ -230,6 +233,9 @@ def delete_connection(fides_key: str, *, db: Session = Depends(deps.get_db)) -> 
     Deprecated: Use DELETE /connection/{connection_key} to delete a connection
     config, or DELETE /connection/{connection_key}/system-links/{system_fides_key}
     to unlink it from a system without deleting it.
+
+    Note: if multiple integrations are linked to this system, this deletes
+    the one with the earliest created_at timestamp (i.e. the oldest integration).
     """
     system = get_system(db, fides_key)
     if not system.connection_configs:

@@ -24,6 +24,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
+from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.config import CONFIG
 
 
 class ParamValue(BaseModel):
@@ -369,6 +371,23 @@ class ConnectorParam(BaseModel):
             raise ValueError(
                 f"The 'multiselect' field in the {name} connector_param must be accompanied by an 'options' field containing a list of values."
             )
+
+        param_type = values.get("type")
+        allowed_values = values.get("allowed_values")
+        if (
+            param_type == "endpoint"
+            and allowed_values is not None
+            and len(allowed_values) > 0
+            and default_value is not None
+            and not (CONFIG.dev_mode or CONFIG.security.disable_domain_validation)
+        ):
+            values_to_check = (
+                default_value if isinstance(default_value, list) else [default_value]
+            )
+            for val in values_to_check:
+                if not isinstance(val, str):
+                    continue
+                validate_value_against_allowed_list(val, allowed_values, str(name))
 
         return values
 

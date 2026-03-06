@@ -93,11 +93,14 @@ const CatalogSystemsTable = () => {
 
   const handleRowClicked = async (row: SystemWithMonitorKeys) => {
     // if there are projects, go to project view; otherwise go to datasets view
-    const projectsResponse = await getProjects({
-      connection_config_key: row.connection_configs?.[0]?.key,
-      page: 1,
-      size: 1,
-    });
+    const connectionConfigKey = row.connection_configs?.[0]?.key;
+    const projectsResponse = connectionConfigKey
+      ? await getProjects({
+          connection_config_key: connectionConfigKey,
+          page: 1,
+          size: 1,
+        })
+      : undefined;
 
     const hasProjects = !!projectsResponse?.data?.total;
     const queryString = getQueryParamsFromArray(
