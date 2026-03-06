@@ -11,6 +11,7 @@ from sqlalchemy.engine import (  # type: ignore
     LegacyCursorResult,
     create_engine,
 )
+from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
@@ -76,7 +77,13 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
         """
 
     def set_schema(self, connection: Connection) -> None:
-        """Sets the schema for a postgres database if applicable"""
+        """Sets the schema for a postgres database if applicable.
+
+        Note: This is the legacy path using the db_schema connection secret.
+        When namespace_meta is configured instead, the schema is prepended
+        directly to the table name in the query config. The two approaches
+        are mutually exclusive in practice.
+        """
         config = self.secrets_schema(**self.configuration.secrets or {})
         if config.db_schema:
             logger.info("Setting PostgreSQL search_path before retrieving data")
@@ -87,4 +94,11 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
     # Overrides SQLConnector.query_config
     def query_config(self, node: ExecutionNode) -> GoogleCloudSQLPostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return GoogleCloudSQLPostgresQueryConfig(node)
+        db: Session = Session.object_session(self.configuration)
+        return GoogleCloudSQLPostgresQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )
+
+    def get_qualified_table_name(self, node: ExecutionNode) -> str:
+        """Get fully qualified table name for table_exists() checks."""
+        return self.query_config(node).generate_table_name(quoted=False)
