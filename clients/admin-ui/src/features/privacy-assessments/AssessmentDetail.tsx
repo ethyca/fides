@@ -12,7 +12,7 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -55,7 +55,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
   const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
-  const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
+  // const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
 
   const focusedGroup = useMemo<QuestionGroup | undefined>(
     () =>
