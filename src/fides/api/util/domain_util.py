@@ -54,6 +54,6 @@ def validate_value_against_allowed_list(
         f"The value '{value}' for '{param_name}' is not in the list of "
         f"allowed values: [{', '.join(allowed_values)}]. "
         f"If this is a legitimate value, contact Ethyca support to have it added. "
-        f"In the meantime, you can temporarily disable domain validation by setting "
+        f"You may temporarily disable domain validation by setting "
         f"the environment variable FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION=true."
     )
