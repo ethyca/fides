@@ -7,6 +7,7 @@
  *
  * During server-side rendering, call loadPrivacyCenterEnvironment() to initialize the environment values for the App.
  */
+import type { AttributionOptions } from "fides-js";
 import { URL } from "url";
 
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
@@ -360,3 +361,14 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
 
   return clientSettings;
 };
+
+export const buildAttributionOptions = (
+  settings: PrivacyCenterClientSettings,
+): AttributionOptions | undefined =>
+  settings.ATTRIBUTION_ENABLED
+    ? {
+        anchorText: settings.ATTRIBUTION_ANCHOR_TEXT,
+        destinationUrl: settings.ATTRIBUTION_DESTINATION_URL,
+        nofollow: settings.ATTRIBUTION_NOFOLLOW,
+      }
+    : undefined;
