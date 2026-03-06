@@ -602,6 +602,7 @@ class System(Base, FidesBase):
         uselist=True,
         viewonly=True,
         lazy="selectin",
+        order_by="ConnectionConfig.created_at",
     )
 
     assets = relationship(
