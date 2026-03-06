@@ -1,14 +1,17 @@
 "use client";
 
 import { Button, Flex, Image, Text } from "fidesui";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React from "react";
 
 const RequestSubmittedPage = () => {
   const router = useRouter();
+  const params = useParams();
+  const propertyPath = params?.propertyPath as string | undefined;
+  const basePath = propertyPath ? `/${propertyPath}` : "";
 
   const handleContinue = () => {
-    router.push("/");
+    router.push(basePath || "/");
   };
 
   return (

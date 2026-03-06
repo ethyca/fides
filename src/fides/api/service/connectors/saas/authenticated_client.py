@@ -22,11 +22,14 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
+from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-from fides.api.util.saas_util import deny_unsafe_hosts, should_ignore_error
+
+from fides.api.util.saas_util import deny_unsafe_hosts, is_domain_validation_disabled, should_ignore_error
+
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -64,6 +67,52 @@ class AuthenticatedClient:
         self.rate_limit_config = rate_limit_config
         self.connect_timeout = connect_timeout
         self.read_timeout = read_timeout
+        self._allowed_hosts: Optional[List[str]] = self._extract_allowed_hosts()
+
+    def _extract_allowed_hosts(self) -> Optional[List[str]]:
+        """One-time extraction of allowed host patterns from the SaaS config.
+
+        Returns None when validation should be skipped (disabled, no SaaS
+        config, no endpoint params with allowed_values, or any endpoint param
+        is self-hosted with an empty allowed_values list).  A non-None list
+        means every outbound host must match at least one entry.
+        """
+        if is_domain_validation_disabled():
+            return None
+
+        saas_config = self.configuration.get_saas_config()
+        if not saas_config:
+            return None
+
+        endpoint_params = [
+            cp
+            for cp in saas_config.connector_params
+            if cp.type == "endpoint" and cp.allowed_values is not None
+        ]
+        if not endpoint_params:
+            return None
+
+        # If any endpoint param is self-hosted (empty list), we cannot
+        # distinguish at runtime which param a request targets, so skip.
+        if any(
+            cp.allowed_values is not None and len(cp.allowed_values) == 0
+            for cp in endpoint_params
+        ):
+            return None
+
+        allowed = [v for cp in endpoint_params for v in (cp.allowed_values or [])]
+        return allowed if allowed else None
+
+    def _validate_request_domain(self, host: str) -> None:
+        """Defense-in-depth: validate the resolved host against the
+        pre-extracted allowed host patterns."""
+        if self._allowed_hosts is None:
+            return
+
+        host_without_port = host.split(":")[0] if ":" in host else host
+        validate_value_against_allowed_list(
+            host_without_port, self._allowed_hosts, "host"
+        )
 
     def get_authenticated_request(
         self, request_params: SaaSRequestParams
@@ -204,7 +253,11 @@ class AuthenticatedClient:
             raise ValueError("The URL for the prepared request is missing.")
 
         # extract the hostname from the complete URL and verify its safety
-        deny_unsafe_hosts(urlparse(prepared_request.url).netloc)
+        request_host = urlparse(prepared_request.url).netloc
+        deny_unsafe_hosts(request_host)
+
+        # Defense-in-depth: validate the resolved host against allowed_values
+        self._validate_request_domain(request_host)
 
         # utf-8 encode the body before sending
         if isinstance(prepared_request.body, str):

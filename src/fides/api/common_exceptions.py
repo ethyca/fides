@@ -320,7 +320,7 @@ class ClientWriteFailedError(HTTPException):
 
     def __init__(self) -> None:
         super().__init__(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Failed to create client",
         )
 
@@ -368,7 +368,7 @@ class InvalidScopeError(HTTPException):
         SCOPES.sort()
 
         super().__init__(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail={
                 "error": "Invalid scope provided",
                 "invalid_scopes": invalid_scopes,
