@@ -17,6 +17,13 @@ the index or the constraint can be used to determine if an index has executed.
 When using the ADD CONSTRAINT USING INDEX syntax, the index specified in the command is
 automatically renamed to match the name of the constraint being added.
 This means that after the constraint is created, the index will have the same name as the constraint.
+
+Each entry in ``TABLE_OBJECT_MAP`` must include a ``migration_key`` matching a row in
+``post_upgrade_background_migration_tasks`` (task_type='index'). These rows are inserted
+by Alembic migrations to register deferred objects. Objects whose migration_key is not
+yet registered are skipped. After successful creation, ``completed_at`` is set to ``now()``
+on the registration row.
+
 """
 
 import json
