@@ -75,7 +75,6 @@ export const AssessmentTaskStatusIndicator = ({
     size: 100,
   });
 
-  // Show a notification each time an assessment completes within the active task
   const completedCount = activeTask?.completed_count ?? 0;
 
   const prevCompletedCountRef = useRef<number | null>(null);
