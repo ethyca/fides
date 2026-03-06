@@ -16,6 +16,8 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { useFlags } from "~/features/common/features/features.slice";
+import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { formatUser } from "~/features/common/utils";
@@ -47,6 +49,8 @@ interface WebsiteMonitorConfigFormValues {
   execution_start_date: Dayjs;
   shared_config_id?: string;
   stewards?: string[];
+  use_llm_classifier: boolean;
+  llm_model_override?: string;
 }
 const FORM_COPY = `This monitor allows you to simulate and verify user consent actions, such as 'accept,' 'reject,' or 'opt-out,' on consent experiences. For each detected activity, the monitor will record whether it occurred before or after the configured user actions, ensuring compliance with user consent choices.`;
 
@@ -73,6 +77,11 @@ const ConfigureWebsiteMonitorForm = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { flags } = useFlags();
+
+  // Feature flag for LLM classification in website monitors
+  const llmClassifierFeatureEnabled = !!flags.alphaWebMonitorLlmClassification;
+
   const integrationId = Array.isArray(router.query.id)
     ? router.query.id[0]
     : (router.query.id as string);
@@ -105,6 +114,10 @@ const ConfigureWebsiteMonitorForm = ({
     label: PRIVACY_NOTICE_REGION_RECORD[region],
   }));
 
+  // Check if monitor currently uses LLM classifier
+  const monitorUsesLlmClassifier =
+    monitor?.classify_params?.context_classifier === "llm";
+
   const initialValues: WebsiteMonitorConfigFormValues = {
     name: monitor?.name || "",
     shared_config_id: monitor?.shared_config_id ?? undefined,
@@ -118,6 +131,8 @@ const ConfigureWebsiteMonitorForm = ({
     },
     stewards:
       monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
+    use_llm_classifier: monitorUsesLlmClassifier,
+    llm_model_override: monitor?.classify_params?.llm_model_override ?? "",
   };
 
   const handleSubmit = async (values: WebsiteMonitorConfigFormValues) => {
@@ -134,12 +149,27 @@ const ConfigureWebsiteMonitorForm = ({
             execution_frequency: MonitorFrequency.NOT_SCHEDULED,
             execution_start_date: undefined,
           };
+
+    // Build classify_params based on LLM classifier toggle
+    const classifyParams = {
+      ...(monitor?.classify_params ?? {}),
+      context_classifier: values.use_llm_classifier ? "llm" : undefined,
+      llm_model_override: values.llm_model_override || undefined,
+    };
+    // Destructure form-only fields to exclude them from payload
+    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
+    const {
+      use_llm_classifier: useLLMClassifier,
+      llm_model_override: llmModelOverride,
+      ...restValues
+    } = values;
+
     const payload: WebsiteMonitorConfig = {
       ...monitor,
-      ...values,
+      ...restValues,
       ...executionInfo,
       key: monitor?.key,
-      classify_params: monitor?.classify_params || {},
+      classify_params: classifyParams,
       datasource_params: values.datasource_params || {},
       connection_config_key: integrationId,
     };
@@ -229,6 +259,10 @@ const ConfigureWebsiteMonitorForm = ({
           name="shared_config_id"
           onChange={(value) => form.setFieldValue("shared_config_id", value)}
           value={form.getFieldValue("shared_config_id")}
+        />
+        <LlmModelSelector
+          skip={!llmClassifierFeatureEnabled}
+          useLlmClassifier={!!form.getFieldValue("use_llm_classifier")}
         />
         <Form.Item
           label="Automatic execution frequency"

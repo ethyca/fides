@@ -27,5 +27,8 @@ export const darkAntTheme: ThemeConfig = {
     Layout: {
       bodyBg: palette.FIDESUI_BG_MINOS,
     },
+    Card: {
+      colorBgContainer: palette.FIDESUI_MINOS,
+    },
   },
 };

@@ -18,7 +18,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.deps import get_connection_service, get_db
@@ -329,7 +329,7 @@ def put_connection_oauth_config(
 
     if connection_config.connection_type != ConnectionType.https:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="OAuth2 configuration can only be set for HTTPS connections.",
         )
 
@@ -377,7 +377,7 @@ def delete_connection_oauth_config(
 
     if connection_config.connection_type != ConnectionType.https:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="OAuth2 configuration can only be deleted for HTTPS connections",
         )
 
@@ -411,7 +411,7 @@ def patch_connection_oauth_config(
 
     if connection_config.connection_type != ConnectionType.https:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="OAuth2 configuration can only be set for HTTPS connections.",
         )
 
@@ -450,7 +450,7 @@ def patch_connection_oauth_config(
         connection_config.save(db=db)
     except sqlalchemy.exc.IntegrityError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Invalid OAuth2 configuration.",
         ) from exc
 

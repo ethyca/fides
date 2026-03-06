@@ -24,7 +24,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_409_CONFLICT,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
@@ -1280,7 +1280,7 @@ class TestSystemCreate:
             json_resource=system_create_request_body.json(exclude_none=True),
         )
 
-        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert len(System.all(db)) == 0  # ensure our system wasn't created
         assert (
             len(PrivacyDeclaration.all(db)) == 0
@@ -1315,7 +1315,7 @@ class TestSystemCreate:
             json_resource=system_create_request_body.json(exclude_none=True),
         )
 
-        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert result.json()["detail"][0]["loc"] == [
             "body",
             "legal_basis_for_profiling",
@@ -3418,6 +3418,7 @@ class TestHealthchecks:
                 "fides.privacy_preferences": 0,
                 "fides.privacy_request_exports": 0,
                 "fides.privacy_request_ingestion": 0,
+                "fidesplus.consent_webhooks": 0,
                 "fidesplus.discovery_monitors_classification": 0,
                 "fidesplus.discovery_monitors_detection": 0,
                 "fidesplus.discovery_monitors_promotion": 0,

@@ -1,0 +1,4 @@
+type: Added
+description: Added questionnaire_tone_prompt column to privacy assessment config
+pr: 7563
+labels: ["db-migration"]

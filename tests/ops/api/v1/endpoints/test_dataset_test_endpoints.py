@@ -4,7 +4,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
@@ -376,7 +376,7 @@ class TestDatasetTest:
                         "msg": "Input should be a valid string",
                     }
                 ],
-                HTTP_422_UNPROCESSABLE_ENTITY,
+                HTTP_422_UNPROCESSABLE_CONTENT,
             ),
             (
                 {
@@ -389,7 +389,7 @@ class TestDatasetTest:
                         "msg": "Field required",
                     }
                 ],
-                HTTP_422_UNPROCESSABLE_ENTITY,
+                HTTP_422_UNPROCESSABLE_CONTENT,
             ),
         ],
     )

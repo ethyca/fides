@@ -5,7 +5,7 @@ from starlette.status import (
     HTTP_201_CREATED,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 from tests.conftest import generate_role_header_for_user
@@ -118,7 +118,7 @@ class TestCreateDataset:
 
         response = api_client.post(url, headers=auth_header, json=payload)
 
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             response.json()["detail"]
             == 'Dataset with fides_key "test_dataset" already exists.'

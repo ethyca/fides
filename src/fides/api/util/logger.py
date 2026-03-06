@@ -263,6 +263,10 @@ def setup(config: FidesConfig) -> None:
     logging.root.handlers = [InterceptHandler()]
     logging.root.setLevel(config.logging.level)
 
+    # Suppress noisy DEBUG messages from watchfiles (used by uvicorn --reload
+    # and celery worker --reload for file watching)
+    logging.getLogger("watchfiles.main").setLevel(logging.WARNING)
+
     # Capture Python warnings and redirect them to logging so they get formatted by Loguru
     logging.captureWarnings(True)
 
