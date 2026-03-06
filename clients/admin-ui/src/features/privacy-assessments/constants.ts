@@ -1,6 +1,11 @@
 import { CUSTOM_TAG_COLOR } from "fidesui";
 
-import { AnswerSource, AssessmentStatus, RiskLevel } from "./types";
+import {
+  AnswerSource,
+  AnswerStatus,
+  AssessmentStatus,
+  RiskLevel,
+} from "./types";
 
 export const ASSESSMENT_STATUS_LABELS: Record<AssessmentStatus, string> = {
   [AssessmentStatus.IN_PROGRESS]: "In progress",
@@ -22,17 +27,22 @@ export const RISK_TAG_COLORS: Record<RiskLevel, CUSTOM_TAG_COLOR> = {
 
 export const ANSWER_SOURCE_LABELS: Record<AnswerSource, string> = {
   [AnswerSource.SYSTEM]: "System derived",
-  [AnswerSource.AI_ANALYSIS]: "AI derived",
+  [AnswerSource.AI_ANALYSIS]: "Agent",
   [AnswerSource.USER_INPUT]: "Team input",
-  [AnswerSource.SLACK]: "Team input",
+  [AnswerSource.TEAM_INPUT]: "Team input",
 };
 
-export const ANSWER_SOURCE_TAG_COLORS: Record<AnswerSource, CUSTOM_TAG_COLOR> =
+export const ANSWER_STATUS_LABELS: Record<AnswerStatus, string> = {
+  [AnswerStatus.COMPLETE]: "Complete",
+  [AnswerStatus.PARTIAL]: "System derivable",
+  [AnswerStatus.NEEDS_INPUT]: "Needs input",
+};
+
+export const ANSWER_STATUS_TAG_COLORS: Record<AnswerStatus, CUSTOM_TAG_COLOR> =
   {
-    [AnswerSource.SYSTEM]: CUSTOM_TAG_COLOR.SUCCESS,
-    [AnswerSource.AI_ANALYSIS]: CUSTOM_TAG_COLOR.SUCCESS,
-    [AnswerSource.USER_INPUT]: CUSTOM_TAG_COLOR.DEFAULT,
-    [AnswerSource.SLACK]: CUSTOM_TAG_COLOR.DEFAULT,
+    [AnswerStatus.COMPLETE]: CUSTOM_TAG_COLOR.SUCCESS,
+    [AnswerStatus.PARTIAL]: CUSTOM_TAG_COLOR.WARNING,
+    [AnswerStatus.NEEDS_INPUT]: CUSTOM_TAG_COLOR.WARNING,
   };
 
 export const RISK_LEVEL_DOT_COLORS: Record<RiskLevel, string> = {

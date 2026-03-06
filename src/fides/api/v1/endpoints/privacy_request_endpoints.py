@@ -34,7 +34,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api import deps
@@ -213,7 +213,7 @@ def get_privacy_request_or_error(
 
     if error_if_deleted and privacy_request.deleted_at is not None:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Privacy request with id {privacy_request_id} has been deleted.",
         )
 
@@ -444,7 +444,7 @@ def _shared_privacy_request_search(
     )
     if hasattr(PrivacyRequest, filters.sort_field) is False:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"{filters.sort_field} is not on PrivacyRequest",
         )
     query = privacy_request_service.sort_privacy_requests(
@@ -682,7 +682,7 @@ def get_privacy_request_diagnostics_report(
         )
     except DefaultStorageNotConfiguredError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=exc.detail,
         )
 
@@ -915,7 +915,7 @@ def validate_manual_input(
                 lambda f: f.name == field_name  # pylint: disable=W0640
             ):
                 raise HTTPException(
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    status_code=HTTP_422_UNPROCESSABLE_CONTENT,
                     detail=f"Cannot save manual rows. No '{field_name}' field defined on the '{collection.value}' collection.",
                 )
 
@@ -1394,7 +1394,7 @@ def _handle_manual_webhook_input(
         )
     except PydanticValidationError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(exc.errors(include_url=False, include_input=False)),
         )
 
@@ -2141,7 +2141,7 @@ def resubmit_privacy_request(
         )
     except FidesopsException as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.message
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=exc.message
         )
 
     if not privacy_request:

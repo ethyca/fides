@@ -18,7 +18,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
@@ -90,7 +90,7 @@ def _dataset_validation_error_response(
         f"{len(field_errors)} validation error(s): {field_errors}"
     )
     return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=HTTP_422_UNPROCESSABLE_CONTENT,
         content={
             "detail": "The requested dataset contains data that fails validation.",
             "errors": field_errors,
@@ -114,7 +114,7 @@ async def create_dataset(
         return dataset_service.create_dataset(dataset)
     except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(
                 exc.errors(include_url=False, include_input=False)
                 if isinstance(exc, PydanticValidationError)
@@ -123,7 +123,7 @@ async def create_dataset(
         )
     except KeyOrNameAlreadyExists as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         )
 
@@ -144,7 +144,7 @@ async def update_dataset(
         return dataset_service.update_dataset(dataset)
     except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(
                 exc.errors(include_url=False, include_input=False)
                 if isinstance(exc, PydanticValidationError)
@@ -380,7 +380,7 @@ async def upsert_datasets(
         }
     except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(
                 exc.errors(include_url=False, include_input=False)
                 if isinstance(exc, PydanticValidationError)
@@ -432,12 +432,12 @@ async def create_data_use(
         )
     except KeyOrNameAlreadyExists as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -463,12 +463,12 @@ async def create_data_category(
         )
     except KeyOrNameAlreadyExists as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -494,12 +494,12 @@ async def create_data_subject(
         )
     except KeyOrNameAlreadyExists as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -535,7 +535,7 @@ async def update_data_use(
         return result
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -571,7 +571,7 @@ async def update_data_category(
         return result
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -606,7 +606,7 @@ async def update_data_category_tagging_instructions(
         return result
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 
@@ -640,7 +640,7 @@ async def delete_data_category_tagging_instructions(
         return result
     except (ValidationError, PydanticValidationError) as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(e),
         )
 

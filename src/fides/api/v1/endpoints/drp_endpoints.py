@@ -8,7 +8,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
     HTTP_424_FAILED_DEPENDENCY,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
@@ -150,7 +150,7 @@ async def create_drp_privacy_request(
     except Exception as exc:
         logger.error("Exception: {}", Pii(str(exc)))
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="DRP privacy request could not be exercised",
         )
 
