@@ -279,12 +279,26 @@ class ConnectionConfig(Base):
 
     @property
     def system_key(self) -> Optional[str]:
-        """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting"""
+        """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting
+
+        .. deprecated::
+            Use :attr:`consent_tracking_key` instead.  ``system_key`` returns
+            the *system* fides_key which conflates multiple integrations on the
+            same system.  Kept only for backward-compatible log context.
+        """
         if self.system:
             return self.system.fides_key
-        # TODO: Remove this fallback once all connection configs are linked to systems
-        # This will always be None in the future. `self.system` will always be set.
         return self.name
+
+    @property
+    def consent_tracking_key(self) -> str:
+        """Unique key used for per-connection consent status tracking.
+
+        Uses the ConnectionConfig key so that each integration on a system
+        gets its own entry in ``affected_system_status``, avoiding the
+        overwrite bug when a system has multiple integrations.
+        """
+        return self.key
 
     @property
     def authorized(self) -> bool:

@@ -502,7 +502,7 @@ class TestCacheSystemStatusesForConsentReporting:
         # Relevant systems
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
-            == {connection_config.name: "pending"}
+            == {connection_config.key: "pending"}
         )
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
@@ -511,7 +511,7 @@ class TestCacheSystemStatusesForConsentReporting:
 
         # non-relevant systems
         assert privacy_preference_history.affected_system_status == {
-            connection_config.name: "skipped"
+            connection_config.key: "skipped"
         }
         assert privacy_preference_history.secondary_user_ids is None
 
@@ -551,7 +551,7 @@ class TestCacheSystemStatusesForConsentReporting:
         # Relevant systems
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
-            == {connection_config.name: "complete"}
+            == {connection_config.key: "complete"}
         )
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
@@ -560,7 +560,7 @@ class TestCacheSystemStatusesForConsentReporting:
 
         # non-relevant systems
         assert privacy_preference_history.affected_system_status == {
-            connection_config.name: "skipped"
+            connection_config.key: "skipped"
         }
         assert privacy_preference_history.secondary_user_ids is None
 
@@ -600,7 +600,7 @@ class TestCacheSystemStatusesForConsentReporting:
         # Relevant systems
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
-            == {connection_config.name: "error"}
+            == {connection_config.key: "error"}
         )
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
@@ -609,7 +609,7 @@ class TestCacheSystemStatusesForConsentReporting:
 
         # non-relevant systems
         assert privacy_preference_history.affected_system_status == {
-            connection_config.name: "skipped"
+            connection_config.key: "skipped"
         }
         assert privacy_preference_history.secondary_user_ids is None
 
