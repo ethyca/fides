@@ -34,6 +34,27 @@ REPLY_TO = "reply_to"
 REPLY_TO_TOKEN = "reply_to_token"
 
 
+def should_ignore_error(
+    status_code: int,
+    ignore_errors: Optional[Union[bool, List[int]]],
+) -> bool:
+    """
+    Determine if an error response should be ignored based on the ignore_errors config.
+
+    Used by AuthenticatedClient and polling/async DSR code to keep logic in one place.
+    - False: do not ignore any errors
+    - True: ignore all errors
+    - List[int]: ignore only if status_code is in the list
+    """
+    if ignore_errors is False:
+        return False
+    if ignore_errors is True:
+        return True
+    if isinstance(ignore_errors, list):
+        return status_code in ignore_errors
+    return False
+
+
 def deny_unsafe_hosts(host: str) -> str:
     """
     Verify that the provided host isn't a potentially unsafe one.

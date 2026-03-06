@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 from unittest.mock import MagicMock, Mock, patch
 
@@ -11,9 +12,10 @@ from fides.api.common_exceptions import (
     PrivacyRequestError,
 )
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import RequestTask
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.saas.async_polling_configuration import (
     AsyncPollingConfiguration,
     PollingResultRequest,
@@ -415,10 +417,10 @@ class TestAsyncPollingStrategy:
         self, db, async_polling_strategy, action_type, policy_factory
     ):
         """
-        Test that _handle_polling_initial_request raises FidesopsException
-        when initial request fails with a status code IN the ignore_errors list,
-        with both access and erasure policy flows.
-        The client.send returns the failed response, then response.ok check triggers FidesopsException.
+        Test that _handle_polling_initial_request skips sub-request creation
+        when initial request fails with a status code IN the ignore_errors list.
+        The client.send returns the failed response, but the ignore_errors guard
+        causes the loop to continue without raising or creating a sub-request.
         """
         # Create a mock request task
         request_task = RequestTask.create(
@@ -453,7 +455,7 @@ class TestAsyncPollingStrategy:
         mock_response = Mock(spec=Response)
         mock_response.status_code = 404  # This is IN the ignore_errors list
         mock_response.text = "Not Found"
-        mock_response.ok = False  # This will trigger the response.ok check in the code
+        mock_response.ok = False
 
         # Since 404 is in ignore_errors list, client.send returns the response without raising
         mock_client.send.return_value = mock_response
@@ -461,21 +463,21 @@ class TestAsyncPollingStrategy:
         input_data = {"email": "test@example.com"}
         policy = policy_factory(db)
 
-        # Test that FidesopsException is raised due to response.ok check
-        with pytest.raises(FidesopsException) as exc_info:
-            async_polling_strategy._handle_polling_initial_request(
-                request_task=request_task,
-                query_config=mock_query_config,
-                read_request=read_request,
-                input_data=input_data,
-                policy=policy,
-                client=mock_client,
-            )
+        # Method should return without raising — the ignored error is skipped
+        async_polling_strategy._handle_polling_initial_request(
+            request_task=request_task,
+            query_config=mock_query_config,
+            read_request=read_request,
+            input_data=input_data,
+            policy=policy,
+            client=mock_client,
+        )
 
-        # Verify the exception message indicates initial request failure
-        assert "Initial async request failed" in str(exc_info.value)
-        assert "404" in str(exc_info.value)
-        assert "Not Found" in str(exc_info.value)
+        # Verify the request was still sent
+        mock_client.send.assert_called_once()
+
+        # Verify no sub-requests were created (ignored response has no correlation ID)
+        assert len(request_task.sub_requests) == 0
 
     def test_check_sub_request_status_wraps_bool_true_to_polling_status_result(
         self, db, async_polling_strategy
@@ -619,3 +621,226 @@ class TestAsyncPollingStrategy:
                     db.refresh(sub_request)
                     assert sub_request.status == ExecutionLogStatus.skipped.value
                     assert sub_request.access_data == []
+
+    def test_initial_request_access_all_ignored_returns_empty(
+        self, db, async_polling_strategy
+    ):
+        """
+        When all initial access requests return an ignored error (I.E ignore_errors: [409] on config)
+        _initial_request_access should return [] instead of raising AwaitingAsyncProcessing.
+        This prevents the task from looping back into the initial_async phase indefinitely.
+        """
+        # Use a real PrivacyRequest so we never assign a mock to the relationship
+        access_policy = Policy.create(
+            db,
+            data={"name": str(uuid.uuid4()), "key": str(uuid.uuid4())},
+        )
+        privacy_request = PrivacyRequest.create(
+            db,
+            data={
+                "policy_id": access_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "test_access_all_ignored",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "pending",
+                "action_type": "access",
+                "privacy_request_id": privacy_request.id,
+            },
+        )
+
+        # Create a read request with async_config and ignore_errors including 409
+        read_request = ReadSaaSRequest(
+            method="GET",
+            path="/api/start-request",
+            correlation_id_path="request_id",
+            ignore_errors=[409],
+            async_config={
+                "strategy": "polling",
+                "configuration": {
+                    "status_request": {
+                        "method": "GET",
+                        "path": "/status/<correlation_id>",
+                        "status_path": "status",
+                        "status_completed_value": "completed",
+                    },
+                },
+            },
+        )
+
+        # Mock query_config to return our read request with async_config
+        mock_query_config = MagicMock()
+        mock_query_config.get_read_requests_by_identity.return_value = [read_request]
+        mock_query_config.generate_requests.return_value = [
+            (MagicMock(), {"email": "test@example.com"})
+        ]
+
+        # Mock client returning 409 (ignored error)
+        mock_client = MagicMock()
+        mock_response = Mock(spec=Response)
+        mock_response.status_code = 409
+        mock_response.text = (
+            '{"error": "A request with this identifier is already pending"}'
+        )
+        mock_response.ok = False
+        mock_client.send.return_value = mock_response
+
+        # Should return [] instead of raising AwaitingAsyncProcessing
+        result = async_polling_strategy._initial_request_access(
+            mock_client,
+            request_task,
+            mock_query_config,
+            {"email": ["test@example.com"]},
+        )
+
+        assert result == []
+        assert len(request_task.sub_requests) == 0
+        mock_client.send.assert_called_once()
+
+    def test_initial_request_access_mixed_ignored_and_success(
+        self, db, async_polling_strategy
+    ):
+        """
+        When some initial requests succeed and others are ignored,
+        _initial_request_access should raise AwaitingAsyncProcessing for the successful ones.
+        """
+        access_policy = Policy.create(
+            db,
+            data={"name": str(uuid.uuid4()), "key": str(uuid.uuid4())},
+        )
+        privacy_request = PrivacyRequest.create(
+            db,
+            data={
+                "policy_id": access_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "test_access_mixed",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "pending",
+                "action_type": "access",
+                "privacy_request_id": privacy_request.id,
+            },
+        )
+
+        read_request = ReadSaaSRequest(
+            method="GET",
+            path="/api/start-request",
+            correlation_id_path="request_id",
+            ignore_errors=[409],
+            async_config={
+                "strategy": "polling",
+                "configuration": {
+                    "status_request": {
+                        "method": "GET",
+                        "path": "/status/<correlation_id>",
+                        "status_path": "status",
+                        "status_completed_value": "completed",
+                    },
+                },
+            },
+        )
+
+        mock_query_config = MagicMock()
+        mock_query_config.get_read_requests_by_identity.return_value = [read_request]
+
+        # Two prepared requests: first succeeds, second gets 409
+        success_response = Mock(spec=Response)
+        success_response.status_code = 200
+        success_response.ok = True
+        success_response.json.return_value = {"request_id": "corr_123"}
+
+        ignored_response = Mock(spec=Response)
+        ignored_response.status_code = 409
+        ignored_response.text = "Already pending"
+        ignored_response.ok = False
+
+        mock_client = MagicMock()
+        mock_client.send.side_effect = [success_response, ignored_response]
+
+        mock_query_config.generate_requests.return_value = [
+            (MagicMock(), {"email": "user1@example.com"}),
+            (MagicMock(), {"email": "user2@example.com"}),
+        ]
+
+        # Should raise AwaitingAsyncProcessing because one sub-request was created
+        with pytest.raises(AwaitingAsyncProcessing):
+            async_polling_strategy._initial_request_access(
+                mock_client,
+                request_task,
+                mock_query_config,
+                {"email": ["user1@example.com", "user2@example.com"]},
+            )
+
+        # Only one sub-request created (the successful one), the 409 was skipped
+        assert len(request_task.sub_requests) == 1
+        assert mock_client.send.call_count == 2
+
+    def test_initial_request_erasure_all_ignored_returns_zero(
+        self, db, async_polling_strategy
+    ):
+        """
+        Integration test: when all initial erasure requests return an ignored error
+        (e.g. 409), _initial_request_erasure should return 0 instead of raising
+        AwaitingAsyncProcessing.
+        """
+        policy = erasure_policy(db)
+        privacy_request = PrivacyRequest.create(
+            db,
+            data={
+                "policy_id": policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
+        )
+        request_task = RequestTask.create(
+            db,
+            data={
+                "id": "test_erasure_all_ignored",
+                "collection_address": "test_dataset:test_collection",
+                "dataset_name": "test_dataset",
+                "collection_name": "test_collection",
+                "status": "pending",
+                "action_type": "erasure",
+                "privacy_request_id": privacy_request.id,
+            },
+        )
+
+        # Create a masking request with async_config and ignore_errors including 409
+        masking_request = MagicMock()
+        masking_request.async_config = {"strategy": "polling", "configuration": {}}
+        masking_request.ignore_errors = [409]
+        masking_request.path = "/api/delete"
+        masking_request.skip_missing_param_values = False
+
+        mock_query_config = MagicMock()
+        mock_query_config.get_masking_request.return_value = masking_request
+        mock_query_config.generate_update_param_values.return_value = {"user_id": "123"}
+        mock_query_config.generate_update_stmt.return_value = MagicMock()
+
+        # Mock client returning 409
+        mock_client = MagicMock()
+        mock_response = Mock(spec=Response)
+        mock_response.status_code = 409
+        mock_response.text = "Already pending"
+        mock_response.ok = False
+        mock_client.send.return_value = mock_response
+
+        # Should return 0 instead of raising AwaitingAsyncProcessing
+        result = async_polling_strategy._initial_request_erasure(
+            mock_client, request_task, mock_query_config, [{"user_id": "123"}]
+        )
+
+        assert result == 0
+        assert len(request_task.sub_requests) == 0
+        mock_client.send.assert_called_once()
