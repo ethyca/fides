@@ -196,6 +196,7 @@ const PromptExplorer: NextPage = () => {
 
       setRenderedPrompt(result.rendered_prompt);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Failed to render prompt:", error);
     }
   }, [
@@ -232,6 +233,7 @@ const PromptExplorer: NextPage = () => {
 
       setLlmResponse(result.response_text);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error("Failed to execute prompt:", error);
     }
   }, [
@@ -327,11 +329,7 @@ const PromptExplorer: NextPage = () => {
                       <Card
                         key={prompt.id}
                         size="small"
-                        className={`cursor-pointer transition-all ${
-                          selectedPromptId === prompt.id
-                            ? "border-primary bg-primary/5"
-                            : "hover:border-primary/50"
-                        }`}
+                        hoverable
                         onClick={() => setSelectedPromptId(prompt.id)}
                       >
                         <Radio value={prompt.id} className="w-full">
