@@ -234,7 +234,6 @@ export type {
   UploadProps,
 } from "antd/lib";
 export {
-  Alert,
   AutoComplete,
   Badge,
   Breadcrumb,
@@ -288,6 +287,8 @@ export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
 export type {
+  AlertAction,
+  CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
   CustomCardProps as CardProps,
   ICustomMultiSelectProps,
@@ -297,6 +298,7 @@ export type {
   StatisticTrend,
 } from "./hoc";
 export {
+  CustomAlert as Alert,
   CustomAvatar as Avatar,
   CustomCard as Card,
   CopyTooltip,
