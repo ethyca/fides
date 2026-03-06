@@ -13,10 +13,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 
 import { AssessmentTaskPopoverContent } from "./AssessmentTaskPopoverContent";
-import {
-  useGetAssessmentTasksQuery,
-  useGetAssessmentTemplatesQuery,
-} from "./privacy-assessments.slice";
+import { useGetAssessmentTasksQuery } from "./privacy-assessments.slice";
 import { TaskStatus } from "./types";
 
 const ACTIVE_POLL_INTERVAL = 15_000;
@@ -70,11 +67,6 @@ export const AssessmentTaskStatusIndicator = ({
   );
   const lastAssessmentAgo = useRelativeTime(lastCompletedDate);
 
-  const { data: templatesData } = useGetAssessmentTemplatesQuery({
-    page: 1,
-    size: 100,
-  });
-
   const completedCount = activeTask?.completed_count ?? 0;
 
   const prevCompletedCountRef = useRef<number | null>(null);
@@ -105,19 +97,6 @@ export const AssessmentTaskStatusIndicator = ({
     }
     prevCompletedCountRef.current = completedCount;
   }, [activeTask, completedCount, onTaskFinish]);
-
-  const templateNamesMap = useMemo(() => {
-    const templates = templatesData?.items ?? [];
-    return Object.fromEntries(
-      templates.flatMap((t) => {
-        const entries: [string, string][] = [[t.key, t.name]];
-        if (t.assessment_type) {
-          entries.push([t.assessment_type, t.name]);
-        }
-        return entries;
-      }),
-    );
-  }, [templatesData]);
 
   // Detect active → idle transition for the final completion or error
   const hadActiveTaskRef = useRef(false);
@@ -199,7 +178,6 @@ export const AssessmentTaskStatusIndicator = ({
         <AssessmentTaskPopoverContent
           activeTask={activeTask}
           lastCompletedTask={lastCompletedTask}
-          templateNamesMap={templateNamesMap}
         />
       }
       title="Evaluation details"

@@ -21,15 +21,6 @@ export const formatSystems = (task: AssessmentTaskResponse | null): string => {
   return "All systems";
 };
 
-export const formatTypes = (
-  assessmentTypes: string[],
-  namesMap?: Record<string, string>,
-): string => {
-  if (assessmentTypes.length === 0) {
-    return "—";
-  }
-  return assessmentTypes.map((t) => namesMap?.[t] ?? t).join(", ");
-};
 
 export const deduplicateEvidence = (items: EvidenceItem[]): EvidenceItem[] => {
   const seen = new Set<string>();
