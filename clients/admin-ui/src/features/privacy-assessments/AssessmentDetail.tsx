@@ -307,25 +307,26 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         size="large"
       />
 
-      {slackChannelName && (
-        <EvidenceDrawer
-          open={drawerOpen}
-          onClose={handleCloseDrawer}
-          focusedGroupId={focusedGroupId}
-          group={focusedGroup}
-          evidence={filteredEvidence}
-          searchQuery={evidenceSearchQuery}
-          onSearchChange={setEvidenceSearchQuery}
-        />
-      )}
+      <EvidenceDrawer
+        open={drawerOpen}
+        onClose={handleCloseDrawer}
+        focusedGroupId={focusedGroupId}
+        group={focusedGroup}
+        evidence={filteredEvidence}
+        searchQuery={evidenceSearchQuery}
+        onSearchChange={setEvidenceSearchQuery}
+      />
+
       {/* Commented out because it does not fit demo needs at the moment */}
-      {/* <RequestInputModal
-        open={isRequestInputOpen}
-        onClose={() => setIsRequestInputOpen(false)}
-        assessmentId={assessment.id}
-        questions={allQuestions}
-        slackChannelName={slackChannelName}
-      /> */}
+      {/* {slackChannelName && (
+        <RequestInputModal
+          open={isRequestInputOpen}
+          onClose={() => setIsRequestInputOpen(false)}
+          assessmentId={assessment.id}
+          questions={allQuestions}
+          slackChannelName={slackChannelName}
+        />
+      )} */}
     </Space>
   );
 };
