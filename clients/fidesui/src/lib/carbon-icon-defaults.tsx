@@ -8,26 +8,85 @@ import {
 import { Flex } from "antd/lib";
 import { ReactNode } from "react";
 
-const ICON_SIZE = 24;
+export type FeedbackType = "info" | "success" | "warning" | "error";
+export type ModalType = FeedbackType | "confirm";
+
+const MODAL_ICON_SIZE = 24;
+const MESSAGE_ICON_SIZE = 16;
+const NOTIFICATION_ICON_SIZE = 24;
 
 /**
  * Wraps a Carbon icon for use inside Ant's modal confirm body.
  * The Flex wrapper with flex="none" prevents the icon from being
  * shrunk by the confirm body's flex layout.
  */
-const icon = (Icon: CarbonIconType, color: string): ReactNode => (
+const modalIcon = (Icon: CarbonIconType, color: string): ReactNode => (
   <Flex align="center" flex="none" style={{ marginInlineEnd: 12 }}>
-    <Icon size={ICON_SIZE} style={{ color }} />
+    <Icon size={MODAL_ICON_SIZE} style={{ color }} />
   </Flex>
 );
 
-const MODAL_ICON_MAP: Record<string, ReactNode> = {
-  info: icon(InformationFilled, "var(--fidesui-minos)"),
-  success: icon(CheckmarkFilled, "var(--fidesui-success)"),
-  warning: icon(WarningFilled, "var(--fidesui-warning)"),
-  error: icon(Misuse, "var(--fidesui-error)"),
-  confirm: icon(WarningFilled, "var(--fidesui-warning)"),
+const inlineIcon = (
+  Icon: CarbonIconType,
+  color: string,
+  size: number,
+  marginInlineEnd?: number,
+): ReactNode => <Icon size={size} style={{ color, marginInlineEnd }} />;
+
+const MODAL_ICON_MAP: Record<ModalType, ReactNode> = {
+  info: modalIcon(InformationFilled, "var(--fidesui-minos)"),
+  success: modalIcon(CheckmarkFilled, "var(--fidesui-success)"),
+  warning: modalIcon(WarningFilled, "var(--fidesui-warning)"),
+  error: modalIcon(Misuse, "var(--fidesui-error)"),
+  confirm: modalIcon(WarningFilled, "var(--fidesui-warning)"),
 };
 
-export const getDefaultModalIcon = (type: string): ReactNode =>
-  MODAL_ICON_MAP[type] ?? null;
+const MESSAGE_ICON_MAP: Record<FeedbackType, ReactNode> = {
+  info: inlineIcon(
+    InformationFilled,
+    "var(--fidesui-minos)",
+    MESSAGE_ICON_SIZE,
+    8,
+  ),
+  success: inlineIcon(
+    CheckmarkFilled,
+    "var(--fidesui-success)",
+    MESSAGE_ICON_SIZE,
+    8,
+  ),
+  warning: inlineIcon(
+    WarningFilled,
+    "var(--fidesui-warning)",
+    MESSAGE_ICON_SIZE,
+    8,
+  ),
+  error: inlineIcon(Misuse, "var(--fidesui-error)", MESSAGE_ICON_SIZE, 8),
+};
+
+const NOTIFICATION_ICON_MAP: Record<FeedbackType, ReactNode> = {
+  info: inlineIcon(
+    InformationFilled,
+    "var(--fidesui-minos)",
+    NOTIFICATION_ICON_SIZE,
+  ),
+  success: inlineIcon(
+    CheckmarkFilled,
+    "var(--fidesui-success)",
+    NOTIFICATION_ICON_SIZE,
+  ),
+  warning: inlineIcon(
+    WarningFilled,
+    "var(--fidesui-warning)",
+    NOTIFICATION_ICON_SIZE,
+  ),
+  error: inlineIcon(Misuse, "var(--fidesui-error)", NOTIFICATION_ICON_SIZE),
+};
+
+export const getDefaultModalIcon = (type: ModalType): ReactNode =>
+  MODAL_ICON_MAP[type];
+
+export const getDefaultMessageIcon = (type: FeedbackType): ReactNode =>
+  MESSAGE_ICON_MAP[type];
+
+export const getDefaultNotificationIcon = (type: FeedbackType): ReactNode =>
+  NOTIFICATION_ICON_MAP[type];
