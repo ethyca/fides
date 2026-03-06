@@ -1,5 +1,6 @@
 from copy import deepcopy
 from typing import Dict, Generator, List
+from unittest.mock import MagicMock
 
 import pytest
 from fideslang.models import Dataset
@@ -17,6 +18,7 @@ from fides.api.schemas.namespace_meta.postgres_namespace_meta import (
 )
 from fides.api.service.connectors.query_configs.postgres_query_config import (
     PostgresQueryConfig,
+    RDSPostgresQueryConfig,
 )
 
 
@@ -220,3 +222,46 @@ class TestPostgresQueryConfig:
             str(update_stmt)
             == 'UPDATE "example_db"."billing"."address" SET city = :masked_city, house = :masked_house, state = :masked_state, street = :masked_street, zip = :masked_zip WHERE id = :id'
         )
+
+
+class TestRDSPostgresQueryConfig:
+    """Unit tests for RDSPostgresQueryConfig.generate_table_name."""
+
+    @pytest.fixture
+    def mock_node(self) -> MagicMock:
+        node = MagicMock()
+        node.collection.name = "orders"
+        return node
+
+    @pytest.mark.parametrize(
+        "namespace_meta, expected",
+        [
+            (
+                {
+                    "connection_type": "rds_postgres",
+                    "database_instance_id": "inst-1",
+                    "database_id": "mydb",
+                    "schema": "billing",
+                },
+                '"billing"."orders"',
+            ),
+            (
+                None,
+                '"orders"',
+            ),
+            (
+                {
+                    "connection_type": "rds_postgres",
+                    "database_instance_id": "inst-1",
+                    "database_id": "mydb",
+                },
+                '"orders"',
+            ),
+        ],
+        ids=["schema-qualified", "no-namespace-meta", "schema-is-none"],
+    )
+    def test_generate_table_name(
+        self, mock_node: MagicMock, namespace_meta, expected: str
+    ):
+        config = RDSPostgresQueryConfig(mock_node, namespace_meta)
+        assert config.generate_table_name() == expected
