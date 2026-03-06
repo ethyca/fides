@@ -26,6 +26,13 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             context.dataset.fides_meta.namespace if context.dataset.fides_meta else None
         )
 
+        # If the dataset's namespace specifies a different connection type,
+        # skip validation — the namespace belongs to a different connector.
+        if namespace_meta and namespace_meta.get("connection_type"):
+            namespace_conn_type = namespace_meta["connection_type"]
+            if namespace_conn_type != connection_type:
+                return
+
         # Get required secret fields from the namespace meta class
         required_fields = namespace_meta_class.get_fallback_secret_fields()
         secrets = context.connection_config.secrets or {}
