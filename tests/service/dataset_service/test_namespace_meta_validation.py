@@ -1,20 +1,9 @@
 import pytest
 from fideslang.models import Dataset as FideslangDataset
 
+import fides.api.schemas.namespace_meta  # noqa: F401 — triggers registration
 from fides.api.common_exceptions import ValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (  # noqa: F401
-    BigQueryNamespaceMeta,
-)
-from fides.api.schemas.namespace_meta.postgres_namespace_meta import (  # noqa: F401
-    PostgresNamespaceMeta,
-)
-from fides.api.schemas.namespace_meta.rds_postgres_namespace_meta import (  # noqa: F401
-    RDSPostgresNamespaceMeta,
-)
-from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (  # noqa: F401
-    SnowflakeNamespaceMeta,
-)
 from fides.service.dataset.dataset_validator import DatasetValidationContext
 from fides.service.dataset.validation_steps.namespace_meta import (
     NamespaceMetaValidationStep,
