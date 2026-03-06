@@ -479,7 +479,7 @@ class TestPatchSaaSConfigAllowedValuesAfterDelete:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
 
         with mock.patch(
-            "fides.api.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
+            "fides.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
         ) as mock_template:
             mock_template.return_value = MagicMock(config=_template_yaml)
             response = api_client.patch(url, headers=auth_header, json=tampered_config)
