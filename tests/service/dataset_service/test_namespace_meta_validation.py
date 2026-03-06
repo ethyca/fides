@@ -372,6 +372,7 @@ def test_validate_with_connection_defaults():
     validator.validate(context)
 
 
+<<<<<<< ENG-2635-gcp-postgres-namespace-support
 def test_validate_mismatched_namespace_skipped():
     """Test that namespace_meta for a different connection type is silently skipped.
 
@@ -530,6 +531,8 @@ def test_validate_legacy_namespace_with_overlap_still_validates():
     assert "Invalid namespace metadata for bigquery" in str(exc.value)
 
 
+=======
+>>>>>>> ENG-2635-postgres-namespace-support
 @pytest.mark.parametrize(
     "falsy_value",
     [None, ""],
@@ -606,8 +609,8 @@ def test_validate_rds_postgres_with_valid_namespace():
         fides_meta={
             "namespace": {
                 "connection_type": "rds_postgres",
-                "database_instance_id": "my-rds-instance",
-                "database_id": "mydb",
+                "database_instance_name": "my-rds-instance",
+                "database_name": "mydb",
                 "schema": "billing",
             }
         },
@@ -634,7 +637,7 @@ def test_validate_rds_postgres_with_invalid_namespace():
         fides_meta={
             "namespace": {
                 "connection_type": "rds_postgres",
-                "schema": "billing",  # Missing required database_instance_id and database_id
+                "schema": "billing",  # Missing required database_instance_name and database_name
             }
         },
     )

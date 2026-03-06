@@ -14,7 +14,9 @@ class SnowflakeNamespaceMeta(SQLNamespaceMeta):
     """
 
     connection_type: Literal["snowflake"] = "snowflake"
-    database_name: str
+    database_name: (
+        str  # required for Snowflake (overrides Optional on SQLNamespaceMeta)
+    )
 
     @classmethod
     def get_fallback_secret_fields(cls) -> Set[Tuple[str, str]]:

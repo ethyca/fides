@@ -239,8 +239,8 @@ class TestRDSPostgresQueryConfig:
             (
                 {
                     "connection_type": "rds_postgres",
-                    "database_instance_id": "inst-1",
-                    "database_id": "mydb",
+                    "database_instance_name": "inst-1",
+                    "database_name": "mydb",
                     "schema": "billing",
                 },
                 '"billing"."orders"',
@@ -252,8 +252,8 @@ class TestRDSPostgresQueryConfig:
             (
                 {
                     "connection_type": "rds_postgres",
-                    "database_instance_id": "inst-1",
-                    "database_id": "mydb",
+                    "database_instance_name": "inst-1",
+                    "database_name": "mydb",
                 },
                 '"orders"',
             ),
