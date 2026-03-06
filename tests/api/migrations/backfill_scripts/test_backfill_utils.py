@@ -15,7 +15,6 @@ from fides.api.migrations.backfill_scripts.utils import (
     acquire_backfill_lock,
     batched_backfill,
     execute_batch_with_retry,
-    get_registered_index_keys,
     is_backfill_completed,
     is_backfill_completed_async,
     is_transient_error,
@@ -135,6 +134,24 @@ class TestBackfillLock:
 class TestMigrationTaskTracking:
     """Tests for backfill completion tracking functions."""
 
+    @pytest.fixture(autouse=True)
+    def clean_migration_tasks(self, db: Session):
+        db.execute(
+            text(
+                "DELETE FROM post_upgrade_background_migration_tasks "
+                "WHERE key LIKE 'test-%' AND task_type = 'backfill'"
+            )
+        )
+        db.commit()
+        yield
+        db.execute(
+            text(
+                "DELETE FROM post_upgrade_background_migration_tasks "
+                "WHERE key LIKE 'test-%' AND task_type = 'backfill'"
+            )
+        )
+        db.commit()
+
     @pytest.mark.parametrize(
         "record_state,expected",
         [
@@ -150,16 +167,6 @@ class TestMigrationTaskTracking:
         A row with NULL completed_at (in-progress) should return False, same as no row.
         """
         backfill_name = f"test-is-backfill-completed-sync-{record_state}"
-
-        # Clean up any leftover record from previous runs
-        db.execute(
-            text(
-                "DELETE FROM post_upgrade_background_migration_tasks "
-                "WHERE key = :name AND task_type = 'backfill'"
-            ),
-            {"name": backfill_name},
-        )
-        db.commit()
 
         if record_state == "completed":
             db.execute(
@@ -204,16 +211,6 @@ class TestMigrationTaskTracking:
         """
         backfill_name = f"test-is-backfill-completed-async-{record_state}"
 
-        # Clean up any leftover record from previous runs
-        await async_session.execute(
-            text(
-                "DELETE FROM post_upgrade_background_migration_tasks "
-                "WHERE key = :name AND task_type = 'backfill'"
-            ),
-            {"name": backfill_name},
-        )
-        await async_session.commit()
-
         if record_state == "completed":
             await async_session.execute(
                 text(
@@ -242,16 +239,6 @@ class TestMigrationTaskTracking:
     def test_register_and_mark_backfill_completed(self, db: Session):
         """Verify register_backfill_started() then mark_backfill_completed() lifecycle."""
         backfill_name = "test-register-and-mark-completed"
-
-        # Clean up any leftover record from previous runs
-        db.execute(
-            text(
-                "DELETE FROM post_upgrade_background_migration_tasks "
-                "WHERE key = :name AND task_type = 'backfill'"
-            ),
-            {"name": backfill_name},
-        )
-        db.commit()
 
         # Step 1: Register as started — row exists with NULL completed_at
         register_backfill_started(db, backfill_name)
@@ -287,16 +274,6 @@ class TestMigrationTaskTracking:
         """
         backfill_name = "test-mark-completed-idempotent"
 
-        # Clean up
-        db.execute(
-            text(
-                "DELETE FROM post_upgrade_background_migration_tasks "
-                "WHERE key = :name AND task_type = 'backfill'"
-            ),
-            {"name": backfill_name},
-        )
-        db.commit()
-
         # Register then complete
         register_backfill_started(db, backfill_name)
         mark_backfill_completed(db, backfill_name)
@@ -331,16 +308,6 @@ class TestMigrationTaskTracking:
         """Verify register_backfill_started() is idempotent (ON CONFLICT DO NOTHING)."""
         backfill_name = "test-register-started-idempotent"
 
-        # Clean up
-        db.execute(
-            text(
-                "DELETE FROM post_upgrade_background_migration_tasks "
-                "WHERE key = :name AND task_type = 'backfill'"
-            ),
-            {"name": backfill_name},
-        )
-        db.commit()
-
         # Register once
         register_backfill_started(db, backfill_name)
 
@@ -355,69 +322,6 @@ class TestMigrationTaskTracking:
             {"name": backfill_name},
         ).scalar()
         assert result == 1
-
-
-class TestRegisteredIndexKeys:
-    """Tests for index key registration functions."""
-
-    def test_get_registered_index_keys(self, db: Session):
-        """Verify get_registered_index_keys() returns only index-type keys."""
-        test_key = "test-index-key-for-get-registered"
-
-        # Clean up
-        db.execute(
-            text(
-                "DELETE FROM post_upgrade_background_migration_tasks WHERE key = :key"
-            ),
-            {"key": test_key},
-        )
-        db.commit()
-
-        # Initially not present
-        keys = get_registered_index_keys(db)
-        assert test_key not in keys
-
-        # Insert as index type
-        db.execute(
-            text(
-                "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
-                "VALUES (:key, 'index')"
-            ),
-            {"key": test_key},
-        )
-        db.commit()
-
-        keys = get_registered_index_keys(db)
-        assert test_key in keys
-
-        # A backfill-type row should NOT appear in index keys
-        backfill_key = "test-backfill-key-for-get-registered"
-        db.execute(
-            text(
-                "DELETE FROM post_upgrade_background_migration_tasks WHERE key = :key"
-            ),
-            {"key": backfill_key},
-        )
-        db.execute(
-            text(
-                "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
-                "VALUES (:key, 'backfill')"
-            ),
-            {"key": backfill_key},
-        )
-        db.commit()
-
-        keys = get_registered_index_keys(db)
-        assert backfill_key not in keys
-
-        # Cleanup
-        db.execute(
-            text(
-                "DELETE FROM post_upgrade_background_migration_tasks WHERE key IN (:k1, :k2)"
-            ),
-            {"k1": test_key, "k2": backfill_key},
-        )
-        db.commit()
 
 
 class TestExecuteBatchWithRetry:

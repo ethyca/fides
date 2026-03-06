@@ -1,7 +1,10 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
+from fides.api.migrations.backfill_scripts.utils import get_registered_index_keys
 from fides.api.migrations.post_upgrade_index_creation import (
     check_and_create_objects,
     post_upgrade_index_creation_task,
@@ -125,3 +128,60 @@ class TestCheckAndCreateObjectsMigrationKeyFiltering:
 
         with pytest.raises(ValueError, match="missing a migration_key"):
             check_and_create_objects(MagicMock(), table_map, mock_lock)
+
+
+class TestRegisteredIndexKeys:
+    """Tests for index key registration functions."""
+
+    @pytest.fixture(autouse=True)
+    def clean_migration_tasks(self, db: Session):
+        db.execute(
+            text(
+                "DELETE FROM post_upgrade_background_migration_tasks "
+                "WHERE key LIKE 'test-%'"
+            )
+        )
+        db.commit()
+        yield
+        db.execute(
+            text(
+                "DELETE FROM post_upgrade_background_migration_tasks "
+                "WHERE key LIKE 'test-%'"
+            )
+        )
+        db.commit()
+
+    def test_get_registered_index_keys(self, db: Session):
+        """Verify get_registered_index_keys() returns only index-type keys."""
+        test_key = "test-index-key-for-get-registered"
+
+        # Initially not present
+        keys = get_registered_index_keys(db)
+        assert test_key not in keys
+
+        # Insert as index type
+        db.execute(
+            text(
+                "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
+                "VALUES (:key, 'index')"
+            ),
+            {"key": test_key},
+        )
+        db.commit()
+
+        keys = get_registered_index_keys(db)
+        assert test_key in keys
+
+        # A backfill-type row should NOT appear in index keys
+        backfill_key = "test-backfill-key-for-get-registered"
+        db.execute(
+            text(
+                "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
+                "VALUES (:key, 'backfill')"
+            ),
+            {"key": backfill_key},
+        )
+        db.commit()
+
+        keys = get_registered_index_keys(db)
+        assert backfill_key not in keys
