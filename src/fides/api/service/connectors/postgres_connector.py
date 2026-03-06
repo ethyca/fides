@@ -1,13 +1,13 @@
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine, create_engine  # type: ignore
+from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration import PostgreSQLSchema
 from fides.api.service.connectors.query_configs.postgres_query_config import (
     PostgresQueryConfig,
 )
-from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.config import get_config
 
@@ -87,6 +87,17 @@ class PostgreSQLConnector(SQLConnector):
             stmt = stmt.bindparams(search_path=config.db_schema)
             connection.execute(stmt)
 
-    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+    def query_config(self, node: ExecutionNode) -> PostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return PostgresQueryConfig(node)
+        db: Session = Session.object_session(self.configuration)
+        return PostgresQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )
+
+    def get_qualified_table_name(self, node: ExecutionNode) -> str:
+        """Get fully qualified Postgres table name for table_exists() checks.
+
+        Returns unquoted names (e.g. schema.table) because the generic
+        SQLConnector.table_exists() uses split(".") + inspector.has_table().
+        """
+        return self.query_config(node).generate_table_name(quoted=False)

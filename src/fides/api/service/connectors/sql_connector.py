@@ -102,10 +102,14 @@ class SQLConnector(BaseConnector[Engine]):
         return rows
 
     @staticmethod
-    def get_namespace_meta(db: Session, dataset: str) -> Optional[Dict[str, Any]]:
+    def get_namespace_meta(
+        db: Optional[Session], dataset: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Util function to return the namespace meta for a given ctl_dataset.
         """
+        if db is None:
+            return None
 
         return db.scalar(
             select(CtlDataset.fides_meta["namespace"].cast(JSONB)).where(

@@ -1,3 +1,6 @@
+from pydantic import ValidationError as PydanticValidationError
+
+import fides.api.schemas.namespace_meta  # noqa: F401  — triggers __init_subclass__ registration
 from fides.api.common_exceptions import ValidationError
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 from fides.service.dataset.dataset_validator import (
@@ -23,11 +26,18 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             context.dataset.fides_meta.namespace if context.dataset.fides_meta else None
         )
 
+        # If the dataset's namespace specifies a different connection type,
+        # skip validation — the namespace belongs to a different connector.
+        if namespace_meta and namespace_meta.get("connection_type"):
+            namespace_conn_type = namespace_meta["connection_type"]
+            if namespace_conn_type != connection_type:
+                return
+
         # Get required secret fields from the namespace meta class
         required_fields = namespace_meta_class.get_fallback_secret_fields()
+        secrets = context.connection_config.secrets or {}
         has_connection_defaults = all(
-            field_name in context.connection_config.secrets
-            and context.connection_config.secrets[field_name]
+            field_name in secrets and secrets[field_name]
             for field_name, _ in required_fields
         )
 
@@ -42,7 +52,7 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
         if namespace_meta:
             try:
                 namespace_meta_class(**namespace_meta)
-            except Exception as e:
+            except PydanticValidationError as e:
                 raise ValidationError(
                     f"Invalid namespace metadata for {connection_type}: {str(e)}"
                 )

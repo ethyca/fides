@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from botocore.exceptions import ClientError
 from loguru import logger
@@ -9,15 +9,12 @@ from sqlalchemy.orm import Session
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
     RDSPostgresSchema,
 )
 from fides.api.service.connectors.query_configs.postgres_query_config import (
-    PostgresQueryConfig,
+    RDSPostgresQueryConfig,
 )
-from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.rds_connector_mixin import RDSConnectorMixin
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
@@ -76,8 +73,8 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
                 "Namespace meta is not set. Please call pre_client_creation_hook before creating the client."
             )
 
-        database_instance_name = self.namespace_meta["database_instance_id"]
-        db_name = self.namespace_meta["database_id"]
+        database_instance_name = self.namespace_meta["database_instance_name"]
+        db_name = self.namespace_meta["database_name"]
         db_info = self.get_database_instance_connection_info(database_instance_name)
         return self.create_engine(
             db_username=self.typed_secrets.db_username,
@@ -86,9 +83,9 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
             db_name=db_name,
         )
 
-    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+    def query_config(self, node: ExecutionNode) -> RDSPostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return PostgresQueryConfig(node)
+        return RDSPostgresQueryConfig(node, self.namespace_meta)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
@@ -129,25 +126,10 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         """
         return SQLConnector.default_cursor_result_to_rows(results)
 
-    def retrieve_data(
-        self,
-        node: ExecutionNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        request_task: RequestTask,
-        input_data: Dict[str, List[Any]],
-    ) -> List[Row]:
-        """DSR execution not yet supported for RDS Postgres"""
-        return []
+    def get_qualified_table_name(self, node: ExecutionNode) -> str:
+        """Get fully qualified Postgres table name for table_exists() checks.
 
-    def mask_data(
-        self,
-        node: ExecutionNode,
-        policy: Policy,
-        privacy_request: PrivacyRequest,
-        request_task: RequestTask,
-        rows: List[Row],
-        input_data: Optional[Dict[str, List[Any]]] = None,
-    ) -> int:
-        """DSR execution not yet supported for RDS Postgres"""
-        return 0
+        Returns unquoted names (e.g. schema.table) because the generic
+        SQLConnector.table_exists() uses split(".") + inspector.has_table().
+        """
+        return self.query_config(node).generate_table_name(quoted=False)
