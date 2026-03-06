@@ -28,8 +28,8 @@ export const RISK_TAG_COLORS: Record<RiskLevel, CUSTOM_TAG_COLOR> = {
 export const ANSWER_SOURCE_LABELS: Record<AnswerSource, string> = {
   [AnswerSource.SYSTEM]: "System derived",
   [AnswerSource.AI_ANALYSIS]: "Agent",
-  [AnswerSource.USER_INPUT]: "Team input",
-  [AnswerSource.TEAM_INPUT]: "Team input",
+  [AnswerSource.USER_INPUT]: "Manual input",
+  [AnswerSource.TEAM_INPUT]: "Via Slack",
 };
 
 export const ANSWER_STATUS_LABELS: Record<AnswerStatus, string> = {

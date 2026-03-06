@@ -69,7 +69,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "plus/privacy-assessments",
         method: "POST",
-        body,
+        body: { high_risk_only: false, ...body }, // Temporary fix to ensure all assessments are generated
       }),
       invalidatesTags: ["Privacy Assessment", "Privacy Assessment Tasks"],
     }),
