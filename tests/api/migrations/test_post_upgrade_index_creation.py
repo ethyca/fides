@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from fides.api.migrations.post_upgrade_index_creation import (
+    check_and_create_objects,
     post_upgrade_index_creation_task,
 )
 
@@ -45,3 +46,90 @@ class TestPostUpgradeIndexCreation:
         post_upgrade_index_creation_task()
 
         mock_check_and_create_objects.assert_called_once()
+
+
+class TestCheckAndCreateObjectsMigrationKeyFiltering:
+    """Tests that check_and_create_objects skips entries whose migration_key is not registered."""
+
+    @patch("fides.api.migrations.post_upgrade_index_creation.get_registered_index_keys")
+    @patch("fides.api.migrations.post_upgrade_index_creation.check_object_exists")
+    @patch("fides.api.migrations.post_upgrade_index_creation.create_object")
+    def test_skips_entry_when_migration_key_not_registered(
+        self, mock_create_object, mock_check_object_exists, mock_get_registered_keys
+    ):
+        """Entry with unregistered migration_key is skipped entirely."""
+        mock_get_registered_keys.return_value = set()
+        mock_lock = MagicMock()
+
+        table_map = {
+            "test_table": [
+                {
+                    "name": "ix_test_index",
+                    "statement": "CREATE INDEX CONCURRENTLY ix_test_index ON test_table (col)",
+                    "type": "index",
+                    "migration_key": "ix_test_index",
+                }
+            ]
+        }
+
+        result = check_and_create_objects(MagicMock(), table_map, mock_lock)
+
+        mock_check_object_exists.assert_not_called()
+        mock_create_object.assert_not_called()
+        assert result == {}
+
+    @patch("fides.api.migrations.post_upgrade_index_creation.get_registered_index_keys")
+    @patch("fides.api.migrations.post_upgrade_index_creation.check_object_exists")
+    @patch("fides.api.migrations.post_upgrade_index_creation.create_object")
+    def test_processes_entry_when_migration_key_is_registered(
+        self, mock_create_object, mock_check_object_exists, mock_get_registered_keys
+    ):
+        """Entry with registered migration_key is processed normally."""
+        mock_get_registered_keys.return_value = {"ix_test_index"}
+        mock_check_object_exists.return_value = False  # index doesn't exist yet
+        mock_lock = MagicMock()
+
+        table_map = {
+            "test_table": [
+                {
+                    "name": "ix_test_index",
+                    "statement": "CREATE INDEX CONCURRENTLY ix_test_index ON test_table (col)",
+                    "type": "index",
+                    "migration_key": "ix_test_index",
+                }
+            ]
+        }
+
+        result = check_and_create_objects(MagicMock(), table_map, mock_lock)
+
+        mock_check_object_exists.assert_called_once()
+        mock_create_object.assert_called_once()
+        assert result == {"ix_test_index": "created"}
+
+    @patch("fides.api.migrations.post_upgrade_index_creation.get_registered_index_keys")
+    @patch("fides.api.migrations.post_upgrade_index_creation.check_object_exists")
+    @patch("fides.api.migrations.post_upgrade_index_creation.create_object")
+    def test_processes_entry_without_migration_key(
+        self, mock_create_object, mock_check_object_exists, mock_get_registered_keys
+    ):
+        """Entry with no migration_key is always processed (backward compat)."""
+        mock_get_registered_keys.return_value = set()
+        mock_check_object_exists.return_value = False
+        mock_lock = MagicMock()
+
+        table_map = {
+            "test_table": [
+                {
+                    "name": "ix_legacy_index",
+                    "statement": "CREATE INDEX CONCURRENTLY ix_legacy_index ON test_table (col)",
+                    "type": "index",
+                    # no migration_key
+                }
+            ]
+        }
+
+        result = check_and_create_objects(MagicMock(), table_map, mock_lock)
+
+        mock_check_object_exists.assert_called_once()
+        mock_create_object.assert_called_once()
+        assert result == {"ix_legacy_index": "created"}
