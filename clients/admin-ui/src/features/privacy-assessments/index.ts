@@ -10,6 +10,7 @@ export * from "./EditableTextBlock";
 export * from "./EmptyState";
 export * from "./EvidenceDrawer";
 export * from "./EvidenceSection";
+export { GenerateAssessmentsModal } from "./GenerateAssessmentsModal";
 export * from "./privacy-assessments.slice";
 export * from "./QuestionCard";
 export * from "./QuestionGroupPanel";
