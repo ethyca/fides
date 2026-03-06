@@ -77,6 +77,21 @@ export const AssessmentTaskStatusIndicator = ({
     size: 100,
   });
 
+  const completedCount = useMemo(
+    () =>
+      (tasksData?.items ?? []).filter((t) => t.status === TaskStatus.COMPLETE)
+        .length,
+    [tasksData],
+  );
+
+  const prevCompletedCountRef = useRef(completedCount);
+  useEffect(() => {
+    if (completedCount > prevCompletedCountRef.current) {
+      onTaskFinish?.();
+    }
+    prevCompletedCountRef.current = completedCount;
+  }, [completedCount, onTaskFinish]);
+
   const templateNamesMap = useMemo(() => {
     const templates = templatesData?.items ?? [];
     return Object.fromEntries(
