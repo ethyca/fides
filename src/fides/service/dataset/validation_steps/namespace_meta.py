@@ -48,6 +48,21 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             if meta_connection_type and meta_connection_type != connection_type:
                 return
 
+            # For legacy namespace_meta without connection_type, check whether
+            # the provided fields overlap with the expected schema.  If there
+            # is zero overlap the namespace belongs to a different connection
+            # type and we skip.  If there IS overlap we backfill connection_type
+            # and validate strictly so malformed namespaces are still caught.
+            if not meta_connection_type:
+                expected_fields = set(namespace_meta_class.model_fields.keys()) - {
+                    "connection_type"
+                }
+                provided_fields = set(namespace_meta.keys()) - {"connection_type"}
+                if not provided_fields & expected_fields:
+                    return
+                # Fields overlap — backfill connection_type so it's persisted
+                namespace_meta["connection_type"] = connection_type
+
             try:
                 namespace_meta_class(**namespace_meta)
             except Exception as e:
