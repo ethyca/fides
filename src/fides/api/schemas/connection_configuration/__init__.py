@@ -46,6 +46,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     ExtendedEmailSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_entra import (
+    EntraDocsSchema as EntraDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_entra import (
+    EntraSchema as EntraSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_fides import (
     FidesConnectorSchema,
     FidesDocsSchema,
@@ -174,6 +180,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.datahub.value: DatahubSchema,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailSchema,
     ConnectionType.dynamodb.value: DynamoDBSchema,
+    ConnectionType.entra.value: EntraSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
     ConnectionType.generic_consent_email.value: ExtendedEmailSchema,
     ConnectionType.generic_erasure_email.value: EmailSchema,
@@ -235,6 +242,7 @@ def get_connection_secrets_schema(
 connection_secrets_schemas = Union[
     BigQueryDocsSchema,
     DatahubDocsSchema,
+    EntraDocsSchema,
     DynamicErasureEmailDocsSchema,
     DynamoDBDocsSchema,
     EmailDocsSchema,
