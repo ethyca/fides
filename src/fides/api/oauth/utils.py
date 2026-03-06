@@ -8,9 +8,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
 
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import SecurityScopes
-from joserfc import jwe
-from joserfc.errors import DecodeError, JoseError
-from joserfc.jwk import OctKey
+from joserfc.errors import JoseError
 from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import select
@@ -35,6 +33,7 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
+from fides.api.oauth.jwt import decrypt_jwe
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING, get_scopes_from_roles
 from fides.api.request_context import set_user_id
 from fides.api.schemas.external_https import (
@@ -46,9 +45,6 @@ from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig
 
-JWT_ENCRYPTION_ALGORITHM = "A256GCM"
-
-
 # TODO: include list of all scopes in the docs via the scopes={} dict
 # (see https://fastapi.tiangolo.com/advanced/security/oauth2-scopes/)
 oauth2_scheme = OAuth2ClientCredentialsBearer(
@@ -59,14 +55,7 @@ oauth2_scheme = OAuth2ClientCredentialsBearer(
 def extract_payload(jwe_string: str, encryption_key: str) -> str:
     """Given a jwe, extracts the payload and returns it in string form."""
     try:
-        key_bytes = (
-            encryption_key.encode("utf-8")
-            if isinstance(encryption_key, str)
-            else encryption_key
-        )
-        key = OctKey.import_key(key_bytes)
-        result = jwe.decrypt_compact(jwe_string, key)
-        return result.plaintext.decode("utf-8")
+        return decrypt_jwe(jwe_string, encryption_key)
     except JoseError as e:
         logger.debug("Failed to decrypt JWE: {}", e)
         raise e
@@ -444,7 +433,7 @@ def extract_token_and_load_client(
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
-    except DecodeError as exc:
+    except (JoseError, ValueError) as exc:
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
@@ -517,7 +506,7 @@ async def extract_token_and_load_client_async(
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
-    except DecodeError as exc:
+    except (JoseError, ValueError) as exc:
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 

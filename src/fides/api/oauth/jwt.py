@@ -1,7 +1,7 @@
 from joserfc import jwe
 from joserfc.jwk import OctKey
 
-_JWT_ENCRYPTION_ALGORITHM = "A256GCM"
+JWT_ENCRYPTION_ALGORITHM = "A256GCM"
 
 
 def generate_jwe(payload: str, encryption_key: str, encoding: str = "UTF-8") -> str:
@@ -16,7 +16,7 @@ def generate_jwe(payload: str, encryption_key: str, encoding: str = "UTF-8") -> 
     )
     key = OctKey.import_key(key_bytes)
     return jwe.encrypt_compact(
-        {"alg": "dir", "enc": _JWT_ENCRYPTION_ALGORITHM},
+        {"alg": "dir", "enc": JWT_ENCRYPTION_ALGORITHM},
         payload.encode(encoding),
         key,
     )
