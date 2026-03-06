@@ -10,8 +10,8 @@ from fides.api.schemas.partitioning.time_based_partitioning import (
     combine_partitions,
 )
 from fides.api.util.api_router import APIRouter
-from fides.common.api.scope_registry import CTL_DATASET_READ
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.common.scope_registry import CTL_DATASET_READ
+from fides.common.urn_registry import V1_URL_PREFIX
 
 router = APIRouter(tags=["Partitions"], prefix=V1_URL_PREFIX)
 

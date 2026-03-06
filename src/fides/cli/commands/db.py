@@ -6,10 +6,10 @@ from fides.api.db.session import get_db_session
 from fides.api.util.consent_encryption_migration import (
     migrate_consent_encryption as run_consent_encryption_migration,
 )
+from fides.cli.core import api as _api
 from fides.cli.options import yes_flag
 from fides.cli.utils import with_analytics, with_server_health_check
 from fides.common.utils import echo_red, handle_cli_response
-from fides.core import api as _api
 
 
 @click.group(name="db")

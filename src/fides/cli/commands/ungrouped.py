@@ -6,6 +6,13 @@ import rich_click as click
 import yaml
 
 import fides
+from fides.cli.core import api as _api
+from fides.cli.core import audit as _audit
+from fides.cli.core import evaluate as _evaluate
+from fides.cli.core import parse as _parse
+from fides.cli.core import push as _push
+from fides.cli.core.api_helpers import get_server_resource, list_server_resources
+from fides.cli.create_config import create_and_update_config_file
 from fides.cli.options import (
     dry_flag,
     fides_key_argument,
@@ -27,13 +34,6 @@ from fides.common.utils import (
     pretty_echo,
     print_divider,
 )
-from fides.config.create import create_and_update_config_file
-from fides.core import api as _api
-from fides.core import audit as _audit
-from fides.core import evaluate as _evaluate
-from fides.core import parse as _parse
-from fides.core import push as _push
-from fides.core.api_helpers import get_server_resource, list_server_resources
 
 
 @click.command()  # type: ignore

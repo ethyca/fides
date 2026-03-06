@@ -62,7 +62,7 @@ from fides.common.api.scope_registry import (
     SAAS_CONFIG_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,

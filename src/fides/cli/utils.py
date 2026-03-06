@@ -24,7 +24,8 @@ from fideslog.sdk.python.utils import (
 from requests import get, put
 
 import fides
-from fides.common.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
+from fides.cli.core import api as _api
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.common.utils import check_response, echo_green, echo_red
 from fides.config import FidesConfig
 from fides.config.credentials_settings import (
@@ -33,27 +34,17 @@ from fides.config.credentials_settings import (
     get_config_database_credentials,
     get_config_okta_credentials,
 )
-from fides.config.helpers import get_config_from_file
-from fides.config.utils import get_dev_mode
-from fides.connectors.models import (
+from fides.config.schemas.credentials import (
     AWSConfig,
     BigQueryConfig,
     DatabaseConfig,
     OktaConfig,
 )
-from fides.core import api as _api
+from fides.config.utils import get_config_from_file, get_dev_mode
 
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
-FIDES_ASCII_ART = """
-
-███████╗██╗██████╗ ███████╗███████╗
-██╔════╝██║██╔══██╗██╔════╝██╔════╝
-█████╗  ██║██║  ██║█████╗  ███████╗
-██╔══╝  ██║██║  ██║██╔══╝  ╚════██║
-██║     ██║██████╔╝███████╗███████║
-╚═╝     ╚═╝╚═════╝ ╚══════╝╚══════╝
-"""
+from fides.common.utils import FIDES_ASCII_ART as FIDES_ASCII_ART
 
 
 def check_server_health(server_url: str, verbose: bool = True) -> requests.Response:
@@ -117,7 +108,7 @@ def is_user_registered(config: FidesConfig) -> bool:
     Send a request to the API server, and determine if a registration is already present.
     """
 
-    response = get(f"{config.cli.server_url}{V1_URL_PREFIX}{REGISTRATION}")
+    response = get(f"{config.cli.server_url}{V1_URL_PREFIX}/registration")
     return response.json()["opt_in"]
 
 
@@ -127,7 +118,7 @@ def register_user(config: FidesConfig, email: str, organization: str) -> None:
     """
 
     put(
-        f"{config.cli.server_url}{V1_URL_PREFIX}{REGISTRATION}",
+        f"{config.cli.server_url}{V1_URL_PREFIX}/registration",
         json={
             "analytics_id": config.cli.analytics_id,
             "opt_in": True,

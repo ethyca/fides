@@ -9,6 +9,7 @@ from fastapi import Depends, HTTPException, Security, status
 from fideslang.models import Dataset, Organization, System
 from loguru import logger as log
 from pydantic import BaseModel, model_validator
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.db.crud import get_resource
@@ -16,9 +17,16 @@ from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
-from fides.api.v1.endpoints import API_PREFIX
-from fides.common.api import scope_registry
-from fides.connectors.models import (
+from fides.cli.core.dataset import (
+    generate_bigquery_datasets,
+    generate_db_datasets,
+    generate_dynamo_db_datasets,
+)
+from fides.cli.core.system import generate_aws_systems, generate_okta_systems
+from fides.common import scope_registry
+from fides.common.urn_registry import V1_URL_PREFIX
+from fides.common.utils import validate_db_engine
+from fides.config.schemas.credentials import (
     AWSConfig,
     BigQueryConfig,
     ConnectorAuthFailureException,
@@ -26,15 +34,8 @@ from fides.connectors.models import (
     DatabaseConfig,
     OktaConfig,
 )
-from fides.core.dataset import (
-    generate_bigquery_datasets,
-    generate_db_datasets,
-    generate_dynamo_db_datasets,
-)
-from fides.core.system import generate_aws_systems, generate_okta_systems
-from fides.core.utils import validate_db_engine
 
-GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
+GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{V1_URL_PREFIX}/generate")
 
 
 class ValidTargets(StrEnum):
@@ -197,7 +198,7 @@ def generate_aws(
     """
     Returns a list of Systems found in AWS.
     """
-    from fides.connectors.aws import validate_credentials
+    from fides.cli.connectors.aws import validate_credentials
 
     log.info("Validating AWS credentials")
     try:
@@ -220,7 +221,7 @@ def generate_dynamodb(
     """
     Returns a list of DynamoDB datasets found in AWS.
     """
-    from fides.connectors.aws import validate_credentials
+    from fides.cli.connectors.aws import validate_credentials
 
     log.info("Validating AWS credentials")
     try:
@@ -245,7 +246,7 @@ def generate_okta(
     """
     Returns a list of Systems found in Okta.
     """
-    from fides.connectors.okta import validate_credentials
+    from fides.cli.connectors.okta import validate_credentials
 
     log.info("Validating Okta credentials")
     try:
@@ -269,7 +270,7 @@ def generate_db(db_config: DatabaseConfig) -> List[Dict[str, str]]:
     log.info("Validating database credentials")
     try:
         validate_db_engine(db_config.connection_string)
-    except ConnectorAuthFailureException as error:
+    except SQLAlchemyError as error:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(error),

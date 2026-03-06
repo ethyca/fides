@@ -43,7 +43,8 @@ from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
 from fides.api.schemas.taxonomy_extensions import DataCategory, DataSubject, DataUse
 from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
 from fides.api.v1.endpoints import health
-from fides.common.api.scope_registry import (
+from fides.cli.core import api as _api
+from fides.common.scope_registry import (
     CREATE,
     DELETE,
     POLICY_CREATE_OR_UPDATE,
@@ -57,9 +58,8 @@ from fides.common.api.scope_registry import (
     SYSTEM_UPDATE,
     UPDATE,
 )
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.config import FidesConfig, get_config
-from fides.core import api as _api
 from fides.system_integration_link.models import SystemConnectionConfigLink
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 

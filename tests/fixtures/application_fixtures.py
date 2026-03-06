@@ -114,7 +114,7 @@ from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
 from fides.api.util.data_category import DataCategory, get_user_data_categories
 from fides.config import CONFIG
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
-from fides.config.helpers import load_file
+from fides.config.utils import load_file
 from fides.service.attachment_service import AttachmentService
 from tests.ops.integration_tests.saas.connector_runner import (
     generate_random_email,

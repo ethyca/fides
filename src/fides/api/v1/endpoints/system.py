@@ -64,7 +64,7 @@ from fides.api.util.connection_util import (
     update_connection_secrets,
 )
 from fides.api.v1.endpoints.saas_config_endpoints import instantiate_connection
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
@@ -74,7 +74,7 @@ from fides.common.api.scope_registry import (
     SYSTEM_READ,
     SYSTEM_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     INSTANTIATE_SYSTEM_CONNECTION,
     SYSTEM_CONNECTIONS,
     V1_URL_PREFIX,

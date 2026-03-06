@@ -24,7 +24,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
 from fides.api.db.base_class import Base, FidesBase
-from fides.config.helpers import load_file
+from fides.config.utils import load_file
 
 LOCATIONS_YAML_FILE_PATH = join(
     dirname(__file__),

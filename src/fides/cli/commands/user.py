@@ -3,6 +3,7 @@
 import rich_click as click
 from pydantic import EmailStr
 
+from fides.cli.core.user import create_command, get_permissions_command, login_command
 from fides.cli.options import (
     email_address_argument,
     first_name_option,
@@ -13,7 +14,6 @@ from fides.cli.options import (
     username_option,
 )
 from fides.cli.utils import with_server_health_check
-from fides.core.user import create_command, get_permissions_command, login_command
 
 
 @click.group(name="user")

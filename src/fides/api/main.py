@@ -63,7 +63,7 @@ from fides.api.ui import (
 )
 from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.rate_limit import safe_rate_limit_key
-from fides.cli.utils import FIDES_ASCII_ART
+from fides.common.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 from fides.service.jira.polling_task import initiate_jira_ticket_polling
 

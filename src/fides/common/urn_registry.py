@@ -1,5 +1,5 @@
-# Prefixes
 V1_URL_PREFIX = "/api/v1"
+
 YAML = "/yml"
 
 # User Permission URLs
