@@ -3,6 +3,9 @@
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,  # noqa: F401
 )
+from fides.api.schemas.namespace_meta.google_cloud_sql_postgres_namespace_meta import (
+    GoogleCloudSQLPostgresNamespaceMeta,  # noqa: F401
+)
 from fides.api.schemas.namespace_meta.postgres_namespace_meta import (
     PostgresNamespaceMeta,  # noqa: F401
 )
