@@ -1,0 +1,4 @@
+type: Changed
+description: Updated IDP monitor result labels to "Known Systems" / "Unknown Systems"
+pr: 7586
+labels: []
