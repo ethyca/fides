@@ -22,7 +22,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
     data: assessmentsData,
     isLoading,
     isError,
-    refetch,
+    refetch: refetchAssessments,
   } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
 
   const assessments = assessmentsData?.items ?? [];
@@ -84,7 +84,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
         rightContent={
           <Space align="center">
             <AssessmentTaskStatusIndicator
-              onTaskFinish={refetch}
+              onTaskFinish={refetchAssessments}
               className="mr-2"
             />
             {hasAssessments && (
