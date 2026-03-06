@@ -1,4 +1,7 @@
-import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
+import loadEnvironmentVariables, {
+  DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
+  DEFAULT_ATTRIBUTION_DESTINATION_URL,
+} from "~/app/server-utils/loadEnvironmentVariables";
 
 describe("loadEnvironmentVariables", () => {
   const originalEnv = process.env;
@@ -32,11 +35,11 @@ describe("loadEnvironmentVariables", () => {
   });
 
   describe("ATTRIBUTION_ANCHOR_TEXT", () => {
-    it('defaults to "Consent powered by Ethyca"', () => {
+    it("defaults to DEFAULT_ATTRIBUTION_ANCHOR_TEXT", () => {
       delete process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ANCHOR_TEXT;
       const settings = loadEnvironmentVariables();
       expect(settings.ATTRIBUTION_ANCHOR_TEXT).toBe(
-        "Consent powered by Ethyca",
+        DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
       );
     });
 
@@ -49,11 +52,11 @@ describe("loadEnvironmentVariables", () => {
   });
 
   describe("ATTRIBUTION_DESTINATION_URL", () => {
-    it('defaults to "https://ethyca.com/consent"', () => {
+    it("defaults to DEFAULT_ATTRIBUTION_DESTINATION_URL", () => {
       delete process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_DESTINATION_URL;
       const settings = loadEnvironmentVariables();
       expect(settings.ATTRIBUTION_DESTINATION_URL).toBe(
-        "https://ethyca.com/consent",
+        DEFAULT_ATTRIBUTION_DESTINATION_URL,
       );
     });
 
