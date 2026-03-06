@@ -71,7 +71,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "plus/privacy-assessments",
         method: "POST",
-        body,
+        body: { high_risk_only: false, ...body }, // Temporary fix to ensure all assessments are generated
       }),
       invalidatesTags: ["Privacy Assessment Tasks"],
     }),
@@ -124,7 +124,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       { id: string; questionId: string; body: UpdateAnswerRequest }
     >({
       query: ({ id, questionId, body }) => ({
-        url: `plus/privacy-assessments/${id}/answers/${questionId}`,
+        url: `plus/privacy-assessments/${id}/questions/${questionId}`,
         method: "PUT",
         body,
       }),
@@ -140,7 +140,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       { id: string; body: BulkUpdateAnswersRequest }
     >({
       query: ({ id, body }) => ({
-        url: `plus/privacy-assessments/${id}/answers`,
+        url: `plus/privacy-assessments/${id}/questions`,
         method: "PUT",
         body,
       }),
