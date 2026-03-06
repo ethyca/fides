@@ -18,6 +18,7 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 import { defaultAntTheme } from "./ant-theme";
 import { theme as defaultTheme } from "./FidesUITheme";
 import {
+  type FeedbackType,
   getDefaultMessageIcon,
   getDefaultModalIcon,
   getDefaultNotificationIcon,
@@ -28,7 +29,7 @@ const isMessageArgsProps = (content: unknown): content is MessageArgsProps =>
 
 const wrapMessageMethod = (
   method: MessageTypeOpen,
-  type: string,
+  type: FeedbackType,
 ): MessageTypeOpen => {
   const defaultIcon = getDefaultMessageIcon(type);
   return (content, duration?, onClose?) => {

@@ -8,6 +8,9 @@ import {
 import { Flex } from "antd/lib";
 import { ReactNode } from "react";
 
+export type FeedbackType = "info" | "success" | "warning" | "error";
+export type ModalType = FeedbackType | "confirm";
+
 const MODAL_ICON_SIZE = 24;
 const MESSAGE_ICON_SIZE = 16;
 const NOTIFICATION_ICON_SIZE = 24;
@@ -30,7 +33,7 @@ const inlineIcon = (
   marginInlineEnd?: number,
 ): ReactNode => <Icon size={size} style={{ color, marginInlineEnd }} />;
 
-const MODAL_ICON_MAP: Record<string, ReactNode> = {
+const MODAL_ICON_MAP: Record<ModalType, ReactNode> = {
   info: modalIcon(InformationFilled, "var(--fidesui-minos)"),
   success: modalIcon(CheckmarkFilled, "var(--fidesui-success)"),
   warning: modalIcon(WarningFilled, "var(--fidesui-warning)"),
@@ -38,7 +41,7 @@ const MODAL_ICON_MAP: Record<string, ReactNode> = {
   confirm: modalIcon(WarningFilled, "var(--fidesui-warning)"),
 };
 
-const MESSAGE_ICON_MAP: Record<string, ReactNode> = {
+const MESSAGE_ICON_MAP: Record<FeedbackType, ReactNode> = {
   info: inlineIcon(
     InformationFilled,
     "var(--fidesui-minos)",
@@ -60,7 +63,7 @@ const MESSAGE_ICON_MAP: Record<string, ReactNode> = {
   error: inlineIcon(Misuse, "var(--fidesui-error)", MESSAGE_ICON_SIZE, 8),
 };
 
-const NOTIFICATION_ICON_MAP: Record<string, ReactNode> = {
+const NOTIFICATION_ICON_MAP: Record<FeedbackType, ReactNode> = {
   info: inlineIcon(
     InformationFilled,
     "var(--fidesui-minos)",
@@ -79,11 +82,11 @@ const NOTIFICATION_ICON_MAP: Record<string, ReactNode> = {
   error: inlineIcon(Misuse, "var(--fidesui-error)", NOTIFICATION_ICON_SIZE),
 };
 
-export const getDefaultModalIcon = (type: string): ReactNode =>
-  MODAL_ICON_MAP[type] ?? null;
+export const getDefaultModalIcon = (type: ModalType): ReactNode =>
+  MODAL_ICON_MAP[type];
 
-export const getDefaultMessageIcon = (type: string): ReactNode =>
-  MESSAGE_ICON_MAP[type] ?? null;
+export const getDefaultMessageIcon = (type: FeedbackType): ReactNode =>
+  MESSAGE_ICON_MAP[type];
 
-export const getDefaultNotificationIcon = (type: string): ReactNode =>
-  NOTIFICATION_ICON_MAP[type] ?? null;
+export const getDefaultNotificationIcon = (type: FeedbackType): ReactNode =>
+  NOTIFICATION_ICON_MAP[type];
