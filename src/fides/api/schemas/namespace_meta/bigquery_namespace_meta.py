@@ -18,7 +18,7 @@ class BigQueryNamespaceMeta(NamespaceMeta):
     dataset_id: str
 
     @classmethod
-    def get_fallback_secret_fields(cls) -> Set[Tuple]:
+    def get_fallback_secret_fields(cls) -> Set[Tuple[str, str]]:
         """
         The required connection config secrets when namespace metadata is missing.
         For BigQuery, dataset must be provided in secrets if dataset_id is not in namespace metadata.

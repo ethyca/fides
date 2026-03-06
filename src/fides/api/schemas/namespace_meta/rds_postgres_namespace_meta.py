@@ -23,7 +23,7 @@ class RDSPostgresNamespaceMeta(NamespaceMeta):
     schema: Optional[str] = None  # type: ignore[assignment]
 
     @classmethod
-    def get_fallback_secret_fields(cls) -> Set[Tuple]:
+    def get_fallback_secret_fields(cls) -> Set[Tuple[str, str]]:
         """
         RDS Postgres does not require fallback secret fields — the namespace
         metadata is always provided by the monitor.

@@ -15,7 +15,7 @@ class PostgresNamespaceMeta(SQLNamespaceMeta):
     connection_type: Literal["postgres"] = "postgres"
 
     @classmethod
-    def get_fallback_secret_fields(cls) -> Set[Tuple]:
+    def get_fallback_secret_fields(cls) -> Set[Tuple[str, str]]:
         """
         The required connection config secrets when namespace metadata is missing.
         For Postgres, db_schema is optional — connections default to the public

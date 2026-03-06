@@ -17,7 +17,7 @@ class SnowflakeNamespaceMeta(SQLNamespaceMeta):
     database_name: str
 
     @classmethod
-    def get_fallback_secret_fields(cls) -> Set[Tuple]:
+    def get_fallback_secret_fields(cls) -> Set[Tuple[str, str]]:
         """
         The required connection config secrets when namespace metadata is missing.
         For Snowflake, database_name and schema_name are required.

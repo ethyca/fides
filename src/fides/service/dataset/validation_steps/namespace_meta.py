@@ -1,3 +1,5 @@
+from pydantic import ValidationError as PydanticValidationError
+
 import fides.api.schemas.namespace_meta  # noqa: F401  — triggers __init_subclass__ registration
 from fides.api.common_exceptions import ValidationError
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
@@ -65,7 +67,7 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
 
             try:
                 namespace_meta_class(**namespace_meta)
-            except Exception as e:
+            except PydanticValidationError as e:
                 raise ValidationError(
                     f"Invalid namespace metadata for {connection_type}: {str(e)}"
                 )
