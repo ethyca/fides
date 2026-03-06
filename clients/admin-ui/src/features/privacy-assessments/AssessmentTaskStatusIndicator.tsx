@@ -178,7 +178,7 @@ export const AssessmentTaskStatusIndicator = ({
   }, [activeTask, hasLastError, lastCompletedDate, lastAssessmentAgo]);
 
   if (!inlineContent) {
-    return null;
+    return notificationHolder;
   }
 
   return (
