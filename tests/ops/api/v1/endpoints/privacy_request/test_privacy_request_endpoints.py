@@ -79,7 +79,7 @@ from fides.api.v1.endpoints.privacy_request_endpoints import (
     EMBEDDED_EXECUTION_LOG_LIMIT,
     validate_manual_input,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_TEST,
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -95,7 +95,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_DATASETS,
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,

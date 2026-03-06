@@ -41,8 +41,8 @@ from fides.api.util.logger import Pii
 from fides.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
-from fides.common.api import scope_registry as scopes
-from fides.common.api.v1 import urn_registry as urls
+from fides.common import scope_registry as scopes
+from fides.common import urn_registry as urls
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (

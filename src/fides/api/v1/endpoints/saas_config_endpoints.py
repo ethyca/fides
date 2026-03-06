@@ -55,14 +55,14 @@ from fides.api.util.saas_util import (
     load_config_from_string,
     validate_connector_param_restrictions,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,

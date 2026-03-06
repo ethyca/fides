@@ -19,8 +19,8 @@ from fides.api.util.connection_type import (
     get_connection_type_secret_schema,
     get_connection_types,
 )
-from fides.common.api.scope_registry import CONNECTION_TYPE_READ
-from fides.common.api.v1.urn_registry import (
+from fides.common.scope_registry import CONNECTION_TYPE_READ
+from fides.common.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     V1_URL_PREFIX,

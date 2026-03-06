@@ -26,8 +26,8 @@ from fides.api.util.memory_watchdog import (
     get_memory_watchdog_enabled,
 )
 from fides.api.v1.endpoints import API_PREFIX
-from fides.common.api import scope_registry
-from fides.common.api.scope_registry import BACKFILL_EXEC, HEAP_DUMP_EXEC
+from fides.common import scope_registry
+from fides.common.scope_registry import BACKFILL_EXEC, HEAP_DUMP_EXEC
 from fides.config import CONFIG
 
 ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])

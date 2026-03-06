@@ -50,12 +50,12 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     update_connection_secrets,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_BY_KEY,
     CONNECTION_OAUTH,
     CONNECTION_SECRETS,

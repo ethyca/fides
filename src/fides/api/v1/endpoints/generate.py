@@ -17,7 +17,7 @@ from fides.api.models.sql_models import sql_model_map  # type: ignore[attr-defin
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
 from fides.api.v1.endpoints import API_PREFIX
-from fides.common.api import scope_registry
+from fides.common import scope_registry
 from fides.connectors.models import (
     AWSConfig,
     BigQueryConfig,

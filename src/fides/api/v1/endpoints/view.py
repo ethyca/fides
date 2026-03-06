@@ -11,7 +11,7 @@ from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import Evaluation  # type: ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
-from fides.common.api import scope_registry
+from fides.common import scope_registry
 
 router = APIRouter(
     tags=["View"],
