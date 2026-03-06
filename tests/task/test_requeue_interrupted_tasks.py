@@ -14,6 +14,7 @@ from fides.api.service.privacy_request.request_service import (
     requeue_interrupted_tasks,
 )
 from fides.api.util.cache import (
+    cache_task_tracking_key,
     get_cache,
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
