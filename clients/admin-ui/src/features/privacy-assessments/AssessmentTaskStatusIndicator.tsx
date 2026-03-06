@@ -1,13 +1,5 @@
 import classNames from "classnames";
-import {
-  Button,
-  Flex,
-  Icons,
-  notification,
-  Popover,
-  Spin,
-  Text,
-} from "fidesui";
+import { Flex, Icons, notification, Popover, Spin, Text } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -77,6 +69,21 @@ export const AssessmentTaskStatusIndicator = ({
     size: 100,
   });
 
+  const completedCount = useMemo(
+    () =>
+      (tasksData?.items ?? []).filter((t) => t.status === TaskStatus.COMPLETE)
+        .length,
+    [tasksData],
+  );
+
+  const prevCompletedCountRef = useRef(completedCount);
+  useEffect(() => {
+    if (completedCount > prevCompletedCountRef.current) {
+      onTaskFinish?.();
+    }
+    prevCompletedCountRef.current = completedCount;
+  }, [completedCount, onTaskFinish]);
+
   const templateNamesMap = useMemo(() => {
     const templates = templatesData?.items ?? [];
     return Object.fromEntries(
@@ -108,22 +115,11 @@ export const AssessmentTaskStatusIndicator = ({
 
       notificationApi.success({
         message: "New assessment results are available",
-        btn: onTaskFinish ? (
-          <Button
-            size="small"
-            onClick={() => {
-              onTaskFinish();
-              notificationApi.destroy();
-            }}
-          >
-            Reload results
-          </Button>
-        ) : undefined,
         duration: 0,
       });
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
+  }, [activeTask, lastCompletedTask, notificationApi]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;

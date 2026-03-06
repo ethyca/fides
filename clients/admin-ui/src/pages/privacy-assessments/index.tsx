@@ -84,7 +84,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
         rightContent={
           <Space align="center">
             <AssessmentTaskStatusIndicator
-              onTaskFinish={() => refetch()}
+              onTaskFinish={refetch}
               className="mr-2"
             />
             {hasAssessments && (
