@@ -315,3 +315,11 @@ export const nFormatter = (num: number = 0, digits: number = 0) =>
     notation: "compact",
     maximumFractionDigits: digits,
   }).format(num);
+
+/**
+ * Humanizes a field name that may be a bare key ("data_use") or a dotted path
+ * ("privacy_declaration.data_use") from the backend. Dots and underscores are
+ * replaced with spaces and the result is sentence-cased.
+ */
+export const formatFieldName = (raw: string): string =>
+  sentenceCase(raw.replace(/\./g, " ").replace(/_/g, " "));

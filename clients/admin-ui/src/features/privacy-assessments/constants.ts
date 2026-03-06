@@ -68,13 +68,3 @@ export const SOURCE_TYPE_LABELS: Record<string, string> = {
   data_flow: "Data flow",
   connection: "Connection",
 };
-
-export const FIELD_NAME_LABELS: Record<string, string> = {
-  name: "Name",
-  description: "Description",
-  data_use: "Data use",
-  data_categories: "Data categories",
-  data_subjects: "Data subjects",
-  retention_period: "Retention period",
-  third_parties: "Third parties",
-};
