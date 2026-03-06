@@ -585,9 +585,10 @@ class System(Base, FidesBase):
     connection_configs = relationship(
         "ConnectionConfig",
         secondary="system_connection_config_link",
-        uselist=False,
+        uselist=True,
         viewonly=True,
         lazy="selectin",
+        order_by="ConnectionConfig.created_at",
     )
 
     assets = relationship(

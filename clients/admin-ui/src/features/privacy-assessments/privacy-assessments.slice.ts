@@ -6,6 +6,8 @@ import type {
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentTaskPage,
+  AssessmentTaskResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
   CreateAssessmentTaskResponse,
@@ -67,8 +69,29 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "plus/privacy-assessments",
         method: "POST",
-        body,
+        body: { high_risk_only: false, ...body }, // Temporary fix to ensure all assessments are generated
       }),
+      invalidatesTags: ["Privacy Assessment Tasks"],
+    }),
+
+    getAssessmentTasks: build.query<
+      AssessmentTaskPage,
+      { page?: number; size?: number; status?: string } | void
+    >({
+      query: (params) => ({
+        url: "plus/privacy-assessments/tasks",
+        params: params ?? undefined,
+      }),
+      providesTags: ["Privacy Assessment Tasks"],
+    }),
+
+    getAssessmentTask: build.query<AssessmentTaskResponse, string>({
+      query: (taskId) => ({
+        url: `plus/privacy-assessments/tasks/${taskId}`,
+      }),
+      providesTags: (_result, _error, taskId) => [
+        { type: "Privacy Assessment Tasks", id: taskId },
+      ],
     }),
 
     updatePrivacyAssessment: build.mutation<
@@ -99,7 +122,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       { id: string; questionId: string; body: UpdateAnswerRequest }
     >({
       query: ({ id, questionId, body }) => ({
-        url: `plus/privacy-assessments/${id}/answers/${questionId}`,
+        url: `plus/privacy-assessments/${id}/questions/${questionId}`,
         method: "PUT",
         body,
       }),
@@ -115,7 +138,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       { id: string; body: BulkUpdateAnswersRequest }
     >({
       query: ({ id, body }) => ({
-        url: `plus/privacy-assessments/${id}/answers`,
+        url: `plus/privacy-assessments/${id}/questions`,
         method: "PUT",
         body,
       }),
@@ -225,6 +248,8 @@ export const {
   useGetAssessmentConfigQuery,
   useUpdateAssessmentConfigMutation,
   useGetAssessmentConfigDefaultsQuery,
+  // Assessment Tasks
+  useGetAssessmentTasksQuery,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };
