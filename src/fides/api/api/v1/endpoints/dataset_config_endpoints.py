@@ -21,7 +21,7 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.api import deps
@@ -127,7 +127,7 @@ def validate_dataset(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -219,7 +219,7 @@ def patch_dataset_configs(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -251,7 +251,7 @@ def patch_datasets(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -299,7 +299,7 @@ async def patch_yaml_datasets(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Dataset validation failed: {str(e)}",
         )
 

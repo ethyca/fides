@@ -825,7 +825,9 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         mock_redis_lock.return_value.__enter__.return_value = True
         mock_get_queue_tasks.return_value = []
         mock_tasks_in_flight.return_value = False
-        mock_get_request_tasks.return_value = {"request_task_id_1": "subtask_id"}
+        mock_get_request_tasks.return_value = [
+            ("request_task_id_1", "subtask_id", ExecutionLogStatus.in_processing, False)
+        ]
 
         with mock.patch.object(
             requeue_interrupted_tasks, "get_new_session"

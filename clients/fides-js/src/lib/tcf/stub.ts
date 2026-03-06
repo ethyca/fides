@@ -109,7 +109,8 @@ export const makeStub = ({
       window.__tcfapi(
         payload.command,
         payload.version,
-        (retValue: any, success: boolean) => {
+        (...args: unknown[]) => {
+          const [retValue, success] = args;
           const returnMsg = {
             __tcfapiReturn: {
               returnValue: retValue,
@@ -149,9 +150,10 @@ export const makeStub = ({
     currentWindow.addEventListener("message", postMessageEventHandler, false);
 
     if (currentWindow.Fides.options.debug) {
-      currentWindow?.__tcfapi?.("addEventListener", 2, (data) =>
-        fidesDebugger("TCF API Updated", data, data.eventStatus),
-      );
+      currentWindow?.__tcfapi?.("addEventListener", 2, (...args: unknown[]) => {
+        const data = args[0] as Record<string, unknown> | undefined;
+        fidesDebugger("TCF API Updated", data, data?.eventStatus);
+      });
     }
   }
 };

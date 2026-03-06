@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Generator, List, Optional, Set
 
 from httpx import AsyncClient
 from loguru import logger
@@ -12,6 +12,7 @@ from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.privacy_request import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
     RequestTask,
@@ -448,22 +449,52 @@ def _handle_privacy_request_requeue(
 
 def _get_request_tasks_in_progress(
     db: Session, privacy_request_id: str
-) -> Dict[str, Optional[str]]:
-    """Get a mapping of {request_task_id: celery_id} for in-progress request tasks."""
-    rows = (
-        db.query(RequestTask.id, RequestTask.celery_id)
-        .filter(RequestTask.privacy_request_id == privacy_request_id)
-        .filter(
-            RequestTask.status.in_(
-                [
-                    ExecutionLogStatus.in_processing,
-                    ExecutionLogStatus.pending,
-                ]
-            )
+) -> list[tuple[str, Optional[str], ExecutionLogStatus, bool]]:
+    """Get (task_id, celery_id, status, awaiting_upstream) for in-progress request tasks.
+
+    Reads celery_id from the DB column (durable) and computes upstream
+    completion from a single query rather than per-task DB lookups.
+    """
+    all_tasks = (
+        db.query(
+            RequestTask.id,
+            RequestTask.celery_id,
+            RequestTask.status,
+            RequestTask.collection_address,
+            RequestTask.action_type,
+            RequestTask.upstream_tasks,
         )
+        .filter(RequestTask.privacy_request_id == privacy_request_id)
         .all()
     )
-    return {task_id: celery_id for task_id, celery_id in rows}
+
+    # Build lookup for upstream completion checks
+    status_by_address: dict[tuple[str, str], ExecutionLogStatus] = {
+        (task.collection_address, task.action_type): task.status for task in all_tasks
+    }
+
+    results: list[tuple[str, Optional[str], ExecutionLogStatus, bool]] = []
+    for task in all_tasks:
+        if task.status not in (
+            ExecutionLogStatus.in_processing,
+            ExecutionLogStatus.pending,
+        ):
+            continue
+        awaiting_upstream = False
+        if task.status == ExecutionLogStatus.pending:
+            upstream_addrs = task.upstream_tasks or []
+            if upstream_addrs:
+                # Mirrors RequestTask.upstream_tasks_complete() — a missing
+                # upstream record returns None from the lookup, which is not
+                # in COMPLETED_EXECUTION_LOG_STATUSES, so it's treated as
+                # incomplete (same safe default as the model method).
+                awaiting_upstream = any(
+                    status_by_address.get((addr, task.action_type))
+                    not in COMPLETED_EXECUTION_LOG_STATUSES
+                    for addr in upstream_addrs
+                )
+        results.append((task.id, task.celery_id, task.status, awaiting_upstream))
+    return results
 
 
 def _has_async_tasks_awaiting_external_completion(
@@ -577,9 +608,14 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         db, privacy_request.id
                     )
 
-                    for request_task_id, subtask_celery_id in tasks_in_progress.items():
+                    for (
+                        request_task_id,
+                        subtask_celery_id,
+                        task_status,
+                        awaiting_upstream,
+                    ) in tasks_in_progress:
                         if not subtask_celery_id:
-                            # Same NULL logic: treat as interrupted and requeue,
+                            # NULL celery_id: treat as interrupted and requeue,
                             # unless the request is waiting on external input.
                             if (
                                 privacy_request.status
@@ -592,6 +628,21 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 )
                                 should_requeue = False
                                 break
+
+                            # A pending task that hasn't been dispatched to Celery yet will
+                            # never have a celery_id — this is not a stuck state. Only pending
+                            # tasks can legitimately lack a celery_id; in_processing tasks
+                            # without one are genuinely stuck and should be canceled below.
+                            if (
+                                task_status == ExecutionLogStatus.pending
+                                and awaiting_upstream
+                            ):
+                                logger.debug(
+                                    f"Request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is pending and "
+                                    f"waiting for upstream tasks to complete - not stuck"
+                                )
+                                continue
 
                             if _has_async_tasks_awaiting_external_completion(
                                 db, privacy_request.id

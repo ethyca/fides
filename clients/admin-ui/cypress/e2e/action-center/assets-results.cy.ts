@@ -535,7 +535,7 @@ describe("Action center Asset Results", () => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
-        cy.get(".ant-tooltip-inner").should(
+        cy.getAntTooltip().should(
           "contain",
           "One or more assets were detected with compliance issues",
         );
@@ -697,7 +697,7 @@ describe("Action center Asset Results", () => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
-        cy.get(".ant-tooltip-inner").should(
+        cy.getAntTooltip().should(
           "contain",
           "One or more assets were detected with compliance issues",
         );
