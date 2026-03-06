@@ -107,14 +107,9 @@ class TestCheckAndCreateObjectsMigrationKeyFiltering:
         assert result == {"ix_test_index": "created"}
 
     @patch("fides.api.migrations.post_upgrade_index_creation.get_registered_index_keys")
-    @patch("fides.api.migrations.post_upgrade_index_creation.check_object_exists")
-    @patch("fides.api.migrations.post_upgrade_index_creation.create_object")
-    def test_processes_entry_without_migration_key(
-        self, mock_create_object, mock_check_object_exists, mock_get_registered_keys
-    ):
-        """Entry with no migration_key is always processed (backward compat)."""
+    def test_raises_on_entry_without_migration_key(self, mock_get_registered_keys):
+        """Entry with no migration_key raises ValueError."""
         mock_get_registered_keys.return_value = set()
-        mock_check_object_exists.return_value = False
         mock_lock = MagicMock()
 
         table_map = {
@@ -128,8 +123,5 @@ class TestCheckAndCreateObjectsMigrationKeyFiltering:
             ]
         }
 
-        result = check_and_create_objects(MagicMock(), table_map, mock_lock)
-
-        mock_check_object_exists.assert_called_once()
-        mock_create_object.assert_called_once()
-        assert result == {"ix_legacy_index": "created"}
+        with pytest.raises(ValueError, match="missing a migration_key"):
+            check_and_create_objects(MagicMock(), table_map, mock_lock)

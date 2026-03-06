@@ -421,17 +421,17 @@ def post_upgrade_index_creation_task() -> None:
 
 
 def initiate_post_upgrade_index_creation() -> None:
-    """Initiates scheduler to migrate all non-credential tables using a bcrypt hash to use a SHA-256 hash"""
+    """Initiates scheduler for post-upgrade deferred index and constraint creation."""
 
     if CONFIG.test_mode:
         logger.debug("Skipping post upgrade index creation in test mode")
         return
 
     assert scheduler.running, (
-        "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+        "Scheduler is not running! Cannot run post-upgrade index creation."
     )
 
-    logger.info("Initiating scheduler for hash migration")
+    logger.info("Initiating scheduler for post-upgrade index creation")
     scheduler.add_job(
         func=post_upgrade_index_creation_task,
         id=POST_UPGRADE_INDEX_CREATION,
