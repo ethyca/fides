@@ -16,6 +16,7 @@ import {
 } from "fidesui";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import { formatDate } from "~/features/common/utils";
 
 import styles from "./AssessmentCard.module.scss";
 import {
@@ -58,6 +59,10 @@ export const AssessmentCard = ({
   const riskLabel = riskLevel ? RISK_LEVEL_LABELS[riskLevel] : "N/A";
   const statusLabel = status ? ASSESSMENT_STATUS_LABELS[status] : "N/A";
   const isComplete = completeness === 100;
+  const completionDate =
+    isComplete && assessment.updated_at
+      ? `Completed on ${formatDate(assessment.updated_at, { showTime: false })}`
+      : statusLabel;
 
   return (
     <Card
@@ -65,11 +70,10 @@ export const AssessmentCard = ({
         [styles.cardComplete]: isComplete,
       })}
     >
-      <Flex vertical gap="small" justify="space-between">
-        <Title level={5}>{assessment.name}</Title>
-        <Text type="secondary" size="sm">
-          System: {assessment.system_name ?? ""}
-        </Text>
+      <Flex vertical gap="small" justify="space-between" style={{ flex: 1 }}>
+        <Title level={5} style={{ marginBottom: "auto" }}>
+          {assessment.name}
+        </Title>
         <Text type="secondary" size="sm" className={styles.textWithTags}>
           Processing{" "}
           {(assessment.data_categories ?? []).length > 0 ? (
@@ -91,33 +95,40 @@ export const AssessmentCard = ({
           />
         </Text>
         {riskLevel && (
-          <Tag color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
-            {`${riskLabel} risk`}
-          </Tag>
+          <div>
+            <Tag color={RISK_TAG_COLORS[riskLevel] ?? CUSTOM_TAG_COLOR.DEFAULT}>
+              {`${riskLabel} risk`}
+            </Tag>
+          </div>
         )}
 
         <Divider className="my-3" />
         <div>
           {isComplete ? (
             <Flex
+              justify="space-between"
               align="center"
-              gap="middle"
               className={styles.completeContainer}
             >
-              <Avatar
-                shape="circle"
-                size={28}
-                icon={<Icons.Checkmark size={14} />}
-                style={{ backgroundColor: "var(--fidesui-success)" }}
-              />
-              <div>
-                <Text strong type="success" size="sm">
-                  Assessment complete
-                </Text>
-                <Paragraph type="secondary" size="sm">
-                  {statusLabel}
-                </Paragraph>
-              </div>
+              <Flex align="center" gap="middle">
+                <Avatar
+                  shape="circle"
+                  size={28}
+                  icon={<Icons.Checkmark size={14} />}
+                  style={{ backgroundColor: "var(--fidesui-success)" }}
+                />
+                <div>
+                  <Text strong type="success" size="sm">
+                    Assessment complete
+                  </Text>
+                  <Paragraph type="secondary" size="sm">
+                    {completionDate}
+                  </Paragraph>
+                </div>
+              </Flex>
+              <Button type="link" className="p-0" onClick={onClick}>
+                View
+              </Button>
             </Flex>
           ) : (
             <>

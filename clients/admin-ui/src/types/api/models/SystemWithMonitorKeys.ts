@@ -179,7 +179,7 @@ export type SystemWithMonitorKeys = {
    * Describes the returned schema for a ConnectionConfiguration.
    *
    */
-  connection_configs: ConnectionConfigurationResponse | null;
+  connection_configs: Array<ConnectionConfigurationResponse> | null;
   /**
    * System managers of the current system
    */

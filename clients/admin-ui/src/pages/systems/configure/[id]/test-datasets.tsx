@@ -27,7 +27,7 @@ const TestDatasetPage: NextPage = () => {
     skip: !systemId,
   });
 
-  const connectionKey = system?.connection_configs?.key || "";
+  const connectionKey = system?.connection_configs?.[0]?.key || "";
 
   if (isLoading) {
     return (
