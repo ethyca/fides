@@ -849,7 +849,7 @@ class ConnectionService:
         # first iteration would overwrite the row and corrupt the merge baseline for all
         # subsequent iterations.
         stored_dataset_template = SaasTemplateDataset.get_by(
-            self.db, field="connection_type", value=connector_type
+            self.db, field="connection_type", value=connector_type.lower()
         )
         stored_dataset_json_snapshot: Optional[dict] = (
             stored_dataset_template.dataset_json

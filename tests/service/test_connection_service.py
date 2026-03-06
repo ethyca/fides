@@ -1743,7 +1743,39 @@ class TestConnectionService:
             dataset_json=v1_stored,
         )
 
-        # v2 template adds a "products" collection (already present in _get_template_yaml)
+        # v2 template adds a new "orders" collection that was NOT in v1.
+        # Without the snapshot fix, the first iteration writes the v2 template
+        # back to SaasTemplateDataset. The second iteration then sees "orders"
+        # in the (now-updated) baseline but not in the customer dataset, and
+        # interprets it as a customer deletion — so "orders" never lands.
+        v2_template_yaml = dedent(
+            """
+            dataset:
+            - fides_key: <instance_fides_key>
+              name: Template Dataset
+              description: Dataset from template
+              collections:
+              - name: products
+                fields:
+                - name: product_id
+                  data_categories: [user.unique_id]
+                  fides_meta:
+                    data_type: string
+                    primary_key: True
+                - name: customer_id
+                  data_categories: [user.preferences]
+                  fides_meta:
+                    data_type: integer
+              - name: orders
+                fields:
+                - name: order_id
+                  data_categories: [system.operations]
+                  fides_meta:
+                    data_type: string
+                    primary_key: True
+        """
+        ).strip()
+
         connector_template = ConnectorTemplate(
             config=dedent(
                 f"""
@@ -1763,7 +1795,7 @@ class TestConnectionService:
                   endpoints: []
             """
             ).strip(),
-            dataset=self._get_template_yaml(),
+            dataset=v2_template_yaml,
             human_readable="Multi Config Connector",
             authorization_required=False,
             supported_actions=[ActionType.access, ActionType.erasure],
@@ -1775,7 +1807,8 @@ class TestConnectionService:
             connector_template,
         )
 
-        # Both configs must reflect the v2 template update
+        # Both configs must reflect the v2 template update — specifically,
+        # the new "orders" collection must appear on both configs.
         for suffix in ("alpha", "beta"):
             instance_key = f"multi_config_{suffix}"
             dataset_config = DatasetConfig.filter(
@@ -1789,6 +1822,23 @@ class TestConnectionService:
             assert ctl_dataset is not None
             collection_names = {c["name"] for c in ctl_dataset.collections}
             assert "products" in collection_names, (
-                f"Template update did not land on {instance_key}: "
+                f"Existing collection missing on {instance_key}: "
                 f"collections={collection_names}"
             )
+            assert "orders" in collection_names, (
+                f"New template collection did not land on {instance_key}: "
+                f"collections={collection_names}"
+            )
+
+        # Clean up created test resources
+        for suffix in ("alpha", "beta"):
+            connection_config = ConnectionConfig.get_by(
+                db, field="key", value=f"multi_config_connection_{suffix}"
+            )
+            if connection_config:
+                connection_config.delete(db)
+        stored_template = SaasTemplateDataset.get_by(
+            db, field="connection_type", value=connector_type
+        )
+        if stored_template:
+            stored_template.delete(db)
