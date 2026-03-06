@@ -1,4 +1,5 @@
-import type { AssessmentTaskResponse } from "./types";
+import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
+import type { AssessmentTaskResponse, EvidenceItem } from "./types";
 
 export const formatSystems = (task: AssessmentTaskResponse | null): string => {
   if (!task) {
@@ -28,4 +29,36 @@ export const formatTypes = (
     return "—";
   }
   return assessmentTypes.map((t) => namesMap?.[t] ?? t).join(", ");
+};
+
+export const deduplicateEvidence = (items: EvidenceItem[]): EvidenceItem[] => {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = `${item.source_type}|${item.source_key}|${item.field_name}|${item.value}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
+export const filterEvidence = (
+  items: EvidenceItem[],
+  query: string,
+): EvidenceItem[] => {
+  if (!query.trim()) {
+    return items;
+  }
+  const lower = query.toLowerCase();
+  return items.filter(
+    (item) =>
+      item.value.toLowerCase().includes(lower) ||
+      (SOURCE_TYPE_LABELS[item.source_type] ?? item.source_type)
+        .toLowerCase()
+        .includes(lower) ||
+      (FIELD_NAME_LABELS[item.field_name] ?? item.field_name.replace(/_/g, " "))
+        .toLowerCase()
+        .includes(lower),
+  );
 };

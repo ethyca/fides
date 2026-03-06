@@ -11,7 +11,7 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -19,6 +19,7 @@ import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
+import { EvidenceDrawer } from "./EvidenceDrawer";
 import {
   useCreateQuestionnaireReminderMutation,
   useGetAssessmentConfigQuery,
@@ -28,7 +29,12 @@ import { QuestionGroupPanel } from "./QuestionGroupPanel";
 import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { RequestInputModal } from "./RequestInputModal";
 import { SlackIcon } from "./SlackIcon";
-import { PrivacyAssessmentDetailResponse } from "./types";
+import {
+  EvidenceItem,
+  PrivacyAssessmentDetailResponse,
+  QuestionGroup,
+} from "./types";
+import { deduplicateEvidence, filterEvidence } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -39,7 +45,43 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const { getDataCategoryDisplayName } = useTaxonomies();
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
+  const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
   const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
+
+  const focusedGroup = useMemo<QuestionGroup | undefined>(
+    () =>
+      focusedGroupId
+        ? (assessment.question_groups ?? []).find(
+            (g) => g.id === focusedGroupId,
+          )
+        : undefined,
+    [focusedGroupId, assessment.question_groups],
+  );
+
+  const focusedGroupEvidence = useMemo<EvidenceItem[]>(
+    () =>
+      focusedGroup
+        ? deduplicateEvidence(focusedGroup.questions.flatMap((q) => q.evidence))
+        : [],
+    [focusedGroup],
+  );
+
+  const filteredEvidence = useMemo(
+    () => filterEvidence(focusedGroupEvidence, evidenceSearchQuery),
+    [focusedGroupEvidence, evidenceSearchQuery],
+  );
+
+  const handleViewEvidence = useCallback((groupId: string) => {
+    setFocusedGroupId(groupId);
+    setDrawerOpen(true);
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    setEvidenceSearchQuery("");
+  }, []);
 
   const { data: config } = useGetAssessmentConfigQuery();
   const [createReminder, { isLoading: isSendingReminder }] =
@@ -91,6 +133,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           <QuestionGroupPanel
             group={group}
             isExpanded={expandedKeys.includes(group.id)}
+            onViewEvidence={() => handleViewEvidence(group.id)}
           />
         ),
         children: (
@@ -105,7 +148,12 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           </Space>
         ),
       })),
-    [assessment.question_groups, assessment.id, expandedKeys],
+    [
+      assessment.question_groups,
+      assessment.id,
+      expandedKeys,
+      handleViewEvidence,
+    ],
   );
 
   return (
@@ -188,6 +236,15 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         size="large"
       />
 
+      <EvidenceDrawer
+        open={drawerOpen}
+        onClose={handleCloseDrawer}
+        focusedGroupId={focusedGroupId}
+        group={focusedGroup}
+        evidence={filteredEvidence}
+        searchQuery={evidenceSearchQuery}
+        onSearchChange={setEvidenceSearchQuery}
+      />
       {slackChannelName && (
         <RequestInputModal
           open={isRequestInputOpen}
