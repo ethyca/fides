@@ -22,11 +22,9 @@ const PrivacyAssessmentsPage: NextPage = () => {
     data: assessmentsData,
     isLoading,
     isError,
-    refetch: refetchAssessments,
   } = useGetPrivacyAssessmentsQuery({ page: 1, size: 100 });
 
   const assessments = assessmentsData?.items ?? [];
-
 
   const { data: templatesData } = useGetAssessmentTemplatesQuery({
     page: 1,
@@ -84,10 +82,7 @@ const PrivacyAssessmentsPage: NextPage = () => {
         heading="Privacy assessments"
         rightContent={
           <Space align="center">
-            <AssessmentTaskStatusIndicator
-              onTaskFinish={refetchAssessments}
-              className="mr-2"
-            />
+            <AssessmentTaskStatusIndicator className="mr-2" />
             {hasAssessments && (
               <Button type="primary" onClick={() => setGenerateModalOpen(true)}>
                 Generate assessments

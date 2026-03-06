@@ -140,6 +140,7 @@ export const GenerateAssessmentsModal = ({
           >
             <Select
               mode="multiple"
+              aria-label="Assessment templates"
               placeholder="Select one or more templates"
               loading={isLoadingTemplates}
               onChange={(values: string[]) => setSelectedTemplateIds(values)}
