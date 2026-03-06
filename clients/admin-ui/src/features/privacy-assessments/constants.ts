@@ -60,7 +60,7 @@ export const FREQUENCY_OPTIONS = [
 
 export const SOURCE_TYPE_LABELS: Record<string, string> = {
   system: "System",
-  privacy_declaration: "Privacy declaration",
+  privacy_declaration: "Data uses",
   data_category: "Data category",
   data_use: "Data use",
   data_subject: "Data subject",
