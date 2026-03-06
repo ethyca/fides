@@ -214,7 +214,6 @@ class AuthenticatedClient:
         )
         ignore_error = should_ignore_error(
             status_code=response.status_code, ignore_errors=ignore_errors
-
         )
         context_logger = logger.bind(
             **request_details(prepared_request, response, ignore_error)
