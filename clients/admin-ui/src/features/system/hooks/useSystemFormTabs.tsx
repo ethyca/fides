@@ -263,13 +263,13 @@ const useSystemFormTabs = ({
             </Text>
           </Box>
           <ConnectionForm
-            connectionConfig={activeSystem.connection_configs}
+            connectionConfig={activeSystem.connection_configs?.[0] ?? null}
             systemFidesKey={activeSystem.fides_key}
           />
-          {activeSystem.connection_configs?.key && (
+          {activeSystem.connection_configs?.[0]?.key && (
             <ConsentAutomationForm
               m={6}
-              connectionKey={activeSystem.connection_configs?.key}
+              connectionKey={activeSystem.connection_configs?.[0]?.key}
             />
           )}
         </Box>
