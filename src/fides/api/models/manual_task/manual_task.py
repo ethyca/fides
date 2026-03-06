@@ -764,7 +764,7 @@ class ManualTaskSubmission(Base):
     def delete(self, db: Session) -> None:
         """Delete the submission and all associated attachments."""
         from fides.api.models.attachment import AttachmentReferenceType
-        from fides.service.attachment_service import AttachmentService
+        from fides.service.attachment.attachment_service import AttachmentService
 
         # Delete attachments associated with this submission
         AttachmentService(db).delete_for_reference(

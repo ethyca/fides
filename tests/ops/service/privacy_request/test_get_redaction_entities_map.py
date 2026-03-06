@@ -14,10 +14,10 @@ from fides.api.models.privacy_request_redaction_pattern import (
     PrivacyRequestRedactionPattern,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
+from fides.service.privacy_request.dsr_package.dsr_report_builder import (
     DSRReportBuilder,
 )
-from fides.api.service.privacy_request.dsr_package.utils import (
+from fides.service.privacy_request.dsr_package.utils import (
     get_redaction_entities_map,
     get_redaction_entities_map_db,
 )

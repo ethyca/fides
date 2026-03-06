@@ -15,7 +15,7 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.api.service.storage.providers import (
+from fides.service.storage.providers import (
     GCSStorageProvider,
     LocalStorageProvider,
     S3StorageProvider,

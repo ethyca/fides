@@ -868,7 +868,7 @@ class TestGraphTaskAffectedConsentSystems:
         return GraphTask(task_resources)
 
     @mock.patch(
-        "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+        "fides.connectors.saas.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_skipped_consent_task_for_connector(
         self,
@@ -918,7 +918,7 @@ class TestGraphTaskAffectedConsentSystems:
 
     @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
     @mock.patch(
-        "fides.api.service.connectors.saas_connector.SaaSConnector.run_consent_request"
+        "fides.connectors.saas.saas_connector.SaaSConnector.run_consent_request"
     )
     def test_errored_consent_task_for_connector_no_relevant_preferences(
         self,
@@ -1250,7 +1250,7 @@ class TestTraversalOnlyBehavior:
         ],
     )
     @mock.patch("fides.api.task.graph_task.GraphTask.access_results_post_processing")
-    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.retrieve_data")
+    @mock.patch("fides.connectors.sql_connector.SQLConnector.retrieve_data")
     def test_access_request_traversal_only_skips_post_processing(
         self,
         mock_retrieve,
@@ -1272,7 +1272,7 @@ class TestTraversalOnlyBehavior:
         else:
             mock_post_processing.assert_called_once()
 
-    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.retrieve_data")
+    @mock.patch("fides.connectors.sql_connector.SQLConnector.retrieve_data")
     def test_access_request_traversal_only_caches_access_data(
         self,
         mock_retrieve,
@@ -1293,7 +1293,7 @@ class TestTraversalOnlyBehavior:
             (PropertyScope.IN_SCOPE, 1),
         ],
     )
-    @mock.patch("fides.api.service.connectors.sql_connector.SQLConnector.mask_data")
+    @mock.patch("fides.connectors.sql_connector.SQLConnector.mask_data")
     def test_erasure_request_traversal_only_skips_masking(
         self,
         mock_mask,

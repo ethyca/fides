@@ -14,8 +14,6 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
-from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
@@ -23,6 +21,8 @@ from fides.api.util.saas_util import (
     PRIVACY_REQUEST_OBJECT,
 )
 from fides.config import CONFIG
+from fides.connectors.saas.saas_connector import SaaSConnector
+from fides.connectors.saas.saas_query_config import SaaSQueryConfig
 from tests.ops.graph.graph_test_util import generate_node
 
 

@@ -4,7 +4,7 @@ import pytest
 
 from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
-from fides.api.service.privacy_request.attachment_handling import (
+from fides.service.privacy_request.attachment_handling import (
     AttachmentData,
     get_attachments_content,
     process_attachments_for_upload,
@@ -69,7 +69,7 @@ class TestGetAttachmentsContent:
         attachment.file_key = f"{attachment.id}/{attachment.file_name}"
         return attachment
 
-    @patch("fides.api.service.privacy_request.attachment_handling.AttachmentService")
+    @patch("fides.service.privacy_request.attachment_handling.AttachmentService")
     def test_get_attachments_content_success(
         self, mock_attachment_service, mock_attachment
     ):
@@ -102,7 +102,7 @@ class TestGetAttachmentsContent:
 
         assert len(results) == 0
 
-    @patch("fides.api.service.privacy_request.attachment_handling.AttachmentService")
+    @patch("fides.service.privacy_request.attachment_handling.AttachmentService")
     def test_get_attachments_content_error_handling(
         self, mock_attachment_service, mock_attachment
     ):
@@ -116,7 +116,7 @@ class TestGetAttachmentsContent:
 
         assert len(results) == 0
 
-    @patch("fides.api.service.privacy_request.attachment_handling.AttachmentService")
+    @patch("fides.service.privacy_request.attachment_handling.AttachmentService")
     def test_get_attachments_content_missing_url(
         self, mock_attachment_service, mock_attachment
     ):

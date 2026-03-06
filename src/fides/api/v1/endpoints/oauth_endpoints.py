@@ -27,12 +27,6 @@ from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
 from fides.api.schemas.client import ClientCreatedResponse
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
-from fides.api.service.authentication.authentication_strategy import (
-    AuthenticationStrategy,
-)
-from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
-    OAuth2AuthorizationCodeAuthenticationStrategy,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import connection_status
 from fides.api.util.rate_limit import fides_limiter
@@ -59,6 +53,12 @@ from fides.common.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
+from fides.connectors.saas.strategies.authentication.authentication_strategy import (
+    AuthenticationStrategy,
+)
+from fides.connectors.saas.strategies.authentication.authentication_strategy_oauth2_authorization_code import (
+    OAuth2AuthorizationCodeAuthenticationStrategy,
+)
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 

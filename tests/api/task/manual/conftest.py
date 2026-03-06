@@ -52,7 +52,7 @@ from fides.api.task.manual.manual_task_utils import (
     get_manual_task_for_connection_config,
 )
 from fides.api.task.task_resources import TaskResources
-from fides.service.attachment_service import AttachmentService
+from fides.service.attachment.attachment_service import AttachmentService
 
 # =============================================================================
 # Policy Fixtures

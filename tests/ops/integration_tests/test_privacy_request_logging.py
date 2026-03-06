@@ -28,7 +28,7 @@ class TestPrivacyRequestLogging:
     @pytest.fixture
     def mock_send(self) -> Generator:
         with mock.patch(
-            "fides.api.service.connectors.saas.authenticated_client.Session.send"
+            "fides.connectors.saas.authenticated_client.Session.send"
         ) as mock_send:
             mock_response = Response()
             mock_response.status_code = 401

@@ -10,7 +10,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.privacy_request.email_batch_service import (
+from fides.service.privacy_request.email_batch_service import (
     EmailExitState,
     send_email_batch,
 )
@@ -22,9 +22,9 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 @pytest.mark.integration
 @pytest.mark.asyncio
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -88,9 +88,9 @@ async def test_erasure_email(
 @pytest.mark.integration
 @pytest.mark.asyncio
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_no_messaging_config(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -207,9 +207,9 @@ async def test_erasure_email_no_updates_needed(
 @pytest.mark.integration
 @pytest.mark.asyncio
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_disabled_connector(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,
@@ -252,9 +252,9 @@ async def test_erasure_email_disabled_connector(
 @pytest.mark.integration
 @pytest.mark.asyncio
 @mock.patch(
-    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+    "fides.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
 )
-@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+@mock.patch("fides.service.messaging.message_dispatch_service._mailgun_dispatcher")
 async def test_erasure_email_unsupported_identity(
     mock_mailgun_dispatcher: Mock,
     mock_requeue_privacy_requests: Mock,

@@ -13,13 +13,13 @@ from fides.api.models.storage import StorageConfig
 from fides.api.schemas.masking.masking_configuration import (
     AesEncryptionMaskingConfiguration,
 )
-from fides.api.service.masking.strategy.masking_strategy_aes_encrypt import (
+from fides.api.util.data_category import DataCategory
+from fides.service.privacy_request.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
-from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
+from fides.service.privacy_request.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fides.api.util.data_category import DataCategory
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 

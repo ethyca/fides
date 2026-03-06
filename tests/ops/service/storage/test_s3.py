@@ -14,7 +14,8 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageSecrets,
 )
-from fides.api.service.storage.s3 import (
+from fides.api.util.aws_util import get_s3_client
+from fides.service.storage.s3 import (
     create_presigned_url_for_s3,
     generic_delete_from_s3,
     generic_retrieve_from_s3,
@@ -22,8 +23,7 @@ from fides.api.service.storage.s3 import (
     get_file_size,
     maybe_get_s3_client,
 )
-from fides.api.service.storage.util import LARGE_FILE_THRESHOLD, AllowedFileType
-from fides.api.util.aws_util import get_s3_client
+from fides.service.storage.util import LARGE_FILE_THRESHOLD, AllowedFileType
 
 TEST_DOCUMENT = b"This is a test document."
 TEST_SPOOLED_DOC = SpooledTemporaryFile()
@@ -127,7 +127,7 @@ class TestS3ClientInitialization:
         - Parameter validation error handling
         """
         monkeypatch.setattr(
-            "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+            "fides.service.storage.s3.get_s3_client", mock_get_s3_client
         )
 
         auth_method = "test_auth_method"

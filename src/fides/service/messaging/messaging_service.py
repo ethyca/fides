@@ -38,16 +38,16 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.messaging.message_dispatch_service import (
+from fides.api.tasks import MESSAGING_QUEUE_NAME
+from fides.api.util.logger import Pii
+from fides.config import FidesConfig
+from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     dispatch_message_task,
     get_email_messaging_config_service_type,
     message_send_enabled,
 )
-from fides.api.tasks import MESSAGING_QUEUE_NAME
-from fides.api.util.logger import Pii
-from fides.config import FidesConfig
-from fides.config.config_proxy import ConfigProxy
 
 
 class MessageDispatchParams(BaseModel):

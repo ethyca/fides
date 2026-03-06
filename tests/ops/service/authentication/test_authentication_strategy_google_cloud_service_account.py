@@ -7,10 +7,10 @@ from requests import Request
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.service.authentication.authentication_strategy import (
+from fides.connectors.saas.strategies.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
-from fides.api.service.authentication.authentication_strategy_google_cloud_service_account import (
+from fides.connectors.saas.strategies.authentication.authentication_strategy_google_cloud_service_account import (
     DEFAULT_SCOPES,
     DEFAULT_TOKEN_URI,
     TOKEN_REFRESH_BUFFER_SECONDS,
@@ -322,7 +322,7 @@ class TestTokenCaching:
         )
 
     @patch(
-        "fides.api.service.authentication.authentication_strategy_google_cloud_service_account.GoogleCloudServiceAccountAuthenticationStrategy._refresh_access_token"
+        "fides.connectors.saas.strategies.authentication.authentication_strategy_google_cloud_service_account.GoogleCloudServiceAccountAuthenticationStrategy._refresh_access_token"
     )
     def test_refreshes_token_when_close_to_expiration(
         self,
@@ -359,7 +359,7 @@ class TestTokenCaching:
         mock_refresh.assert_called_once()
 
     @patch(
-        "fides.api.service.authentication.authentication_strategy_google_cloud_service_account.GoogleCloudServiceAccountAuthenticationStrategy._refresh_access_token"
+        "fides.connectors.saas.strategies.authentication.authentication_strategy_google_cloud_service_account.GoogleCloudServiceAccountAuthenticationStrategy._refresh_access_token"
     )
     def test_refreshes_token_when_no_cached_token(
         self,

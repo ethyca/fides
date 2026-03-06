@@ -6,7 +6,7 @@ import pytest
 from moto import mock_aws
 
 from fides.api.schemas.storage.storage import AWSAuthMethod
-from fides.api.service.storage.streaming.s3.s3_storage_client import S3StorageClient
+from fides.service.storage.streaming.s3.s3_storage_client import S3StorageClient
 
 
 class TestS3StorageClient:
@@ -112,7 +112,7 @@ class TestS3StorageClient:
         assert "region" not in params
         assert "assume_role_arn" not in params
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     def test_get_transport_params_fallback_without_client(self, mock_get_s3_client):
         """Test transport params include credential parameters when no S3 client is available."""
         # Mock get_s3_client to return None (simulating failure)
@@ -134,7 +134,7 @@ class TestS3StorageClient:
         assert "region" in transport_params
         assert "assume_role_arn" not in transport_params
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     def test_get_transport_params_automatic_auth_failure(self, mock_get_s3_client):
         """Test that automatic authentication failures provide helpful error messages."""
         # Mock get_s3_client to raise an exception
@@ -171,9 +171,9 @@ class TestS3StorageClient:
         assert "region" not in params
         assert "assume_role_arn" not in params
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
-        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+        "fides.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
     )
     def test_generate_presigned_url_success(
         self, mock_create_presigned, mock_get_s3_client
@@ -199,7 +199,7 @@ class TestS3StorageClient:
             mock_s3_client, "test-bucket", "test-key", 3600
         )
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     def test_generate_presigned_url_failure(self, mock_get_s3_client):
         """Test presigned URL generation failure."""
         mock_get_s3_client.side_effect = Exception("S3 client error")
@@ -211,9 +211,9 @@ class TestS3StorageClient:
         with pytest.raises(Exception, match="S3 client error"):
             client.generate_presigned_url("test-bucket", "test-key")
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
-        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+        "fides.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
     )
     def test_generate_presigned_url_with_credentials_uses_secret_keys(
         self, mock_create_presigned, mock_get_s3_client
@@ -238,9 +238,9 @@ class TestS3StorageClient:
             AWSAuthMethod.SECRET_KEYS.value, secrets, None
         )
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
-        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+        "fides.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
     )
     def test_generate_presigned_url_with_assume_role_arn_secret_keys(
         self, mock_create_presigned, mock_get_s3_client
@@ -269,9 +269,9 @@ class TestS3StorageClient:
             "arn:aws:iam::123456789012:role/TestRole",
         )
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
-        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+        "fides.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
     )
     def test_generate_presigned_url_with_assume_role_arn_automatic(
         self, mock_create_presigned, mock_get_s3_client
@@ -299,9 +299,9 @@ class TestS3StorageClient:
             "arn:aws:iam::123456789012:role/TestRole",
         )
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
-        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+        "fides.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
     )
     def test_generate_presigned_url_without_assume_role_arn(
         self, mock_create_presigned, mock_get_s3_client
@@ -328,9 +328,9 @@ class TestS3StorageClient:
             AWSAuthMethod.SECRET_KEYS.value, secrets, None
         )
 
-    @patch("fides.api.service.storage.streaming.s3.s3_storage_client.get_s3_client")
+    @patch("fides.service.storage.streaming.s3.s3_storage_client.get_s3_client")
     @patch(
-        "fides.api.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
+        "fides.service.storage.streaming.s3.s3_storage_client.create_presigned_url_for_s3"
     )
     def test_generate_presigned_url_with_empty_assume_role_arn(
         self, mock_create_presigned, mock_get_s3_client

@@ -7,9 +7,6 @@ from fideslang.models import DatasetCollection
 
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
-from fides.api.service.connectors.saas.connector_registry_service import (
-    ConnectorRegistry,
-)
 from fides.api.util.saas_config_updater import update_saas_configs
 from fides.api.util.saas_util import (
     encode_file_contents,
@@ -18,6 +15,9 @@ from fides.api.util.saas_util import (
     load_yaml_as_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
+)
+from fides.service.connection.connector_registry_service import (
+    ConnectorRegistry,
 )
 
 NEW_CONFIG_DESCRIPTION = "new test config description"

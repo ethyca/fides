@@ -11,9 +11,9 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.connectors.fides import fides_client
-from fides.api.service.connectors.fides.fides_client import FidesClient
-from fides.api.service.connectors.fides_connector import (
+from fides.connectors.fides import fides_client
+from fides.connectors.fides.fides_client import FidesClient
+from fides.connectors.fides.fides_connector import (
     DEFAULT_POLLING_INTERVAL,
     DEFAULT_POLLING_TIMEOUT,
     FidesConnector,

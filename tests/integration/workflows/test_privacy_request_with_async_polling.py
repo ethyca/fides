@@ -21,7 +21,7 @@ from fides.api.models.privacy_request.request_task import RequestTaskSubRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.service.privacy_request.request_service import requeue_polling_tasks
+from fides.service.privacy_request.request_service import requeue_polling_tasks
 
 
 @pytest.mark.async_dsr
@@ -118,7 +118,7 @@ class TestPrivacyRequestWithAsyncPolling:
 
         return client
 
-    @patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
+    @patch("fides.connectors.saas.saas_connector.SaaSConnector.create_client")
     def test_access_privacy_request_with_async_polling(
         self,
         mock_create_client,
@@ -217,7 +217,7 @@ class TestPrivacyRequestWithAsyncPolling:
         assert len(request_task_sub_requests) == 1
         assert request_task_sub_requests[0].status == ExecutionLogStatus.complete.value
 
-    @patch("fides.api.service.connectors.saas_connector.SaaSConnector.create_client")
+    @patch("fides.connectors.saas.saas_connector.SaaSConnector.create_client")
     def test_erasure_privacy_request_with_async_polling(
         self,
         mock_create_client,

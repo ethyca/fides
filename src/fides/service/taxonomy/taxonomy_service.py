@@ -14,7 +14,7 @@ from fides.api.models.sql_models import (  # type:ignore[attr-defined]
     DataUse,
 )
 from fides.api.models.taxonomy import TaxonomyUsage
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 
 from .handlers import LegacyTaxonomyHandler, TaxonomyHandler
 from .utils import (

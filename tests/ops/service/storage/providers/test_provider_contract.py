@@ -16,7 +16,7 @@ from uuid import uuid4
 
 import pytest
 
-from fides.api.service.storage.providers.base import (
+from fides.service.storage.providers.base import (
     ObjectInfo,
     StorageProvider,
     UploadResult,

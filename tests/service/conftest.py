@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.request_context import reset_request_context, set_user_id
 from fides.service.connection.connection_service import ConnectionService
-from fides.service.event_audit_service import EventAuditService
+from fides.service.event_audit.event_audit_service import EventAuditService
 
 
 @pytest.fixture

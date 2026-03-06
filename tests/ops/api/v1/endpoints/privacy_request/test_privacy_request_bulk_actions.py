@@ -84,7 +84,7 @@ class TestBulkOperationsBatching:
         ],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
         "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
@@ -166,7 +166,7 @@ class TestBulkOperationsBatching:
         ],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+        "fides.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_bulk_finalize_with_batching(
         self,

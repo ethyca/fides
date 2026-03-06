@@ -26,9 +26,11 @@ from fides.api.models.sql_models import DataCategory  # type: ignore
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType, DrpAction
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.util.data_category import _validate_data_category
 from fides.config import CONFIG
+from fides.service.privacy_request.masking.strategy.masking_strategy import (
+    MaskingStrategy,
+)
 
 if TYPE_CHECKING:
     from fides.api.graph.traversal import TraversalNode

@@ -42,9 +42,6 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.messaging.shared_schemas import MessagingSecretsMailgunDocs
 from fides.api.schemas.policy import ActionType, DrpAction
-from fides.api.service.messaging.messaging_crud_service import (
-    create_or_update_messaging_config,
-)
 from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.errors import AlreadyExistsError, QueryError
@@ -55,6 +52,9 @@ from fides.api.v1.endpoints.saas_config_endpoints import (
 )
 from fides.config import CONFIG
 from fides.service.dataset.dataset_config_service import DatasetConfigService
+from fides.service.messaging.messaging_crud_service import (
+    create_or_update_messaging_config,
+)
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 from .crud import upsert_resources

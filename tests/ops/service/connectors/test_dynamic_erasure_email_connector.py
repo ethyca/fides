@@ -15,11 +15,11 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
     IdentityTypes,
 )
 from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
-from fides.api.service.connectors.base_erasure_email_connector import (
+from fides.connectors.base_erasure_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
 )
-from fides.api.service.privacy_request.request_runner_service import (
+from fides.service.privacy_request.request_runner_service import (
     get_erasure_email_connection_configs,
 )
 
@@ -196,7 +196,7 @@ class TestDynamicErasureEmailConnector:
         assert status == ConnectionTestStatus.failed
 
     @mock.patch(
-        "fides.api.service.connectors.dynamic_erasure_email_connector.send_single_erasure_email"
+        "fides.connectors.email.dynamic_erasure_email_connector.send_single_erasure_email"
     )
     def test_test_connection_call(
         self, mock_send_email, db, test_dynamic_erasure_email_connector
@@ -218,13 +218,13 @@ class TestDynamicErasureEmailConnector:
         assert call_kwargs["test_mode"]
 
     @mock.patch(
-        "fides.api.service.connectors.dynamic_erasure_email_connector.send_single_erasure_email"
+        "fides.connectors.email.dynamic_erasure_email_connector.send_single_erasure_email"
     )
     @mock.patch(
-        "fides.api.service.connectors.dynamic_erasure_email_connector.DynamicErasureEmailConnector.get_email_and_vendor_from_custom_request_fields"
+        "fides.connectors.email.dynamic_erasure_email_connector.DynamicErasureEmailConnector.get_email_and_vendor_from_custom_request_fields"
     )
     @mock.patch(
-        "fides.api.service.connectors.dynamic_erasure_email_connector.DynamicErasureEmailConnector.process_connector_config"
+        "fides.connectors.email.dynamic_erasure_email_connector.DynamicErasureEmailConnector.process_connector_config"
     )
     def test_batch_email_send_logs_errors_when_failed(
         self,

@@ -7,7 +7,7 @@ from sqlalchemy import text
 from fides.api.common_exceptions import ConnectionException, TableNotFound
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.service.connectors.sql_connector import SQLConnector
+from fides.connectors.sql_connector import SQLConnector
 
 
 class MockSecretsSchema(BaseModel):

@@ -5,9 +5,11 @@ from requests import Response
 from fides.api.schemas.saas.strategy_configuration import (
     ExtractForExecutionLogPostProcessorConfiguration,
 )
-from fides.api.service.execution_context import collect_execution_log_messages
-from fides.api.service.processors.post_processor_strategy.post_processor_strategy_extract_for_execution_log import (
+from fides.connectors.saas.strategies.processors.post_processor_strategy.post_processor_strategy_extract_for_execution_log import (
     ExtractForExecutionLogPostProcessorStrategy,
+)
+from fides.service.privacy_request.execution_context import (
+    collect_execution_log_messages,
 )
 
 
@@ -148,7 +150,7 @@ class TestExtractForExecutionLogPostProcessorStrategy:
         # Mock pydash.get to raise an exception
         with collect_execution_log_messages() as messages:
             with patch(
-                "fides.api.service.processors.post_processor_strategy.post_processor_strategy_extract_for_execution_log.pydash.get",
+                "fides.connectors.saas.strategies.processors.post_processor_strategy.post_processor_strategy_extract_for_execution_log.pydash.get",
                 side_effect=Exception("Test error"),
             ):
                 result = processor.process(data, response=mock_response)
