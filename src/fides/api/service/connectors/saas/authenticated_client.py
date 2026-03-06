@@ -27,9 +27,11 @@ from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-
-from fides.api.util.saas_util import deny_unsafe_hosts, is_domain_validation_disabled, should_ignore_error
-
+from fides.api.util.saas_util import (
+    deny_unsafe_hosts,
+    is_domain_validation_disabled,
+    should_ignore_error,
+)
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
