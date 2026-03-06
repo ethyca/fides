@@ -1,4 +1,4 @@
-import { Flex, Space, Text, useMessage } from "fidesui";
+import { Flex, Text, useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { RTKErrorResult } from "~/types/errors/api";
@@ -42,9 +42,7 @@ export const QuestionCard = ({ assessmentId, question }: QuestionCardProps) => {
         <Text strong>
           {question.id}. {question.question_text}
         </Text>
-        <Space size="small">
-          <AnswerStatusTags question={question} />
-        </Space>
+        <AnswerStatusTags question={question} />
       </Flex>
       <EditableTextBlock
         value={question.answer_text}

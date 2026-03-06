@@ -136,6 +136,10 @@ declare global {
        * Get the confirm buttons from an Ant Design Modal component
        */
       getAntModalConfirmButtons: () => Chainable;
+      /**
+       * Get the Ant Design tooltip
+       */
+      getAntTooltip: () => Chainable;
     }
   }
 }
@@ -363,5 +367,6 @@ Cypress.Commands.add("getAntModalFooter", () => cy.get(`.ant-modal-footer`));
 Cypress.Commands.add("getAntModalConfirmButtons", () =>
   cy.get(`.ant-modal-confirm-btns`),
 );
+Cypress.Commands.add("getAntTooltip", () => cy.findByRole("tooltip"));
 
 export {};

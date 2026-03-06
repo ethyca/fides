@@ -1,0 +1,4 @@
+type: Added
+description: Added gdprApplies=false signaling to existing TCF stubs in non-TCF bundles
+pr: 7556
+labels: []
