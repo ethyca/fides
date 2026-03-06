@@ -43,28 +43,6 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
                 f"or the connection must have values for the following fields: {field_descriptions}"
             )
         if namespace_meta:
-            # Skip validation when the namespace_meta connection_type doesn't
-            # match this connection. This happens when datasets of mixed types
-            # (e.g. BigQuery, Snowflake) are linked to a single connection.
-            meta_connection_type = namespace_meta.get("connection_type")
-            if meta_connection_type and meta_connection_type != connection_type:
-                return
-
-            # For legacy namespace_meta without connection_type, check whether
-            # the provided fields overlap with the expected schema.  If there
-            # is zero overlap the namespace belongs to a different connection
-            # type and we skip.  If there IS overlap we backfill connection_type
-            # and validate strictly so malformed namespaces are still caught.
-            if not meta_connection_type:
-                expected_fields = set(namespace_meta_class.model_fields.keys()) - {
-                    "connection_type"
-                }
-                provided_fields = set(namespace_meta.keys()) - {"connection_type"}
-                if not provided_fields & expected_fields:
-                    return
-                # Fields overlap — backfill connection_type so it's persisted
-                namespace_meta["connection_type"] = connection_type
-
             try:
                 namespace_meta_class(**namespace_meta)
             except PydanticValidationError as e:
