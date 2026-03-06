@@ -1,27 +1,20 @@
-import {
-  Descriptions,
-  Flex,
-  Progress,
-  Space,
-  Spin,
-  Tag,
-  TagList,
-  Text,
-} from "fidesui";
+import { Descriptions, Flex, Progress, Space, Spin, Tag, Text } from "fidesui";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 
 import { AssessmentTaskResponse, TaskStatus } from "./types";
-import { formatSystems } from "./utils";
+import { formatSystems, formatTypes } from "./utils";
 
 interface AssessmentTaskPopoverContentProps {
   activeTask: AssessmentTaskResponse | null;
   lastCompletedTask: AssessmentTaskResponse | null;
+  templateNamesMap?: Record<string, string>;
 }
 
 export const AssessmentTaskPopoverContent = ({
   activeTask,
   lastCompletedTask,
+  templateNamesMap,
 }: AssessmentTaskPopoverContentProps) => {
   const activeRelativeTime = useRelativeTime(
     activeTask?.created_at ? new Date(activeTask.created_at) : null,
@@ -55,11 +48,7 @@ export const AssessmentTaskPopoverContent = ({
             </Space>
           </Descriptions.Item>
           <Descriptions.Item label="Type">
-            <TagList
-              tags={activeTask.assessment_types}
-              maxTags={2}
-              expandable
-            />
+            {formatTypes(activeTask.assessment_types, templateNamesMap)}
           </Descriptions.Item>
           <Descriptions.Item label="Systems">
             {formatSystems(activeTask)}
@@ -93,11 +82,7 @@ export const AssessmentTaskPopoverContent = ({
           )}
         </Descriptions.Item>
         <Descriptions.Item label="Type">
-          <TagList
-            tags={lastCompletedTask.assessment_types}
-            maxTags={2}
-            expandable
-          />
+          {formatTypes(lastCompletedTask.assessment_types, templateNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Systems">
           {formatSystems(lastCompletedTask)}

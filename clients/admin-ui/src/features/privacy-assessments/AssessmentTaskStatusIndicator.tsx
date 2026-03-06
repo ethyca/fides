@@ -13,7 +13,10 @@ import { useEffect, useMemo, useRef } from "react";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 
 import { AssessmentTaskPopoverContent } from "./AssessmentTaskPopoverContent";
-import { useGetAssessmentTasksQuery } from "./privacy-assessments.slice";
+import {
+  useGetAssessmentTasksQuery,
+  useGetAssessmentTemplatesQuery,
+} from "./privacy-assessments.slice";
 import { TaskStatus } from "./types";
 
 const ACTIVE_POLL_INTERVAL = 15_000;
@@ -66,6 +69,24 @@ export const AssessmentTaskStatusIndicator = ({
     [lastCompletedTask],
   );
   const lastAssessmentAgo = useRelativeTime(lastCompletedDate);
+
+  const { data: templatesData } = useGetAssessmentTemplatesQuery({
+    page: 1,
+    size: 100,
+  });
+
+  const templateNamesMap = useMemo(() => {
+    const templates = templatesData?.items ?? [];
+    return Object.fromEntries(
+      templates.flatMap((t) => {
+        const entries: [string, string][] = [[t.key, t.name]];
+        if (t.assessment_type) {
+          entries.push([t.assessment_type, t.name]);
+        }
+        return entries;
+      }),
+    );
+  }, [templatesData]);
 
   const completedCount = activeTask?.completed_count ?? 0;
 
@@ -178,6 +199,7 @@ export const AssessmentTaskStatusIndicator = ({
         <AssessmentTaskPopoverContent
           activeTask={activeTask}
           lastCompletedTask={lastCompletedTask}
+          templateNamesMap={templateNamesMap}
         />
       }
       title="Evaluation details"
