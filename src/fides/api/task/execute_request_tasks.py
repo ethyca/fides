@@ -1,3 +1,4 @@
+import uuid
 from typing import Callable, List, Optional, Tuple
 
 from celery.app.task import Task
@@ -34,7 +35,6 @@ from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
-from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
@@ -606,17 +606,25 @@ mapping = {
 def queue_request_task(
     request_task: RequestTask, privacy_request_proceed: bool = True
 ) -> None:
-    """Queues the RequestTask in Celery and caches the Celery Task ID"""
+    """Pre-generates a celery_id, persists it to the DB, then dispatches the
+    Celery task with that ID.  This makes tracking durable."""
+    celery_id = str(uuid.uuid4())
+
+    db: Session = Session.object_session(request_task)
+    if db:
+        request_task.celery_id = celery_id
+        db.commit()
+
     celery_task_fn: Task = mapping[request_task.action_type]
-    celery_task = celery_task_fn.apply_async(
+    celery_task_fn.apply_async(
         queue=DSR_QUEUE_NAME,
+        task_id=celery_id,
         kwargs={
             "privacy_request_id": request_task.privacy_request_id,
             "privacy_request_task_id": request_task.id,
             "privacy_request_proceed": privacy_request_proceed,
         },
     )
-    cache_task_tracking_key(request_task.id, celery_task.task_id)
 
 
 def log_task_queued(request_task: RequestTask, location: str) -> None:

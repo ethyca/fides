@@ -110,7 +110,6 @@ from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
     get_all_cache_keys_for_privacy_request,
-    get_async_task_tracking_cache_key,
     get_cache,
     get_custom_privacy_request_field_cache_key,
     get_drp_request_body_cache_key,
@@ -237,6 +236,8 @@ class PrivacyRequest(
         uselist=True,
     )
     property_id = Column(String, nullable=True)
+
+    celery_id = Column(String(255), nullable=True, index=True)
 
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
@@ -698,16 +699,15 @@ class PrivacyRequest(
         return encryption_key
 
     def get_cached_task_id(self) -> Optional[str]:
-        """Gets the cached task ID for this privacy request."""
-        cache: FidesopsRedis = get_cache()
-        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
-        return task_id
+        """Returns the Celery task ID for this privacy request from the DB."""
+        return self.celery_id
 
     def get_async_execution_task(self) -> Optional[AsyncResult]:
         """Returns a task reflecting the state of this privacy request's asynchronous execution."""
-        task_id = self.get_cached_task_id()
-        res: AsyncResult = AsyncResult(task_id)
-        return res
+        task_id = self.celery_id
+        if not task_id:
+            return None
+        return AsyncResult(task_id)
 
     def cache_drp_request_body(self, drp_request_body: DrpPrivacyRequestCreate) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
@@ -1201,15 +1201,10 @@ class PrivacyRequest(
     def get_request_task_celery_task_ids(self) -> List[str]:
         """Returns the celery task ids for each of the Request Tasks (subtasks)
 
-        It is possible Request Tasks get queued multiple times, so the celery task
-        id returned is the last celery task queued.
+        It is possible Request Tasks get queued multiple times, so the celery_id
+        on each RequestTask reflects the most recently dispatched task.
         """
-        request_task_celery_ids: List[str] = []
-        for request_task in self.request_tasks:
-            request_task_id: Optional[str] = request_task.get_cached_task_id()
-            if request_task_id:
-                request_task_celery_ids.append(request_task_id)
-        return request_task_celery_ids
+        return [rt.celery_id for rt in self.request_tasks if rt.celery_id is not None]
 
     def cancel_celery_tasks(self) -> None:
         """Cancel all Celery tasks associated with this privacy request.
