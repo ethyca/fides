@@ -9,7 +9,7 @@ pgp_sym_decrypt and re-encrypt with AES-GCM, then drop old columns and
 rename.
 
 Revision ID: bf12f05ef8eb
-Revises: 074796d61d8a
+Revises: ca2c622bad39
 Create Date: 2026-03-03 14:00:00.000000
 
 """
@@ -28,7 +28,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 from fides.config import CONFIG
 
 revision = "bf12f05ef8eb"
-down_revision = "074796d61d8a"
+down_revision = "ca2c622bad39"
 branch_labels = None
 depends_on = None
 
