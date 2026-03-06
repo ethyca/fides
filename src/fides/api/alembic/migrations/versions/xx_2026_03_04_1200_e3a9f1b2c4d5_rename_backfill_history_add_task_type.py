@@ -1,7 +1,7 @@
 """Rename backfill_history to post_upgrade_background_migration_tasks, add task_type column
 
 Revision ID: e3a9f1b2c4d5
-Revises: ca2c622bad39
+Revises: bf12f05ef8eb
 Create Date: 2026-03-04 12:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "e3a9f1b2c4d5"
-down_revision = "ca2c622bad39"
+down_revision = "bf12f05ef8eb"
 branch_labels = None
 depends_on = None
 
