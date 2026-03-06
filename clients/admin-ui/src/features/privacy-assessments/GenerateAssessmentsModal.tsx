@@ -11,7 +11,7 @@ import {
   Text,
   useMessage,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -21,7 +21,6 @@ import {
   useCreatePrivacyAssessmentMutation,
   useGetAssessmentTemplatesQuery,
 } from "./privacy-assessments.slice";
-import { TemplateResponse } from "./types";
 
 const { Item } = Form;
 
@@ -30,26 +29,6 @@ interface FormValues {
   system_fides_keys?: string[];
   use_llm: boolean;
 }
-
-interface TemplateOptionData {
-  value: string;
-  label: string;
-  template: TemplateResponse;
-}
-
-const renderTemplateOption = (option: { data: TemplateOptionData }) => {
-  const { template } = option.data;
-  return (
-    <Flex align="center">
-      <Text strong>{template.name}</Text>
-      {template.region && (
-        <Text type="secondary" className="ml-2" size="sm">
-          {template.region}
-        </Text>
-      )}
-    </Flex>
-  );
-};
 
 interface GenerateAssessmentsModalProps {
   open: boolean;
@@ -63,6 +42,23 @@ export const GenerateAssessmentsModal = ({
   const message = useMessage();
   const [form] = Form.useForm<FormValues>();
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
+
+  const renderTemplateOption = useCallback(
+    (option: { data: { template: { name: string; region?: string } } }) => {
+      const { template } = option.data;
+      return (
+        <Flex align="center">
+          <Text strong>{template.name}</Text>
+          {template.region && (
+            <Text type="secondary" className="ml-2" size="sm">
+              {template.region}
+            </Text>
+          )}
+        </Flex>
+      );
+    },
+    [],
+  );
 
   const { data: templatesData, isLoading: isLoadingTemplates } =
     useGetAssessmentTemplatesQuery({ page: 1, size: 100 });

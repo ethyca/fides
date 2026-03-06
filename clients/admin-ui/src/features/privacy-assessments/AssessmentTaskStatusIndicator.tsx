@@ -9,13 +9,11 @@ import {
   Text,
 } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
-import { useDispatch } from "react-redux";
 
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 
 import { AssessmentTaskPopoverContent } from "./AssessmentTaskPopoverContent";
 import {
-  privacyAssessmentsApi,
   useGetAssessmentTasksQuery,
   useGetAssessmentTemplatesQuery,
 } from "./privacy-assessments.slice";
@@ -32,7 +30,6 @@ export const AssessmentTaskStatusIndicator = ({
   onTaskFinish,
   className,
 }: AssessmentTaskStatusIndicatorProps) => {
-  const dispatch = useDispatch();
   const [notificationApi, notificationHolder] = notification.useNotification();
 
   // Fetch once on mount; derive activeTask first without polling so we can
@@ -109,9 +106,6 @@ export const AssessmentTaskStatusIndicator = ({
         return;
       }
 
-      dispatch(
-        privacyAssessmentsApi.util.invalidateTags(["Privacy Assessment"]),
-      );
       notificationApi.success({
         message: "New assessment results are available",
         btn: onTaskFinish ? (
@@ -129,7 +123,7 @@ export const AssessmentTaskStatusIndicator = ({
       });
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, lastCompletedTask, notificationApi, dispatch, onTaskFinish]);
+  }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;
