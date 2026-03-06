@@ -4,11 +4,10 @@ describe("loadEnvironmentVariables", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
     process.env = { ...originalEnv };
   });
 
-  afterAll(() => {
+  afterEach(() => {
     process.env = originalEnv;
   });
 
