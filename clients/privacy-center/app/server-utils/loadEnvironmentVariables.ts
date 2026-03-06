@@ -197,9 +197,14 @@ const loadEnvironmentVariables = () => {
     ATTRIBUTION_ANCHOR_TEXT:
       process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ANCHOR_TEXT ||
       DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
-    ATTRIBUTION_DESTINATION_URL:
-      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_DESTINATION_URL ||
-      DEFAULT_ATTRIBUTION_DESTINATION_URL,
+    ATTRIBUTION_DESTINATION_URL: (() => {
+      const url =
+        process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_DESTINATION_URL ||
+        DEFAULT_ATTRIBUTION_DESTINATION_URL;
+      return url.startsWith("https://") || url.startsWith("http://")
+        ? url
+        : DEFAULT_ATTRIBUTION_DESTINATION_URL;
+    })(),
     ATTRIBUTION_NOFOLLOW:
       process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_NOFOLLOW === "true", // default: false
   };
