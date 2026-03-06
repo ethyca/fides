@@ -37,10 +37,20 @@ def update_saas_configs(db: Session) -> None:
         # Store the original template dataset (with placeholders) instead of the modified version
         template_dataset_json = load_dataset_from_string(template.dataset)
 
-        SaasTemplateDataset.get_or_create(
+        _, stored_dataset_template = SaasTemplateDataset.get_or_create(
             db=db,
             connector_type=connector_type,
             dataset_json=template_dataset_json,
+        )
+
+        # Snapshot the stored baseline before the loop. update_saas_instance writes back
+        # to SaasTemplateDataset on every call, so without this snapshot the first
+        # iteration would overwrite the row and corrupt the merge baseline for all
+        # subsequent iterations of the same connector type.
+        stored_dataset_json_snapshot = (
+            stored_dataset_template.dataset_json
+            if isinstance(stored_dataset_template.dataset_json, dict)
+            else None
         )
 
         saas_config = SaaSConfig(**load_config_from_string(template.config))
@@ -66,6 +76,7 @@ def update_saas_configs(db: Session) -> None:
                         connection_config,
                         template,
                         saas_config_instance,
+                        stored_dataset_json=stored_dataset_json_snapshot,
                     )
                 except Exception:
                     logger.exception(
