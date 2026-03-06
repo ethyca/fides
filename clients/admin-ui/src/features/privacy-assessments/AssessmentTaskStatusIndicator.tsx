@@ -30,8 +30,6 @@ export const AssessmentTaskStatusIndicator = ({
   onTaskFinish,
   className,
 }: AssessmentTaskStatusIndicatorProps) => {
-  const [notificationApi, notificationHolder] = notification.useNotification();
-
   // Fetch once on mount; derive activeTask first without polling so we can
   // use it to gate the polling interval on the same query subscription.
   const { data: tasksData } = useGetAssessmentTasksQuery({ page: 1, size: 10 });
@@ -77,20 +75,37 @@ export const AssessmentTaskStatusIndicator = ({
     size: 100,
   });
 
-  const completedCount = useMemo(
-    () =>
-      (tasksData?.items ?? []).filter((t) => t.status === TaskStatus.COMPLETE)
-        .length,
-    [tasksData],
-  );
+  // Show a notification each time an assessment completes within the active task
+  const completedCount = activeTask?.completed_count ?? 0;
 
-  const prevCompletedCountRef = useRef(completedCount);
+  const prevCompletedCountRef = useRef<number | null>(null);
   useEffect(() => {
-    if (completedCount > prevCompletedCountRef.current) {
-      onTaskFinish?.();
+    if (!activeTask) {
+      prevCompletedCountRef.current = null;
+      return;
+    }
+    if (
+      prevCompletedCountRef.current !== null &&
+      completedCount > prevCompletedCountRef.current
+    ) {
+      notification.success({
+        message: "New assessment results are available",
+        btn: onTaskFinish ? (
+          <Button
+            size="small"
+            onClick={() => {
+              onTaskFinish();
+              notification.destroy();
+            }}
+          >
+            Reload results
+          </Button>
+        ) : undefined,
+        duration: 0,
+      });
     }
     prevCompletedCountRef.current = completedCount;
-  }, [completedCount, onTaskFinish]);
+  }, [activeTask, completedCount, onTaskFinish]);
 
   const templateNamesMap = useMemo(() => {
     const templates = templatesData?.items ?? [];
@@ -105,40 +120,22 @@ export const AssessmentTaskStatusIndicator = ({
     );
   }, [templatesData]);
 
-  // Detect active → idle transition and fire the completion notification
+  // Detect active → idle transition and fire error notification
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
       const isError = lastCompletedTask?.status === TaskStatus.ERROR;
 
       if (isError) {
-        notificationApi.error({
+        notification.error({
           message: "Assessment evaluation failed",
           description: "An error occurred during evaluation",
           duration: 0,
         });
-        hadActiveTaskRef.current = false;
-        return;
       }
-
-      notificationApi.success({
-        message: "New assessment results are available",
-        btn: onTaskFinish ? (
-          <Button
-            size="small"
-            onClick={() => {
-              onTaskFinish();
-              notificationApi.destroy();
-            }}
-          >
-            Reload results
-          </Button>
-        ) : undefined,
-        duration: 0,
-      });
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
+  }, [activeTask, lastCompletedTask]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;
@@ -178,28 +175,25 @@ export const AssessmentTaskStatusIndicator = ({
   }, [activeTask, hasLastError, lastCompletedDate, lastAssessmentAgo]);
 
   if (!inlineContent) {
-    return notificationHolder;
+    return null;
   }
 
   return (
-    <>
-      {notificationHolder}
-      <Popover
-        content={
-          <AssessmentTaskPopoverContent
-            activeTask={activeTask}
-            lastCompletedTask={lastCompletedTask}
-            templateNamesMap={templateNamesMap}
-          />
-        }
-        title="Evaluation details"
-        trigger="hover"
-        placement="bottom"
-      >
-        <div className={classNames("cursor-pointer", className)}>
-          {inlineContent}
-        </div>
-      </Popover>
-    </>
+    <Popover
+      content={
+        <AssessmentTaskPopoverContent
+          activeTask={activeTask}
+          lastCompletedTask={lastCompletedTask}
+          templateNamesMap={templateNamesMap}
+        />
+      }
+      title="Evaluation details"
+      trigger="hover"
+      placement="bottom"
+    >
+      <div className={classNames("cursor-pointer", className)}>
+        {inlineContent}
+      </div>
+    </Popover>
   );
 };
