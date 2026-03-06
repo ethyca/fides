@@ -20,6 +20,38 @@ from fides.api.service.connectors.saas.authenticated_client import Authenticated
 from fides.api.util.saas_util import map_param_values, should_ignore_error
 
 
+def send_and_handle_errors(
+    client: AuthenticatedClient,
+    prepared_request: SaaSRequestParams,
+    ignore_errors: Optional[Union[bool, list]],
+    request_label: str,
+    exception_cls: Type[Exception] = PrivacyRequestError,
+) -> Response:
+    """
+    Send a request and handle error responses, respecting ignore_errors configuration.
+
+    When ignore_errors is configured and the response status code matches, the error
+    is logged and the response is returned without raising. Otherwise raises
+    exception_cls (PrivacyRequestError by default; e.g. FidesopsException for strategy callers).
+    """
+    response: Response = client.send(prepared_request, ignore_errors=True)
+
+    if not response.ok and should_ignore_error(response.status_code, ignore_errors):
+        logger.info(
+            "Ignoring errored response with status code {} for {} as configured.",
+            response.status_code,
+            request_label,
+        )
+        return response
+
+    if not response.ok:
+        raise exception_cls(
+            f"{request_label} failed with status code {response.status_code}: {response.text}"
+        )
+
+    return response
+
+
 class PollingRequestHandler:
     """
     Pure HTTP utility for executing polling requests.
@@ -34,38 +66,6 @@ class PollingRequestHandler:
     ):
         self.status_request = status_request
         self.result_request = result_request
-
-    @staticmethod
-    def _send_and_handle_errors(
-        client: AuthenticatedClient,
-        prepared_request: SaaSRequestParams,
-        ignore_errors: Optional[Union[bool, list]],
-        request_label: str,
-        exception_cls: Type[Exception] = PrivacyRequestError,
-    ) -> Response:
-        """
-        Send a request and handle error responses, respecting ignore_errors configuration.
-
-        When ignore_errors is configured and the response status code matches, the error
-        is logged and the response is returned without raising. Otherwise raises
-        exception_cls (PrivacyRequestError by default; e.g. FidesopsException for strategy callers).
-        """
-        response: Response = client.send(prepared_request, ignore_errors)
-
-        if not response.ok and should_ignore_error(response.status_code, ignore_errors):
-            logger.info(
-                "Ignoring errored response with status code {} for {} as configured.",
-                response.status_code,
-                request_label,
-            )
-            return response
-
-        if not response.ok:
-            raise exception_cls(
-                f"{request_label} failed with status code {response.status_code}: {response.text}"
-            )
-
-        return response
 
     def get_status_response(
         self,
@@ -85,7 +85,7 @@ class PollingRequestHandler:
             param_values=param_values,
         )
 
-        return self._send_and_handle_errors(
+        return send_and_handle_errors(
             client,
             prepared_status_request,
             self.status_request.ignore_errors,
@@ -110,7 +110,7 @@ class PollingRequestHandler:
             param_values=param_values,
         )
 
-        return self._send_and_handle_errors(
+        return send_and_handle_errors(
             client,
             prepared_result_request,
             self.result_request.ignore_errors,

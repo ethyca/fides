@@ -30,6 +30,7 @@ from fides.api.service.async_dsr.handlers.polling_attachment_handler import (
 )
 from fides.api.service.async_dsr.handlers.polling_request_handler import (
     PollingRequestHandler,
+    send_and_handle_errors,
 )
 from fides.api.service.async_dsr.handlers.polling_response_handler import (
     PollingResponseProcessor,
@@ -314,7 +315,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
         logger.info(f"Prepared requests: {len(prepared_requests)}")
 
         for next_request, param_value_map in prepared_requests:
-            response = PollingRequestHandler._send_and_handle_errors(
+            response = send_and_handle_errors(
                 client,
                 next_request,
                 read_request.ignore_errors,
@@ -370,7 +371,7 @@ class AsyncPollingStrategy(AsyncDSRStrategy):
                 prepared_request = query_config.generate_update_stmt(
                     row, policy, privacy_request
                 )
-                response = PollingRequestHandler._send_and_handle_errors(
+                response = send_and_handle_errors(
                     client,
                     prepared_request,
                     request.ignore_errors,
