@@ -55,7 +55,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
   const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
-  // const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
 
   const focusedGroup = useMemo<QuestionGroup | undefined>(
     () =>
@@ -316,17 +315,6 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         searchQuery={evidenceSearchQuery}
         onSearchChange={setEvidenceSearchQuery}
       />
-
-      {/* Commented out because it does not fit demo needs at the moment */}
-      {/* {slackChannelName && (
-        <RequestInputModal
-          open={isRequestInputOpen}
-          onClose={() => setIsRequestInputOpen(false)}
-          assessmentId={assessment.id}
-          questions={allQuestions}
-          slackChannelName={slackChannelName}
-        />
-      )} */}
     </Space>
   );
 };
