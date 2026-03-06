@@ -12,7 +12,7 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
@@ -20,6 +20,7 @@ import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
+import { EvidenceDrawer } from "./EvidenceDrawer";
 import {
   useCreateQuestionnaireMutation,
   useCreateQuestionnaireReminderMutation,
@@ -33,8 +34,11 @@ import { SlackIcon } from "./SlackIcon";
 import {
   AnswerSource,
   AnswerStatus,
+  EvidenceItem,
   PrivacyAssessmentDetailResponse,
+  QuestionGroup,
 } from "./types";
+import { deduplicateEvidence, filterEvidence } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
@@ -48,6 +52,43 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
   const { getDataCategoryDisplayName } = useTaxonomies();
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
+  const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
+  const [isRequestInputOpen, setIsRequestInputOpen] = useState(false);
+
+  const focusedGroup = useMemo<QuestionGroup | undefined>(
+    () =>
+      focusedGroupId
+        ? (assessment.question_groups ?? []).find(
+            (g) => g.id === focusedGroupId,
+          )
+        : undefined,
+    [focusedGroupId, assessment.question_groups],
+  );
+
+  const focusedGroupEvidence = useMemo<EvidenceItem[]>(
+    () =>
+      focusedGroup
+        ? deduplicateEvidence(focusedGroup.questions.flatMap((q) => q.evidence))
+        : [],
+    [focusedGroup],
+  );
+
+  const filteredEvidence = useMemo(
+    () => filterEvidence(focusedGroupEvidence, evidenceSearchQuery),
+    [focusedGroupEvidence, evidenceSearchQuery],
+  );
+
+  const handleViewEvidence = useCallback((groupId: string) => {
+    setFocusedGroupId(groupId);
+    setDrawerOpen(true);
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    setEvidenceSearchQuery("");
+  }, []);
 
   const { data: config } = useGetAssessmentConfigQuery();
   const [createQuestionnaire, { isLoading: isSending }] =
@@ -161,6 +202,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           <QuestionGroupPanel
             group={group}
             isExpanded={expandedKeys.includes(group.id)}
+            onViewEvidence={() => handleViewEvidence(group.id)}
           />
         ),
         children: (
@@ -175,7 +217,12 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           </Space>
         ),
       })),
-    [assessment.question_groups, assessment.id, expandedKeys],
+    [
+      assessment.question_groups,
+      assessment.id,
+      expandedKeys,
+      handleViewEvidence,
+    ],
   );
 
   return (
@@ -260,16 +307,25 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         size="large"
       />
 
-      {/* Commented out because it does not fit demo needs at the moment */}
-      {/* {slackChannelName && (
-        <RequestInputModal
-          open={isRequestInputOpen}
-          onClose={() => setIsRequestInputOpen(false)}
-          assessmentId={assessment.id}
-          questions={allQuestions}
-          slackChannelName={slackChannelName}
+      {slackChannelName && (
+        <EvidenceDrawer
+          open={drawerOpen}
+          onClose={handleCloseDrawer}
+          focusedGroupId={focusedGroupId}
+          group={focusedGroup}
+          evidence={filteredEvidence}
+          searchQuery={evidenceSearchQuery}
+          onSearchChange={setEvidenceSearchQuery}
         />
-      )} */}
+      )}
+      {/* Commented out because it does not fit demo needs at the moment */}
+      {/* <RequestInputModal
+        open={isRequestInputOpen}
+        onClose={() => setIsRequestInputOpen(false)}
+        assessmentId={assessment.id}
+        questions={allQuestions}
+        slackChannelName={slackChannelName}
+      /> */}
     </Space>
   );
 };
