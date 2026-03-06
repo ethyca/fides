@@ -1,6 +1,10 @@
 import type { AttributionOptions } from "fides-js";
 
 import { getClientSettings } from "~/app/server-environment";
+import {
+  DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
+  DEFAULT_ATTRIBUTION_DESTINATION_URL,
+} from "~/app/server-utils/loadEnvironmentVariables";
 
 describe("fides-js attribution config", () => {
   const originalEnv = process.env;
@@ -24,10 +28,10 @@ describe("fides-js attribution config", () => {
     const settings = getClientSettings();
     expect(settings.ATTRIBUTION_ENABLED).toBe(true);
     expect(settings.ATTRIBUTION_ANCHOR_TEXT).toBe(
-      "Consent powered by Ethyca",
+      DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
     );
     expect(settings.ATTRIBUTION_DESTINATION_URL).toBe(
-      "https://ethyca.com/consent",
+      DEFAULT_ATTRIBUTION_DESTINATION_URL,
     );
     expect(settings.ATTRIBUTION_NOFOLLOW).toBe(false);
   });
@@ -94,8 +98,8 @@ describe("fides-js handler attribution config building", () => {
   it("produces attribution object with defaults when enabled", () => {
     process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "true";
     expect(buildAttributionFromSettings()).toEqual({
-      anchorText: "Consent powered by Ethyca",
-      destinationUrl: "https://ethyca.com/consent",
+      anchorText: DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
+      destinationUrl: DEFAULT_ATTRIBUTION_DESTINATION_URL,
       nofollow: false,
     });
   });
@@ -127,8 +131,8 @@ describe("fides-js handler attribution config building", () => {
     const options = { attribution, otherField: true };
     const parsed = JSON.parse(JSON.stringify(options));
     expect(parsed.attribution).toEqual({
-      anchorText: "Consent powered by Ethyca",
-      destinationUrl: "https://ethyca.com/consent",
+      anchorText: DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
+      destinationUrl: DEFAULT_ATTRIBUTION_DESTINATION_URL,
       nofollow: false,
     });
   });
