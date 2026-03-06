@@ -119,7 +119,7 @@ export const AssessmentTaskStatusIndicator = ({
     );
   }, [templatesData]);
 
-  // Detect active → idle transition and fire error notification
+  // Detect active → idle transition for the final completion or error
   const hadActiveTaskRef = useRef(false);
   useEffect(() => {
     if (hadActiveTaskRef.current && !activeTask) {
@@ -131,10 +131,26 @@ export const AssessmentTaskStatusIndicator = ({
           description: "An error occurred during evaluation",
           duration: 0,
         });
+      } else {
+        notification.success({
+          message: "New assessment results are available",
+          btn: onTaskFinish ? (
+            <Button
+              size="small"
+              onClick={() => {
+                onTaskFinish();
+                notification.destroy();
+              }}
+            >
+              Reload results
+            </Button>
+          ) : undefined,
+          duration: 0,
+        });
       }
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, lastCompletedTask]);
+  }, [activeTask, lastCompletedTask, onTaskFinish]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;
