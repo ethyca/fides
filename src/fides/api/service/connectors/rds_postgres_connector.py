@@ -86,9 +86,9 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
     def query_config(self, node: ExecutionNode) -> RDSPostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         db: Session = Session.object_session(self.configuration)
-        return RDSPostgresQueryConfig(
-            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
-        )
+        namespace_meta = SQLConnector.get_namespace_meta(db, node.address.dataset)
+        self.namespace_meta = namespace_meta
+        return RDSPostgresQueryConfig(node, namespace_meta)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
