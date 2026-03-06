@@ -11,7 +11,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
-from joserfc.errors import DecodeError
+from joserfc.errors import JoseError
 from loguru import logger
 from sqlalchemy.orm import Query, Session
 from sqlalchemy_utils import escape_like
@@ -282,7 +282,7 @@ def logout_oauth_client(
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
-    except DecodeError:
+    except JoseError:
         return None
 
     client_id = token_data.get(JWE_PAYLOAD_CLIENT_ID)

@@ -40,4 +40,6 @@ def decrypt_jwe(token: str, encryption_key: str, encoding: str = "UTF-8") -> str
     )
     key = OctKey.import_key(key_bytes)
     result = jwe.decrypt_compact(token, key)
+    if result.plaintext is None:
+        raise ValueError("JWE decryption produced no plaintext")
     return result.plaintext.decode(encoding)
