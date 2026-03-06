@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.1a3.dev72+g8f2e7e4e5"
+    "version": "2.79.1a3.dev73+g0807bc9aa"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2342,7 +2342,7 @@
           "System"
         ],
         "summary": "Delete Connection",
-        "description": "Delete the connection config linked to this system.\n\nDeprecated: Use DELETE /connection/{connection_key} to delete a connection\nconfig, or DELETE /connection/{connection_key}/system-links/{system_fides_key}\nto unlink it from a system without deleting it.",
+        "description": "Delete the connection config linked to this system.\n\nDeprecated: Use DELETE /connection/{connection_key} to delete a connection\nconfig, or DELETE /connection/{connection_key}/system-links/{system_fides_key}\nto unlink it from a system without deleting it.\n\nNote: if multiple integrations are linked to this system, this deletes\nthe one with the earliest created_at timestamp (i.e. the oldest integration).",
         "operationId": "delete_connection_api_v1_system__fides_key__connection_delete",
         "deprecated": true,
         "security": [
@@ -2386,7 +2386,7 @@
           "System"
         ],
         "summary": "Patch Connection Secrets",
-        "description": "Patch secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.\n\nDeprecated: Use PATCH /connection/{connection_key}/secret instead.",
+        "description": "Patch secrets that will be used to connect to a specified connection_type.\n\nThe specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB\nwill differ from Dynamo DB.\n\nDeprecated: Use PATCH /connection/{connection_key}/secret instead.\n\nNote: if multiple integrations are linked to this system, this operates on\nthe one with the earliest created_at timestamp (i.e. the oldest integration).",
         "operationId": "patch_connection_secrets_api_v1_system__fides_key__connection_secrets_patch",
         "deprecated": true,
         "security": [
@@ -36628,12 +36628,16 @@
           "connection_configs": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/ConnectionConfigurationResponse"
+                "items": {
+                  "$ref": "#/components/schemas/ConnectionConfigurationResponse"
+                },
+                "type": "array"
               },
               {
                 "type": "null"
               }
             ],
+            "title": "Connection Configs",
             "description": "\nDescribes the returned schema for a ConnectionConfiguration.\n"
           },
           "data_stewards": {
