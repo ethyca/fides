@@ -153,6 +153,7 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
         # Ops requires this to route emails to separate queues
         "task_create_missing_queues": True,
         "task_default_queue": "fides",
+        "worker_prefetch_multiplier": 1,
         "healthcheck_port": config.celery.healthcheck_port,
         "healthcheck_ping_timeout": config.celery.healthcheck_ping_timeout,
     }

@@ -3,9 +3,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System
-from fides.system_integration_link.models import (
-    SystemConnectionConfigLink,
-)
 from fides.system_integration_link.repository import (
     SystemIntegrationLinkRepository,
 )
@@ -74,20 +71,6 @@ def connection_config_b(db: Session):
     )
     yield config
     config.delete(db)
-
-
-@pytest.fixture(autouse=True)
-def cleanup_links(db: Session):
-    """Clean up any link records after each test."""
-    yield
-    db.query(SystemConnectionConfigLink).filter(
-        SystemConnectionConfigLink.connection_config_id.in_(
-            db.query(ConnectionConfig.id).filter(
-                ConnectionConfig.key.like("link_test_%")
-            )
-        )
-    ).delete(synchronize_session=False)
-    db.commit()
 
 
 class TestUpsertLink:

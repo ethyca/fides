@@ -64,7 +64,7 @@ class TestPartitioningEndpoints:
             headers=auth_header,
         )
 
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "All partitioning specifications must use the same field"
             in response.json()["detail"]

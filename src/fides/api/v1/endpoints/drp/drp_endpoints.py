@@ -8,12 +8,13 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
     HTTP_424_FAILED_DEPENDENCY,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fides.api import common_exceptions, deps
+from fides.api.common_exceptions import RedisConnectionError
+from fides.api.deps import get_cache, get_config_proxy, get_db
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.oauth.utils import verify_oauth_client
@@ -63,9 +64,9 @@ EMBEDDED_EXECUTION_LOG_LIMIT = 50
 )
 async def create_drp_privacy_request(
     *,
-    cache: FidesopsRedis = Depends(deps.get_cache),
-    db: Session = Depends(deps.get_db),
-    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+    cache: FidesopsRedis = Depends(get_cache),
+    db: Session = Depends(get_db),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
     data: DrpPrivacyRequestCreate,
 ) -> PrivacyRequestDRPStatusResponse:
     """
@@ -140,7 +141,7 @@ async def create_drp_privacy_request(
             status=DrpFidesopsMapper.map_status(privacy_request.status),  # type: ignore
         )
 
-    except common_exceptions.RedisConnectionError as exc:
+    except RedisConnectionError as exc:
         logger.error("RedisConnectionError: {}", Pii(str(exc)))
         # Thrown when cache.ping() fails on cache connection retrieval
         raise HTTPException(
@@ -150,7 +151,7 @@ async def create_drp_privacy_request(
     except Exception as exc:
         logger.error("Exception: {}", Pii(str(exc)))
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="DRP privacy request could not be exercised",
         )
 
@@ -161,7 +162,7 @@ async def create_drp_privacy_request(
     response_model=PrivacyRequestDRPStatusResponse,
 )
 def get_request_status_drp(
-    *, db: Session = Depends(deps.get_db), request_id: str
+    *, db: Session = Depends(get_db), request_id: str
 ) -> PrivacyRequestDRPStatusResponse:
     """
     Returns PrivacyRequest information where the respective privacy request is associated with
@@ -194,7 +195,7 @@ def get_request_status_drp(
     dependencies=[Security(verify_oauth_client, scopes=[scopes.POLICY_READ])],
     response_model=DrpDataRightsResponse,
 )
-def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsResponse:
+def get_drp_data_rights(*, db: Session = Depends(get_db)) -> DrpDataRightsResponse:
     """
     Query all policies and determine the list of DRP actions that are attached to existing policies.
     """
@@ -218,7 +219,7 @@ def get_drp_data_rights(*, db: Session = Depends(deps.get_db)) -> DrpDataRightsR
     response_model=PrivacyRequestDRPStatusResponse,
 )
 def revoke_request(
-    *, db: Session = Depends(deps.get_db), data: DrpRevokeRequest
+    *, db: Session = Depends(get_db), data: DrpRevokeRequest
 ) -> PrivacyRequestDRPStatusResponse:
     """
     Revoke a pending privacy request.

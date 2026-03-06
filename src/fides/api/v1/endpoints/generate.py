@@ -17,7 +17,6 @@ from fides.api.db.ctl_session import get_async_db
 from fides.api.models.sql_models import sql_model_map  # type: ignore[attr-defined]
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util.api_router import APIRouter
-from fides.api.v1.endpoints import API_PREFIX
 from fides.cli.core.dataset import (
     generate_bigquery_datasets,
     generate_db_datasets,
@@ -25,6 +24,7 @@ from fides.cli.core.dataset import (
 )
 from fides.cli.core.system import generate_aws_systems, generate_okta_systems
 from fides.common import scope_registry
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.common.utils import validate_db_engine
 from fides.config.schemas.credentials import (
     AWSConfig,
@@ -35,7 +35,7 @@ from fides.config.schemas.credentials import (
     OktaConfig,
 )
 
-GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{API_PREFIX}/generate")
+GENERATE_ROUTER = APIRouter(tags=["Generate"], prefix=f"{V1_URL_PREFIX}/generate")
 
 
 class ValidTargets(StrEnum):

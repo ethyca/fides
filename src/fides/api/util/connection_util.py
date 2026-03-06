@@ -6,7 +6,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field, ValidationError
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_CONTENT
 
 from fides.api import deps
 from fides.api.common_exceptions import (
@@ -88,12 +88,14 @@ def validate_secrets(
         return connection_service.validate_secrets(request_body, connection_config)
     except SaaSConfigNotFoundException:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=validate_secrets_error_message(),
         )
     except FidesValidationError as e:
         # Check if the exception has the original pydantic errors attached
-        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=e.message
+        )
     except ValidationError as e:
         errors = e.errors(include_url=False, include_input=False)
         for err in errors:
@@ -101,7 +103,7 @@ def validate_secrets(
             # this may contain sensitive information
             err.pop("ctx", None)
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(errors),
         )
 
@@ -160,13 +162,13 @@ def patch_connection_configs(
                 err.pop("ctx", None)
 
             raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=jsonable_encoder(errors),
             )
         except ValueError as exc:
             # Handle missing saas_connector_type and other validation errors
             raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=str(exc),
             )
         except Exception as e:
@@ -278,7 +280,7 @@ def update_connection_secrets(
         )
     except SaaSConfigNotFoundException:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=validate_secrets_error_message(),
         )
     except ValidationError as e:
@@ -288,9 +290,11 @@ def update_connection_secrets(
             # this may contain sensitive information
             err.pop("ctx", None)
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(errors),
         )
     except FidesValidationError as e:
         # Check if the exception has the original pydantic errors attached
-        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=e.message
+        )

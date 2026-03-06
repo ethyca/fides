@@ -18,11 +18,10 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
-from fides.api import deps
-from fides.api.deps import get_connection_service
+from fides.api.deps import get_connection_service, get_db
 from fides.api.models.connection_oauth_credentials import OAuthConfig
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.event_audit import EventAuditType
@@ -80,7 +79,7 @@ router = APIRouter(tags=["Connections"], prefix=V1_URL_PREFIX)
 )
 def get_connections(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     params: Params = Depends(),
     search: Optional[str] = None,
     disabled: Optional[bool] = None,
@@ -186,7 +185,7 @@ def get_connections(
     response_model=ConnectionConfigurationResponseWithSystemKey,
 )
 def get_connection_detail(
-    connection_key: FidesKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, db: Session = Depends(get_db)
 ) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
     connection_config = (
@@ -213,7 +212,7 @@ def get_connection_detail(
 )
 def patch_connections(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     configs: Annotated[
         List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)
     ],  # type: ignore
@@ -235,7 +234,7 @@ def patch_connections(
     response_model=None,
 )
 def delete_connection(
-    connection_key: FidesKey, *, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, *, db: Session = Depends(get_db)
 ) -> None:
     delete_connection_config(db, connection_key)
 
@@ -301,7 +300,7 @@ def patch_connection_config_secrets(
 def test_connection_config_secrets(
     connection_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
 ) -> TestStatusMessage:
     """
     Endpoint to test a connection at any time using the saved configuration secrets.
@@ -320,7 +319,7 @@ def put_connection_oauth_config(
     connection_key: FidesKey,
     *,
     oauth_config: OAuthConfigSchema,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
@@ -330,7 +329,7 @@ def put_connection_oauth_config(
 
     if connection_config.connection_type != ConnectionType.https:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="OAuth2 configuration can only be set for HTTPS connections.",
         )
 
@@ -369,7 +368,7 @@ def put_connection_oauth_config(
 def delete_connection_oauth_config(
     connection_key: FidesKey,
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
 ) -> None:
     """
     Delete the OAuth2 configuration for a given connection.
@@ -378,7 +377,7 @@ def delete_connection_oauth_config(
 
     if connection_config.connection_type != ConnectionType.https:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="OAuth2 configuration can only be deleted for HTTPS connections",
         )
 
@@ -402,7 +401,7 @@ def patch_connection_oauth_config(
     connection_key: FidesKey,
     *,
     oauth_config: OAuthConfigSchema,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(get_db),
     verify: Optional[bool] = True,
 ) -> TestStatusMessage:
     """
@@ -412,7 +411,7 @@ def patch_connection_oauth_config(
 
     if connection_config.connection_type != ConnectionType.https:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="OAuth2 configuration can only be set for HTTPS connections.",
         )
 
@@ -451,7 +450,7 @@ def patch_connection_oauth_config(
         connection_config.save(db=db)
     except sqlalchemy.exc.IntegrityError as exc:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Invalid OAuth2 configuration.",
         ) from exc
 

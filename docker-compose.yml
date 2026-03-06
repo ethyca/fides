@@ -125,7 +125,7 @@ services:
 
   worker-other:
     image: ethyca/fides:local${IMAGE_SUFFIX:-}
-    command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
+    command: fides worker --reload --reload-dir src --reload-dir data --exclude-queues=fides.dsr,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
     depends_on:
       redis:
         condition: service_started
@@ -136,6 +136,8 @@ services:
       interval: 20s
       timeout: 20s
       retries: 10
+    env_file:
+      - .env
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
@@ -155,14 +157,14 @@ services:
   worker-privacy-preferences:
     extends:
       service: worker-other
-    command: fides worker --queues=fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion
+    command: fides worker --reload --reload-dir src --reload-dir data --queues=fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion
 
   worker-dsr:
     extends:
       service: worker-other
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9001/"]
-    command: fides worker --queues=fides.dsr
+    command: fides worker --reload --reload-dir src --reload-dir data --queues=fides.dsr
 
   redis:
     image: "redis:8.0-alpine"

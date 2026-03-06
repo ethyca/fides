@@ -12,7 +12,7 @@ from starlette.status import (
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
@@ -42,7 +42,11 @@ from fides.api.schemas.saas.saas_config import (
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import validate_secrets_error_message
 from fides.api.util.event_audit_util import generate_connection_audit_event_details
-from fides.common.scope_registry import (
+from fides.api.util.saas_util import (
+    load_config_from_string,
+    validate_connector_param_restrictions,
+)
+from fides.common.api.scope_registry import (
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
@@ -66,6 +70,7 @@ from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,
 )
+from fides.service.connection.connector_registry_service import ConnectorRegistry
 from fides.service.event_audit.event_audit_service import EventAuditService
 
 router = APIRouter(tags=["SaaS Configs"], prefix=V1_URL_PREFIX)
@@ -109,20 +114,20 @@ def verify_oauth_connection_config(
     saas_config = connection_config.get_saas_config()
     if not saas_config:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="The connection config does not contain a SaaS config.",
         )
 
     authentication = saas_config.client_config.authentication
     if not authentication:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="The connection config does not contain an authentication configuration.",
         )
 
     if authentication.strategy != OAuth2AuthorizationCodeAuthenticationStrategy.name:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail="The connection config does not use OAuth2 Authorization Code authentication.",
         )
 
@@ -175,6 +180,32 @@ def patch_saas_config(
         saas_config.fides_key,
         connection_config.key,
     )
+
+    existing_saas_config = connection_config.get_saas_config()
+    if not existing_saas_config:
+        template = ConnectorRegistry.get_connector_template(saas_config.type)
+        if template:
+            existing_saas_config = SaaSConfig(
+                **load_config_from_string(template.config)
+            )
+        else:
+            raise HTTPException(
+                status_code=HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=(
+                    "Cannot create a SaaS config via PATCH when no existing config "
+                    "or connector template is available. Use the connector template "
+                    "registration flow instead."
+                ),
+            )
+
+    try:
+        validate_connector_param_restrictions(existing_saas_config, saas_config)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        )
+
     connection_config.update_saas_config(db, saas_config=saas_config)
 
     # Create audit event for SaaS config update
@@ -342,12 +373,14 @@ def instantiate_connection(
         )
     except SaaSConfigNotFoundException:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=validate_secrets_error_message(),
         )
     except FidesValidationError as e:
         # Check if the exception has the original pydantic errors attached
-        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=e.message
+        )
     except ValidationError as e:
         errors = e.errors(include_url=False, include_input=False)
         for err in errors:
@@ -355,7 +388,7 @@ def instantiate_connection(
             # this may contain sensitive information
             err.pop("ctx", None)
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(errors),
         )
     except Exception as exc:

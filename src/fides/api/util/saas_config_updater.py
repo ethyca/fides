@@ -27,13 +27,11 @@ def update_saas_configs(db: Session) -> None:
     """
     event_audit_service = EventAuditService(db)
     saas_connection_service = ConnectionService(db, event_audit_service)
-    for connector_type in ConnectorRegistry.connector_types():
+    all_templates = ConnectorRegistry.get_combined_templates()
+    for connector_type, template in all_templates.items():
         logger.debug(
             "Determining if any updates are needed for connectors of type {} based on templates...",
             connector_type,
-        )
-        template: ConnectorTemplate = ConnectorRegistry.get_connector_template(  # type: ignore
-            connector_type
         )
 
         # Store the original template dataset (with placeholders) instead of the modified version

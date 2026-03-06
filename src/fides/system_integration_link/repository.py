@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from sqlalchemy import and_, delete, exists
 from sqlalchemy.future import select
-from sqlalchemy.orm import Load, Session, joinedload, load_only, noload, selectinload
+from sqlalchemy.orm import Load, Session, load_only, noload, selectinload
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
@@ -11,7 +11,9 @@ from fides.common.session_management import (
     with_optional_sync_session,
 )
 from fides.system_integration_link.entities import (
+    ConnectionConfigRef,
     SystemIntegrationLinkEntity,
+    SystemRef,
 )
 from fides.system_integration_link.models import (
     SystemConnectionConfigLink,
@@ -52,15 +54,20 @@ class SystemIntegrationLinkRepository:
         self, connection_config_id: str, *, session: Session
     ) -> list[SystemIntegrationLinkEntity]:
         stmt = (
-            select(SystemConnectionConfigLink)
-            .options(joinedload(SystemConnectionConfigLink.system))
+            select(SystemConnectionConfigLink, System.fides_key, System.name)
+            .join(System, SystemConnectionConfigLink.system_id == System.id)
             .where(
                 SystemConnectionConfigLink.connection_config_id == connection_config_id
             )
             .order_by(SystemConnectionConfigLink.created_at.asc())
         )
-        links = session.execute(stmt).scalars().unique().all()
-        return [SystemIntegrationLinkEntity.from_orm(link) for link in links]
+        rows = session.execute(stmt).all()
+        return [
+            SystemIntegrationLinkEntity.from_orm(
+                link, system_fides_key=fides_key, system_name=name
+            )
+            for link, fides_key, name in rows
+        ]
 
     @with_optional_sync_readonly_session
     def get_link(
@@ -71,15 +78,20 @@ class SystemIntegrationLinkRepository:
         session: Session,
     ) -> Optional[SystemIntegrationLinkEntity]:
         stmt = (
-            select(SystemConnectionConfigLink)
-            .options(joinedload(SystemConnectionConfigLink.system))
+            select(SystemConnectionConfigLink, System.fides_key, System.name)
+            .join(System, SystemConnectionConfigLink.system_id == System.id)
             .where(
                 SystemConnectionConfigLink.connection_config_id == connection_config_id,
                 SystemConnectionConfigLink.system_id == system_id,
             )
         )
-        link = session.execute(stmt).scalars().unique().first()
-        return SystemIntegrationLinkEntity.from_orm(link) if link else None
+        row = session.execute(stmt).first()
+        if not row:
+            return None
+        link, fides_key, name = row
+        return SystemIntegrationLinkEntity.from_orm(
+            link, system_fides_key=fides_key, system_name=name
+        )
 
     @with_optional_sync_session
     def create_or_update_link(
@@ -110,7 +122,7 @@ class SystemIntegrationLinkRepository:
         session.add(link)
         session.flush()
         session.refresh(link)
-        return SystemIntegrationLinkEntity.from_orm(link)
+        return self._to_entity_with_system(link, session=session)
 
     @with_optional_sync_session
     def get_or_create_link(
@@ -128,7 +140,7 @@ class SystemIntegrationLinkRepository:
         existing = session.execute(stmt).scalars().first()
         if existing:
             session.refresh(existing)
-            return SystemIntegrationLinkEntity.from_orm(existing)
+            return self._to_entity_with_system(existing, session=session)
 
         link = SystemConnectionConfigLink(
             connection_config_id=connection_config_id,
@@ -137,7 +149,19 @@ class SystemIntegrationLinkRepository:
         session.add(link)
         session.flush()
         session.refresh(link)
-        return SystemIntegrationLinkEntity.from_orm(link)
+        return self._to_entity_with_system(link, session=session)
+
+    def _to_entity_with_system(
+        self, link: SystemConnectionConfigLink, *, session: Session
+    ) -> SystemIntegrationLinkEntity:
+        """Convert an ORM link to an entity, fetching system info via a join."""
+        stmt = select(System.fides_key, System.name).where(System.id == link.system_id)
+        row = session.execute(stmt).one()
+        return SystemIntegrationLinkEntity.from_orm(
+            link,
+            system_fides_key=row.fides_key,
+            system_name=row.name,
+        )
 
     @with_optional_sync_session
     def delete_links(
@@ -179,13 +203,19 @@ class SystemIntegrationLinkRepository:
     @with_optional_sync_readonly_session
     def resolve_connection_config(
         self, connection_key: str, *, session: Session
-    ) -> Optional[ConnectionConfig]:
-        stmt = select(ConnectionConfig).where(ConnectionConfig.key == connection_key)
-        return session.execute(stmt).scalars().first()
+    ) -> Optional[ConnectionConfigRef]:
+        stmt = select(ConnectionConfig.id, ConnectionConfig.key).where(
+            ConnectionConfig.key == connection_key
+        )
+        row = session.execute(stmt).first()
+        return ConnectionConfigRef(id=row.id, key=row.key) if row else None
 
     @with_optional_sync_readonly_session
     def resolve_system(
         self, system_fides_key: str, *, session: Session
-    ) -> Optional[System]:
-        stmt = select(System).where(System.fides_key == system_fides_key)
-        return session.execute(stmt).scalars().first()
+    ) -> Optional[SystemRef]:
+        stmt = select(System.id, System.fides_key).where(
+            System.fides_key == system_fides_key
+        )
+        row = session.execute(stmt).first()
+        return SystemRef(id=row.id, fides_key=row.fides_key) if row else None

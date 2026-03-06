@@ -10,7 +10,6 @@ from fides.api.db.ctl_session import async_session, get_async_db
 from fides.api.util.cache import get_cache as get_redis_connection
 from fides.common.session_management import (
     get_api_session,
-    get_db,
     get_readonly_api_session,
 )
 from fides.config import CONFIG, FidesConfig
@@ -30,6 +29,15 @@ from fides.service.user.user_service import UserService
 def get_config() -> FidesConfig:
     """Returns the config for use in dependency injection."""
     return get_app_config()
+
+
+def get_db() -> Generator:
+    """Return our database session"""
+    try:
+        db = get_api_session()
+        yield db
+    finally:
+        db.close()
 
 
 def get_readonly_db() -> Generator:

@@ -40,6 +40,7 @@ from fides.api.task.create_request_tasks import (
 )
 from fides.api.util.cache import FidesopsRedis
 from fides.api.util.collection_util import Row
+from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
@@ -377,6 +378,13 @@ def _dataset(connector_type: str) -> Dict[str, Any]:
 
 def _connection_config(db: Session, config, secrets) -> ConnectionConfig:
     fides_key = config["fides_key"]
+    for param in config.get("connector_params", []):
+        allowed_values = param.get("allowed_values")
+        param_type = param.get("type")
+        name = param.get("name")
+        value = secrets.get(name)
+        if param_type == "endpoint" and allowed_values and isinstance(value, str):
+            validate_value_against_allowed_list(value, allowed_values, name)
     connection_config = ConnectionConfig.create(
         db=db,
         data={

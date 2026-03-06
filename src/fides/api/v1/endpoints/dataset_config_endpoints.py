@@ -21,11 +21,11 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api import deps
-from fides.api.deps import get_dataset_config_service
+from fides.api.deps import get_dataset_config_service, get_db
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
@@ -82,7 +82,7 @@ class DatasetConfigParams(Params):
 
 # Helper method to inject the parent ConnectionConfig into these child routes
 def _get_connection_config(
-    connection_key: FidesKey, db: Session = Depends(deps.get_db)
+    connection_key: FidesKey, db: Session = Depends(get_db)
 ) -> ConnectionConfig:
     logger.debug("Finding connection config with key '{}'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
@@ -127,7 +127,7 @@ def validate_dataset(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -219,7 +219,7 @@ def patch_dataset_configs(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -251,7 +251,7 @@ def patch_datasets(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
 
@@ -299,7 +299,7 @@ async def patch_yaml_datasets(
         )
     except PydanticValidationError as e:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Dataset validation failed: {str(e)}",
         )
 

@@ -4,6 +4,8 @@ from celery import VERSION_BANNER
 from celery.apps.worker import Worker
 from celery.signals import celeryd_after_setup
 from loguru import logger
+from watchfiles import run_process
+from watchfiles.filters import DefaultFilter
 
 from fides.api.db.base import Base  # type: ignore
 from fides.api.tasks import (
@@ -21,14 +23,44 @@ from fides.api.tasks import (
 from fides.service.privacy_request.saas_request.override_implementations import *
 
 
+class _PythonAndYamlFilter(DefaultFilter):
+    """Extends DefaultFilter to only trigger on Python and YAML file changes."""
+
+    allowed_extensions = (".py", ".yml", ".yaml")
+
+    def __call__(self, change: Any, path: str) -> bool:
+        if not super().__call__(change, path):
+            return False
+        return path.endswith(self.allowed_extensions)
+
+
+def _run_celery_worker(worker_queues: str) -> None:
+    """Run the Celery worker process. Extracted so it can be used as a watchfiles target."""
+    celery_app.worker_main(
+        argv=[
+            "--quiet",  # Disable Celery startup banner
+            "worker",
+            "--loglevel=info",
+            "--concurrency=2",
+            f"--queues={worker_queues}",
+        ]
+    )
+
+
 def start_worker(
-    queues: Optional[str] = None, exclude_queues: Optional[str] = None
+    queues: Optional[str] = None,
+    exclude_queues: Optional[str] = None,
+    reload: bool = False,
+    reload_dirs: Optional[List[str]] = None,
 ) -> None:
     """
     Start a Celery worker. Optionally provide a list of queues for the worker to consume,
     as a comma-separated string, or a list of queues to exclude.
     If no queues are provided, the worker will consume from all queues: the default queue,
     the messaging queue, and the privacy preferences queue.
+
+    If reload is True, the worker will automatically restart when Python or YAML files
+    change in the watched directories (similar to uvicorn --reload).
     """
 
     assert not queues or not exclude_queues, (
@@ -68,15 +100,17 @@ def start_worker(
 
     logger.info(f"Running Celery worker for queues: {worker_queues}")
 
-    celery_app.worker_main(
-        argv=[
-            "--quiet",  # Disable Celery startup banner
-            "worker",
-            "--loglevel=info",
-            "--concurrency=2",
-            f"--queues={worker_queues}",
-        ]
-    )
+    if reload:
+        watch_dirs = reload_dirs or ["src", "data"]
+        logger.info(f"Hot-reload enabled, watching directories: {watch_dirs}")
+        run_process(
+            *watch_dirs,
+            target=_run_celery_worker,
+            args=(worker_queues,),
+            watch_filter=_PythonAndYamlFilter(),
+        )
+    else:
+        _run_celery_worker(worker_queues)
 
 
 def validate_queues(queues_string: str, known_queues: List[str]) -> None:
