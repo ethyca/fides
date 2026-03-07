@@ -46,13 +46,17 @@ class CoverageConfig:
 @dataclass
 class XdistConfig:
     parallel_runners: str = "auto"
+    dist_mode: Optional[str] = None  # e.g. "loadfile", "loadscope"; improves grouping when set
 
     def __str__(self):
         return " ".join(self.args)
 
     @property
     def args(self) -> list[str]:
-        return ["-n", self.parallel_runners]
+        args = ["-n", self.parallel_runners]
+        if self.parallel_runners != "0" and self.dist_mode:
+            args.extend(["--dist", self.dist_mode])
+        return args
 
 
 @dataclass

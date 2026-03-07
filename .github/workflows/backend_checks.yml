@@ -340,6 +340,8 @@ jobs:
   Safe-Tests:
     needs: [Check-Backend-Changes, Check-Container-Startup]
     if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    env:
+      PYTEST_XDIST_WORKERS: "2"
     strategy:
       fail-fast: false
       matrix:
