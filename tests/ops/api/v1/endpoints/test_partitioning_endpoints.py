@@ -1,7 +1,7 @@
 import pytest
 from fastapi import status
 
-from fides.common.api.scope_registry import CTL_DATASET_READ
+from fides.common.scope_registry import CTL_DATASET_READ
 
 
 @pytest.mark.integration
