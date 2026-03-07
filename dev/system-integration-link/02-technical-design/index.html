@@ -1827,7 +1827,7 @@ You're not viewing the latest version.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fides.system_integration_link.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemConnectionConfigLink</span>
 </code></pre></div></td></tr></table></div>
 <h3 id="session-management">Session Management</h3>
-<p>The service and repository use the shared <code>@with_optional_sync_session</code> decorator from <code>src/fides/core/repository/session_management.py</code>. This decorator provides composable session semantics:</p>
+<p>The service and repository use the shared <code>@with_optional_sync_session</code> decorator from <code>src/fides/common/session_management.py</code>. This decorator provides composable session semantics:</p>
 <ul>
 <li><strong>When called without a session</strong> (from routes): creates a new session, commits on success, closes on exit.</li>
 <li><strong>When called with a session</strong> (from another service/repo method): participates in the caller's transaction (flush only, no commit).</li>
