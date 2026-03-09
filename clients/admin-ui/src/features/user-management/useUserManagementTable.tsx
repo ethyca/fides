@@ -118,6 +118,8 @@ export const UserActionsCell = ({ user }: { user: User }) => {
 };
 
 const useUserManagementTable = () => {
+  const { flags } = useFlags();
+  const isRbacEnabled = flags.alphaRbac;
   const loggedInUser = useAppSelector(selectUser);
   const canUserDelete = useHasPermission([ScopeRegistryEnum.USER_DELETE]);
   const canUserUpdate = useHasPermission([ScopeRegistryEnum.USER_UPDATE]);
@@ -207,7 +209,7 @@ const useUserManagementTable = () => {
         key: "last_name",
       },
       {
-        title: "Permissions",
+        title: isRbacEnabled ? "Roles" : "Permissions",
         key: "permissions",
         render: (_: unknown, user: User) => (
           <UserPermissionsCell userId={user.id ?? ""} />
@@ -240,7 +242,7 @@ const useUserManagementTable = () => {
           ]
         : []),
     ],
-    [canUserDelete, canUserUpdate, loggedInUser],
+    [canUserDelete, canUserUpdate, isRbacEnabled, loggedInUser],
   );
 
   return {
