@@ -171,6 +171,13 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/trends",
         params,
       }),
+      transformResponse: (response: TrendsResponse) => {
+        // Normalize keyed object → array when backend migrates
+        if (!Array.isArray(response.metrics)) {
+          response.metrics = Object.values(response.metrics);
+        }
+        return response;
+      },
       providesTags: [{ type: "Fides Dashboard", id: "trends" }],
     }),
     getAstralis: build.query<AstralisResponse, void>({
