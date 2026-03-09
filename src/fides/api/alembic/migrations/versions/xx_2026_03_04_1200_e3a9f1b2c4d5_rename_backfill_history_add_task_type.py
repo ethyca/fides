@@ -1,5 +1,12 @@
 """Rename backfill_history to post_upgrade_background_migration_tasks, add task_type column
 
+Renames the table, adds a task_type discriminator and a surrogate PK, and makes
+completed_at nullable to distinguish "registered/in-progress" from "done".
+
+This migration also pre-populates the table with entries for all deferred indexes
+that predate this change (listed in EXISTING_INDEX_KEYS), marking them as completed
+so the background index-creation script treats them as already processed.
+
 Revision ID: e3a9f1b2c4d5
 Revises: bf12f05ef8eb
 Create Date: 2026-03-04 12:00:00.000000
