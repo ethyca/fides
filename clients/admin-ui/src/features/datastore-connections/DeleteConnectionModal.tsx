@@ -33,9 +33,9 @@ const DeleteConnectionModal = ({
     useDeleteDatastoreConnectionMutation();
   const router = useRouter();
 
-  const handleDeleteConnection = () => {
+  const handleDeleteConnection = async () => {
     if (connection_key) {
-      deleteConnection(connection_key);
+      await deleteConnection(connection_key);
       if (!showMenu) {
         router.push(INTEGRATION_MANAGEMENT_ROUTE);
       }

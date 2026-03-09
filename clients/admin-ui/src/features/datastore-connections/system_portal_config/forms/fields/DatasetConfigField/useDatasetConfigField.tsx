@@ -22,9 +22,10 @@ export const useDatasetConfigField = ({
 }: UseDatasetConfigField) => {
   const [putDatasetConfig] = usePutDatasetConfigsMutation();
 
-  const { data } = useGetConnectionConfigDatasetConfigsQuery(
-    connectionConfig?.key ?? "",
-  );
+  const connectionKey = connectionConfig?.key ?? "";
+  const { data } = useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
+    skip: !connectionKey,
+  });
 
   const initialDatasets = data?.items?.map((d) => d.fides_key) ?? [];
   const initialDatasetOptions =

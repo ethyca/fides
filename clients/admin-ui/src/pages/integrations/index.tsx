@@ -78,7 +78,7 @@ const IntegrationListView: NextPage = () => {
   const router = useRouter();
 
   const {
-    flags: { newIntegrationManagement },
+    flags: { newIntegrationManagement, alphaJiraIntegration },
   } = useFlags();
 
   const handleSearchChange = (value: string) => {
@@ -105,17 +105,19 @@ const IntegrationListView: NextPage = () => {
     [connectionTypesData],
   );
 
-  // Filter connection types based on the new integration management flag
+  // Filter connection types based on feature flags
   const connectionTypesToQuery = useMemo(() => {
-    if (newIntegrationManagement) {
-      // Show all integrations (including SaaS) when the flag is enabled
-      return SUPPORTED_INTEGRATIONS;
+    let types = SUPPORTED_INTEGRATIONS;
+
+    if (!newIntegrationManagement) {
+      types = types.filter((type) => type !== ConnectionType.SAAS);
     }
-    // Hide SaaS integrations when the flag is disabled
-    return SUPPORTED_INTEGRATIONS.filter(
-      (type) => type !== ConnectionType.SAAS,
-    );
-  }, [newIntegrationManagement]);
+    if (!alphaJiraIntegration) {
+      types = types.filter((type) => type !== ConnectionType.JIRA_TICKET);
+    }
+
+    return types;
+  }, [newIntegrationManagement, alphaJiraIntegration]);
 
   const { data, isLoading, error } = useGetAllDatastoreConnectionsQuery({
     connection_type: connectionTypesToQuery,
@@ -196,7 +198,15 @@ const IntegrationListView: NextPage = () => {
       key: "connection_status",
       width: 150,
       render: (_, record) => {
+        const isJiraTicket =
+          record.connection_type === ConnectionType.JIRA_TICKET;
         const getConnectionStatus = () => {
+          if (isJiraTicket && !record.authorized) {
+            return {
+              status: "Unauthorized",
+              color: CUSTOM_TAG_COLOR.ERROR,
+            };
+          }
           if (
             record.last_test_timestamp === null ||
             record.last_test_timestamp === undefined
@@ -215,7 +225,9 @@ const IntegrationListView: NextPage = () => {
         const { status, color } = getConnectionStatus();
         const tooltipText = record.last_test_timestamp
           ? `Last connection: ${formatDate(record.last_test_timestamp)}`
-          : "The connection has not been tested";
+          : isJiraTicket && !record.authorized
+            ? "Jira connection has not been authorized"
+            : "The connection has not been tested";
 
         return (
           <Tooltip title={tooltipText}>

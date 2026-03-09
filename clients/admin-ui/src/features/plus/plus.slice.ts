@@ -241,12 +241,7 @@ const plusApi = baseApi.injectEndpoints({
         method: "POST",
         body: params,
       }),
-      invalidatesTags: (result, error, { resource_type, field_type }) => [
-        { type: "Custom Field Definition" },
-        { type: "Datamap" },
-        { type: "Taxonomy History", id: resource_type },
-        { type: "Taxonomy History", id: field_type },
-      ],
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
     updateCustomFieldDefinition: build.mutation<
       CustomFieldDefinitionWithId,
@@ -257,65 +252,36 @@ const plusApi = baseApi.injectEndpoints({
         method: "PUT",
         body: params,
       }),
-      invalidatesTags: (result, error, { resource_type, field_type }) => [
-        { type: "Custom Field Definition" },
-        { type: "Datamap" },
-        { type: "Taxonomy History", id: resource_type },
-        { type: "Taxonomy History", id: field_type },
-      ],
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
-    deleteCustomFieldDefinition: build.mutation<
-      void,
-      { id: string; resource_type: string; field_type: string }
-    >({
+    deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
       query: ({ id }) => ({
         url: `plus/custom-metadata/custom-field-definition/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, { resource_type, field_type }) => [
-        { type: "Custom Field Definition" },
-        { type: "Datamap" },
-        { type: "Taxonomy History", id: resource_type },
-        { type: "Taxonomy History", id: field_type },
-      ],
+      invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
 
     // Custom Metadata Custom Field Definition By Resource Type (supports taxonomy:<key>)
     getCustomFieldDefinitionsByResourceType: build.query<
-      (CustomFieldDefinitionWithId & { created_at: string })[],
+      CustomFieldDefinitionWithId[],
       string
     >({
-      async queryFn(resource_type, _queryApi, _extraOptions, fetchWithBQ) {
-        const result = await fetchWithBQ({
-          url: `plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(resource_type)}`,
-        });
-
-        // the API will 404 if there are no fields for the given resource
-        // type; we want to return an empty array in this case so that the last
-        // result doesn't remain cached
-        if (
-          result.error &&
-          "status" in result.error &&
-          result.error.status === 404
-        ) {
-          return { data: [] };
-        }
-
-        // any other errors should error as normal
-        if (result.error) {
-          return { error: result.error };
-        }
-
-        const response = result.data as (CustomFieldDefinitionWithId & {
-          created_at: string;
-        })[];
-        return {
-          data: response.sort((a, b) =>
-            (a.name ?? "").localeCompare(b.name ?? ""),
-          ),
-        };
-      },
+      query: (resource_type: string) => ({
+        url: `plus/custom-metadata/custom-field-definition/resource-type/${encodeURIComponent(resource_type)}`,
+      }),
       providesTags: ["Custom Field Definition"],
+      transformResponse: (
+        response: CustomFieldDefinitionWithId[] | { detail: string },
+      ) => {
+        // If the server returns a message (eg. `{detail: "No custom metadata fields found with resource type system"}`) instead of a list of definitions, it means there weren't any found. Return an empty list in that case to prevent unexpected errors in the FE code.
+        if ("detail" in response) {
+          return [];
+        }
+        return response.sort((a, b) =>
+          (a.name ?? "").localeCompare(b.name ?? ""),
+        );
+      },
     }),
     // Custom Fields: dynamic locations (legacy + custom taxonomies)
     getCustomFieldLocations: build.query<string[], void>({
@@ -323,8 +289,7 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/custom-fields/locations`,
       }),
       providesTags: ["Custom Field Definition"],
-      transformResponse: (data: string[]) =>
-        data.sort((a, b) => a.localeCompare(b)),
+      transformResponse: (data: string[]) => data.sort((a, b) => a.localeCompare(b)),
     }),
     getAllDictionaryEntries: build.query<Page_Vendor_, void>({
       query: () => ({
@@ -536,6 +501,17 @@ const plusApi = baseApi.injectEndpoints({
         body: { dataset_ids: datasetIds },
       }),
     }),
+    initiateJiraOAuth: build.mutation<
+      { authorization_url: string },
+      { connection_key: string }
+    >({
+      query: (body) => ({
+        url: `plus/oauth/jira/initiate`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Datastore Connection"],
+    }),
   }),
 });
 
@@ -580,6 +556,7 @@ export const {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
   useSyncDatahubConnectionMutation,
+  useInitiateJiraOAuthMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =
