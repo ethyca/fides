@@ -488,6 +488,7 @@ export type { PrivacyPreferencesRequest } from "./models/PrivacyPreferencesReque
 export type { PrivacyPreferenceStats } from "./models/PrivacyPreferenceStats";
 export type { PrivacyRequestAccessResults } from "./models/PrivacyRequestAccessResults";
 export type { PrivacyRequestCreate } from "./models/PrivacyRequestCreate";
+export type { PrivacyRequestDiagnosticsExportResponse } from "./models/PrivacyRequestDiagnosticsExportResponse";
 export { PrivacyRequestDRPStatus } from "./models/PrivacyRequestDRPStatus";
 export type { PrivacyRequestDRPStatusResponse } from "./models/PrivacyRequestDRPStatusResponse";
 export type { PrivacyRequestFilter } from "./models/PrivacyRequestFilter";
