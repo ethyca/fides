@@ -1221,7 +1221,7 @@ requires-dist = [
     { name = "starlette", specifier = "~=0.50.0" },
     { name = "stream-zip", specifier = "==0.0.83" },
     { name = "tenacity", specifier = "~=9.1.2" },
-    { name = "tinycss2", specifier = "==1.2.1" },
+    { name = "tinycss2", specifier = ">=1.5.0" },
     { name = "toml", specifier = "==0.10.2" },
     { name = "tornado", specifier = "~=6.5.2" },
     { name = "twilio", specifier = "==7.15.0" },
@@ -4420,14 +4420,14 @@ wheels = [
 
 [[package]]
 name = "tinycss2"
-version = "1.2.1"
+version = "1.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "webencodings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/75/be/24179dfaa1d742c9365cbd0e3f0edc5d3aa3abad415a2327c5a6ff8ca077/tinycss2-1.2.1.tar.gz", hash = "sha256:8cff3a8f066c2ec677c06dbc7b45619804a6938478d9d73c284b29d14ecb0627", size = 65957, upload-time = "2022-10-18T07:04:56.49Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/ae/2ca4913e5c0f09781d75482874c3a95db9105462a92ddd303c7d285d3df2/tinycss2-1.5.1.tar.gz", hash = "sha256:d339d2b616ba90ccce58da8495a78f46e55d4d25f9fd71dfd526f07e7d53f957", size = 88195, upload-time = "2025-11-23T10:29:10.082Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/99/fd23634d6962c2791fb8cb6ccae1f05dcbfc39bce36bba8b1c9a8d92eae8/tinycss2-1.2.1-py3-none-any.whl", hash = "sha256:2b80a96d41e7c3914b8cda8bc7f705a4d9c49275616e886103dd839dfc847847", size = 21824, upload-time = "2022-10-18T07:04:54.003Z" },
+    { url = "https://files.pythonhosted.org/packages/60/45/c7b5c3168458db837e8ceab06dc77824e18202679d0463f0e8f002143a97/tinycss2-1.5.1-py3-none-any.whl", hash = "sha256:3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661", size = 28404, upload-time = "2025-11-23T10:29:08.676Z" },
 ]
 
 [[package]]
