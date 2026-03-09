@@ -7,6 +7,7 @@ import {
   ACTION_CENTER_ROUTE,
 } from "~/features/common/nav/routes";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import ActionCenterDashboard from "~/features/data-discovery-and-detection/action-center/ActionCenterDashboard";
 import ActionCenterLayout from "~/features/data-discovery-and-detection/action-center/ActionCenterLayout";
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
 import MonitorList from "~/features/data-discovery-and-detection/action-center/MonitorList";
@@ -43,7 +44,10 @@ const ActionCenterPage: NextPage = () => {
   }
 
   return (
-    <ActionCenterLayout routeConfig={ROOT_ACTION_CENTER_CONFIG}>
+    <ActionCenterLayout
+      routeConfig={ROOT_ACTION_CENTER_CONFIG}
+      dashboard={<ActionCenterDashboard monitors={[]} />}
+    >
       <MonitorList />
     </ActionCenterLayout>
   );

@@ -26,6 +26,7 @@ export interface ActionCenterLayoutProps {
     dropdownProps?: DropdownProps;
     badgeProps?: BadgeProps;
   };
+  dashboard?: React.ReactNode;
 }
 
 const ActionCenterLayout = ({
@@ -33,6 +34,7 @@ const ActionCenterLayout = ({
   monitorId,
   routeConfig,
   pageSettings,
+  dashboard,
 }: PropsWithChildren<ActionCenterLayoutProps>) => {
   const {
     items: menuItems,
@@ -68,6 +70,7 @@ const ActionCenterLayout = ({
           )
         }
       />
+      {dashboard}
       <Menu
         aria-label="Action center tabs"
         mode="horizontal"
