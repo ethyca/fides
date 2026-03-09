@@ -5,7 +5,6 @@ from typing import Optional, Tuple
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.api.v1.endpoints.messaging_endpoints import user_email_invite_status
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
@@ -18,13 +17,21 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import dispatch_message
 from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.messaging_service import MessagingService
 
 
 class UserService:
-    def __init__(self, db: Session, config: FidesConfig, config_proxy: ConfigProxy):
+    def __init__(
+        self,
+        db: Session,
+        config: FidesConfig,
+        config_proxy: ConfigProxy,
+        messaging_service: MessagingService,
+    ):
         self.db = db
         self.config = config
         self.config_proxy = config_proxy
+        self.messaging_service = messaging_service
 
     def invite_user(self, user: FidesUser) -> None:
         """
@@ -33,8 +40,7 @@ class UserService:
         This is a no-op if email messaging isn't configured.
         """
 
-        # invite user via email if email messaging is enabled and the Admin UI URL is defined
-        if user_email_invite_status(db=self.db, config_proxy=self.config_proxy).enabled:
+        if self.messaging_service.is_email_invite_enabled():
             invite_code = str(uuid.uuid4())
             FidesUserInvite.create(
                 db=self.db, data={"username": user.username, "invite_code": invite_code}

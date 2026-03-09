@@ -64,7 +64,7 @@ from fides.api.tasks import celery_app, celery_healthcheck
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
-from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
+from fides.common.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository

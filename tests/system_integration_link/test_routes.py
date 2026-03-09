@@ -11,12 +11,12 @@ from starlette.testclient import TestClient
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE,
     SYSTEM_INTEGRATION_LINK_DELETE,
     SYSTEM_INTEGRATION_LINK_READ,
 )
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
