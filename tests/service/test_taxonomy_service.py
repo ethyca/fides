@@ -10,7 +10,6 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataUse,
 )
 from fides.api.models.taxonomy import LEGACY_TAXONOMY_KEYS, Taxonomy, TaxonomyUsage
-from fides.api.service.deps import get_taxonomy_service
 from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
 from fides.service.event_audit_service import EventAuditService
 from fides.service.taxonomy.handlers.legacy_handler import LegacyTaxonomyHandler
@@ -1155,12 +1154,6 @@ class TestTaxonomyServiceRoundTrip:
         taxonomy_service.delete_element(taxonomy_type, created.fides_key)
         db.flush()
         assert taxonomy_service.get_element(taxonomy_type, created.fides_key) is None
-
-
-class TestTaxonomyServiceDI:
-    def test_dependency_factory_returns_service_instance(self, db):
-        taxonomy_service = get_taxonomy_service(db)
-        assert isinstance(taxonomy_service, TaxonomyService)
 
 
 class TestTaxonomyServiceKeyGeneration:

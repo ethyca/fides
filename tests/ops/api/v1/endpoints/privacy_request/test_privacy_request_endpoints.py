@@ -20,10 +20,6 @@ from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
     get_connection_dataset_url,
 )
 
-from fides.api.api.v1.endpoints.privacy_request_endpoints import (
-    EMBEDDED_EXECUTION_LOG_LIMIT,
-    validate_manual_input,
-)
 from fides.api.cryptography.schemas.jwt import (
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
@@ -79,7 +75,11 @@ from fides.api.util.fuzzy_search_utils import (
     manually_reset_automaton,
     remove_refresh_automaton_signal,
 )
-from fides.common.api.scope_registry import (
+from fides.api.v1.endpoints.privacy_request_endpoints import (
+    EMBEDDED_EXECUTION_LOG_LIMIT,
+    validate_manual_input,
+)
+from fides.common.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_TEST,
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -95,7 +95,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_VIEW_DATA,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_DATASETS,
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
@@ -8778,7 +8778,7 @@ class TestRequestTaskAsyncCallback:
         )
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
+        "fides.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
     )
     def test_request_task_async_callback_no_results_supplied(
         self,
@@ -8812,7 +8812,7 @@ class TestRequestTaskAsyncCallback:
         assert request_task.get_access_data() == []
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
+        "fides.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
     )
     def test_request_task_async_callback_access_data_supplied(
         self, _, db, api_client: TestClient, url, request_task, privacy_request
@@ -8860,7 +8860,7 @@ class TestRequestTaskAsyncCallback:
         assert 422 == response.status_code
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
+        "fides.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
     )
     def test_erasure_request_task_async_callback(
         self,
@@ -9631,7 +9631,7 @@ class TestSendBatchEmailIntegrations:
         response = api_client.post(url, headers=request.getfixturevalue(auth_header))
         assert response.status_code == expected_status
 
-    @patch("fides.api.api.v1.endpoints.privacy_request_endpoints.send_email_batch")
+    @patch("fides.api.v1.endpoints.privacy_request_endpoints.send_email_batch")
     def test_send_batch_email_integrations_queues_task(
         self,
         mock_send_email_batch,
