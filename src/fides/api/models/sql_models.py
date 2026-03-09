@@ -48,6 +48,14 @@ from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.rbac import (
+    RBACConstraint,
+    RBACConstraintRole,
+    RBACPermission,
+    RBACRole,
+    RBACRolePermission,
+    RBACUserRole,
+)
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.util.taxonomy_utils import find_undeclared_categories
 from fides.config import get_config
@@ -839,6 +847,12 @@ sql_model_map: Dict = {
     "policy": PolicyCtl,
     "system": System,
     "evaluation": Evaluation,
+    "rbac_role": RBACRole,
+    "rbac_permission": RBACPermission,
+    "rbac_role_permission": RBACRolePermission,
+    "rbac_user_role": RBACUserRole,
+    "rbac_constraint": RBACConstraint,
+    "rbac_constraint_role": RBACConstraintRole,
 }
 
 
