@@ -14,14 +14,14 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     AUTHORIZE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
@@ -479,7 +479,7 @@ class TestPatchSaaSConfigAllowedValuesAfterDelete:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
 
         with mock.patch(
-            "fides.api.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
+            "fides.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
         ) as mock_template:
             mock_template.return_value = MagicMock(config=_template_yaml)
             response = api_client.patch(url, headers=auth_header, json=tampered_config)
@@ -508,7 +508,7 @@ class TestPatchSaaSConfigAllowedValuesAfterDelete:
         auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
 
         with mock.patch(
-            "fides.api.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
+            "fides.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
         ) as mock_template:
             mock_template.return_value = MagicMock(config=_template_yaml)
             response = api_client.patch(
@@ -569,7 +569,7 @@ class TestAuthorizeConnection:
         assert 403 == response.status_code
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
     )
     def test_get_authorize_url(
         self,

@@ -3,9 +3,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from fides.api.api.v1.endpoints.consent_request_endpoints import (
-    queue_privacy_request_to_propagate_consent_old_workflow,
-)
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.privacy_request import Consent, ConsentRequest, ProvidedIdentity
@@ -18,6 +15,9 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.v1.endpoints.consent_request_endpoints import (
+    queue_privacy_request_to_propagate_consent_old_workflow,
+)
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
