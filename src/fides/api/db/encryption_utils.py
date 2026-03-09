@@ -1,3 +1,5 @@
+from typing import Union
+
 from sqlalchemy import Text
 from sqlalchemy.types import TypeEngine
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -26,7 +28,9 @@ def _reset_encryption_key_cache() -> None:
     _cached_dek = None
 
 
-def encrypted_type(type_in: TypeEngine | None = None) -> StringEncryptedType:
+def encrypted_type(
+    type_in: Union[type[TypeEngine], TypeEngine, None] = None,
+) -> StringEncryptedType:
     """Build a StringEncryptedType with a callable key."""
     if type_in is None:
         type_in = Text()
