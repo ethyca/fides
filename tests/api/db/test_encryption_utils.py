@@ -55,12 +55,12 @@ class TestEncryptedType:
     def test_default_type_in_is_text(self):
         """Default underlying type should be Text."""
         col_type = encrypted_type()
-        assert isinstance(col_type.impl, Text)
+        assert isinstance(col_type.underlying_type, Text)
 
     def test_custom_type_in(self):
         """Specifying type_in should use that type."""
         col_type = encrypted_type(type_in=String())
-        assert isinstance(col_type.impl, String)
+        assert isinstance(col_type.underlying_type, String)
 
     def test_key_is_callable(self):
         """The key should be a callable (get_encryption_key), not a string."""
