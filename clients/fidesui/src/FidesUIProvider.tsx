@@ -27,6 +27,16 @@ import {
 const isMessageArgsProps = (content: unknown): content is MessageArgsProps =>
   typeof content === "object" && content !== null && "content" in content;
 
+/**
+ * Wraps an Ant message method to inject a default Carbon icon.
+ *
+ * Supports both calling conventions:
+ *   message.success("Saved!")                           - simple content
+ *   message.success({ content: "Saved!", duration: 5 }) - with options
+ *
+ * Prefer the simple string form for basic feedback. Use the config
+ * object form when you need to set duration, onClose, or override the icon.
+ */
 const wrapMessageMethod = (
   method: MessageTypeOpen,
   type: FeedbackType,
