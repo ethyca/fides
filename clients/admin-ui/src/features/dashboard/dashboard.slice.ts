@@ -135,15 +135,15 @@ const dashboardApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     resetDashboard: build.mutation<ResetResponse, void>({
       query: () => ({ url: "plus/dashboard/reset", method: "POST" }),
-      invalidatesTags: ["Dashboard"],
+      invalidatesTags: ["Fides Dashboard"],
     }),
     getDashboardPosture: build.query<PostureResponse, void>({
       query: () => ({ url: "plus/dashboard/posture" }),
-      providesTags: [{ type: "Dashboard", id: "posture" }],
+      providesTags: [{ type: "Fides Dashboard", id: "posture" }],
     }),
     getAgentBriefing: build.query<AgentBriefingResponse, void>({
       query: () => ({ url: "plus/dashboard/agent-briefing" }),
-      providesTags: [{ type: "Dashboard", id: "briefing" }],
+      providesTags: [{ type: "Fides Dashboard", id: "briefing" }],
     }),
     getPriorityActions: build.query<
       PriorityActionsResponse,
@@ -153,7 +153,7 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/actions",
         params: params ?? { page: 1, size: 8 },
       }),
-      providesTags: [{ type: "Dashboard", id: "actions" }],
+      providesTags: [{ type: "Fides Dashboard", id: "actions" }],
     }),
     updatePriorityAction: build.mutation<
       PriorityAction,
@@ -164,18 +164,18 @@ const dashboardApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
-      invalidatesTags: [{ type: "Dashboard", id: "actions" }],
+      invalidatesTags: [{ type: "Fides Dashboard", id: "actions" }],
     }),
     getDashboardTrends: build.query<TrendsResponse, { period: TrendPeriod }>({
       query: (params) => ({
         url: "plus/dashboard/trends",
         params,
       }),
-      providesTags: [{ type: "Dashboard", id: "trends" }],
+      providesTags: [{ type: "Fides Dashboard", id: "trends" }],
     }),
     getAstralis: build.query<AstralisResponse, void>({
       query: () => ({ url: "plus/dashboard/astralis" }),
-      providesTags: [{ type: "Dashboard", id: "astralis" }],
+      providesTags: [{ type: "Fides Dashboard", id: "astralis" }],
     }),
     getActivityFeed: build.query<
       ActivityFeedResponse,
@@ -185,7 +185,7 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/activity-feed",
         params: params ?? {},
       }),
-      providesTags: [{ type: "Dashboard", id: "activity-feed" }],
+      providesTags: [{ type: "Fides Dashboard", id: "activity-feed" }],
     }),
     getPrivacyRequests: build.query<
       PrivacyRequestsResponse,
@@ -195,7 +195,7 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/privacy-requests",
         params: params ?? {},
       }),
-      providesTags: [{ type: "Dashboard", id: "privacy-requests" }],
+      providesTags: [{ type: "Fides Dashboard", id: "privacy-requests" }],
     }),
   }),
 });
