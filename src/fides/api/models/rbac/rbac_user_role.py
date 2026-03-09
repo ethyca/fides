@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, relationship
 
@@ -100,16 +100,9 @@ class RBACUserRole(Base):
         foreign_keys=[assigned_by],
     )
 
-    # Ensure unique combination of user, role, resource_type, resource_id
-    __table_args__ = (
-        UniqueConstraint(
-            "user_id",
-            "role_id",
-            "resource_type",
-            "resource_id",
-            name="uq_rbac_user_role_assignment",
-        ),
-    )
+    # Note: Uniqueness is enforced by partial indexes in the migration
+    # (uq_rbac_user_role_global, uq_rbac_user_role_type_scoped, uq_rbac_user_role_fully_scoped)
+    # to correctly handle NULL values in PostgreSQL
 
     def __repr__(self) -> str:
         scope = (

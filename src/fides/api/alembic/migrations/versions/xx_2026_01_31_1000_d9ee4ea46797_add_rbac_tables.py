@@ -1,7 +1,7 @@
 """Add RBAC tables for dynamic role-based access control
 
 Revision ID: d9ee4ea46797
-Revises: f85bd4c08401
+Revises: bf12f05ef8eb
 Create Date: 2026-01-31 10:00:00.000000
 
 """
