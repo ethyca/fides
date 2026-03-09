@@ -29,7 +29,7 @@ import {
 interface FormValues {
   fieldAddress: string;
   operator: Operator;
-  value?: string | boolean | Dayjs;
+  value?: string | boolean | Dayjs | string[];
 }
 
 interface AddConditionFormProps {
@@ -117,10 +117,13 @@ const AddConditionForm = ({
 
   const handleSubmit = useCallback(
     (values: FormValues) => {
+      const parsedValue = parseConditionValue(values.operator, values.value);
       const condition: ConditionLeaf = {
         field_address: values.fieldAddress.trim(),
         operator: values.operator,
-        value: parseConditionValue(values.operator, values.value),
+        // The auto-generated ConditionLeaf type doesn't include string[] but the
+        // backend accepts arrays for list operators like LIST_CONTAINS
+        value: parsedValue as ConditionLeaf["value"],
       };
 
       onAdd(condition);
@@ -164,6 +167,15 @@ const AddConditionForm = ({
       form.setFieldValue("value", "");
     }
   }, [isValueDisabled, form]);
+
+  // Reset value when the user manually changes the operator to prevent stale
+  // array values (e.g. from LIST_CONTAINS multiselect) being submitted with
+  // a non-list operator like EQ
+  useEffect(() => {
+    if (form.isFieldTouched("operator")) {
+      form.setFieldValue("value", undefined);
+    }
+  }, [selectedOperator, form]);
 
   return (
     <Form
@@ -256,6 +268,7 @@ const AddConditionForm = ({
           disabled={isValueDisabled}
           fieldAddress={selectedFieldAddress}
           customFieldMetadata={customFieldMetadata}
+          operator={selectedOperator}
         />
       </Form.Item>
 

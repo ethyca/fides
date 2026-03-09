@@ -1,8 +1,9 @@
 import {
   Button,
+  Card,
   ChakraBox as Box,
-  ChakraFlex as Flex,
   ChakraSpacer as Spacer,
+  Flex,
   TabsProps,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
@@ -16,6 +17,7 @@ import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrat
 import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
+import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
 import { ConnectionSystemTypeMap, IntegrationFeature } from "~/types/api";
 
 interface UseFeatureBasedTabsProps {
@@ -31,6 +33,7 @@ interface UseFeatureBasedTabsProps {
   overview?: React.ReactNode;
   instructions?: React.ReactNode;
   supportsConnectionTest: boolean;
+  supportsSystemLinking: boolean;
 }
 
 export const useFeatureBasedTabs = ({
@@ -46,6 +49,7 @@ export const useFeatureBasedTabs = ({
   overview,
   instructions,
   supportsConnectionTest,
+  supportsSystemLinking,
 }: UseFeatureBasedTabsProps) => {
   const { onOpen, isOpen, onClose } = useDisclosure();
   const tabs = useMemo(() => {
@@ -84,45 +88,39 @@ export const useFeatureBasedTabs = ({
         label: "Connection",
         key: "connection",
         children: (
-          <Box>
+          <Flex vertical gap="middle">
             {supportsConnectionTest && (
-              <Flex
-                borderRadius="md"
-                outline="1px solid"
-                outlineColor="gray.100"
-                align="center"
-                p={3}
-              >
-                <Flex flexDirection="column">
+              <Card size="small">
+                <Flex>
                   <ConnectionStatusNotice
                     testData={testData}
                     connectionOption={integrationOption}
                   />
+                  <Spacer />
+                  <Flex gap="middle">
+                    {needsAuthorization && (
+                      <Button
+                        onClick={handleAuthorize}
+                        data-testid="authorize-integration-btn"
+                      >
+                        Authorize integration
+                      </Button>
+                    )}
+                    {!needsAuthorization && (
+                      <Button
+                        onClick={testConnection}
+                        loading={testIsLoading}
+                        data-testid="test-connection-btn"
+                      >
+                        Test connection
+                      </Button>
+                    )}
+                    <Button onClick={onOpen} data-testid="manage-btn">
+                      Manage
+                    </Button>
+                  </Flex>
                 </Flex>
-                <Spacer />
-                <div className="flex gap-4">
-                  {needsAuthorization && (
-                    <Button
-                      onClick={handleAuthorize}
-                      data-testid="authorize-integration-btn"
-                    >
-                      Authorize integration
-                    </Button>
-                  )}
-                  {!needsAuthorization && (
-                    <Button
-                      onClick={testConnection}
-                      loading={testIsLoading}
-                      data-testid="test-connection-btn"
-                    >
-                      Test connection
-                    </Button>
-                  )}
-                  <Button onClick={onOpen} data-testid="manage-btn">
-                    Manage
-                  </Button>
-                </div>
-              </Flex>
+              </Card>
             )}
             <ConfigureIntegrationModal
               isOpen={isOpen}
@@ -132,8 +130,16 @@ export const useFeatureBasedTabs = ({
             />
             {overview}
             {instructions}
-          </Box>
+          </Flex>
         ),
+      });
+    }
+
+    if (supportsSystemLinking) {
+      tabItems.push({
+        label: "Linked system",
+        key: "linked-systems",
+        children: <IntegrationLinkedSystems connection={connection!} />,
       });
     }
 
@@ -177,21 +183,22 @@ export const useFeatureBasedTabs = ({
 
     return tabItems;
   }, [
-    connection,
     enabledFeatures,
-    integrationOption,
-    testData,
-    needsAuthorization,
-    handleAuthorize,
-    testConnection,
-    testIsLoading,
+    supportsSystemLinking,
     onOpen,
     isOpen,
     onClose,
+    connection,
     description,
     overview,
     instructions,
     supportsConnectionTest,
+    testData,
+    integrationOption,
+    needsAuthorization,
+    handleAuthorize,
+    testConnection,
+    testIsLoading,
   ]);
 
   return tabs;

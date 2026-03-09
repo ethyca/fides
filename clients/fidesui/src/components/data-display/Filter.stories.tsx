@@ -1,13 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Flex, Typography } from "antd";
-import type { TreeProps } from "antd/lib";
-import { notification } from "antd/lib";
 import { useState } from "react";
 
-import { Filter } from "./Filter";
+import { Filter, Flex, notification, TreeProps, Typography } from "../../index";
 
 const meta = {
-  title: "DataDisplay/Filter",
+  title: "Data Display/Filter",
   component: Filter,
   parameters: {
     layout: "centered",

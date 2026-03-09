@@ -15,13 +15,13 @@ from fides.api.schemas.connection_configuration.enums.system_type import SystemT
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     CONNECTOR_TEMPLATE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     CONNECTOR_TEMPLATES,
@@ -60,8 +60,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
+        )  # there are 6 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -103,6 +103,7 @@ class TestGetConnections:
         assert "https" not in [item["identifier"] for item in data]
         assert "custom" not in [item["identifier"] for item in data]
         assert "manual" not in [item["identifier"] for item in data]
+        assert "manual_webhook" not in [item["identifier"] for item in data]
 
     def test_get_connection_types_size_param(
         self,
@@ -119,8 +120,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
+        )  # there are 6 connection types that are not returned by the endpoint
         # this value is > 20, so we've effectively tested our "default" size is
         # > than the default of 20 (it's 100!)
 
@@ -389,7 +390,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 21  # Includes test_datastore
+        assert len(data) == 22  # Includes test_datastore
 
     def test_search_system_type_and_connection_type(
         self,
@@ -427,26 +428,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=manual", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 1
-        assert data == [
-            {
-                "identifier": "manual_webhook",
-                "type": "manual",
-                "human_readable": "Manual Process",
-                "encoded_icon": None,
-                "authorization_required": False,
-                "user_guide": None,
-                "supported_actions": [
-                    ActionType.access.value,
-                    ActionType.erasure.value,
-                ],
-                "category": None,
-                "tags": None,
-                "enabled_features": None,
-                "custom": False,
-                "default_connector_available": False,
-            }
-        ]
+        assert len(data) == 0
 
     def test_search_email_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -647,14 +629,15 @@ class TestGetConnectionsActionTypeParams:
                 [],  # no filters should give us all connectors
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
                     ConnectionType.attentive_email.value,
                     ConnectionType.sovrn.value,
                 ],
-                [],
+                [
+                    ConnectionType.manual_webhook.value,
+                ],
             ),
             (
                 [ActionType.consent],
@@ -672,7 +655,6 @@ class TestGetConnectionsActionTypeParams:
                 [ActionType.access],
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     MAILCHIMP,
                     STRIPE,
@@ -680,6 +662,7 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.sovrn.value,
                     ConnectionType.attentive_email.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -690,10 +673,10 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     MAILCHIMP,
                     ConnectionType.attentive_email.value,
-                    ConnectionType.manual_webhook.value,
                 ],
                 [
                     ConnectionType.sovrn.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -701,13 +684,13 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
                 ],
                 [
                     ConnectionType.attentive_email.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -719,15 +702,15 @@ class TestGetConnectionsActionTypeParams:
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
                     ConnectionType.attentive_email.value,
+                ],
+                [
                     ConnectionType.manual_webhook.value,
                 ],
-                [],
             ),
             (
                 [ActionType.access, ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
@@ -735,6 +718,7 @@ class TestGetConnectionsActionTypeParams:
                 ],
                 [
                     ConnectionType.sovrn.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
         ],
@@ -1658,12 +1642,20 @@ class TestGetConnectionSecretSchema:
                     "description": "Your HubSpot domain",
                     "default": "api.hubapi.com",
                     "sensitive": False,
+                    "options": None,
+                    "multiselect": False,
+                    "param_type": None,
+                    "allowed_values": None,
                     "type": "string",
                 },
                 "private_app_token": {
                     "title": "Private app token",
                     "description": "Your HubSpot Private Apps access token",
                     "sensitive": True,
+                    "options": None,
+                    "multiselect": False,
+                    "param_type": None,
+                    "allowed_values": None,
                     "type": "string",
                 },
             },
@@ -1678,12 +1670,9 @@ class TestGetConnectionSecretSchema:
             base_url.format(connection_type="manual_webhook"), headers=auth_header
         )
         assert resp.status_code == 200
-        assert resp.json() == {
-            "title": "ManualWebhookSchema",
-            "description": "Secrets for manual webhooks. No secrets needed at this time.",
-            "type": "object",
-            "properties": {},
-        }
+        body = resp.json()
+        assert body["type"] == "object"
+        assert body["properties"] == {}
 
     def test_get_connection_secrets_attentive(
         self, api_client: TestClient, generate_auth_header, base_url

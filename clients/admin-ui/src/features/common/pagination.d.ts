@@ -7,6 +7,15 @@ export interface PaginationState {
 }
 
 /**
+ * Cursor pagination state interface
+ */
+export interface CursorPaginationState {
+  cursor_start?: string;
+  cursor_end?: string;
+  pageSize: number;
+}
+
+/**
  * Configuration for pagination (standalone or table)
  */
 export interface PaginationConfig {
@@ -23,5 +32,13 @@ export interface PaginationConfig {
  */
 export interface PaginationQueryParams {
   page?: number | null;
+  size?: number | null;
+}
+
+/**
+ * Updates for cursor pagination URL state
+ */
+export interface CursorPaginationQueryParams {
+  cursor?: string | null;
   size?: number | null;
 }

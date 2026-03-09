@@ -1,4 +1,13 @@
-import { Menu } from "fidesui";
+import {
+  Badge,
+  BadgeProps,
+  Button,
+  Dropdown,
+  DropdownProps,
+  Flex,
+  Icons,
+  Menu,
+} from "fidesui";
 import _ from "lodash";
 import { PropsWithChildren } from "react";
 
@@ -13,12 +22,17 @@ import useActionCenterNavigation, {
 export interface ActionCenterLayoutProps {
   monitorId?: string;
   routeConfig: ActionCenterRouteConfig;
+  pageSettings?: {
+    dropdownProps?: DropdownProps;
+    badgeProps?: BadgeProps;
+  };
 }
 
 const ActionCenterLayout = ({
   children,
   monitorId,
   routeConfig,
+  pageSettings,
 }: PropsWithChildren<ActionCenterLayoutProps>) => {
   const {
     items: menuItems,
@@ -39,6 +53,20 @@ const ActionCenterLayout = ({
           ...(monitorId ? [{ title: monitorId }] : []),
         ]}
         isSticky={false}
+        rightContent={
+          pageSettings && (
+            <Flex>
+              <Badge {...pageSettings.badgeProps}>
+                <Dropdown {...pageSettings.dropdownProps}>
+                  <Button
+                    aria-label="Page settings"
+                    icon={<Icons.SettingsView />}
+                  />
+                </Dropdown>
+              </Badge>
+            </Flex>
+          )
+        }
       />
       <Menu
         aria-label="Action center tabs"

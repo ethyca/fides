@@ -1,0 +1,4 @@
+type: Fixed
+description: Added circuit breaker and socket timeouts to prevent startup hangs when Redis is unavailable
+pr: 7536
+labels: []

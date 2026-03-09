@@ -1,0 +1,4 @@
+type: Added
+description: Create Card and Statistic HOCs, demonstrate in StatCard
+pr: 7477
+labels: []

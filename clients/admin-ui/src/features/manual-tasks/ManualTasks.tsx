@@ -3,6 +3,7 @@ import {
   ChakraFlex as Flex,
   FilterValue,
   Icons,
+  PageSpinner,
   Table,
   TablePaginationConfig,
   Typography,
@@ -14,7 +15,6 @@ import { useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import ErrorPage from "~/features/common/errors/ErrorPage";
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { GlobalFilterV2 } from "~/features/common/table/v2/filters/GlobalFilterV2";
@@ -223,7 +223,7 @@ export const ManualTasks = () => {
   );
 
   if (isLoading) {
-    return <FidesSpinner />;
+    return <PageSpinner />;
   }
 
   const showSpinner = isLoading || isFetching;

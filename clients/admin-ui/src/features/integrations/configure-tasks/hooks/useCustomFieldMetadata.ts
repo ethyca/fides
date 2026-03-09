@@ -4,6 +4,7 @@ import { extractUniqueCustomFields } from "~/features/privacy-requests/dashboard
 import { useGetPrivacyCenterConfigQuery } from "~/features/privacy-requests/privacy-requests.slice";
 
 import { CustomFieldMetadata, CustomFieldMetadataMap } from "../types";
+import { PrivacyRequestField } from "../utils";
 
 /**
  * Hook that provides access to custom field metadata from the privacy center config.
@@ -36,14 +37,13 @@ export const useCustomFieldMetadata = () => {
   const getCustomFieldMetadata = (
     fieldAddress: string,
   ): CustomFieldMetadata | null => {
-    // Check if this is a custom field address
-    const customFieldPrefix = "privacy_request.custom_privacy_request_fields.";
-    if (!fieldAddress.startsWith(customFieldPrefix)) {
+    if (!fieldAddress.startsWith(PrivacyRequestField.CUSTOM_FIELDS_PREFIX)) {
       return null;
     }
 
-    // Extract the field name
-    const fieldName = fieldAddress.substring(customFieldPrefix.length);
+    const fieldName = fieldAddress.substring(
+      PrivacyRequestField.CUSTOM_FIELDS_PREFIX.length,
+    );
 
     // Look up the field in the map
     return customFieldsMap[fieldName] || null;
