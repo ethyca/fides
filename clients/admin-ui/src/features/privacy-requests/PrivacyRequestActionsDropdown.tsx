@@ -118,11 +118,7 @@ const PrivacyRequestActionsDropdown = ({
     if (showDownloadTroubleshootingData) {
       menu.push({
         key: "download-troubleshooting-data",
-        label: (
-          <span data-testid="download-troubleshooting-data-btn">
-            Download troubleshooting data
-          </span>
-        ),
+        label: "Download troubleshooting data",
         onClick: downloadTroubleshootingData,
         disabled: isTroubleshootingDownloadLoading,
       });
