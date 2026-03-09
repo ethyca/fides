@@ -1,4 +1,10 @@
-"""RBAC Role model for dynamic role definitions."""
+"""RBAC Role model for dynamic role definitions.
+
+Implements the Roles component of the NIST RBAC standard (ANSI/INCITS 359-2004),
+including support for Hierarchical RBAC (General Hierarchy) via parent_role_id.
+
+See: https://csrc.nist.gov/projects/role-based-access-control
+"""
 
 from __future__ import annotations
 
@@ -17,16 +23,16 @@ if TYPE_CHECKING:
 
 class RBACRole(Base):
     """
-    Dynamic role definition for RBAC system.
+    Dynamic role definition following the NIST RBAC standard (ANSI/INCITS 359-2004).
 
-    Roles group permissions together and can form hierarchies where child roles
-    inherit permissions from parent roles. System roles (is_system_role=True)
-    are the built-in roles migrated from the legacy hardcoded system and cannot
-    be deleted or have their core properties modified.
+    Roles group permissions together and can form hierarchies (General Hierarchy)
+    where child roles inherit permissions from parent roles. System roles
+    (is_system_role=True) are the built-in roles migrated from the legacy
+    hardcoded system and cannot be deleted or have their core properties modified.
 
     Role hierarchy is implemented via parent_role_id. When checking permissions,
     a role's effective permissions include both its directly assigned permissions
-    and all permissions inherited from ancestor roles.
+    and all permissions inherited from ancestor roles (NIST Hierarchical RBAC).
     """
 
     @declared_attr

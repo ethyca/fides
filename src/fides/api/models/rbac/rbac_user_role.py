@@ -1,4 +1,10 @@
-"""RBAC User-Role assignment model with resource scoping and temporal validity."""
+"""RBAC User-Role assignment model with resource scoping and temporal validity.
+
+Implements User-Role Assignment (UA) from the NIST RBAC standard
+(ANSI/INCITS 359-2004), extended with resource scoping and temporal validity.
+
+See: https://csrc.nist.gov/projects/role-based-access-control
+"""
 
 from __future__ import annotations
 
