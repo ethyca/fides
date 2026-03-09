@@ -206,7 +206,61 @@ serialized_collection = {
     "erase_after": ["g:h"],
     "grouped_inputs": ["test_param"],
     "data_categories": ["user"],
+    "property_scope": "in_scope",
 }
+
+
+class TestPropertyScope:
+    @pytest.mark.parametrize(
+        "scope,expected_value",
+        [
+            (PropertyScope.IN_SCOPE, "in_scope"),
+            (PropertyScope.TRAVERSAL_ONLY, "traversal_only"),
+        ],
+    )
+    def test_property_scope_values(self, scope, expected_value):
+        assert scope.value == expected_value
+
+    def test_collection_default_property_scope(self):
+        coll = Collection(name="test", fields=[])
+        assert coll.property_scope == PropertyScope.IN_SCOPE
+
+    def test_collection_traversal_only_scope(self):
+        coll = Collection(
+            name="test",
+            fields=[],
+            property_scope=PropertyScope.TRAVERSAL_ONLY,
+        )
+        assert coll.property_scope == PropertyScope.TRAVERSAL_ONLY
+
+    def test_collection_traversal_only_serialization(self):
+        coll = Collection(
+            name="test",
+            fields=[ScalarField(name="f1")],
+            property_scope=PropertyScope.TRAVERSAL_ONLY,
+        )
+        serialized = json.loads(coll.model_dump_json(serialize_as_any=True))
+        assert serialized["property_scope"] == "traversal_only"
+
+        parsed = Collection.parse_from_request_task(serialized)
+        assert parsed.property_scope == PropertyScope.TRAVERSAL_ONLY
+
+    def test_graph_dataset_property_ids(self):
+        ds = GraphDataset(
+            name="test_ds",
+            collections=[],
+            connection_key="mock_key",
+            property_ids=["prop_1", "prop_2"],
+        )
+        assert ds.property_ids == ["prop_1", "prop_2"]
+
+    def test_graph_dataset_default_property_ids(self):
+        ds = GraphDataset(
+            name="test_ds",
+            collections=[],
+            connection_key="mock_key",
+        )
+        assert ds.property_ids == []
 
 
 class TestCollection:

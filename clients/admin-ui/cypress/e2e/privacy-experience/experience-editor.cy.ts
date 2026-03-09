@@ -394,6 +394,85 @@ describe("Experience editor", () => {
     });
   });
 
+  describe("disabled notices", () => {
+    const DISABLED_NOTICE_TOOLTIP =
+      "This notice is disabled and will not display. Enable it or remove it from this experience.";
+
+    describe("when editing an existing experience with a disabled notice", () => {
+      beforeEach(() => {
+        // Override the notices endpoint so the notice in the experience is also disabled in the list
+        cy.fixture("privacy-experiences/notices.json").then((data) => {
+          const notices = data.items.map((n: { id: string }) =>
+            n.id === "pri_b1244715-2adb-499f-abb2-e86b6c0040c2"
+              ? { ...n, disabled: true }
+              : n,
+          );
+          cy.intercept("GET", "/api/v1/privacy-notice*", {
+            ...data,
+            items: notices,
+          }).as("getExperienceNoticesDisabled");
+        });
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getExperienceDetail");
+      });
+
+      it("shows a warning icon with tooltip on a disabled notice row", () => {
+        cy.getByTestId(
+          "privacy-notice-row-pri_b1244715-2adb-499f-abb2-e86b6c0040c2",
+        )
+          .find("svg")
+          .should("exist");
+        cy.getByTestId(
+          "privacy-notice-row-pri_b1244715-2adb-499f-abb2-e86b6c0040c2",
+        )
+          .find("span[tabindex='0']")
+          .focus();
+        cy.getAntTooltip()
+          .should("be.visible")
+          .should("contain", DISABLED_NOTICE_TOOLTIP);
+      });
+    });
+
+    describe("when an existing experience has a notice that became disabled", () => {
+      // A notice can become disabled after being added to an experience.
+      // Both tests use the edit path with a pre-existing experience that includes
+      // the disabled notice in its privacy_notice_ids.
+      beforeEach(() => {
+        // Override the notices endpoint so the notice is marked disabled in the list
+        cy.fixture("privacy-experiences/notices.json").then((data) => {
+          const notices = data.items.map((n: { id: string }) =>
+            n.id === "pri_b1244715-2adb-499f-abb2-e86b6c0040c2"
+              ? { ...n, disabled: true }
+              : n,
+          );
+          cy.intercept("GET", "/api/v1/privacy-notice*", {
+            ...data,
+            items: notices,
+          }).as("getExperienceNoticesDisabled");
+        });
+      });
+
+      it("shows a warning icon on a notice that became disabled", () => {
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getExperienceDetail");
+        cy.getByTestId(
+          "privacy-notice-row-pri_b1244715-2adb-499f-abb2-e86b6c0040c2",
+        )
+          .find("svg")
+          .should("exist");
+      });
+
+      it("does not show a disabled notice in the preview", () => {
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getExperienceDetail");
+        // The preview container should not contain the disabled notice's name
+        cy.get(`#${PREVIEW_CONTAINER_ID}`)
+          .should("contain", "Manage your consent preferences")
+          .and("not.contain", "Example Notice");
+      });
+    });
+  });
+
   describe("translation interface", () => {
     it("shows the language interface when translations are enabled", () => {
       stubTranslationConfig(true);

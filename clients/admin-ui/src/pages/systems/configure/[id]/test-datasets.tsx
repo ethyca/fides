@@ -1,8 +1,7 @@
-import { Flex } from "fidesui";
+import { Flex, PageSpinner } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -28,12 +27,12 @@ const TestDatasetPage: NextPage = () => {
     skip: !systemId,
   });
 
-  const connectionKey = system?.connection_configs?.key || "";
+  const connectionKey = system?.connection_configs?.[0]?.key || "";
 
   if (isLoading) {
     return (
       <Layout title="System inventory">
-        <FidesSpinner />
+        <PageSpinner />
       </Layout>
     );
   }

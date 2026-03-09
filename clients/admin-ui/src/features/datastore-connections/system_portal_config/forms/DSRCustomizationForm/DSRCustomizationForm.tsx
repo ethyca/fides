@@ -15,7 +15,7 @@ import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 import { selectDataCategories } from "~/features/taxonomy/data-category.slice";
 
-import CustomInput from "../../../add-connection/forms/CustomInput";
+import CustomInput from "../CustomInput";
 import { ButtonGroup as ManualButtonGroup } from "./ButtonGroup";
 import { Field } from "./types";
 

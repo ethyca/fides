@@ -349,17 +349,22 @@ class BaseTraversal:
                 break
 
             # Process the node
+            is_first_visit = current_node.address.value not in finished_str
             node_run_fn(current_node, environment)
             finished_nodes[current_node.address] = current_node
             finished_str.add(current_node.address.value)
 
-            # Update blocked_by counts for nodes waiting on this one
-            for waiting_addr in unblocks.get(current_node.address.value, set()):
-                if waiting_addr in blocked_by:
-                    blocked_by[waiting_addr] -= 1
-                    # If this node is pending and now has 0 blockers, move to ready
-                    if waiting_addr in pending and blocked_by[waiting_addr] == 0:
-                        ready_queue.append(pending.pop(waiting_addr))
+            # Update blocked_by counts for nodes waiting on this one.
+            # Only decrement on the first visit — cycle re-processing must not
+            # double-decrement, which would push the counter below zero and
+            # permanently strand the dependent node in the pending queue.
+            if is_first_visit:
+                for waiting_addr in unblocks.get(current_node.address.value, set()):
+                    if waiting_addr in blocked_by:
+                        blocked_by[waiting_addr] -= 1
+                        # If this node is pending and now has 0 blockers, move to ready
+                        if waiting_addr in pending and blocked_by[waiting_addr] == 0:
+                            ready_queue.append(pending.pop(waiting_addr))
 
             # Handle edge-based parent/child relationships - O(edges) not O(finished_nodes)
             # Only check edges incident to current node, not all finished nodes
@@ -876,15 +881,15 @@ class TraversalNode(Contextualizable):
         ).model_dump(mode="json")
 
     def to_mock_request_task(self) -> RequestTask:
-        """Converts a portion of the TraversalNode into a RequestTask - used in building
-        dry run queries or for supporting Deprecated DSR 2.0. Request Tasks were introduced in DSR 3.0
+        """Converts a portion of the TraversalNode into a RequestTask in memory,
+        used in building dry-run queries.
         """
         collection_data = json.loads(
             # Serializes with duck-typing behavior, no longer the default in Pydantic v2
             # Needed for serializing nested collection fields
             self.node.collection.model_dump_json(serialize_as_any=True)
         )
-        return RequestTask(  # Mock a RequestTask object in memory
+        return RequestTask(
             collection_address=self.node.address.value,
             dataset_name=self.node.address.dataset,
             collection_name=self.node.address.collection,
@@ -893,11 +898,8 @@ class TraversalNode(Contextualizable):
         )
 
     def to_mock_execution_node(self) -> ExecutionNode:
-        """Converts a TraversalNode into an ExecutionNode - used for supporting DSR 2.0, to convert
-        Traversal Nodes into the Execution Node format which is needed for executing the graph in
-        DSR 3.0
-
-        DSR 3.0 on the other hand, creates ExecutionNodes from data on the RequestTask.
+        """Converts a TraversalNode into an ExecutionNode in memory via a mock
+        RequestTask. Used by test infrastructure and connector query config tests.
         """
         request_task: RequestTask = self.to_mock_request_task()
         return ExecutionNode(request_task)

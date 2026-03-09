@@ -24,11 +24,10 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_409_CONFLICT,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.endpoints import health
 from fides.api.db.crud import get_resource
 from fides.api.db.system import create_system
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -43,7 +42,8 @@ from fides.api.oauth.roles import OWNER, VIEWER
 from fides.api.schemas.system import PrivacyDeclarationResponse, SystemResponse
 from fides.api.schemas.taxonomy_extensions import DataCategory, DataSubject, DataUse
 from fides.api.util.endpoint_utils import API_PREFIX, CLI_SCOPE_PREFIX_MAPPING
-from fides.common.api.scope_registry import (
+from fides.api.v1.endpoints import health
+from fides.common.scope_registry import (
     CREATE,
     DELETE,
     POLICY_CREATE_OR_UPDATE,
@@ -57,9 +57,11 @@ from fides.common.api.scope_registry import (
     SYSTEM_UPDATE,
     UPDATE,
 )
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.config import FidesConfig, get_config
 from fides.core import api as _api
+from fides.system_integration_link.models import SystemConnectionConfigLink
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 CONFIG = get_config()
 
@@ -1078,7 +1080,6 @@ class TestSystemCreate:
         system = systems[0]
 
         expected_none = [
-            "connection_configs",
             "data_security_practices",
             "description",
             "dpa_location",
@@ -1113,6 +1114,7 @@ class TestSystemCreate:
             assert getattr(system, field) is False
 
         expected_empty_list = [
+            "connection_configs",
             "dataset_references",
             "data_stewards",
             "legal_basis_for_profiling",
@@ -1278,7 +1280,7 @@ class TestSystemCreate:
             json_resource=system_create_request_body.json(exclude_none=True),
         )
 
-        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert len(System.all(db)) == 0  # ensure our system wasn't created
         assert (
             len(PrivacyDeclaration.all(db)) == 0
@@ -1313,7 +1315,7 @@ class TestSystemCreate:
             json_resource=system_create_request_body.json(exclude_none=True),
         )
 
-        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert result.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert result.json()["detail"][0]["loc"] == [
             "body",
             "legal_basis_for_profiling",
@@ -1397,6 +1399,69 @@ class TestSystemGet:
         assert len(privacy_declarations) == 2
         assert privacy_declarations[0]["name"] == "Another Declaration Name"
         assert privacy_declarations[1]["name"] == "Collect data for marketing"
+
+    def test_system_with_multiple_connection_configs(
+        self, test_config, system, db, generate_auth_header
+    ):
+        """Test that a system with multiple connection configs returns all of them,
+        ordered by created_at."""
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
+        # Create two connection configs and link them to the system
+        first_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "First Connection",
+                "key": f"first_conn_{uuid4().hex[:8]}",
+                "connection_type": "postgres",
+                "access": "write",
+            },
+        )
+        second_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "Second Connection",
+                "key": f"second_conn_{uuid4().hex[:8]}",
+                "connection_type": "postgres",
+                "access": "read",
+            },
+        )
+
+        link_repo = SystemIntegrationLinkRepository()
+        link_repo.create_or_update_link(
+            system_id=system.id,
+            connection_config_id=first_config.id,
+            session=db,
+        )
+        link_repo.create_or_update_link(
+            system_id=system.id,
+            connection_config_id=second_config.id,
+            session=db,
+        )
+        db.commit()
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            resource_id=system.fides_key,
+        )
+        assert result.status_code == 200
+
+        response = result.json()
+        assert len(response["connection_configs"]) == 2
+        returned_keys = [cc["key"] for cc in response["connection_configs"]]
+        assert first_config.key in returned_keys
+        assert second_config.key in returned_keys
+
+        # Verify ordering is by created_at (first-created comes first)
+        assert response["connection_configs"][0]["key"] == first_config.key
+        assert response["connection_configs"][1]["key"] == second_config.key
+
+        # Cleanup
+        second_config.delete(db)
+        first_config.delete(db)
 
 
 @pytest.mark.unit
@@ -2921,7 +2986,7 @@ class TestSystemDelete:
         )
         assert result.status_code == HTTP_403_FORBIDDEN
 
-    def test_delete_system_deletes_connection_config_and_dataset(
+    def test_delete_system_unlinks_connection_config(
         self,
         test_config,
         db,
@@ -2930,40 +2995,52 @@ class TestSystemDelete:
         dataset_config: DatasetConfig,
     ) -> None:
         """
-        Ensure that deleting the system also deletes any associated
-        ConnectionConfig and DatasetConfig records
+        Deleting a system cascade-deletes the join-table link but
+        preserves the ConnectionConfig and DatasetConfig (they become
+        orphaned).  This changed when system_id moved from a direct FK
+        on ConnectionConfig to the system_connection_config_link table.
         """
         auth_header = generate_auth_header(scopes=[SYSTEM_DELETE])
 
         connection_config = dataset_config.connection_config
-        connection_config.system_id = (
-            system.id
-        )  # tie the connectionconfig to the system we will delete
-        connection_config.save(db)
-        # the keys are cached before the delete
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.commit()
+        system_fides_key = system.fides_key
+        connection_config_id = connection_config.id
         connection_config_key = connection_config.key
         dataset_config_key = dataset_config.fides_key
 
-        # delete the system via API
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type="system",
-            resource_id=system.fides_key,
+            resource_id=system_fides_key,
             headers=auth_header,
         )
         assert result.status_code == HTTP_200_OK
 
-        # ensure our system itself was deleted
-        assert db.query(System).filter_by(fides_key=system.fides_key).first() is None
-        # ensure our associated ConnectionConfig was deleted
+        db.expire_all()
+
+        assert db.query(System).filter_by(fides_key=system_fides_key).first() is None
+
+        # Link row is cascade-deleted, but ConnectionConfig and
+        # DatasetConfig are preserved (orphaned).
         assert (
-            db.query(ConnectionConfig).filter_by(key=connection_config_key).first()
+            db.query(SystemConnectionConfigLink)
+            .filter_by(connection_config_id=connection_config_id)
+            .first()
             is None
         )
-        # and ensure our associated DatasetConfig was deleted
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config_key).first()
+            is not None
+        )
         assert (
             db.query(DatasetConfig).filter_by(fides_key=dataset_config_key).first()
-            is None
+            is not None
         )
 
     def test_owner_role_gets_404_if_system_not_found(
@@ -3404,6 +3481,7 @@ class TestHealthchecks:
                 "fides.privacy_preferences": 0,
                 "fides.privacy_request_exports": 0,
                 "fides.privacy_request_ingestion": 0,
+                "fidesplus.consent_webhooks": 0,
                 "fidesplus.discovery_monitors_classification": 0,
                 "fidesplus.discovery_monitors_detection": 0,
                 "fidesplus.discovery_monitors_promotion": 0,

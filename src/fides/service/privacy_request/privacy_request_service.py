@@ -32,7 +32,10 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_center_config import LocationCustomPrivacyRequestField
+from fides.api.schemas.privacy_center_config import (
+    LocationCustomPrivacyRequestField,
+    reorder_custom_privacy_request_fields,
+)
 from fides.api.schemas.privacy_center_config import (
     PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
@@ -59,6 +62,7 @@ from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.common.session_management import get_autoclose_db_session
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (
     MessagingService,
@@ -240,17 +244,25 @@ class PrivacyRequestService:
         1) The request's property config (if provided)
         2) The default property's config (if available)
         3) The single-row Privacy Center config table (legacy/global)
+
+        Returns a copy of the config with custom_privacy_request_fields key order
+        restored when custom_privacy_request_field_order is present (JSONB does
+        not preserve object key order).
         """
         # 1) Request's property config
         if property_id:
             prop = Property.get_by(self.db, field="id", value=property_id)
             if prop and getattr(prop, "privacy_center_config", None):
-                return prop.privacy_center_config  # type: ignore[return-value]
+                return reorder_custom_privacy_request_fields(
+                    prop.privacy_center_config  # type: ignore[arg-type]
+                )
 
         # 2) Default property config
         default_prop = Property.get_by(self.db, field="is_default", value=True)
         if default_prop and getattr(default_prop, "privacy_center_config", None):
-            return default_prop.privacy_center_config  # type: ignore[return-value]
+            return reorder_custom_privacy_request_fields(
+                default_prop.privacy_center_config  # type: ignore[arg-type]
+            )
 
         # 3) Single-row global config
         privacy_center_config_record = PrivacyCenterConfigModel.filter(
@@ -258,7 +270,9 @@ class PrivacyRequestService:
             conditions=PrivacyCenterConfigModel.single_row,  # type: ignore[arg-type]
         ).first()
         if privacy_center_config_record:
-            return privacy_center_config_record.config  # type: ignore[return-value]
+            return reorder_custom_privacy_request_fields(
+                privacy_center_config_record.config  # type: ignore[arg-type]
+            )
         return None
 
     def _parse_privacy_center_config(
@@ -903,11 +917,8 @@ def _handle_scheduling_failure(
     Creates an ExecutionLog entry for visibility in the activity timeline and
     marks the privacy request as errored with the detailed error message.
     """
-    from fides.api.api.deps import (  # pylint: disable=cyclic-import
-        get_autoclose_db_session as get_db,
-    )
 
-    with get_db() as db:
+    with get_autoclose_db_session() as db:
         privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
         if privacy_request:
             # Add execution log for activity timeline visibility
@@ -933,11 +944,8 @@ def _clear_scheduling_failure_if_exists(privacy_request_id: str) -> None:
 
     This clears the error styling in the UI activity timeline when a retry succeeds.
     """
-    from fides.api.api.deps import (  # pylint: disable=cyclic-import
-        get_autoclose_db_session as get_db,
-    )
 
-    with get_db() as db:
+    with get_autoclose_db_session() as db:
         # Check if the most recent scheduling log is an error
         latest_scheduling_log = (
             db.query(ExecutionLog)
@@ -1097,7 +1105,7 @@ def _requeue_privacy_request(
             f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
 
-    # Both DSR 2.0 and 3.0 cache checkpoint details
+    # Checkpoint details are cached in Redis
     checkpoint_details: Optional[CheckpointActionRequired] = (
         privacy_request.get_failed_checkpoint_details()
     )

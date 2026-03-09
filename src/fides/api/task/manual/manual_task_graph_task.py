@@ -32,6 +32,7 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
+from fides.service.attachment_service import AttachmentService
 
 
 class ManualTaskGraphTask(GraphTask):
@@ -89,7 +90,6 @@ class ManualTaskGraphTask(GraphTask):
     def erasure_request(
         self,
         retrieved_data: list[Row],  # This is not used for manual tasks.
-        *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument # TODO Remove when we stop support for DSR 2.0
         inputs: Optional[list[list[Row]]] = None,
     ) -> int:
         """Execute manual-task-driven erasure logic.
@@ -437,7 +437,7 @@ class ManualTaskGraphTask(GraphTask):
             submission.attachments,
         ):
             try:
-                size, url = attachment.retrieve_attachment()
+                size, url = AttachmentService().retrieve_url(attachment)
                 attachment_list.append(
                     {
                         "file_name": attachment.file_name,

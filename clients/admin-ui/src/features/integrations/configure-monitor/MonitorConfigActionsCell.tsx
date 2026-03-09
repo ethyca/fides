@@ -34,7 +34,12 @@ const DeleteMonitorMessage = ({
     return <Spin />;
   }
 
-  const resourceCount = deletionImpact?.staged_resource_count ?? 0;
+  // Note: staged_resource_count is intentionally omitted from this modal.
+  // Showing staged resource counts introduces more confusion than value:
+  // counts aligned with the action center would misrepresent the fact that
+  // some approved/ignored staged resources are also being deleted, while
+  // misaligned counts are simply confusing. The BE API still exposes this
+  // count for anyone who wants to inspect it directly.
   const linkedDatasets = deletionImpact?.linked_datasets ?? [];
   const activeTaskCount = deletionImpact?.active_task_count ?? 0;
   const systemCount = deletionImpact?.associated_system_count ?? 0;
@@ -46,21 +51,15 @@ const DeleteMonitorMessage = ({
         <Text strong>This action cannot be undone.</Text>
       </Text>
 
+      <Text>
+        All action center resources discovered by this monitor will be
+        permanently deleted.
+      </Text>
+
       {activeTaskCount > 0 && (
         <Text strong type="warning">
           This monitor has {activeTaskCount} active task
           {activeTaskCount !== 1 ? "s" : ""} that will be cancelled.
-        </Text>
-      )}
-
-      {resourceCount > 0 && (
-        <Text>
-          This will also permanently delete{" "}
-          <Text strong>
-            {resourceCount} pending resource{resourceCount !== 1 ? "s" : ""} in
-            the action center
-          </Text>{" "}
-          discovered by this monitor.
         </Text>
       )}
 

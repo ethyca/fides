@@ -25,7 +25,7 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.db.session import get_db_session
-from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.graph import DatasetGraph, apply_dataset_graph_filters
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
@@ -78,7 +78,6 @@ from fides.api.task.graph_runners import access_runner, consent_runner, erasure_
 from fides.api.task.graph_task import (
     build_consent_dataset_graph,
     filter_by_enabled_actions,
-    get_cached_data_for_erasures,
 )
 from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.tasks import DatabaseTask, celery_app
@@ -88,7 +87,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
-from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
+from fides.common.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
@@ -530,6 +529,30 @@ def run_privacy_request(
                 )
                 dataset_graphs.extend(manual_task_graphs)
 
+                # Apply registered dataset graph filters (e.g. property-based DAG filtering)
+                all_dataset_names = {ds.name for ds in dataset_graphs}
+                dataset_graphs = apply_dataset_graph_filters(
+                    dataset_graphs, privacy_request.property_id
+                )
+                filtered_dataset_names = {ds.name for ds in dataset_graphs}
+
+                if filtered_dataset_names != all_dataset_names:
+                    excluded = sorted(all_dataset_names - filtered_dataset_names)
+                    privacy_request.add_success_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Dataset filtering",
+                        collection_name=None,
+                        message=(
+                            f"Dataset filtering applied for property_id "
+                            f"'{privacy_request.property_id}': "
+                            f"{len(filtered_dataset_names)} of "
+                            f"{len(all_dataset_names)} datasets retained. "
+                            f"Excluded: {excluded}"
+                        ),
+                        action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                    )
+
                 dataset_graph = DatasetGraph(*dataset_graphs)
 
                 # Add success log for dataset configuration
@@ -631,9 +654,7 @@ def run_privacy_request(
                         graph=dataset_graph,
                         connection_configs=connection_configs,
                         identity=identity_data,
-                        access_request_data=get_cached_data_for_erasures(
-                            privacy_request.id
-                        ),
+                        access_request_data={},
                         session=session,
                         privacy_request_proceed=True,  # Should always be True unless we're testing
                     )

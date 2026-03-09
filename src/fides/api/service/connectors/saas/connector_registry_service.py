@@ -8,7 +8,6 @@ from fideslang.models import Dataset
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_api_session
 from fides.api.common_exceptions import ValidationError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -22,6 +21,7 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.authentication.authentication_strategy_oauth2_authorization_code import (
     OAuth2AuthorizationCodeAuthenticationStrategy,
 )
+from fides.api.util.redis_version_cache import redis_version_cached
 from fides.api.util.saas_util import (
     encode_file_contents,
     extract_display_info_from_config,
@@ -32,6 +32,7 @@ from fides.api.util.saas_util import (
     replace_version,
 )
 from fides.api.util.unsafe_file_util import verify_svg, verify_zip
+from fides.common.session_management import get_api_session
 
 
 class ConnectorTemplateLoader(ABC):
@@ -108,7 +109,29 @@ class FileConnectorTemplateLoader(ConnectorTemplateLoader):
 class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
     """
     Loads custom connector templates defined in the custom_connector_template database table.
+
+    Uses the ``@redis_version_cached`` decorator so that
+    ``get_connector_templates()`` checks a lightweight Redis version.
+    When a template is saved or deleted, ``bump_version()`` increments the
+    counter so all servers detect the change on their next read.
     """
+
+    def __new__(
+        cls: Type["CustomConnectorTemplateLoader"],
+    ) -> "CustomConnectorTemplateLoader":  # type: ignore[override]
+        """Override to skip the eager _load_connector_templates call.
+
+        The base ``ConnectorTemplateLoader.__new__`` calls
+        ``_load_connector_templates`` on first instantiation, but for
+        custom templates the ``@redis_version_cached`` decorator on
+        ``get_connector_templates`` is responsible for deciding *when* to
+        load.  We still create the singleton instance and initialise an
+        empty ``_templates`` dict.
+        """
+        if cls._instance is None:
+            cls._instance = object.__new__(cls)
+            cls._instance._templates = {}  # type: ignore[attr-defined]
+        return cls._instance  # type: ignore[return-value]
 
     def _load_connector_templates(self) -> None:
         logger.info("Loading connectors templates from the database.")
@@ -118,6 +141,28 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 CustomConnectorTemplateLoader._register_template(template)
             except Exception:
                 logger.exception("Unable to load {} connector", template.key)
+
+    # ------------------------------------------------------------------
+    # Override get_connector_templates with Redis-version caching
+    # ------------------------------------------------------------------
+
+    @classmethod
+    @redis_version_cached(
+        redis_key="custom_connector_templates:version",
+        cache_key="custom_connector_templates",
+    )
+    def get_connector_templates(cls) -> Dict[str, ConnectorTemplate]:
+        """Returns a map of custom connector templates.
+
+        The ``@redis_version_cached`` decorator checks a lightweight Redis
+        version counter on each call.  If the version is unchanged the
+        cached dict is returned; otherwise ``_load_connector_templates``
+        is invoked to rebuild it from the database.
+        """
+        instance = cls()
+        instance._templates = {}  # type: ignore[attr-defined]
+        instance._load_connector_templates()
+        return dict(instance._templates)  # type: ignore[attr-defined]
 
     @classmethod
     def _register_template(
@@ -157,10 +202,12 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             **display_info,
         )
 
-        # register the template in the loader's template dictionary
-        CustomConnectorTemplateLoader.get_connector_templates()[template.key] = (
-            connector_template
-        )
+        # register the template in the singleton's _templates dict directly.
+        # We must NOT go through get_connector_templates() here because that
+        # method is wrapped by @redis_version_cached — calling it during a
+        # cache-miss reload (from _load_connector_templates) would recurse
+        # infinitely since the cache is not yet populated.
+        cls()._templates[template.key] = connector_template  # type: ignore[attr-defined]
 
     @classmethod
     def delete_template(cls, db: Session, key: str) -> None:
@@ -172,6 +219,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         CustomConnectorTemplate.filter(
             db, conditions=(CustomConnectorTemplate.key == key)
         ).delete()
+        # Bump the Redis version counter and clear the local cache so
+        # every server detects the change on its next read.
+        cls.get_connector_templates.bump_version()  # type: ignore[attr-defined]
 
     # pylint: disable=too-many-branches
     @classmethod
@@ -280,16 +330,29 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             dataset_json=template_dataset_json,
         )
 
+        # Bump the Redis version counter and clear the local cache so
+        # every server detects the change on its next read.
+        cls.get_connector_templates.bump_version()  # type: ignore[attr-defined]
+
         return connector_type
 
 
 class ConnectorRegistry:
     @classmethod
-    def _get_combined_templates(cls) -> Dict[str, ConnectorTemplate]:
-        """
-        Returns a combined map of connector templates from all registered loaders.
-        The resulting map is an aggregation of templates from the file loader and the custom loader,
-        with custom loader templates taking precedence in case of conflicts.
+    def get_combined_templates(cls) -> dict[str, ConnectorTemplate]:
+        """Returns a combined map of connector templates from all registered loaders.
+
+        The resulting map is an aggregation of templates from the file loader
+        and the custom loader, with custom loader templates taking precedence
+        in case of conflicts.
+
+        The custom loader's ``get_connector_templates()`` is backed by the
+        ``@redis_version_cached`` decorator, so it only reloads from the
+        database when the Redis version counter has changed.
+
+        Callers that need to iterate over all templates should call this once
+        and loop over the result rather than calling get_connector_template()
+        per type, which would trigger repeated Redis version checks.
         """
         return {
             **FileConnectorTemplateLoader.get_connector_templates(),  # type: ignore
@@ -299,14 +362,14 @@ class ConnectorRegistry:
     @classmethod
     def connector_types(cls) -> List[str]:
         """List of registered SaaS connector types"""
-        return list(cls._get_combined_templates().keys())
+        return list(cls.get_combined_templates().keys())
 
     @classmethod
     def get_connector_template(cls, connector_type: str) -> Optional[ConnectorTemplate]:
         """
         Returns an object containing the various SaaS connector artifacts
         """
-        return cls._get_combined_templates().get(connector_type)
+        return cls.get_combined_templates().get(connector_type)
 
     @classmethod
     def get_all_connector_templates_summary(cls) -> List[ConnectorTemplateListResponse]:
@@ -315,7 +378,7 @@ class ConnectorRegistry:
         Includes connector_type, name, supported_actions, category, whether it's custom,
         and whether a default connector is available.
         """
-        combined_templates = cls._get_combined_templates()
+        combined_templates = cls.get_combined_templates()
 
         summaries: List[ConnectorTemplateListResponse] = []
         for connector_type, template in combined_templates.items():

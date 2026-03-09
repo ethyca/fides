@@ -4,12 +4,12 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/routes";
-import { CustomFieldDefinition, ReportType } from "~/types/api";
 import {
   LegacyAllowedTypes,
   LegacyResourceTypes,
 } from "~/features/common/custom-fields/types";
+import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/routes";
+import { CustomFieldDefinition, ReportType } from "~/types/api";
 
 const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
   const base = {
@@ -590,7 +590,7 @@ describe("Data map report table", () => {
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
       cy.get(".ant-drawer-close").click({ force: true });
-      cy.getByTestId("datamap-drawer").should("not.be.visible");
+      cy.getByTestId("datamap-drawer").should("not.exist");
     });
     it("should open the system preview drawer when grouped by data use", () => {
       cy.getByTestId("group-by-menu").click();
@@ -601,7 +601,7 @@ describe("Data map report table", () => {
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
       cy.get(".ant-drawer-close").click({ force: true });
-      cy.getByTestId("datamap-drawer").should("not.be.visible");
+      cy.getByTestId("datamap-drawer").should("not.exist");
     });
   });
 });

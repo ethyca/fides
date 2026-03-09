@@ -28,6 +28,7 @@ const useActionCenterTabs = (systemId?: string) => {
         label: "Added",
         params: {
           diff_status: [DiffStatus.MONITORED],
+          system: systemId,
         },
         hash: ActionCenterTabHash.ADDED,
       },
