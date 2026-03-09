@@ -13,8 +13,12 @@ _cached_dek: str | None = None
 
 
 def get_encryption_key() -> str:
-    """Return the DEK. In legacy mode, this is CONFIG.security.app_encryption_key.
-    Cached for the lifetime of the process (called on every encrypt/decrypt)."""
+    """
+    Return the encryption key set in CONFIG.security.app_encryption_key.
+    Cached for the lifetime of the process (called on every encrypt/decrypt).
+
+    TODO: implement support for other key managers like AWS KMS
+    """
     global _cached_dek
     if _cached_dek is not None:
         return _cached_dek
@@ -23,7 +27,7 @@ def get_encryption_key() -> str:
 
 
 def _reset_encryption_key_cache() -> None:
-    """Reset the cached DEK. For testing only."""
+    """Reset the cached encryption key. For testing only."""
     global _cached_dek
     _cached_dek = None
 
