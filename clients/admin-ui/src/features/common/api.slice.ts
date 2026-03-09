@@ -99,6 +99,7 @@ export const baseApi = createApi({
     "Privacy Assessment Config",
     "Privacy Assessment Questionnaire",
     "Privacy Assessment Evidence",
+    "Privacy Assessment Tasks",
     "User Monitors",
     "Datastore Filters",
   ],
