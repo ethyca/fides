@@ -4,6 +4,7 @@ from typing import Iterable
 from loguru import logger
 from packaging.version import Version
 from packaging.version import parse as parse_version
+from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -59,7 +60,8 @@ def update_saas_configs(db: Session) -> None:
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
             conditions=(
-                ConnectionConfig.saas_config["type"].astext == connector_type.lower()
+                sa_func.lower(ConnectionConfig.saas_config["type"].astext)
+                == connector_type.lower()
             ),
         ).all()
         for connection_config in connection_configs:
