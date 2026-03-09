@@ -26,6 +26,7 @@ class RBACRolePermission(Base):
 
     @declared_attr
     def __tablename__(cls) -> str:
+        """Return the database table name for this model."""
         return "rbac_role_permission"
 
     # Override Base.id - junction table uses composite PK instead
@@ -53,4 +54,5 @@ class RBACRolePermission(Base):
     )
 
     def __repr__(self) -> str:
+        """Return a string representation of this role-permission mapping."""
         return f"<RBACRolePermission(role_id='{self.role_id}', permission_id='{self.permission_id}')>"

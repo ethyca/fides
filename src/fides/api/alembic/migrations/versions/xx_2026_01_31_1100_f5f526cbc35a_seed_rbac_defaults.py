@@ -296,7 +296,15 @@ NOT_CONTRIBUTOR_SCOPES = [
 
 
 def get_resource_type_from_scope(scope: str) -> str | None:
-    """Extract resource type from scope code."""
+    """
+    Extract resource type from scope code.
+
+    Args:
+        scope: Permission scope code like 'system:read' or 'privacy-request:create'
+
+    Returns:
+        Normalized resource type string, or None if scope has no colon separator
+    """
     if ":" not in scope:
         return None
     resource = scope.split(":")[0]
@@ -320,7 +328,8 @@ def get_resource_type_from_scope(scope: str) -> str | None:
     return resource_map.get(resource, resource)
 
 
-def upgrade():
+def upgrade() -> None:
+    """Seed default RBAC permissions and system roles from existing scope definitions."""
     connection = op.get_bind()
 
     # Step 1: Seed permissions from SCOPE_DOCS
@@ -422,7 +431,8 @@ def upgrade():
     # Note: We'll add this constraint once we verify the roles exist
 
 
-def downgrade():
+def downgrade() -> None:
+    """Remove seeded RBAC permissions and system roles."""
     connection = op.get_bind()
 
     # Delete all seeded data (system roles and their mappings)

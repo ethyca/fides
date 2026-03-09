@@ -8,7 +8,7 @@ See: https://csrc.nist.gov/projects/role-based-access-control
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Set
+from typing import TYPE_CHECKING, Any, List, Optional, Set, Union
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.declarative import declared_attr
@@ -37,6 +37,7 @@ class RBACRole(Base):
 
     @declared_attr
     def __tablename__(cls) -> str:
+        """Return the database table name for this model."""
         return "rbac_role"
 
     name = Column(
@@ -108,17 +109,19 @@ class RBACRole(Base):
     )
 
     def __repr__(self) -> str:
+        """Return a string representation of this role."""
         return f"<RBACRole(key='{self.key}', name='{self.name}')>"
 
     def get_all_permissions(
-        self, db: Session, _visited_role_ids: Optional[Set[str]] = None
+        self, db: Session, _visited_role_ids: Optional[Set[Union[str, int]]] = None
     ) -> List["RBACPermission"]:
         """
         Get all permissions for this role, including inherited from parent roles.
 
         This method traverses the role hierarchy and collects all permissions
         from this role and all ancestor roles. Cycle detection prevents infinite
-        recursion if a cyclic parent_role_id chain exists.
+        recursion if a cyclic parent_role_id chain exists. Uses id(self) as
+        fallback for transient instances where self.id is None before persistence.
 
         Args:
             db: Database session (needed for lazy-loaded relationships)
@@ -131,10 +134,14 @@ class RBACRole(Base):
         if _visited_role_ids is None:
             _visited_role_ids = set()
 
+        # Use id(self) as fallback for transient instances (self.id is None before persist)
+        # This prevents false positives when building hierarchies in-memory
+        role_key = self.id if self.id is not None else id(self)
+
         # Detect cycle: if we've already visited this role, stop traversal
-        if self.id in _visited_role_ids:
+        if role_key in _visited_role_ids:
             return []
-        _visited_role_ids.add(self.id)
+        _visited_role_ids.add(role_key)
 
         seen_permission_ids: Set[str] = set()
         all_permissions: List["RBACPermission"] = []
@@ -196,19 +203,26 @@ class RBACRole(Base):
         Get all ancestor roles in the hierarchy (parent, grandparent, etc.).
 
         Cycle detection prevents infinite loops if a cyclic parent_role_id
-        chain exists in the database.
+        chain exists in the database. Uses id(self) as fallback for transient
+        instances where self.id is None before persistence.
 
         Returns:
             List of ancestor RBACRole objects, starting with immediate parent
         """
         ancestors: List["RBACRole"] = []
-        visited_ids: Set[str] = {self.id}  # Include self to detect immediate cycle
+        # Use id(self) fallback for transient instances (self.id is None before persist)
+        self_key = self.id if self.id is not None else id(self)
+        visited_keys: Set[Union[str, int]] = {
+            self_key
+        }  # Include self to detect immediate cycle
         current = self.parent_role
         while current:
+            # Use id() fallback for transient instances
+            current_key = current.id if current.id is not None else id(current)
             # Detect cycle: stop if we've already seen this role
-            if current.id in visited_ids:
+            if current_key in visited_keys:
                 break
-            visited_ids.add(current.id)
+            visited_keys.add(current_key)
             ancestors.append(current)
             current = current.parent_role
         return ancestors

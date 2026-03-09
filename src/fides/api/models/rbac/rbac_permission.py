@@ -34,6 +34,7 @@ class RBACPermission(Base):
 
     @declared_attr
     def __tablename__(cls) -> str:
+        """Return the database table name for this model."""
         return "rbac_permission"
 
     code = Column(
@@ -70,4 +71,5 @@ class RBACPermission(Base):
     )
 
     def __repr__(self) -> str:
+        """Return a string representation of this permission."""
         return f"<RBACPermission(code='{self.code}')>"

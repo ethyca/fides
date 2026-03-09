@@ -27,6 +27,7 @@ class RBACConstraintRole(Base):
 
     @declared_attr
     def __tablename__(cls) -> str:
+        """Return the database table name for this model."""
         return "rbac_constraint_role"
 
     # Override Base.id — junction table uses composite PK instead
@@ -54,4 +55,5 @@ class RBACConstraintRole(Base):
     )
 
     def __repr__(self) -> str:
+        """Return a string representation of this constraint-role mapping."""
         return f"<RBACConstraintRole(constraint_id='{self.constraint_id}', role_id='{self.role_id}')>"

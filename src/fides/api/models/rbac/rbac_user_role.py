@@ -39,6 +39,7 @@ class RBACUserRole(Base):
 
     @declared_attr
     def __tablename__(cls) -> str:
+        """Return the database table name for this model."""
         return "rbac_user_role"
 
     user_id = Column(
@@ -105,6 +106,7 @@ class RBACUserRole(Base):
     # to correctly handle NULL values in PostgreSQL
 
     def __repr__(self) -> str:
+        """Return a string representation of this user-role assignment."""
         scope = (
             f"{self.resource_type}:{self.resource_id}"
             if self.resource_type

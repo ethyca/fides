@@ -16,7 +16,8 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
+    """Create the RBAC database tables for dynamic role-based access control."""
     # Create rbac_role table
     op.create_table(
         "rbac_role",
@@ -85,6 +86,11 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name", name="uq_rbac_role_name"),
+        # CHECK: Prevent self-referential parent (role cannot be its own parent)
+        sa.CheckConstraint(
+            "parent_role_id IS NULL OR parent_role_id <> id",
+            name="ck_rbac_role_no_self_parent",
+        ),
     )
     op.create_index(op.f("ix_rbac_role_id"), "rbac_role", ["id"], unique=False)
     op.create_index(op.f("ix_rbac_role_key"), "rbac_role", ["key"], unique=True)
@@ -404,7 +410,8 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
+    """Drop all RBAC database tables."""
     # Drop tables in reverse order of creation
     op.drop_table("rbac_constraint_role")
     op.drop_index(op.f("ix_rbac_constraint_id"), table_name="rbac_constraint")

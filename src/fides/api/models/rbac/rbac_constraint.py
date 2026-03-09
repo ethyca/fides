@@ -76,6 +76,7 @@ class RBACConstraint(Base):
 
     @declared_attr
     def __tablename__(cls) -> str:
+        """Return the database table name for this model."""
         return "rbac_constraint"
 
     name = Column(
@@ -117,6 +118,7 @@ class RBACConstraint(Base):
     )
 
     def __repr__(self) -> str:
+        """Return a string representation of this constraint."""
         role_count = len(self.roles) if self.roles else 0
         return (
             f"<RBACConstraint(name='{self.name}', type='{self.constraint_type}', "

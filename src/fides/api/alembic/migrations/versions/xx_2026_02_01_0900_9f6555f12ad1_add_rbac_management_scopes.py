@@ -40,14 +40,22 @@ RBAC_MANAGEMENT_SCOPES = {
 
 
 def get_resource_type_from_scope(scope: str) -> str | None:
-    """Extract resource type from scope code."""
+    """
+    Extract resource type from scope code.
+
+    Args:
+        scope: Permission scope code like 'rbac_role:read'
+
+    Returns:
+        Resource type string (e.g., 'rbac_role'), or None if no colon separator
+    """
     if ":" not in scope:
         return None
     resource = scope.split(":")[0]
     return resource
 
 
-def upgrade():
+def upgrade() -> None:
     """Add RBAC management scopes and assign to Owner role."""
     conn = op.get_bind()
 
@@ -116,7 +124,7 @@ def upgrade():
             )
 
 
-def downgrade():
+def downgrade() -> None:
     """Remove RBAC management scopes."""
     conn = op.get_bind()
 
