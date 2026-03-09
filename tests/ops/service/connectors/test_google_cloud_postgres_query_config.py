@@ -1,6 +1,5 @@
 from copy import deepcopy
 from typing import Dict, Generator, List
-from unittest.mock import MagicMock
 
 import pytest
 from fideslang.models import Dataset
@@ -13,25 +12,24 @@ from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.schemas.namespace_meta.postgres_namespace_meta import (
-    PostgresNamespaceMeta,
+from fides.api.schemas.namespace_meta.google_cloud_sql_postgres_namespace_meta import (
+    GoogleCloudSQLPostgresNamespaceMeta,
 )
-from fides.api.service.connectors.query_configs.postgres_query_config import (
-    PostgresQueryConfig,
-    RDSPostgresQueryConfig,
+from fides.api.service.connectors.query_configs.google_cloud_postgres_query_config import (
+    GoogleCloudSQLPostgresQueryConfig,
 )
 
 
 @pytest.mark.integration
 @pytest.mark.integration_postgres
-class TestPostgresQueryConfig:
+class TestGoogleCloudSQLPostgresQueryConfig:
     """
-    Verify that PostgresQueryConfig correctly adjusts the table name
-    based on the available namespace info in the dataset's fides_meta.
+    Verify that GoogleCloudSQLPostgresQueryConfig correctly adjusts the table
+    name based on the available namespace info in the dataset's fides_meta.
     """
 
     @pytest.fixture
-    def postgres_dataset_config_with_namespace_meta(
+    def gcs_postgres_dataset_config_with_namespace_meta(
         self,
         connection_config: ConnectionConfig,
         db: Session,
@@ -58,9 +56,9 @@ class TestPostgresQueryConfig:
     @pytest.fixture
     def execution_node(
         self,
-        postgres_dataset_config_with_namespace_meta: DatasetConfig,
+        gcs_postgres_dataset_config_with_namespace_meta: DatasetConfig,
     ) -> Generator:
-        dataset_config = postgres_dataset_config_with_namespace_meta
+        dataset_config = gcs_postgres_dataset_config_with_namespace_meta
         graph_dataset = convert_dataset_to_graph(
             Dataset.model_validate(dataset_config.ctl_dataset),
             dataset_config.connection_config.key,
@@ -69,15 +67,15 @@ class TestPostgresQueryConfig:
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
         yield traversal.traversal_node_dict[
-            CollectionAddress("postgres_example_test_dataset", "customer")
+            CollectionAddress(dataset_config.fides_key, "customer")
         ].to_mock_execution_node()
 
     @pytest.fixture
     def address_node(
         self,
-        postgres_dataset_config_with_namespace_meta: DatasetConfig,
+        gcs_postgres_dataset_config_with_namespace_meta: DatasetConfig,
     ) -> Generator:
-        dataset_config = postgres_dataset_config_with_namespace_meta
+        dataset_config = gcs_postgres_dataset_config_with_namespace_meta
         graph_dataset = convert_dataset_to_graph(
             Dataset.model_validate(dataset_config.ctl_dataset),
             dataset_config.connection_config.key,
@@ -86,19 +84,21 @@ class TestPostgresQueryConfig:
         traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
 
         yield traversal.traversal_node_dict[
-            CollectionAddress("postgres_example_test_dataset", "address")
+            CollectionAddress(dataset_config.fides_key, "address")
         ].to_mock_execution_node()
 
     @pytest.mark.parametrize(
         "namespace_meta, expected_query",
         [
             (
-                PostgresNamespaceMeta(schema="billing"),
+                GoogleCloudSQLPostgresNamespaceMeta(schema="billing"),
                 'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
-                PostgresNamespaceMeta(database_name="example_db", schema="billing"),
-                'SELECT address_id, created, email, id, name FROM "example_db"."billing"."customer" WHERE ("email" = :email)',
+                GoogleCloudSQLPostgresNamespaceMeta(
+                    database_name="prod_db", schema="billing"
+                ),
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
@@ -106,7 +106,10 @@ class TestPostgresQueryConfig:
                 'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
-                {"schema": "billing", "connection_type": "postgres"},
+                {
+                    "schema": "billing",
+                    "connection_type": "google_cloud_sql_postgres",
+                },
                 'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
@@ -118,7 +121,7 @@ class TestPostgresQueryConfig:
     def test_generate_query_with_namespace_meta(
         self, execution_node: ExecutionNode, namespace_meta, expected_query
     ):
-        query_config = PostgresQueryConfig(execution_node, namespace_meta)
+        query_config = GoogleCloudSQLPostgresQueryConfig(execution_node, namespace_meta)
         assert (
             query_config.generate_query(
                 input_data={"email": ["customer-1@example.com"]}
@@ -130,11 +133,11 @@ class TestPostgresQueryConfig:
         self, execution_node: ExecutionNode
     ):
         with pytest.raises(ValueError) as exc:
-            PostgresQueryConfig(
+            GoogleCloudSQLPostgresQueryConfig(
                 execution_node,
-                {"database_name": "some_db"},  # missing required 'schema'
+                {"database_name": "some_db"},
             )
-        assert "Invalid namespace_meta" in str(exc.value)
+        assert "schema" in str(exc.value)
 
     def test_generate_update_stmt(
         self,
@@ -146,7 +149,9 @@ class TestPostgresQueryConfig:
         """Test non-namespaced update statement uses quoted table name."""
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
-        update_stmt = PostgresQueryConfig(address_node).generate_update_stmt(
+        update_stmt = GoogleCloudSQLPostgresQueryConfig(
+            address_node
+        ).generate_update_stmt(
             {
                 "id": "1",
                 "house": "222",
@@ -173,9 +178,9 @@ class TestPostgresQueryConfig:
         """Test namespaced update statement prepends schema to table name."""
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
-        update_stmt = PostgresQueryConfig(
+        update_stmt = GoogleCloudSQLPostgresQueryConfig(
             address_node,
-            PostgresNamespaceMeta(schema="billing"),
+            GoogleCloudSQLPostgresNamespaceMeta(schema="billing"),
         ).generate_update_stmt(
             {
                 "id": "1",
@@ -200,12 +205,14 @@ class TestPostgresQueryConfig:
         erasure_policy,
         privacy_request,
     ):
-        """Test namespaced update with database_name prepends database.schema to table name."""
+        """Test namespaced update with database_name ignores database (Postgres doesn't support cross-db queries)."""
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
-        update_stmt = PostgresQueryConfig(
+        update_stmt = GoogleCloudSQLPostgresQueryConfig(
             address_node,
-            PostgresNamespaceMeta(database_name="example_db", schema="billing"),
+            GoogleCloudSQLPostgresNamespaceMeta(
+                database_name="prod_db", schema="billing"
+            ),
         ).generate_update_stmt(
             {
                 "id": "1",
@@ -220,48 +227,5 @@ class TestPostgresQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "example_db"."billing"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
+            == 'UPDATE "billing"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
-
-
-class TestRDSPostgresQueryConfig:
-    """Unit tests for RDSPostgresQueryConfig.generate_table_name."""
-
-    @pytest.fixture
-    def mock_node(self) -> MagicMock:
-        node = MagicMock()
-        node.collection.name = "orders"
-        return node
-
-    @pytest.mark.parametrize(
-        "namespace_meta, expected",
-        [
-            (
-                {
-                    "connection_type": "rds_postgres",
-                    "database_instance_name": "inst-1",
-                    "database_name": "mydb",
-                    "schema": "billing",
-                },
-                '"billing"."orders"',
-            ),
-            (
-                None,
-                '"orders"',
-            ),
-            (
-                {
-                    "connection_type": "rds_postgres",
-                    "database_instance_name": "inst-1",
-                    "database_name": "mydb",
-                },
-                '"orders"',
-            ),
-        ],
-        ids=["schema-qualified", "no-namespace-meta", "schema-is-none"],
-    )
-    def test_generate_table_name(
-        self, mock_node: MagicMock, namespace_meta, expected: str
-    ):
-        config = RDSPostgresQueryConfig(mock_node, namespace_meta)
-        assert config.generate_table_name() == expected

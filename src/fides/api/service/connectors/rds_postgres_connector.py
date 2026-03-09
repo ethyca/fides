@@ -85,7 +85,10 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
 
     def query_config(self, node: ExecutionNode) -> RDSPostgresQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return RDSPostgresQueryConfig(node, self.namespace_meta)
+        db: Session = Session.object_session(self.configuration)
+        namespace_meta = SQLConnector.get_namespace_meta(db, node.address.dataset)
+        self.namespace_meta = namespace_meta
+        return RDSPostgresQueryConfig(node, namespace_meta)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
@@ -125,11 +128,3 @@ class RDSPostgresConnector(RDSConnectorMixin, SQLConnector):
         Convert SQLAlchemy results to a list of dictionaries
         """
         return SQLConnector.default_cursor_result_to_rows(results)
-
-    def get_qualified_table_name(self, node: ExecutionNode) -> str:
-        """Get fully qualified Postgres table name for table_exists() checks.
-
-        Returns unquoted names (e.g. schema.table) because the generic
-        SQLConnector.table_exists() uses split(".") + inspector.has_table().
-        """
-        return self.query_config(node).generate_table_name(quoted=False)
