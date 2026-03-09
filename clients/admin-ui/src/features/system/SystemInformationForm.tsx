@@ -32,6 +32,7 @@ import {
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useHasPermission } from "~/features/common/Restrict";
 import { errorToastParams } from "~/features/common/toast";
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import {
   selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
@@ -78,6 +79,8 @@ import {
   useRemoveUserManagedSystemMutation,
 } from "~/features/user-management";
 import { ScopeRegistryEnum, SystemResponse } from "~/types/api";
+
+import { formatUser } from "../common/utils";
 
 const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
@@ -126,7 +129,7 @@ const SystemInformationForm = ({
   const dataStewardOptions = useMemo(() => {
     const users = eligibleUsersData?.items || [];
     return users.map((user) => ({
-      label: user.username,
+      label: formatUser(user),
       value: user.username,
     }));
   }, [eligibleUsersData]);
@@ -552,6 +555,7 @@ const SystemInformationForm = ({
                   tooltip="Is there a dataset configured for this system?"
                   mode="multiple"
                   layout="stacked"
+                  optionRender={DatasetSelectOption}
                 />
               </SystemFormInputGroup>
               <SystemFormInputGroup heading="Data processing properties">

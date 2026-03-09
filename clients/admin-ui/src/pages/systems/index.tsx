@@ -22,7 +22,7 @@ const Systems: NextPage = () => {
   }
 
   return (
-    <Layout title="System inventory" mainProps={{ w: "calc(100vw - 240px)" }}>
+    <Layout title="System inventory">
       <Box data-testid="system-management">
         <PageHeader
           heading="System inventory"

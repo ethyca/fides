@@ -22,3 +22,8 @@ export type MonitorUpdates =
 
 export interface MonitorSummaryPaginatedResponse
   extends PaginatedResponse<MonitorAggregatedResults> {}
+
+export type DatastorePageSettings = {
+  showIgnored: boolean;
+  showApproved: boolean;
+};

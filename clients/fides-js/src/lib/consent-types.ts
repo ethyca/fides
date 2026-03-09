@@ -203,6 +203,9 @@ export interface FidesInitOptions {
 
   // Cookie compression method to reduce cookie size
   fidesCookieCompression: "gzip" | "none";
+
+  // Custom user ID provided by customer to identify the user across their systems
+  fidesExternalId: string | null;
 }
 
 /**
@@ -251,12 +254,21 @@ export interface FidesGlobal
   reinitialize: () => Promise<void>;
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
+  setIdentity: (identity: SetIdentityOptions) => Promise<void>;
   showModal: () => void;
   updateConsent: (options: {
     consent?: NoticeConsent;
     fidesString?: string;
     validation?: UpdateConsentValidation;
   }) => Promise<void>;
+}
+
+/**
+ * Options for Fides.setIdentity(). Only external_id is supported today.
+ */
+export interface SetIdentityOptions {
+  /** Custom user ID to set on the consent cookie; included in API calls. */
+  external_id?: string;
 }
 
 /**
@@ -909,6 +921,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesUnsupportedRepeatedScriptLoading"
   | "fidesCookieSuffix"
   | "fidesCookieCompression"
+  | "fidesExternalId"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -1002,6 +1015,7 @@ export type Identity = {
   ga_client_id?: string;
   ljt_readerID?: string;
   fides_user_device_id?: string;
+  external_id?: string;
 };
 
 export enum RequestOrigin {

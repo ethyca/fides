@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.migrations.backfill_scripts.utils import (
@@ -15,6 +16,7 @@ from fides.api.migrations.backfill_scripts.utils import (
     batched_backfill,
     execute_batch_with_retry,
     is_backfill_completed,
+    is_backfill_completed_async,
     is_transient_error,
     mark_backfill_completed,
     refresh_backfill_lock,
@@ -136,10 +138,10 @@ class TestBackfillHistory:
         [True, False],
         ids=["record_exists", "record_not_exists"],
     )
-    def test_is_backfill_completed(self, db: Session, record_exists):
-        """Verify is_backfill_completed() checks database correctly."""
+    def test_is_backfill_completed_sync(self, db: Session, record_exists):
+        """Verify is_backfill_completed() checks database correctly (sync version)."""
         # Use unique name per test case to avoid conflicts between parametrized runs
-        backfill_name = f"test-is-backfill-completed-{record_exists}"
+        backfill_name = f"test-is-backfill-completed-sync-{record_exists}"
 
         # Clean up any leftover record from previous runs
         db.execute(
@@ -158,6 +160,39 @@ class TestBackfillHistory:
 
         # Execute
         result = is_backfill_completed(db, backfill_name)
+
+        # Verify
+        assert result == record_exists
+
+    @pytest.mark.parametrize(
+        "record_exists",
+        [True, False],
+        ids=["record_exists", "record_not_exists"],
+    )
+    async def test_is_backfill_completed_async(
+        self, async_session: AsyncSession, record_exists
+    ):
+        """Verify is_backfill_completed_async() checks database correctly (async version)."""
+        # Use unique name per test case to avoid conflicts between parametrized runs
+        backfill_name = f"test-is-backfill-completed-async-{record_exists}"
+
+        # Clean up any leftover record from previous runs
+        await async_session.execute(
+            text("DELETE FROM backfill_history WHERE backfill_name = :name"),
+            {"name": backfill_name},
+        )
+        await async_session.commit()
+
+        if record_exists:
+            # Insert a record directly into backfill_history
+            await async_session.execute(
+                text("INSERT INTO backfill_history (backfill_name) VALUES (:name)"),
+                {"name": backfill_name},
+            )
+            await async_session.commit()
+
+        # Execute
+        result = await is_backfill_completed_async(async_session, backfill_name)
 
         # Verify
         assert result == record_exists

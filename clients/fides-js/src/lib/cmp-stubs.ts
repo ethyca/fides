@@ -48,3 +48,27 @@ export const locateFrame = (name: IabFrameName) => {
   }
   return cmpFrame;
 };
+
+/**
+ * If a TCF API stub exists on the page (e.g. the open-source IAB TCF stub
+ * loaded by the publisher), update it to set gdprApplies=false. Called by
+ * non-TCF bundles (fides.js, fides-headless.js) so that ad scripts waiting
+ * for a boolean gdprApplies value can proceed — the stub defaults to
+ * undefined, and without this call it would stay undefined forever.
+ *
+ * See: https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/stub
+ */
+export const updateTcfStubGdprApplies = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  // eslint-disable-next-line no-underscore-dangle
+  const tcfApi = window.__tcfapi;
+  if (typeof tcfApi === "function") {
+    try {
+      tcfApi("setGdprApplies", 2, () => {}, false);
+    } catch {
+      // Third-party stub did not support setGdprApplies — ignore
+    }
+  }
+};

@@ -6,7 +6,6 @@ from sqlalchemy import text
 from fides.api.graph.config import Collection, ScalarField
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import ExecutionLog
-from fides.api.task.graph_task import get_cached_data_for_erasures
 
 from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import assert_rows_match, field, records_matching_fields
@@ -20,22 +19,14 @@ from ..task.traversal_data import (
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_timescale_access_request_task(
     db,
     policy,
     timescale_connection_config,
     timescale_integration_db,
     privacy_request,
-    dsr_version,
-    request,
 ) -> None:
     database_name = "my_timescale_db_1"
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     v = access_runner_tester(
         privacy_request,
         policy,
@@ -119,21 +110,13 @@ async def test_timescale_access_request_task(
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_timescale_erasure_request_task(
     db,
     erasure_policy,
     timescale_connection_config,
     timescale_integration_db,
     privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     rule = erasure_policy.rules[0]
     target = rule.targets[0]
     target.data_category = "user"
@@ -165,7 +148,7 @@ async def test_timescale_erasure_request_task(
         graph,
         [timescale_connection_config],
         {"email": "customer-1@example.com"},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
     assert v == {
@@ -206,21 +189,13 @@ async def test_timescale_erasure_request_task(
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
 async def test_timescale_query_and_mask_hypertable(
     db,
     erasure_policy,
     timescale_connection_config,
     timescale_integration_db,
     privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
 ) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
     database_name = "my_timescale_db_1"
 
     dataset = postgres_db_graph_dataset(database_name, timescale_connection_config.key)
@@ -273,7 +248,7 @@ async def test_timescale_query_and_mask_hypertable(
         graph,
         [timescale_connection_config],
         {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
+        {},
         db,
     )
 

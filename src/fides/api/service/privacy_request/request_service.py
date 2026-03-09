@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Generator, List, Optional, Set
 
 from httpx import AsyncClient
 from loguru import logger
@@ -12,6 +12,7 @@ from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.privacy_request import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
     RequestTask,
@@ -463,40 +464,69 @@ def _handle_privacy_request_requeue(
 
 def _get_request_task_ids_in_progress(
     db: Session, privacy_request_id: str
-) -> List[str]:
-    """Get the IDs of request tasks that are currently in progress for a privacy request."""
-    request_tasks_in_progress = (
-        db.query(RequestTask.id)
-        .filter(RequestTask.privacy_request_id == privacy_request_id)
-        .filter(
-            RequestTask.status.in_(
-                [
-                    ExecutionLogStatus.in_processing,
-                    ExecutionLogStatus.pending,
-                ]
-            )
+) -> Generator[tuple[str, ExecutionLogStatus, bool], None, None]:
+    """Yield (task_id, status, awaiting_upstream) for in-progress request tasks.
+
+    Loads only the columns needed (avoiding large JSON blobs) and computes
+    upstream completion from a single query rather than per-task DB lookups.
+    """
+    all_tasks = (
+        db.query(
+            RequestTask.id,
+            RequestTask.status,
+            RequestTask.collection_address,
+            RequestTask.action_type,
+            RequestTask.upstream_tasks,
         )
+        .filter(RequestTask.privacy_request_id == privacy_request_id)
         .all()
     )
-    return [task[0] for task in request_tasks_in_progress]
+
+    # Build lookup for upstream completion checks
+    status_by_address: dict[tuple[str, str], ExecutionLogStatus] = {
+        (task.collection_address, task.action_type): task.status for task in all_tasks
+    }
+
+    for task in all_tasks:
+        if task.status not in (
+            ExecutionLogStatus.in_processing,
+            ExecutionLogStatus.pending,
+        ):
+            continue
+        awaiting_upstream = False
+        if task.status == ExecutionLogStatus.pending:
+            upstream_addrs = task.upstream_tasks or []
+            if upstream_addrs:
+                # Mirrors RequestTask.upstream_tasks_complete() — a missing
+                # upstream record returns None from the lookup, which is not
+                # in COMPLETED_EXECUTION_LOG_STATUSES, so it's treated as
+                # incomplete (same safe default as the model method).
+                awaiting_upstream = any(
+                    status_by_address.get((addr, task.action_type))
+                    not in COMPLETED_EXECUTION_LOG_STATUSES
+                    for addr in upstream_addrs
+                )
+        yield (task.id, task.status, awaiting_upstream)
 
 
-def _has_polling_tasks(db: Session, privacy_request_id: str) -> bool:
+def _has_async_tasks_awaiting_external_completion(
+    db: Session, privacy_request_id: str
+) -> bool:
     """
-    Check if a privacy request has any polling async tasks.
+    Check if a privacy request has any async task pending external completion.
 
     Args:
         db: Database session
         privacy_request_id: The ID of the privacy request to check
 
     Returns:
-        bool: True if the privacy request has polling tasks, False otherwise
+        bool: True if the privacy request has async tasks awaiting external completion, False otherwise
     """
     return db.query(
         db.query(RequestTask)
         .filter(
             RequestTask.privacy_request_id == privacy_request_id,
-            RequestTask.async_type == AsyncTaskType.polling,
+            RequestTask.async_type.in_([AsyncTaskType.polling, AsyncTaskType.callback]),
         )
         .exists()
     ).scalar()
@@ -605,12 +635,16 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         )
                         should_requeue = True
 
-                    request_task_ids_in_progress = _get_request_task_ids_in_progress(
+                    request_tasks_in_progress = _get_request_task_ids_in_progress(
                         db, privacy_request.id
                     )
 
                     # Check each individual request task
-                    for request_task_id in request_task_ids_in_progress:
+                    for (
+                        request_task_id,
+                        task_status,
+                        awaiting_upstream,
+                    ) in request_tasks_in_progress:
                         try:
                             subtask_id = get_cached_task_id(request_task_id)
                         except Exception as cache_exc:
@@ -642,13 +676,30 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # Check if the Privacy request has polling tasks
-                            if _has_polling_tasks(db, privacy_request.id):
-                                # If the polling request task has no cached task ID, it's stuck
+                            # A pending task that hasn't been dispatched to Celery yet will
+                            # never have a cache key — this is not a stuck state. Only pending
+                            # tasks can legitimately lack a cache key; in_processing tasks
+                            # without one are genuinely stuck and should be canceled below.
+                            # Checked before the async query to avoid an unnecessary DB hit.
+                            if (
+                                task_status == ExecutionLogStatus.pending
+                                and awaiting_upstream
+                            ):
+                                logger.debug(
+                                    f"Request task {request_task_id} "
+                                    f"(privacy request {privacy_request.id}) is pending and "
+                                    f"waiting for upstream tasks to complete - not stuck"
+                                )
+                                continue
+
+                            # Check if the request has async tasks awaiting external completion
+                            if _has_async_tasks_awaiting_external_completion(
+                                db, privacy_request.id
+                            ):
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) Contains polling tasks - "
-                                    f"keeping request in current status as it may be waiting for polling task to complete"
+                                    f"(privacy request {privacy_request.id}) contains async tasks awaiting "
+                                    f"external completion - keeping request in current status"
                                 )
                                 should_requeue = False
                                 break

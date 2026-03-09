@@ -1,4 +1,0 @@
-type: Fixed # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Disabled adding uncategorized assets from web monitor results
-pr: 7359 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

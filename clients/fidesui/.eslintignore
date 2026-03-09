@@ -1,5 +1,6 @@
 # Don't run eslint on build artifacts
 dist
+storybook-static
 .eslintrc*
 postcss.config.js
 tailwind.config.js

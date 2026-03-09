@@ -11,17 +11,17 @@ export const ACTION_CENTER_CONFIG: Record<
   ActionCenterRoute,
   NonNullable<MenuProps["items"]>[number]
 > = {
-  [ActionCenterRoute.ACTIVITY]: {
-    key: ActionCenterRoute.ACTIVITY,
-    type: "item",
-    label: "Activity",
-    icon: <Icons.Activity />,
-  },
   [ActionCenterRoute.ATTENTION_REQUIRED]: {
     key: ActionCenterRoute.ATTENTION_REQUIRED,
     type: "item",
     label: "Attention required",
     icon: <Icons.ListBoxes />,
+  },
+  [ActionCenterRoute.ACTIVITY]: {
+    key: ActionCenterRoute.ACTIVITY,
+    type: "item",
+    label: "Activity",
+    icon: <Icons.Activity />,
   },
 } as const;
 

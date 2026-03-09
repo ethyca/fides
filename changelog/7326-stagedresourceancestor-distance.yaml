@@ -1,4 +1,0 @@
-type: Added
-description: Added distance column to StagedResourceAncestor table
-pr: 7326
-labels: ["db-migration"]
