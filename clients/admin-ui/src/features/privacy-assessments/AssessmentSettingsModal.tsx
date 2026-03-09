@@ -150,7 +150,12 @@ const AssessmentSettingsModal = ({
           <Spin />
         </Flex>
       ) : (
-        <Form form={form} layout="vertical" initialValues={initialValues}>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={initialValues}
+          className="mt-4"
+        >
           {/* LLM Configuration Section */}
           <LlmModelSelector
             showSwitch={false}
