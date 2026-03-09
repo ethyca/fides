@@ -261,12 +261,10 @@ def upgrade():
             ondelete="SET NULL",
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint(
-            "user_id",
-            "role_id",
-            "resource_type",
-            "resource_id",
-            name="uq_rbac_user_role_assignment",
+        # CHECK: resource_id requires resource_type (no orphaned resource IDs)
+        sa.CheckConstraint(
+            "resource_id IS NULL OR resource_type IS NOT NULL",
+            name="ck_rbac_user_role_resource_scope",
         ),
     )
     op.create_index(
@@ -277,6 +275,33 @@ def upgrade():
     )
     op.create_index(
         op.f("ix_rbac_user_role_role_id"), "rbac_user_role", ["role_id"], unique=False
+    )
+
+    # Partial unique indexes for scoped assignments
+    # PostgreSQL UNIQUE treats NULL as distinct, so we need separate indexes:
+    # 1. Global assignments: only one per (user_id, role_id) when both scope fields are NULL
+    op.create_index(
+        "uq_rbac_user_role_global",
+        "rbac_user_role",
+        ["user_id", "role_id"],
+        unique=True,
+        postgresql_where=sa.text("resource_type IS NULL AND resource_id IS NULL"),
+    )
+    # 2. Type-scoped: only one per (user_id, role_id, resource_type) when resource_id is NULL
+    op.create_index(
+        "uq_rbac_user_role_type_scoped",
+        "rbac_user_role",
+        ["user_id", "role_id", "resource_type"],
+        unique=True,
+        postgresql_where=sa.text("resource_type IS NOT NULL AND resource_id IS NULL"),
+    )
+    # 3. Fully-scoped: only one per (user_id, role_id, resource_type, resource_id)
+    op.create_index(
+        "uq_rbac_user_role_fully_scoped",
+        "rbac_user_role",
+        ["user_id", "role_id", "resource_type", "resource_id"],
+        unique=True,
+        postgresql_where=sa.text("resource_id IS NOT NULL"),
     )
 
     # Create rbac_constraint table
@@ -385,6 +410,9 @@ def downgrade():
     op.drop_index(op.f("ix_rbac_constraint_id"), table_name="rbac_constraint")
     op.drop_table("rbac_constraint")
 
+    op.drop_index("uq_rbac_user_role_fully_scoped", table_name="rbac_user_role")
+    op.drop_index("uq_rbac_user_role_type_scoped", table_name="rbac_user_role")
+    op.drop_index("uq_rbac_user_role_global", table_name="rbac_user_role")
     op.drop_index(op.f("ix_rbac_user_role_role_id"), table_name="rbac_user_role")
     op.drop_index(op.f("ix_rbac_user_role_user_id"), table_name="rbac_user_role")
     op.drop_index(op.f("ix_rbac_user_role_id"), table_name="rbac_user_role")

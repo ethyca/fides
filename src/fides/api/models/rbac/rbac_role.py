@@ -110,19 +110,32 @@ class RBACRole(Base):
     def __repr__(self) -> str:
         return f"<RBACRole(key='{self.key}', name='{self.name}')>"
 
-    def get_all_permissions(self, db: Session) -> List["RBACPermission"]:
+    def get_all_permissions(
+        self, db: Session, _visited_role_ids: Optional[Set[str]] = None
+    ) -> List["RBACPermission"]:
         """
         Get all permissions for this role, including inherited from parent roles.
 
         This method traverses the role hierarchy and collects all permissions
-        from this role and all ancestor roles.
+        from this role and all ancestor roles. Cycle detection prevents infinite
+        recursion if a cyclic parent_role_id chain exists.
 
         Args:
             db: Database session (needed for lazy-loaded relationships)
+            _visited_role_ids: Internal set for cycle detection (do not pass externally)
 
         Returns:
             List of unique RBACPermission objects
         """
+        # Initialize or copy visited set for cycle detection
+        if _visited_role_ids is None:
+            _visited_role_ids = set()
+
+        # Detect cycle: if we've already visited this role, stop traversal
+        if self.id in _visited_role_ids:
+            return []
+        _visited_role_ids.add(self.id)
+
         seen_permission_ids: Set[str] = set()
         all_permissions: List["RBACPermission"] = []
 
@@ -134,7 +147,9 @@ class RBACRole(Base):
 
         # Add inherited permissions from parent hierarchy
         if self.parent_role:
-            for permission in self.parent_role.get_all_permissions(db):
+            for permission in self.parent_role.get_all_permissions(
+                db, _visited_role_ids
+            ):
                 if permission.id not in seen_permission_ids and permission.is_active:
                     seen_permission_ids.add(permission.id)
                     all_permissions.append(permission)
@@ -180,12 +195,20 @@ class RBACRole(Base):
         """
         Get all ancestor roles in the hierarchy (parent, grandparent, etc.).
 
+        Cycle detection prevents infinite loops if a cyclic parent_role_id
+        chain exists in the database.
+
         Returns:
             List of ancestor RBACRole objects, starting with immediate parent
         """
         ancestors: List["RBACRole"] = []
+        visited_ids: Set[str] = {self.id}  # Include self to detect immediate cycle
         current = self.parent_role
         while current:
+            # Detect cycle: stop if we've already seen this role
+            if current.id in visited_ids:
+                break
+            visited_ids.add(current.id)
             ancestors.append(current)
             current = current.parent_role
         return ancestors

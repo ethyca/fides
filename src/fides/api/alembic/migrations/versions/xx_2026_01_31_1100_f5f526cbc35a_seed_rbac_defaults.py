@@ -400,9 +400,12 @@ def upgrade():
     # Approver gets approver scopes
     create_role_permission_mapping("approver", APPROVER_SCOPES)
 
-    # Contributor gets all scopes except NOT_CONTRIBUTOR_SCOPES
+    # Contributor gets all scopes except NOT_CONTRIBUTOR_SCOPES and RBAC_MANAGEMENT_SCOPES
+    # RBAC management scopes are owner-only to prevent privilege escalation
     contributor_scopes = [
-        s for s in SCOPE_DOCS.keys() if s not in NOT_CONTRIBUTOR_SCOPES
+        s
+        for s in SCOPE_DOCS.keys()
+        if s not in NOT_CONTRIBUTOR_SCOPES and s not in RBAC_MANAGEMENT_SCOPES
     ]
     create_role_permission_mapping("contributor", contributor_scopes)
 
@@ -424,9 +427,12 @@ def downgrade():
 
     # Delete all seeded data (system roles and their mappings)
     # Cascading deletes will handle rbac_role_permission
-    connection.execute(
-        text("DELETE FROM rbac_role WHERE is_system_role = true")
-    )
+    connection.execute(text("DELETE FROM rbac_role WHERE is_system_role = true"))
 
-    # Delete all permissions (they were seeded)
-    connection.execute(text("DELETE FROM rbac_permission"))
+    # Delete only the permissions seeded by this migration (those in SCOPE_DOCS)
+    # This preserves any custom permissions created after this migration
+    seeded_permission_codes = list(SCOPE_DOCS.keys())
+    connection.execute(
+        text("DELETE FROM rbac_permission WHERE code = ANY(:codes)"),
+        {"codes": seeded_permission_codes},
+    )
