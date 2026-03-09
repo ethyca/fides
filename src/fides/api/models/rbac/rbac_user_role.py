@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, String, text
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, relationship
 
@@ -67,7 +67,7 @@ class RBACUserRole(Base):
     )
     valid_from = Column(
         DateTime(timezone=True),
-        server_default="now()",
+        server_default=text("now()"),
         nullable=True,
         comment="When this assignment becomes active. NULL means immediately.",
     )

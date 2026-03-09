@@ -104,7 +104,7 @@ class RBACRole(Base):
         "RBACUserRole",
         back_populates="role",
         cascade="all, delete-orphan",
-        lazy="dynamic",
+        lazy="selectin",
     )
 
     def __repr__(self) -> str:
