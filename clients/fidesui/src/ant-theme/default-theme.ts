@@ -48,8 +48,9 @@ export const defaultAntTheme: ThemeConfig = {
       colorTextPlaceholder: palette.FIDESUI_BG_DEFAULT,
     },
     Alert: {
-      colorInfoBg: palette.FIDESUI_FULL_WHITE,
-      colorInfo: palette.FIDESUI_NEUTRAL_500,
+      colorInfo: palette.FIDESUI_MINOS,
+      colorInfoBg: palette.FIDESUI_NEUTRAL_50,
+      colorInfoBorder: palette.FIDESUI_NEUTRAL_100,
     },
     Button: {
       primaryShadow: undefined,
