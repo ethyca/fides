@@ -1,6 +1,6 @@
 import EthycaLogo from "./EthycaLogo";
 
-const BrandLink = () => (
+export const BrandLink = () => (
   <div className="fides-brand">
     <a
       href="https://ethyca.com/"
@@ -13,5 +13,3 @@ const BrandLink = () => (
     </a>
   </div>
 );
-
-export default BrandLink;
