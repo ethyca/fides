@@ -70,17 +70,15 @@ interface PriorityActionsParams {
 type TrendPeriod = "30d" | "60d" | "90d";
 
 export interface TrendMetric {
-  key: string;
+  name: string;
   value: number;
   history: number[];
   metadata: Record<string, unknown>;
   diff_percent: number;
 }
 
-// TODO: metrics should be keyed by name (Record<string, TrendMetric>) rather
-// than an ordered array — pending backend contract update.
 interface TrendsResponse {
-  metrics: TrendMetric[];
+  metrics: Record<string, TrendMetric>;
 }
 
 interface AstralisResponse {
@@ -171,13 +169,6 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/trends",
         params,
       }),
-      transformResponse: (response: TrendsResponse) => {
-        // Normalize keyed object → array when backend migrates
-        if (!Array.isArray(response.metrics)) {
-          response.metrics = Object.values(response.metrics);
-        }
-        return response;
-      },
       providesTags: [{ type: "Fides Dashboard", id: "trends" }],
     }),
     getAstralis: build.query<AstralisResponse, void>({
