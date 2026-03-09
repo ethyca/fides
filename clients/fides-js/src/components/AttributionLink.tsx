@@ -1,5 +1,5 @@
 import type { AttributionOptions } from "../lib/consent-types";
-import EthycaLogo from "./EthycaLogo";
+import { EthycaLogo } from "./EthycaLogo";
 
 interface AttributionLinkProps {
   attribution: AttributionOptions;

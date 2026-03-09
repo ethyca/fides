@@ -1,4 +1,4 @@
-import EthycaLogo from "./EthycaLogo";
+import { EthycaLogo } from "./EthycaLogo";
 
 export const BrandLink = () => (
   <div className="fides-brand">
