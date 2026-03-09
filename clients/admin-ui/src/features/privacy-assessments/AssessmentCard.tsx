@@ -70,8 +70,10 @@ export const AssessmentCard = ({
         [styles.cardComplete]: isComplete,
       })}
     >
-      <Flex vertical gap="small" justify="space-between">
-        <Title level={5}>{assessment.name}</Title>
+      <Flex vertical gap="small" justify="space-between" style={{ flex: 1 }}>
+        <Title level={5} style={{ marginBottom: "auto" }}>
+          {assessment.name}
+        </Title>
         <Text type="secondary" size="sm" className={styles.textWithTags}>
           Processing{" "}
           {(assessment.data_categories ?? []).length > 0 ? (
