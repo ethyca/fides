@@ -1,5 +1,6 @@
 from typing import Union
 
+from loguru import logger
 from sqlalchemy import Text
 from sqlalchemy.types import TypeEngine
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
@@ -22,7 +23,13 @@ def get_encryption_key() -> str:
     global _cached_dek
     if _cached_dek is not None:
         return _cached_dek
+
     _cached_dek = CONFIG.security.app_encryption_key
+    if _cached_dek == "":
+        logger.warning(
+            "App encryption key is empty, this may lead to unexpected issues"
+        )
+
     return _cached_dek
 
 
