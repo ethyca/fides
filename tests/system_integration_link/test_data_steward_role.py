@@ -6,7 +6,7 @@ from fides.api.oauth.roles import (
     RoleRegistryEnum,
     viewer_scopes,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE,
     SYSTEM_INTEGRATION_LINK_DELETE,
     SYSTEM_INTEGRATION_LINK_READ,
