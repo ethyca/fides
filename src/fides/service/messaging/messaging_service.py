@@ -2,7 +2,7 @@ import secrets
 from typing import Optional, Set, Union
 
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
@@ -10,7 +10,11 @@ from fides.api.common_exceptions import (
     MessageDispatchException,
     PolicyNotFoundException,
 )
-from fides.api.models.messaging import MessagingConfig
+from fides.api.models.messaging import (
+    MessagingConfig,
+    get_messaging_method,
+    get_schema_for_secrets,
+)
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     ConsentRequest,
@@ -24,6 +28,10 @@ from fides.api.schemas.messaging.messaging import (
     ErrorNotificationBodyParams,
     FidesopsMessage,
     MessagingActionType,
+    MessagingConfigRequestBase,
+    MessagingConfigStatus,
+    MessagingConfigStatusMessage,
+    MessagingMethod,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
@@ -37,6 +45,7 @@ from fides.api.service.messaging.message_dispatch_service import (
     message_send_enabled,
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME
+from fides.api.util.logger import Pii
 from fides.config import FidesConfig
 from fides.config.config_proxy import ConfigProxy
 
@@ -53,6 +62,79 @@ class MessagingService:
         self.db = db
         self.config = config
         self.config_proxy = config_proxy
+
+    def get_messaging_config_status(
+        self,
+        messaging_method: Optional[MessagingMethod] = None,
+    ) -> MessagingConfigStatusMessage:
+        """Determines the status of the active default messaging config."""
+        logger.info("Determining active default messaging config status")
+
+        messaging_config = MessagingConfig.get_active_default(self.db)
+
+        if not messaging_config or (
+            messaging_method
+            and get_messaging_method(messaging_config.service_type.value)  # type: ignore
+            != messaging_method
+        ):
+            detail = "No active default messaging configuration found"
+            if messaging_method:
+                detail += f" for {messaging_method}"
+
+            return MessagingConfigStatusMessage(
+                config_status=MessagingConfigStatus.not_configured,
+                detail=detail,
+            )
+
+        try:
+            details = messaging_config.details
+            MessagingConfigRequestBase.validate_details_schema(
+                messaging_config.service_type, details
+            )
+        except Exception as e:
+            logger.error(
+                f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
+            )
+            return MessagingConfigStatusMessage(
+                config_status=MessagingConfigStatus.not_configured,
+                detail=f"Invalid or unpopulated details on {messaging_config.service_type.value} messaging configuration",  # type: ignore
+            )
+
+        secrets = messaging_config.secrets
+        if not secrets:
+            return MessagingConfigStatusMessage(
+                config_status=MessagingConfigStatus.not_configured,
+                detail=f"No secrets found for {messaging_config.service_type.value} messaging configuration",  # type: ignore
+            )
+        try:
+            get_schema_for_secrets(
+                service_type=messaging_config.service_type,  # type: ignore
+                secrets=secrets,
+            )
+        except (ValidationError, ValueError, KeyError) as e:
+            if isinstance(e, (ValueError, KeyError)):
+                logger.error(
+                    f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration: {Pii(str(e))}"  # type: ignore[attr-defined]
+                )
+            return MessagingConfigStatusMessage(
+                config_status=MessagingConfigStatus.not_configured,
+                detail=f"Invalid secrets found on {messaging_config.service_type.value} messaging configuration",  # type: ignore
+            )
+
+        return MessagingConfigStatusMessage(
+            config_status=MessagingConfigStatus.configured,
+            detail=f"Active default messaging service of type {messaging_config.service_type.value} is fully configured",  # type: ignore
+        )
+
+    def is_email_invite_enabled(self) -> bool:
+        """Returns whether all necessary configurations are in place to invite a user via email."""
+        messaging_status = self.get_messaging_config_status(
+            messaging_method=MessagingMethod.EMAIL
+        )
+        return (
+            messaging_status.config_status == MessagingConfigStatus.configured
+            and self.config_proxy.admin_ui.url is not None
+        )
 
     def send_request_approved(self, privacy_request: PrivacyRequest) -> None:
         if message_send_enabled(

@@ -19,13 +19,18 @@ class TaskDetails(FidesSchema):
             else None
         )
 
-        # Only include kwargs for execute request tasks
         keyword_args = None
+        task_name = task["name"]
         if any(
-            task_type in task["name"]
-            for task_type in ["run_access_node", "run_erasure_node", "run_consent_node"]
+            allowed in task_name
+            for allowed in [
+                "run_access_node",
+                "run_erasure_node",
+                "run_consent_node",
+                "run_privacy_request",
+            ]
         ):
-            keyword_args = task.get("kwargs", {})
+            keyword_args = task.get("kwargs") or None
 
         return cls(
             task_id=task["id"],

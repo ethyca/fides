@@ -21,7 +21,7 @@ from fides.api.schemas.external_https import (
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_READ_ACCESS_RESULTS,
     PRIVACY_REQUEST_REVIEW,

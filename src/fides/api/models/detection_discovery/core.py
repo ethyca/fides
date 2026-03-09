@@ -459,6 +459,12 @@ class StagedResourceAncestor(Base):
             "ancestor_urn",
             "distance",
         ),
+        Index(
+            "ix_staged_resource_ancestor_anc_dist_desc",
+            "ancestor_urn",
+            "distance",
+            "descendant_urn",
+        ),
     )
 
     @classmethod
@@ -698,6 +704,11 @@ class StagedResource(Base):
             "user_assigned_data_categories",
             postgresql_using="gin",
         ),
+        # Two separate indices for different query patterns:
+        # 1. IS NOT NULL: optimizes queries filtering for containers (~is_leaf_filter)
+        # 2. IS TRUE: optimizes queries filtering for leaf fields (is_leaf = True)
+        # Both are needed because PostgreSQL won't use a partial index if the
+        # WHERE clause doesn't match the index condition exactly.
         Index(
             "ix_stagedresource_monitor_leaf_status_urn",
             "monitor_config_id",
@@ -705,6 +716,13 @@ class StagedResource(Base):
             "diff_status",
             "urn",
             postgresql_where=text("is_leaf IS NOT NULL"),
+        ),
+        Index(
+            "ix_stagedresource_leaf_true_monitor_status_urn",
+            "monitor_config_id",
+            "diff_status",
+            "urn",
+            postgresql_where=text("is_leaf IS TRUE"),
         ),
     )
 

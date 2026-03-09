@@ -14,13 +14,13 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     CustomConnectorTemplateLoader,
     FileConnectorTemplateLoader,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CLIENT_READ,
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTOR_TEMPLATES_CONFIG,
     CONNECTOR_TEMPLATES_DATASET,
     CONNECTOR_TEMPLATES_REGISTER,
@@ -564,10 +564,12 @@ class TestDeleteCustomConnectorTemplate:
     @pytest.fixture(scope="function", autouse=True)
     def reset_connector_template_loaders(self):
         """
-        Resets the loader singleton instances before each test
+        Resets the loader singleton instances and the redis_version_cached
+        decorator cache before each test so tests don't bleed into each other.
         """
         FileConnectorTemplateLoader._instance = None
         CustomConnectorTemplateLoader._instance = None
+        CustomConnectorTemplateLoader.get_connector_templates.cache_clear()  # type: ignore[attr-defined]
 
     @pytest.fixture
     def complete_connector_template(

@@ -44,7 +44,7 @@ class SystemResponse(BasicSystemResponse):
         description=PrivacyDeclarationResponse.__doc__,
     )
 
-    connection_configs: Optional[ConnectionConfigurationResponse] = Field(
+    connection_configs: Optional[List[ConnectionConfigurationResponse]] = Field(
         description=ConnectionConfigurationResponse.__doc__,
     )
 

@@ -24,7 +24,7 @@ from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.sql_models import Dataset, System
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
@@ -35,9 +35,10 @@ from fides.common.api.scope_registry import (
     SYSTEM_READ,
     SYSTEM_UPDATE,
 )
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.conftest import generate_role_header_for_user
 from tests.fixtures.saas.connection_template_fixtures import instantiate_connector
 
@@ -145,16 +146,26 @@ class TestPatchSystemConnections:
     def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, oauth2_authorization_code_connection_config, db: Session
     ):
-        system.connection_configs = oauth2_authorization_code_connection_config
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=oauth2_authorization_code_connection_config.id,
+            session=db,
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     @pytest.fixture(scope="function")
     def system_linked_with_oauth2_client_credentials_connection_config(
         self, system: System, oauth2_client_credentials_connection_config, db: Session
     ):
-        system.connection_configs = oauth2_client_credentials_connection_config
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=oauth2_client_credentials_connection_config.id,
+            session=db,
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     def test_patch_connections_valid_system(
@@ -364,6 +375,7 @@ class TestGetConnections:
             "description",
             "authorized",
             "enabled_actions",
+            "linked_systems",
         }
         connection_keys = [connection["key"] for connection in connections]
         assert response_body["items"][0]["key"] in connection_keys
@@ -500,8 +512,13 @@ class TestDeleteSystemConnectionConfig:
     def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, connection_config, db: Session
     ):
-        system.connection_configs = connection_config
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
         db.commit()
+        db.refresh(system)
         return system
 
     def test_delete_connection_config_not_authenticated(
@@ -537,7 +554,9 @@ class TestDeleteSystemConnectionConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         # the key needs to be cached before the delete
-        key = system_linked_with_oauth2_authorization_code_connection_config.connection_configs.key
+        key = system_linked_with_oauth2_authorization_code_connection_config.connection_configs[
+            0
+        ].key
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
         assert db.query(ConnectionConfig).filter_by(key=key).first() is None
@@ -557,7 +576,11 @@ class TestDeleteSystemConnectionConfig:
         """Assert both the connection config and its webhook are deleted"""
         access_manual_webhook_id = access_manual_webhook.id
         integration_manual_webhook_config_id = integration_manual_webhook_config.id
-        system.connection_configs = integration_manual_webhook_config
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=integration_manual_webhook_config.id,
+            session=db,
+        )
         db.commit()
         assert (
             db.query(AccessManualWebhook).filter_by(id=access_manual_webhook_id).first()
@@ -1028,7 +1051,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert connection_config.disabled_at is None
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
-        assert connection_config.system_id is not None
+        assert connection_config.system is not None
 
         assert dataset_config.connection_config_id == connection_config.id
         assert dataset_config.ctl_dataset_id is not None
@@ -1101,7 +1124,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert connection_config.disabled_at is None
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
-        assert connection_config.system_id is not None
+        assert connection_config.system is not None
         assert connection_config.enabled_actions is None
 
         assert dataset_config.connection_config_id == connection_config.id

@@ -10,7 +10,6 @@ from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_204_NO_CONTENT
 
-from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
@@ -75,6 +74,7 @@ from fides.api.util.saas_util import (
     check_dataset_missing_reference_values,
     map_param_values,
 )
+from fides.common.session_management import get_autoclose_db_session as get_db
 
 
 class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):

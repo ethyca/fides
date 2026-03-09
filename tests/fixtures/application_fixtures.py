@@ -115,6 +115,7 @@ from fides.api.util.data_category import DataCategory, get_user_data_categories
 from fides.config import CONFIG
 from fides.config.duplicate_detection_settings import DuplicateDetectionSettings
 from fides.config.helpers import load_file
+from fides.service.attachment_service import AttachmentService
 from tests.ops.integration_tests.saas.connector_runner import (
     generate_random_email,
     generate_random_phone_number,
@@ -4123,44 +4124,6 @@ def served_notice_history(
     pref_1.delete(db)
 
 
-# TODO: remove this fixture when we get rid of DSR 2.0
-@pytest.fixture(scope="function")
-def use_dsr_3_0():
-    """DSR 3.0 is now the default - this fixture is kept for test compatibility."""
-    # DSR 3.0 is now always used for new requests
-    yield CONFIG
-
-
-@pytest.fixture(scope="function")
-def use_dsr_2_0():
-    """Force DSR 2.0 behavior by mocking the scheduler function."""
-
-    # Patch where the function is actually used in production code AND in test modules
-    with (
-        mock.patch(
-            "fides.api.task.graph_runners.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-        mock.patch(
-            "fides.api.task.graph_task.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-        mock.patch(
-            "tests.test_dsr_3_0_default.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-        mock.patch(
-            "tests.ops.integration_tests.saas.connector_runner.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-        mock.patch(
-            "tests.ops.task.test_execute_request_tasks.use_dsr_3_0_scheduler",
-            return_value=False,
-        ),
-    ):
-        yield CONFIG
-
-
 @pytest.fixture()
 def postgres_dataset_graph(example_datasets, connection_config):
     dataset_postgres = Dataset(**example_datasets[0])
@@ -4258,11 +4221,11 @@ def attachment(s3_client, db, attachment_data, monkeypatch):
     monkeypatch.setattr(
         "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
     )
-    attachment = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content")
+    attachment = AttachmentService(db).create_and_upload(
+        data=attachment_data, file_data=BytesIO(b"file content")
     )
     yield attachment
-    attachment.delete(db)
+    AttachmentService(db).delete(attachment)
 
 
 @pytest.fixture
@@ -4276,11 +4239,11 @@ def attachment_include_in_download(s3_client, db, attachment_data, monkeypatch):
         "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
     )
     attachment_data["attachment_type"] = AttachmentType.include_with_access_package
-    attachment = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=BytesIO(b"file content")
+    attachment = AttachmentService(db).create_and_upload(
+        data=attachment_data, file_data=BytesIO(b"file content")
     )
     yield attachment
-    attachment.delete(db)
+    AttachmentService(db).delete(attachment)
 
 
 @pytest.fixture(scope="function")

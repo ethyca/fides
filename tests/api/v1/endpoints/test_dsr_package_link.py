@@ -9,7 +9,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 
 from fides.api.models.privacy_request.webhook import (
@@ -23,7 +23,7 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageSecrets,
 )
-from fides.common.api.v1.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
+from fides.common.urn_registry import PRIVACY_CENTER_DSR_PACKAGE
 
 
 @mock_aws
@@ -504,7 +504,7 @@ class TestPrivacyCenterDsrPackage:
     def test_get_access_results_missing_token(self, url_without_token, test_client):
         """Test that requests without a token are rejected"""
         response = test_client.get(url_without_token)
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         # FastAPI returns 422 when required parameters are missing, not 401
         # The error detail will be about the missing required parameter
 

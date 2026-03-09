@@ -1,3 +1,4 @@
+import copy
 from abc import ABC
 from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
@@ -234,3 +235,37 @@ class PartialPrivacyCenterConfig(FidesSchema):
     """Partial schema for the Admin UI privacy request submission."""
 
     actions: List[PartialPrivacyRequestOption]
+
+
+def reorder_custom_privacy_request_fields(config: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of the privacy center config with custom_privacy_request_fields
+    ordered by custom_privacy_request_field_order when present.
+
+    JSONB does not preserve object key order. This helper reconstructs the desired
+    order using the stored order list and removes that internal key from the result.
+    When no order list exists (legacy config), the existing key order is preserved.
+    """
+    result = copy.deepcopy(config)
+    actions = result.get("actions")
+    if not actions or not isinstance(actions, list):
+        return result
+
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        fields = action.get("custom_privacy_request_fields")
+        if not fields or not isinstance(fields, dict):
+            continue
+
+        order = action.get("custom_privacy_request_field_order")
+        if isinstance(order, list) and len(order) > 0:
+            ordered = {k: fields[k] for k in order if k in fields}
+            # Append any fields not in order (prevents data loss if order list becomes stale)
+            for k in fields:
+                if k not in ordered:
+                    ordered[k] = fields[k]
+            action["custom_privacy_request_fields"] = ordered
+            action.pop("custom_privacy_request_field_order", None)
+        # No order list: deep copy already preserved existing key order
+
+    return result
