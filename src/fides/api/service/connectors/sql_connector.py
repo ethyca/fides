@@ -122,6 +122,15 @@ class SQLConnector(BaseConnector[Engine]):
     def build_uri(self) -> Optional[str]:
         """Build a database specific uri connection string"""
 
+    def client_for_node(self, node: ExecutionNode) -> Engine:
+        """Return the engine appropriate for the given execution node.
+
+        The default implementation returns the shared engine from client().
+        Subclasses (e.g. PostgreSQLConnector) can override this to select a
+        different database based on the dataset's namespace_meta.
+        """
+        return self.client()
+
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         return SQLQueryConfig(node)
@@ -158,7 +167,7 @@ class SQLConnector(BaseConnector[Engine]):
             )
             return []
 
-        client = self.client()
+        client = self.client_for_node(node)
         query_config = self.query_config(node)
         query = query_config.generate_raw_query(fields, filters)
 
@@ -184,7 +193,7 @@ class SQLConnector(BaseConnector[Engine]):
     ) -> List[Row]:
         """Retrieve sql data"""
         query_config = self.query_config(node)
-        client = self.client()
+        client = self.client_for_node(node)
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
             return []
@@ -207,7 +216,7 @@ class SQLConnector(BaseConnector[Engine]):
             except Exception as exc:
                 # Check if table exists using qualified table name
                 qualified_table_name = self.get_qualified_table_name(node)
-                if not self.table_exists(qualified_table_name):
+                if not self.table_exists(qualified_table_name, engine=client):
                     # Central decision point - will raise TableNotFound or ConnectionException
                     self.handle_table_not_found(
                         node=node,
@@ -230,7 +239,7 @@ class SQLConnector(BaseConnector[Engine]):
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
         update_ct = 0
-        client = self.client()
+        client = self.client_for_node(node)
 
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
@@ -250,7 +259,9 @@ class SQLConnector(BaseConnector[Engine]):
                         except Exception as exc:
                             # Check if table exists using qualified table name
                             qualified_table_name = self.get_qualified_table_name(node)
-                            if not self.table_exists(qualified_table_name):
+                            if not self.table_exists(
+                                qualified_table_name, engine=client
+                            ):
                                 # Central decision point - will raise TableNotFound or ConnectionException
                                 self.handle_table_not_found(
                                     node=node,
@@ -351,7 +362,9 @@ class SQLConnector(BaseConnector[Engine]):
             return f"{database_name}.{qualified}"
         return qualified
 
-    def table_exists(self, qualified_table_name: str) -> bool:
+    def table_exists(
+        self, qualified_table_name: str, engine: Engine | None = None
+    ) -> bool:
         """
         Check if table exists using SQLAlchemy introspection.
 
@@ -359,7 +372,7 @@ class SQLConnector(BaseConnector[Engine]):
         Override: Connectors can implement database-specific table existence checking
         """
         try:
-            client = self.create_client()
+            client = engine or self.create_client()
             with client.connect() as connection:
                 inspector = inspect(connection)
 

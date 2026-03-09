@@ -50,8 +50,11 @@ class PostgresQueryConfig(PostgresColumnQuotingMixin, SQLQueryConfig):
 
     def generate_table_name(self, quoted: bool = True) -> str:
         """
-        Prepends the schema and optionally the database name to the base table name
-        if the Postgres namespace meta is provided.
+        Prepends the schema to the base table name if Postgres namespace meta
+        is provided.
+
+        Database selection is handled at the connection level by the connector
+        (via client_for_node), so only schema.table qualification is needed here.
 
         Args:
             quoted: If True (default), wraps identifiers in double quotes for SQL.
@@ -65,13 +68,7 @@ class PostgresQueryConfig(PostgresColumnQuotingMixin, SQLQueryConfig):
 
         postgres_meta = cast(PostgresNamespaceMeta, self.namespace_meta)
         schema = self._quote_identifier(postgres_meta.schema, quoted)
-        qualified_name = f"{schema}.{table_name}"
-
-        if database_name := postgres_meta.database_name:
-            db = self._quote_identifier(database_name, quoted)
-            return f"{db}.{qualified_name}"
-
-        return qualified_name
+        return f"{schema}.{table_name}"
 
     def get_formatted_query_string(
         self,
@@ -102,8 +99,8 @@ class RDSPostgresQueryConfig(
     tuple parameters the way psycopg2 does, causing ``= :param`` with a
     tuple value to return 0 rows.
 
-    The RDS engine already connects to the correct database, so
-    generate_table_name only needs schema qualification (not database).
+    Uses RDSPostgresNamespaceMeta which has optional schema (unlike the
+    base PostgresNamespaceMeta where schema is required).
     """
 
     namespace_meta_schema = RDSPostgresNamespaceMeta  # type: ignore[assignment]
@@ -111,8 +108,7 @@ class RDSPostgresQueryConfig(
     def generate_table_name(self, quoted: bool = True) -> str:
         """
         Prepends the schema to the base table name if RDS namespace meta
-        is provided.  Unlike Postgres, RDS doesn't need database_name
-        qualification because the connection targets a specific database.
+        is provided.  Schema is optional in the RDS variant.
         """
         collection_name = self.node.collection.name
         table_name = self._quote_identifier(collection_name, quoted)

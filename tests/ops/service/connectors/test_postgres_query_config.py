@@ -98,7 +98,7 @@ class TestPostgresQueryConfig:
             ),
             (
                 PostgresNamespaceMeta(database_name="example_db", schema="billing"),
-                'SELECT address_id, created, email, id, name FROM "example_db"."billing"."customer" WHERE ("email" = :email)',
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
@@ -200,7 +200,8 @@ class TestPostgresQueryConfig:
         erasure_policy,
         privacy_request,
     ):
-        """Test namespaced update with database_name prepends database.schema to table name."""
+        """Test namespaced update with database_name — DB selection is at the connection
+        level, so only schema.table qualification appears in the SQL."""
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
         update_stmt = PostgresQueryConfig(
@@ -220,7 +221,7 @@ class TestPostgresQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "example_db"."billing"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
+            == 'UPDATE "billing"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
 
 
