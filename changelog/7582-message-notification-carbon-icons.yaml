@@ -1,0 +1,4 @@
+type: Changed
+description: Extended message and notification APIs to use Carbon icons via FidesUI provider
+pr: 7582
+labels: []

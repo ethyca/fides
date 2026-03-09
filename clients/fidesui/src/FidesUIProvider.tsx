@@ -9,11 +9,57 @@ import {
   notification,
   ThemeConfig,
 } from "antd/lib";
+import type {
+  ArgsProps as MessageArgsProps,
+  TypeOpen as MessageTypeOpen,
+} from "antd/lib/message/interface";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 import { defaultAntTheme } from "./ant-theme";
 import { theme as defaultTheme } from "./FidesUITheme";
-import { getDefaultModalIcon } from "./lib/carbon-icon-defaults";
+import {
+  type FeedbackType,
+  getDefaultMessageIcon,
+  getDefaultModalIcon,
+  getDefaultNotificationIcon,
+} from "./lib/carbon-icon-defaults";
+
+const isMessageArgsProps = (content: unknown): content is MessageArgsProps =>
+  typeof content === "object" && content !== null && "content" in content;
+
+/**
+ * Wraps an Ant message method to inject a default Carbon icon.
+ *
+ * Supports both calling conventions:
+ *   message.success("Saved!")                           - simple content
+ *   message.success({ content: "Saved!", duration: 5 }) - with options
+ *
+ * Prefer the simple string form for basic feedback. Use the config
+ * object form when you need to set duration, onClose, or override the icon.
+ */
+const wrapMessageMethod = (
+  method: MessageTypeOpen,
+  type: FeedbackType,
+): MessageTypeOpen => {
+  const defaultIcon = getDefaultMessageIcon(type);
+  return (content, duration?, onClose?) => {
+    if (isMessageArgsProps(content)) {
+      // ArgsProps form - inject icon as default, caller can override
+      return method({ icon: defaultIcon, ...content });
+    }
+    // JointContent (string/ReactNode) - convert to ArgsProps to inject icon
+    const args: MessageArgsProps = { content, icon: defaultIcon };
+    if (typeof duration === "number") {
+      args.duration = duration;
+    } else if (typeof duration === "function") {
+      args.onClose = duration;
+    }
+    if (onClose) {
+      args.onClose = onClose;
+    }
+    return method(args);
+  };
+};
 
 interface ComponentAPIExports {
   messageApi: ReturnType<typeof message.useMessage>[0];
@@ -57,9 +103,54 @@ export const FidesUIProvider = ({
     [modalApi],
   );
 
+  const wrappedMessageApi = useMemo(
+    () => ({
+      ...messageApi,
+      // open, destroy, and loading are inherited unchanged from messageApi.
+      // open does not inject Carbon icons; use info/success/error/warning instead.
+      // loading keeps Ant's default spinner.
+      info: wrapMessageMethod(messageApi.info, "info"),
+      success: wrapMessageMethod(messageApi.success, "success"),
+      error: wrapMessageMethod(messageApi.error, "error"),
+      warning: wrapMessageMethod(messageApi.warning, "warning"),
+    }),
+    [messageApi],
+  );
+
+  const wrappedNotificationApi = useMemo(
+    () => ({
+      ...notificationApi,
+      info: (props: Parameters<typeof notificationApi.info>[0]) =>
+        notificationApi.info({
+          icon: getDefaultNotificationIcon("info"),
+          ...props,
+        }),
+      success: (props: Parameters<typeof notificationApi.success>[0]) =>
+        notificationApi.success({
+          icon: getDefaultNotificationIcon("success"),
+          ...props,
+        }),
+      error: (props: Parameters<typeof notificationApi.error>[0]) =>
+        notificationApi.error({
+          icon: getDefaultNotificationIcon("error"),
+          ...props,
+        }),
+      warning: (props: Parameters<typeof notificationApi.warning>[0]) =>
+        notificationApi.warning({
+          icon: getDefaultNotificationIcon("warning"),
+          ...props,
+        }),
+    }),
+    [notificationApi],
+  );
+
   const value = useMemo(
-    () => ({ messageApi, modalApi: wrappedModalApi, notificationApi }),
-    [messageApi, wrappedModalApi, notificationApi],
+    () => ({
+      messageApi: wrappedMessageApi,
+      modalApi: wrappedModalApi,
+      notificationApi: wrappedNotificationApi,
+    }),
+    [wrappedMessageApi, wrappedModalApi, wrappedNotificationApi],
   );
 
   return (
