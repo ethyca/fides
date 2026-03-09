@@ -42,7 +42,7 @@ def upgrade():
         sa.Column(
             "resurface_behavior",
             sa.ARRAY(sa.String()),
-            nullable=True,  # History table stays nullable
+            nullable=True,
         ),
     )
 
