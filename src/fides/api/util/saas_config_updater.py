@@ -1,3 +1,4 @@
+import copy
 from typing import Iterable
 
 from loguru import logger
@@ -48,7 +49,7 @@ def update_saas_configs(db: Session) -> None:
         # iteration would overwrite the row and corrupt the merge baseline for all
         # subsequent iterations of the same connector type.
         stored_dataset_json_snapshot = (
-            stored_dataset_template.dataset_json
+            copy.deepcopy(stored_dataset_template.dataset_json)
             if isinstance(stored_dataset_template.dataset_json, dict)
             else None
         )

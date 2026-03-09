@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Optional, Set, Tuple
 
 import yaml
@@ -852,7 +853,7 @@ class ConnectionService:
             self.db, field="connection_type", value=connector_type.lower()
         )
         stored_dataset_json_snapshot: Optional[dict] = (
-            stored_dataset_template.dataset_json
+            copy.deepcopy(stored_dataset_template.dataset_json)
             if stored_dataset_template
             and isinstance(stored_dataset_template.dataset_json, dict)
             else None
