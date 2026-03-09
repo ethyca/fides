@@ -4,13 +4,9 @@ from typing import TYPE_CHECKING, Any, Dict, Type, TypeVar
 
 from sqlalchemy import Text
 from sqlalchemy.types import TypeEngine
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     # Override the Enum constructor not to accept a list of strings and confuse mypy:
@@ -63,10 +59,5 @@ def optionally_encrypted_type(
         type_in = Text()
 
     if encryption_enabled:
-        return StringEncryptedType(
-            type_in=type_in,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        )
+        return encrypted_type(type_in=type_in)
     return type_in
