@@ -1,8 +1,8 @@
 import {
-  AntAlert as Alert,
-  AntButton as Button,
-  AntModal as Modal,
-  Box,
+  Alert,
+  Button,
+  Modal,
+  ChakraBox as Box,
   Text,
 } from "fidesui";
 import React, { useState } from "react";
