@@ -130,7 +130,6 @@ const AssessmentSettingsModal = ({
       title="Assessment settings"
       open={open}
       onCancel={onClose}
-      width={600}
       destroyOnClose
       footer={
         <Flex justify="flex-end" gap={8}>
@@ -219,8 +218,12 @@ const AssessmentSettingsModal = ({
             label="Enable automatic reassessment"
             valuePropName="checked"
             layout="horizontal"
+            className="mb-3"
           >
-            <Switch data-testid="switch-reassessment-enabled" />
+            <Switch
+              data-testid="switch-reassessment-enabled"
+              className="ml-auto"
+            />
           </Form.Item>
 
           {reassessmentEnabled && (
