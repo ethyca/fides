@@ -77,7 +77,12 @@ class PostgreSQLConnector(SQLConnector):
         return self._build_ssh_uri_for_database(local_address)
 
     def _create_engine_for_database(self, dbname: str | None = None) -> Engine:
-        """Create a SQLAlchemy Engine, optionally targeting a specific database."""
+        """Create a SQLAlchemy Engine, optionally targeting a specific database.
+
+        When dbname is explicitly provided (from namespace_meta), we always
+        build the URI ourselves so the database override takes effect. The
+        ``url`` secret is only used for the default engine (no override).
+        """
         if (
             self.configuration.secrets
             and self.configuration.secrets.get("ssh_required", False)
@@ -89,10 +94,14 @@ class PostgreSQLConnector(SQLConnector):
             uri = self._build_ssh_uri_for_database(
                 local_address=self.ssh_server.local_bind_address, dbname=dbname
             )
+        elif dbname:
+            # Explicit database override — build URI directly so the
+            # override isn't silently ignored by a url secret.
+            uri = self._build_uri_for_database(dbname)
         else:
             uri = (self.configuration.secrets or {}).get(
                 "url"
-            ) or self._build_uri_for_database(dbname)
+            ) or self._build_uri_for_database()
 
         return create_engine(
             uri,
