@@ -536,7 +536,7 @@ class TestRBACScopeRegistrySync:
         import ast
         from pathlib import Path
 
-        from fides.common.api.scope_registry import SCOPE_REGISTRY
+        from fides.common.scope_registry import SCOPE_REGISTRY
 
         # Find the seed migration file
         migrations_dir = (
