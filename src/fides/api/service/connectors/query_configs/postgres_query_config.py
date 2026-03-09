@@ -6,7 +6,10 @@ from fides.api.schemas.namespace_meta.postgres_namespace_meta import (
 from fides.api.schemas.namespace_meta.rds_postgres_namespace_meta import (
     RDSPostgresNamespaceMeta,
 )
-from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
+from fides.api.service.connectors.query_configs.query_config import (
+    QueryStringWithoutTuplesOverrideQueryConfig,
+    SQLQueryConfig,
+)
 
 
 class PostgresColumnQuotingMixin:
@@ -88,9 +91,16 @@ class PostgresQueryConfig(PostgresColumnQuotingMixin, SQLQueryConfig):
         return f"UPDATE {self.generate_table_name()} SET {', '.join(update_clauses)} WHERE {' AND '.join(where_clauses)}"
 
 
-class RDSPostgresQueryConfig(PostgresQueryConfig):
+class RDSPostgresQueryConfig(
+    QueryStringWithoutTuplesOverrideQueryConfig, PostgresQueryConfig
+):
     """
     Query config for RDS Postgres.
+
+    Inherits from QueryStringWithoutTuplesOverrideQueryConfig because the
+    pg8000 driver (used by RDS IAM auth) does not auto-unpack single-element
+    tuple parameters the way psycopg2 does, causing ``= :param`` with a
+    tuple value to return 0 rows.
 
     The RDS engine already connects to the correct database, so
     generate_table_name only needs schema qualification (not database).
