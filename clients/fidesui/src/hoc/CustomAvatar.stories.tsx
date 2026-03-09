@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Breakpoint } from "antd/lib";
 
 import type { AvatarProps } from "../index";
-import { Avatar } from "../index";
+import { Avatar, Icons } from "../index";
+import palette from "../palette/palette.module.scss";
 import { iconControl } from "../stories/utils/controls";
 
 const AVATAR_SHAPE: Record<
@@ -31,14 +32,25 @@ const AVATAR_SIZE: Record<AvatarSize, AvatarSize> = {
   large: "large",
 };
 
+const AVATAR_FIT: Record<
+  NonNullable<AvatarProps["imageFit"]>,
+  AvatarProps["imageFit"]
+> = {
+  contain: "contain",
+  cover: "cover",
+};
+
 const meta = {
   title: "Data Display/Avatar",
   component: Avatar,
-  args: {
-    draggable: false,
-    shape: "circle",
-    size: "default",
-  },
+  tags: ["autodocs"],
+} satisfies Meta<typeof Avatar>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = {
+  args: { icon: <Icons.User color={palette.FIDESUI_MINOS} /> },
   argTypes: {
     icon: iconControl,
     gap: {
@@ -56,13 +68,41 @@ const meta = {
       control: "select",
       options: Object.values(AVATAR_SIZE),
     },
+    imageFit: {
+      control: "select",
+      options: Object.values(AVATAR_FIT),
+    },
   },
-  tags: ["autodocs"],
-} satisfies Meta<typeof Avatar>;
+};
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+export const Square: Story = {
+  args: {
+    icon: <Icons.User color={palette.FIDESUI_MINOS} />,
+    shape: "square",
+  },
+  parameters: { controls: { include: [] } },
+};
 
-export const Primary: Story = {
-  args: {},
+export const Outlined: Story = {
+  args: {
+    icon: <Icons.User color={palette.FIDESUI_MINOS} />,
+    variant: "outlined",
+  },
+  parameters: { controls: { include: [] } },
+};
+
+export const ContainedImage: Story = {
+  args: {
+    src: <img src="/context.png" alt="alt" />,
+    imageFit: "contain",
+  },
+  parameters: { controls: { include: [] } },
+};
+
+export const CoveredImage: Story = {
+  args: {
+    src: <img src="/context.png" alt="alt" />,
+    imageFit: "cover",
+  },
+  parameters: { controls: { include: [] } },
 };
