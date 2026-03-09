@@ -180,7 +180,7 @@ async def update_user(
     is_this_user = user.id == current_user.id
     if not is_this_user:
         await verify_oauth_client(
-            security_scopes=Security(verify_oauth_client, scopes=[USER_UPDATE]),
+            security_scopes=SecurityScopes([USER_UPDATE]),
             authorization=authorization,
             db=db,
             permission_checker=permission_checker,
@@ -410,7 +410,7 @@ async def get_managed_systems(
     # User must have a specific scope to be able to read another user's systems
     user = validate_user_id(db, user_id)
     await verify_oauth_client(
-        security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
+        security_scopes=SecurityScopes([SYSTEM_MANAGER_READ]),
         authorization=authorization,
         db=db,
         permission_checker=permission_checker,
@@ -441,7 +441,7 @@ async def get_managed_system_details(
         user = current_user
     else:
         await verify_oauth_client(
-            security_scopes=Security(verify_oauth_client, scopes=[SYSTEM_MANAGER_READ]),
+            security_scopes=SecurityScopes([SYSTEM_MANAGER_READ]),
             authorization=authorization,
             db=db,
             permission_checker=permission_checker,
