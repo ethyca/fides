@@ -124,6 +124,8 @@ class PrivacyExperienceConfigBase:
     resurface_behavior = Column(
         ARRAY(EnumColumn(ResurfaceBehavior, native_enum=False)),
         nullable=True,
+        server_default="{}",
+        default=list,
     )
 
     disabled = Column(Boolean, nullable=False, default=True)
