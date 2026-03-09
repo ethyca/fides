@@ -3,20 +3,28 @@ from typing import List, cast
 from fides.api.schemas.namespace_meta.google_cloud_sql_postgres_namespace_meta import (
     GoogleCloudSQLPostgresNamespaceMeta,
 )
+from fides.api.service.connectors.query_configs.postgres_query_config import (
+    PostgresColumnQuotingMixin,
+)
 from fides.api.service.connectors.query_configs.query_config import (
     QueryStringWithoutTuplesOverrideQueryConfig,
 )
 
 
-class GoogleCloudSQLPostgresQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
+class GoogleCloudSQLPostgresQueryConfig(
+    PostgresColumnQuotingMixin, QueryStringWithoutTuplesOverrideQueryConfig
+):
     """Generates SQL in Google Cloud SQL for Postgres' custom dialect."""
 
     namespace_meta_schema = GoogleCloudSQLPostgresNamespaceMeta
 
     def generate_table_name(self, quoted: bool = True) -> str:
         """
-        Prepends the schema and optionally the database name to the base table name
-        if the Google Cloud SQL Postgres namespace meta is provided.
+        Prepends the schema to the base table name if namespace meta is provided.
+
+        Unlike Snowflake, Postgres doesn't support cross-database queries via
+        three-part names. The connection is already bound to the correct database
+        via the db param in create_client(), so only schema qualification is needed.
 
         Args:
             quoted: If True (default), wraps identifiers in double quotes for SQL.
@@ -29,14 +37,11 @@ class GoogleCloudSQLPostgresQueryConfig(QueryStringWithoutTuplesOverrideQueryCon
             return table_name
 
         meta = cast(GoogleCloudSQLPostgresNamespaceMeta, self.namespace_meta)
-        schema = f'"{meta.schema}"' if quoted else meta.schema
-        qualified_name = f"{schema}.{table_name}"
+        if meta.schema:
+            schema = f'"{meta.schema}"' if quoted else meta.schema
+            return f"{schema}.{table_name}"
 
-        if database_name := meta.database_name:
-            db = f'"{database_name}"' if quoted else database_name
-            return f"{db}.{qualified_name}"
-
-        return qualified_name
+        return table_name
 
     def get_formatted_query_string(
         self,

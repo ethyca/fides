@@ -94,24 +94,24 @@ class TestPostgresQueryConfig:
         [
             (
                 PostgresNamespaceMeta(schema="billing"),
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 PostgresNamespaceMeta(database_name="example_db", schema="billing"),
-                'SELECT address_id, created, email, id, name FROM "example_db"."billing"."customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "example_db"."billing"."customer" WHERE ("email" = :email)',
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"schema": "billing"},
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 {"schema": "billing", "connection_type": "postgres"},
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 None,
-                'SELECT address_id, created, email, id, name FROM "customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "customer" WHERE ("email" = :email)',
             ),
         ],
     )
@@ -160,7 +160,7 @@ class TestPostgresQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "address" SET city = :masked_city, house = :masked_house, state = :masked_state, street = :masked_street, zip = :masked_zip WHERE id = :id'
+            == 'UPDATE "address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
 
     def test_generate_namespaced_update_stmt(
@@ -190,7 +190,7 @@ class TestPostgresQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "billing"."address" SET city = :masked_city, house = :masked_house, state = :masked_state, street = :masked_street, zip = :masked_zip WHERE id = :id'
+            == 'UPDATE "billing"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
 
     def test_generate_namespaced_update_stmt_with_database(
@@ -220,7 +220,7 @@ class TestPostgresQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "example_db"."billing"."address" SET city = :masked_city, house = :masked_house, state = :masked_state, street = :masked_street, zip = :masked_zip WHERE id = :id'
+            == 'UPDATE "example_db"."billing"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
 
 

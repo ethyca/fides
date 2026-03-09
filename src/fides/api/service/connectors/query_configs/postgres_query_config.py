@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import Any, Dict, List, cast
 
 from fides.api.schemas.namespace_meta.postgres_namespace_meta import (
     PostgresNamespaceMeta,
@@ -12,7 +12,28 @@ from fides.api.service.connectors.query_configs.query_config import (
 )
 
 
-class PostgresQueryConfig(SQLQueryConfig):
+class PostgresColumnQuotingMixin:
+    """Mixin that quotes column names with double quotes for Postgres dialects.
+
+    Handles reserved-word collisions in WHERE clauses and UPDATE statements.
+    Used by PostgresQueryConfig (SQLQueryConfig branch) and
+    GoogleCloudSQLPostgresQueryConfig (QueryStringWithoutTuplesOverrideQueryConfig branch).
+    """
+
+    def format_clause_for_query(
+        self, string_path: str, operator: str, operand: str
+    ) -> str:
+        """Returns clauses with quoted column names to handle Postgres reserved words."""
+        if operator == "IN":
+            return f'"{string_path}" IN ({operand})'
+        return f'"{string_path}" {operator} :{operand}'
+
+    def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> list[str]:
+        """Quotes column names in UPDATE SET and WHERE clauses."""
+        return [f'"{k}" = :{v}' for k, v in sorted(param_map.items())]
+
+
+class PostgresQueryConfig(PostgresColumnQuotingMixin, SQLQueryConfig):
     """
     Generates SQL valid for Postgres
     """
