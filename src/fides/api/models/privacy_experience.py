@@ -181,6 +181,12 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     name = Column(
         String, nullable=False
     )  # Overriding PrivacyExperienceConfigBase to make non-nullable
+    resurface_behavior = Column(
+        ARRAY(EnumColumn(ResurfaceBehavior, native_enum=False)),
+        nullable=False,
+        server_default="{}",
+        default=list,
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
 
     privacy_notice_keys = Column(
         ARRAY(String)
@@ -268,6 +274,12 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     name = Column(
         String, nullable=False
     )  # Overriding PrivacyExperienceConfigBase to make non-nullable
+    resurface_behavior = Column(
+        ARRAY(EnumColumn(ResurfaceBehavior, native_enum=False)),
+        nullable=False,
+        server_default="{}",
+        default=list,
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     origin = Column(
         String, ForeignKey(ExperienceConfigTemplate.id_field_path)
     )  # The template from which this config was created if applicable
