@@ -737,7 +737,7 @@ class ConnectionService:
         )
         stored_dataset_template = (
             SaasTemplateDataset.get_by(
-                self.db, field="connection_type", value=connector_type
+                self.db, field="connection_type", value=connector_type.lower()
             )
             if connector_type
             else None

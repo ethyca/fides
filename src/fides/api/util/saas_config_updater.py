@@ -57,7 +57,7 @@ def update_saas_configs(db: Session) -> None:
         template_version: Version = parse_version(saas_config.version)
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
-            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type.lower()),
         ).all()
         for connection_config in connection_configs:
             saas_config_instance = SaaSConfig.model_validate(

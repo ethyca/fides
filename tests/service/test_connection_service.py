@@ -22,6 +22,9 @@ from fides.api.models.detection_discovery.core import (
 )
 from fides.api.models.event_audit import EventAuditType
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
+from fides.api.models.sql_models import (
+    Dataset as CtlDataset,  # type: ignore[attr-defined]
+)
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
 )
@@ -1830,8 +1833,21 @@ class TestConnectionService:
                 f"collections={collection_names}"
             )
 
-        # Clean up created test resources
+        # Clean up created test resources (CtlDataset must be deleted explicitly
+        # since it is not cascade-deleted when ConnectionConfig is removed)
         for suffix in ("alpha", "beta"):
+            instance_key = f"multi_config_{suffix}"
+            dataset_config = DatasetConfig.filter(
+                db=db,
+                conditions=(DatasetConfig.fides_key == instance_key),
+            ).first()
+            if dataset_config and dataset_config.ctl_dataset_id:
+                ctl_dataset = db.query(CtlDataset).filter(
+                    CtlDataset.id == dataset_config.ctl_dataset_id
+                ).first()
+                if ctl_dataset:
+                    db.delete(ctl_dataset)
+                    db.commit()
             connection_config = ConnectionConfig.get_by(
                 db, field="key", value=f"multi_config_connection_{suffix}"
             )
