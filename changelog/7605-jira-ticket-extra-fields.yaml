@@ -1,0 +1,4 @@
+type: Changed
+description: Allowed extra fields in JiraTicketSchema for Fidesplus extensibility
+pr: 7605
+labels: []
