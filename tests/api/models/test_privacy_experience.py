@@ -773,7 +773,7 @@ class TestExperienceConfig:
         config.delete(db)
 
     def test_create_privacy_experience_config_without_resurface_behavior(self, db):
-        """Test that resurface_behavior defaults to None"""
+        """Test that resurface_behavior defaults to empty list"""
         config = PrivacyExperienceConfig.create(
             db=db,
             data={
@@ -800,7 +800,7 @@ class TestExperienceConfig:
             },
         )
 
-        assert config.resurface_behavior is None
+        assert config.resurface_behavior == []
 
         for translation in config.translations:
             for history in translation.histories:
@@ -851,10 +851,11 @@ class TestExperienceConfig:
             ResurfaceBehavior.DISMISS,
         ]
 
-        config.resurface_behavior = None
+        # Reset to empty list (column is non-nullable)
+        config.resurface_behavior = []
         config.save(db)
 
-        assert config.resurface_behavior is None
+        assert config.resurface_behavior == []
 
         for translation in config.translations:
             for history in translation.histories:
