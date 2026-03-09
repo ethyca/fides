@@ -1,13 +1,9 @@
 """SQLAlchemy model for privacy assessment configuration."""
 
-from sqlalchemy import Boolean, Column, String
+from sqlalchemy import Boolean, Column, String, Text
 from sqlalchemy.ext.declarative import declared_attr
 
 from fides.api.db.base_class import Base
-
-# Default LLM models for assessments
-DEFAULT_ASSESSMENT_MODEL = "openrouter/anthropic/claude-opus-4"
-DEFAULT_CHAT_MODEL = "openrouter/google/gemini-2.5-flash"
 
 
 class PrivacyAssessmentConfig(Base):
@@ -65,16 +61,9 @@ class PrivacyAssessmentConfig(Base):
         comment="Slack channel name (for display purposes).",
     )
 
-    @classmethod
-    def get_assessment_model(cls, config: "PrivacyAssessmentConfig | None") -> str:
-        """Get the effective assessment model, using default if not configured."""
-        if config and config.assessment_model_override:
-            return config.assessment_model_override
-        return DEFAULT_ASSESSMENT_MODEL
-
-    @classmethod
-    def get_chat_model(cls, config: "PrivacyAssessmentConfig | None") -> str:
-        """Get the effective chat model, using default if not configured."""
-        if config and config.chat_model_override:
-            return config.chat_model_override
-        return DEFAULT_CHAT_MODEL
+    # Tone Configuration
+    questionnaire_tone_prompt = Column(
+        Text,
+        nullable=True,
+        comment="Custom tone prompt for questionnaire messages. If null, uses default.",
+    )

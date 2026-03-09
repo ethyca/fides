@@ -1,7 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
 
-// --- Shared types ---
-
 type PostureBand = "critical" | "at_risk" | "good" | "excellent";
 type DiffDirection = "up" | "down" | "unchanged";
 
@@ -15,13 +13,11 @@ export interface PostureDimension {
 
 export interface PostureResponse {
   score: number;
-  diff: number;
+  diff_percent: number;
   diff_direction: DiffDirection;
   agent_annotation: string;
   dimensions: PostureDimension[];
 }
-
-// --- Agent Briefing ---
 
 interface QuickAction {
   id: string;
@@ -34,8 +30,6 @@ interface AgentBriefingResponse {
   briefing: string;
   quick_actions: QuickAction[];
 }
-
-// --- Priority Actions ---
 
 type ActionType =
   | "classification_review"
@@ -73,22 +67,19 @@ interface PriorityActionsParams {
   size?: number;
 }
 
-// --- Trends ---
-
 type TrendPeriod = "30d" | "60d" | "90d";
 
 export interface TrendMetric {
+  name: string;
   value: number;
   history: number[];
   metadata: Record<string, unknown>;
-  diff: number;
+  diff_percent: number;
 }
 
 interface TrendsResponse {
-  metrics: TrendMetric[];
+  metrics: Record<string, TrendMetric>;
 }
-
-// --- Astralis ---
 
 interface AstralisResponse {
   active_conversations: number;
@@ -96,8 +87,6 @@ interface AstralisResponse {
   awaiting_response: number;
   risks_identified: number;
 }
-
-// --- Activity Feed ---
 
 interface ActivityFeedItem {
   actor_type: "user" | "agent";
@@ -120,8 +109,6 @@ interface ActivityFeedParams {
   end_date?: string;
 }
 
-// --- Privacy Requests ---
-
 interface PrivacyRequestRegion {
   name: string;
   level: "global" | "country" | "state";
@@ -138,27 +125,23 @@ interface PrivacyRequestsParams {
   country?: string;
 }
 
-// --- Reset ---
-
 interface ResetResponse {
   message: string;
 }
-
-// --- API ---
 
 const dashboardApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     resetDashboard: build.mutation<ResetResponse, void>({
       query: () => ({ url: "plus/dashboard/reset", method: "POST" }),
-      invalidatesTags: ["Dashboard"],
+      invalidatesTags: ["Fides Dashboard"],
     }),
     getDashboardPosture: build.query<PostureResponse, void>({
       query: () => ({ url: "plus/dashboard/posture" }),
-      providesTags: ["Dashboard"],
+      providesTags: [{ type: "Fides Dashboard", id: "posture" }],
     }),
     getAgentBriefing: build.query<AgentBriefingResponse, void>({
       query: () => ({ url: "plus/dashboard/agent-briefing" }),
-      providesTags: ["Dashboard"],
+      providesTags: [{ type: "Fides Dashboard", id: "briefing" }],
     }),
     getPriorityActions: build.query<
       PriorityActionsResponse,
@@ -168,7 +151,7 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/actions",
         params: params ?? { page: 1, size: 8 },
       }),
-      providesTags: ["Dashboard"],
+      providesTags: [{ type: "Fides Dashboard", id: "actions" }],
     }),
     updatePriorityAction: build.mutation<
       PriorityAction,
@@ -179,18 +162,18 @@ const dashboardApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
-      invalidatesTags: ["Dashboard"],
+      invalidatesTags: [{ type: "Fides Dashboard", id: "actions" }],
     }),
     getDashboardTrends: build.query<TrendsResponse, { period: TrendPeriod }>({
       query: (params) => ({
         url: "plus/dashboard/trends",
         params,
       }),
-      providesTags: ["Dashboard"],
+      providesTags: [{ type: "Fides Dashboard", id: "trends" }],
     }),
     getAstralis: build.query<AstralisResponse, void>({
       query: () => ({ url: "plus/dashboard/astralis" }),
-      providesTags: ["Dashboard"],
+      providesTags: [{ type: "Fides Dashboard", id: "astralis" }],
     }),
     getActivityFeed: build.query<
       ActivityFeedResponse,
@@ -200,7 +183,7 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/activity-feed",
         params: params ?? {},
       }),
-      providesTags: ["Dashboard"],
+      providesTags: [{ type: "Fides Dashboard", id: "activity-feed" }],
     }),
     getPrivacyRequests: build.query<
       PrivacyRequestsResponse,
@@ -210,7 +193,7 @@ const dashboardApi = baseApi.injectEndpoints({
         url: "plus/dashboard/privacy-requests",
         params: params ?? {},
       }),
-      providesTags: ["Dashboard"],
+      providesTags: [{ type: "Fides Dashboard", id: "privacy-requests" }],
     }),
   }),
 });

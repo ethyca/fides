@@ -15,7 +15,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
@@ -36,13 +36,13 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
     CONNECTION_READ,
     STORAGE_DELETE,
 )
-from fides.common.api.v1.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
+from fides.common.urn_registry import CONNECTIONS, SAAS_CONFIG, V1_URL_PREFIX
 from fides.config import CONFIG
 from fides.service.connection.connection_service import ConnectionService
 from fides.service.event_audit_service import EventAuditService
@@ -2731,7 +2731,7 @@ class TestPutConnectionOAuthConfig:
             headers=auth_header,
             json=self.oauth_payload,
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be set for HTTPS connections"
             in response.json()["detail"]
@@ -2851,7 +2851,7 @@ class TestPatchConnectionOAuthConfig:
             headers=auth_header,
             json=self.patch_payload,
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be set for HTTPS connections"
             in response.json()["detail"]
@@ -2967,7 +2967,7 @@ class TestPatchConnectionOAuthConfig:
                 json=self.patch_payload,
             )
 
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
 
         # Verify new config was not created due to incomplete data
         db.refresh(https_connection_config)
@@ -3020,7 +3020,7 @@ class TestDeleteConnectionOAuthConfig:
         response = api_client.delete(
             self.url.format(connection_config.key), headers=auth_header
         )
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert (
             "OAuth2 configuration can only be deleted for HTTPS connections"
             in response.json()["detail"]

@@ -19,7 +19,7 @@ from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 from uvicorn import Config, Server
 
 import fides
@@ -249,7 +249,7 @@ async def request_validation_exception_handler(
     password from being returned in the error message
     """
     return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=HTTP_422_UNPROCESSABLE_CONTENT,
         content={
             "detail": jsonable_encoder(exc.errors(), exclude={"input", "url", "ctx"})
         },

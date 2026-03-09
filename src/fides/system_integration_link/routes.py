@@ -3,12 +3,12 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQU
 
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.util.api_router import APIRouter
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     SYSTEM_INTEGRATION_LINK_CREATE_OR_UPDATE,
     SYSTEM_INTEGRATION_LINK_DELETE,
     SYSTEM_INTEGRATION_LINK_READ,
 )
-from fides.common.api.v1.urn_registry import V1_URL_PREFIX
+from fides.common.urn_registry import V1_URL_PREFIX
 from fides.system_integration_link.deps import get_system_integration_link_service
 from fides.system_integration_link.entities import SystemLinkInput
 from fides.system_integration_link.exceptions import (
@@ -53,14 +53,7 @@ def get_system_links(
             detail=f"Connection '{connection_key}' not found",
         ) from exc
 
-    return [
-        SystemLinkResponse(
-            system_fides_key=e.system_fides_key,
-            system_name=e.system_name,
-            created_at=e.created_at,
-        )
-        for e in entities
-    ]
+    return [SystemLinkResponse.from_entity(e) for e in entities]
 
 
 @router.put(
@@ -102,14 +95,7 @@ def set_system_links(
     except TooManyLinksError as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    return [
-        SystemLinkResponse(
-            system_fides_key=e.system_fides_key,
-            system_name=e.system_name,
-            created_at=e.created_at,
-        )
-        for e in entities
-    ]
+    return [SystemLinkResponse.from_entity(e) for e in entities]
 
 
 @router.delete(

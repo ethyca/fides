@@ -1,6 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Alert, GetProps } from "../../index";
+import { PARAGRAPH_LOREM, SUBTITLE_LOREM } from "../../stories/utils/content";
+import { iconControl } from "../../stories/utils/controls";
+
+const meta = {
+  title: "Feedback/Alert",
+  component: Alert,
+  tags: ["autodocs"],
+} satisfies Meta<typeof Alert>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 const ALERT_TYPE: Record<
   NonNullable<GetProps<typeof Alert>["type"]>,
@@ -12,10 +23,12 @@ const ALERT_TYPE: Record<
   warning: "warning",
 };
 
-const meta = {
-  title: "Feedback/Alert",
-  component: Alert,
-  tags: ["autodocs"],
+export const Primary: Story = {
+  args: {
+    message: SUBTITLE_LOREM,
+    description: PARAGRAPH_LOREM,
+    type: "info",
+  },
   argTypes: {
     type: {
       control: "select",
@@ -24,28 +37,14 @@ const meta = {
     showIcon: {
       control: "boolean",
     },
-  },
-} satisfies Meta<typeof Alert>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const Primary: Story = {
-  args: {
-    message:
-      "Our mission is to become the trusted data layer for enterprise and AI—unifying privacy, governance, and policy enforcement to make AI adoption safe and scalable.",
-    description:
-      "Ethyca was founded to build the trusted data layer for enterprise and AI: where privacy, governance, and policy enforcement are integrated directly into systems, not bolted on after the fact. As AI adoption accelerates, the stakes for responsible data use grow exponentially. Organizations need more than guidelines. They need data infrastructure that turns policy into practice, automatically and at scale.",
-    type: "info",
+    icon: iconControl,
   },
 };
 
 export const Error: Story = {
   args: {
-    message:
-      "Our mission is to become the trusted data layer for enterprise and AI—unifying privacy, governance, and policy enforcement to make AI adoption safe and scalable.",
-    description:
-      "Ethyca was founded to build the trusted data layer for enterprise and AI: where privacy, governance, and policy enforcement are integrated directly into systems, not bolted on after the fact. As AI adoption accelerates, the stakes for responsible data use grow exponentially. Organizations need more than guidelines. They need data infrastructure that turns policy into practice, automatically and at scale.",
+    message: SUBTITLE_LOREM,
+    description: PARAGRAPH_LOREM,
     type: "error",
     showIcon: true,
   },
@@ -53,10 +52,8 @@ export const Error: Story = {
 
 export const Success: Story = {
   args: {
-    message:
-      "Our mission is to become the trusted data layer for enterprise and AI—unifying privacy, governance, and policy enforcement to make AI adoption safe and scalable.",
-    description:
-      "Ethyca was founded to build the trusted data layer for enterprise and AI: where privacy, governance, and policy enforcement are integrated directly into systems, not bolted on after the fact. As AI adoption accelerates, the stakes for responsible data use grow exponentially. Organizations need more than guidelines. They need data infrastructure that turns policy into practice, automatically and at scale.",
+    message: SUBTITLE_LOREM,
+    description: PARAGRAPH_LOREM,
     type: "success",
     showIcon: true,
   },
@@ -64,10 +61,8 @@ export const Success: Story = {
 
 export const Warning: Story = {
   args: {
-    message:
-      "Our mission is to become the trusted data layer for enterprise and AI—unifying privacy, governance, and policy enforcement to make AI adoption safe and scalable.",
-    description:
-      "Ethyca was founded to build the trusted data layer for enterprise and AI: where privacy, governance, and policy enforcement are integrated directly into systems, not bolted on after the fact. As AI adoption accelerates, the stakes for responsible data use grow exponentially. Organizations need more than guidelines. They need data infrastructure that turns policy into practice, automatically and at scale.",
+    message: SUBTITLE_LOREM,
+    description: PARAGRAPH_LOREM,
     type: "warning",
     showIcon: true,
   },
