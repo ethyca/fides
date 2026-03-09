@@ -1842,9 +1842,11 @@ class TestConnectionService:
                 conditions=(DatasetConfig.fides_key == instance_key),
             ).first()
             if dataset_config and dataset_config.ctl_dataset_id:
-                ctl_dataset = db.query(CtlDataset).filter(
-                    CtlDataset.id == dataset_config.ctl_dataset_id
-                ).first()
+                ctl_dataset = (
+                    db.query(CtlDataset)
+                    .filter(CtlDataset.id == dataset_config.ctl_dataset_id)
+                    .first()
+                )
                 if ctl_dataset:
                     db.delete(ctl_dataset)
                     db.commit()
