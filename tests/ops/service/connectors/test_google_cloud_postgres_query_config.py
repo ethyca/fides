@@ -92,29 +92,29 @@ class TestGoogleCloudSQLPostgresQueryConfig:
         [
             (
                 GoogleCloudSQLPostgresNamespaceMeta(schema="billing"),
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 GoogleCloudSQLPostgresNamespaceMeta(
                     database_name="prod_db", schema="billing"
                 ),
-                'SELECT address_id, created, email, id, name FROM "prod_db"."billing"."customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"schema": "billing"},
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 {
                     "schema": "billing",
                     "connection_type": "google_cloud_sql_postgres",
                 },
-                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "billing"."customer" WHERE ("email" = :email)',
             ),
             (
                 None,
-                'SELECT address_id, created, email, id, name FROM "customer" WHERE (email = :email)',
+                'SELECT address_id, created, email, id, name FROM "customer" WHERE ("email" = :email)',
             ),
         ],
     )
@@ -165,7 +165,7 @@ class TestGoogleCloudSQLPostgresQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "address" SET city = :masked_city, house = :masked_house, state = :masked_state, street = :masked_street, zip = :masked_zip WHERE id = :id'
+            == 'UPDATE "address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
 
     def test_generate_namespaced_update_stmt(
@@ -195,7 +195,7 @@ class TestGoogleCloudSQLPostgresQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "billing"."address" SET city = :masked_city, house = :masked_house, state = :masked_state, street = :masked_street, zip = :masked_zip WHERE id = :id'
+            == 'UPDATE "billing"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
 
     def test_generate_namespaced_update_stmt_with_database(
@@ -205,7 +205,7 @@ class TestGoogleCloudSQLPostgresQueryConfig:
         erasure_policy,
         privacy_request,
     ):
-        """Test namespaced update with database_name prepends database.schema."""
+        """Test namespaced update with database_name ignores database (Postgres doesn't support cross-db queries)."""
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
         update_stmt = GoogleCloudSQLPostgresQueryConfig(
@@ -227,5 +227,5 @@ class TestGoogleCloudSQLPostgresQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "prod_db"."billing"."address" SET city = :masked_city, house = :masked_house, state = :masked_state, street = :masked_street, zip = :masked_zip WHERE id = :id'
+            == 'UPDATE "billing"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
