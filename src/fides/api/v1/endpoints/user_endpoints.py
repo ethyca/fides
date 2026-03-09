@@ -588,8 +588,6 @@ def get_user(
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> FidesUser:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
-    # Resolve Depends if called directly (not via FastAPI DI)
-    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     user: Optional[FidesUser] = FidesUser.get_by_key_or_id(db, data={"id": user_id})
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
@@ -635,8 +633,6 @@ def get_users(
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
 ) -> AbstractPage[FidesUser]:
     """Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data."""
-    # Resolve Depends if called directly (not via FastAPI DI)
-    permission_checker = _resolve_depends(permission_checker, get_permission_checker)
     query = FidesUser.query(db)
 
     # Check if user has USER_READ_OWN scope and filter accordingly
