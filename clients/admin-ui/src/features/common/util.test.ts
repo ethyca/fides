@@ -7,6 +7,7 @@ import {
   getOptionsFromMap,
   getPII,
   nFormatter,
+  snakeCaseToTitleCase,
   truncateUrl,
 } from "~/features/common/utils";
 
@@ -160,6 +161,23 @@ describe(truncateUrl.name, () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
+  });
+});
+
+describe(snakeCaseToTitleCase.name, () => {
+  it.each([
+    ["hmac", "HMAC"],
+    ["aes_encrypt", "AES Encrypt"],
+    ["nlp_redact", "NLP Redact"],
+    ["random_string_rewrite", "Random String Rewrite"],
+    ["null_rewrite", "Null Rewrite"],
+    ["hash", "Hash"],
+  ])('formats "%s" as "%s" with acronyms', (input, expected) => {
+    expect(snakeCaseToTitleCase(input, ["aes", "hmac", "nlp"])).toBe(expected);
+  });
+
+  it("title-cases all words when no acronyms provided", () => {
+    expect(snakeCaseToTitleCase("hmac_hash")).toBe("Hmac Hash");
   });
 });
 

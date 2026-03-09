@@ -180,15 +180,38 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
 @click.pass_context
 @click.option("--queues", "-q", type=str, default="")
 @click.option("--exclude-queues", type=str, default="")
+@click.option(
+    "--reload",
+    is_flag=True,
+    default=False,
+    help="Auto-restart the worker when Python or YAML files change (dev only).",
+)
+@click.option(
+    "--reload-dir",
+    multiple=True,
+    type=str,
+    help="Directories to watch for changes (can be specified multiple times). Defaults to 'src' and 'data'.",
+)
 @with_analytics
-def worker(ctx: click.Context, queues: str = "", exclude_queues: str = "") -> None:
+def worker(
+    ctx: click.Context,
+    queues: str = "",
+    exclude_queues: str = "",
+    reload: bool = False,
+    reload_dir: tuple = (),
+) -> None:
     """
     Start a Celery worker for the Fides webserver.
     """
     # This has to be here to avoid a circular dependency
     from fides.api.worker import start_worker
 
-    start_worker(queues, exclude_queues)
+    start_worker(
+        queues,
+        exclude_queues,
+        reload=reload,
+        reload_dirs=list(reload_dir) if reload_dir else None,
+    )
 
 
 @click.command()  # type: ignore

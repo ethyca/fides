@@ -1,4 +1,0 @@
-type: Added
-description: Added property-based DAG filtering infrastructure for DSR traversal
-pr: 7404
-labels: []

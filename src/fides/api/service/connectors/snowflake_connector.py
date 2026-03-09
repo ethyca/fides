@@ -67,6 +67,9 @@ class SnowflakeConnector(SQLConnector):
             private_key_encoded = serialization.load_pem_private_key(
                 config.private_key.encode(),
                 password=password,
+                # default_backend() is deprecated since cryptography 36.0 (2021-11-21);
+                # the backend argument is silently accepted but no longer required.
+                # https://cryptography.io/en/36.0.0/faq/#faq-missing-backend
                 backend=default_backend(),
             )
             private_key = private_key_encoded.private_bytes(

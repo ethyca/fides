@@ -18,7 +18,7 @@ import {
   useGetDatasetInputsQuery,
   useTestDatastoreConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
+import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 import {
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,

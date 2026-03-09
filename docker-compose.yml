@@ -125,7 +125,7 @@ services:
 
   worker-other:
     image: ethyca/fides:local${IMAGE_SUFFIX:-}
-    command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
+    command: fides worker --reload --reload-dir src --reload-dir data --exclude-queues=fides.dsr,fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
     depends_on:
       redis:
         condition: service_started
@@ -136,6 +136,8 @@ services:
       interval: 20s
       timeout: 20s
       retries: 10
+    env_file:
+      - .env
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
@@ -155,14 +157,14 @@ services:
   worker-privacy-preferences:
     extends:
       service: worker-other
-    command: fides worker --queues=fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion
+    command: fides worker --reload --reload-dir src --reload-dir data --queues=fides.privacy_preferences,fides.privacy_request_exports,fides.privacy_request_ingestion
 
   worker-dsr:
     extends:
       service: worker-other
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9001/"]
-    command: fides worker --queues=fides.dsr
+    command: fides worker --reload --reload-dir src --reload-dir data --queues=fides.dsr
 
   redis:
     image: "redis:8.0-alpine"
@@ -195,6 +197,133 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://:redispassword@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:redispassword@redis:6379/0
+
+  # Redis Cluster (3 nodes) for cluster-mode testing. Standalone redis above for regular use.
+  # Cluster forms with Docker hostnames so nodes can reach each other. Run cluster tests
+  # FROM INSIDE the stack so the client can reach all nodes: docker compose run --rm fides
+  #   env FIDES__REDIS__CLUSTER_ENABLED=true FIDES__REDIS__HOST=redis-cluster-node-1
+  #   FIDES__REDIS__PORT=6379 FIDES__REDIS__PASSWORD=redispassword
+  #   uv run pytest tests/ops/util/test_cache.py::TestRedisClusterMode -v
+  # After any change here: docker compose down && docker compose up -d.
+  redis-cluster-node-1:
+    image: redis:7-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --bind
+      - "0.0.0.0"
+      - --requirepass
+      - redispassword
+      - --masterauth
+      - redispassword
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "no"
+      - --save
+      - ""
+    ports:
+      - "6380:6379"
+      - "16380:16379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "-a", "redispassword", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  redis-cluster-node-2:
+    image: redis:7-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --bind
+      - "0.0.0.0"
+      - --requirepass
+      - redispassword
+      - --masterauth
+      - redispassword
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "no"
+      - --save
+      - ""
+    ports:
+      - "6381:6379"
+      - "16381:16379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "-a", "redispassword", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  redis-cluster-node-3:
+    image: redis:7-alpine
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --bind
+      - "0.0.0.0"
+      - --requirepass
+      - redispassword
+      - --masterauth
+      - redispassword
+      - --cluster-enabled
+      - "yes"
+      - --cluster-config-file
+      - nodes.conf
+      - --cluster-node-timeout
+      - "5000"
+      - --appendonly
+      - "no"
+      - --save
+      - ""
+    ports:
+      - "6382:6379"
+      - "16382:16379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "-a", "redispassword", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  redis-cluster-init:
+    image: redis:7-alpine
+    command: >
+      sh -c "
+        echo 'Waiting for Redis cluster nodes...' &&
+        until redis-cli -h redis-cluster-node-1 -p 6379 -a redispassword ping 2>/dev/null; do sleep 1; done &&
+        until redis-cli -h redis-cluster-node-2 -p 6379 -a redispassword ping 2>/dev/null; do sleep 1; done &&
+        until redis-cli -h redis-cluster-node-3 -p 6379 -a redispassword ping 2>/dev/null; do sleep 1; done &&
+        if redis-cli -h redis-cluster-node-1 -p 6379 -a redispassword cluster info 2>/dev/null | grep -q 'cluster_state:ok'; then
+          echo 'Cluster already exists, skipping create.';
+        else
+          echo 'Resetting any existing cluster state...' &&
+          redis-cli -h redis-cluster-node-1 -p 6379 -a redispassword cluster reset soft 2>/dev/null || true &&
+          redis-cli -h redis-cluster-node-2 -p 6379 -a redispassword cluster reset soft 2>/dev/null || true &&
+          redis-cli -h redis-cluster-node-3 -p 6379 -a redispassword cluster reset soft 2>/dev/null || true &&
+          sleep 2 &&
+          echo 'Creating cluster...' &&
+          redis-cli -a redispassword --cluster create redis-cluster-node-1:6379 redis-cluster-node-2:6379 redis-cluster-node-3:6379 --cluster-yes &&
+          echo 'Redis Cluster ready.';
+        fi
+      "
+    depends_on:
+      redis-cluster-node-1: { condition: service_healthy }
+      redis-cluster-node-2: { condition: service_healthy }
+      redis-cluster-node-3: { condition: service_healthy }
+    restart: "no"
 
   # Cluster services for nginx load balancing
   fides-1:

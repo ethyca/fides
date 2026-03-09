@@ -1,4 +1,0 @@
-type: Added
-description: Added shared clean_version() utility to fides.common.utils for version string sanitization
-pr: 7345
-labels: []

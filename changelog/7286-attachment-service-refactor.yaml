@@ -1,4 +1,0 @@
-type: Changed
-description: Refactored attachment storage to use service layer
-pr: 7286
-labels: []

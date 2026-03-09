@@ -19,8 +19,13 @@ import ErrorPage from "~/features/common/errors/ErrorPage";
 import { useFlags } from "~/features/common/features";
 import { useConnectionLogo } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
+import {
+  EDIT_SYSTEM_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import { LinkCell } from "~/features/common/table/cells/LinkCell";
+import { ListExpandableCell } from "~/features/common/table/cells/ListExpandableCell";
 import { formatDate } from "~/features/common/utils";
 import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
@@ -148,12 +153,9 @@ const IntegrationListView: NextPage = () => {
       render: (name: string | null, record) => (
         <div className="flex items-center gap-3">
           <IntegrationLogo integration={record} />
-          <Typography.Text
-            ellipsis={{ tooltip: name || "(No name)" }}
-            className="font-semibold"
-          >
+          <LinkCell href={`${INTEGRATION_MANAGEMENT_ROUTE}/${record.key}`}>
             {name || "(No name)"}
-          </Typography.Text>
+          </LinkCell>
           {isCustomIntegration(record, connectionTypes) && (
             <Tooltip title="Custom integration">
               <Icons.SettingsCheck size={16} />
@@ -190,7 +192,7 @@ const IntegrationListView: NextPage = () => {
       ),
     },
     {
-      title: "Connection Status",
+      title: "Connection status",
       key: "connection_status",
       width: 150,
       render: (_, record) => {
@@ -219,6 +221,34 @@ const IntegrationListView: NextPage = () => {
           <Tooltip title={tooltipText}>
             <Tag color={color}>{status}</Tag>
           </Tooltip>
+        );
+      },
+    },
+    {
+      title: "Linked system",
+      dataIndex: "linked_systems",
+      key: "linked_systems",
+      width: 150,
+      render: (_, { linked_systems }) => {
+        if (!linked_systems) {
+          return null;
+        }
+        if (linked_systems?.length === 1) {
+          return (
+            <Typography.Link
+              href={`${EDIT_SYSTEM_ROUTE.replace("[id]", linked_systems[0].fides_key)}`}
+              variant="primary"
+              ellipsis
+            >
+              {linked_systems[0].name || linked_systems[0].fides_key}
+            </Typography.Link>
+          );
+        }
+        return (
+          <ListExpandableCell
+            values={linked_systems.map((link) => link.name ?? link.fides_key)}
+            valueSuffix="systems"
+          />
         );
       },
     },
@@ -307,11 +337,6 @@ const IntegrationListView: NextPage = () => {
         size="small"
         locale={tableLocale}
         bordered
-        onRow={(record) => ({
-          onClick: () => handleManageClick(record),
-          "data-testid": `integration-info-${record.key}`,
-        })}
-        rowClassName="cursor-pointer"
         onChange={handleTableChange}
         data-testid="integrations-table"
       />

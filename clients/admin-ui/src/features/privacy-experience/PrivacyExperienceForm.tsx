@@ -143,6 +143,8 @@ const GPC_ADAPTIVE_TOOLTIP = `Enabling ${bannerButtonOptions.find((b) => b.value
 
 const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
 const GPP_PLACEHOLDER_ID = "gpp_notices_not_supported_placeholder";
+const DISABLED_NOTICE_TOOLTIP =
+  "This notice is disabled and will not display. Enable it or remove it from this experience.";
 
 const isGppNotice = (notice: LimitedPrivacyNoticeResponseSchema): boolean => {
   return (
@@ -540,6 +542,12 @@ export const PrivacyExperienceForm = ({
               }
               return undefined;
             }}
+            getWarningTooltip={(id: string): string | undefined => {
+              const notice = allPrivacyNoticesWithTcfPlaceholder.find(
+                (item) => item.id === id,
+              );
+              return notice?.disabled ? DISABLED_NOTICE_TOOLTIP : undefined;
+            }}
             getItemLabel={getTcfPrivacyNoticeName}
             draggable={false}
             baseTestId="privacy-notice"
@@ -575,6 +583,10 @@ export const PrivacyExperienceForm = ({
           isItemDisabled={(id: string) => {
             const notice = allPrivacyNotices.find((n) => n.id === id);
             return notice?.disabled ?? false;
+          }}
+          getWarningTooltip={(id: string): string | undefined => {
+            const notice = allPrivacyNotices.find((item) => item.id === id);
+            return notice?.disabled ? DISABLED_NOTICE_TOOLTIP : undefined;
           }}
         />
       )}

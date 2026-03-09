@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed embedded consent layout for mobile SDK WebViews in TCF banner_and_modal experiences
+pr: 7513
+labels: []

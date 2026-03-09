@@ -41,9 +41,7 @@ describe("configureNavGroups", () => {
     ]);
 
     expect(findGroup(navGroups, "Privacy requests").children).toMatchObject([
-      { title: "Policies", path: routes.POLICIES_ROUTE },
       { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
-      { title: "Connection manager", path: routes.DATASTORE_CONNECTION_ROUTE },
     ]);
   });
 
@@ -97,10 +95,9 @@ describe("configureNavGroups", () => {
       ]);
 
       // Data inventory should not exist when user has irrelevant scopes
-      const dataInventoryGroup = navGroups.find(
-        (g) => g.title === "Data inventory",
-      );
-      expect(dataInventoryGroup).toBeUndefined();
+      expect(
+        navGroups.find((g) => g.title === "Data inventory"),
+      ).toBeUndefined();
     });
 
     it("conditionally shows request manager using scopes", () => {
@@ -142,11 +139,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: true,
       });
 
-      expect(
-        findGroup(navGroups, "Settings")
-          .children.map((c) => c.title)
-          .find((title) => title === "Domain verification"),
-      ).toBeDefined();
+      const coreConfigChildren = findGroup(
+        navGroups,
+        "Core configuration",
+      ).children.map((c) => c.title);
+      expect(coreConfigChildren).toContain("Domain verification");
     });
 
     it("does not show domain verification page when fides cloud is disabled", () => {
@@ -158,11 +155,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      expect(
-        findGroup(navGroups, "Settings")
-          .children.map((c) => c.title)
-          .find((title) => title === "Domain verification"),
-      ).toBeUndefined();
+      const coreConfigChildren = findGroup(
+        navGroups,
+        "Core configuration",
+      ).children.map((c) => c.title);
+      expect(coreConfigChildren).not.toContain("Domain verification");
     });
   });
 
@@ -179,11 +176,11 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      expect(
-        findGroup(navGroups, "Settings")
-          .children.map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains"),
-      ).toEqual({
+      const coreConfigChildren = findGroup(
+        navGroups,
+        "Core configuration",
+      ).children.map((c) => ({ title: c.title, path: c.path }));
+      expect(coreConfigChildren).toContainEqual({
         title: "Domains",
         path: routes.DOMAIN_MANAGEMENT_ROUTE,
       });
@@ -195,7 +192,6 @@ describe("configureNavGroups", () => {
         userScopes: [
           ScopeRegistryEnum.CONFIG_READ,
           ScopeRegistryEnum.CONFIG_UPDATE,
-          // include this so Management group is non-empty without domains
           ScopeRegistryEnum.USER_READ,
         ],
         flags: undefined,
@@ -203,11 +199,12 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      expect(
-        findGroup(navGroups, "Settings")
-          .children.map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains"),
-      ).toBeUndefined();
+      const coreConfig = navGroups.find(
+        (g) => g.title === "Core configuration",
+      );
+      expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
+        "Domains",
+      );
     });
 
     it("hide domain management when scopes are wrong", () => {
@@ -222,11 +219,12 @@ describe("configureNavGroups", () => {
         hasFidesCloud: false,
       });
 
-      expect(
-        findGroup(navGroups, "Settings")
-          .children.map((c) => ({ title: c.title, path: c.path }))
-          .find((c) => c.title === "Domains"),
-      ).toBeUndefined();
+      const coreConfig = navGroups.find(
+        (g) => g.title === "Core configuration",
+      );
+      expect(coreConfig?.children.map((c) => c.title) ?? []).not.toContain(
+        "Domains",
+      );
     });
   });
 
@@ -302,14 +300,6 @@ describe("findActiveNav", () => {
       expected: {
         title: "Data inventory",
         path: routes.ADD_SYSTEMS_ROUTE,
-      },
-    },
-    // Inexact match is the default.
-    {
-      path: `${routes.DATASTORE_CONNECTION_ROUTE}/new`,
-      expected: {
-        title: "Privacy requests",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
       },
     },
     {
