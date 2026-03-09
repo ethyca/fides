@@ -15,19 +15,19 @@ from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
-from fides.api.api.v1.endpoints.dataset_config_endpoints import (
-    MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM,
-)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.common.api.scope_registry import (
+from fides.api.v1.endpoints.dataset_config_endpoints import (
+    MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM,
+)
+from fides.common.scope_registry import (
     CTL_DATASET_READ,
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_DATASETS,
     DATASET_BY_KEY,
     DATASET_CONFIG_BY_KEY,

@@ -47,7 +47,7 @@ export const AssessmentTaskPopoverContent = ({
               />
             </Space>
           </Descriptions.Item>
-          <Descriptions.Item label="Types">
+          <Descriptions.Item label="Type">
             {formatTypes(activeTask.assessment_types, templateNamesMap)}
           </Descriptions.Item>
           <Descriptions.Item label="Systems">
@@ -81,7 +81,7 @@ export const AssessmentTaskPopoverContent = ({
             <Tag color="success">Completed</Tag>
           )}
         </Descriptions.Item>
-        <Descriptions.Item label="Assessment types">
+        <Descriptions.Item label="Type">
           {formatTypes(lastCompletedTask.assessment_types, templateNamesMap)}
         </Descriptions.Item>
         <Descriptions.Item label="Systems">

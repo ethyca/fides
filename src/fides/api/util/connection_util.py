@@ -8,7 +8,7 @@ from pydantic import Field, ValidationError
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_CONTENT
 
-from fides.api.api import deps
+from fides.api import deps
 from fides.api.common_exceptions import (
     ConnectionNotFoundException,
     KeyOrNameAlreadyExists,
@@ -35,7 +35,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.common.api.v1.urn_registry import SAAS_CONFIG
+from fides.common.urn_registry import SAAS_CONFIG
 from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,
