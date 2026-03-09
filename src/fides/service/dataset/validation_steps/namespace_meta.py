@@ -1,3 +1,4 @@
+from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 
 import fides.api.schemas.namespace_meta  # noqa: F401  — triggers __init_subclass__ registration
@@ -31,6 +32,12 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
         if namespace_meta and namespace_meta.get("connection_type"):
             namespace_conn_type = namespace_meta["connection_type"]
             if namespace_conn_type != connection_type:
+                logger.warning(
+                    "Dataset namespace_meta connection_type '{}' does not match "
+                    "connection config type '{}'; skipping namespace validation",
+                    namespace_conn_type,
+                    connection_type,
+                )
                 return
 
         # Get required secret fields from the namespace meta class
