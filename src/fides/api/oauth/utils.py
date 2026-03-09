@@ -8,8 +8,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
 
 from fastapi import Depends, HTTPException, Request, Security
 from fastapi.security import SecurityScopes
-from jose import exceptions, jwe
-from jose.constants import ALGORITHMS
+from joserfc.errors import JoseError
 from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import select
@@ -17,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, selectinload
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND
 
-from fides.api.api.deps import get_db
 from fides.api.common_exceptions import AuthenticationError, AuthorizationError
 from fides.api.cryptography.cryptographic_util import generate_secure_random_string
 from fides.api.cryptography.schemas.jwt import (
@@ -28,12 +26,14 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
 )
 from fides.api.db.ctl_session import get_async_db
+from fides.api.deps import get_db
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
+from fides.api.oauth.jwt import decrypt_jwe
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING, get_scopes_from_roles
 from fides.api.request_context import set_user_id
 from fides.api.schemas.external_https import (
@@ -42,11 +42,8 @@ from fides.api.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
-from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
+from fides.common.urn_registry import TOKEN, V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig
-
-JWT_ENCRYPTION_ALGORITHM = ALGORITHMS.A256GCM
-
 
 # TODO: include list of all scopes in the docs via the scopes={} dict
 # (see https://fastapi.tiangolo.com/advanced/security/oauth2-scopes/)
@@ -58,9 +55,8 @@ oauth2_scheme = OAuth2ClientCredentialsBearer(
 def extract_payload(jwe_string: str, encryption_key: str) -> str:
     """Given a jwe, extracts the payload and returns it in string form."""
     try:
-        decrypted_payload = jwe.decrypt(jwe_string, encryption_key)
-        return decrypted_payload.decode("utf-8")
-    except exceptions.JWEError as e:
+        return decrypt_jwe(jwe_string, encryption_key)
+    except JoseError as e:
         logger.debug("Failed to decrypt JWE: {}", e)
         raise e
 
@@ -140,7 +136,7 @@ def _get_webhook_jwe_or_error(
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
-    except exceptions.JWEError:
+    except JoseError:
         raise AuthorizationError(detail="Not Authorized for this action")
 
     try:
@@ -168,7 +164,7 @@ def _get_request_task_jwe_or_error(
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
-    except exceptions.JWEError:
+    except JoseError:
         raise AuthorizationError(detail="Not Authorized for this action")
 
     try:
@@ -212,7 +208,7 @@ def validate_download_token(token: str, privacy_request_id: str) -> DownloadToke
         token_data = json.loads(
             extract_payload(token, CONFIG.security.app_encryption_key)
         )
-    except exceptions.JWEError:
+    except JoseError:
         raise AuthenticationError(detail="Invalid download token format")
 
     try:
@@ -437,7 +433,7 @@ def extract_token_and_load_client(
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
-    except exceptions.JWEParseError as exc:
+    except (JoseError, ValueError) as exc:
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
@@ -510,7 +506,7 @@ async def extract_token_and_load_client_async(
         token_data = json.loads(
             extract_payload(authorization, CONFIG.security.app_encryption_key)
         )
-    except exceptions.JWEParseError as exc:
+    except (JoseError, ValueError) as exc:
         logger.debug("Unable to parse auth token.")
         raise AuthorizationError(detail="Not Authorized for this action") from exc
 
