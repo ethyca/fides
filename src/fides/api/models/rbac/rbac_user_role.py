@@ -11,7 +11,15 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, text
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    text,
+)
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import RelationshipProperty, relationship
 
@@ -41,6 +49,50 @@ class RBACUserRole(Base):
     def __tablename__(cls) -> str:
         """Return the database table name for this model."""
         return "rbac_user_role"
+
+    @declared_attr
+    def __table_args__(cls) -> tuple:
+        """Define table-level constraints and indexes.
+
+        Partial unique indexes handle PostgreSQL's NULL-as-distinct behavior:
+        - Global assignments: one per (user_id, role_id) when scope is NULL
+        - Type-scoped: one per (user_id, role_id, resource_type) when resource_id is NULL
+        - Fully-scoped: one per (user_id, role_id, resource_type, resource_id)
+        """
+        return (
+            # Partial unique indexes for scoped assignments
+            Index(
+                "uq_rbac_user_role_global",
+                "user_id",
+                "role_id",
+                unique=True,
+                postgresql_where=text("resource_type IS NULL AND resource_id IS NULL"),
+            ),
+            Index(
+                "uq_rbac_user_role_type_scoped",
+                "user_id",
+                "role_id",
+                "resource_type",
+                unique=True,
+                postgresql_where=text(
+                    "resource_type IS NOT NULL AND resource_id IS NULL"
+                ),
+            ),
+            Index(
+                "uq_rbac_user_role_fully_scoped",
+                "user_id",
+                "role_id",
+                "resource_type",
+                "resource_id",
+                unique=True,
+                postgresql_where=text("resource_id IS NOT NULL"),
+            ),
+            # CHECK: resource_id requires resource_type (no orphaned resource IDs)
+            CheckConstraint(
+                "resource_id IS NULL OR resource_type IS NOT NULL",
+                name="ck_rbac_user_role_resource_scope",
+            ),
+        )
 
     user_id = Column(
         String(255),
@@ -100,10 +152,6 @@ class RBACUserRole(Base):
         "FidesUser",
         foreign_keys=[assigned_by],
     )
-
-    # Note: Uniqueness is enforced by partial indexes in the migration
-    # (uq_rbac_user_role_global, uq_rbac_user_role_type_scoped, uq_rbac_user_role_fully_scoped)
-    # to correctly handle NULL values in PostgreSQL
 
     def __repr__(self) -> str:
         """Return a string representation of this user-role assignment."""

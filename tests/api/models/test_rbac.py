@@ -227,11 +227,23 @@ class TestRBACUserRole:
 
     def test_temporal_role_assignment(self, db: Session, user: FidesUser):
         """Test temporal validity of role assignments."""
-        role = RBACRole.create(
+        # Create separate roles for each temporal test case to avoid unique constraint violation
+        # (only one global assignment per user_id/role_id is allowed)
+        future_role_def = RBACRole.create(
             db=db,
             data={
-                "name": "Temporal Role",
-                "key": "temporal_role",
+                "name": "Future Temporal Role",
+                "key": "future_temporal_role",
+                "is_system_role": False,
+                "is_active": True,
+            },
+            check_name=False,
+        )
+        expired_role_def = RBACRole.create(
+            db=db,
+            data={
+                "name": "Expired Temporal Role",
+                "key": "expired_temporal_role",
                 "is_system_role": False,
                 "is_active": True,
             },
@@ -241,33 +253,33 @@ class TestRBACUserRole:
 
         now = datetime.now(timezone.utc)
 
-        # Create future role (not yet valid)
-        future_role = RBACUserRole.create(
+        # Create future role assignment (not yet valid)
+        future_assignment = RBACUserRole.create(
             db=db,
             data={
                 "user_id": user.id,
-                "role_id": role.id,
+                "role_id": future_role_def.id,
                 "valid_from": now + timedelta(days=1),
             },
             check_name=False,
         )
         db.commit()
 
-        assert future_role.is_valid() is False
+        assert future_assignment.is_valid() is False
 
-        # Create expired role
-        expired_role = RBACUserRole.create(
+        # Create expired role assignment
+        expired_assignment = RBACUserRole.create(
             db=db,
             data={
                 "user_id": user.id,
-                "role_id": role.id,
+                "role_id": expired_role_def.id,
                 "valid_until": now - timedelta(days=1),
             },
             check_name=False,
         )
         db.commit()
 
-        assert expired_role.is_valid() is False
+        assert expired_assignment.is_valid() is False
 
 
 class TestRBACConstraint:
