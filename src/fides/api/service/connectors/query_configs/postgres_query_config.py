@@ -23,10 +23,18 @@ class PostgresColumnQuotingMixin:
     def format_clause_for_query(
         self, string_path: str, operator: str, operand: str
     ) -> str:
-        """Returns clauses with quoted column names to handle Postgres reserved words."""
-        if operator == "IN":
-            return f'"{string_path}" IN ({operand})'
-        return f'"{string_path}" {operator} :{operand}'
+        """Returns clauses with quoted column names to handle Postgres reserved words.
+
+        Delegates to the superclass for operator/operand handling so that both
+        the base SQLQueryConfig (tuple bind params for IN) and the
+        QueryStringWithoutTuplesOverrideQueryConfig (pre-expanded `:param` lists)
+        work correctly.  This mixin only adds double-quoting of the column name.
+        """
+        clause = super().format_clause_for_query(string_path, operator, operand)
+        # super() always starts with the bare column name — quote just that prefix.
+        if clause.startswith(string_path):
+            return f'"{string_path}"{clause[len(string_path):]}'
+        return clause
 
     def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> list[str]:
         """Quotes column names in UPDATE SET and WHERE clauses."""
