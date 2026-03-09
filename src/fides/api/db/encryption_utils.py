@@ -25,7 +25,7 @@ def get_encryption_key() -> str:
         return _cached_dek
 
     _cached_dek = CONFIG.security.app_encryption_key
-    if _cached_dek == "":
+    if not _cached_dek:
         logger.warning(
             "App encryption key is empty, this may lead to unexpected issues"
         )
