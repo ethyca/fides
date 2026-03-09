@@ -1,5 +1,11 @@
 """rename rds namespace meta fields
 
+Renames the following fields in ctl_datasets.fides_meta namespace metadata
+for rds_postgres, rds_mysql, and mysql connection types:
+
+    database_id           → database_name
+    database_instance_id  → database_instance_name
+
 Revision ID: 04281f44cc0b
 Revises: bf12f05ef8eb
 Create Date: 2026-03-06 20:33:13.839629
