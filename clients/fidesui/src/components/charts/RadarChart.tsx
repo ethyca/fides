@@ -36,7 +36,7 @@ export interface RadarChartProps {
   data?: RadarChartDataPoint[] | null;
   color?: AntColorTokenKey;
   animationDuration?: number;
-  aspect?: number;
+  outerRadius?: string | null;
 }
 
 interface RadarTickProps {
@@ -68,6 +68,7 @@ const RadarTick = ({
       y={y}
       fill={statusColor ?? chartColor}
       fillOpacity={statusColor ? 1 : 0.75}
+      fontSize={10}
     >
       {payload.value}
     </ChartText>
@@ -109,8 +110,8 @@ const RadarDot = ({
 export const RadarChart = ({
   data,
   color,
+  outerRadius = "70%",
   animationDuration = CHART_ANIMATION.defaultDuration,
-  aspect = 1,
 }: RadarChartProps) => {
   const { token } = theme.useToken();
   const empty = !data?.length;
@@ -137,7 +138,7 @@ export const RadarChart = ({
           data={empty ? EMPTY_PLACEHOLDER_DATA : data}
           cx="50%"
           cy="50%"
-          outerRadius="70%"
+          outerRadius={outerRadius}
         >
           <ChartGradient
             id={gradientId}

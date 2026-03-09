@@ -1,4 +1,4 @@
-import { Card, CardProps } from "antd/lib";
+import { Card, CardProps, Typography } from "antd/lib";
 import { theme } from "antd/lib";
 import classNames from "classnames";
 import React from "react";
@@ -33,6 +33,12 @@ export interface CustomCardProps extends CardProps {
    * @default true
    */
   showTitleDivider?: boolean;
+  /**
+   * When true, wraps a string `title` in `<Typography.Title level={5}>` and
+   * removes the header divider and padding so the title flows with the body.
+   * @default false
+   */
+  titleHeading?: boolean;
 }
 
 const withCustomProps = (WrappedComponent: typeof Card) => {
@@ -43,22 +49,39 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
         headerLayout = "stacked",
         titleFont = "default",
         showTitleDivider = true,
+        titleHeading = false,
         className,
         styles: stylesProp,
+        title,
         ...props
       },
       ref,
     ) => {
       const { token } = theme.useToken();
 
-      const headerStyle: React.CSSProperties = showTitleDivider
+      const effectiveShowDivider = titleHeading ? false : showTitleDivider;
+
+      const headerStyle: React.CSSProperties = effectiveShowDivider
         ? {}
         : { borderBottom: "none" };
+
+      if (titleHeading) {
+        headerStyle.padding = 0;
+      }
 
       const titleStyle: React.CSSProperties =
         titleFont === "mono"
           ? { fontFamily: token.fontFamilyCode, fontSize: token.fontSize }
           : {};
+
+      const resolvedTitle =
+        titleHeading && title ? (
+          <Typography.Title level={5} style={{ margin: 0 }}>
+            {title}
+          </Typography.Title>
+        ) : (
+          title
+        );
 
       return (
         <WrappedComponent
@@ -68,6 +91,7 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
             { [styles.inlineHeader]: headerLayout === "inline" },
             className,
           )}
+          title={resolvedTitle}
           styles={{
             ...stylesProp,
             header: { ...headerStyle, ...stylesProp?.header },

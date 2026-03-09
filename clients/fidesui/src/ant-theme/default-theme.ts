@@ -1,6 +1,10 @@
+import { generate } from "@ant-design/colors";
 import { ThemeConfig } from "antd/es";
 
 import palette from "../palette/palette.module.scss";
+
+const errorColors = generate(palette.FIDESUI_ERROR);
+const warningColors = generate(palette.FIDESUI_WARNING);
 
 /**
  * Order of priority for styling
@@ -36,10 +40,10 @@ export const defaultAntTheme: ThemeConfig = {
     borderRadiusSM: 4,
     borderRadius: 6,
     borderRadiusLG: 6,
-    colorErrorBg: "#ffdcd6", // custom override
-    colorErrorBorder: "#f2aca5", // custom override
-    colorWarningBg: "#ffecc9", // custom override
-    colorWarningBorder: "#ffdba1", // custom override
+    colorErrorBg: errorColors[2],
+    colorErrorBorder: errorColors[2],
+    colorWarningBg: warningColors[2],
+    colorWarningBorder: warningColors[2],
     colorSuccessBorder: palette.FIDESUI_SUCCESS,
     colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
     colorBorder: palette.FIDESUI_NEUTRAL_100,

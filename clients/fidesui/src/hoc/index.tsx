@@ -1,5 +1,4 @@
 export * from "./CopyTooltip";
-export * from "./CustomAlert";
 export * from "./CustomAvatar";
 export * from "./CustomCard";
 export * from "./CustomDateRangePicker";

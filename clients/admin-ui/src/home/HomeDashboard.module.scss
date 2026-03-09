@@ -1,0 +1,102 @@
+$terracotta: #b9704b;
+$limestone: #f1efee;
+
+.smallFont {
+  font-size: 14px;
+}
+
+.radarChartWrapper {
+  margin-left: -12px;
+  margin-right: -12px;
+  aspect-ratio: 3/2;
+}
+
+.emptyActions {
+  min-height: 200px;
+}
+
+.activityList {
+  max-height: calc(8 * 48px);
+  overflow-y: auto;
+}
+
+.activityRow {
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.activityRowAgent {
+  color: $terracotta;
+}
+
+.sparkleIcon {
+  color: $terracotta;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.activityDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--ant-color-text-quaternary);
+  flex-shrink: 0;
+}
+
+.activityMessage {
+  flex: 1;
+}
+
+.actorAgent {
+  color: $terracotta;
+}
+
+.relativeTime {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.statRow {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ant-color-border);
+}
+
+.statValue {
+  font-size: 20px;
+  color: $terracotta;
+}
+
+.astralisDivider {
+  margin: 12px 0;
+}
+
+.autonomyBox {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: $limestone;
+}
+
+.autonomyLabel {
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.autonomyValue {
+  font-size: 36px;
+  line-height: 1.2;
+  color: $terracotta;
+}
+
+.autonomyPercent {
+  font-size: 20px;
+}
+
+.autonomySubtitle {
+  font-size: 14px;
+}
+
+.alertSm {
+  :global(.ant-alert-message) {
+    font-size: var(--ant-font-size-sm);
+  }
+}

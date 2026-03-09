@@ -1,14 +1,13 @@
-import {
-  ArrowDownOutlined,
-  ArrowUpOutlined,
-  RobotOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
+import classNames from "classnames";
+import { formatDistanceStrict } from "date-fns";
 import {
   Alert,
+  Badge,
   Button,
   Card,
   Col,
+  Divider,
   Empty,
   Flex,
   Row,
@@ -18,21 +17,185 @@ import {
   Typography,
 } from "fidesui";
 import { RadarChart, Sparkline } from "fidesui";
+import { useRouter } from "next/router";
 import * as React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
+import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
 import {
   type PriorityAction,
   type TrendMetric,
-  useGetActivityFeedQuery,
   useGetAgentBriefingQuery,
   useGetAstralisQuery,
   useGetDashboardPostureQuery,
   useGetDashboardTrendsQuery,
-  useGetPriorityActionsQuery,
-  useGetPrivacyRequestsQuery,
   useResetDashboardMutation,
 } from "~/features/dashboard/dashboard.slice";
+
+import styles from "./HomeDashboard.module.scss";
+
+const now = new Date();
+const hoursAgo = (h: number) =>
+  new Date(now.getTime() - h * 3600_000).toISOString();
+
+const MOCK_ACTIVITY_FEED = {
+  items: [
+    {
+      actor_type: "agent" as const,
+      message: "completed PIA for the new Marketing Analytics platform",
+      timestamp: hoursAgo(0.5),
+    },
+    {
+      actor_type: "user" as const,
+      message: "approved data mapping for CRM system",
+      timestamp: hoursAgo(1),
+    },
+    {
+      actor_type: "agent" as const,
+      message: "flagged consent anomaly in EU region — opt-in rate dropped 12%",
+      timestamp: hoursAgo(2),
+    },
+    {
+      actor_type: "user" as const,
+      message: "resolved DSR #4821 (erasure request)",
+      timestamp: hoursAgo(3),
+    },
+    {
+      actor_type: "agent" as const,
+      message: "auto-classified 38 new data fields in Warehouse schema",
+      timestamp: hoursAgo(5),
+    },
+    {
+      actor_type: "user" as const,
+      message: "updated retention policy for HR records",
+      timestamp: hoursAgo(8),
+    },
+    {
+      actor_type: "agent" as const,
+      message: "identified 3 systems sharing data without a legal basis",
+      timestamp: hoursAgo(14),
+    },
+    {
+      actor_type: "user" as const,
+      message: "assigned steward role to J. Martinez for Finance dept",
+      timestamp: hoursAgo(22),
+    },
+    {
+      actor_type: "agent" as const,
+      message: "generated monthly compliance summary report",
+      timestamp: hoursAgo(36),
+    },
+    {
+      actor_type: "user" as const,
+      message: "added new vendor Snowflake to system registry",
+      timestamp: hoursAgo(48),
+    },
+  ],
+  total: 10,
+  page: 1,
+  size: 10,
+  pages: 1,
+};
+
+const MOCK_PRIORITY_ACTIONS = {
+  items: [
+    {
+      id: "pa-1",
+      priority: 1,
+      title: "Review classification changes",
+      message:
+        "38 fields auto-classified in Warehouse — 4 flagged as sensitive",
+      agent_summary: "",
+      due_date: hoursAgo(-24),
+      action: "classification_review" as const,
+      action_data: {},
+      status: "pending" as const,
+    },
+    {
+      id: "pa-2",
+      priority: 2,
+      title: "Consent anomaly in EU",
+      message: "Opt-in rate for cookie consent dropped 12% week-over-week",
+      agent_summary: "",
+      due_date: hoursAgo(-48),
+      action: "consent_anomaly" as const,
+      action_data: {},
+      status: "pending" as const,
+    },
+    {
+      id: "pa-3",
+      priority: 3,
+      title: "DSR escalation — erasure #4910",
+      message: "Erasure request approaching SLA deadline (2 days remaining)",
+      agent_summary: "",
+      due_date: hoursAgo(-36),
+      action: "dsr_action" as const,
+      action_data: {},
+      status: "in_progress" as const,
+    },
+    {
+      id: "pa-4",
+      priority: 4,
+      title: "Policy violation detected",
+      message:
+        "Marketing system sharing email data with 3rd party without legal basis",
+      agent_summary: "",
+      due_date: hoursAgo(-12),
+      action: "policy_violation" as const,
+      action_data: {},
+      status: "pending" as const,
+    },
+    {
+      id: "pa-5",
+      priority: 5,
+      title: "Assign steward for new Analytics dept",
+      message: "New department created with 12 systems — no steward assigned",
+      agent_summary: "",
+      due_date: null,
+      action: "steward_assignment" as const,
+      action_data: {},
+      status: "pending" as const,
+    },
+    {
+      id: "pa-6",
+      priority: 6,
+      title: "PIA update needed for Payment Gateway",
+      message: "System configuration changed since last assessment 90 days ago",
+      agent_summary: "",
+      due_date: null,
+      action: "pia_update" as const,
+      action_data: {},
+      status: "pending" as const,
+    },
+    {
+      id: "pa-7",
+      priority: 7,
+      title: "System review — new vendor Snowflake",
+      message: "Newly registered system needs data flow and risk review",
+      agent_summary: "",
+      due_date: null,
+      action: "system_review" as const,
+      action_data: {},
+      status: "pending" as const,
+    },
+    {
+      id: "pa-8",
+      priority: 8,
+      title: "Review DSR automation rules",
+      message:
+        "Agent suggests updating auto-approval rules based on recent patterns",
+      agent_summary: "",
+      due_date: null,
+      action: "dsr_action" as const,
+      action_data: {},
+      status: "pending" as const,
+    },
+  ],
+  total: 8,
+  page: 1,
+  size: 8,
+  pages: 1,
+};
 
 const SMALL_FONT = { fontSize: 14 };
 
@@ -68,31 +231,37 @@ const formatTrendDiff = (metric: TrendMetric, index: number): string => {
   return abs.toLocaleString();
 };
 
+function getPostureAlertType(score: number): "error" | "warning" | "success" {
+  if (score < 40) return "error";
+  if (score < 80) return "warning";
+  return "success";
+}
+
 const HomeDashboardMockup = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("act_now");
+  const [showBriefing, setShowBriefing] = useState(true);
 
-  const [resetDashboard, { isSuccess: resetDone }] =
-    useResetDashboardMutation();
+  // const [resetDashboard, { isSuccess: resetDone }] =
+  //   useResetDashboardMutation();
 
-  useEffect(() => {
-    resetDashboard();
-  }, [resetDashboard]);
+  // useEffect(() => {
+  //   resetDashboard();
+  // }, [resetDashboard]);
 
-  const skip = !resetDone;
+  // const skip = !resetDone;
+  const skip = false;
 
   const { data: posture } = useGetDashboardPostureQuery(undefined, { skip });
   const { data: briefing } = useGetAgentBriefingQuery(undefined, { skip });
-  const { data: actions, isLoading: actionsLoading } =
-    useGetPriorityActionsQuery({ page: 1, size: 8 }, { skip });
+  const actions = MOCK_PRIORITY_ACTIONS;
+  const actionsLoading = false;
   const { data: trends } = useGetDashboardTrendsQuery(
     { period: "30d" },
     { skip },
   );
   const { data: astralis } = useGetAstralisQuery(undefined, { skip });
-  const { data: activityFeed } = useGetActivityFeedQuery(undefined, { skip });
-  const { data: privacyRequests } = useGetPrivacyRequestsQuery(undefined, {
-    skip,
-  });
+  const activityFeed = MOCK_ACTIVITY_FEED;
 
   const radarData = posture?.dimensions.map((d) => ({
     subject: d.label,
@@ -112,35 +281,48 @@ const HomeDashboardMockup = () => {
     return actions.items.filter((a: PriorityAction) => a.due_date === null);
   }, [actions, activeTab]);
 
+  const actNowCount = useMemo(
+    () =>
+      actions?.items?.filter((a: PriorityAction) => a.due_date !== null)
+        .length ?? 0,
+    [actions],
+  );
+  const dueLaterCount = useMemo(
+    () =>
+      actions?.items?.filter((a: PriorityAction) => a.due_date === null)
+        .length ?? 0,
+    [actions],
+  );
+
   const metrics = trends?.metrics ?? [];
 
   return (
     <Flex vertical gap={24} className="px-10 pb-6 pt-6">
       {/* Agent Briefing banner */}
-      {briefing && (
+      {briefing && showBriefing && (
         <Alert
           type="info"
-          banner
           showIcon
+          closable
+          onClose={() => setShowBriefing(false)}
           message={briefing.briefing}
-          description={
-            briefing.quick_actions.length > 0 ? (
-              <Flex gap={8} className="mt-2">
-                {briefing.quick_actions.map((qa) => (
-                  <Button key={qa.id} size="small" type="link" href={qa.action_url}>
-                    {qa.title}
-                  </Button>
-                ))}
-              </Flex>
-            ) : undefined
+          action={
+            <Button
+              size="small"
+              type="link"
+              onClick={() => router.push("/steward")}
+            >
+              View actions
+            </Button>
           }
+          className={styles.alertSm}
         />
       )}
 
       {/* Middle row: Posture + Priority actions */}
       <Row gutter={24}>
         {/* Posture card */}
-        <Col xs={24} md={8} lg={8} xxl={5}>
+        <Col xs={24} md={8} lg={8} xxl={8}>
           <Card
             title="Posture"
             variant="borderless"
@@ -162,21 +344,22 @@ const HomeDashboardMockup = () => {
                 }
                 valueStyle={SMALL_FONT}
               />
-              <div
-                className="aspect-square"
-                style={{ marginLeft: -12, marginRight: -12 }}
-              >
-                <RadarChart data={radarData} />
+              <div className={classNames(styles.radarChartWrapper)}>
+                <RadarChart data={radarData} outerRadius="90%" />
               </div>
               {posture?.agent_annotation && (
-                <Alert type="info" message={posture.agent_annotation} />
+                <Alert
+                  type={getPostureAlertType(postureScore)}
+                  message={posture.agent_annotation}
+                  className={styles.alertSm}
+                />
               )}
             </>
           </Card>
         </Col>
 
         {/* Priority actions card with inline tabs */}
-        <Col xs={24} md={16} lg={16} xxl={19}>
+        <Col xs={24} md={16} lg={16} xxl={16}>
           <Card
             title="Priority actions"
             variant="borderless"
@@ -185,8 +368,22 @@ const HomeDashboardMockup = () => {
             showTitleDivider={false}
             styles={CARD_STYLES}
             tabList={[
-              { key: "act_now", label: "Act now" },
-              { key: "due_later", label: "Due later" },
+              {
+                key: "act_now",
+                label: (
+                  <span>
+                    Act now <Tag color="default">{actNowCount}</Tag>
+                  </span>
+                ),
+              },
+              {
+                key: "due_later",
+                label: (
+                  <span>
+                    Due later <Tag color="default">{dueLaterCount}</Tag>
+                  </span>
+                ),
+              },
             ]}
             activeTabKey={activeTab}
             onTabChange={setActiveTab}
@@ -194,20 +391,29 @@ const HomeDashboardMockup = () => {
             {actionsLoading ? (
               <Skeleton active />
             ) : filteredActions.length === 0 ? (
-              <Flex align="center" justify="center" style={{ minHeight: 200 }}>
+              <Flex
+                align="center"
+                justify="center"
+                className={styles.emptyActions}
+              >
                 <Empty
                   description={`No ${activeTab === "act_now" ? "urgent" : "upcoming"} actions`}
                 />
               </Flex>
             ) : (
-              <Flex vertical gap={8}>
+              <Flex vertical gap={8} className="pt-3">
                 {filteredActions.map((action: PriorityAction) => (
-                  <Card key={action.id} size="small" variant="borderless">
+                  <Card
+                    key={action.id}
+                    size="small"
+                    variant="borderless"
+                    hoverable
+                    onClick={() => router.push("/steward")}
+                    style={{ cursor: "pointer" }}
+                  >
                     <Flex justify="space-between" align="start">
                       <div>
-                        <Typography.Text strong>
-                          {action.title}
-                        </Typography.Text>
+                        <Typography.Text strong>{action.title}</Typography.Text>
                         <br />
                         <Typography.Text type="secondary">
                           {action.message}
@@ -215,7 +421,10 @@ const HomeDashboardMockup = () => {
                       </div>
                       <Flex gap={8} align="center">
                         {action.due_date && (
-                          <Typography.Text type="secondary" style={SMALL_FONT}>
+                          <Typography.Text
+                            type="secondary"
+                            className={styles.smallFont}
+                          >
                             {new Date(action.due_date).toLocaleDateString()}
                           </Typography.Text>
                         )}
@@ -281,119 +490,129 @@ const HomeDashboardMockup = () => {
         })}
       </Row>
 
-      {/* System Health + DSR Timeline */}
+      {/* Activity Feed + Astralis Agent Panel */}
       <Row gutter={24}>
-        <Col xs={24} sm={12} md={7}>
+        <Col xs={24} md={17}>
           <Card
             variant="borderless"
-            title="System Health"
+            title="Activity"
             className="overflow-clip h-full"
             showTitleDivider={false}
             styles={CARD_STYLES}
           >
-            {astralis ? (
-              <Row gutter={[16, 16]}>
-                <Col span={12}>
-                  <Statistic
-                    title="Active conversations"
-                    value={astralis.active_conversations}
-                  />
-                </Col>
-                <Col span={12}>
-                  <Statistic
-                    title="Completed assessments"
-                    value={astralis.completed_assessments}
-                  />
-                </Col>
-                <Col span={12}>
-                  <Statistic
-                    title="Awaiting response"
-                    value={astralis.awaiting_response}
-                  />
-                </Col>
-                <Col span={12}>
-                  <Statistic
-                    title="Risks identified"
-                    value={astralis.risks_identified}
-                  />
-                </Col>
-              </Row>
-            ) : (
-              <Skeleton active />
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={17}>
-          <Card
-            variant="borderless"
-            title="DSR Timeline"
-            className="overflow-clip h-full"
-            showTitleDivider={false}
-            styles={CARD_STYLES}
-          >
-            {privacyRequests ? (
-              <Flex vertical gap={12}>
-                <Statistic
-                  title="Month over month"
-                  value={`${privacyRequests.diff_month_over_month > 0 ? "+" : ""}${(privacyRequests.diff_month_over_month * 100).toFixed(1)}%`}
-                  trend={
-                    privacyRequests.diff_month_over_month > 0 ? "up" : "down"
-                  }
-                />
-                <Flex vertical gap={4}>
-                  {privacyRequests.regions.map((region) => (
-                    <Flex key={region.name} justify="space-between">
-                      <Typography.Text>{region.name}</Typography.Text>
-                      <Flex gap={16}>
-                        <Typography.Text type="secondary">
-                          Access: {region.access_count.toLocaleString()}
-                        </Typography.Text>
-                        <Typography.Text type="secondary">
-                          Erasure: {region.erasure_count.toLocaleString()}
-                        </Typography.Text>
-                      </Flex>
+            {activityFeed?.items ? (
+              <Flex vertical gap={0} className={styles.activityList}>
+                {activityFeed.items.map((item, idx) => {
+                  const isAgent = item.actor_type === "agent";
+                  const relativeTime = formatDistanceStrict(
+                    new Date(item.timestamp),
+                    new Date(),
+                  )
+                    .replace(/ seconds?/, "s")
+                    .replace(/ minutes?/, "m")
+                    .replace(/ hours?/, "h")
+                    .replace(/ days?/, "d")
+                    .replace(/ months?/, "mo")
+                    .replace(/ years?/, "y");
+
+                  return (
+                    <Flex
+                      key={idx}
+                      align="center"
+                      gap={12}
+                      className={classNames(styles.activityRow, {
+                        [styles.activityRowAgent]: isAgent,
+                      })}
+                    >
+                      {isAgent ? (
+                        <SparkleIcon className={styles.sparkleIcon} />
+                      ) : (
+                        <span className={styles.activityDot} />
+                      )}
+                      <Typography.Text className={styles.activityMessage}>
+                        <Typography.Text
+                          strong
+                          className={isAgent ? styles.actorAgent : undefined}
+                        >
+                          {isAgent ? "Astralis" : "User"}
+                        </Typography.Text>{" "}
+                        {item.message}
+                      </Typography.Text>
+                      <Typography.Text
+                        type="secondary"
+                        className={styles.relativeTime}
+                      >
+                        {relativeTime}
+                      </Typography.Text>
                     </Flex>
-                  ))}
-                </Flex>
+                  );
+                })}
+                {activityFeed.items.length === 0 && (
+                  <Empty description="No recent activity" />
+                )}
               </Flex>
             ) : (
               <Skeleton active />
             )}
           </Card>
         </Col>
-      </Row>
-
-      {/* Activity Feed */}
-      <Row gutter={24}>
-        <Col span={24}>
+        <Col xs={24} md={7}>
           <Card
             variant="borderless"
-            title="Activity Feed"
-            className="overflow-clip"
+            className="overflow-clip h-full"
             showTitleDivider={false}
             styles={CARD_STYLES}
+            title="Astralis"
           >
-            {activityFeed?.items ? (
-              <Flex vertical gap={8}>
-                {activityFeed.items.map((item, idx) => (
-                  <Flex key={idx} gap={12} align="start">
-                    {item.actor_type === "agent" ? (
-                      <RobotOutlined />
-                    ) : (
-                      <UserOutlined />
-                    )}
-                    <div>
-                      <Typography.Text>{item.message}</Typography.Text>
-                      <br />
-                      <Typography.Text type="secondary" style={SMALL_FONT}>
-                        {new Date(item.timestamp).toLocaleString()}
-                      </Typography.Text>
-                    </div>
+            {astralis ? (
+              <Flex vertical gap={0}>
+                {(
+                  [
+                    ["PIA active", astralis.active_conversations],
+                    ["Auto-approvals", astralis.completed_assessments],
+                    ["Risks found", astralis.risks_identified],
+                  ] as const
+                ).map(([label, value]) => (
+                  <Flex
+                    key={label}
+                    justify="space-between"
+                    align="center"
+                    className={styles.statRow}
+                  >
+                    <Typography.Text>{label}</Typography.Text>
+                    <Typography.Text strong className={styles.statValue}>
+                      {value}
+                    </Typography.Text>
                   </Flex>
                 ))}
-                {activityFeed.items.length === 0 && (
-                  <Empty description="No recent activity" />
-                )}
+                <Divider className={styles.astralisDivider} />
+                <Flex vertical align="center" className={styles.autonomyBox}>
+                  <Typography.Text
+                    type="secondary"
+                    className={styles.autonomyLabel}
+                  >
+                    AUTONOMY
+                  </Typography.Text>
+                  <Typography.Text strong className={styles.autonomyValue}>
+                    {astralis.active_conversations +
+                      astralis.awaiting_response >
+                    0
+                      ? Math.round(
+                          (astralis.completed_assessments /
+                            (astralis.completed_assessments +
+                              astralis.awaiting_response)) *
+                            100,
+                        )
+                      : 0}
+                    <span className={styles.autonomyPercent}>%</span>
+                  </Typography.Text>
+                  <Typography.Text
+                    type="secondary"
+                    className={styles.autonomySubtitle}
+                  >
+                    of actions this month
+                  </Typography.Text>
+                </Flex>
               </Flex>
             ) : (
               <Skeleton active />
