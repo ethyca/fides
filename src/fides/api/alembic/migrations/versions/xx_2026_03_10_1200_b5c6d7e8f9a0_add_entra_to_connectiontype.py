@@ -2,11 +2,12 @@
 
 Revision ID: b5c6d7e8f9a0
 Revises: 074796d61d8a
-Create Date: 2026-02-19
+Create Date: 2026-03-10
 
 """
 
 from alembic import op
+from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision = "b5c6d7e8f9a0"
@@ -19,7 +20,9 @@ TYPE_TO_HANDLE = "entra"
 
 def get_enum_values():
     conn = op.get_bind()
-    result = conn.execute("SELECT unnest(enum_range(NULL::connectiontype))").fetchall()
+    result = conn.execute(
+        text("SELECT unnest(enum_range(NULL::connectiontype))")
+    ).fetchall()
     return [row[0] for row in result]
 
 

@@ -93,7 +93,9 @@ class EntraHttpClient:
         if not self._token:
             raise ConnectionException("Entra token response missing access_token")
         # Cache with 10-minute buffer before the token actually expires (default 3600s)
-        self._token_expiry = time.monotonic() + data.get("expires_in", 3600) - 600
+        self._token_expiry = time.monotonic() + max(
+            data.get("expires_in", 3600) - 600, 0
+        )
         return self._token
 
     def list_service_principals(
@@ -135,20 +137,24 @@ class EntraHttpClient:
             timeout=DEFAULT_REQUEST_TIMEOUT,
         )
         if not response.ok:
-            msg = f"Microsoft Graph request failed: {response.status_code}. {response.text[:200]}"
-            if response.status_code == 403:
-                try:
-                    body = response.json()
-                    err = body.get("error", {})
-                    if err.get("code") == "Authorization_RequestDenied":
-                        msg = (
-                            "Insufficient Microsoft Graph permissions. "
-                            "In Azure Portal: App registrations > Your app > API permissions: "
-                            "add application permission 'Application.Read.All' (Microsoft Graph), "
-                            "then grant admin consent."
-                        )
-                except (ValueError, KeyError, TypeError):
-                    pass
+            msg = f"Microsoft Graph request failed: {response.status_code}"
+            try:
+                body = response.json()
+                err = body.get("error", {})
+                if (
+                    response.status_code == 403
+                    and err.get("code") == "Authorization_RequestDenied"
+                ):
+                    msg = (
+                        "Insufficient Microsoft Graph permissions. "
+                        "In Azure Portal: App registrations > Your app > API permissions: "
+                        "add application permission 'Application.Read.All' (Microsoft Graph), "
+                        "then grant admin consent."
+                    )
+                elif err.get("message"):
+                    msg = f"{msg}. {err['message']}"
+            except (ValueError, KeyError, TypeError):
+                pass
             raise ConnectionException(msg)
         data = response.json()
         value = data.get("value", [])
