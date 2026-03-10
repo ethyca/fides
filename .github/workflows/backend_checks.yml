@@ -430,6 +430,7 @@ jobs:
         run: |
           docker pull postgres:16 > /dev/null 2>&1 &
           docker pull redis:8.0-alpine > /dev/null 2>&1 &
+          docker pull valkey/valkey:9.0.3-alpine > /dev/null 2>&1 &
           echo "Docker pull initiated in background."
         shell: bash
 
@@ -475,7 +476,7 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
-      - name: Run Redis cluster tests
+      - name: Run Redis and Valkey cache tests (cluster + standalone)
         run: uv run nox -s pytest_redis_cluster_docker
 
   ##################
