@@ -3,19 +3,13 @@
 Uses OAuth 2.0 client credentials flow for Microsoft Graph API access.
 """
 
-import re
 from typing import ClassVar, List
 
-from pydantic import Field, field_validator
+from pydantic import Field
 
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
-)
-
-# UUID format: 32 hex chars optionally with hyphens (used for tenant_id and client_id)
-ENTRA_UUID_PATTERN = re.compile(
-    r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$"
 )
 
 
@@ -41,42 +35,6 @@ class EntraSchema(ConnectionConfigSecretsSchema):
         "client_id",
         "client_secret",
     ]
-
-    @field_validator("tenant_id")
-    @classmethod
-    def validate_tenant_id(cls, value: str) -> str:
-        """Validate Azure tenant ID format (UUID)."""
-        if not value or not value.strip():
-            raise ValueError("Tenant ID cannot be empty")
-        cleaned = value.strip()
-        if not ENTRA_UUID_PATTERN.match(cleaned):
-            raise ValueError(
-                "Tenant ID must be a valid Azure AD tenant ID (UUID format). "
-                "Find it in Azure Portal: Microsoft Entra ID > Overview > Tenant ID"
-            )
-        return cleaned
-
-    @field_validator("client_id")
-    @classmethod
-    def validate_client_id(cls, value: str) -> str:
-        """Validate application (client) ID format (UUID)."""
-        if not value or not value.strip():
-            raise ValueError("Client ID cannot be empty")
-        cleaned = value.strip()
-        if not ENTRA_UUID_PATTERN.match(cleaned):
-            raise ValueError(
-                "Client ID must be a valid application (client) ID (UUID format). "
-                "Find it in Azure Portal: App registrations > Your app > Overview > Application (client) ID"
-            )
-        return cleaned
-
-    @field_validator("client_secret")
-    @classmethod
-    def validate_client_secret(cls, value: str) -> str:
-        """Ensure client secret is non-empty."""
-        if not value or not value.strip():
-            raise ValueError("Client secret cannot be empty")
-        return value.strip()
 
 
 class EntraDocsSchema(EntraSchema, NoValidationSchema):

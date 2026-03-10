@@ -1,6 +1,6 @@
 """Tests for Microsoft Entra ID connector."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
