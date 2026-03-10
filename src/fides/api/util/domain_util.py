@@ -12,9 +12,10 @@ logger = logging.getLogger(__name__)
 
 def get_domain_validation_mode() -> DomainValidationMode:
     """Return the effective domain validation mode, accounting for dev_mode."""
-    if CONFIG.dev_mode:
+    mode = CONFIG.security.domain_validation_mode
+    if CONFIG.dev_mode and mode == DomainValidationMode.enabled:
         return DomainValidationMode.monitor
-    return CONFIG.security.domain_validation_mode
+    return mode
 
 
 def wildcard_to_regex(pattern: str) -> str:
