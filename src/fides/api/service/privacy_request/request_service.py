@@ -14,6 +14,7 @@ from fides.api.common_exceptions import PrivacyRequestError
 from fides.api.models.privacy_request import (
     COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
+    ExecutionLog,
     PrivacyRequest,
     RequestTask,
 )
@@ -410,6 +411,31 @@ def _cancel_interrupted_tasks_and_error_privacy_request(
     except Exception as exc:
         logger.error(
             f"Failed to mark privacy request {privacy_request.id} as error: {exc}"
+        )
+
+    # Write a single execution log so the error is visible in the UI.
+    # Without this, error_processing() sets the status but creates no ExecutionLog,
+    # so the activity timeline shows a silent error with no explanation.
+    try:
+        first_task = (
+            db.query(RequestTask)
+            .filter(RequestTask.privacy_request_id == privacy_request.id)
+            .first()
+        )
+        if first_task:
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "privacy_request_id": privacy_request.id,
+                    "action_type": first_task.action_type,
+                    "status": ExecutionLogStatus.error,
+                    "message": error_message
+                    or f"Privacy request {privacy_request.id} was interrupted and could not be completed",
+                },
+            )
+    except Exception as log_exc:
+        logger.error(
+            f"Failed to create error execution log for privacy request {privacy_request.id}: {log_exc}"
         )
 
 

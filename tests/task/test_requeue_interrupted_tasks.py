@@ -4,13 +4,14 @@ from unittest import mock
 
 import pytest
 
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.models.privacy_request.request_task import AsyncTaskType
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.request_service import (
     REQUEUE_INTERRUPTED_TASKS_LOCK,
+    _cancel_interrupted_tasks_and_error_privacy_request,
     requeue_interrupted_tasks,
 )
 from fides.api.util.cache import cache_task_tracking_key, get_cache
@@ -995,4 +996,84 @@ class TestEnhancedRequeueInterruptedTasks:
 
         finally:
             # Clean up
+            privacy_request.delete(db)
+
+
+class TestCancelInterruptedTasksAndErrorPrivacyRequest:
+    """Tests for _cancel_interrupted_tasks_and_error_privacy_request."""
+
+    def test_creates_execution_log_with_error_message(self, db, policy):
+        """An ExecutionLog with status=error is written so the UI can surface the reason."""
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.consent,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "bloomreach:bloomreach",
+                "dataset_name": "bloomreach",
+                "collection_name": "bloomreach",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+
+        try:
+            error_msg = "No task ID found for request task, subtask is stuck - canceling privacy request"
+            _cancel_interrupted_tasks_and_error_privacy_request(
+                db, privacy_request, error_msg
+            )
+
+            logs = (
+                db.query(ExecutionLog)
+                .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+                .all()
+            )
+            assert len(logs) == 1
+            assert logs[0].status == ExecutionLogStatus.error
+            assert logs[0].message == error_msg
+            assert logs[0].action_type == ActionType.consent
+            assert logs[0].dataset_name is None  # surfaces as "Request error" in UI
+        finally:
+            privacy_request.delete(db)
+
+    def test_no_execution_log_created_when_no_request_tasks_exist(self, db, policy):
+        """If no RequestTasks exist yet, no ExecutionLog is created (graceful fallback)."""
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        try:
+            _cancel_interrupted_tasks_and_error_privacy_request(
+                db, privacy_request, "some error"
+            )
+
+            logs = (
+                db.query(ExecutionLog)
+                .filter(ExecutionLog.privacy_request_id == privacy_request.id)
+                .all()
+            )
+            assert len(logs) == 0
+        finally:
             privacy_request.delete(db)
