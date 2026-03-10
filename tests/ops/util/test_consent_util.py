@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 import pytest
 from sqlalchemy.orm.attributes import flag_modified
 
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ProvidedIdentity
@@ -502,7 +509,7 @@ class TestCacheSystemStatusesForConsentReporting:
         # Relevant systems
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
-            == {connection_config.key: "pending"}
+            == {connection_config.consent_tracking_key: "pending"}
         )
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
@@ -511,7 +518,7 @@ class TestCacheSystemStatusesForConsentReporting:
 
         # non-relevant systems
         assert privacy_preference_history.affected_system_status == {
-            connection_config.key: "skipped"
+            connection_config.consent_tracking_key: "skipped"
         }
         assert privacy_preference_history.secondary_user_ids is None
 
@@ -551,7 +558,7 @@ class TestCacheSystemStatusesForConsentReporting:
         # Relevant systems
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
-            == {connection_config.key: "complete"}
+            == {connection_config.consent_tracking_key: "complete"}
         )
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
@@ -560,7 +567,7 @@ class TestCacheSystemStatusesForConsentReporting:
 
         # non-relevant systems
         assert privacy_preference_history.affected_system_status == {
-            connection_config.key: "skipped"
+            connection_config.consent_tracking_key: "skipped"
         }
         assert privacy_preference_history.secondary_user_ids is None
 
@@ -600,7 +607,7 @@ class TestCacheSystemStatusesForConsentReporting:
         # Relevant systems
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.affected_system_status
-            == {connection_config.key: "error"}
+            == {connection_config.consent_tracking_key: "error"}
         )
         assert (
             privacy_preference_history_fr_provide_service_frontend_only.secondary_user_ids
@@ -609,9 +616,80 @@ class TestCacheSystemStatusesForConsentReporting:
 
         # non-relevant systems
         assert privacy_preference_history.affected_system_status == {
-            connection_config.key: "skipped"
+            connection_config.consent_tracking_key: "skipped"
         }
         assert privacy_preference_history.secondary_user_ids is None
+
+    def test_multiple_connections_on_same_system_track_independently(
+        self,
+        db,
+        system,
+        privacy_request_with_consent_policy,
+        connection_config,
+        privacy_preference_history_fr_provide_service_frontend_only,
+    ):
+        """Regression test: when a system has multiple connections, each connection
+        should get its own entry in affected_system_status. Previously all connections
+        on the same system wrote to the same system_key, causing overwrites."""
+        # Link the existing connection_config to the system
+        connection_config.system_id = system.id
+        connection_config.save(db)
+
+        # Create a second connection on the same system
+        second_connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": str(uuid4()),
+                "key": "my_postgres_db_2",
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.write,
+                "disabled": False,
+                "description": "Second postgres connection on the same system",
+                "system_id": system.id,
+            },
+        )
+
+        pref = privacy_preference_history_fr_provide_service_frontend_only
+        pref.privacy_request_id = privacy_request_with_consent_policy.id
+        pref.save(db)
+
+        # Both connections mark the preference as pending
+        cache_initial_status_and_identities_for_consent_reporting(
+            db,
+            privacy_request_with_consent_policy,
+            connection_config,
+            relevant_preferences=[pref],
+            relevant_user_identities={"email": "customer-1@example.com"},
+        )
+        cache_initial_status_and_identities_for_consent_reporting(
+            db,
+            privacy_request_with_consent_policy,
+            second_connection_config,
+            relevant_preferences=[pref],
+            relevant_user_identities={"email": "customer-1@example.com"},
+        )
+
+        db.refresh(pref)
+        assert pref.affected_system_status == {
+            connection_config.consent_tracking_key: "pending",
+            second_connection_config.consent_tracking_key: "pending",
+        }, "Each connection should have its own entry"
+
+        # First connection completes, second errors
+        add_complete_system_status_for_consent_reporting(
+            db, privacy_request_with_consent_policy, connection_config
+        )
+        add_errored_system_status_for_consent_reporting(
+            db, privacy_request_with_consent_policy, second_connection_config
+        )
+
+        db.refresh(pref)
+        assert pref.affected_system_status == {
+            connection_config.consent_tracking_key: "complete",
+            second_connection_config.consent_tracking_key: "error",
+        }, "Statuses must not overwrite each other"
+
+        second_connection_config.delete(db)
 
 
 class TestGetFidesUserProvidedIdentity:

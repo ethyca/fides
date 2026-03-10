@@ -279,12 +279,13 @@ class ConnectionConfig(Base):
 
     @property
     def system_key(self) -> Optional[str]:
-        """Property for caching a system identifier for systems (or connector names as a fallback) for consent reporting
+        """Returns the system fides_key (or connector name as a fallback).
 
         .. deprecated::
-            Use :attr:`consent_tracking_key` instead.  ``system_key`` returns
-            the *system* fides_key which conflates multiple integrations on the
-            same system.  Kept only for backward-compatible log context.
+            Use :attr:`consent_tracking_key` for consent status tracking.
+            ``system_key`` returns the *system* fides_key, which conflates
+            multiple integrations on the same system.  Retained for any
+            external callers and backward compatibility only.
         """
         if self.system:
             return self.system.fides_key
