@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed SaaS template 3-way merge using wrong baseline when updating multiple configs of the same type
+pr: 7578
+labels: []
