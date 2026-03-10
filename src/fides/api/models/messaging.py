@@ -152,11 +152,7 @@ class MessagingConfig(Base):
             # We don't want to handle these explicitly here, only in the API view
             raise
 
-        self.secrets = (
-            messaging_secrets.model_dump()
-            if hasattr(messaging_secrets, "model_dump")
-            else messaging_secrets
-        )
+        self.secrets = messaging_secrets
         self.save(db=db)
 
     @classmethod
