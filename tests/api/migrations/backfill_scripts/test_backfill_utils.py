@@ -20,6 +20,7 @@ from fides.api.migrations.backfill_scripts.utils import (
     is_transient_error,
     mark_backfill_completed,
     refresh_backfill_lock,
+    register_backfill_started,
     release_backfill_lock,
 )
 
@@ -130,30 +131,58 @@ class TestBackfillLock:
             mock_lock.extend.assert_not_called()
 
 
-class TestBackfillHistory:
+class TestMigrationTaskTracking:
     """Tests for backfill completion tracking functions."""
 
-    @pytest.mark.parametrize(
-        "record_exists",
-        [True, False],
-        ids=["record_exists", "record_not_exists"],
-    )
-    def test_is_backfill_completed_sync(self, db: Session, record_exists):
-        """Verify is_backfill_completed() checks database correctly (sync version)."""
-        # Use unique name per test case to avoid conflicts between parametrized runs
-        backfill_name = f"test-is-backfill-completed-sync-{record_exists}"
-
-        # Clean up any leftover record from previous runs
+    @pytest.fixture(autouse=True)
+    def clean_migration_tasks(self, db: Session):
         db.execute(
-            text("DELETE FROM backfill_history WHERE backfill_name = :name"),
-            {"name": backfill_name},
+            text(
+                "DELETE FROM post_upgrade_background_migration_tasks "
+                "WHERE key LIKE 'test-%' AND task_type = 'backfill'"
+            )
+        )
+        db.commit()
+        yield
+        db.execute(
+            text(
+                "DELETE FROM post_upgrade_background_migration_tasks "
+                "WHERE key LIKE 'test-%' AND task_type = 'backfill'"
+            )
         )
         db.commit()
 
-        if record_exists:
-            # Insert a record directly into backfill_history
+    @pytest.mark.parametrize(
+        "record_state,expected",
+        [
+            ("completed", True),
+            ("in_progress", False),
+            ("absent", False),
+        ],
+        ids=["completed_record", "in_progress_record", "no_record"],
+    )
+    def test_is_backfill_completed_sync(self, db: Session, record_state, expected):
+        """Verify is_backfill_completed() checks database correctly (sync version).
+
+        A row with NULL completed_at (in-progress) should return False, same as no row.
+        """
+        backfill_name = f"test-is-backfill-completed-sync-{record_state}"
+
+        if record_state == "completed":
             db.execute(
-                text("INSERT INTO backfill_history (backfill_name) VALUES (:name)"),
+                text(
+                    "INSERT INTO post_upgrade_background_migration_tasks (key, task_type, completed_at) "
+                    "VALUES (:name, 'backfill', now())"
+                ),
+                {"name": backfill_name},
+            )
+            db.commit()
+        elif record_state == "in_progress":
+            db.execute(
+                text(
+                    "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
+                    "VALUES (:name, 'backfill')"
+                ),
                 {"name": backfill_name},
             )
             db.commit()
@@ -162,31 +191,41 @@ class TestBackfillHistory:
         result = is_backfill_completed(db, backfill_name)
 
         # Verify
-        assert result == record_exists
+        assert result == expected
 
     @pytest.mark.parametrize(
-        "record_exists",
-        [True, False],
-        ids=["record_exists", "record_not_exists"],
+        "record_state,expected",
+        [
+            ("completed", True),
+            ("in_progress", False),
+            ("absent", False),
+        ],
+        ids=["completed_record", "in_progress_record", "no_record"],
     )
     async def test_is_backfill_completed_async(
-        self, async_session: AsyncSession, record_exists
+        self, async_session: AsyncSession, record_state, expected
     ):
-        """Verify is_backfill_completed_async() checks database correctly (async version)."""
-        # Use unique name per test case to avoid conflicts between parametrized runs
-        backfill_name = f"test-is-backfill-completed-async-{record_exists}"
+        """Verify is_backfill_completed_async() checks database correctly (async version).
 
-        # Clean up any leftover record from previous runs
-        await async_session.execute(
-            text("DELETE FROM backfill_history WHERE backfill_name = :name"),
-            {"name": backfill_name},
-        )
-        await async_session.commit()
+        A row with NULL completed_at (in-progress) should return False, same as no row.
+        """
+        backfill_name = f"test-is-backfill-completed-async-{record_state}"
 
-        if record_exists:
-            # Insert a record directly into backfill_history
+        if record_state == "completed":
             await async_session.execute(
-                text("INSERT INTO backfill_history (backfill_name) VALUES (:name)"),
+                text(
+                    "INSERT INTO post_upgrade_background_migration_tasks (key, task_type, completed_at) "
+                    "VALUES (:name, 'backfill', now())"
+                ),
+                {"name": backfill_name},
+            )
+            await async_session.commit()
+        elif record_state == "in_progress":
+            await async_session.execute(
+                text(
+                    "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
+                    "VALUES (:name, 'backfill')"
+                ),
                 {"name": backfill_name},
             )
             await async_session.commit()
@@ -195,58 +234,94 @@ class TestBackfillHistory:
         result = await is_backfill_completed_async(async_session, backfill_name)
 
         # Verify
-        assert result == record_exists
+        assert result == expected
 
-    def test_mark_backfill_completed_inserts_record(self, db: Session):
-        """Verify mark_backfill_completed() inserts and commits record."""
-        backfill_name = "test-mark-completed-insert"
+    def test_register_and_mark_backfill_completed(self, db: Session):
+        """Verify register_backfill_started() then mark_backfill_completed() lifecycle."""
+        backfill_name = "test-register-and-mark-completed"
 
-        # Clean up any leftover record from previous runs (DELETE is safe even if record doesn't exist)
-        db.execute(
-            text("DELETE FROM backfill_history WHERE backfill_name = :name"),
-            {"name": backfill_name},
-        )
-        db.commit()
+        # Step 1: Register as started — row exists with NULL completed_at
+        register_backfill_started(db, backfill_name)
 
-        # Execute
-        mark_backfill_completed(db, backfill_name)
-
-        # Verify record now exists using direct SQL
-        result = db.execute(
-            text("SELECT COUNT(*) FROM backfill_history WHERE backfill_name = :name"),
-            {"name": backfill_name},
-        ).scalar()
-        assert result == 1
-
-    def test_mark_backfill_completed_idempotency(self, db: Session):
-        """Verify mark_backfill_completed() is idempotent (ON CONFLICT DO NOTHING)."""
-        backfill_name = "test-mark-completed-idempotent"
-
-        # Insert once
-        mark_backfill_completed(db, backfill_name)
-
-        # Get timestamp and count after first insert
         result = db.execute(
             text(
-                "SELECT COUNT(*), completed_at FROM backfill_history WHERE backfill_name = :name GROUP BY completed_at"
+                "SELECT completed_at FROM post_upgrade_background_migration_tasks "
+                "WHERE key = :name AND task_type = 'backfill'"
+            ),
+            {"name": backfill_name},
+        ).first()
+        assert result is not None  # Row exists
+        assert result[0] is None  # completed_at is NULL
+
+        # Step 2: Mark as completed — completed_at is now non-NULL
+        mark_backfill_completed(db, backfill_name)
+
+        result = db.execute(
+            text(
+                "SELECT completed_at FROM post_upgrade_background_migration_tasks "
+                "WHERE key = :name AND task_type = 'backfill'"
+            ),
+            {"name": backfill_name},
+        ).first()
+        assert result is not None
+        assert result[0] is not None  # completed_at is set
+
+    def test_mark_backfill_completed_idempotency(self, db: Session):
+        """Verify mark_backfill_completed() is idempotent.
+
+        The UPDATE has a WHERE completed_at IS NULL condition, so calling it twice
+        doesn't change the timestamp set by the first call.
+        """
+        backfill_name = "test-mark-completed-idempotent"
+
+        # Register then complete
+        register_backfill_started(db, backfill_name)
+        mark_backfill_completed(db, backfill_name)
+
+        # Get timestamp after first completion
+        result = db.execute(
+            text(
+                "SELECT COUNT(*), completed_at FROM post_upgrade_background_migration_tasks "
+                "WHERE key = :name AND task_type = 'backfill' GROUP BY completed_at"
             ),
             {"name": backfill_name},
         ).first()
         assert result[0] == 1
         first_timestamp = result[1]
+        assert first_timestamp is not None
 
-        # Insert again - should not raise error due to ON CONFLICT DO NOTHING
+        # Call mark_backfill_completed again — should be a no-op (completed_at IS NULL fails)
         mark_backfill_completed(db, backfill_name)
 
-        # Verify still only one record (not duplicated) and timestamp unchanged
+        # Verify still only one record and timestamp unchanged
         result = db.execute(
             text(
-                "SELECT COUNT(*), completed_at FROM backfill_history WHERE backfill_name = :name GROUP BY completed_at"
+                "SELECT COUNT(*), completed_at FROM post_upgrade_background_migration_tasks "
+                "WHERE key = :name AND task_type = 'backfill' GROUP BY completed_at"
             ),
             {"name": backfill_name},
         ).first()
         assert result[0] == 1
-        assert result[1] == first_timestamp  # Timestamp should not change
+        assert result[1] == first_timestamp
+
+    def test_register_backfill_started_idempotency(self, db: Session):
+        """Verify register_backfill_started() is idempotent (ON CONFLICT DO NOTHING)."""
+        backfill_name = "test-register-started-idempotent"
+
+        # Register once
+        register_backfill_started(db, backfill_name)
+
+        # Register again — should not raise or create a duplicate
+        register_backfill_started(db, backfill_name)
+
+        result = db.execute(
+            text(
+                "SELECT COUNT(*) FROM post_upgrade_background_migration_tasks "
+                "WHERE key = :name AND task_type = 'backfill'"
+            ),
+            {"name": backfill_name},
+        ).scalar()
+        assert result == 1
 
 
 class TestExecuteBatchWithRetry:
@@ -340,6 +415,9 @@ class TestBatchedBackfillDecorator:
                 return_value=is_completed,
             ),
             patch(
+                "fides.api.migrations.backfill_scripts.utils.register_backfill_started"
+            ) as mock_register,
+            patch(
                 "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
             ) as mock_mark,
             patch(
@@ -359,11 +437,13 @@ class TestBatchedBackfillDecorator:
             mock_execute.assert_not_called()
 
             if exit_reason == "already_completed":
-                # When already completed, should not check pending count
+                # When already completed, should not register or check pending count
+                mock_register.assert_not_called()
                 mock_pending_count_fn.assert_not_called()
                 mock_mark.assert_not_called()
             else:
-                # When no pending rows, should check count then mark as completed
+                # When no pending rows, should register, check count, then mark as completed
+                mock_register.assert_called_once_with(mock_db, "test-backfill")
                 mock_pending_count_fn.assert_called_once()
                 mock_mark.assert_called_once_with(mock_db, "test-backfill")
 
@@ -394,6 +474,9 @@ class TestBatchedBackfillDecorator:
                 return_value=False,
             ),
             patch(
+                "fides.api.migrations.backfill_scripts.utils.register_backfill_started"
+            ) as mock_register,
+            patch(
                 "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
             ) as mock_mark,
             patch(
@@ -421,6 +504,9 @@ class TestBatchedBackfillDecorator:
             assert result.failed_batches == 0
             assert result.success is True
             assert len(result.errors) == 0
+
+            # Verify register was called before batch processing
+            mock_register.assert_called_once_with(mock_db, "test-backfill")
 
             # Verify batch delay was respected (sleep happens after each batch, but not after the last one
             # when rows_updated < batch_size triggers a break)
@@ -454,6 +540,9 @@ class TestBatchedBackfillDecorator:
             patch(
                 "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
                 return_value=False,
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.register_backfill_started"
             ),
             patch(
                 "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
@@ -527,6 +616,9 @@ class TestBatchedBackfillDecorator:
             patch(
                 "fides.api.migrations.backfill_scripts.utils.is_backfill_completed",
                 return_value=False,
+            ),
+            patch(
+                "fides.api.migrations.backfill_scripts.utils.register_backfill_started"
             ),
             patch(
                 "fides.api.migrations.backfill_scripts.utils.mark_backfill_completed"
