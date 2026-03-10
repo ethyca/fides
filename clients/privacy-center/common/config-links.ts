@@ -16,12 +16,16 @@ type ConfigWithLinks = {
  * 2. If the deprecated fields are both present, synthesize a single-item list.
  * 3. Otherwise return an empty array.
  */
-export const getEffectivePrivacyCenterLinks = (config: ConfigWithLinks): PrivacyCenterLink[] => {
+export const getEffectivePrivacyCenterLinks = (
+  config: ConfigWithLinks,
+): PrivacyCenterLink[] => {
   if (config.links && config.links.length > 0) {
     return config.links;
   }
   if (config.privacy_policy_url && config.privacy_policy_url_text) {
-    return [{ url: config.privacy_policy_url, label: config.privacy_policy_url_text }];
+    return [
+      { url: config.privacy_policy_url, label: config.privacy_policy_url_text },
+    ];
   }
   return [];
 };
