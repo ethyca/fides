@@ -140,6 +140,12 @@ class SaaSSchemaFactory:
                 "multiselect": connector_param.multiselect,
                 "param_type": connector_param.type,
                 "allowed_values": connector_param.allowed_values,
+                "readonly": (
+                    connector_param.type == "endpoint"
+                    and connector_param.allowed_values is not None
+                    and len(connector_param.allowed_values) == 1
+                    and "*" not in connector_param.allowed_values[0]
+                ),
             }
             field_definitions[connector_param.name] = (
                 (

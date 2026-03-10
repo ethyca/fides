@@ -24,6 +24,7 @@ export type ConnectionTypeSecretSchemaProperty = {
   multiselect?: boolean;
   multiline?: boolean;
   options?: string[];
+  readonly?: boolean;
 };
 
 export type ConnectionTypeSecretSchemaResponse = {
