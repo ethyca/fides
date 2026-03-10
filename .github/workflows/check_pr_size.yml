@@ -2,6 +2,10 @@ name: Check PR Size
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   check-pr-size:
     runs-on: ubuntu-latest
