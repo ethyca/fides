@@ -21,6 +21,13 @@ class PrivacyCenterLink(FidesSchema):
     label: str
     url: str
 
+    @field_validator("url")
+    @classmethod
+    def validate_url_scheme(cls, v: str) -> str:
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("url must use the http or https scheme")
+        return v
+
 
 class CustomIdentity(FidesSchema):
     label: str
