@@ -22,6 +22,34 @@ export default defineConfig({
             );
           }
         },
+        DATAMAP_GROUPING: (schema) => {
+          // Replace commas and spaces in enum values to produce valid identifier keys
+          if (schema.enum && Array.isArray(schema.enum)) {
+            // eslint-disable-next-line no-param-reassign
+            schema["x-enum-varnames"] = schema.enum.map((value: string) =>
+              value
+                .toUpperCase()
+                .replace(/,\s*/g, "_")
+                .replace(/\s+/g, "_")
+                .replace(/-/g, "_"),
+            );
+          }
+        },
+        AllowedTypes: (schema) => {
+          // Assign distinct enum key names since both values would map to STRING
+          if (schema.enum && Array.isArray(schema.enum)) {
+            // eslint-disable-next-line no-param-reassign
+            schema["x-enum-varnames"] = schema.enum.map((value: string) => {
+              if (value === "string") {
+                return "STRING";
+              }
+              if (value === "string[]") {
+                return "STRING_ARRAY";
+              }
+              return value.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+            });
+          }
+        },
       },
     },
     hooks: {
@@ -46,6 +74,7 @@ export default defineConfig({
             return `models/${symbol.name}`;
           }
           // Let other symbols use default placement
+          return undefined;
         },
       },
     },

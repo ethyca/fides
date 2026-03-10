@@ -6,7 +6,16 @@
  * Allowed column groupings for the minimal datamap report
  */
 export enum DATAMAP_GROUPING {
-  "SYSTEM,_DATA_USE" = "system, data_use",
-  "DATA_USE,_SYSTEM" = "data_use, system",
+  /**
+   * SYSTEM_DATA_USE
+   */
+  SYSTEM_DATA_USE = "system, data_use",
+  /**
+   * DATA_USE_SYSTEM
+   */
+  DATA_USE_SYSTEM = "data_use, system",
+  /**
+   * SYSTEM_GROUP
+   */
   SYSTEM_GROUP = "system_group",
 }

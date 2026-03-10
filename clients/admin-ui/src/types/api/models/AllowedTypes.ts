@@ -6,6 +6,12 @@
  * Allowed types for custom field.
  */
 export enum AllowedTypes {
+  /**
+   * STRING
+   */
   STRING = "string",
-  STRING = "string[]",
+  /**
+   * STRING_ARRAY
+   */
+  STRING_ARRAY = "string[]",
 }
