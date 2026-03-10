@@ -317,9 +317,16 @@ export const nFormatter = (num: number = 0, digits: number = 0) =>
   }).format(num);
 
 /**
- * Humanizes a field name that may be a bare key ("data_use") or a dotted path
- * ("privacy_declaration.data_use") from the backend. Dots and underscores are
- * replaced with spaces and the result is sentence-cased.
+ * Humanizes a field_name value from evidence items.
+ *
+ * The backend emits two formats depending on how the evidence was generated:
+ * - AI path (bare key):   "legal_basis"                     → "Legal basis"
+ * - Non-AI path (dotted): "privacy_declaration.legal_basis" → "Legal basis"
+ *
+ * The source_type label already identifies where the data came from, so the
+ * prefix segment of a dotted path is redundant and is stripped.
  */
-export const formatFieldName = (raw: string): string =>
-  sentenceCase(raw.replace(/\./g, " ").replace(/_/g, " "));
+export const formatFieldName = (raw: string): string => {
+  const leaf = raw.includes(".") ? raw.split(".").pop()! : raw;
+  return sentenceCase(leaf.replace(/_/g, " "));
+};
