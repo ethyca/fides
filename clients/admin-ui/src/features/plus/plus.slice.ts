@@ -254,7 +254,10 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Custom Field Definition", "Datamap"],
     }),
-    deleteCustomFieldDefinition: build.mutation<void, { id: string }>({
+    deleteCustomFieldDefinition: build.mutation<
+      void,
+      { id: string; resource_type: string; field_type: string }
+    >({
       query: ({ id }) => ({
         url: `plus/custom-metadata/custom-field-definition/${id}`,
         method: "DELETE",
