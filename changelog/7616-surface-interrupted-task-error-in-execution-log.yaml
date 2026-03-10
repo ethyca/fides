@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed silent error state when requeue_interrupted_tasks cancels a privacy request — the reason now appears in the activity timeline
+pr: 7616
+labels: []
