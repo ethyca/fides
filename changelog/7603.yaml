@@ -1,0 +1,4 @@
+type: Changed
+description: Remove horizontal padding from integration picker modal steps
+pr: 7603
+labels: []
