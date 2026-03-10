@@ -6,6 +6,9 @@ export default defineConfig({
   output: {
     path: "./src/types/api",
     format: "prettier",
+    fileName: {
+      suffix: null,
+    },
   },
   parser: {
     patch: {
@@ -18,6 +21,31 @@ export default defineConfig({
               value.toUpperCase().replace(/:/g, "_").replace(/-/g, "_"),
             );
           }
+        },
+      },
+    },
+    hooks: {
+      symbols: {
+        getFilePath: (symbol) => {
+          // Skip endpoint-specific types (camelCase pattern: operationNameApiV1PathMethodData/Response/Errors/etc)
+          // These are auto-generated for each endpoint and bloat the output
+          if (
+            symbol.name &&
+            /Api[A-Z].*(?:Data|Response|Responses|Error|Errors)$/.test(
+              symbol.name,
+            )
+          ) {
+            // Return undefined to skip this symbol entirely
+            return undefined;
+          }
+
+          // Keep one type/enum per file in models/ directory
+          // Note: enums have kind: undefined, only types have kind: "type"
+          // So we match on any symbol with a name (enums, types, interfaces all get split)
+          if (symbol.name) {
+            return `models/${symbol.name}`;
+          }
+          // Let other symbols use default placement
         },
       },
     },
