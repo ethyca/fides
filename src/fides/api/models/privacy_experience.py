@@ -122,7 +122,13 @@ class PrivacyExperienceConfigBase:
     )  # base is nullable for privacy experience config history
 
     resurface_behavior = Column(
-        ARRAY(EnumColumn(ResurfaceBehavior, native_enum=False)),
+        ARRAY(
+            EnumColumn(
+                ResurfaceBehavior,
+                native_enum=False,
+                values_callable=lambda x: [i.value for i in x],
+            )
+        ),
         nullable=True,
         server_default="{}",
         default=list,
@@ -182,7 +188,13 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
         String, nullable=False
     )  # Overriding PrivacyExperienceConfigBase to make non-nullable
     resurface_behavior = Column(
-        ARRAY(EnumColumn(ResurfaceBehavior, native_enum=False)),
+        ARRAY(
+            EnumColumn(
+                ResurfaceBehavior,
+                native_enum=False,
+                values_callable=lambda x: [i.value for i in x],
+            )
+        ),
         nullable=False,
         server_default="{}",
         default=list,
@@ -275,7 +287,13 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         String, nullable=False
     )  # Overriding PrivacyExperienceConfigBase to make non-nullable
     resurface_behavior = Column(
-        ARRAY(EnumColumn(ResurfaceBehavior, native_enum=False)),
+        ARRAY(
+            EnumColumn(
+                ResurfaceBehavior,
+                native_enum=False,
+                values_callable=lambda x: [i.value for i in x],
+            )
+        ),
         nullable=False,
         server_default="{}",
         default=list,
