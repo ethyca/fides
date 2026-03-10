@@ -1,7 +1,7 @@
 import { PrivacyCenterLink } from "~/types/config";
 
 type ConfigWithLinks = {
-  links?: Array<{ label: string; url: string }>;
+  links?: PrivacyCenterLink[];
   privacy_policy_url?: string | null;
   privacy_policy_url_text?: string | null;
 };
