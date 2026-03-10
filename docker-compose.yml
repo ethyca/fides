@@ -403,7 +403,7 @@ services:
     healthcheck:
       test: ["CMD", "valkey-cli", "-p", "6379", "-a", "redispassword", "ping"]
       interval: 2s
-          valkey-cli -a redispassword --cluster create valkey-cluster-node-1:6379 valkey-cluster-node-2:6379 valkey-cluster-node-3:6379 --cluster-replicas 0 --cluster-yes &&
+      timeout: 3s
       retries: 10
 
   valkey-cluster-node-3:
@@ -454,7 +454,7 @@ services:
           valkey-cli -h valkey-cluster-node-3 -p 6379 -a redispassword cluster reset soft 2>/dev/null || true &&
           sleep 2 &&
           echo 'Creating Valkey cluster...' &&
-          valkey-cli -a redispassword --cluster create valkey-cluster-node-1:6379 valkey-cluster-node-2:6379 valkey-cluster-node-3:6379 --cluster-yes &&
+          valkey-cli -a redispassword --cluster create valkey-cluster-node-1:6379 valkey-cluster-node-2:6379 valkey-cluster-node-3:6379 --cluster-replicas 0 --cluster-yes &&
           echo 'Valkey Cluster ready.';
         fi
       "
