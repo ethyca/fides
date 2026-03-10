@@ -27,7 +27,7 @@ export enum AnswerSource {
   SYSTEM = "system",
   AI_ANALYSIS = "ai_analysis",
   USER_INPUT = "user_input",
-  SLACK = "slack",
+  TEAM_INPUT = "team_input",
 }
 
 export enum EvidenceType {
@@ -74,6 +74,8 @@ export interface QuestionGroup {
   title: string;
   requirement_key: string;
   questions: AssessmentQuestion[];
+  answered_count: number;
+  total_count: number;
   risk_level: RiskLevel | null;
   last_updated_at: string | null;
   last_updated_by: string | null;
@@ -96,125 +98,15 @@ export interface AssessmentQuestion {
   sme_prompt: string | null;
 }
 
-// Discriminated union for different evidence types
-export type EvidenceItem =
-  | SystemEvidenceItem
-  | AIAnalysisEvidenceItem
-  | ManualEntryEvidenceItem
-  | SlackCommunicationEvidenceItem;
-
-export interface BaseEvidenceItem {
+export interface EvidenceItem {
   id: string;
+  type: EvidenceType;
+  value: string;
   created_at: string;
+  field_name: string;
+  source_key: string;
+  source_type: string;
   citation_number: number | null;
-}
-
-export interface SystemEvidenceItem extends BaseEvidenceItem {
-  type: EvidenceType.SYSTEM;
-  source: {
-    source_type: SystemSourceType;
-    source_key: string;
-    source_name: string;
-  };
-  field: {
-    field_name: string;
-    field_label: string;
-  };
-  value: unknown;
-  value_display: string;
-}
-
-export enum SystemSourceType {
-  SYSTEM = "system",
-  PRIVACY_DECLARATION = "privacy_declaration",
-  DATA_CATEGORY = "data_category",
-  DATA_USE = "data_use",
-  DATA_SUBJECT = "data_subject",
-  DATASET = "dataset",
-  DATA_FLOW = "data_flow",
-}
-
-export interface AIAnalysisEvidenceItem extends BaseEvidenceItem {
-  type: EvidenceType.AI_ANALYSIS;
-  model: {
-    model_id: string;
-    model_version: string | null;
-  };
-  analysis: {
-    input_summary: string;
-    reasoning: string | null;
-    confidence: number;
-    confidence_label: RiskLevel;
-  };
-  sources_used: string[];
-}
-
-export interface ManualEntryEvidenceItem extends BaseEvidenceItem {
-  type: EvidenceType.MANUAL_ENTRY;
-  author: {
-    user_id: string;
-    user_name: string;
-    user_email: string | null;
-    role: string | null;
-  };
-  entry: {
-    previous_value: string | null;
-    new_value: string;
-    edit_reason: string | null;
-  };
-}
-
-export interface SlackCommunicationEvidenceItem extends BaseEvidenceItem {
-  type: EvidenceType.SLACK_COMMUNICATION;
-  channel: {
-    channel_id: string;
-    channel_name: string;
-  };
-  thread: {
-    thread_id: string;
-    thread_url: string | null;
-    started_at: string;
-    message_count: number;
-    participant_count: number;
-  };
-  messages: SlackMessage[];
-  summary: string | null;
-}
-
-export interface SlackMessage {
-  message_id: string;
-  timestamp: string;
-  sender: {
-    user_id: string;
-    user_name: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  content: {
-    text: string;
-    is_bot_message: boolean;
-    attachments: SlackAttachment[];
-  };
-  reactions: SlackReaction[];
-  reply_to_message_id: string | null;
-}
-
-export enum SlackAttachmentType {
-  FILE = "file",
-  IMAGE = "image",
-  LINK = "link",
-}
-
-export interface SlackAttachment {
-  type: SlackAttachmentType;
-  name: string;
-  url: string | null;
-}
-
-export interface SlackReaction {
-  emoji: string;
-  count: number;
-  users: string[];
 }
 
 export interface QuestionnaireStatus {
@@ -325,12 +217,7 @@ export interface AssessmentEvidenceResponse {
   assessment_id: string;
   total_count: number;
   by_question?: Record<string, QuestionEvidence>;
-  by_type?: {
-    [EvidenceType.SYSTEM]: SystemEvidenceItem[];
-    [EvidenceType.AI_ANALYSIS]: AIAnalysisEvidenceItem[];
-    [EvidenceType.MANUAL_ENTRY]: ManualEntryEvidenceItem[];
-    [EvidenceType.SLACK_COMMUNICATION]: SlackCommunicationEvidenceItem[];
-  };
+  by_type?: Record<EvidenceType, EvidenceItem[]>;
   items?: EvidenceItem[];
 }
 
