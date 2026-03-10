@@ -23,6 +23,7 @@ from fides.api.util.consent_util import (
     create_default_tcf_purpose_overrides_on_startup,
     get_fides_user_device_id_provided_identity,
 )
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 class TestBuildUserConsentAndFilteredPreferencesForService:
@@ -632,8 +633,12 @@ class TestCacheSystemStatusesForConsentReporting:
         should get its own entry in affected_system_status. Previously all connections
         on the same system wrote to the same system_key, causing overwrites."""
         # Link the existing connection_config to the system
-        connection_config.system_id = system.id
-        connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.refresh(connection_config)
 
         # Create a second connection on the same system
         second_connection_config = ConnectionConfig.create(
@@ -645,9 +650,14 @@ class TestCacheSystemStatusesForConsentReporting:
                 "access": AccessLevel.write,
                 "disabled": False,
                 "description": "Second postgres connection on the same system",
-                "system_id": system.id,
             },
         )
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=second_connection_config.id,
+            session=db,
+        )
+        db.refresh(second_connection_config)
 
         pref = privacy_preference_history_fr_provide_service_frontend_only
         pref.privacy_request_id = privacy_request_with_consent_policy.id
