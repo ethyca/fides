@@ -37,7 +37,7 @@ def validate_value_against_allowed_list(
     value: str,
     allowed_values: List[str],
     param_name: str,
-    mode: DomainValidationMode = DomainValidationMode.enabled,
+    mode: DomainValidationMode = DomainValidationMode.monitor,
 ) -> None:
     """
     Validate that a value matches at least one of the allowed patterns.
