@@ -251,7 +251,7 @@ const HomePage: NextPage = () => {
                 {label}
               </Link>
             ))}
-            <BrandLink />
+            <BrandLink position="relative" right="unset" />
           </Stack>
         )}
       </Stack>
