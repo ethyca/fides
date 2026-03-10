@@ -2,10 +2,7 @@ import { Alert, AlertProps } from "antd/lib";
 import type { AlertRef } from "antd/lib/alert/Alert";
 import React from "react";
 
-import {
-  type FeedbackType,
-  getDefaultAlertIcon,
-} from "../lib/carbon-icon-defaults";
+import { getDefaultAlertIcon } from "../lib/carbon-icon-defaults";
 
 export interface CustomAlertProps extends AlertProps {}
 
@@ -14,7 +11,7 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
     ({ showIcon, icon, type = "info", description, ...props }, ref) => {
       const carbonIcon =
         showIcon && icon === undefined
-          ? getDefaultAlertIcon(type as FeedbackType, !!description)
+          ? getDefaultAlertIcon(type, !!description)
           : icon;
 
       return (

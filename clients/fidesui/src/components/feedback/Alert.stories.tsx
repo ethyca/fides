@@ -1,11 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Alert, GetProps } from "../../index";
-import {
-  PARAGRAPH_LOREM,
-  SUBTITLE_LOREM,
-  TITLE_LOREM,
-} from "../../stories/utils/content";
+import { PARAGRAPH_LOREM, SUBTITLE_LOREM } from "../../stories/utils/content";
 import { iconControl } from "../../stories/utils/controls";
 
 const meta = {
@@ -67,47 +63,6 @@ export const Warning: Story = {
   args: {
     message: SUBTITLE_LOREM,
     description: PARAGRAPH_LOREM,
-    type: "warning",
-    showIcon: true,
-  },
-};
-
-export const PrimaryCompact: Story = {
-  args: {
-    message: TITLE_LOREM,
-    type: "info",
-  },
-  argTypes: {
-    type: {
-      control: "select",
-      options: Object.values(ALERT_TYPE),
-    },
-    showIcon: {
-      control: "boolean",
-    },
-    icon: iconControl,
-  },
-};
-
-export const ErrorCompact: Story = {
-  args: {
-    message: TITLE_LOREM,
-    type: "error",
-    showIcon: true,
-  },
-};
-
-export const SuccessCompact: Story = {
-  args: {
-    message: TITLE_LOREM,
-    type: "success",
-    showIcon: true,
-  },
-};
-
-export const WarningCompact: Story = {
-  args: {
-    message: TITLE_LOREM,
     type: "warning",
     showIcon: true,
   },
