@@ -1,7 +1,7 @@
 """add user_name to comments
 
 Revision ID: 4ac4864180db
-Revises: 074796d61d8a
+Revises: a8b9c0d1e2f3
 Create Date: 2026-03-04 22:32:35.300783
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "4ac4864180db"
-down_revision = "074796d61d8a"
+down_revision = "a8b9c0d1e2f3"
 branch_labels = None
 depends_on = None
 
