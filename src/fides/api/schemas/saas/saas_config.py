@@ -24,7 +24,10 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
-from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.api.util.domain_util import (
+    get_domain_validation_mode,
+    validate_value_against_allowed_list,
+)
 from fides.config import CONFIG
 from fides.config.security_settings import DomainValidationMode
 
@@ -375,8 +378,6 @@ class ConnectorParam(BaseModel):
 
         param_type = values.get("type")
         allowed_values = values.get("allowed_values")
-        from fides.api.util.saas_util import get_domain_validation_mode
-
         domain_mode = get_domain_validation_mode()
         if (
             param_type == "endpoint"

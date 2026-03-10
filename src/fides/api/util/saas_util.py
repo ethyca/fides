@@ -20,7 +20,6 @@ from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSReque
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.config import CONFIG
 from fides.config.helpers import load_file
-from fides.config.security_settings import DomainValidationMode
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 PRIVACY_REQUEST_ID = "privacy_request_id"
@@ -54,13 +53,6 @@ def deny_unsafe_hosts(host: str) -> str:
     if host_ip.is_link_local or host_ip.is_loopback:
         raise ValueError(f"Host '{host}' with IP Address '{host_ip}' is not safe!")
     return host
-
-
-def get_domain_validation_mode() -> DomainValidationMode:
-    """Return the effective domain validation mode, accounting for dev_mode."""
-    if CONFIG.dev_mode:
-        return DomainValidationMode.monitor
-    return CONFIG.security.domain_validation_mode
 
 
 def validate_connector_param_constraints_not_modified(

@@ -301,6 +301,19 @@ class TestValidateRequestDomain:
 
     @mock.patch(
         "fides.api.service.connectors.saas.authenticated_client.get_domain_validation_mode",
+        return_value=DomainValidationMode.monitor,
+    )
+    def test_validation_monitor_mode_logs_warning(self, mock_mode, caplog):
+        """Monitor mode should log a warning but not raise."""
+        import logging
+
+        client = _make_client_with_allowed_values({"domain": ["api.stripe.com"]})
+        with caplog.at_level(logging.WARNING):
+            client._validate_request_domain("evil.example.com")
+        assert "not in the list of allowed values" in caplog.text
+
+    @mock.patch(
+        "fides.api.service.connectors.saas.authenticated_client.get_domain_validation_mode",
         return_value=DomainValidationMode.enabled,
     )
     def test_no_saas_config_skips(self, mock_mode):

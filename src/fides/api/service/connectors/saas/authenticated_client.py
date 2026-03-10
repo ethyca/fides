@@ -22,12 +22,15 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
-from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.api.util.domain_util import (
+    get_domain_validation_mode,
+    validate_value_against_allowed_list,
+)
 from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-from fides.api.util.saas_util import deny_unsafe_hosts, get_domain_validation_mode
+from fides.api.util.saas_util import deny_unsafe_hosts
 from fides.config import CONFIG
 from fides.config.security_settings import DomainValidationMode
 
