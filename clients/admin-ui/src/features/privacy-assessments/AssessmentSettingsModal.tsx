@@ -71,12 +71,21 @@ const AssessmentSettingsModal = ({
     const matchingPreset = FREQUENCY_OPTIONS.find(
       (opt) => opt.cron === config.reassessment_cron,
     );
+    const monthlyPreset = FREQUENCY_OPTIONS.find(
+      (opt) => opt.value === "monthly",
+    )!;
+    let frequencyPresetValue = "monthly";
+    if (matchingPreset) {
+      frequencyPresetValue = matchingPreset.value;
+    } else if (config.reassessment_cron) {
+      frequencyPresetValue = "custom";
+    }
     return {
       assessment_model_override: config.assessment_model_override || "",
       chat_model_override: config.chat_model_override || "",
       reassessment_enabled: config.reassessment_enabled,
-      frequency_preset: matchingPreset ? matchingPreset.value : "custom",
-      reassessment_cron: config.reassessment_cron,
+      frequency_preset: frequencyPresetValue,
+      reassessment_cron: config.reassessment_cron || monthlyPreset.cron,
       slack_channel_id: config.slack_channel_id || undefined,
     };
   }, [config]);
