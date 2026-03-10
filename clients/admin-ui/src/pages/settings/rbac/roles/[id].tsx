@@ -272,6 +272,15 @@ const RoleDetailPage: NextPage = () => {
                   className="mb-4"
                 />
               )}
+              {resourceType === "rbac_role" && (
+                <Alert
+                  message="Role management grants full permission control"
+                  description="Users with rbac_role:update can assign any permission to roles, including permissions they don't personally have. Only grant role management permissions to trusted administrators."
+                  type="warning"
+                  showIcon
+                  className="mb-4"
+                />
+              )}
               <Table
                 dataSource={perms}
                 columns={permissionColumns}
