@@ -20,6 +20,7 @@ from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSReque
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.config import CONFIG
 from fides.config.helpers import load_file
+from fides.config.security_settings import DomainValidationMode
 
 FIDESOPS_GROUPED_INPUTS = "fidesops_grouped_inputs"
 PRIVACY_REQUEST_ID = "privacy_request_id"
@@ -55,9 +56,11 @@ def deny_unsafe_hosts(host: str) -> str:
     return host
 
 
-def is_domain_validation_disabled() -> bool:
-    """Check if domain validation is disabled via config flags."""
-    return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
+def get_domain_validation_mode() -> DomainValidationMode:
+    """Return the effective domain validation mode, accounting for dev_mode."""
+    if CONFIG.dev_mode:
+        return DomainValidationMode.monitor
+    return CONFIG.security.domain_validation_mode
 
 
 def validate_connector_param_constraints_not_modified(

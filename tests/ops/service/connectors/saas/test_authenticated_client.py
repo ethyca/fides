@@ -20,6 +20,7 @@ from fides.api.service.connectors.saas.authenticated_client import (
     get_retry_after,
 )
 from fides.api.util.saas_util import load_config_with_replacement
+from fides.config.security_settings import DomainValidationMode
 
 
 @pytest.fixture
@@ -278,10 +279,10 @@ class TestValidateRequestDomain:
         ],
     )
     @mock.patch(
-        "fides.api.service.connectors.saas.authenticated_client.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.service.connectors.saas.authenticated_client.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
-    def test_domain_validation(self, mock_disabled, params, host, should_pass):
+    def test_domain_validation(self, mock_mode, params, host, should_pass):
         client = _make_client_with_allowed_values(params)
         if should_pass:
             client._validate_request_domain(host)
@@ -290,19 +291,19 @@ class TestValidateRequestDomain:
                 client._validate_request_domain(host)
 
     @mock.patch(
-        "fides.api.service.connectors.saas.authenticated_client.is_domain_validation_disabled",
-        return_value=True,
+        "fides.api.service.connectors.saas.authenticated_client.get_domain_validation_mode",
+        return_value=DomainValidationMode.disabled,
     )
-    def test_validation_disabled_skips(self, mock_disabled):
+    def test_validation_disabled_skips(self, mock_mode):
         """Validation should be skipped when disabled."""
         client = _make_client_with_allowed_values({"domain": ["api.stripe.com"]})
         client._validate_request_domain("evil.example.com")
 
     @mock.patch(
-        "fides.api.service.connectors.saas.authenticated_client.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.service.connectors.saas.authenticated_client.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
-    def test_no_saas_config_skips(self, mock_disabled):
+    def test_no_saas_config_skips(self, mock_mode):
         """No SaaS config should skip validation."""
         configuration = mock.MagicMock()
         configuration.get_saas_config.return_value = None
@@ -313,10 +314,10 @@ class TestValidateRequestDomain:
         client._validate_request_domain("anything.example.com")
 
     @mock.patch(
-        "fides.api.service.connectors.saas.authenticated_client.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.service.connectors.saas.authenticated_client.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
-    def test_allowed_hosts_extracted_once_at_construction(self, mock_disabled):
+    def test_allowed_hosts_extracted_once_at_construction(self, mock_mode):
         """get_saas_config should be called once during __init__, not on every
         _validate_request_domain call."""
         client = _make_client_with_allowed_values({"domain": ["api.stripe.com"]})

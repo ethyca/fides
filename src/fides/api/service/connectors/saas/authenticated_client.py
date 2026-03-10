@@ -27,8 +27,9 @@ from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-from fides.api.util.saas_util import deny_unsafe_hosts, is_domain_validation_disabled
+from fides.api.util.saas_util import deny_unsafe_hosts, get_domain_validation_mode
 from fides.config import CONFIG
+from fides.config.security_settings import DomainValidationMode
 
 if TYPE_CHECKING:
     from fides.api.models.connectionconfig import ConnectionConfig
@@ -65,6 +66,7 @@ class AuthenticatedClient:
         self.rate_limit_config = rate_limit_config
         self.connect_timeout = connect_timeout
         self.read_timeout = read_timeout
+        self._domain_validation_mode = get_domain_validation_mode()
         self._allowed_hosts: Optional[List[str]] = self._extract_allowed_hosts()
 
     def _extract_allowed_hosts(self) -> Optional[List[str]]:
@@ -75,7 +77,7 @@ class AuthenticatedClient:
         is self-hosted with an empty allowed_values list).  A non-None list
         means every outbound host must match at least one entry.
         """
-        if is_domain_validation_disabled():
+        if self._domain_validation_mode == DomainValidationMode.disabled:
             return None
 
         saas_config = self.configuration.get_saas_config()
@@ -109,7 +111,10 @@ class AuthenticatedClient:
 
         host_without_port = host.split(":")[0] if ":" in host else host
         validate_value_against_allowed_list(
-            host_without_port, self._allowed_hosts, "host"
+            host_without_port,
+            self._allowed_hosts,
+            "host",
+            monitor=self._domain_validation_mode == DomainValidationMode.monitor,
         )
 
     def get_authenticated_request(

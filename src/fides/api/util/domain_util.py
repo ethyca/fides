@@ -1,7 +1,10 @@
 """Shared helpers for domain-validation logic."""
 
+import logging
 import re
 from typing import List
+
+logger = logging.getLogger(__name__)
 
 
 def wildcard_to_regex(pattern: str) -> str:
@@ -20,7 +23,10 @@ def wildcard_to_regex(pattern: str) -> str:
 
 
 def validate_value_against_allowed_list(
-    value: str, allowed_values: List[str], param_name: str
+    value: str,
+    allowed_values: List[str],
+    param_name: str,
+    monitor: bool = False,
 ) -> None:
     """
     Validate that a value matches at least one of the allowed patterns.
@@ -39,7 +45,9 @@ def validate_value_against_allowed_list(
       - Subdomain wildcard: "*.salesforce.com"
       - Any position: "api.*.stripe.com"
 
-    Raises ValueError if the value does not match any allowed pattern.
+    When ``monitor`` is True, logs a warning instead of raising.
+    Raises ValueError if the value does not match any allowed pattern
+    and ``monitor`` is False.
     """
     if not allowed_values:
         return
@@ -50,9 +58,23 @@ def validate_value_against_allowed_list(
         regex = wildcard_to_regex(pattern_stripped)
         if re.fullmatch(regex, value_stripped, re.IGNORECASE):
             return
-    raise ValueError(
+
+    violation_msg = (
         f"The value '{value}' for '{param_name}' is not in the list of "
-        f"allowed values: [{', '.join(allowed_values)}]. "
-        f"In the meantime, you may temporarily disable domain validation by setting "
-        f"the environment variable FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION=true."
+        f"allowed values: [{', '.join(allowed_values)}]."
+    )
+
+    if monitor:
+        logger.warning(
+            "Domain validation violation (monitor mode): %s "
+            "This would be blocked with DOMAIN_VALIDATION_MODE=enabled.",
+            violation_msg,
+        )
+        return
+
+    raise ValueError(
+        f"{violation_msg} "
+        f"You may change the validation behavior by setting "
+        f"the environment variable FIDES__SECURITY__DOMAIN_VALIDATION_MODE "
+        f"to 'monitor' (log warnings only) or 'disabled' (skip validation)."
     )

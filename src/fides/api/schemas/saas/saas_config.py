@@ -26,6 +26,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 )
 from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.config import CONFIG
+from fides.config.security_settings import DomainValidationMode
 
 
 class ParamValue(BaseModel):
@@ -374,12 +375,15 @@ class ConnectorParam(BaseModel):
 
         param_type = values.get("type")
         allowed_values = values.get("allowed_values")
+        from fides.api.util.saas_util import get_domain_validation_mode
+
+        domain_mode = get_domain_validation_mode()
         if (
             param_type == "endpoint"
             and allowed_values is not None
             and len(allowed_values) > 0
             and default_value is not None
-            and not (CONFIG.dev_mode or CONFIG.security.disable_domain_validation)
+            and domain_mode != DomainValidationMode.disabled
         ):
             values_to_check = (
                 default_value if isinstance(default_value, list) else [default_value]
@@ -387,7 +391,12 @@ class ConnectorParam(BaseModel):
             for val in values_to_check:
                 if not isinstance(val, str):
                     continue
-                validate_value_against_allowed_list(val, allowed_values, str(name))
+                validate_value_against_allowed_list(
+                    val,
+                    allowed_values,
+                    str(name),
+                    monitor=domain_mode == DomainValidationMode.monitor,
+                )
 
         return values
 
