@@ -104,6 +104,7 @@ class Attachment(Base):
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
     )
+    username = Column(String, nullable=True)
     file_name = Column(String, nullable=False)
     attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
     storage_key = Column(
