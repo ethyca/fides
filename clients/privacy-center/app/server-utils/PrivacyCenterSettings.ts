@@ -80,6 +80,6 @@ export interface PrivacyCenterSettings {
   FIDES_COOKIE_COMPRESSION: "gzip" | "none"; // (optional) compression method to use for the consent cookie (defaults to "none")
   ATTRIBUTION_ENABLED: boolean; // (optional) whether attribution link is enabled (defaults to false)
   ATTRIBUTION_ANCHOR_TEXT: string; // (optional) anchor text for attribution link (defaults to "Consent powered by Ethyca")
-  ATTRIBUTION_DESTINATION_URL: string; // (optional) destination URL for attribution link (defaults to "https://ethyca.com/consent")
+  ATTRIBUTION_DESTINATION_URL: string; // (optional) destination URL for attribution link. Must begin with "http://" or "https://". (defaults to "https://ethyca.com/consent")
   ATTRIBUTION_NOFOLLOW: boolean; // (optional) whether attribution link should have rel="nofollow" (defaults to false)
 }
