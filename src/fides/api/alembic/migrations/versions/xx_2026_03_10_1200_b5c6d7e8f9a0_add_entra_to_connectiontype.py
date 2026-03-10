@@ -44,7 +44,8 @@ def upgrade():
 
 
 def downgrade():
-    # Remove 'entra' from ConnectionType enum
+    # Remove 'entra' from ConnectionType enum.
+    # WARNING: This permanently deletes any connectionconfig rows with connection_type='entra'.
     op.execute(
         f"DELETE FROM connectionconfig WHERE connection_type IN ('{TYPE_TO_HANDLE}')"
     )

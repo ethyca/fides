@@ -44,7 +44,7 @@ class EntraHttpClient:
     ):
         self.tenant_id = tenant_id.strip()
         self.client_id = client_id.strip()
-        self.client_secret = client_secret
+        self.client_secret = client_secret.strip()
         self._token: Optional[str] = None
         self._token_expiry: float = 0
         if session is not None:

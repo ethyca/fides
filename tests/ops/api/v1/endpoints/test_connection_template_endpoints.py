@@ -393,11 +393,13 @@ class TestGetConnections:
         identifiers = {item["identifier"] for item in data}
         assert "entra" in identifiers
         assert "okta" in identifiers
+        assert all(item["type"] == "system" for item in data)
 
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 21  # Includes test_datastore
+        assert all(item["type"] == "database" for item in data)
+        assert "entra" not in {item["identifier"] for item in data}
 
     def test_search_system_type_and_connection_type(
         self,
