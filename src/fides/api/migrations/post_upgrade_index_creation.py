@@ -287,7 +287,7 @@ def create_object(db: Session, object_statement: str, object_name: str) -> None:
 
 def is_registered(
     object_data: Dict[str, str],
-    registered_keys: set[str],
+    registered_keys: Dict,
 ) -> bool:
     """Check whether this object's migration_key has been registered by a migration.
 
@@ -368,13 +368,18 @@ def check_and_create_objects(
                 lock.reacquire()
                 continue
 
+            migration_key = object_data.get("migration_key")
+            if registered_keys[migration_key]["completed_at"] is not None:
+                lock.reacquire()
+                continue
+
             if should_skip_existing(db, object_data):
-                mark_index_completed(db, object_data.get("migration_key"))
+                mark_index_completed(db, migration_key)
                 lock.reacquire()
                 continue
 
             create_object(db, object_data["statement"], object_data["name"])
-            mark_index_completed(db, object_data.get("migration_key"))
+            mark_index_completed(db, migration_key)
             object_info[object_data["name"]] = "created"
             lock.reacquire()
 

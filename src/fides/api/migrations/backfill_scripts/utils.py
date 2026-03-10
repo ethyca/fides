@@ -1,7 +1,8 @@
 import time
 from dataclasses import dataclass, field
+from datetime import datetime
 from functools import wraps
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional, TypedDict
 
 from loguru import logger
 from redis.lock import Lock
@@ -144,15 +145,20 @@ def mark_backfill_completed(db: Session, backfill_name: str) -> None:
     )
 
 
-def get_registered_index_keys(db: Session) -> set[str]:
-    """Return index task keys registered by migrations."""
+class IndexKeyStatus(TypedDict):
+    key: str
+    completed_at: Optional[datetime]
+
+
+def get_registered_index_keys(db: Session) -> Dict[str, IndexKeyStatus]:
+    """Return all index task keys registered by migrations, with their completion status."""
     result = db.execute(
         text(
-            "SELECT key FROM post_upgrade_background_migration_tasks "
+            "SELECT key, completed_at FROM post_upgrade_background_migration_tasks "
             "WHERE task_type = 'index'"
         )
     )
-    return {row[0] for row in result}
+    return {row[0]: IndexKeyStatus(key=row[0], completed_at=row[1]) for row in result}
 
 
 @dataclass

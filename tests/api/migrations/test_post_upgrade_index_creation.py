@@ -166,14 +166,14 @@ class TestRegisteredIndexKeys:
         db.commit()
 
     def test_get_registered_index_keys(self, db: Session):
-        """Verify get_registered_index_keys() returns only index-type keys."""
+        """Verify get_registered_index_keys() returns index keys with completion status."""
         test_key = "test-index-key-for-get-registered"
 
         # Initially not present
         keys = get_registered_index_keys(db)
         assert test_key not in keys
 
-        # Insert as index type
+        # Insert as index type with NULL completed_at (pending)
         db.execute(
             text(
                 "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
@@ -181,10 +181,37 @@ class TestRegisteredIndexKeys:
             ),
             {"key": test_key},
         )
+        # Insert an already-completed index key
+        completed_key = "test-index-key-already-completed"
+        db.execute(
+            text(
+                "INSERT INTO post_upgrade_background_migration_tasks (key, task_type, completed_at) "
+                "VALUES (:key, 'index', now())"
+            ),
+            {"key": completed_key},
+        )
         db.commit()
 
         keys = get_registered_index_keys(db)
         assert test_key in keys
+        assert keys[test_key]["completed_at"] is None
+        assert completed_key in keys
+        assert keys[completed_key]["completed_at"] is not None
+
+        # Mark the pending one completed
+        db.execute(
+            text(
+                "UPDATE post_upgrade_background_migration_tasks "
+                "SET completed_at = now() "
+                "WHERE key = :key AND task_type = 'index'"
+            ),
+            {"key": test_key},
+        )
+        db.commit()
+
+        keys = get_registered_index_keys(db)
+        assert test_key in keys
+        assert keys[test_key]["completed_at"] is not None
 
         # A backfill-type row should NOT appear in index keys
         backfill_key = "test-backfill-key-for-get-registered"
