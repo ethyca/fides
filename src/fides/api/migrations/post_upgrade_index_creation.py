@@ -369,6 +369,7 @@ def check_and_create_objects(
                 continue
 
             if should_skip_existing(db, object_data):
+                mark_index_completed(db, object_data.get("migration_key"))
                 lock.reacquire()
                 continue
 

@@ -4,8 +4,10 @@ Renames the table, adds a task_type discriminator and a surrogate PK, and makes
 completed_at nullable to distinguish "registered/in-progress" from "done".
 
 This migration also pre-populates the table with entries for all deferred indexes
-that predate this change (listed in EXISTING_INDEX_KEYS), marking them as completed
-so the background index-creation script treats them as already processed.
+that predate this change (listed in PRE_MIGRATION_INDEX_KEYS). Each key is checked against
+Postgres system catalogs: keys whose objects already exist are marked completed
+(completed_at = now()), while keys whose objects are missing are inserted with
+completed_at = NULL so the background script will create them.
 
 Revision ID: e3a9f1b2c4d5
 Revises: bf12f05ef8eb
@@ -15,6 +17,7 @@ Create Date: 2026-03-04 12:00:00.000000
 
 import sqlalchemy as sa
 from alembic import op
+from loguru import logger
 
 # revision identifiers, used by Alembic.
 revision = "e3a9f1b2c4d5"
@@ -22,39 +25,45 @@ down_revision = "bf12f05ef8eb"
 branch_labels = None
 depends_on = None
 
-# All existing TABLE_OBJECT_MAP index/constraint names that predate this migration.
+# All TABLE_OBJECT_MAP index/constraint names that predate this migration.
 # Since these migrations cannot be modified retroactively, we pre-register them here
 # so the background script knows they are safe to process.
-EXISTING_INDEX_KEYS = [
-    "ix_currentprivacypreferencev2_email_property_id",
-    "ix_currentprivacypreferencev2_external_id_property_id",
-    "ix_currentprivacypreferencev2_fides_user_device_property_id",
-    "ix_currentprivacypreferencev2_phone_number_property_id",
-    "ix_currentprivacypreferencev2_hashed_external_id",
-    "last_saved_for_email_per_property_id",
-    "last_saved_for_external_id_per_property_id",
-    "last_saved_for_fides_user_device_per_property_id",
-    "last_saved_for_phone_number_per_property_id",
-    "ix_privacypreferencehistory_hashed_external_id",
-    "ix_providedidentity_privacy_request_id",
-    "ix_providedidentity_reqid_field_hash",
-    "ix_privacyrequest_policy_created",
-    "ix_servednoticehistory_hashed_external_id",
-    "ix_staged_resource_ancestor_pkey",
-    "ix_staged_resource_ancestor_unique",
-    "uq_staged_resource_ancestor",
-    "fk_staged_resource_ancestor_ancestor",
-    "fk_staged_resource_ancestor_descendant",
-    "ix_staged_resource_ancestor_ancestor",
-    "ix_staged_resource_ancestor_descendant",
-    "ix_staged_resource_ancestor_desc_anc_dist",
-    "ix_staged_resource_ancestor_anc_dist_desc",
-    "ix_stagedresource_monitor_config_resource_type_consent",
-    "ix_stagedresource_system_vendor_consent",
-    "idx_stagedresource_user_categories_gin",
-    "idx_stagedresource_classifications_gin",
-    "ix_stagedresource_monitor_leaf_status_urn",
-    "ix_stagedresource_leaf_true_monitor_status_urn",
+#
+# Each entry is (migration_key, catalog_name) where catalog_name is the name to
+# look up in pg_indexes/pg_constraint. For indexes that back a constraint,
+# ADD CONSTRAINT ... USING INDEX renames the index to the constraint name,
+# so we must check the constraint name instead.
+PRE_MIGRATION_INDEX_KEYS = [
+    # (migration_key, catalog_name)
+    ("ix_currentprivacypreferencev2_email_property_id", "last_saved_for_email_per_property_id"),
+    ("ix_currentprivacypreferencev2_external_id_property_id", "last_saved_for_external_id_per_property_id"),
+    ("ix_currentprivacypreferencev2_fides_user_device_property_id", "last_saved_for_fides_user_device_per_property_id"),
+    ("ix_currentprivacypreferencev2_phone_number_property_id", "last_saved_for_phone_number_per_property_id"),
+    ("ix_currentprivacypreferencev2_hashed_external_id", "ix_currentprivacypreferencev2_hashed_external_id"),
+    ("last_saved_for_email_per_property_id", "last_saved_for_email_per_property_id"),
+    ("last_saved_for_external_id_per_property_id", "last_saved_for_external_id_per_property_id"),
+    ("last_saved_for_fides_user_device_per_property_id", "last_saved_for_fides_user_device_per_property_id"),
+    ("last_saved_for_phone_number_per_property_id", "last_saved_for_phone_number_per_property_id"),
+    ("ix_privacypreferencehistory_hashed_external_id", "ix_privacypreferencehistory_hashed_external_id"),
+    ("ix_providedidentity_privacy_request_id", "ix_providedidentity_privacy_request_id"),
+    ("ix_providedidentity_reqid_field_hash", "ix_providedidentity_reqid_field_hash"),
+    ("ix_privacyrequest_policy_created", "ix_privacyrequest_policy_created"),
+    ("ix_servednoticehistory_hashed_external_id", "ix_servednoticehistory_hashed_external_id"),
+    ("ix_staged_resource_ancestor_pkey", "ix_staged_resource_ancestor_pkey"),
+    ("ix_staged_resource_ancestor_unique", "uq_staged_resource_ancestor"),
+    ("uq_staged_resource_ancestor", "uq_staged_resource_ancestor"),
+    ("fk_staged_resource_ancestor_ancestor", "fk_staged_resource_ancestor_ancestor"),
+    ("fk_staged_resource_ancestor_descendant", "fk_staged_resource_ancestor_descendant"),
+    ("ix_staged_resource_ancestor_ancestor", "ix_staged_resource_ancestor_ancestor"),
+    ("ix_staged_resource_ancestor_descendant", "ix_staged_resource_ancestor_descendant"),
+    ("ix_staged_resource_ancestor_desc_anc_dist", "ix_staged_resource_ancestor_desc_anc_dist"),
+    ("ix_staged_resource_ancestor_anc_dist_desc", "ix_staged_resource_ancestor_anc_dist_desc"),
+    ("ix_stagedresource_monitor_config_resource_type_consent", "ix_stagedresource_monitor_config_resource_type_consent"),
+    ("ix_stagedresource_system_vendor_consent", "ix_stagedresource_system_vendor_consent"),
+    ("idx_stagedresource_user_categories_gin", "idx_stagedresource_user_categories_gin"),
+    ("idx_stagedresource_classifications_gin", "idx_stagedresource_classifications_gin"),
+    ("ix_stagedresource_monitor_leaf_status_urn", "ix_stagedresource_monitor_leaf_status_urn"),
+    ("ix_stagedresource_leaf_true_monitor_status_urn", "ix_stagedresource_leaf_true_monitor_status_urn"),
 ]
 
 
@@ -126,15 +135,55 @@ def upgrade() -> None:
     )
 
     # Pre-register all existing deferred index entries whose migrations predate this change.
-    # These indexes predate the new completed_at semantics, so we explicitly set
-    # completed_at = now() to preserve current behavior.
-    values_clause = ", ".join(
-        f"('{key}', 'index', now())" for key in EXISTING_INDEX_KEYS
-    )
-    op.execute(
-        f"INSERT INTO post_upgrade_background_migration_tasks (key, task_type, completed_at) "
-        f"VALUES {values_clause} ON CONFLICT (task_type, key) DO NOTHING"
-    )
+    # Only mark completed_at = now() for keys whose objects actually exist in Postgres.
+    # Keys whose objects don't exist yet are inserted with completed_at = NULL so
+    # the background index-creation script will pick them up.
+
+    # First check which catalog_names actually exist as indexes/constraints in the DB
+    conn = op.get_bind()
+    catalog_names = [catalog_name for _, catalog_name in PRE_MIGRATION_INDEX_KEYS]
+    rows = conn.execute(
+        sa.text(
+            "SELECT indexname AS name FROM pg_indexes WHERE indexname = ANY(:keys) "
+            "UNION "
+            "SELECT conname AS name FROM pg_constraint WHERE conname = ANY(:keys)"
+        ),
+        {"keys": catalog_names},
+    ).fetchall()
+    existing_catalog_names = {row[0] for row in rows}
+
+    # Split into existing (completed) and missing (need background creation)
+    existing_keys = [
+        key for key, catalog_name in PRE_MIGRATION_INDEX_KEYS
+        if catalog_name in existing_catalog_names
+    ]
+    missing_keys = [
+        key for key, catalog_name in PRE_MIGRATION_INDEX_KEYS
+        if catalog_name not in existing_catalog_names
+    ]
+
+    # Insert keys for objects that already exist, marked as completed
+    if existing_keys:
+        values_clause = ", ".join(
+            f"('{key}', 'index', now())" for key in existing_keys
+        )
+        op.execute(
+            f"INSERT INTO post_upgrade_background_migration_tasks (key, task_type, completed_at) "
+            f"VALUES {values_clause} ON CONFLICT (task_type, key) DO NOTHING"
+        )
+
+    # Insert keys for objects that don't exist yet, with completed_at = NULL
+    if missing_keys:
+        logger.warning(
+            f"Missing expected indexes {missing_keys}. They will be created in the background."
+        )
+        values_clause = ", ".join(
+            f"('{key}', 'index', NULL)" for key in missing_keys
+        )
+        op.execute(
+            f"INSERT INTO post_upgrade_background_migration_tasks (key, task_type, completed_at) "
+            f"VALUES {values_clause} ON CONFLICT (task_type, key) DO NOTHING"
+        )
 
 
 def downgrade() -> None:
