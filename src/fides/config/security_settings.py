@@ -180,6 +180,13 @@ class SecuritySettings(FidesSettings):
         description="The timeout in seconds for tunnel connection (open_channel timeout)",
     )
 
+    @field_validator("domain_validation_mode", mode="before")
+    @classmethod
+    def lowercase_domain_validation_mode(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
     @field_validator("app_encryption_key", mode="before")
     @classmethod
     def validate_encryption_key_length(
