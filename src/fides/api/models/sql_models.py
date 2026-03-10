@@ -39,18 +39,23 @@ from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Case
 from sqlalchemy.sql.sqltypes import DateTime
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 from typing_extensions import Protocol, runtime_checkable
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.db.base_class import FidesBase as FideslibBase
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.rbac import (
+    RBACConstraint,
+    RBACConstraintRole,
+    RBACPermission,
+    RBACRole,
+    RBACRolePermission,
+    RBACUserRole,
+)
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.util.taxonomy_utils import find_undeclared_categories
 from fides.config import get_config
@@ -474,31 +479,16 @@ class Organization(Base, FidesBase):
 
     organization_parent_key = Column(String, nullable=True)
     controller = Column(
-        StringEncryptedType(
-            JSONTypeOverride,
-            CONFIG.security.app_encryption_key,
-            AesGcmEngine,
-            "pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
         nullable=True,
     )
     data_protection_officer = Column(
-        StringEncryptedType(
-            JSONTypeOverride,
-            CONFIG.security.app_encryption_key,
-            AesGcmEngine,
-            "pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
         nullable=True,
     )
     fidesctl_meta = Column(JSON)
     representative = Column(
-        StringEncryptedType(
-            JSONTypeOverride,
-            CONFIG.security.app_encryption_key,
-            AesGcmEngine,
-            "pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
         nullable=True,
     )
     security_policy = Column(String, nullable=True)
@@ -857,6 +847,12 @@ sql_model_map: Dict = {
     "policy": PolicyCtl,
     "system": System,
     "evaluation": Evaluation,
+    "rbac_role": RBACRole,
+    "rbac_permission": RBACPermission,
+    "rbac_role_permission": RBACRolePermission,
+    "rbac_user_role": RBACUserRole,
+    "rbac_constraint": RBACConstraint,
+    "rbac_constraint_role": RBACConstraintRole,
 }
 
 

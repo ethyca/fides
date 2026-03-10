@@ -14,13 +14,13 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     CustomConnectorTemplateLoader,
     FileConnectorTemplateLoader,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CLIENT_READ,
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTOR_TEMPLATES_CONFIG,
     CONNECTOR_TEMPLATES_DATASET,
     CONNECTOR_TEMPLATES_REGISTER,
