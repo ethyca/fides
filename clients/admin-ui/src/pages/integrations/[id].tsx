@@ -142,7 +142,8 @@ const IntegrationDetailView: NextPage = () => {
 
   const supportsSystemLinking =
     connection?.connection_type !== ConnectionType.WEBSITE &&
-    connection?.connection_type !== ConnectionType.MANUAL_TASK;
+    connection?.connection_type !== ConnectionType.MANUAL_TASK &&
+    connection?.connection_type !== ConnectionType.JIRA_TICKET;
 
   const tabs = useFeatureBasedTabs({
     connection,
