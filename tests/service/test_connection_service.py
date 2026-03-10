@@ -1833,28 +1833,27 @@ class TestConnectionService:
                 f"collections={collection_names}"
             )
 
-        # Clean up created test resources (CtlDataset must be deleted explicitly
-        # since it is not cascade-deleted when ConnectionConfig is removed)
+        # Clean up created test resources. DatasetConfig must be deleted before
+        # CtlDataset because datasetconfig.ctl_dataset_id has a NOT NULL constraint.
         for suffix in ("alpha", "beta"):
             instance_key = f"multi_config_{suffix}"
             dataset_config = DatasetConfig.filter(
                 db=db,
                 conditions=(DatasetConfig.fides_key == instance_key),
             ).first()
-            if dataset_config and dataset_config.ctl_dataset_id:
-                ctl_dataset = (
-                    db.query(CtlDataset)
-                    .filter(CtlDataset.id == dataset_config.ctl_dataset_id)
-                    .first()
-                )
-                if ctl_dataset:
-                    db.delete(ctl_dataset)
-                    db.commit()
+            ctl_dataset_id = dataset_config.ctl_dataset_id if dataset_config else None
             connection_config = ConnectionConfig.get_by(
                 db, field="key", value=f"multi_config_connection_{suffix}"
             )
             if connection_config:
                 connection_config.delete(db)
+            if ctl_dataset_id:
+                ctl_dataset = (
+                    db.query(CtlDataset).filter(CtlDataset.id == ctl_dataset_id).first()
+                )
+                if ctl_dataset:
+                    db.delete(ctl_dataset)
+                    db.commit()
         stored_template = SaasTemplateDataset.get_by(
             db, field="connection_type", value=connector_type
         )
