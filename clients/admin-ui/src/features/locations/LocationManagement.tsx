@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  Box,
-  SimpleGrid,
-  Text,
-  useDisclosure,
-  useToast,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraSimpleGrid as SimpleGrid,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
   WarningIcon,
 } from "fidesui";
 import _ from "lodash";

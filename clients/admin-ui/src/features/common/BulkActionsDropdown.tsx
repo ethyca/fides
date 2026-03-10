@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntMenuProps as MenuProps,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Icons, MenuProps } from "fidesui";
 import React from "react";
 
 interface BulkActionsDropdownProps {

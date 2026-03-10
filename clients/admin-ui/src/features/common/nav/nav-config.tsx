@@ -6,7 +6,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import * as routes from "./routes";
 
-export type NavConfigRoute = {
+export interface NavConfigRoute {
   title?: string;
   path: string;
   exact?: boolean;
@@ -24,13 +24,13 @@ export type NavConfigRoute = {
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
   routes?: NavConfigRoute[];
-};
+}
 
-export type NavConfigGroup = {
+export interface NavConfigGroup {
   title: string;
   icon: ReactNode;
   routes: NavConfigRoute[];
-};
+}
 
 export const NAV_CONFIG: NavConfigGroup[] = [
   {
@@ -53,29 +53,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Action center",
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresAnyFlag: ["webMonitor", "heliosV2"],
         requiresPlus: true,
-      },
-      {
-        title: "Activity",
-        path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidesIfFlag: "heliosV2",
-      },
-      {
-        title: "Data detection",
-        path: routes.DATA_DETECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidesIfFlag: "heliosV2",
-      },
-      {
-        title: "Data discovery",
-        path: routes.DATA_DISCOVERY_ROUTE,
-        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
-        requiresPlus: true,
-        hidesIfFlag: "heliosV2",
       },
       {
         title: "Data catalog",
@@ -115,8 +93,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Reporting",
+        title: "Data map report",
         path: routes.REPORTING_DATAMAP_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.DATAMAP_READ],
+      },
+      {
+        title: "Asset report",
+        path: routes.REPORTING_ASSETS_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.DATAMAP_READ],
       },
@@ -137,20 +121,22 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Request manager (new)",
-        path: routes.PRIVACY_REQUESTS_ROUTE_NEW,
-        requiresFlag: "privacyRequestV2",
-        scopes: [
-          ScopeRegistryEnum.PRIVACY_REQUEST_READ,
-          ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
-          ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
-          ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
-        ],
+        title: "Policies",
+        path: routes.POLICIES_ROUTE,
+        requiresFlag: "alphaPolicies",
+        scopes: [ScopeRegistryEnum.POLICY_READ],
       },
+    ],
+  },
+  {
+    title: "Privacy assessments",
+    icon: <Icons.Document />,
+    routes: [
       {
-        title: "Connection manager",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
+        title: "Assessments",
+        path: routes.PRIVACY_ASSESSMENTS_ROUTE,
+        scopes: [],
+        requiresFlag: "alphaDataProtectionAssessments",
       },
     ],
   },
@@ -177,7 +163,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [ScopeRegistryEnum.PRIVACY_EXPERIENCE_READ],
       },
       {
-        title: "Consent reporting",
+        title: "Consent report",
         path: routes.CONSENT_REPORTING_ROUTE,
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
@@ -185,44 +171,17 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     ],
   },
   {
-    title: "Settings",
-    icon: <Icons.Settings />,
+    title: "Core configuration",
+    icon: <Icons.WorkflowAutomation />,
     routes: [
       {
-        title: "Properties",
-        path: routes.PROPERTIES_ROUTE,
-        requiresPlus: true,
-        scopes: [ScopeRegistryEnum.PROPERTY_READ],
-      },
-      {
-        title: "Notifications",
-        path: routes.NOTIFICATIONS_ROUTE,
+        title: "Taxonomy",
+        path: routes.TAXONOMY_ROUTE,
         scopes: [
-          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
-          ScopeRegistryEnum.DIGEST_CONFIG_READ,
-          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
+          ScopeRegistryEnum.DATA_USE_READ,
+          ScopeRegistryEnum.DATA_CATEGORY_READ,
+          ScopeRegistryEnum.DATA_SUBJECT_READ,
         ],
-      },
-      {
-        title: "Privacy requests",
-        path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
-        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
-      },
-      {
-        title: "Users",
-        path: routes.USER_MANAGEMENT_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.USER_UPDATE,
-          ScopeRegistryEnum.USER_CREATE,
-          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
-          ScopeRegistryEnum.USER_READ,
-        ],
-      },
-      {
-        title: "User Detail",
-        path: routes.USER_DETAIL_ROUTE,
-        hidden: true, // Don't show in nav but allow access
-        scopes: [], // Any authenticated user can access their own profile
       },
       {
         title: "Integrations",
@@ -238,13 +197,49 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Organization",
-        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
+        title: "Notifications",
+        path: routes.NOTIFICATIONS_ROUTE,
         scopes: [
-          ScopeRegistryEnum.ORGANIZATION_READ,
-          ScopeRegistryEnum.ORGANIZATION_UPDATE,
+          ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE,
+          ScopeRegistryEnum.DIGEST_CONFIG_READ,
+          ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
         ],
       },
+      {
+        title: "Custom fields",
+        path: routes.CUSTOM_FIELDS_ROUTE,
+        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
+        requiresPlus: true,
+      },
+      {
+        title: "Properties",
+        path: routes.PROPERTIES_ROUTE,
+        requiresPlus: true,
+        scopes: [ScopeRegistryEnum.PROPERTY_READ],
+      },
+      {
+        title: "Domain verification",
+        path: routes.DOMAIN_RECORDS_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: true,
+        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
+      },
+      {
+        title: "Domains",
+        path: routes.DOMAIN_MANAGEMENT_ROUTE,
+        requiresPlus: true,
+        requiresFidesCloud: false,
+        scopes: [
+          ScopeRegistryEnum.CONFIG_READ,
+          ScopeRegistryEnum.CONFIG_UPDATE,
+        ],
+      },
+    ],
+  },
+  {
+    title: "Compliance",
+    icon: <Icons.RuleDraft />,
+    routes: [
       {
         title: "Locations",
         path: routes.LOCATIONS_ROUTE,
@@ -263,43 +258,46 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
         requiresPlus: true,
       },
+    ],
+  },
+  {
+    title: "Settings",
+    icon: <Icons.Settings />,
+    routes: [
       {
-        title: "Taxonomy",
-        path: routes.TAXONOMY_ROUTE,
+        title: "Privacy requests",
+        path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
+      },
+      {
+        title: "Users",
+        path: routes.USER_MANAGEMENT_ROUTE,
         scopes: [
-          ScopeRegistryEnum.DATA_USE_READ,
-          ScopeRegistryEnum.DATA_CATEGORY_READ,
-          ScopeRegistryEnum.DATA_SUBJECT_READ,
+          ScopeRegistryEnum.USER_UPDATE,
+          ScopeRegistryEnum.USER_CREATE,
+          ScopeRegistryEnum.USER_PERMISSION_UPDATE,
+          ScopeRegistryEnum.USER_READ,
         ],
       },
       {
-        title: "Custom fields",
-        path: routes.CUSTOM_FIELDS_ROUTE,
-        scopes: [ScopeRegistryEnum.CUSTOM_FIELD_READ],
-        requiresPlus: true,
+        title: "User detail",
+        path: routes.USER_DETAIL_ROUTE,
+        hidden: true, // Don't show in nav but allow access
+        scopes: [], // Any authenticated user can access their own profile
+      },
+      {
+        title: "Organization",
+        path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.ORGANIZATION_READ,
+          ScopeRegistryEnum.ORGANIZATION_UPDATE,
+        ],
       },
       {
         title: "Email templates",
         path: routes.EMAIL_TEMPLATES_ROUTE,
         requiresOss: true,
         scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
-      },
-      {
-        title: "Domain verification",
-        path: routes.DOMAIN_RECORDS_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: true,
-        scopes: [ScopeRegistryEnum.FIDES_CLOUD_CONFIG_READ],
-      },
-      {
-        title: "Domains",
-        path: routes.DOMAIN_MANAGEMENT_ROUTE,
-        requiresPlus: true,
-        requiresFidesCloud: false,
-        scopes: [
-          ScopeRegistryEnum.CONFIG_READ,
-          ScopeRegistryEnum.CONFIG_UPDATE,
-        ],
       },
       {
         title: "Consent",
@@ -342,6 +340,17 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
     icon: <Icons.Code />,
     routes: [
       {
+        title: "Prompt Explorer",
+        path: routes.PROMPT_EXPLORER_ROUTE,
+        scopes: [ScopeRegistryEnum.DEVELOPER_READ],
+        requiresPlus: true,
+      },
+      {
+        title: "Test Monitors",
+        path: routes.TEST_MONITORS_ROUTE,
+        scopes: [ScopeRegistryEnum.DEVELOPER_READ],
+      },
+      {
         title: "Ant Design POC",
         path: routes.ANT_POC_ROUTE,
         scopes: [],
@@ -361,19 +370,24 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         path: routes.TABLE_MIGRATION_POC_ROUTE,
         scopes: [],
       },
+      {
+        title: "Error Test",
+        path: routes.ERRORS_POC_ROUTE,
+        scopes: [],
+      },
     ],
   });
 }
 
-export type NavGroupChild = {
+export interface NavGroupChild {
   title: string;
   path: string;
   exact?: boolean;
   hidden?: boolean;
   children: Array<NavGroupChild>;
-};
+}
 
-export type NavGroup = {
+export interface NavGroup {
   /**
    * Title of the group. Displayed as an accordion in MainSideNav.
    */
@@ -387,7 +401,7 @@ export type NavGroup = {
    * Icon to display in the accordion header
    */
   icon: React.ReactNode;
-};
+}
 
 /** If all routes in the group require plus and plus is not running then return true */
 const navAllGroupReqsPlus = (group: NavConfigGroup, hasPlus: boolean) => {
@@ -579,7 +593,9 @@ export const configureNavGroups = ({
   return navGroups;
 };
 
-export type ActiveNav = NavGroup & { path?: string };
+export interface ActiveNav extends NavGroup {
+  path?: string;
+}
 
 export const findActiveNav = ({
   navGroups,

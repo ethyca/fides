@@ -121,7 +121,7 @@ class TestAddAuthentication:
             )
         assert (
             str(exc.value)
-            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_client_credentials_connector"
+            == "Missing required secret(s) 'client_id, client_secret' for oauth2_client_credentials_connector"
         )
 
     # access token expired, call refresh request
@@ -332,5 +332,5 @@ class TestAccessTokenRequest:
             )
         assert (
             str(exc.value)
-            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_client_credentials_connector"
+            == "Missing required secret(s) 'client_id, client_secret' for oauth2_client_credentials_connector"
         )

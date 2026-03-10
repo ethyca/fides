@@ -9,19 +9,19 @@ import {
   PatchAccessManualWebhookRequest,
 } from "datastore-connections/types";
 import {
-  AntButton as Button,
-  AntTooltip as Tooltip,
-  Box,
-  Center,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Spinner,
-  useDisclosure,
-  VStack,
+  Button,
+  ChakraBox as Box,
+  ChakraCenter as Center,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraSpinner as Spinner,
+  ChakraVStack as VStack,
+  Tooltip,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import React, { useEffect, useRef, useState } from "react";
 

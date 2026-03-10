@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, Optional, cast
 
 from pydantic import ConfigDict, Field
@@ -13,15 +13,15 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
-from fides.api.request_context import get_user_id
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.policy import ActionType
 
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 # ------------------------------------------------------------
 
 
-class ManualTaskExecutionTiming(str, Enum):
+class ManualTaskExecutionTiming(StrEnum):
     """Enum for when a manual task should be executed in the privacy request DAG."""
 
     pre_execution = "pre_execution"  # Execute before the main DAG
@@ -43,14 +43,14 @@ class ManualTaskExecutionTiming(str, Enum):
     parallel = "parallel"  # Execute in parallel with the main DAG
 
 
-class ManualTaskType(str, Enum):
+class ManualTaskType(StrEnum):
     """Enum for manual task types."""
 
     privacy_request = "privacy_request"
-    # Add more task types as needed
+    jira_ticket = "jira_ticket"
 
 
-class ManualTaskParentEntityType(str, Enum):
+class ManualTaskParentEntityType(StrEnum):
     """Enum for manual task parent entity types."""
 
     connection_config = (
@@ -59,14 +59,14 @@ class ManualTaskParentEntityType(str, Enum):
     # Add more parent entity types as needed
 
 
-class ManualTaskEntityType(str, Enum):
+class ManualTaskEntityType(StrEnum):
     """Enum for manual task entity types."""
 
     privacy_request = "privacy_request"
     # Add more entity types as needed
 
 
-class ManualTaskReferenceType(str, Enum):
+class ManualTaskReferenceType(StrEnum):
     """Enum for manual task reference types."""
 
     privacy_request = "privacy_request"
@@ -76,28 +76,7 @@ class ManualTaskReferenceType(str, Enum):
     # Add more reference types as needed
 
 
-class ManualTaskLogStatus(str, Enum):
-    """Enum for manual task log status."""
-
-    created = "created"
-    updated = "updated"
-    in_progress = "in_progress"
-    complete = "complete"
-    error = "error"
-    retrying = "retrying"
-    paused = "paused"
-    awaiting_input = "awaiting_input"
-
-
-class ManualTaskConfigurationType(str, Enum):
-    """Enum for manual task configuration types."""
-
-    access_privacy_request = "access_privacy_request"
-    erasure_privacy_request = "erasure_privacy_request"
-    # Add more configuration types as needed
-
-
-class ManualTaskFieldType(str, Enum):
+class ManualTaskFieldType(StrEnum):
     """Enum for manual task field types."""
 
     text = "text"  # Key-value pairs
@@ -106,7 +85,7 @@ class ManualTaskFieldType(str, Enum):
     # Add more field types as needed
 
 
-class StatusType(str, Enum):
+class StatusType(StrEnum):
     """Enum for manual task status."""
 
     pending = "pending"
@@ -220,12 +199,6 @@ class ManualTask(Base):
         uselist=True,
         cascade="all, delete-orphan",
     )
-    logs = relationship(
-        "ManualTaskLog",
-        back_populates="task",
-        primaryjoin="and_(ManualTask.id == ManualTaskLog.task_id)",
-        order_by="ManualTaskLog.created_at",
-    )
     configs = relationship(
         "ManualTaskConfig",
         back_populates="task",
@@ -263,21 +236,6 @@ class ManualTask(Base):
             for ref in self.references
             if ref.reference_type == ManualTaskReferenceType.assigned_user
         ]
-
-    # CRUD Operations
-    @classmethod
-    def create(
-        cls, db: Session, *, data: dict[str, Any], check_name: bool = True
-    ) -> "ManualTask":
-        """Create a new manual task."""
-        task = super().create(db=db, data=data, check_name=check_name)
-        ManualTaskLog.create_log(
-            db=db,
-            task_id=task.id,
-            status=ManualTaskLogStatus.created,
-            message=f"Created manual task for {data['task_type']}",
-        )
-        return task
 
 
 class ManualTaskInstance(Base):
@@ -350,14 +308,6 @@ class ManualTaskInstance(Base):
     submissions = relationship(
         "ManualTaskSubmission",
         back_populates="instance",
-        uselist=True,
-    )
-    logs = relationship(
-        "ManualTaskLog",
-        back_populates="instance",
-        primaryjoin="ManualTaskInstance.id == ManualTaskLog.instance_id",
-        cascade="all, delete-orphan",
-        order_by="ManualTaskLog.created_at",
         uselist=True,
     )
     attachments = relationship(
@@ -456,6 +406,10 @@ class ManualTaskReference(Base):
     """Join table to associate manual tasks with multiple references.
 
     A single task may have many references including privacy requests, configurations, and assigned users.
+
+    When config_field_key is NULL, the reference applies to the entire task.
+    When config_field_key is set, the reference applies only to that specific field.
+    This enables field-level user assignments.
     """
 
     @declared_attr
@@ -486,9 +440,18 @@ class ManualTaskReference(Base):
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(ManualTaskReferenceType), nullable=False)
 
+    # Optional field key - when set, reference applies to field only
+    # This stores the field_key string rather than the config_field_id UUID
+    config_field_key = Column(
+        String,
+        nullable=True,
+        index=True,
+    )
+
     __table_args__ = (
         Index("ix_manual_task_reference_reference", "reference_id", "reference_type"),
         Index("ix_manual_task_reference_task_id", "task_id"),
+        Index("ix_manual_task_reference_config_field_key", "config_field_key"),
     )
 
     # Relationships
@@ -529,13 +492,16 @@ class ManualTaskConfig(Base):
         ),
         nullable=True,
     )
-    config_type = Column(EnumColumn(ManualTaskConfigurationType), nullable=False)
+    config_type = Column(EnumColumn(ActionType), nullable=False)
     version = Column(Integer, nullable=False, default=1)
     is_current = Column(Boolean, nullable=False, default=True)
     execution_timing = Column(
         EnumColumn(ManualTaskExecutionTiming),
         nullable=False,
         default=ManualTaskExecutionTiming.pre_execution,
+    )
+    property_ids = Column(
+        ARRAY(String), nullable=False, server_default="{}", default=list
     )
 
     __table_args__ = (
@@ -563,37 +529,21 @@ class ManualTaskConfig(Base):
         cascade="all, delete-orphan",
         uselist=True,
     )
-    logs = relationship(
-        "ManualTaskLog",
-        back_populates="config",
-        primaryjoin="ManualTaskConfig.id == ManualTaskLog.config_id",
-        cascade="all, delete-orphan",
-    )
 
     @classmethod
     def create(
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfig":
         """Create a new manual task configuration."""
-        # Validate config_type
+        # Validate config_type - must be a valid ActionType
         try:
-            ManualTaskConfigurationType(data["config_type"])
+            ActionType(data["config_type"])
         except ValueError:
             raise ValueError(f"Invalid config type: {data['config_type']}")
 
         config = super().create(db=db, data=data, check_name=check_name)
 
         # Log the config creation as a task-level log
-        ManualTaskLog.create_log(
-            db=db,
-            task_id=data["task_id"],
-            config_id=config.id,
-            status=ManualTaskLogStatus.created,
-            message=f"Created manual task configuration for {data['config_type']}",
-            details={
-                "config_type": data["config_type"],
-            },
-        )
         return config
 
     def get_field(self, field_key: str) -> Optional["ManualTaskConfigField"]:
@@ -652,6 +602,12 @@ class ManualTaskConfigField(Base):
     field_metadata: dict[str, Any] = cast(
         dict[str, Any], Column(JSONB, nullable=False, default={})
     )
+    # Field-level execution timing override. When NULL, uses config's execution_timing.
+    execution_timing = Column(
+        EnumColumn(ManualTaskExecutionTiming),
+        nullable=True,
+        default=None,
+    )
 
     __table_args__ = (
         UniqueConstraint("config_id", "field_key", name="unique_field_key_per_config"),
@@ -671,9 +627,9 @@ class ManualTaskConfigField(Base):
     @property
     def field_metadata_model(self) -> ManualTaskFieldMetadata:
         """Get the field metadata as a Pydantic model."""
-        assert isinstance(
-            self.field_metadata, dict
-        ), "field_metadata must be a dictionary"
+        assert isinstance(self.field_metadata, dict), (
+            "field_metadata must be a dictionary"
+        )
         return ManualTaskFieldMetadata.model_validate(self.field_metadata)
 
     @classmethod
@@ -681,7 +637,7 @@ class ManualTaskConfigField(Base):
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
-        # Get the config to access its task_id and check if it exists
+        # Get the config to check if it exists
         config = (
             db.query(ManualTaskConfig)
             .filter(ManualTaskConfig.id == data["config_id"])
@@ -692,16 +648,6 @@ class ManualTaskConfigField(Base):
 
         # Create the field and let SQLAlchemy complex type validation handled in service.
         field = super().create(db=db, data=data, check_name=check_name)
-
-        # Create a log entry
-        if config.task_id:
-            ManualTaskLog.create_log(
-                db=db,
-                task_id=config.task_id,
-                config_id=data["config_id"],
-                status=ManualTaskLogStatus.created,
-                message=f"Created manual task config field for {data['field_key']}",
-            )
         return field
 
 
@@ -817,11 +763,12 @@ class ManualTaskSubmission(Base):
 
     def delete(self, db: Session) -> None:
         """Delete the submission and all associated attachments."""
-        from fides.api.models.attachment import Attachment, AttachmentReferenceType
+        from fides.api.models.attachment import AttachmentReferenceType
+        from fides.service.attachment_service import AttachmentService
 
         # Delete attachments associated with this submission
-        Attachment.delete_attachments_for_reference_and_type(
-            db, self.id, AttachmentReferenceType.manual_task_submission
+        AttachmentService(db).delete_for_reference(
+            self.id, AttachmentReferenceType.manual_task_submission
         )
         # Delete the submission itself
         db.delete(self)
@@ -851,134 +798,3 @@ class ManualTaskSubmission(Base):
 
         for submission in submissions:
             submission.delete(db)
-
-
-class ManualTaskLog(Base):
-    """Model for storing manual task execution logs."""
-
-    @declared_attr
-    def __tablename__(cls) -> str:
-        """Overriding base class method to set the table name."""
-        return "manual_task_log"
-
-    # redefined here because there's a minor, unintended discrepancy between
-    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
-    # TODO: we likely should _not_ be setting `index=True` on the `id`
-    # attribute of the `Base` class, as `primary_key=True` already specifies a
-    # primary key constraint, which will implicitly create an index for the field.
-    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
-    created_at = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        nullable=False,
-    )
-
-    task_id = Column(
-        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
-    )
-    config_id = Column(
-        String, ForeignKey("manual_task_config.id", ondelete="CASCADE"), nullable=True
-    )
-    instance_id = Column(
-        String,
-        ForeignKey("manual_task_instance.id", ondelete="CASCADE"),
-        nullable=True,
-    )
-    # The user responsible for the action being logged.  This may be `None`
-    # for system-initiated events or for legacy records created before this
-    # column existed.
-    user_id = Column(String, nullable=True, index=True)
-    status = Column(String, nullable=False)
-    message = Column(String, nullable=True)
-    details = Column(JSONB, nullable=True)
-
-    __table_args__ = (
-        Index("ix_manual_task_log_config_id", "config_id"),
-        Index("ix_manual_task_log_created_at", "created_at"),
-        Index("ix_manual_task_log_instance_id", "instance_id"),
-        Index("ix_manual_task_log_status", "status"),
-        Index("ix_manual_task_log_task_id", "task_id"),
-        Index("ix_manual_task_log_user_id", "user_id"),
-    )
-
-    # Relationships
-    task = relationship("ManualTask", back_populates="logs", foreign_keys=[task_id])
-    config = relationship(
-        "ManualTaskConfig",
-        back_populates="logs",
-        foreign_keys=[config_id],
-    )
-    instance = relationship("ManualTaskInstance", back_populates="logs")
-
-    @classmethod
-    def create_log(
-        cls,
-        db: Session,
-        task_id: str,
-        status: "ManualTaskLogStatus",
-        message: str,
-        user_id: Optional[str] = None,
-        config_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None,
-    ) -> "ManualTaskLog":
-        """Create a new task log entry.
-
-        Args:
-            db: Database session
-            task_id: ID of the task
-            status: Status of the log entry
-            message: Optional message describing the event
-            details: Optional additional details about the event
-        """
-
-        data = {
-            "task_id": task_id,
-            "config_id": config_id,
-            "instance_id": instance_id,
-            "user_id": user_id or get_user_id(),
-            "status": status,
-            "message": message,
-            "details": details,
-        }
-        return cls.create(db=db, data=data)
-
-    @classmethod
-    def create_error_log(
-        cls,
-        db: Session,
-        task_id: str,
-        message: str,
-        user_id: Optional[str] = None,
-        config_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
-        details: Optional[dict[str, Any]] = None,
-    ) -> "ManualTaskLog":
-        """Create a new error log entry.
-
-        Args:
-            db: Database session
-            task_id: ID of the task
-            message: Error message describing what went wrong
-            config_id: Optional ID of the configuration
-            instance_id: Optional ID of the instance
-            details: Optional additional details about the error
-
-        Returns:
-            The created error log entry
-        """
-
-        return cls.create_log(
-            db=db,
-            status=ManualTaskLogStatus.error,
-            task_id=task_id,
-            config_id=config_id,
-            instance_id=instance_id,
-            user_id=user_id or get_user_id(),
-            message=message,
-            details=details,
-        )

@@ -1,9 +1,4 @@
-import {
-  AntForm as Form,
-  AntTypography as Typography,
-  isoCodesToOptions,
-  LocationSelect,
-} from "fidesui";
+import { Form, isoCodesToOptions, LocationSelect, Typography } from "fidesui";
 import { useFormikContext } from "formik";
 
 import { useFeatures } from "~/features/common/features";

@@ -43,7 +43,7 @@ describe("User management", () => {
       it("can access their own profile but not their permissions", () => {
         cy.visit("/user-management");
         cy.wait("@getAllUsers");
-        cy.getByTestId(`row-${CYPRESS_USER_ID}`).click();
+        cy.getByTestId(`user-link-${CYPRESS_USER_ID}`).click();
         cy.url().should(
           "contain",
           `/user-management/profile/${CYPRESS_USER_ID}`,
@@ -69,7 +69,7 @@ describe("User management", () => {
         cy.wait("@getAllUsers");
 
         // try via clicking the row
-        cy.getByTestId(`row-${USER_1_ID}`).click();
+        cy.getByTestId(`user-link-${USER_1_ID}`).click();
         cy.url().should("not.contain", "profile");
         // should still be on the table view
         cy.getByTestId("user-management-table");
@@ -96,12 +96,12 @@ describe("User management", () => {
       cy.visit("/user-management");
       cy.wait("@getAllUsers");
       const numUsers = 4;
-      cy.getByTestId("user-management-table")
-        .find("tbody > tr")
-        .then((rows) => {
-          expect(rows.length).to.eql(numUsers);
-        })
-        .first();
+      cy.getByTestId("user-management-table").within(() => {
+        cy.get("tbody > tr:not(.ant-table-measure-row)").should(
+          "have.length",
+          numUsers,
+        );
+      });
       cy.getByTestId("user-systems-badge");
       cy.contains("4");
     });

@@ -2,6 +2,7 @@ import { baseApi } from "~/features/common/api.slice";
 import { ConditionGroup, ManualTaskResponse } from "~/types/api";
 
 import { PLUS_CONNECTION_API_ROUTE } from "../../constants";
+import { PrivacyRequestFieldsResponse } from "../integrations/configure-tasks/types";
 
 export const connectionManualTasksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -38,6 +39,17 @@ export const connectionManualTasksApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Manual Tasks"],
     }),
+
+    getPrivacyRequestFields: build.query<
+      PrivacyRequestFieldsResponse,
+      { connectionKey: string }
+    >({
+      query: ({ connectionKey }) => ({
+        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-task/dependency-conditions/privacy-request-fields`,
+        method: "GET",
+      }),
+      providesTags: () => ["Allowed Conditions Fields"],
+    }),
   }),
 });
 
@@ -45,4 +57,5 @@ export const {
   useGetManualTaskConfigQuery,
   useAssignUsersToManualTaskMutation,
   useUpdateDependencyConditionsMutation,
+  useGetPrivacyRequestFieldsQuery,
 } = connectionManualTasksApi;

@@ -1,4 +1,4 @@
-import { AntFlex as Flex, AntImage as Image, AntText as Text } from "fidesui";
+import { Flex, Image, Text } from "fidesui";
 import React from "react";
 
 const RequestSubmitted = () => (

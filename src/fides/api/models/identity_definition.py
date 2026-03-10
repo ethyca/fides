@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, StrEnum
 
 from sqlalchemy import Boolean, Column, String, Text
 from sqlalchemy.ext.declarative import declared_attr
@@ -7,7 +7,7 @@ from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 
 
-class IdentityDefinitionType(str, Enum):
+class IdentityDefinitionType(StrEnum):
     """Enum for the type of identity"""
 
     EMAIL = "email"

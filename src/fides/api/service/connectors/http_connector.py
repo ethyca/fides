@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 from loguru import logger
@@ -17,6 +17,7 @@ from fides.api.schemas.connection_configuration import HttpsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row
+from fides.api.util.logger import Pii
 
 
 class HTTPSConnector(BaseConnector[None]):
@@ -40,10 +41,12 @@ class HTTPSConnector(BaseConnector[None]):
         self,
         request_body: Dict[str, Any],
         response_expected: bool,
-        additional_headers: Dict[str, Any] = {},
+        additional_headers: Dict[str, str] = {},
     ) -> Optional[Dict[str, Any]]:
         """Calls a client-defined endpoint and returns the data that it responds with"""
         config = HttpsSchema(**self.configuration.secrets or {})
+
+        headers = (config.headers or {}) | additional_headers
 
         def _request_with_oauth() -> requests.Response:
             """Helper function to make a request with OAuth2 authentication"""
@@ -63,14 +66,14 @@ class HTTPSConnector(BaseConnector[None]):
                 )
 
             return session_client.post(
-                url=config.url, headers=additional_headers, json=request_body
+                url=config.url, headers=headers, json=request_body
             )
 
         def _request_without_oauth() -> requests.Response:
             """Helper function to make a request without OAuth2 authentication"""
-            headers = self.build_authorization_header()
-            headers.update(additional_headers)
-            return requests.post(url=config.url, headers=headers, json=request_body)
+            all_headers = self.build_authorization_header()
+            all_headers.update(headers)
+            return requests.post(url=config.url, headers=all_headers, json=request_body)
 
         oauth_config = self.configuration.oauth_config
 
@@ -81,17 +84,31 @@ class HTTPSConnector(BaseConnector[None]):
                 else _request_without_oauth()
             )
 
-            if not response_expected:
-                return {}
-
             if not response.ok:
-                logger.error("Invalid response received from webhook.")
-                raise ClientUnsuccessfulException(status_code=response.status_code)
+                response_text: Union[str, Pii]
+                try:
+                    response_text = Pii(response.text)
+                except Exception as exception:
+                    response_text = (
+                        f"Encountered an error getting response: {exception}"
+                    )
 
-            return json.loads(response.text)
+                logger.error(
+                    f"HTTP Connector received status code: {response.status_code}. {response_text}"
+                )
 
-        except requests.ConnectionError:
-            logger.error("HTTPS client received a connection error.")
+                if response_expected:
+                    raise ClientUnsuccessfulException(status_code=response.status_code)
+
+            logger.info(f"HTTP Connector received status code: {response.status_code}")
+
+            if response_expected:
+                return json.loads(response.text)
+
+            return {}
+
+        except requests.ConnectionError as ex:
+            logger.error(f"HTTPS client received a connection error. {Pii(ex)}")
             raise ClientUnsuccessfulException(
                 status_code=HTTP_500_INTERNAL_SERVER_ERROR
             )

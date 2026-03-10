@@ -1,12 +1,12 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  BoxProps,
-  Text,
+  ChakraAccordion as Accordion,
+  ChakraAccordionButton as AccordionButton,
+  ChakraAccordionIcon as AccordionIcon,
+  ChakraAccordionItem as AccordionItem,
+  ChakraAccordionPanel as AccordionPanel,
+  ChakraBox as Box,
+  ChakraBoxProps as BoxProps,
+  ChakraText as Text,
 } from "fidesui";
 import { Fragment, ReactNode, useState } from "react";
 

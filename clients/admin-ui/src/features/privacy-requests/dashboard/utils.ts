@@ -31,7 +31,7 @@ interface CustomFieldWithKey {
   value: unknown;
 }
 
-interface IdentityValueWithKey extends IdentityValue {
+export interface IdentityValueWithKey extends IdentityValue {
   key: string;
 }
 

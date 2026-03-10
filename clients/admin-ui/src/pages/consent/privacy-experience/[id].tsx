@@ -1,4 +1,9 @@
-import { Center, Flex, Spinner, Text } from "fidesui";
+import {
+  ChakraCenter as Center,
+  ChakraFlex as Flex,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+} from "fidesui";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";

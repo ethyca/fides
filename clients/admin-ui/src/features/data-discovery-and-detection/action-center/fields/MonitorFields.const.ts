@@ -2,11 +2,7 @@ import { CUSTOM_TAG_COLOR, Icons } from "fidesui";
 // TODO: fix this export to be better encapsulated in fidesui
 import palette from "fidesui/src/palette/palette.module.scss";
 
-import {
-  DiffStatus,
-  StagedResourceTypeValue,
-  TreeResourceChangeIndicator,
-} from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 
 export const TREE_PAGE_SIZE = 100;
 export const TREE_NODE_LOAD_MORE_TEXT = "Load more...";
@@ -18,49 +14,53 @@ export const FIELD_PAGE_SIZE = 25;
 export const RESOURCE_STATUS = [
   "Unlabeled",
   "Classifying",
-  "In Review",
+  "Classified",
+  "Reviewed",
+  "Approving",
   "Approved",
-  "Confirming...",
-  "Confirmed",
   "Removed",
   "Ignored",
   "Error",
-  "Removing...",
+  "Removing",
 ] as const;
 
 export type ResourceStatusLabel = (typeof RESOURCE_STATUS)[number];
 
 // Statuses to exclude from filters by default
 export const EXCLUDED_FILTER_STATUSES: ResourceStatusLabel[] = [
-  "Confirmed",
+  "Approved",
   "Ignored",
-  "Confirming...",
-  "Removing...",
+  "Approving",
+  "Removing",
 ];
 
-/**
- * Filter out excluded statuses from a list of statuses.
- */
-export const getFilterableStatuses = (
-  statuses: ResourceStatusLabel[],
-): ResourceStatusLabel[] =>
-  statuses.filter((status) => !EXCLUDED_FILTER_STATUSES.includes(status));
+export const DEFAULT_FILTER_STATUSES: Exclude<
+  ResourceStatusLabel,
+  "Approved" | "Ignored" | "Approving" | "Removing"
+>[] = [
+  "Unlabeled",
+  "Classifying",
+  "Classified",
+  "Reviewed",
+  "Removed",
+  "Error",
+];
 
 export const DIFF_TO_RESOURCE_STATUS: Record<DiffStatus, ResourceStatusLabel> =
   {
     addition: "Unlabeled",
-    approved: "Approved",
-    classification_addition: "In Review",
+    reviewed: "Reviewed",
+    classification_addition: "Classified",
     classification_error: "Error",
     classification_queued: "Classifying",
-    classification_update: "In Review",
+    classification_update: "Classified",
     classifying: "Classifying",
-    monitored: "Confirmed",
+    monitored: "Approved",
     muted: "Ignored",
-    promoting: "Confirming...",
+    promoting: "Approving",
     promotion_error: "Error",
     removal: "Removed",
-    removing: "Removing...",
+    removing: "Removing",
     removal_promotion_error: "Error",
   } as const;
 
@@ -72,30 +72,33 @@ export const MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL: Record<
   }
 > = {
   addition: { label: "Unlabeled" }, // No tag for this status
-  approved: { label: "Approved", color: CUSTOM_TAG_COLOR.SUCCESS },
+  reviewed: { label: "Reviewed", color: CUSTOM_TAG_COLOR.ALERT },
   classification_addition: {
-    label: "In Review",
+    label: "Classified",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
   classification_error: {
     label: "Error",
     color: CUSTOM_TAG_COLOR.ERROR,
   },
-  classification_queued: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
+  classification_queued: {
+    label: "Classifying",
+    color: CUSTOM_TAG_COLOR.INFO,
+  },
   classification_update: {
-    label: "In Review",
+    label: "Classified",
     color: CUSTOM_TAG_COLOR.CAUTION,
   },
   classifying: { label: "Classifying", color: CUSTOM_TAG_COLOR.INFO },
-  monitored: { label: "Confirmed", color: CUSTOM_TAG_COLOR.MINOS },
+  monitored: { label: "Approved", color: CUSTOM_TAG_COLOR.SUCCESS },
   muted: { label: "Ignored", color: CUSTOM_TAG_COLOR.DEFAULT },
-  promoting: { label: "Confirming...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  promoting: { label: "Approving", color: CUSTOM_TAG_COLOR.DEFAULT },
   promotion_error: {
     label: "Error",
     color: CUSTOM_TAG_COLOR.ERROR,
   },
   removal: { label: "Removed", color: CUSTOM_TAG_COLOR.ERROR },
-  removing: { label: "Removing...", color: CUSTOM_TAG_COLOR.DEFAULT },
+  removing: { label: "Removing", color: CUSTOM_TAG_COLOR.DEFAULT },
   removal_promotion_error: {
     label: "Error",
     color: CUSTOM_TAG_COLOR.ERROR,
@@ -112,30 +115,22 @@ export const MAP_DATASTORE_RESOURCE_TYPE_TO_ICON: Partial<
   [StagedResourceTypeValue.TABLE]: Icons.Table,
 } as const;
 
-export const FIELDS_FILTER_SECTION_KEYS = {
-  STATUS: "status-section",
-  DATA_CATEGORY: "data-category-section",
-  CONFIDENCE: "confidence-section",
-} as const;
-
 // Map tree resource change indicator to status info
-export const MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO: Record<
-  TreeResourceChangeIndicator,
-  {
-    color: string;
-    tooltip: string;
-  }
+export const MAP_DIFF_STATUS_TO_STATUS_INFO: Partial<
+  Record<
+    DiffStatus,
+    {
+      color: string;
+      tooltip: string;
+    }
+  >
 > = {
-  [TreeResourceChangeIndicator.ADDITION]: {
+  [DiffStatus.ADDITION]: {
     color: palette.FIDESUI_SUCCESS,
     tooltip: "This resource was added in the latest scan",
   },
-  [TreeResourceChangeIndicator.REMOVAL]: {
+  [DiffStatus.REMOVAL]: {
     color: palette.FIDESUI_ERROR,
     tooltip: "This resource was removed in the latest scan",
-  },
-  [TreeResourceChangeIndicator.CHANGE]: {
-    color: palette.FIDESUI_WARNING,
-    tooltip: "This resource was modified in the latest scan",
   },
 } as const;

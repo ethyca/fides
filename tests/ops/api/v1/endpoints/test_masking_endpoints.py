@@ -21,8 +21,8 @@ from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite i
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fides.common.api.scope_registry import MASKING_EXEC, MASKING_READ
-from fides.common.api.v1.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
+from fides.common.scope_registry import MASKING_EXEC, MASKING_READ
+from fides.common.urn_registry import MASKING, MASKING_STRATEGY, V1_URL_PREFIX
 
 
 class TestGetMaskingStrategies:
@@ -298,9 +298,9 @@ class TestMaskValues:
         )
         assert 200 == response.status_code
         assert response.json()["plain"] == ["check"]
-        assert response.json()["masked_values"] != [
-            rewrite_val
-        ], "Final value is hashed, because that was the last strategy"
+        assert response.json()["masked_values"] != [rewrite_val], (
+            "Final value is hashed, because that was the last strategy"
+        )
 
         switch_order = {
             "values": [value],
@@ -320,9 +320,9 @@ class TestMaskValues:
         )
         assert 200 == response.status_code
         assert response.json()["plain"] == ["check"]
-        assert response.json()["masked_values"] == [
-            rewrite_val
-        ], "Final value is rewrite value, because that was the last strategy specified"
+        assert response.json()["masked_values"] == [rewrite_val], (
+            "Final value is rewrite value, because that was the last strategy specified"
+        )
 
     def test_flexible_config(self, api_client: TestClient, generate_auth_header):
         auth_header = generate_auth_header(scopes=[MASKING_EXEC])

@@ -10,6 +10,7 @@ import {
   PrivacyCenterConfig,
   PrivacyRequestAccessResults,
   PrivacyRequestCreate,
+  PrivacyRequestDiagnosticsExportResponse,
   PrivacyRequestFilter,
   PrivacyRequestNotificationInfo,
   PrivacyRequestStatus,
@@ -116,7 +117,7 @@ interface DateRangeParams {
   to?: string | null;
 }
 
-interface SearchFilterParams
+export interface SearchFilterParams
   extends Partial<PrivacyRequestFilter>,
     Partial<DateRangeParams> {}
 
@@ -375,6 +376,17 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    bulkFinalizeRequest: build.mutation<
+      { succeeded: string[]; failed: any[] },
+      { request_ids: string[] }
+    >({
+      query: (body) => ({
+        url: `privacy-request/bulk/finalize`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Request"],
+    }),
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
       Partial<PrivacyRequestParams>
@@ -565,6 +577,15 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${privacy_request_id}/access-results`,
       }),
     }),
+    getPrivacyRequestDiagnostics: build.query<
+      PrivacyRequestDiagnosticsExportResponse,
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/diagnostics`,
+      }),
+    }),
     getFilteredResults: build.query<
       {
         privacy_request_id: string;
@@ -610,6 +631,7 @@ export const {
   useBulkDenyRequestMutation,
   useBulkRetryMutation,
   useBulkSoftDeleteRequestMutation,
+  useBulkFinalizeRequestMutation,
   useDenyRequestMutation,
   useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,
@@ -627,6 +649,7 @@ export const {
   useCreateStorageSecretsMutation,
   useGetActiveStorageQuery,
   useGetPrivacyRequestAccessResultsQuery,
+  useLazyGetPrivacyRequestDiagnosticsQuery,
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,
   usePostPrivacyRequestFinalizeMutation,

@@ -1,15 +1,15 @@
 import { formatDate } from "common/utils";
 import {
-  AntTag,
-  Box,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
+  ChakraBox as Box,
+  ChakraTable as Table,
+  ChakraTableContainer as TableContainer,
+  ChakraTbody as Tbody,
+  ChakraTd as Td,
+  ChakraText as Text,
+  ChakraTh as Th,
+  ChakraThead as Thead,
+  ChakraTr as Tr,
+  Tag,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import {
@@ -221,9 +221,9 @@ const EventLog = ({
       </Td>
       <Td>
         {ExecutionLogStatusLabels[detail.status] ? (
-          <AntTag color={ExecutionLogStatusColors[detail.status]}>
+          <Tag color={ExecutionLogStatusColors[detail.status]}>
             {ExecutionLogStatusLabels[detail.status]}
-          </AntTag>
+          </Tag>
         ) : (
           <Text
             color="gray.600"

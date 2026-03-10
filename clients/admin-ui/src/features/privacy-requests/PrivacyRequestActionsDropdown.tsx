@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntTooltip as Tooltip,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Icons, Tooltip } from "fidesui";
 import { useMemo } from "react";
 
 import { PrivacyRequestStatus } from "~/types/api";
@@ -11,6 +6,7 @@ import { PrivacyRequestStatus } from "~/types/api";
 import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
 import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
 import useApproveDenyPrivacyRequest from "./hooks/useApproveDenyPrivacyRequest";
+import useDownloadPrivacyRequestDiagnostics from "./hooks/useDownloadPrivacyRequestDiagnostics";
 import useDownloadPrivacyRequestResults from "./hooks/useDownloadPrivacyRequestResults";
 import { useMutations } from "./hooks/useMutations";
 import useReprocessPrivacyRequest from "./hooks/useReprocessPrivacyRequest";
@@ -29,6 +25,12 @@ const PrivacyRequestActionsDropdown = ({
     infoTooltip,
     isDisabled: isDownloadDisabled,
   } = useDownloadPrivacyRequestResults({ privacyRequest });
+
+  const {
+    showDownloadTroubleshootingData,
+    downloadTroubleshootingData,
+    isLoading: isTroubleshootingDownloadLoading,
+  } = useDownloadPrivacyRequestDiagnostics({ privacyRequest });
 
   const {
     isModalOpen: isApproveModalOpen,
@@ -113,12 +115,24 @@ const PrivacyRequestActionsDropdown = ({
       });
     }
 
+    if (showDownloadTroubleshootingData) {
+      menu.push({
+        key: "download-troubleshooting-data",
+        label: "Download troubleshooting data",
+        onClick: downloadTroubleshootingData,
+        disabled: isTroubleshootingDownloadLoading,
+      });
+    }
+
     return menu;
   }, [
     showDownloadResults,
     downloadResults,
     infoTooltip,
     isDownloadDisabled,
+    showDownloadTroubleshootingData,
+    downloadTroubleshootingData,
+    isTroubleshootingDownloadLoading,
     showApproveRequest,
     showDenyRequest,
     openApproveConfirmationModal,

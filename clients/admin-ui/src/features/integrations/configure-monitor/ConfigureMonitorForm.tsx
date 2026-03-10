@@ -1,47 +1,53 @@
-import { format, parseISO } from "date-fns";
-import { AntButton as Button, VStack } from "fidesui";
-import { Form, Formik } from "formik";
+import { skipToken } from "@reduxjs/toolkit/query";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { Button, DatePicker, Form, Input, Select } from "fidesui";
 import { useRouter } from "next/router";
-import * as Yup from "yup";
+import { useEffect, useState } from "react";
 
-import { useFeatures } from "~/features/common/features/features.slice";
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import {
-  CustomDateTimeInput,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { enumToOptions } from "~/features/common/helpers";
-import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
-import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
+import { formatUser } from "~/features/common/utils";
+import {
+  getMonitorType,
+  MONITOR_TYPES,
+} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
+import { useGetSystemByFidesKeyQuery } from "~/features/system";
+import { useGetAllUsersQuery } from "~/features/user-management";
 import {
   ClassifyLlmPromptTemplateOptions,
   ConnectionSystemTypeMap,
   ConnectionType,
   EditableMonitorConfig,
-  MonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
+
+import { START_TIME_TOOLTIP_COPY } from "./ConfigureWebsiteMonitorForm";
+import { FormikSharedConfigSelect } from "./FormikSharedConfigSelect";
+
+dayjs.extend(utc);
 
 interface MonitorConfigFormValues {
   name: string;
   execution_frequency?: MonitorFrequency;
-  execution_start_date: string;
+  execution_start_date: Dayjs;
   shared_config_id?: string;
   use_llm_classifier: boolean;
   llm_model_override?: string;
   prompt_template?: ClassifyLlmPromptTemplateOptions;
   content_classification_enabled?: boolean;
+  stewards?: string[];
 }
 
 const DEFAULT_CLASSIFIER_PARAMS = {
   num_samples: 25,
   num_threads: 1,
-};
+} as const;
 
 const getClassifyParams = (
   isEditing: boolean,
-  monitor: MonitorConfig | undefined,
+  monitor: EditableMonitorConfig | undefined,
   values: MonitorConfigFormValues,
 ) => {
   const baseParams = isEditing
@@ -76,63 +82,51 @@ const getClassifyParams = (
 const ConfigureMonitorForm = ({
   monitor,
   integrationOption,
+  integrationSystem,
   isSubmitting,
   databasesAvailable,
   onClose,
   onAdvance,
   onSubmit,
 }: {
-  monitor?: MonitorConfig;
+  monitor?: EditableMonitorConfig;
   integrationOption: ConnectionSystemTypeMap;
+  integrationSystem?: string | null;
   isSubmitting?: boolean;
   databasesAvailable?: boolean;
   onClose: () => void;
-  onAdvance: (monitor: MonitorConfig) => void;
-  onSubmit: (monitor: MonitorConfig) => void;
+  onAdvance: (monitor: EditableMonitorConfig) => void;
+  onSubmit: (monitor: EditableMonitorConfig) => void;
 }) => {
   const isEditing = !!monitor;
-  const { flags } = useFeatures();
+
+  const isInfrastructureMonitor =
+    getMonitorType(integrationOption.identifier as ConnectionType) ===
+    MONITOR_TYPES.INFRASTRUCTURE;
 
   /**
-   * Feature flag for LLM classifier functionality within action center.
-   * Note: Action center can exist for web monitoring without this feature.
-   * This flag specifically gates the LLM-based classification capabilities.
+   * Show the LLM classifier option if the monitor is not an infrastructure monitor.
+   * Infrastructure monitors (e.g., Okta) don't use classification.
    */
-  const llmClassifierFeatureEnabled = !!flags.heliosV2;
+  const showLLMOption = !isInfrastructureMonitor;
 
-  const { data: appConfig } = useGetConfigurationSettingsQuery(
-    {
-      api_set: false,
-    },
-    { skip: !llmClassifierFeatureEnabled },
-  );
-
-  /**
-   * Server-side LLM classifier capability.
-   * This determines if the backend supports LLM-based classification for monitors.
-   */
-  const serverSupportsLlmClassifier =
-    !!appConfig?.detection_discovery?.llm_classifier_enabled;
+  const [form] = Form.useForm<MonitorConfigFormValues>();
+  const { data: systemData, isLoading: isLoadingSystem } =
+    useGetSystemByFidesKeyQuery(integrationSystem || skipToken);
 
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;
 
-  const validationSchema = Yup.object().shape({
-    name: Yup.string().required().label("Name"),
-    execution_frequency: Yup.string().nullable().label("Execution frequency"),
-    execution_start_date: Yup.date().nullable().label("Execution start date"),
-  });
-
   const handleNextClicked = (values: MonitorConfigFormValues) => {
     const executionInfo =
       values.execution_frequency !== MonitorFrequency.NOT_SCHEDULED
         ? {
             execution_frequency: values.execution_frequency,
-            execution_start_date: new Date(
-              values.execution_start_date,
-            ).toISOString(),
+            execution_start_date: values.execution_start_date
+              .utc()
+              .format("YYYY-MM-DD[T]HH:mm:ss[Z]"),
           }
         : {
             execution_frequency: MonitorFrequency.NOT_SCHEDULED,
@@ -140,7 +134,6 @@ const ConfigureMonitorForm = ({
           };
 
     const classifyParams = getClassifyParams(isEditing, monitor, values);
-
     const payload: EditableMonitorConfig = isEditing
       ? {
           ...monitor,
@@ -148,6 +141,7 @@ const ConfigureMonitorForm = ({
           name: values.name,
           shared_config_id: values.shared_config_id,
           classify_params: classifyParams,
+          stewards: values.stewards,
         }
       : {
           ...executionInfo,
@@ -155,6 +149,7 @@ const ConfigureMonitorForm = ({
           shared_config_id: values.shared_config_id,
           connection_config_key: integrationId!,
           classify_params: classifyParams,
+          stewards: values.stewards,
         };
 
     if (integrationOption.identifier === ConnectionType.DYNAMODB) {
@@ -169,10 +164,6 @@ const ConfigureMonitorForm = ({
     }
   };
 
-  const initialDate = monitor?.execution_start_date
-    ? parseISO(monitor.execution_start_date)
-    : Date.now();
-
   /**
    * Check if this monitor is currently configured to use LLM classification.
    * This is independent of whether the server supports it or the feature is enabled.
@@ -180,13 +171,41 @@ const ConfigureMonitorForm = ({
   const monitorUsesLlmClassifier =
     monitor?.classify_params?.context_classifier === "llm";
 
+  const [submittable, setSubmittable] = useState(false);
+  const formValues = Form.useWatch([], form);
+
+  const { data: eligibleUsersData } = useGetAllUsersQuery({
+    page: 1,
+    size: 100,
+    include_external: false,
+    exclude_approvers: true,
+  });
+
+  const dataStewardOptions = (eligibleUsersData?.items || []).map((user) => ({
+    label: formatUser(user),
+    value: user.id,
+  }));
+
+  // TODO: build better pattern for async form initialization
+  useEffect(() => {
+    form.resetFields();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingSystem]);
+
+  useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, formValues]);
+
   const initialValues = {
-    name: monitor?.name ?? "",
-    shared_config_id: monitor?.shared_config_id ?? undefined,
-    execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
+    name: monitor?.name,
+    shared_config_id: monitor?.shared_config_id,
+    execution_start_date: dayjs(monitor?.execution_start_date ?? undefined),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
-    use_llm_classifier: monitorUsesLlmClassifier && serverSupportsLlmClassifier,
+    use_llm_classifier: monitorUsesLlmClassifier,
     llm_model_override: monitorUsesLlmClassifier
       ? (monitor?.classify_params?.llm_model_override ?? undefined)
       : undefined,
@@ -194,94 +213,94 @@ const ConfigureMonitorForm = ({
       ? (monitor?.classify_params?.prompt_template ?? undefined)
       : undefined,
     content_classification_enabled: !monitorUsesLlmClassifier
-      ? (monitor?.classify_params?.content_classification_enabled ?? undefined)
+      ? monitor?.classify_params?.content_classification_enabled
       : undefined, // for now, content classification is always disabled for LLM classification
-  };
-
-  const frequencyOptions = enumToOptions(MonitorFrequency);
+    stewards:
+      monitor?.stewards ?? systemData?.data_stewards?.map(({ id }) => id),
+  } as const;
 
   return (
-    <Formik
+    <Form
+      form={form}
+      onFinish={handleNextClicked}
+      className="pt-4"
+      layout="vertical"
+      validateTrigger="onChange"
       initialValues={initialValues}
-      enableReinitialize
-      onSubmit={handleNextClicked}
-      validationSchema={validationSchema}
+      disabled={isLoadingSystem} // TODO: establish better pattern and styles for async form initialization
     >
-      {({ values, isValid, resetForm }) => (
-        <Form>
-          <VStack alignItems="start" spacing={6} mt={4}>
-            <CustomTextInput
-              name="name"
-              id="name"
-              label="Name"
-              isRequired
-              variant="stacked"
-            />
-            <ControlledSelect
-              name="execution_frequency"
-              id="execution_frequency"
-              tooltip="Interval to run the monitor automatically after the start date"
-              options={frequencyOptions}
-              label="Automatic execution frequency"
-              layout="stacked"
-            />
-            <SharedConfigSelect name="shared_config_id" id="shared_config_id" />
-            <CustomDateTimeInput
-              name="execution_start_date"
-              label="Automatic execution start time"
-              disabled={
-                values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
-              }
-              id="execution_start_date"
-            />
-            {llmClassifierFeatureEnabled && (
-              <>
-                <CustomSwitch
-                  name="use_llm_classifier"
-                  id="use_llm_classifier"
-                  label="Use LLM classifier"
-                  variant="stacked"
-                  isDisabled={!serverSupportsLlmClassifier}
-                  tooltip={
-                    !serverSupportsLlmClassifier
-                      ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
-                      : undefined
-                  }
-                />
-                {values.use_llm_classifier && (
-                  <CustomTextInput
-                    name="llm_model_override"
-                    id="llm_model_override"
-                    label="Model override"
-                    variant="stacked"
-                    tooltip="Optionally specify a custom model to use for LLM classification"
-                  />
-                )}
-              </>
-            )}
-            <div className="flex w-full justify-between">
-              <Button
-                onClick={() => {
-                  resetForm();
-                  onClose();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                htmlType="submit"
-                type="primary"
-                disabled={!isValid}
-                loading={isSubmitting}
-                data-testid="next-btn"
-              >
-                {databasesAvailable ? "Next" : "Save"}
-              </Button>
-            </div>
-          </VStack>
-        </Form>
-      )}
-    </Formik>
+      <Form.Item
+        label="Name"
+        name="name"
+        rules={[{ required: true, message: "Please enter a name" }]}
+      >
+        <Input data-testid="input-name" />
+      </Form.Item>
+      <Form.Item label="Stewards" name="stewards">
+        <Select
+          mode="multiple"
+          aria-label="Select stewards"
+          data-testid="controlled-select-stewards"
+          options={dataStewardOptions}
+          optionFilterProp="label"
+        />
+      </Form.Item>
+      <Form.Item
+        label="Automatic execution frequency"
+        name="execution_frequency"
+        tooltip="Interval to run the monitor automatically after the start date"
+      >
+        <Select
+          aria-label="Select automatic execution frequency"
+          data-testid="controlled-select-execution_frequency"
+          options={enumToOptions(MonitorFrequency)}
+        />
+      </Form.Item>
+      <FormikSharedConfigSelect
+        name="shared_config_id"
+        onChange={(value) => form.setFieldValue("shared_config_id", value)}
+        value={form.getFieldValue("shared_config_id")}
+      />
+      <Form.Item
+        label="Automatic execution start time"
+        name="execution_start_date"
+        tooltip={START_TIME_TOOLTIP_COPY}
+      >
+        <DatePicker
+          data-testid="input-execution_start_date"
+          disabled={
+            form.getFieldValue("execution_frequency") ===
+            MonitorFrequency.NOT_SCHEDULED
+          }
+          showTime
+          className="w-full"
+        />
+      </Form.Item>
+      <LlmModelSelector
+        skip={!showLLMOption}
+        useLlmClassifier={!!form.getFieldValue("use_llm_classifier")}
+        modelOverridePlaceholder=""
+      />
+      <div className="flex w-full justify-between">
+        <Button
+          onClick={() => {
+            form.resetFields();
+            onClose();
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          htmlType="submit"
+          type="primary"
+          disabled={!submittable}
+          loading={isSubmitting}
+          data-testid="next-btn"
+        >
+          {databasesAvailable ? "Next" : "Save"}
+        </Button>
+      </div>
+    </Form>
   );
 };
 

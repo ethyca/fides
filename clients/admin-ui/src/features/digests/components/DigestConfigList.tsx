@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntList as List,
-  AntPagination as Pagination,
-  AntSpace as Space,
-  AntSwitch as Switch,
-  AntTag as Tag,
-  AntTypography as Typography,
+  Button,
+  Flex,
+  List,
+  Pagination,
+  Space,
+  Switch,
+  Tag,
+  Typography,
   useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";

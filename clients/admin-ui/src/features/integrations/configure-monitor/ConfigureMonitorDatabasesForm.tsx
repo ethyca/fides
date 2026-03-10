@@ -1,18 +1,18 @@
 import {
-  AntButton as Button,
-  AntTooltip as Tooltip,
-  Flex,
-  Text,
-  useToast,
+  Button,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  PageSpinner,
+  Tooltip,
+  useChakraToast as useToast,
 } from "fidesui";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
-import { MonitorConfig } from "~/types/api";
+import { EditableMonitorConfig } from "~/types/api";
 
 const TOOLTIP_COPY =
   "Selecting a project will monitor all current and future datasets within that project.";
@@ -27,11 +27,11 @@ const ConfigureMonitorDatabasesForm = ({
   onSubmit,
   onClose,
 }: {
-  monitor: MonitorConfig;
+  monitor: EditableMonitorConfig;
   isEditing?: boolean;
   isSubmitting?: boolean;
   integrationKey: string;
-  onSubmit: (monitor: MonitorConfig) => void;
+  onSubmit: (monitor: EditableMonitorConfig) => void;
   onClose: () => void;
 }) => {
   const toast = useToast();
@@ -83,7 +83,7 @@ const ConfigureMonitorDatabasesForm = ({
   const saveIsDisabled = !allSelected && selected.length === 0;
 
   if (initialIsLoading) {
-    return <FidesSpinner my={12} />;
+    return <PageSpinner className="my-12" />;
   }
 
   return (

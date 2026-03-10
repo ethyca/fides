@@ -1,11 +1,11 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  ChevronDownIcon,
-  Collapse,
-  Stack,
-  Text,
-  useDisclosure,
+  Button,
+  ChakraChevronDownIcon as ChevronDownIcon,
+  ChakraCollapse as Collapse,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  Flex,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";

@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { iso31661 } from "iso-3166";
+import { iso31661, iso31662 } from "iso-3166";
 import { fn } from "storybook/test";
 
 import { LocationSelect } from "./LocationSelect";
 
 const meta = {
-  title: "DataEntry/LocationSelect",
+  title: "Data Entry/LocationSelect",
   component: LocationSelect,
   parameters: {},
   tags: ["autodocs"],
@@ -35,5 +35,15 @@ export const TagMode: Story = {
   args: {
     mode: "tags",
     styles: { root: { minWidth: "30rem" } },
+  },
+};
+
+export const RegionsAndCountriesOptions: Story = {
+  args: {
+    includeCountryOnlyOptions: true,
+    options: {
+      countries: iso31661.filter((c) => ["US", "CA", "GB"].includes(c.alpha2)),
+      regions: iso31662.filter((r) => ["US", "CA", "GB"].includes(r.parent)),
+    },
   },
 };

@@ -1,16 +1,16 @@
 import {
-  AntButton as Button,
-  MenuItem,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-  Text,
-  useDisclosure,
+  Button,
+  ChakraMenuItem as MenuItem,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";

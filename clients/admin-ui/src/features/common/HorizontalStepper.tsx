@@ -1,4 +1,8 @@
-import { HorizontalLineIcon, Stack, Text } from "fidesui";
+import {
+  ChakraStack as Stack,
+  ChakraText as Text,
+  HorizontalLineIcon,
+} from "fidesui";
 import React from "react";
 
 interface Props {

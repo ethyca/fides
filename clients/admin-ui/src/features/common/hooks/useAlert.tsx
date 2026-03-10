@@ -1,12 +1,12 @@
 import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  Box,
-  CloseButton,
-  useToast,
-  UseToastOptions,
+  ChakraAlert as Alert,
+  ChakraAlertDescription as AlertDescription,
+  ChakraAlertIcon as AlertIcon,
+  ChakraAlertTitle as AlertTitle,
+  ChakraBox as Box,
+  ChakraCloseButton as CloseButton,
+  ChakraUseToastOptions as UseToastOptions,
+  useChakraToast as useToast,
 } from "fidesui";
 import { MouseEventHandler } from "react";
 

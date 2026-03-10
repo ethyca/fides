@@ -1,10 +1,10 @@
 /* eslint-disable tailwindcss/no-custom-classname */
 import {
-  AntBreadcrumb as Breadcrumb,
-  AntBreadcrumbItemType as BreadcrumbItemType,
-  AntBreadcrumbProps as BreadcrumbProps,
-  AntButton as Button,
-  AntTypography as Typography,
+  Breadcrumb,
+  BreadcrumbItemType,
+  BreadcrumbProps,
+  Button,
+  Typography,
 } from "fidesui";
 import { Url } from "next/dist/shared/lib/router/router";
 import NextLink from "next/link";

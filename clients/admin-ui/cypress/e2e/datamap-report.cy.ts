@@ -4,13 +4,12 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/routes";
 import {
-  AllowedTypes,
-  CustomFieldDefinition,
-  ReportType,
-  ResourceTypes,
-} from "~/types/api";
+  LegacyAllowedTypes,
+  LegacyResourceTypes,
+} from "~/features/common/custom-fields/types";
+import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/routes";
+import { CustomFieldDefinition, ReportType } from "~/types/api";
 
 const mockCustomField = (overrides?: Partial<CustomFieldDefinition>) => {
   const base = {
@@ -46,12 +45,11 @@ describe("Data map report table", () => {
           mockCustomField({ name: "Starter pokemon" }),
           mockCustomField({
             name: "Pokemon party",
-            // eslint-disable-next-line no-underscore-dangle
-            field_type: AllowedTypes.STRING_,
+            field_type: LegacyAllowedTypes.STRING_ARRAY,
           }),
           mockCustomField({
             name: "color",
-            resource_type: ResourceTypes.DATA_USE,
+            resource_type: LegacyResourceTypes.DATA_USE,
           }),
         ],
       },
@@ -592,7 +590,7 @@ describe("Data map report table", () => {
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
       cy.get(".ant-drawer-close").click({ force: true });
-      cy.getByTestId("datamap-drawer").should("not.be.visible");
+      cy.getByTestId("datamap-drawer").should("not.exist");
     });
     it("should open the system preview drawer when grouped by data use", () => {
       cy.getByTestId("group-by-menu").click();
@@ -603,7 +601,7 @@ describe("Data map report table", () => {
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
       cy.get(".ant-drawer-close").click({ force: true });
-      cy.getByTestId("datamap-drawer").should("not.be.visible");
+      cy.getByTestId("datamap-drawer").should("not.exist");
     });
   });
 });

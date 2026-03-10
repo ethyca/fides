@@ -1,0 +1,18 @@
+// Styles for OpenCloseArrow component (animation handled by Framer Motion)
+
+.arrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--arrow-size);
+  height: var(--arrow-size);
+}
+
+.bar {
+  position: absolute;
+  width: calc(var(--arrow-size) * 0.65);
+  height: calc(var(--arrow-size) * 0.15);
+  background-color: currentcolor;
+  border-radius: var(--ant-border-radius);
+}

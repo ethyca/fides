@@ -34,10 +34,12 @@ secrets = get_secrets("stripe")
 @pytest.fixture(scope="session")
 def stripe_secrets(saas_config):
     return {
-        "domain": pydash.get(saas_config, "stripe.domain") or secrets["domain"],
-        "api_key": pydash.get(saas_config, "stripe.api_key") or secrets["api_key"],
+        "domain": pydash.get(saas_config, "stripe.domain")
+        or secrets.get("domain", None),
+        "api_key": pydash.get(saas_config, "stripe.api_key")
+        or secrets.get("api_key", None),
         "payment_types": pydash.get(saas_config, "stripe.payment_types")
-        or secrets["payment_types"],
+        or secrets.get("payment_types", None),
     }
 
 
@@ -119,7 +121,6 @@ def stripe_dataset_config(
 
 
 class StripeTestClient:
-
     def __init__(self, stripe_secrets: Dict[str, Any]):
         self.base_url = f"https://{stripe_secrets['domain']}"
         self.headers = {
@@ -128,7 +129,6 @@ class StripeTestClient:
         }
 
     def create_customer(self, customer_data: Dict[str, Any]) -> Dict[str, Any]:
-
         response = requests.post(
             url=f"{self.base_url}/v1/customers",
             headers=self.headers,
@@ -437,7 +437,6 @@ def stripe_test_client(
 
 
 def stripe_generate_data(client, email, phone_number):
-
     # customer
     customer_data = {
         "address": {

@@ -1,41 +1,31 @@
-import {
-  AntButton as Button,
-  AntTag as Tag,
-  AntTypography as Typography,
-  Box,
-  Flex,
-  Text,
-  Wrap,
-} from "fidesui";
+import { Button, Flex, Icons, Tag, Tooltip, Typography } from "fidesui";
 
 import { useConnectionLogo } from "~/features/common/hooks";
-import useClickOutside from "~/features/common/hooks/useClickOutside";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
+import styles from "~/features/integrations/SelectableIntegrationBox.module.scss";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { getCategoryLabel } from "~/features/integrations/utils/categoryUtils";
 import { ConnectionConfigurationResponse } from "~/types/api";
+
+interface SelectableIntegrationBoxProps {
+  integration?: ConnectionConfigurationResponse;
+  integrationTypeInfo?: IntegrationTypeInfo;
+  onClick?: () => void;
+  onDetailsClick?: () => void;
+}
 
 const SelectableIntegrationBox = ({
   integration,
   integrationTypeInfo,
-  selected = false,
   onClick,
   onDetailsClick,
-  onUnfocus,
-}: {
-  integration?: ConnectionConfigurationResponse;
-  integrationTypeInfo?: IntegrationTypeInfo;
-  selected?: boolean;
-  onClick?: () => void;
-  onDetailsClick?: () => void;
-  onUnfocus?: () => void;
-}) => {
-  // Get logo data using the custom hook
+}: SelectableIntegrationBoxProps) => {
   const logoData = useConnectionLogo(integration);
 
-  // Use provided integrationTypeInfo or fallback to generating it
   const typeInfo =
     integrationTypeInfo ||
     getIntegrationTypeInfo(
@@ -43,57 +33,52 @@ const SelectableIntegrationBox = ({
       integration?.saas_config?.type,
     );
 
-  // Handle click outside to unfocus when selected
-  const boxRef = useClickOutside<HTMLDivElement>(() => {
-    if (selected && onUnfocus) {
-      onUnfocus();
-    }
-  });
+  const connectionOption = useIntegrationOption(
+    integration?.connection_type,
+    integration?.saas_config?.type as SaasConnectionTypes,
+  );
 
   return (
-    <Box
-      ref={boxRef}
-      borderWidth={1}
-      borderColor={selected ? "black" : "gray.200"}
-      backgroundColor={selected ? "gray.50" : "transparent"}
-      boxShadow={selected ? "md" : "none"}
-      borderRadius="lg"
-      overflow="hidden"
-      padding="12px"
-      cursor="pointer"
+    <div
+      className={`cursor-pointer overflow-hidden p-3 ${styles.card}`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
       data-testid={`integration-info-${integration?.key}`}
     >
-      <Flex
-        justifyContent="space-between"
-        alignItems="flex-start"
-        className="w-full"
-      >
-        <Flex flexGrow={1} width="100%">
+      <Flex justify="space-between" align="start" className="w-full">
+        <Flex className="w-full grow">
           <ConnectionTypeLogo data={logoData} size={40} />
-          <Flex
-            direction="column"
-            flexGrow={1}
-            flexShrink={1}
-            marginLeft="12px"
-            marginRight="12px"
-            width={0}
-          >
+          <Flex vertical className="mx-3 min-w-0 shrink grow">
+            <Flex align="center" gap="small">
+              <Typography.Text
+                strong
+                ellipsis={{
+                  tooltip: integration?.name || "(No name)",
+                }}
+              >
+                {integration?.name || "(No name)"}
+              </Typography.Text>
+              {connectionOption?.custom && (
+                <Tooltip title="Custom integration" placement="top">
+                  <span className="inline-flex">
+                    <Icons.SettingsCheck size={16} />
+                  </span>
+                </Tooltip>
+              )}
+            </Flex>
             <Typography.Text
-              strong
-              style={{
-                color: "var(--chakra-colors-gray-700)",
-                fontSize: "14px",
-              }}
-              ellipsis={{
-                tooltip: integration?.name || "(No name)",
-              }}
+              type="secondary"
+              className={`mt-1 ${styles.categoryLabel}`}
             >
-              {integration?.name || "(No name)"}
-            </Typography.Text>
-            <Text color="gray.600" fontSize="xs" mt={1}>
               {getCategoryLabel(typeInfo.category)}
-            </Text>
+            </Typography.Text>
           </Flex>
           {onDetailsClick && (
             <Button
@@ -103,7 +88,7 @@ const SelectableIntegrationBox = ({
                 onDetailsClick();
               }}
               type="default"
-              className="shrink-0 px-2 py-1 text-xs"
+              className="shrink-0 px-2 py-1"
               data-testid={`details-btn-${integration?.key}`}
             >
               Details
@@ -111,15 +96,15 @@ const SelectableIntegrationBox = ({
           )}
         </Flex>
       </Flex>
-      <Wrap marginTop="12px" spacing={1}>
+      <Flex wrap gap="small" className="mt-3">
         {typeInfo.tags.slice(0, 3).map((item) => (
           <Tag key={item}>{item}</Tag>
         ))}
         {typeInfo.tags.length > 3 && (
           <Tag color="corinth">+{typeInfo.tags.length - 3}</Tag>
         )}
-      </Wrap>
-    </Box>
+      </Flex>
+    </div>
   );
 };
 

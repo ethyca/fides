@@ -1,16 +1,16 @@
 import { Column } from "@tanstack/react-table";
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  AntButton as Button,
-  Box,
-  Checkbox,
-  Heading,
-  SimpleGrid,
-  Text,
+  Button,
+  ChakraAccordion as Accordion,
+  ChakraAccordionButton as AccordionButton,
+  ChakraAccordionIcon as AccordionIcon,
+  ChakraAccordionItem as AccordionItem,
+  ChakraAccordionPanel as AccordionPanel,
+  ChakraBox as Box,
+  ChakraCheckbox as Checkbox,
+  ChakraHeading as Heading,
+  ChakraSimpleGrid as SimpleGrid,
+  ChakraText as Text,
 } from "fidesui";
 import { ReactNode, useState } from "react";
 

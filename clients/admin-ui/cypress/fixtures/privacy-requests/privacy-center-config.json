@@ -26,6 +26,12 @@
           "label": "Example field with default value",
           "required": false,
           "default_value": "The default value"
+        },
+        "department": {
+          "label": "Department",
+          "required": false,
+          "field_type": "select",
+          "options": ["Engineering", "Marketing", "Sales", "Support"]
         }
       }
     },

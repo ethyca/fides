@@ -1,4 +1,4 @@
-import { AntButton as Button, AntSpace as Space, useToast } from "fidesui";
+import { Button, Space, useChakraToast as useToast } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 

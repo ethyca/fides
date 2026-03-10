@@ -1,0 +1,26 @@
+{
+  "privacy_request": {
+    "location": {
+      "field_path": "privacy_request.location",
+      "field_type": "string",
+      "description": "Privacy request location",
+      "is_convenience_field": false
+    },
+    "policy": {
+      "has_access_rule": {
+        "field_path": "privacy_request.policy.has_access_rule",
+        "field_type": "boolean",
+        "description": "Whether the policy has at least one rule with action_type 'access'.",
+        "is_convenience_field": true
+      }
+    },
+    "custom_privacy_request_fields": {
+      "department": {
+        "field_path": "privacy_request.custom_privacy_request_fields.department",
+        "field_type": "string",
+        "description": "Custom privacy request field 'department'",
+        "is_convenience_field": false
+      }
+    }
+  }
+}

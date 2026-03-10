@@ -1,13 +1,13 @@
+import csv
 import json
 import os
 from datetime import datetime
-from io import BytesIO
+from io import BytesIO, StringIO
 from typing import Any, Dict, Generator
 from unittest import mock
 from unittest.mock import Mock
 from zipfile import ZipFile
 
-import pandas as pd
 import pytest
 from bson import ObjectId
 from sqlalchemy.orm import Session
@@ -636,51 +636,41 @@ class TestWriteToInMemoryBuffer:
         ]
 
         with zipfile.open("mongo:address.csv") as address_csv:
-            df = pd.read_csv(address_csv, encoding="utf-8")
+            # Decode bytes to string for csv reader
+            text_stream = StringIO(address_csv.read().decode("utf-8"))
+            reader = csv.DictReader(text_stream)
 
-            assert list(df.columns) == [
-                "id",
-                "zip",
-                "city",
-            ]
-            assert list(df.iloc[0]) == [
-                1,
-                10024,
-                "Cañon City",
-            ]
+            assert reader.fieldnames == ["id", "zip", "city"]
 
-            assert list(df.iloc[1]) == [
-                2,
-                10011,
-                "Venice",
-            ]
+            rows = list(reader)
+            assert len(rows) == 2
+            assert rows[0] == {"id": "1", "zip": "10024", "city": "Cañon City"}
+            assert rows[1] == {"id": "2", "zip": "10011", "city": "Venice"}
 
         with zipfile.open("mysql:customer.csv") as foobar_csv:
-            df = pd.read_csv(foobar_csv, encoding="utf-8")
+            text_stream = StringIO(foobar_csv.read().decode("utf-8"))
+            reader = csv.DictReader(text_stream)
 
-            assert list(df.columns) == [
-                "uuid",
-                "name",
-                "email",
-            ]
-            assert list(df.iloc[0]) == [
-                "xyz-112-333",
-                "foo",
-                "foo@bar",
-            ]
+            assert reader.fieldnames == ["uuid", "name", "email"]
 
-            assert list(df.iloc[1]) == [
-                "xyz-122-333",
-                "foo1",
-                "foo@bar1",
-            ]
+            rows = list(reader)
+            assert len(rows) == 2
+            assert rows[0] == {"uuid": "xyz-112-333", "name": "foo", "email": "foo@bar"}
+            assert rows[1] == {
+                "uuid": "xyz-122-333",
+                "name": "foo1",
+                "email": "foo@bar1",
+            }
 
         with zipfile.open("mongo:foobar.csv") as customer_csv:
-            df = pd.read_csv(customer_csv, encoding="utf-8")
+            text_stream = StringIO(customer_csv.read().decode("utf-8"))
+            reader = csv.DictReader(text_stream)
 
-            assert list(df.columns) == ["_id", "customer"]
+            assert reader.fieldnames == ["_id", "customer"]
 
-            assert list(df.iloc[0]) == [1, "{'x': 1, 'y': [1, 2]}"]
+            rows = list(reader)
+            assert len(rows) == 1
+            assert rows[0] == {"_id": "1", "customer": "{'x': 1, 'y': [1, 2]}"}
 
     def test_html_format(self, data, privacy_request):
         buff = write_to_in_memory_buffer("html", data, privacy_request)
@@ -736,26 +726,15 @@ class TestWriteToInMemoryBuffer:
             decrypted_data = decrypt_combined_nonce_and_message(
                 encrypted_data, self.key.encode(CONFIG.security.encoding)
             )
-            df = pd.read_csv(
-                BytesIO(decrypted_data.encode(CONFIG.security.encoding)),
-                encoding=CONFIG.security.encoding,
-            )
+            text_stream = StringIO(decrypted_data)
+            reader = csv.DictReader(text_stream)
 
-            assert list(df.columns) == [
-                "id",
-                "zip",
-                "city",
-            ]
-            assert list(df.iloc[0]) == [
-                1,
-                10024,
-                "Cañon City",
-            ]
-            assert list(df.iloc[1]) == [
-                2,
-                10011,
-                "Venice",
-            ]
+            assert reader.fieldnames == ["id", "zip", "city"]
+
+            rows = list(reader)
+            assert len(rows) == 2
+            assert rows[0] == {"id": "1", "zip": "10024", "city": "Cañon City"}
+            assert rows[1] == {"id": "2", "zip": "10011", "city": "Venice"}
 
 
 class TestEncryptResultsPackage:

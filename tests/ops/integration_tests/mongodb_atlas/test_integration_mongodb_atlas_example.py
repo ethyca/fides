@@ -71,6 +71,6 @@ def test_mongo_atlas_connection_test(integration_mongodb_atlas_config):
     connector = MongoDBConnector(integration_mongodb_atlas_config)
     status = connector.test_connection()
 
-    assert (
-        status == ConnectionTestStatus.succeeded
-    ), "Atlas connection test should succeed"
+    assert status == ConnectionTestStatus.succeeded, (
+        "Atlas connection test should succeed"
+    )

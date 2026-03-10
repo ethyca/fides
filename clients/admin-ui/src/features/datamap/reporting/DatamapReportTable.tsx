@@ -1,3 +1,5 @@
+import { SerializedError } from "@reduxjs/toolkit";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   getCoreRowModel,
   getExpandedRowModel,
@@ -14,17 +16,17 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import {
-  AntButton as Button,
-  ChevronDownIcon,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItemOption,
-  MenuList,
+  Button,
+  ChakraChevronDownIcon as ChevronDownIcon,
+  ChakraFlex as Flex,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuItemOption as MenuItemOption,
+  ChakraMenuList as MenuList,
   MoreIcon,
-  useDisclosure,
-  useToast,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik, FormikState } from "formik";
 import { debounce } from "lodash";
@@ -85,7 +87,11 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   pages: 1,
 };
 
-export const DatamapReportTable = () => {
+export const DatamapReportTable = ({
+  onError,
+}: {
+  onError: (error: FetchBaseQueryError | SerializedError) => void;
+}) => {
   const userCanSeeReports = useHasPermission([
     ScopeRegistryEnum.CUSTOM_REPORT_READ,
   ]);
@@ -178,7 +184,14 @@ export const DatamapReportTable = () => {
     data: datamapReport,
     isLoading: isReportLoading,
     isFetching: isReportFetching,
+    error: reportError,
   } = useGetMinimalDatamapReportQuery(reportQuery);
+
+  useEffect(() => {
+    if (reportError) {
+      onError(reportError);
+    }
+  }, [reportError, onError]);
 
   const [
     exportMinimalDatamapReport,

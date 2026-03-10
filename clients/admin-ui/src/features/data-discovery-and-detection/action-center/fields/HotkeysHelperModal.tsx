@@ -1,9 +1,9 @@
 import {
-  AntDescriptions as Descriptions,
-  AntModal as Modal,
-  AntModalProps as ModalProps,
-  AntTypography as Typography,
+  Descriptions,
   LIST_HOTKEYS,
+  Modal,
+  ModalProps,
+  Typography,
 } from "fidesui";
 
 import { SEARCH_INPUT_HOTKEY } from "~/features/common/SearchInput";
@@ -79,13 +79,13 @@ export const HotkeysHelperModal = ({ ...props }: ModalProps) => {
             children: "Open/close details drawer for active field",
           },
           {
-            key: FIELD_ACTION_HOTKEYS.APPROVE,
+            key: FIELD_ACTION_HOTKEYS.REVIEW,
             label: (
               <Typography.Text keyboard>
-                {FIELD_ACTION_HOTKEYS.APPROVE}
+                {FIELD_ACTION_HOTKEYS.REVIEW}
               </Typography.Text>
             ),
-            children: "Approve the active field",
+            children: "Mark the active field as reviewed",
           },
           {
             key: FIELD_ACTION_HOTKEYS.PROMOTE,
@@ -94,7 +94,7 @@ export const HotkeysHelperModal = ({ ...props }: ModalProps) => {
                 {FIELD_ACTION_HOTKEYS.PROMOTE}
               </Typography.Text>
             ),
-            children: "Confirm the active field",
+            children: "Approve the active field",
           },
           {
             key: FIELD_ACTION_HOTKEYS.MUTE,
@@ -106,6 +106,15 @@ export const HotkeysHelperModal = ({ ...props }: ModalProps) => {
             children: "Ignore the active field",
           },
           {
+            key: FIELD_ACTION_HOTKEYS.UN_MUTE,
+            label: (
+              <Typography.Text keyboard>
+                {FIELD_ACTION_HOTKEYS.UN_MUTE}
+              </Typography.Text>
+            ),
+            children: "Restore the active field",
+          },
+          {
             key: FIELD_ACTION_HOTKEYS.OPEN_CLASSIFICATION_SELECT,
             label: (
               <Typography.Text keyboard>
@@ -113,6 +122,15 @@ export const HotkeysHelperModal = ({ ...props }: ModalProps) => {
               </Typography.Text>
             ),
             children: "Edit data categories for the active field",
+          },
+          {
+            key: FIELD_ACTION_HOTKEYS.REFRESH,
+            label: (
+              <Typography.Text keyboard>
+                {FIELD_ACTION_HOTKEYS.REFRESH}
+              </Typography.Text>
+            ),
+            children: "Refresh the list",
           },
           {
             key: FIELD_ACTION_HOTKEYS.REFRESH,

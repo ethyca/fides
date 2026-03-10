@@ -1,8 +1,8 @@
 import {
-  AntButton as Button,
-  AntSpace as Space,
-  Text,
-  useToast,
+  Button,
+  ChakraText as Text,
+  Space,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";

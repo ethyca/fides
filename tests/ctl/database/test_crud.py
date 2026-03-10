@@ -6,6 +6,7 @@ import pytest
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.ctl.types import FixtureRequest
 
 from fides.api.db.crud import (
     create_resource,
@@ -18,7 +19,6 @@ from fides.api.models import sql_models
 from fides.api.util.errors import QueryError
 from fides.config import FidesConfig
 from fides.core import api as _api
-from tests.ctl.types import FixtureRequest
 
 
 @pytest.fixture(name="created_resources")
@@ -94,7 +94,7 @@ def custom_field_definition_data_use(db):
     custom_field_definition_data = {
         "name": "custom_field_def_string_data_use_1",
         "field_type": "string[]",
-        "resource_type": "data_use",
+        "resource_type": "data use",
         "field_definition": "string",
     }
     custom_field_definition = sql_models.CustomFieldDefinition.create(

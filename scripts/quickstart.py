@@ -16,8 +16,8 @@ from loguru import logger
 
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.policy import ActionType
-from fides.common.api.scope_registry import SCOPE_REGISTRY
-from fides.common.api.v1 import urn_registry as ops_urls
+from fides.common import urn_registry as ops_urls
+from fides.common.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 
 CONFIG = get_config()

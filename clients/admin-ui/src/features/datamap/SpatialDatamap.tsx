@@ -1,5 +1,5 @@
 import { Row } from "@tanstack/react-table";
-import { Box } from "fidesui";
+import { ChakraBox as Box } from "fidesui";
 import React, { useContext, useMemo } from "react";
 
 import DatamapGraph from "~/features/datamap/DatamapGraph";

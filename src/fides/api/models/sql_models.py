@@ -7,6 +7,7 @@ Contains all of the SqlAlchemy models for the Fides resources.
 from __future__ import annotations
 
 from enum import Enum as EnumType
+from enum import StrEnum
 from typing import Any, Dict, List, Optional, Set, Type, TypeVar
 
 from fideslang import MAPPED_PURPOSES_BY_DATA_USE
@@ -15,24 +16,22 @@ from fideslang.models import DataCategory as FideslangDataCategory
 from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import DatasetCollection as FideslangDatasetCollection
 from pydantic import BaseModel
-from sqlalchemy import BOOLEAN, JSON, Column
-from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import (
+    BOOLEAN,
+    JSON,
+    Column,
     ForeignKey,
     Index,
     Integer,
     String,
     Text,
-    TypeDecorator,
     UniqueConstraint,
     case,
-    cast,
     func,
     select,
     text,
-    type_coerce,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
+from sqlalchemy.dialects.postgresql import ARRAY, BIGINT
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -43,11 +42,20 @@ from sqlalchemy.sql.sqltypes import DateTime
 from typing_extensions import Protocol, runtime_checkable
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.api.db.base_class import FidesBase as FideslibBase
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.rbac import (
+    RBACConstraint,
+    RBACConstraintRole,
+    RBACPermission,
+    RBACRole,
+    RBACRolePermission,
+    RBACUserRole,
+)
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.util.taxonomy_utils import find_undeclared_categories
 from fides.config import get_config
@@ -78,45 +86,6 @@ class FidesBase(FideslibBase):
         server_default=func.now(),
         onupdate=func.now(),
     )
-
-
-class PGEncryptedString(TypeDecorator):
-    """
-    This TypeDecorator handles encrypting and decrypting values at rest
-    on the database that would normally be stored as json.
-
-    The values are explicitly cast as json then text to take advantage of
-    the pgcrypto extension.
-    """
-
-    impl = BYTEA
-    python_type = String
-
-    cache_ok = True
-
-    def __init__(self):
-        super().__init__()
-
-        self.passphrase = CONFIG.user.encryption_key
-
-    def bind_expression(self, bindparam):
-        # Needs to be a string for the encryption, however it also needs to be treated as JSON first
-
-        bindparam = type_coerce(bindparam, JSON)
-
-        return func.pgp_sym_encrypt(cast(bindparam, Text), self.passphrase)
-
-    def column_expression(self, column):
-        return cast(func.pgp_sym_decrypt(column, self.passphrase), JSON)
-
-    def process_bind_param(self, value, dialect):
-        pass
-
-    def process_literal_param(self, value, dialect):
-        pass
-
-    def process_result_value(self, value, dialect):
-        pass
 
 
 class ClassificationDetail(Base):
@@ -509,10 +478,19 @@ class Organization(Base, FidesBase):
     __tablename__ = "ctl_organizations"
 
     organization_parent_key = Column(String, nullable=True)
-    controller = Column(PGEncryptedString, nullable=True)
-    data_protection_officer = Column(PGEncryptedString, nullable=True)
+    controller = Column(
+        encrypted_type(type_in=JSONTypeOverride),
+        nullable=True,
+    )
+    data_protection_officer = Column(
+        encrypted_type(type_in=JSONTypeOverride),
+        nullable=True,
+    )
     fidesctl_meta = Column(JSON)
-    representative = Column(PGEncryptedString, nullable=True)
+    representative = Column(
+        encrypted_type(type_in=JSONTypeOverride),
+        nullable=True,
+    )
     security_policy = Column(String, nullable=True)
 
 
@@ -596,10 +574,11 @@ class System(Base, FidesBase):
 
     connection_configs = relationship(
         "ConnectionConfig",
-        back_populates="system",
-        cascade="all, delete",
-        uselist=False,
+        secondary="system_connection_config_link",
+        uselist=True,
+        viewonly=True,
         lazy="selectin",
+        order_by="ConnectionConfig.created_at",
     )
 
     assets = relationship(
@@ -868,6 +847,12 @@ sql_model_map: Dict = {
     "policy": PolicyCtl,
     "system": System,
     "evaluation": Evaluation,
+    "rbac_role": RBACRole,
+    "rbac_permission": RBACPermission,
+    "rbac_role_permission": RBACRolePermission,
+    "rbac_user_role": RBACUserRole,
+    "rbac_constraint": RBACConstraint,
+    "rbac_constraint_role": RBACConstraintRole,
 }
 
 
@@ -876,14 +861,14 @@ class ModelWithDefaultField(Protocol):
     is_default: bool
 
 
-class AllowedTypes(str, EnumType):
+class AllowedTypes(StrEnum):
     """Allowed types for custom field."""
 
     string = "string"
     string_list = "string[]"
 
 
-class ResourceTypes(str, EnumType):
+class ResourceTypes(StrEnum):
     """Resource types that can use custom fields."""
 
     system = "system"
@@ -917,11 +902,11 @@ class CustomFieldDefinition(Base):
     name = Column(String, index=True, nullable=False)
     description = Column(String)
     field_type = Column(
-        EnumColumn(AllowedTypes),
+        String,
         nullable=False,
     )
     allow_list_id = Column(String, ForeignKey(CustomFieldValueList.id), nullable=True)
-    resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
+    resource_type = Column(String, nullable=False)
     field_definition = Column(String)
     custom_field = relationship(
         "CustomField",
@@ -985,7 +970,7 @@ class CustomField(Base):
 
     __tablename__ = "plus_custom_field"
 
-    resource_type = Column(EnumColumn(ResourceTypes), nullable=False)
+    resource_type = Column(String, nullable=False)
     resource_id = Column(String, index=True, nullable=False)
     custom_field_definition_id = Column(
         String, ForeignKey(CustomFieldDefinition.id), nullable=False

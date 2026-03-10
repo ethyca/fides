@@ -1,8 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Flex, Typography } from "fidesui";
 import { Form, Formik } from "formik";
 import { uniq } from "lodash";
 import { useMemo } from "react";

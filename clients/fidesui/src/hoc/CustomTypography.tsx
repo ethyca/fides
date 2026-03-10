@@ -49,11 +49,12 @@ const CustomTitle = ({ headingSize, ...props }: CustomTypographyTitleProps) => (
 const CustomText = ({
   size,
   unStyled,
+  className,
   ...props
 }: React.ComponentProps<typeof Typography.Text> &
   CustomTypographyTextProps) => (
   <Typography.Text
-    className={classNames(getTextSizeClassName(size), {
+    className={classNames(getTextSizeClassName(size), className, {
       [styles.unStyled]: unStyled,
     })}
     {...props}

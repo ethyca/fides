@@ -1,7 +1,12 @@
-import { Box, Spinner, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+} from "fidesui";
 import type { NextPage } from "next";
 
 import { useAppSelector } from "~/app/hooks";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import LocationManagement from "~/features/locations/LocationManagement";
@@ -12,9 +17,18 @@ import {
 
 const LocationsPage: NextPage = () => {
   // Subscribe to locations/regulations endpoint
-  const { isLoading } = useGetLocationsRegulationsQuery();
+  const { isLoading, error } = useGetLocationsRegulationsQuery();
 
   const locationsRegulations = useAppSelector(selectLocationsRegulations);
+
+  if (error) {
+    return (
+      <ErrorPage
+        error={error}
+        defaultMessage="A problem occurred while fetching locations settings"
+      />
+    );
+  }
 
   return (
     <Layout title="Locations">

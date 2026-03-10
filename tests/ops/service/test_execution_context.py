@@ -8,7 +8,6 @@ from fides.api.service.execution_context import (
 
 
 class TestExecutionContext:
-
     def test_collect_execution_log_messages_context_manager(self):
         """Test that collect_execution_log_messages can be used as a context manager"""
         with collect_execution_log_messages() as messages:

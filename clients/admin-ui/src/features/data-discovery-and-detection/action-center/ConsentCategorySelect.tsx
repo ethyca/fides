@@ -1,4 +1,4 @@
-import { AntSpace as Space, Icons, SparkleIcon } from "fidesui";
+import { Icons, Space, SparkleIcon } from "fidesui";
 import { useMemo } from "react";
 
 import {

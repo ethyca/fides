@@ -178,3 +178,23 @@ class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
     """
 
     refresh_request: Optional[SaaSRequest] = Field(exclude=True)
+
+
+class GoogleCloudServiceAccountConfiguration(StrategyConfiguration):
+    """
+    Configuration for Google Cloud Service Account authentication.
+
+    Uses service account credentials (keyfile_creds from connection secrets)
+    to automatically generate OAuth2 access tokens to authenticate against Google Cloud APIs.
+    """
+
+    scopes: Optional[List[str]] = Field(
+        default=None,
+        description=(
+            "OAuth2 scopes to request for the access token. "
+            "Defaults to ['https://www.googleapis.com/auth/cloud-platform'] if not specified. "
+            "Common scopes include: "
+            "'https://www.googleapis.com/auth/bigquery' for BigQuery, "
+            "'https://www.googleapis.com/auth/devstorage.read_write' for Cloud Storage, "
+        ),
+    )

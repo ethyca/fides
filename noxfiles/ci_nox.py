@@ -1,5 +1,8 @@
 """Contains the nox sessions used during CI checks."""
 
+import os
+import socket
+from enum import StrEnum
 from functools import partial
 from pathlib import Path
 from typing import Callable, Dict
@@ -10,6 +13,10 @@ from nox import session as nox_session
 from nox.command import CommandFailed
 
 from constants_nox import (
+    ANALYTICS_ID_OVERRIDE,
+    ANALYTICS_OPT_OUT,
+    CI_ARGS_EXEC,
+    COMPOSE_FILE,
     CONTAINER_NAME,
     IMAGE_NAME,
     LOGIN,
@@ -19,6 +26,10 @@ from constants_nox import (
     WITH_TEST_CONFIG,
 )
 from setup_tests_nox import (
+    CoverageConfig,
+    PytestConfig,
+    ReportConfig,
+    XdistConfig,
     pytest_api,
     pytest_ctl,
     pytest_lib,
@@ -30,54 +41,62 @@ from setup_tests_nox import (
 from utils_nox import db, install_requirements
 
 
+class RuffMode(StrEnum):
+    FORMAT = "format"
+    CHECK = "check"
+    SORT_IMPORTS_ONLY = "sort-imports"
+
+
 ###################
 ## Static Checks ##
 ###################
 @nox.session()
 def static_checks(session: nox.Session) -> None:
     """Run the static checks only."""
-    session.notify("black(fix)")
-    session.notify("isort(fix)")
+    session.notify("ruff(format)")
+    session.notify("ruff(check)")
     session.notify("mypy")
-    session.notify("pylint")
 
 
 @nox.session()
 @nox.parametrize(
     "mode",
     [
-        nox.param("check", id="check"),
-        nox.param("fix", id="fix"),
+        nox.param(RuffMode.FORMAT, id="format"),
+        nox.param(RuffMode.CHECK, id="check"),
+        nox.param(RuffMode.SORT_IMPORTS_ONLY, id="sort-imports"),
     ],
 )
-def black(session: nox.Session, mode: str) -> None:
-    """Run the 'black' style linter."""
+def ruff(session: nox.Session, mode: RuffMode = RuffMode.CHECK) -> None:
+    """
+    Run the 'ruff' linter and formatter. Supported modes:
+    - `check` (check only)
+    - `format` (sort imports and apply formatting)
+    - `sort-imports` (only sort imports).
+    """
     install_requirements(session)
-    command = ("black", "src", "tests", "noxfiles", "scripts", "noxfile.py")
+    ruff_arguments = ["src", "tests", "noxfiles", "scripts", "noxfile.py"]
     if session.posargs:
-        command = ("black", *session.posargs)
-    if mode == "check":
-        command = (*command, "--check")
-    session.run(*command)
+        ruff_arguments = session.posargs
 
+    format_command = ("ruff", "format", *ruff_arguments)
+    format_check_command = ("ruff", "format", "--check", *ruff_arguments)
+    check_command = ("ruff", "check", *ruff_arguments)
+    sort_imports_command = ("ruff", "check", "--select", "I", "--fix", *ruff_arguments)
 
-@nox.session()
-@nox.parametrize(
-    "mode",
-    [
-        nox.param("check", id="check"),
-        nox.param("fix", id="fix"),
-    ],
-)
-def isort(session: nox.Session, mode: str) -> None:
-    """Run the 'isort' import linter."""
-    install_requirements(session)
-    command = ("isort", "src", "tests", "noxfiles", "scripts", "noxfile.py")
-    if session.posargs:
-        command = ("isort", *session.posargs)
-    if mode == "check":
-        command = (*command, "--check")
-    session.run(*command)
+    if mode == RuffMode.FORMAT:
+        # Format code and sort imports
+        session.run(*format_command)
+        session.run(*sort_imports_command)
+
+    elif mode == RuffMode.CHECK:
+        # Verify formatting (fail if files would be reformatted)
+        session.run(*format_check_command)
+        # Lint code
+        session.run(*check_command)
+
+    elif mode == RuffMode.SORT_IMPORTS_ONLY:
+        session.run(*sort_imports_command)
 
 
 @nox.session()
@@ -86,21 +105,6 @@ def mypy(session: nox.Session) -> None:
     install_requirements(session)
     command = "mypy"
     session.run(command)
-
-
-@nox.session()
-def pylint(session: nox.Session) -> None:
-    """Run the 'pylint' code linter."""
-    install_requirements(session)
-    command = (
-        "pylint",
-        "src",
-        "noxfiles",
-        "noxfile.py",
-        "--jobs",
-        "0",
-    )
-    session.run(*command)
 
 
 @nox.session()
@@ -117,7 +121,6 @@ def xenon(session: nox.Session) -> None:
         "--max-modules=B",
         "--max-average=A",
         "--ignore=data,docs",
-        "--exclude=src/fides/_version.py",
     )
     session.run(*command, success_codes=[0, 1])
     session.warn(
@@ -138,7 +141,9 @@ def check_install(session: nox.Session) -> None:
 
     This is also a good sanity check for correct syntax.
     """
-    session.install(".")
+    # Build deps must be in env when using --no-build-isolation (hatchling is build-backend).
+    session.install("hatchling", "hatch-vcs", "setuptools==80.10.2", "wheel")
+    session.install("--no-build-isolation", ".")
 
     REQUIRED_ENV_VARS = {
         "FIDES__SECURITY__APP_ENCRYPTION_KEY": "OLMkv91j8DHiDAULnK5Lxx3kSCov30b3",
@@ -269,25 +274,6 @@ def minimal_config_startup(session: nox.Session) -> None:
     session.run(*start_command, external=True)
 
 
-#################
-## Performance ##
-#################
-@nox.session()
-def performance_tests(session: nox.Session) -> None:
-    """Compose the various performance checks into a single uber-test."""
-    session.notify("teardown")
-    perf_env = {
-        "FIDES__SECURITY__AUTH_RATE_LIMIT": "1000000/minute",
-        **session.env,
-    }
-    session.run(*START_APP, external=True, silent=True, env=perf_env)
-    samples = 2
-    for i in range(samples):
-        session.log(f"Sample {i + 1} of {samples}")
-        load_tests(session)
-        docker_stats(session)
-
-
 @nox.session()
 def docker_stats(session: nox.Session) -> None:
     """
@@ -317,6 +303,136 @@ def load_tests(session: nox.Session) -> None:
     session.run(
         "drill", "-b", "noxfiles/drill.yml", "--quiet", "--stats", external=True
     )
+
+
+############
+## Redis cluster tests (optional; require running cluster) ##
+############
+REDIS_CLUSTER_ENV_LOCAL = {
+    "FIDES__REDIS__CLUSTER_ENABLED": "true",
+    "FIDES__REDIS__HOST": "127.0.0.1",
+    "FIDES__REDIS__PORT": "6380",
+    "FIDES__REDIS__PASSWORD": "redispassword",
+}
+
+# Tests that rely on Redis/cache/Celery; run with cluster enabled to exercise cluster paths.
+# Requeue tests use get_cache() and retry counts; some tests in that file need DB.
+# Model and service tests below exercise get_cached_identity_data, get_cached_task_id, etc.
+REDIS_CLUSTER_TEST_PATHS = [
+    "tests/ops/util/test_cache.py",
+    "tests/ops/tasks/test_celery.py",
+    "tests/task/test_requeue_interrupted_tasks.py",
+    "tests/ops/models/privacy_request/test_privacy_request.py",
+    "tests/ops/models/privacy_request/test_consent.py",
+    "tests/ops/models/privacy_request/test_request_task.py",
+    "tests/ops/service/privacy_request/test_request_service.py",
+]
+
+
+def _redis_cluster_reachable(host: str = "127.0.0.1", port: int = 6380) -> bool:
+    """Return True if a Redis server is reachable at host:port (cluster or standalone)."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(2)
+    try:
+        s.connect((host, port))
+        return True
+    except (socket.error, OSError):
+        return False
+    finally:
+        s.close()
+
+
+@nox.session()
+def pytest_redis_cluster(session: nox.Session) -> None:
+    """
+    Run Redis cluster and Celery cluster tests against a local cluster.
+
+    Start the cluster first (e.g. foreman start -f Procfile.redis-cluster),
+    then run: nox -s pytest_redis_cluster
+
+    Fails immediately if nothing is listening on 127.0.0.1:6380 so you know to
+    start the cluster. Tests run on the host with Redis at 127.0.0.1:6380.
+    Includes all cache tests, Celery tests, and requeue-interrupted-tasks tests
+    (some requeue tests need DB).
+    """
+    if not _redis_cluster_reachable():
+        session.error(
+            "Redis is not reachable at 127.0.0.1:6380. Start the cluster first, e.g.:\n"
+            "  foreman start -f Procfile.redis-cluster\n"
+            "Then run this session again."
+        )
+    install_requirements(session)
+    session.install(".")
+    env = {**os.environ, **REDIS_CLUSTER_ENV_LOCAL}
+    run_command = (
+        "uv",
+        "run",
+        "pytest",
+        "-v",
+        *REDIS_CLUSTER_TEST_PATHS,
+    )
+    session.run(*run_command, env=env)
+
+
+@nox.session()
+def pytest_redis_cluster_docker(session: nox.Session) -> None:
+    """
+    Run Redis cluster and Celery cluster tests like other Docker tests: full stack
+    (START_APP) with the Redis cluster also running; pytest runs in the fides
+    container via exec with cluster env vars.
+    """
+    session.notify("teardown")
+    session.log("Starting Redis cluster nodes...")
+    session.run(
+        "docker",
+        "compose",
+        "-f",
+        COMPOSE_FILE,
+        "up",
+        "-d",
+        "--wait",
+        "redis-cluster-node-1",
+        "redis-cluster-node-2",
+        "redis-cluster-node-3",
+        external=True,
+    )
+    session.log("Forming Redis cluster (one-shot init)...")
+    session.run(
+        "docker",
+        "compose",
+        "-f",
+        COMPOSE_FILE,
+        "run",
+        "--rm",
+        "redis-cluster-init",
+        external=True,
+    )
+    session.log("Starting full stack (fides, fides-db, redis)...")
+    session.run(*START_APP, external=True)
+    run_command = (
+        "docker",
+        "exec",
+        *ANALYTICS_OPT_OUT,
+        *ANALYTICS_ID_OVERRIDE,
+        "-e",
+        "FIDES__REDIS__CLUSTER_ENABLED=true",
+        "-e",
+        "FIDES__REDIS__HOST=redis-cluster-node-1",
+        "-e",
+        "FIDES__REDIS__PORT=6379",
+        "-e",
+        "FIDES__REDIS__PASSWORD=redispassword",
+        CI_ARGS_EXEC,
+        CONTAINER_NAME,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        "-v",
+        *REDIS_CLUSTER_TEST_PATHS,
+    )
+    session.run(*run_command, external=True)
 
 
 ############
@@ -367,6 +483,7 @@ TEST_MATRIX: Dict[str, Callable] = {
 # This maps actual test directories to the test groups that cover them
 TEST_DIRECTORY_COVERAGE = {
     "tests/api/": ["api"],
+    "tests/common/": ["misc-unit"],
     "tests/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
     "tests/lib/": ["lib"],
     "tests/ops/": [
@@ -378,6 +495,11 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-saas",
     ],
     "tests/service/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/system_integration_link/": [
+        "misc-unit",
+        "misc-integration",
+        "misc-integration-external",
+    ],
     "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
@@ -406,9 +528,12 @@ def collect_tests(session: nox.Session) -> None:
     errors within the test code.
     """
     session.install(".")
-    install_requirements(session, True)
-    command = ("pytest", "tests/", "--collect-only")
-    session.run(*command)
+    (install_requirements(session, True))
+    command = ("pytest", "--collect-only", "tests/")
+    session.run(
+        *command,
+        env={"PYTHONDONTWRITEBYTECODE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"},
+    )
     validate_test_coverage(session)
 
 
@@ -426,8 +551,21 @@ def pytest(session: nox.Session, test_group: str) -> None:
     session.notify("teardown")
 
     validate_test_matrix(session)
-    coverage_arg = "--cov-report=xml"
-    TEST_MATRIX[test_group](session=session, coverage_arg=coverage_arg)
+    pytest_config = PytestConfig(
+        xdist_config=XdistConfig(parallel_runners="auto"),
+        coverage_config=CoverageConfig(
+            report_format="xml",
+            cov_name="fides",
+            skip_on_fail=True,
+            branch_coverage=True,
+        ),
+        report_config=ReportConfig(
+            report_format="xml",
+            report_file="test_report.xml",
+        ),
+    )
+
+    TEST_MATRIX[test_group](session=session, pytest_config=pytest_config)
 
 
 @nox.session()
@@ -440,13 +578,8 @@ def pytest(session: nox.Session, test_group: str) -> None:
 )
 def python_build(session: nox.Session, dist: str) -> None:
     "Build the Python distribution."
-    session.run(
-        *RUN_NO_DEPS,
-        "python",
-        "setup.py",
-        dist,
-        external=True,
-    )
+    build_arg = "--sdist" if dist == "sdist" else "--wheel"
+    session.run(*RUN_NO_DEPS, "uv", "build", build_arg, external=True)
 
 
 @nox_session()
@@ -454,6 +587,11 @@ def check_worker_startup(session: Session) -> None:
     """
     Check that the main 'worker-dsr' service can start up successfully using docker compose --wait.
     Relies on the healthcheck defined in docker-compose.yml.
+
+    Uses image ethyca/fides:local. To match CI (prod image), build it first:
+      uv run nox -s "build(test)"
+    then run:
+      uv run nox -s check_worker_startup
     """
     worker_service = "worker-dsr"
     session.log(f"Attempting to start and wait for service: {worker_service}")

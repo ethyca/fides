@@ -1,4 +1,3 @@
-import { encode as base64_encode } from "base-64";
 import { CookieAttributes } from "js-cookie";
 import * as uuid from "uuid";
 
@@ -17,10 +16,14 @@ import {
 import {
   getOrMakeFidesCookie,
   isNewFidesCookie,
+  isWildcardCookie,
   makeConsentDefaultsLegacy,
+  makeDefaultIdentity,
   makeFidesCookie,
+  normalizeIdentityValue,
   removeCookiesFromBrowser,
   saveFidesCookie,
+  tcfCookieIsProperlySet,
   transformTcfPreferencesToCookieKeys,
   updateCookieFromExperience,
   updateCookieFromNoticePreferences,
@@ -79,6 +82,34 @@ describe("cookies", () => {
     mockGetCookie.mockClear();
     mockSetCookie.mockClear();
   });
+  describe("normalizeIdentityValue", () => {
+    it("returns undefined for null", () => {
+      expect(normalizeIdentityValue(null)).toBeUndefined();
+    });
+
+    it("returns undefined for undefined", () => {
+      expect(normalizeIdentityValue(undefined)).toBeUndefined();
+    });
+
+    it("returns undefined for empty string", () => {
+      expect(normalizeIdentityValue("")).toBeUndefined();
+    });
+
+    it("returns undefined for whitespace-only string", () => {
+      expect(normalizeIdentityValue("   ")).toBeUndefined();
+      expect(normalizeIdentityValue("\t\n")).toBeUndefined();
+    });
+
+    it("returns trimmed string for valid non-empty value", () => {
+      expect(normalizeIdentityValue("user-123")).toBe("user-123");
+      expect(normalizeIdentityValue("  user-123  ")).toBe("user-123");
+    });
+
+    it("preserves content for string with internal spaces", () => {
+      expect(normalizeIdentityValue("user 123")).toBe("user 123");
+    });
+  });
+
   describe("makeFidesCookie", () => {
     it("generates a v0.9.0 cookie with uuid", () => {
       const cookie: FidesCookie = makeFidesCookie();
@@ -119,8 +150,8 @@ describe("cookies", () => {
       beforeEach(() => {
         mockGetCookie.mockReturnValue(undefined);
       });
-      it("makes and returns a default cookie", () => {
-        const cookie: FidesCookie = getOrMakeFidesCookie();
+      it("makes and returns a default cookie", async () => {
+        const cookie: FidesCookie = await getOrMakeFidesCookie();
         expect(cookie.consent).toEqual({});
         expect(cookie.fides_meta.consentMethod).toEqual(undefined);
         expect(cookie.fides_meta.createdAt).toEqual(MOCK_DATE);
@@ -160,9 +191,9 @@ describe("cookies", () => {
           },
         ])(
           "returns the saved cookie $description",
-          ({ suffix, cookieName }) => {
+          async ({ suffix, cookieName }) => {
             mockGetCookie.mockReturnValue(JSON.stringify(V090_COOKIE_OBJECT));
-            const cookie: FidesCookie = getOrMakeFidesCookie(undefined, {
+            const cookie: FidesCookie = await getOrMakeFidesCookie(undefined, {
               fidesCookieSuffix: suffix,
             });
             expect(cookie.consent).toEqual(SAVED_CONSENT);
@@ -177,7 +208,7 @@ describe("cookies", () => {
           },
         );
 
-        it("returns the saved cookie including optional fides_meta details like consentMethod", () => {
+        it("returns the saved cookie including optional fides_meta details like consentMethod", async () => {
           // extend the cookie object with some extra details on fides_meta
           const extendedFidesMeta: FidesJSMeta = {
             ...V090_COOKIE_OBJECT.fides_meta,
@@ -188,7 +219,7 @@ describe("cookies", () => {
             ...{ fides_meta: extendedFidesMeta },
           };
           mockGetCookie.mockReturnValue(JSON.stringify(cookieObject));
-          const cookie: FidesCookie = getOrMakeFidesCookie();
+          const cookie: FidesCookie = await getOrMakeFidesCookie();
           expect(cookie.consent).toEqual(SAVED_CONSENT);
           expect(cookie.fides_meta.consentMethod).toEqual("accept");
           expect(cookie.fides_meta.otherMetadata).toEqual("foo");
@@ -204,33 +235,8 @@ describe("cookies", () => {
         const V0_COOKIE = JSON.stringify(SAVED_CONSENT);
         beforeEach(() => mockGetCookie.mockReturnValue(V0_COOKIE));
 
-        it("returns the saved cookie and converts to new 0.9.0 format", () => {
-          const cookie: FidesCookie = getOrMakeFidesCookie();
-          expect(cookie.consent).toEqual(SAVED_CONSENT);
-          expect(cookie.fides_meta.consentMethod).toEqual(undefined);
-          expect(cookie.fides_meta.createdAt).toEqual(MOCK_DATE);
-          expect(cookie.identity.fides_user_device_id).toEqual(MOCK_UUID);
-          expect(cookie.tcf_consent).toEqual({});
-        });
-      });
-      describe("in base64 format", () => {
-        const V090_COOKIE_OBJECT: FidesCookie = {
-          consent: SAVED_CONSENT,
-          identity: { fides_user_device_id: SAVED_UUID },
-          fides_meta: {
-            createdAt: CREATED_DATE,
-            updatedAt: UPDATED_DATE,
-            version: "0.9.0",
-          },
-          tcf_consent: {},
-        };
-        // mock base64 cookie
-        mockGetCookie.mockReturnValue(
-          base64_encode(JSON.stringify(V090_COOKIE_OBJECT)),
-        );
-
-        it("returns the saved cookie and decodes from base64", () => {
-          const cookie: FidesCookie = getOrMakeFidesCookie();
+        it("returns the saved cookie and converts to new 0.9.0 format", async () => {
+          const cookie: FidesCookie = await getOrMakeFidesCookie();
           expect(cookie.consent).toEqual(SAVED_CONSENT);
           expect(cookie.fides_meta.consentMethod).toEqual(undefined);
           expect(cookie.fides_meta.createdAt).toEqual(MOCK_DATE);
@@ -248,17 +254,17 @@ describe("cookies", () => {
       ),
     );
 
-    it("updates the updatedAt date", () => {
-      const cookie: FidesCookie = getOrMakeFidesCookie();
+    it("updates the updatedAt date", async () => {
+      const cookie: FidesCookie = await getOrMakeFidesCookie();
       expect(cookie.fides_meta.updatedAt).toEqual("");
-      saveFidesCookie(cookie, { base64Cookie: false });
+      await saveFidesCookie(cookie, { base64Cookie: false });
       expect(cookie.fides_meta.updatedAt).toEqual(MOCK_DATE);
     });
 
-    it("saves optional fides_meta details like consentMethod", () => {
-      const cookie: FidesCookie = getOrMakeFidesCookie();
+    it("saves optional fides_meta details like consentMethod", async () => {
+      const cookie: FidesCookie = await getOrMakeFidesCookie();
       cookie.fides_meta.consentMethod = "dismiss";
-      saveFidesCookie(cookie, { base64Cookie: false });
+      await saveFidesCookie(cookie, { base64Cookie: false });
       expect(mockSetCookie.mock.calls).toHaveLength(1);
       expect(mockSetCookie.mock.calls[0][0]).toEqual("fides_consent"); // name
       const cookieValue = mockSetCookie.mock.calls[0][1];
@@ -267,9 +273,9 @@ describe("cookies", () => {
       expect(cookieParsed.fides_meta.consentMethod).toEqual("dismiss");
     });
 
-    it("sets a cookie on the root domain with 1 year expiry date", () => {
-      const cookie: FidesCookie = getOrMakeFidesCookie(undefined);
-      saveFidesCookie(cookie, { base64Cookie: false });
+    it("sets a cookie on the root domain with 1 year expiry date", async () => {
+      const cookie: FidesCookie = await getOrMakeFidesCookie(undefined);
+      await saveFidesCookie(cookie, { base64Cookie: false });
       const expectedCookieString = JSON.stringify(cookie);
       expect(mockSetCookie.mock.calls).toHaveLength(1);
       const [name, value, attributes] = mockSetCookie.mock.calls[0];
@@ -279,22 +285,10 @@ describe("cookies", () => {
       expect(attributes).toHaveProperty("expires", 365);
     });
 
-    it("sets a base64 cookie", () => {
-      const cookie: FidesCookie = getOrMakeFidesCookie();
-      saveFidesCookie(cookie, { base64Cookie: true });
-      const expectedCookieString = base64_encode(JSON.stringify(cookie));
-      expect(mockSetCookie.mock.calls).toHaveLength(1);
-      const [name, value, attributes] = mockSetCookie.mock.calls[0];
-      expect(name).toEqual("fides_consent");
-      expect(value).toEqual(expectedCookieString);
-      expect(attributes).toHaveProperty("domain", "localhost");
-      expect(attributes).toHaveProperty("expires", 365);
-    });
-
-    it("allows saves the cookie with a suffix on the cookie name", () => {
+    it("allows saves the cookie with a suffix on the cookie name", async () => {
       const TEST_COOKIE_SUFFIX = "TEST_SUFFIX";
-      const cookie: FidesCookie = getOrMakeFidesCookie(undefined);
-      saveFidesCookie(cookie, { fidesCookieSuffix: TEST_COOKIE_SUFFIX });
+      const cookie: FidesCookie = await getOrMakeFidesCookie(undefined);
+      await saveFidesCookie(cookie, { fidesCookieSuffix: TEST_COOKIE_SUFFIX });
       expect(mockSetCookie.mock.calls).toHaveLength(1);
       const [name, value, attributes] = mockSetCookie.mock.calls[0];
       expect(name).toEqual(`fides_consent_${TEST_COOKIE_SUFFIX}`);
@@ -323,14 +317,14 @@ describe("cookies", () => {
       },
     ])(
       "calculates the root domain from the hostname ($url)",
-      ({ url, expected }) => {
+      async ({ url, expected }) => {
         const mockUrl = new URL(url);
         Object.defineProperty(window, "location", {
           value: mockUrl,
           writable: true,
         });
-        const cookie: FidesCookie = getOrMakeFidesCookie();
-        saveFidesCookie(cookie);
+        const cookie: FidesCookie = await getOrMakeFidesCookie();
+        await saveFidesCookie(cookie);
         const numCalls = expected.split(".").length;
         expect(mockSetCookie.mock.calls).toHaveLength(numCalls);
         expect(mockSetCookie.mock.calls[numCalls - 1][2]).toHaveProperty(
@@ -401,8 +395,8 @@ describe("cookies", () => {
   });
 
   describe("isNewFidesCookie", () => {
-    it("returns true for new cookies", () => {
-      const newCookie: FidesCookie = getOrMakeFidesCookie();
+    it("returns true for new cookies", async () => {
+      const newCookie: FidesCookie = await getOrMakeFidesCookie();
       expect(isNewFidesCookie(newCookie)).toBeTruthy();
     });
 
@@ -426,12 +420,87 @@ describe("cookies", () => {
       const V090_COOKIE = JSON.stringify(V090_COOKIE_OBJECT);
       beforeEach(() => mockGetCookie.mockReturnValue(V090_COOKIE));
 
-      it("returns false for saved cookies", () => {
-        const savedCookie: FidesCookie = getOrMakeFidesCookie();
+      it("returns false for saved cookies", async () => {
+        const savedCookie: FidesCookie = await getOrMakeFidesCookie();
         expect(savedCookie.fides_meta.createdAt).toEqual(CREATED_DATE);
         expect(savedCookie.fides_meta.updatedAt).toEqual(UPDATED_DATE);
         expect(isNewFidesCookie(savedCookie)).toBeFalsy();
       });
+    });
+  });
+
+  describe("tcfCookieIsProperlySet", () => {
+    it("returns false for undefined cookie", () => {
+      expect(tcfCookieIsProperlySet(undefined)).toBeFalsy();
+    });
+
+    it("returns false for a new/empty TCF cookie with no TCF-specific fields", () => {
+      const newCookie: FidesCookie = makeFidesCookie();
+      expect(tcfCookieIsProperlySet(newCookie)).toBeFalsy();
+    });
+
+    it("returns false for a cookie with only consent set (e.g., GPC-set cookie)", () => {
+      const gpcCookie: FidesCookie = {
+        ...makeFidesCookie(),
+        consent: {
+          custom_notice_1: false,
+          custom_notice_2: true,
+        },
+      };
+      expect(tcfCookieIsProperlySet(gpcCookie)).toBeFalsy();
+    });
+
+    it("returns false when only fides_string is set", () => {
+      const cookieWithFidesString: FidesCookie = {
+        ...makeFidesCookie(),
+        fides_string:
+          "CQeBJ0AQeBJ0AGXABBENCNFgALAAAEPAAAiQFyQAQFyAXJABAXIAAAAA.IFyQAQFyAAAA,2~~dv.,DBACMMA~CQeBJ0AQeBJ0AGXABBENCNFgALAAAEPAAAiQFyQAQFyAXJABAXIAAAAA.YAAAAAAAAAAA~BAAAAAAAAABY.YA",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithFidesString)).toBeFalsy();
+    });
+
+    it("returns false when only tcf_version_hash is set", () => {
+      const cookieWithVersionHash: FidesCookie = {
+        ...makeFidesCookie(),
+        tcf_version_hash: "v1",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithVersionHash)).toBeFalsy();
+    });
+
+    it("returns true when both fides_string and tcf_version_hash are set", () => {
+      const cookieWithBothFields: FidesCookie = {
+        ...makeFidesCookie(),
+        fides_string:
+          "CQeBJ0AQeBJ0AGXABBENCNFgALAAAEPAAAiQFyQAQFyAXJABAXIAAAAA.IFyQAQFyAAAA,2~~dv.,DBACMMA~CQeBJ0AQeBJ0AGXABBENCNFgALAAAEPAAAiQFyQAQFyAXJABAXIAAAAA.YAAAAAAAAAAA~BAAAAAAAAABY.YA",
+        tcf_version_hash: "v1",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithBothFields)).toBeTruthy();
+    });
+
+    it("returns false when fides_string contains only NC data (no TC or GPP)", () => {
+      const cookieWithOnlyNC: FidesCookie = {
+        ...makeFidesCookie(),
+        fides_string:
+          ",,,eyJhbmFseXRpY3MiOjEsImRhdGFfc2FsZXNfYW5kX3NoYXJpbmciOjEsIm1hcmtldGluZyI6MX0=",
+        tcf_version_hash: "v1",
+      };
+      expect(tcfCookieIsProperlySet(cookieWithOnlyNC)).toBeFalsy();
+    });
+  });
+
+  describe("isWildcardCookie", () => {
+    it("returns false for non-wildcard cookies", () => {
+      const cookie: CookiesType = { name: "regular_cookie" };
+      expect(isWildcardCookie(cookie)).toBeFalsy();
+    });
+
+    it("returns true for wildcard cookies", () => {
+      expect(isWildcardCookie({ name: "_ga[id]" })).toBeTruthy();
+      expect(
+        isWildcardCookie({
+          name: "_ga_[id]_[id]",
+        }),
+      ).toBeTruthy();
     });
   });
 
@@ -538,6 +607,95 @@ describe("cookies", () => {
         });
       },
     );
+
+    describe("wildcard cookies", () => {
+      it("should remove cookies with provided domain", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          false,
+          false,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", { domain: "foo.com", path: "/bar" }],
+        ]);
+      });
+      it("should remove cookies with host domain and subdomains", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]", domain: "foo.com", path: "/bar" }],
+          true,
+          true,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", { domain: "example.co.jp", path: "/bar" }],
+          ["_ga123", { domain: ".example.co.jp" }],
+        ]);
+      });
+      it("should remove cookies matching multiple wildcards", () => {
+        mockGetCookie.mockReturnValue({
+          _ga123: "test_value",
+          foo_abc: "test_value_2",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "_ga[id]" }, { name: "foo_[id]" }],
+          false,
+          false,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga123", { path: "/" }],
+          ["foo_abc", { path: "/" }],
+        ]);
+      });
+      it("should handle the wildcard anchors correctly", () => {
+        mockGetCookie.mockReturnValue({
+          ab123: "",
+          cab123: "",
+        } as any);
+        removeCookiesFromBrowser(
+          [{ name: "x[id]" }, { name: "ab[id]" }, { name: "y[id]" }],
+          false,
+          false,
+        );
+        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", { path: "/" }]]);
+      });
+      it("should handle prefix-only cookies correctly", () => {
+        mockGetCookie.mockReturnValue({
+          ab: "",
+          ab123: "",
+        } as any);
+        removeCookiesFromBrowser([{ name: "ab[id]" }], false, false);
+        expect(mockRemoveCookie.mock.calls).toEqual([["ab123", { path: "/" }]]);
+      });
+      it("should handle wildcard cookies with special characters", () => {
+        const prefix = "^$[](){}\\|.*?-";
+        mockGetCookie.mockReturnValue({
+          [`${prefix}123`]: "test_value",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser([{ name: `${prefix}[id]` }], false, false);
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          [`${prefix}123`, { path: "/" }],
+        ]);
+      });
+      it("should handle cookies with multiple wildcards", () => {
+        mockGetCookie.mockReturnValue({
+          _ga_123_456: "test_value",
+          "_ga_789.101": "test_value_2",
+          other_cookie: "other_value",
+        } as any);
+        removeCookiesFromBrowser([{ name: "_ga_[id]_[id]" }], false, false);
+        expect(mockRemoveCookie.mock.calls).toEqual([
+          ["_ga_123_456", { path: "/" }],
+        ]);
+      });
+    });
   });
 
   describe("transformTcfPreferencesToCookieKeys", () => {
@@ -792,6 +950,195 @@ describe("cookies", () => {
         "na_notice_1",
         "na_notice_2",
       ]);
+    });
+
+    it("preserves external_id when updating cookie from notice preferences", async () => {
+      const externalId = "test-external-id-123";
+      const cookie = makeFidesCookie();
+      cookie.identity.external_id = externalId;
+
+      const notices = [
+        { notice_key: "one", current_preference: UserConsentPreference.OPT_IN },
+      ] as PrivacyNoticeWithPreference[];
+      const preferences = notices.map(
+        (n) =>
+          new SaveConsentPreference(
+            n,
+            n.current_preference ?? UserConsentPreference.OPT_OUT,
+            `pri_notice-history-mock-${n.notice_key}`,
+          ),
+      );
+      const updatedCookie = await updateCookieFromNoticePreferences(
+        cookie,
+        preferences,
+      );
+      expect(updatedCookie.identity.external_id).toEqual(externalId);
+    });
+  });
+
+  describe("external_id handling", () => {
+    describe("getOrMakeFidesCookie", () => {
+      beforeEach(() => {
+        mockGetCookie.mockReturnValue(undefined);
+      });
+
+      it("includes external_id in identity when fidesExternalId is provided", async () => {
+        const externalId = "customer-user-id-123";
+        const cookie = await getOrMakeFidesCookie(undefined, {
+          fidesExternalId: externalId,
+        });
+        expect(cookie.identity.external_id).toEqual(externalId);
+      });
+
+      it("updates external_id when fidesExternalId is provided and cookie exists", async () => {
+        const oldExternalId = "old-external-id";
+        const newExternalId = "new-external-id";
+        const savedCookie: FidesCookie = {
+          consent: {},
+          identity: {
+            fides_user_device_id: MOCK_UUID,
+            external_id: oldExternalId,
+          },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        const cookie = await getOrMakeFidesCookie(undefined, {
+          fidesExternalId: newExternalId,
+        });
+        expect(cookie.identity.external_id).toEqual(newExternalId);
+      });
+
+      it("handles undefined identity in parsed cookie when fidesExternalId is provided", async () => {
+        // Verifies that if parsedCookie.identity is undefined, the function handles it gracefully
+        // by creating a new default identity with the provided fidesExternalId
+        const externalId = "test-external-id";
+        const savedCookie: Partial<FidesCookie> = {
+          consent: {},
+          // identity is intentionally missing/undefined
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        // Should not throw and should handle undefined identity gracefully
+        const cookie = await getOrMakeFidesCookie(undefined, {
+          fidesExternalId: externalId,
+        });
+        expect(cookie.identity).toBeDefined();
+        expect(cookie.identity.external_id).toEqual(externalId);
+        expect(cookie.identity.fides_user_device_id).toBeDefined();
+      });
+
+      it("handles undefined identity in parsed cookie when fidesExternalId is not provided", async () => {
+        // Verifies that if parsedCookie.identity is undefined and no fidesExternalId is provided,
+        // the function creates a new default identity without external_id
+        const savedCookie: Partial<FidesCookie> = {
+          consent: {},
+          // identity is intentionally missing/undefined
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        // Should not throw and should handle undefined identity gracefully
+        const cookie = await getOrMakeFidesCookie(undefined, {});
+        expect(cookie.identity).toBeDefined();
+        expect(cookie.identity.external_id).toBeUndefined();
+        expect(cookie.identity.fides_user_device_id).toBeDefined();
+      });
+
+      it("rejects empty string for external_id", async () => {
+        // Verifies that empty strings are treated as falsy and do not set external_id
+        const emptyString = "";
+        const cookie = await getOrMakeFidesCookie(undefined, {
+          fidesExternalId: emptyString,
+        });
+        // Empty strings are falsy, so external_id should not be set
+        expect(cookie.identity.external_id).not.toEqual(emptyString);
+        expect(cookie.identity.external_id).toBeUndefined();
+      });
+
+      it("preserves external_id when fidesExternalId is not provided after being previously set", async () => {
+        // Verifies that when fidesExternalId is not provided, the existing external_id from the cookie
+        // is preserved (not removed)
+        const initialExternalId = "initial-external-id";
+        const savedCookie: FidesCookie = {
+          consent: {},
+          identity: {
+            fides_user_device_id: MOCK_UUID,
+            external_id: initialExternalId,
+          },
+          fides_meta: {
+            version: "0.9.0",
+            createdAt: MOCK_DATE,
+            updatedAt: "",
+          },
+          tcf_consent: {},
+        };
+        mockGetCookie.mockReturnValue(JSON.stringify(savedCookie));
+        // When fidesExternalId is not provided, external_id should persist from the cookie
+        const cookie = await getOrMakeFidesCookie();
+        expect(cookie.identity.external_id).toEqual(initialExternalId);
+      });
+    });
+  });
+
+  describe("makeDefaultIdentity", () => {
+    it("generates device ID when no options provided", () => {
+      const identity = makeDefaultIdentity();
+      expect(identity.fides_user_device_id).toBeDefined();
+      expect(typeof identity.fides_user_device_id).toBe("string");
+      expect(identity.fides_user_device_id.length).toBeGreaterThan(0);
+    });
+
+    it("uses provided fidesUserDeviceId", () => {
+      const providedDeviceId = "custom-device-id-123";
+      const identity = makeDefaultIdentity({
+        fidesUserDeviceId: providedDeviceId,
+      });
+      expect(identity.fides_user_device_id).toEqual(providedDeviceId);
+    });
+
+    it("sets external_id when fidesExternalId is provided", () => {
+      const externalId = "external-id-789";
+      const identity = makeDefaultIdentity({
+        fidesExternalId: externalId,
+      });
+      expect(identity.fides_user_device_id).toBeDefined();
+      expect(identity.external_id).toEqual(externalId);
+    });
+
+    it("handles both fidesUserDeviceId and fidesExternalId together", () => {
+      const deviceId = "custom-device-123";
+      const externalId = "custom-external-456";
+      const identity = makeDefaultIdentity({
+        fidesUserDeviceId: deviceId,
+        fidesExternalId: externalId,
+      });
+      expect(identity.fides_user_device_id).toEqual(deviceId);
+      expect(identity.external_id).toEqual(externalId);
+    });
+
+    it("does not set external_id when fidesExternalId is falsy", () => {
+      const falsyValues = [null, undefined, ""];
+      falsyValues.forEach((falsyValue) => {
+        const identity = makeDefaultIdentity({
+          fidesExternalId: falsyValue as string | null,
+        });
+        expect(identity.fides_user_device_id).toBeDefined();
+        expect(identity.external_id).toBeUndefined();
+      });
     });
   });
 });

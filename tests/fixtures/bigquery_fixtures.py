@@ -616,7 +616,6 @@ def bigquery_enterprise_resources(
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
     with bigquery_client.connect() as connection:
-
         # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
         stmt = "select max(id) from enterprise_dsr_testing.users;"
         res = connection.execute(stmt)
@@ -711,7 +710,6 @@ def bigquery_enterprise_resources_with_partitioning(
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
     with bigquery_client.connect() as connection:
-
         # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
         stmt = "select max(id) from enterprise_dsr_testing.users;"
         res = connection.execute(stmt)
@@ -827,7 +825,6 @@ def seed_bigquery_enterprise_integration_db(
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
     with bigquery_client.connect() as connection:
-
         stmt = "CREATE TABLE enterprise_dsr_testing.stackoverflow_posts_partitioned partition by date(creation_date) as select * from enterprise_dsr_testing.stackoverflow_posts;"
         connection.execute(stmt)
 

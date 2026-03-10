@@ -1,4 +1,4 @@
-import { AntButton as Button, Icons } from "fidesui";
+import { Button, Icons } from "fidesui";
 import { useState } from "react";
 
 import {
@@ -71,6 +71,7 @@ const ClassificationSelect = ({
         setOpen(false);
       }}
       data-classification-select={urn}
+      popupMatchSelectWidth={600}
       {...props}
     />
   );

@@ -35,6 +35,8 @@ import {
 } from "./shared-consent-utils";
 import { TcfModelsRecord } from "./tcf/types";
 
+export const DEFAULT_MODAL_LINK_ID = "fides-modal-link";
+
 /**
  * Returns true if the provided input is a valid PrivacyExperience object.
  *

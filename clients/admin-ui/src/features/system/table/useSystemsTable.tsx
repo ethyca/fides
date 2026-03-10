@@ -1,8 +1,8 @@
 import {
-  AntButton as Button,
-  AntColumnsType as ColumnsType,
-  AntFlex as Flex,
-  AntTypography as Typography,
+  Button,
+  ColumnsType,
+  Flex,
+  FlexProps,
   Icons,
   useMessage,
 } from "fidesui";
@@ -15,9 +15,10 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ListExpandableCell } from "~/features/common/table/cells";
 import { expandCollapseAllMenuItems } from "~/features/common/table/cells/constants";
+import { EllipsisCell } from "~/features/common/table/cells/EllipsisCell";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { useAntTable, useTableState } from "~/features/common/table/hooks";
-import { convertToAntFilters } from "~/features/common/utils";
+import { convertToAntFilters, formatUser } from "~/features/common/utils";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   useDeleteSystemMutation,
@@ -100,6 +101,7 @@ const useSystemsTable = () => {
 
   const {
     data: systemsResponse,
+    error,
     isLoading,
     isFetching,
   } = useGetSystemsQuery({
@@ -123,6 +125,9 @@ const useSystemsTable = () => {
       customTableProps: {
         locale: {
           emptyText: <div>No systems found</div>,
+        },
+        sticky: {
+          offsetHeader: 40,
         },
       },
     }),
@@ -222,6 +227,7 @@ const useSystemsTable = () => {
           <LinkCell
             href={`/systems/configure/${record.fides_key}`}
             data-testid={`system-link-${record.fides_key}`}
+            containerProps={{ className: "max-w-96" } as FlexProps}
           >
             {name || record.fides_key}
           </LinkCell>
@@ -301,11 +307,25 @@ const useSystemsTable = () => {
         title: "Data stewards",
         dataIndex: "data_stewards",
         key: SystemColumnKeys.DATA_STEWARDS,
-        render: (dataStewards: string[] | null) => (
-          <ListExpandableCell values={dataStewards ?? []} valueSuffix="users" />
+        render: (_, { data_stewards }) => (
+          <ListExpandableCell
+            values={
+              data_stewards?.map((data_steward) => formatUser(data_steward)) ??
+              []
+            }
+            valueSuffix="users"
+            containerProps={{ className: "min-w-36" }}
+          />
         ),
+        width: 200,
         filters: convertToAntFilters(
-          allUsers?.items?.map((user) => user.username),
+          allUsers?.items?.map(({ username }) => username),
+          (username) =>
+            formatUser(
+              allUsers?.items?.find((u) => u.username === username) ?? {
+                username,
+              },
+            ),
         ),
         filteredValue: columnFilters?.data_stewards || null,
       },
@@ -315,9 +335,7 @@ const useSystemsTable = () => {
         key: SystemColumnKeys.DESCRIPTION,
         render: (description: string | null) => (
           <div className="max-w-96">
-            <Typography.Text ellipsis={{ tooltip: description }}>
-              {description}
-            </Typography.Text>
+            <EllipsisCell>{description}</EllipsisCell>
           </div>
         ),
         ellipsis: true,
@@ -375,6 +393,7 @@ const useSystemsTable = () => {
     tableProps,
     selectionProps,
     columns,
+    error,
     // search
     searchQuery,
     updateSearch,

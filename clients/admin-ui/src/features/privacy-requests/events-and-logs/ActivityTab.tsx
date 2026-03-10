@@ -1,4 +1,4 @@
-import { AntButton as Button, AntFlex as Flex } from "fidesui";
+import { Button, Flex } from "fidesui";
 import { useState } from "react";
 
 import Restrict from "~/features/common/Restrict";

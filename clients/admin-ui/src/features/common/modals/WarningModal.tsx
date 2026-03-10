@@ -1,11 +1,11 @@
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  AntButton as Button,
+  Button,
+  ChakraAlertDialog as AlertDialog,
+  ChakraAlertDialogBody as AlertDialogBody,
+  ChakraAlertDialogContent as AlertDialogContent,
+  ChakraAlertDialogFooter as AlertDialogFooter,
+  ChakraAlertDialogHeader as AlertDialogHeader,
+  ChakraAlertDialogOverlay as AlertDialogOverlay,
   WarningIcon,
 } from "fidesui";
 import { ReactNode, useRef } from "react";

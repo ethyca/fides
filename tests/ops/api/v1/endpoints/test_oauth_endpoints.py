@@ -22,7 +22,7 @@ from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
     CLIENT_READ,
@@ -31,7 +31,7 @@ from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
     STORAGE_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
@@ -440,6 +440,10 @@ class TestAcquireAccessToken:
 
         assert extracted_token[JWE_PAYLOAD_ROLES] == [OWNER]
 
+        # Check token type
+        token_type = json.loads(response.text).get("token_type")
+        assert token_type == "Bearer"
+
     def test_get_access_token(self, db, url, api_client):
         new_client, secret = ClientDetail.create_client_and_secret(
             db,
@@ -468,6 +472,9 @@ class TestAcquireAccessToken:
             == []
         )
 
+        token_type = json.loads(response.text).get("token_type")
+        assert token_type == "Bearer"
+
         new_client.delete(db)
 
 
@@ -486,7 +493,7 @@ class TestCallback:
         }
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state(
         self,
@@ -513,7 +520,7 @@ class TestCallback:
         authentication_request.delete(db)
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_for_valid_state_with_token_error(
         self,
@@ -541,9 +548,9 @@ class TestCallback:
 
         authentication_request.delete(db)
 
-    @mock.patch("fides.api.api.v1.endpoints.oauth_endpoints.connection_status")
+    @mock.patch("fides.api.v1.endpoints.oauth_endpoints.connection_status")
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_successful_callback_with_referer(
         self,
@@ -579,9 +586,9 @@ class TestCallback:
 
         authentication_request.delete(db)
 
-    @mock.patch("fides.api.api.v1.endpoints.oauth_endpoints.connection_status")
+    @mock.patch("fides.api.v1.endpoints.oauth_endpoints.connection_status")
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_failed_callback_with_referer(
         self,
@@ -618,7 +625,7 @@ class TestCallback:
         authentication_request.delete(db)
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_access_token"
     )
     def test_callback_without_referer(
         self,
@@ -684,6 +691,7 @@ class TestReadRoleMapping:
         assert set(response_body.keys()) == {
             "approver",
             "contributor",
+            "data_steward",
             "external_respondent",
             "owner",
             "respondent",
@@ -874,9 +882,9 @@ class TestOAuthPrivilegeEscalationSecurity:
         contributor_scopes = ROLES_TO_SCOPES_MAPPING[CONTRIBUTOR]
         # Pick a safe scope that CONTRIBUTOR has
         allowed_scope = CLIENT_READ  # CONTRIBUTOR should have this
-        assert (
-            allowed_scope in contributor_scopes
-        ), f"{allowed_scope} should be in CONTRIBUTOR scopes"
+        assert allowed_scope in contributor_scopes, (
+            f"{allowed_scope} should be in CONTRIBUTOR scopes"
+        )
 
         # Create auth header using role-based authentication
         auth_header = generate_role_header_for_user(user, [CONTRIBUTOR])

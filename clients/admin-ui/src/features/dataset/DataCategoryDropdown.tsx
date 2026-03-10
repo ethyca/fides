@@ -1,14 +1,14 @@
 import {
-  AntButton,
   ArrowDownLineIcon,
-  Box,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
-  MenuOptionGroup,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuDivider as MenuDivider,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
+  ChakraMenuOptionGroup as MenuOptionGroup,
+  ChakraText as Text,
 } from "fidesui";
 import { useMemo } from "react";
 
@@ -39,7 +39,7 @@ const DataCategoryDropdown = ({
   return (
     <Menu closeOnSelect>
       <MenuButton
-        as={AntButton}
+        as={Button}
         icon={<ArrowDownLineIcon />}
         className="!bg-transparent"
         block
@@ -59,7 +59,7 @@ const DataCategoryDropdown = ({
             <MenuOptionGroup>
               <Box display="flex" justifyContent="space-between" px={2} mb={2}>
                 <MenuItem
-                  as={AntButton}
+                  as={Button}
                   size="small"
                   className="mr-2 !w-auto"
                   onClick={() => onChecked([])}
@@ -70,7 +70,7 @@ const DataCategoryDropdown = ({
                 </MenuItem>
                 <Text mr={2}>Data Categories</Text>
                 <MenuItem
-                  as={AntButton}
+                  as={Button}
                   size="small"
                   className="!w-auto"
                   data-testid="data-category-done-btn"

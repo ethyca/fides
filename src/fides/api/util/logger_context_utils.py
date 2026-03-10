@@ -1,6 +1,6 @@
 import inspect
 from abc import abstractmethod
-from enum import Enum
+from enum import Enum, StrEnum
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
 
@@ -17,7 +17,7 @@ from requests.exceptions import (  # pylint: disable=redefined-builtin
 from fides.config import CONFIG
 
 
-class LoggerContextKeys(str, Enum):
+class LoggerContextKeys(StrEnum):
     action_type = "action_type"
     status_code = "status_code"
     body = "body"
@@ -34,7 +34,7 @@ class LoggerContextKeys(str, Enum):
     privacy_request_source = "privacy_request_source"
 
 
-class ErrorGroup(str, Enum):
+class ErrorGroup(StrEnum):
     """A collection of user-friendly error labels to be used in contextualized logs."""
 
     network_error = "NetworkError"

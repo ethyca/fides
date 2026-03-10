@@ -12,16 +12,15 @@ from typing import Any, Dict, List, Tuple, Type, TypeVar
 
 from fastapi import HTTPException
 from loguru import logger as log
-from sqlalchemy import and_, column
+from sqlalchemy import and_, column, or_
 from sqlalchemy import delete as _delete
-from sqlalchemy import or_
 from sqlalchemy import update as _update
 from sqlalchemy.dialects.postgresql import Insert as _insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.sql import Select
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     CustomField,
@@ -48,7 +47,6 @@ async def create_resource(
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
     ):
-
         existing_resource = await get_resource(
             sql_model, resource_dict["fides_key"], async_session, raise_not_found=False
         )
@@ -366,7 +364,7 @@ async def delete_resource(
 
             log.bind(error="SQL Query integrity error!").error(raw_error_text)
             raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=error_message,
             )
         except SQLAlchemyError as e:

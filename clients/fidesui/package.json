@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "chromatic --exit-zero-on-changes"
   },
   "dependencies": {
     "@carbon/icons-react": "^11.51.0",
@@ -20,7 +21,9 @@
     "@chakra-ui/react": "^2.8.2",
     "antd": "^5.26.2",
     "iso-3166": "^4.3.0",
+    "motion": "^12.23.26",
     "react-hotkeys-hook": "^5.2.1",
+    "recharts": "^3.7.0",
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
@@ -33,12 +36,14 @@
     "sass": "^1.80.6"
   },
   "devDependencies": {
-    "@storybook/react-vite": "^9.1.15",
+    "@storybook/addon-a11y": "^10.2.10",
+    "@storybook/react-vite": "^10.2.10",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
     "@typescript-eslint/parser": "^7.17.0",
     "autoprefixer": "^10.4.14",
+    "chromatic": "^15.2.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^18.0.0",
@@ -50,11 +55,13 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-storybook": "^9.1.15",
+    "msw": "^2.12.10",
     "postcss": "^8.4.38",
     "prettier": "^3.3.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "storybook": "^9.1.15",
-    "tailwindcss": "^3.4.3"
+    "storybook": "^10.2.10",
+    "tailwindcss": "^3.4.3",
+    "vite": "^7.3.1"
   }
 }

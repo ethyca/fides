@@ -97,9 +97,7 @@ def refine_target_path(
     try:
         current_level = target_path[0]
         current_elem = row[current_level]
-    except (
-        KeyError
-    ):  # FieldPath not found in record, this is expected to happen when data doesn't exist in collection
+    except KeyError:  # FieldPath not found in record, this is expected to happen when data doesn't exist in collection
         return []
     except (
         IndexError,

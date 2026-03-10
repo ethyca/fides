@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntDivider as Divider,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Divider, Flex, Typography } from "fidesui";
 
 import { ConnectionConfigurationResponse } from "~/types/api";
 

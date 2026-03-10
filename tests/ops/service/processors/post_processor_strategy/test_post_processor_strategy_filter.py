@@ -372,7 +372,6 @@ def test_nested_array_path():
 
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.get_raw_access_results")
 def test_filter_by_invalid_dataset_reference(mock_method):
-
     config = FilterPostProcessorConfiguration(
         field="customerId",
         value={"dataset_reference": "postgres.customer"},

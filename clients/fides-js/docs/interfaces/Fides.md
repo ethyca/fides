@@ -162,16 +162,65 @@ Get the link text in the default locale to match other links on the page:
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
 
-Apply the link text to a custom modal link element on Fides initialization:
+Apply the link text to a custom element using the `FidesLocaleUpdated` event (also see [FidesLocaleEvent](FidesLocaleEvent.md) and [Fides.showModal](Fides.md#showmodal)):
 ```html
-<button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
-<script id="fides-js">
-  function() {
-    addEventListener("FidesReady", ( function() {
-      document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
-    }));
-  }
+<button id="fides-modal-link" class="footer__link"></button>
+<script>
+  window.addEventListener("FidesLocaleUpdated", () => {
+    document.getElementById("fides-modal-link").textContent =
+      Fides.getModalLinkLabel();
+  });
 </script>
+```
+
+***
+
+### setIdentity()
+
+> **setIdentity**: (`identity`) => `Promise`\<`void`\>
+
+Set identity fields on the Fides consent cookie (e.g. a custom user ID).
+Call after [Fides.init](Fides.md#init); the values are persisted in the cookie and
+included in subsequent save/API requests (e.g. in `browser_identity.external_id`).
+Only `external_id` is supported today. Reserved keys (e.g. `fides_user_device_id`)
+and verified keys (e.g. `email`, `phone_number`) cannot be set and will throw; support for
+custom and verified identity keys is planned on the roadmap.
+Empty or whitespace-only `external_id` throws; omit the key to leave identity unchanged.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `identity` | \{ `external_id`: `string`; \} | Object with optional `external_id` string (trimmed before use; empty/whitespace-only throws) |
+| `identity.external_id`? | `string` | - |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+Promise that resolves when the cookie has been updated
+
+#### Throws
+
+If Fides is not initialized, if external_id is empty or whitespace-only, or if an unsupported/reserved/verified key is provided
+
+#### Examples
+
+Set a custom external ID after the user logs in:
+```ts
+await Fides.setIdentity({ external_id: "user-123" });
+```
+
+In HTML, call setIdentity when your app knows the user (e.g. after login):
+```html
+<body>
+  <script src="path/to/fides.js"></script>
+  <script>
+    function onUserLoggedIn(userId) {
+      Fides.setIdentity({ external_id: userId });
+    }
+  </script>
+</body>
 ```
 
 ***
@@ -297,6 +346,100 @@ With options to include non-applicable notices and use consent mechanism strings
 
 ***
 
+### aep()
+
+> **aep**: (`options`?) => `object`
+
+Enable the Adobe Experience Platform (AEP) integration. This should be called
+immediately after FidesJS is included. Once enabled, FidesJS will automatically
+sync consent to both Adobe Web SDK (Alloy) and Adobe ECID Opt-In Service (AppMeasurement)
+based on the user's consent preferences.
+
+The integration supports custom mappings for both Adobe Web SDK purposes and
+legacy ECID Opt-In categories. If no custom mappings are provided, default
+mappings are used that work for common use cases.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | \{ `purposeMapping`: `Record`\<`string`, `string`[]\>; `ecidMapping`: `Record`\<`string`, `string`[]\>; \} | Optional configuration for the Adobe Experience Platform integration |
+| `options.purposeMapping`? | `Record`\<`string`, `string`[]\> | Maps Fides consent keys to Adobe Web SDK purposes. Default mapping includes: analytics → ['collect', 'measure'], functional → ['personalize'], advertising → ['share', 'personalize'] |
+| `options.ecidMapping`? | `Record`\<`string`, `string`[]\> | Maps Fides consent keys to Adobe ECID Opt-In categories. Default mapping includes: analytics → ['aa'], functional → ['target'], advertising → ['aam'] |
+
+#### Returns
+
+`object`
+
+| Name | Type |
+| ------ | ------ |
+| `consent` | () => `object` |
+
+#### Examples
+
+Basic usage with default mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>Fides.aep()</script>
+</head>
+```
+
+With custom Adobe Web SDK purpose mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.aep({
+      purposeMapping: {
+        analytics: ['collect', 'measure'],
+        marketing: ['personalize', 'share']
+      }
+    });
+  </script>
+</head>
+```
+
+With custom ECID Opt-In category mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.aep({
+      ecidMapping: {
+        analytics: ['aa', 'mediaaa'],
+        functional: ['target'],
+        advertising: ['aam', 'adcloud']
+      }
+    });
+  </script>
+</head>
+```
+
+With both custom mappings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    const aep = Fides.aep({
+      purposeMapping: {
+        analytics: ['collect', 'measure'],
+        marketing: ['personalize', 'share']
+      },
+      ecidMapping: {
+        analytics: ['aa'],
+        marketing: ['target', 'aam']
+      }
+    });
+
+    // Check current Adobe consent state
+    console.log(aep.consent());
+  </script>
+</head>
+```
+
+***
+
 ### gcm()
 
 > **gcm**: (`options`?) => `object`
@@ -313,8 +456,6 @@ and optional types like functionality_storage and personalization_storage.
 The integration gracefully handles cases where not all mapped consent keys
 are configured in Fides - it will only process consent for keys that exist
 in both the purposeMapping and the Fides consent object.
-
-See the [Google Consent Mode documentation](https://developers.google.com/tag-platform/security/guides/consent) for more.
 
 #### Parameters
 

@@ -1,7 +1,7 @@
 import { Select } from "antd/lib";
 import React, { ComponentProps, useState } from "react";
 
-import { CustomTag as AntTag, CustomTypography } from "../../hoc";
+import { CustomTag as Tag, CustomTypography } from "../../hoc";
 import styles from "./SelectInline.module.scss";
 
 type SelectProps = ComponentProps<typeof Select>;
@@ -28,7 +28,7 @@ type SelectInlineValue = string | number | boolean;
 
 const SelectInlinePrefix = () => (
   <div style={{ paddingTop: "1px" }}>
-    <AntTag addable className="cursor-pointer m-0 border-none" />
+    <Tag addable className="cursor-pointer m-0 border-none" />
   </div>
 );
 
@@ -67,7 +67,7 @@ export const SelectInline = ({
 
     return (
       <div className="mr-1">
-        <AntTag
+        <Tag
           color="white"
           closable={readonly ? false : closable}
           onClose={onClose}
@@ -75,7 +75,7 @@ export const SelectInline = ({
           className={onTagClick ? "cursor-pointer" : undefined}
         >
           {label}
-        </AntTag>
+        </Tag>
       </div>
     );
   },

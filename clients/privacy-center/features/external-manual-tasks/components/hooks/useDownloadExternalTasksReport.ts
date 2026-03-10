@@ -1,4 +1,4 @@
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 
 import { useLazyExportExternalTasksQuery } from "../../external-manual-tasks.slice";
 

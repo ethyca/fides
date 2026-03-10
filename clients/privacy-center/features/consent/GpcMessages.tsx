@@ -1,12 +1,12 @@
 import { GpcStatus } from "fides-js";
 import {
-  AntTag as Tag,
-  Box,
+  ChakraBox as Box,
+  ChakraHStack as HStack,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  ChakraWarningTwoIcon as WarningTwoIcon,
   CUSTOM_TAG_COLOR,
-  HStack,
-  Stack,
-  Text,
-  WarningTwoIcon,
+  Tag,
 } from "fidesui";
 
 import useI18n from "~/common/hooks/useI18n";
@@ -17,15 +17,24 @@ const BADGE_COLORS = {
   [GpcStatus.OVERRIDDEN]: CUSTOM_TAG_COLOR.ERROR,
 };
 
-export const GpcBadge = ({ status }: { status: GpcStatus }) =>
-  status === GpcStatus.NONE ? null : (
+export const GpcBadge = ({ status }: { status: GpcStatus }) => {
+  const { i18n } = useI18n();
+  if (status === GpcStatus.NONE) {
+    return null;
+  }
+  const statusLabel =
+    status === GpcStatus.APPLIED
+      ? i18n.t("exp.gpc_status_applied_label")
+      : i18n.t("exp.gpc_status_overridden_label");
+  return (
     <HStack data-testid="gpc-badge">
       <Text color="gray.800" fontWeight="semibold" fontSize="xs">
-        Global Privacy Control
+        {i18n.t("exp.gpc_label")}
       </Text>
-      <Tag color={BADGE_COLORS[status]}>{status}</Tag>
+      <Tag color={BADGE_COLORS[status]}>{statusLabel}</Tag>
     </HStack>
   );
+};
 
 const InfoText: typeof Text = (props) => (
   <Box
@@ -83,12 +92,12 @@ export const GpcBanner = () => {
       <Stack direction="row">
         <WarningTwoIcon color="blue.400" />
         <Text fontSize="sm" fontWeight="bold" data-testid="gpc.banner.title">
-          {i18n.t("static.gpc.title")}
+          {i18n.t("exp.gpc_title")}
         </Text>
       </Stack>
 
       <Box paddingLeft={6} data-testid="gpc.banner.description">
-        <Text fontSize="sm">{i18n.t("static.gpc.description")}</Text>
+        <Text fontSize="sm">{i18n.t("exp.gpc_description")}</Text>
       </Box>
     </Stack>
   );

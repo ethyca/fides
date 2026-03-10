@@ -10,7 +10,6 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncProcessing,
@@ -28,6 +27,7 @@ from fides.api.graph.config import (
     FieldAddress,
     FieldPath,
     GraphDataset,
+    PropertyScope,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
@@ -47,15 +47,13 @@ from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
+from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.task.refine_target_path import FieldPathNodeInput
-from fides.api.task.scheduler_utils import use_dsr_3_0_scheduler
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import (
     NodeInput,
     Row,
     append_unique,
-    extract_key_for_address,
     make_immutable,
     make_mutable,
 )
@@ -65,6 +63,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
+from fides.common.session_management import get_autoclose_db_session as get_db
 from fides.config import CONFIG
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
@@ -142,9 +141,6 @@ def retry(
                     traceback.print_exc()
                     self.request_task.rows_masked = 0
                     self.log_end(action_type, ex=None, success_override_msg=exc)
-                    self.resources.cache_erasure(
-                        f"{self.traversal_node.address.value}", 0
-                    )  # Cache that the erasure was performed in case we need to restart for DSR 2.0
                     return 0
                 except (
                     CollectionDisabled,
@@ -212,11 +208,6 @@ def retry(
                 ]  # Convert ActionType into a CurrentStep, no longer coerced with Pydantic V2
             )
             self.add_error_status_for_consent_reporting()
-            if not self.request_task.id:
-                # TODO Remove when we stop support for DSR 2.0
-                # Re-raise to stop privacy request execution on failure for
-                # deprecated DSR 2.0 sequential execution
-                raise raised_ex  # type: ignore
             return default_return
 
         return result
@@ -282,8 +273,17 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return self.connector.dry_run_query(self.execution_node)
 
     def can_write_data(self) -> bool:
-        """Checks if the relevant ConnectionConfig has been granted "write" access to its data"""
+        """Checks if the relevant ConnectionConfig has been granted "write" access to its data.
+
+        Manual task connections always return True since they don't actually write to
+        external systems - humans manually record/confirm actions instead.
+        """
         connection_config: ConnectionConfig = self.connector.configuration
+        # Manual tasks don't connect to external systems, so the write access
+        # concept doesn't apply. Humans manually record erasure confirmations
+        # or consent preferences.
+        if connection_config.connection_type == ConnectionType.manual_task:
+            return True
         return connection_config.access == AccessLevel.write
 
     def _combine_seed_data(
@@ -302,7 +302,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             ROOT_COLLECTION_ADDRESS
         ]:
             dependent_values = consolidate_query_matches(
-                row=seed_data, target_path=foreign_field_path  # type: ignore
+                row=seed_data,  # type: ignore[arg-type]
+                target_path=foreign_field_path,  # type: ignore
             )
             grouped_data[local_field_path.string_path] = dependent_values
         return grouped_data
@@ -424,15 +425,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 },
             )
 
-            # For DSR 3.0, updating the Request Task status when the ExecutionLog is
-            # created to keep these in sync.
-            # TODO remove conditional above alongside deprecating DSR 2.0
             if self.request_task.id:
-                # Merge the request_task into the current session to make it persistent,
-                # then refresh its `async_type` to load the latest state from the
-                # database. This is crucial for async tasks where `async_type` might be
-                # updated by another process, and avoids overwriting local data like
-                # `access_data`.
+                # Merge the request_task into the current session to make it
+                # persistent, then refresh its `async_type` to load the latest
+                # state from the database. This is crucial for async tasks where
+                # `async_type` might be updated by another process, and avoids
+                # overwriting local data like `access_data`.
                 request_task = db.merge(self.request_task)
                 db.refresh(request_task, attribute_names=["async_type"])
                 request_task.update_status(db, status)
@@ -611,19 +609,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             placeholder_output.append(row_copy)
 
-        # For DSR 3.0, save data to build masking requests directly
-        # on the Request Task.
+        # Save data to build masking requests directly on the Request Task.
         # Results saved with matching array elements preserved
-        if self.request_task.id:
-            self.request_task.data_for_erasures = placeholder_output
-
-        # TODO Remove when we stop support for DSR 2.0
-        # Save data to build masking requests for DSR 2.0 in Redis.
-        # Results saved with matching array elements preserved
-        if not use_dsr_3_0_scheduler(self.resources.request, ActionType.access):
-            self.resources.cache_results_with_placeholders(
-                f"access_request__{self.key}", placeholder_output
-            )
+        self.request_task.data_for_erasures = placeholder_output
 
         # For access request results, mutate rows in-place to remove non-matching
         # array elements.  We already iterated over `output` above, so reuse the same
@@ -644,15 +632,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 len(post_processed_node_input_data),
             )
 
-        if self.request_task.id:
-            # Saves intermediate access results for DSR 3.0 directly on the Request Task
-            self.request_task.access_data = output
-
-        # TODO Remove when we stop support for DSR 2.0
-        # Saves intermediate access results for DSR 2.0 in Redis
-        # Only cache for existing DSR 2.0 requests
-        if not use_dsr_3_0_scheduler(self.resources.request, ActionType.access):
-            self.resources.cache_object(f"access_request__{self.key}", output)
+        # Save intermediate access results directly on the Request Task
+        self.request_task.access_data = output
 
         # Return filtered rows with non-matched array data removed.
         return output
@@ -711,6 +692,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
+        is_traversal_only = (
+            self.execution_node.collection.property_scope
+            == PropertyScope.TRAVERSAL_ONLY
+        )
         with logger.contextualize(
             **{LoggerContextKeys.privacy_request_id.value: self.resources.request.id}
         ):
@@ -727,6 +712,23 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                     self.request_task,
                     formatted_input_data,
                 )
+
+            if is_traversal_only:
+                # TRAVERSAL_ONLY bridge nodes: retrieve data for FK propagation
+                # to downstream nodes, but don't save for erasures or access report.
+                logger.debug(
+                    "TRAVERSAL_ONLY node {}: caching FK values for downstream, "
+                    "skipping access report and erasure data.",
+                    self.execution_node.address,
+                )
+                self.request_task.access_data = output
+                self.update_status(
+                    f"Traversal-only bridge node - retrieved {len(output)} records for FK propagation",
+                    None,
+                    ActionType.access,
+                    ExecutionLogStatus.complete,
+                )
+                return output
 
             filtered_output: List[Row] = self.access_results_post_processing(
                 self.pre_process_input_data(*inputs, group_dependent_fields=False),
@@ -749,12 +751,26 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def erasure_request(
         self,
         retrieved_data: List[Row],
-        *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0. DSR 3.0 enforces with downstream_tasks.
-        inputs: Optional[
-            List[List[Row]]
-        ] = None,  # Upstream data from corresponding access task
+        inputs: Optional[List[List[Row]]] = None,
     ) -> int:
         """Run erasure request"""
+        if (
+            self.execution_node.collection.property_scope
+            == PropertyScope.TRAVERSAL_ONLY
+        ):
+            # TRAVERSAL_ONLY bridge nodes: skip masking entirely
+            logger.debug(
+                "TRAVERSAL_ONLY node {}: skipping erasure.",
+                self.execution_node.address,
+            )
+            self.request_task.rows_masked = 0
+            self.update_status(
+                "Skipped erasure for traversal-only bridge node",
+                None,
+                ActionType.erasure,
+                ExecutionLogStatus.complete,
+            )
+            return 0
 
         if inputs is None:
             inputs = []
@@ -772,12 +788,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
                 self.connector.configuration.connection_type,
             )
-            if self.request_task.id:
-                # For DSR 3.0, largely for testing. DSR 3.0 uses Request Task status
-                # instead of presence of cached erasure data to know if we should rerun a node
-                self.request_task.rows_masked = 0  # Saved as part of update_status
-            # TODO Remove when we stop support for DSR 2.0
-            self.resources.cache_erasure(self.key.value, 0)
+            self.request_task.rows_masked = 0  # Saved as part of update_status
             self.update_status(
                 "No values were erased since no primary key was defined in any of the fields for this collection",
                 None,
@@ -791,11 +802,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "No erasures on {} as its ConnectionConfig does not have write access.",
                 self.execution_node.address,
             )
-            if self.request_task.id:
-                # DSR 3.0
-                self.request_task.rows_masked = 0  # Saved as part of update_status
-            # TODO Remove when we stop support for DSR 2.0
-            self.resources.cache_erasure(self.key.value, 0)
+            self.request_task.rows_masked = 0  # Saved as part of update_status
             self.update_status(
                 f"No values were erased since this connection {self.connector.configuration.key} has not been "
                 f"given write access",
@@ -820,16 +827,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 formatted_input_data,
             )
 
-        if self.request_task.id:
-            # For DSR 3.0, largely for testing. DSR 3.0 uses Request Task status
-            # instead of presence of cached erasure data to know if we should rerun a node
-            self.request_task.rows_masked = (
-                output  # Saved as part of update_status below
-            )
-        # TODO Remove when we stop support for DSR 2.0
-        self.resources.cache_erasure(
-            self.key.value, output
-        )  # Cache that the erasure was performed in case we need to restart
+        self.request_task.rows_masked = output  # Saved as part of update_status below
 
         # Include postprocessor messages in success message if available
         success_message = None
@@ -852,7 +850,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.execution_node.address,
             )
             if self.request_task.id:
-                # For DSR 3.0, saved as part of
+                # Saved as part of the request task
                 self.request_task.consent_sent = False
             self.update_status(
                 f"No consent requests were sent since this connection {self.connector.configuration.key} has not been "
@@ -935,18 +933,6 @@ def collect_queries(
     return env
 
 
-def start_function(seed: List[Dict[str, Any]]) -> Callable[[], List[Dict[str, Any]]]:
-    """Return a function for collections with no upstream dependencies, that just start
-    with seed data.
-
-    This is used for root nodes or previously-visited nodes on restart."""
-
-    def g() -> List[Dict[str, Any]]:
-        return seed
-
-    return g
-
-
 def filter_by_enabled_actions(
     access_results: Dict[str, Any], connection_configs: List[ConnectionConfig]
 ) -> Dict[str, Any]:
@@ -967,25 +953,6 @@ def filter_by_enabled_actions(
             filtered_access_results[key] = value
 
     return filtered_access_results
-
-
-def get_cached_data_for_erasures(
-    privacy_request_id: str,
-) -> Dict[str, Any]:
-    """
-    Fetches processed access request results to be used for erasures.
-
-    Processing may have added indicators to not mask certain elements in array data.
-    """
-    cache = get_cache()
-    value_dict = cache.get_encoded_objects_by_prefix(
-        f"PLACEHOLDER_RESULTS__{privacy_request_id}"
-    )
-    number_of_leading_strings_to_exclude = 3
-    return {
-        extract_key_for_address(k, number_of_leading_strings_to_exclude): v
-        for k, v in value_dict.items()
-    }
 
 
 def build_affected_field_logs(
@@ -1016,9 +983,9 @@ def build_affected_field_logs(
             if not rule_categories:
                 continue
 
-            collection_categories: Dict[
-                str, List[FieldPath]
-            ] = node.collection.field_paths_by_category  # type: ignore
+            collection_categories: Dict[str, List[FieldPath]] = (
+                node.collection.field_paths_by_category
+            )  # type: ignore
             for rule_cat in rule_categories:
                 for collection_cat, field_paths in collection_categories.items():
                     if collection_cat.startswith(rule_cat):
@@ -1042,11 +1009,22 @@ def build_affected_field_logs(
         return ret
 
 
-def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
+def build_consent_dataset_graph(
+    datasets: List[DatasetConfig], session: Optional[Session] = None
+) -> DatasetGraph:
     """
     Build the starting DatasetGraph for consent requests.
 
-    Consent Graph has one node per dataset.  Nodes must be of saas type and have consent requests defined.
+    Consent Graph has one node per dataset. Nodes must be of saas type and have consent
+    requests defined, or be manual tasks with consent configurations.
+
+    Args:
+        datasets: List of DatasetConfig objects to build the graph from
+        session: Optional database session for loading manual task graphs.
+            If provided, manual tasks with consent configs will be included.
+
+    Returns:
+        DatasetGraph containing all consent-capable nodes
     """
     consent_datasets: List[GraphDataset] = []
 
@@ -1064,5 +1042,12 @@ def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
             consent_datasets.append(
                 dataset_config.get_dataset_with_stubbed_collection()
             )
+
+    # Add manual task graphs if session is provided
+    if session:
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            session, config_types=[ActionType.consent]
+        )
+        consent_datasets.extend(manual_task_graphs)
 
     return DatasetGraph(*consent_datasets)

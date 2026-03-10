@@ -3,13 +3,13 @@ from typing import Any, Optional, Type
 
 from loguru import logger
 
-from fides.api.api.deps import get_autoclose_db_session
 from fides.api.schemas.external_storage import ExternalStorageMetadata
 from fides.api.service.external_data_storage import (
     ExternalDataStorageError,
     ExternalDataStorageService,
 )
 from fides.api.util.data_size import LARGE_DATA_THRESHOLD_BYTES, calculate_data_size
+from fides.common.session_management import get_autoclose_db_session
 
 
 class EncryptedLargeDataDescriptor:
@@ -34,9 +34,7 @@ class EncryptedLargeDataDescriptor:
 
     # Descriptor protocol helpers
 
-    def __set_name__(
-        self, owner: Type, name: str
-    ) -> None:  # noqa: D401 (docstring in orig file)
+    def __set_name__(self, owner: Type, name: str) -> None:  # noqa: D401 (docstring in orig file)
         self.name = name
         self.model_class = owner.__name__
 

@@ -1,15 +1,15 @@
 import {
-  AntButton as Button,
-  Code,
-  Link,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-  Text,
-  useDisclosure,
+  Button,
+  ChakraCode as Code,
+  ChakraLink as Link,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useMemo, useRef } from "react";
 

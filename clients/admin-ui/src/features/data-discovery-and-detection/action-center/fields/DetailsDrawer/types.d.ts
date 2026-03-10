@@ -1,7 +1,4 @@
-import {
-  AntDrawerProps as DrawerProps,
-  AntTagProps as TagProps,
-} from "fidesui";
+import { DrawerProps, TagProps } from "fidesui";
 import { ReactNode } from "react";
 
 export type DetailsAction = {

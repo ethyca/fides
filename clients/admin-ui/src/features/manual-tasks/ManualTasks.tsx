@@ -1,11 +1,12 @@
 import {
-  AntButton as Button,
-  AntFilterValue as FilterValue,
-  AntTable as Table,
-  AntTablePaginationConfig as TablePaginationConfig,
-  AntTypography as Typography,
-  Flex,
+  Button,
+  ChakraFlex as Flex,
+  FilterValue,
   Icons,
+  PageSpinner,
+  Table,
+  TablePaginationConfig,
+  Typography,
 } from "fidesui";
 import { isEqual } from "lodash";
 import { useRouter } from "next/router";
@@ -13,7 +14,7 @@ import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
-import FidesSpinner from "~/features/common/FidesSpinner";
+import ErrorPage from "~/features/common/errors/ErrorPage";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { GlobalFilterV2 } from "~/features/common/table/v2/filters/GlobalFilterV2";
@@ -88,7 +89,12 @@ export const ManualTasks = () => {
     setPageIndex(1);
   };
 
-  const { data, isLoading, isFetching } = useGetTasksQuery({
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error: dataError,
+  } = useGetTasksQuery({
     page: pageIndex,
     size: pageSize,
     status: filters.status as ManualFieldStatus,
@@ -217,7 +223,7 @@ export const ManualTasks = () => {
   );
 
   if (isLoading) {
-    return <FidesSpinner />;
+    return <PageSpinner />;
   }
 
   const showSpinner = isLoading || isFetching;
@@ -246,6 +252,15 @@ export const ManualTasks = () => {
       </div>
     );
   };
+
+  if (dataError) {
+    return (
+      <ErrorPage
+        error={dataError}
+        defaultMessage="A problem occurred while fetching your manual tasks"
+      />
+    );
+  }
 
   return (
     <div className="mt-2 space-y-4">

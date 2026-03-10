@@ -1,24 +1,19 @@
 import type { Key } from "antd/es/table/interface";
-import {
-  AntButton as Button,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Empty, Flex, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useCallback, useMemo, useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import { useSavePrivacyPreferencesMutation } from "~/features/common/v3-api.slice";
 import type { PrivacyNoticeResponse } from "~/types/api";
 import type { ConsentPreferenceCreate } from "~/types/api/models/ConsentPreferenceCreate";
 import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
-import type { OverrideMode } from "~/types/api/models/OverrideMode";
-import { OverrideMode as OverrideModeEnum } from "~/types/api/models/OverrideMode";
+import type { PropagationPolicyKey } from "~/types/api/models/PropagationPolicyKey";
 import { UserConsentPreference } from "~/types/api/models/UserConsentPreference";
 
-import OverrideModeDropdown from "./OverrideModeDropdown";
 import PreviewCard from "./PreviewCard";
 import PrivacyNoticesTree from "./PrivacyNoticesTree";
+import PropagationPolicyDropdown from "./PropagationPolicyDropdown";
 
 export interface PreferenceState {
   checkedKeys: Key[];
@@ -32,8 +27,8 @@ export interface NoticeMappings {
 }
 
 interface SavePreferencesSectionProps {
-  overrideMode: OverrideMode | null;
-  onOverrideModeChange: (mode: OverrideMode | null) => void;
+  policy: PropagationPolicyKey | null;
+  onPolicyChange: (mode: PropagationPolicyKey | null) => void;
   privacyNotices: PrivacyNoticeResponse[];
   preferenceState: PreferenceState;
   noticeMappings: NoticeMappings;
@@ -45,8 +40,8 @@ interface SavePreferencesSectionProps {
 }
 
 const SavePreferencesSection = ({
-  overrideMode,
-  onOverrideModeChange,
+  policy,
+  onPolicyChange,
   privacyNotices,
   preferenceState,
   noticeMappings,
@@ -127,10 +122,10 @@ const SavePreferencesSection = ({
           value: isChecked
             ? UserConsentPreference.OPT_IN
             : UserConsentPreference.OPT_OUT,
-          experience_config_history_id: experienceConfigHistoryId,
+          collected_at: new Date().toISOString(),
           meta: {
             fides: {
-              collected_at: new Date().toISOString(),
+              experience_config_history_id: experienceConfigHistoryId,
             },
           },
         };
@@ -145,12 +140,19 @@ const SavePreferencesSection = ({
           },
           preferences,
         },
-        override_mode: overrideMode,
+        policy,
       }).unwrap();
 
       setPostResponse(response);
-      // Update fetched state to current state after successful save
-      onFetchedKeysChange(checkedKeys);
+
+      // Update checked keys based on the response from the backend
+      // This ensures the UI reflects any cascading that happened server-side
+      const savedOptInKeys = response.preferences
+        .filter((pref) => pref.value === UserConsentPreference.OPT_IN)
+        .map((pref) => pref.notice_key);
+
+      onCheckedKeysChange(savedOptInKeys);
+      onFetchedKeysChange(savedOptInKeys);
       // Clear explicitly changed keys after successful save
       onExplicitlyChangedKeysChange([]);
     } catch {
@@ -159,12 +161,12 @@ const SavePreferencesSection = ({
   }, [
     createKeySets,
     noticeKeyToHistoryMap,
-    overrideMode,
+    policy,
     experienceConfigHistoryId,
     email,
     savePreferences,
+    onCheckedKeysChange,
     onFetchedKeysChange,
-    checkedKeys,
     explicitlyChangedKeys,
     onExplicitlyChangedKeysChange,
   ]);
@@ -178,23 +180,15 @@ const SavePreferencesSection = ({
 
         {hasCurrentResponse ? (
           <>
-            <OverrideModeDropdown
-              value={overrideMode}
-              onChange={onOverrideModeChange}
+            <PropagationPolicyDropdown
+              value={policy}
+              onChange={onPolicyChange}
             />
 
             <PrivacyNoticesTree
               privacyNotices={privacyNotices}
               checkedKeys={checkedKeys}
               onCheckedKeysChange={onCheckedKeysChange}
-              cascadeConsent={
-                overrideMode === OverrideModeEnum.DESCENDANTS ||
-                overrideMode === OverrideModeEnum.ALL
-              }
-              cascadeAncestors={
-                overrideMode === OverrideModeEnum.ANCESTORS ||
-                overrideMode === OverrideModeEnum.ALL
-              }
               onExplicitChange={(key) => {
                 // Always track when user clicks a key
                 // Remove the key if it's already there (user is toggling back)
@@ -216,10 +210,9 @@ const SavePreferencesSection = ({
               Save preferences
             </Button>
 
-            {isError && (
+            {isError && error && (
               <Typography.Text type="danger" className="mt-2 block">
-                Error saving preferences:{" "}
-                {error && "message" in error ? error.message : "Unknown error"}
+                Error saving preferences: {getErrorMessage(error)}
               </Typography.Text>
             )}
           </>
@@ -237,7 +230,7 @@ const SavePreferencesSection = ({
           header={
             postResponse
               ? `POST /api/v3/privacy-preferences${
-                  overrideMode ? `?override_mode=${overrideMode}` : ""
+                  policy ? `?policy=${policy}` : ""
                 }`
               : null
           }

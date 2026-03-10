@@ -1,13 +1,13 @@
 /* eslint-disable no-param-reassign */
 import {
-  AntButton as Button,
-  Flex,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Thead,
-  Tr,
+  Button,
+  ChakraFlex as Flex,
+  ChakraTable as Table,
+  ChakraTbody as Tbody,
+  ChakraTd as Td,
+  ChakraText as Text,
+  ChakraThead as Thead,
+  ChakraTr as Tr,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useState } from "react";

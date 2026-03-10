@@ -11,7 +11,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from fides.api.db.base import Base  # type: ignore
 from fides.api.db.crud import get_resource, list_resource
 from fides.api.util import errors
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CTL_DATASET,
     CTL_POLICY,
     DATA_CATEGORY,
@@ -54,12 +54,12 @@ async def forbid_if_editing_is_default(
     if isinstance(sql_model, ModelWithDefaultField):
         resource = await get_resource(sql_model, fides_key, async_session)
 
-        assert isinstance(
-            resource, ModelWithDefaultField
-        ), "Provided Resource is not the right type!"
-        assert isinstance(
-            payload, ModelWithDefaultField
-        ), "Provided Payload is not the right type!"
+        assert isinstance(resource, ModelWithDefaultField), (
+            "Provided Resource is not the right type!"
+        )
+        assert isinstance(payload, ModelWithDefaultField), (
+            "Provided Payload is not the right type!"
+        )
 
         if resource.is_default != payload.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
@@ -115,7 +115,7 @@ async def forbid_if_editing_any_is_default(
 
 
 def validate_start_and_end_filters(
-    date_filters: List[Tuple[Optional[datetime], Optional[datetime], str]]
+    date_filters: List[Tuple[Optional[datetime], Optional[datetime], str]],
 ) -> None:
     """Assert that start date isn't after end date
 

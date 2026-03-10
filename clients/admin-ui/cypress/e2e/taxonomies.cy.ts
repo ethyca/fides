@@ -12,7 +12,7 @@ describe("Taxonomy management page", () => {
 
   it("Can navigate to the taxonomy page", () => {
     cy.visit("/");
-    cy.getByTestId("Settings-nav-group").click();
+    cy.getByTestId("Core configuration-nav-group").click();
     cy.getByTestId("Taxonomy-nav-link").click();
     cy.getByTestId("taxonomy-type-selector");
   });
@@ -285,10 +285,9 @@ describe("Taxonomy management page", () => {
     });
 
     it("Can (soft) delete a label", () => {
-      cy.intercept("PUT", "/api/v1/data_category*", {
-        fides_key: "user.content",
-        active: false,
-      }).as("deleteDataCategory");
+      cy.intercept("DELETE", "/api/v1/data_category/*").as(
+        "deleteDataCategory",
+      );
 
       cy.getByTestId(`taxonomy-node-user.content`).click();
       cy.getByTestId("edit-drawer-content").within(() => {
@@ -298,11 +297,7 @@ describe("Taxonomy management page", () => {
         cy.getByTestId("continue-btn").click();
       });
 
-      cy.wait("@deleteDataCategory").then((interception) => {
-        const { body } = interception.request;
-        expect(body.fides_key).to.equal("user.content");
-        expect(body.active).to.equal(false);
-      });
+      cy.wait("@deleteDataCategory");
     });
   });
 

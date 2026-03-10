@@ -12,12 +12,11 @@ from fides.api.models.manual_task import (
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskInstance,
-    ManualTaskLog,
-    ManualTaskLogStatus,
     ManualTaskSubmission,
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.service.attachment_service import AttachmentService
 
 
 @pytest.fixture
@@ -59,7 +58,6 @@ class TestManualTaskInstance:
         assert instance.status == StatusType.pending
         assert instance.completed_at is None
         assert instance.completed_by_id is None
-        assert instance.logs == []
         assert instance.submissions == []
         assert instance.config is manual_task_config
         assert instance.task is manual_task
@@ -69,38 +67,38 @@ class TestManualTaskInstance:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
     ):
         """Test getting required fields."""
         # Update the field to be required
-        manual_task_config_field_1.field_metadata = {"required": True}
+        manual_task_config_field.field_metadata = {"required": True}
         db.commit()
 
         required_fields = manual_task_instance.required_fields
         assert len(required_fields) == 1
-        assert required_fields[0].id == manual_task_config_field_1.id
+        assert required_fields[0].id == manual_task_config_field.id
         assert required_fields[0].field_metadata["required"] is True
 
     def test_incomplete_fields(
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
     ):
         """Test getting incomplete fields."""
         # Update the field to be required
-        manual_task_config_field_1.field_metadata = {"required": True}
+        manual_task_config_field.field_metadata = {"required": True}
         db.commit()
 
         incomplete_fields = manual_task_instance.incomplete_fields
         assert len(incomplete_fields) == 1
-        assert incomplete_fields[0].id == manual_task_config_field_1.id
+        assert incomplete_fields[0].id == manual_task_config_field.id
 
     def test_completed_fields(
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test getting completed fields."""
@@ -113,7 +111,7 @@ class TestManualTaskInstance:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -123,14 +121,14 @@ class TestManualTaskInstance:
         # Now field1 should be completed
         completed_fields = manual_task_instance.completed_fields
         assert len(completed_fields) == 1
-        assert completed_fields[0].id == manual_task_config_field_1.id
+        assert completed_fields[0].id == manual_task_config_field.id
 
     @pytest.mark.usefixtures("mock_s3_client", "s3_client")
     def test_attachments(
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         attachment_data: dict[str, Any],
         user: FidesUser,
     ):
@@ -141,7 +139,7 @@ class TestManualTaskInstance:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -149,10 +147,9 @@ class TestManualTaskInstance:
         )
 
         # Create an attachment
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
 
         # Link attachment to submission
@@ -194,7 +191,7 @@ class TestManualTaskInstance:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test that submissions relationship automatically syncs without manual expire/refresh."""
@@ -207,7 +204,7 @@ class TestManualTaskInstance:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test1"},
@@ -224,7 +221,7 @@ class TestManualTaskInstance:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test2"},
@@ -249,7 +246,7 @@ class TestManualTaskInstance:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         attachment_data: dict[str, Any],
         user: FidesUser,
         mock_s3_client,
@@ -261,7 +258,7 @@ class TestManualTaskInstance:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -272,10 +269,9 @@ class TestManualTaskInstance:
         assert len(manual_task_instance.attachments) == 0
 
         # Create and link an attachment
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
 
         AttachmentReference.create(
@@ -298,7 +294,7 @@ class TestManualTaskInstance:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test that bidirectional relationships stay consistent automatically."""
@@ -308,7 +304,7 @@ class TestManualTaskInstance:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -360,28 +356,9 @@ class TestManualTaskInstance:
         """Test that deleting a ManualTask orphans historical data but deletes references."""
         task = manual_task_instance.task
 
-        # Create some logs for the task
-        log1 = ManualTaskLog.create_log(
-            db=db,
-            task_id=task.id,
-            status=ManualTaskLogStatus.created,
-            message="Test log 1",
-        )
-        log2 = ManualTaskLog.create_log(
-            db=db,
-            task_id=task.id,
-            status=ManualTaskLogStatus.in_progress,
-            message="Test log 2",
-        )
-
-        # Verify logs exist
-        assert len(task.logs) >= 2
-
         # Store IDs for verification
         task_id = task.id
         instance_id = manual_task_instance.id
-        log1_id = log1.id
-        log2_id = log2.id
 
         # Delete the task (should orphan instance and logs)
         db.delete(task)
@@ -398,21 +375,13 @@ class TestManualTaskInstance:
         assert orphaned_instance is not None
         assert orphaned_instance.task_id is None
 
-        # Verify logs still exist but are orphaned
-        orphaned_log1 = db.query(ManualTaskLog).filter_by(id=log1_id).first()
-        orphaned_log2 = db.query(ManualTaskLog).filter_by(id=log2_id).first()
-        assert orphaned_log1 is not None
-        assert orphaned_log2 is not None
-        assert orphaned_log1.task_id is None
-        assert orphaned_log2.task_id is None
-
 
 class TestManualTaskSubmission:
     def test_create_manual_task_submission(
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test creating a manual task submission."""
@@ -421,7 +390,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -430,7 +399,7 @@ class TestManualTaskSubmission:
 
         assert submission.task_id == manual_task_instance.task_id
         assert submission.config_id == manual_task_instance.config_id
-        assert submission.field_id == manual_task_config_field_1.id
+        assert submission.field_id == manual_task_config_field.id
         assert submission.instance_id == manual_task_instance.id
         assert submission.submitted_by == user.id
         assert submission.data == {"value": "test"}
@@ -482,10 +451,9 @@ class TestManualTaskSubmission:
     ):
         """Test submission attachments."""
         # Create an attachment
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
         # Link attachment to submission
         AttachmentReference.create(
@@ -508,7 +476,7 @@ class TestManualTaskSubmission:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test submission data validation."""
@@ -518,7 +486,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -533,7 +501,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {},
@@ -544,7 +512,7 @@ class TestManualTaskSubmission:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test that submissions are deleted when instance is deleted."""
@@ -554,7 +522,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -575,7 +543,7 @@ class TestManualTaskSubmission:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test submission timestamp handling."""
@@ -585,7 +553,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -625,10 +593,9 @@ class TestManualTaskSubmission:
         assert len(manual_task_submission.attachments) == 0
 
         # Create first attachment
-        attachment1 = Attachment.create_and_upload(
-            db=db,
+        attachment1 = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents 1"),
+            file_data=BytesIO(b"test contents 1"),
         )
 
         AttachmentReference.create(
@@ -647,10 +614,9 @@ class TestManualTaskSubmission:
         # Create second attachment
         attachment_data2 = attachment_data.copy()
         attachment_data2["file_name"] = "file2.txt"
-        attachment2 = Attachment.create_and_upload(
-            db=db,
+        attachment2 = AttachmentService(db).create_and_upload(
             data=attachment_data2,
-            attachment_file=BytesIO(b"test contents 2"),
+            file_data=BytesIO(b"test contents 2"),
         )
 
         AttachmentReference.create(
@@ -707,7 +673,7 @@ class TestManualTaskSubmission:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         attachment_data: dict[str, Any],
         user: FidesUser,
         mock_s3_client,
@@ -719,7 +685,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -727,10 +693,9 @@ class TestManualTaskSubmission:
         )
 
         # Create and link attachment
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
 
         attachment_ref = AttachmentReference.create(
@@ -816,10 +781,9 @@ class TestManualTaskSubmission:
         assert len(initial_attachments) == 0
 
         # Create attachment in a separate transaction
-        attachment = Attachment.create_and_upload(
-            db=db,
+        attachment = AttachmentService(db).create_and_upload(
             data=attachment_data,
-            attachment_file=BytesIO(b"test contents"),
+            file_data=BytesIO(b"test contents"),
         )
 
         AttachmentReference.create(
@@ -845,7 +809,7 @@ class TestManualTaskSubmission:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test that relationships remain consistent across separate transactions."""
@@ -859,7 +823,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -885,7 +849,7 @@ class TestManualTaskSubmission:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test that cascade deletion properly removes related records."""
@@ -895,7 +859,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test1"},
@@ -907,7 +871,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test2"},
@@ -942,7 +906,7 @@ class TestManualTaskSubmission:
         self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_config_field: ManualTaskConfigField,
         user: FidesUser,
     ):
         """Test that relationships load fresh data when accessed after changes."""
@@ -952,7 +916,7 @@ class TestManualTaskSubmission:
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_config_field_1.id,
+                "field_id": manual_task_config_field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": user.id,
                 "data": {"value": "test"},
@@ -972,41 +936,3 @@ class TestManualTaskSubmission:
         updated_submissions = manual_task_instance.submissions
         assert len(updated_submissions) == 1
         assert updated_submissions[0].data["value"] == "updated"
-
-    def test_manual_task_creation_logging(
-        self,
-        db: Session,
-        privacy_request,
-    ):
-        """Test that manual task creation properly logs with valid task_id (refreshes if needed)."""
-        # Count existing logs
-        initial_log_count = db.query(ManualTaskLog).count()
-
-        # Create a manual task
-        task_data = {
-            "task_type": "privacy_request",
-            "parent_entity_id": privacy_request.id,
-            "parent_entity_type": "connection_config",
-        }
-
-        task = ManualTask.create(db=db, data=task_data)
-
-        # Verify task was created with valid ID
-        assert task.id is not None
-        assert task.id != ""
-
-        # Check that a log was created (should always happen now)
-        final_log_count = db.query(ManualTaskLog).count()
-        assert final_log_count == initial_log_count + 1
-
-        # Find the log entry for this task
-        task_log = (
-            db.query(ManualTaskLog).filter(ManualTaskLog.task_id == task.id).first()
-        )
-
-        # Verify the log has valid task_id (not NULL)
-        assert task_log is not None
-        assert task_log.task_id is not None
-        assert task_log.task_id == task.id
-        assert task_log.message == f"Created manual task for {task_data['task_type']}"
-        assert task_log.status == "created"

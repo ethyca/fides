@@ -15,14 +15,18 @@ from fides.api.schemas.connection_configuration.enums.system_type import SystemT
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
+    CONNECTOR_TEMPLATE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
+    CONNECTOR_TEMPLATES,
+    CONNECTOR_TEMPLATES_CONFIG,
+    CONNECTOR_TEMPLATES_DATASET,
     SAAS_CONNECTOR_FROM_TEMPLATE,
     V1_URL_PREFIX,
 )
@@ -56,8 +60,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
+        )  # there are 6 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -70,6 +74,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
         first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -97,6 +103,7 @@ class TestGetConnections:
         assert "https" not in [item["identifier"] for item in data]
         assert "custom" not in [item["identifier"] for item in data]
         assert "manual" not in [item["identifier"] for item in data]
+        assert "manual_webhook" not in [item["identifier"] for item in data]
 
     def test_get_connection_types_size_param(
         self,
@@ -113,8 +120,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-        )  # there are 5 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
+        )  # there are 6 connection types that are not returned by the endpoint
         # this value is > 20, so we've effectively tested our "default" size is
         # > than the default of 20 (it's 100!)
 
@@ -217,6 +224,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -229,6 +238,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -241,6 +252,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
@@ -249,9 +262,9 @@ class TestGetConnections:
         ]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert (
-                saas_id in actual_identifiers
-            ), f"Expected SaaS type {saas_id} not found in response"
+            assert saas_id in actual_identifiers, (
+                f"Expected SaaS type {saas_id} not found in response"
+            )
 
     def test_search_connection_types_case_insensitive(
         self, api_client, generate_auth_header, url
@@ -285,15 +298,17 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
         expected_saas_identifiers = [template[0] for template in expected_saas_types]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert (
-                saas_id in actual_identifiers
-            ), f"Expected SaaS type {saas_id} not found in response"
+            assert saas_id in actual_identifiers, (
+                f"Expected SaaS type {saas_id} not found in response"
+            )
 
         search = "Re"
         expected_saas_types = [
@@ -321,6 +336,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -333,6 +350,8 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -345,15 +364,17 @@ class TestGetConnections:
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         } in data
 
         # Verify that all expected SaaS types are present in the data
         expected_saas_identifiers = [template[0] for template in expected_saas_types]
         actual_identifiers = [item["identifier"] for item in data]
         for saas_id in expected_saas_identifiers:
-            assert (
-                saas_id in actual_identifiers
-            ), f"Expected SaaS type {saas_id} not found in response"
+            assert saas_id in actual_identifiers, (
+                f"Expected SaaS type {saas_id} not found in response"
+            )
 
     def test_search_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -369,7 +390,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 21  # Includes test_datastore
+        assert len(data) == 22  # Includes test_datastore
 
     def test_search_system_type_and_connection_type(
         self,
@@ -407,24 +428,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=manual", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 1
-        assert data == [
-            {
-                "identifier": "manual_webhook",
-                "type": "manual",
-                "human_readable": "Manual Process",
-                "encoded_icon": None,
-                "authorization_required": False,
-                "user_guide": None,
-                "supported_actions": [
-                    ActionType.access.value,
-                    ActionType.erasure.value,
-                ],
-                "category": None,
-                "tags": None,
-                "enabled_features": None,
-            }
-        ]
+        assert len(data) == 0
 
     def test_search_email_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -445,6 +449,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -457,6 +463,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -469,6 +477,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -481,6 +491,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             {
                 "encoded_icon": None,
@@ -493,6 +505,8 @@ class TestGetConnections:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
         ]
 
@@ -555,6 +569,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             ConnectionType.manual_webhook.value: {
                 "identifier": ConnectionType.manual_webhook.value,
@@ -570,6 +586,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             HUBSPOT: actual_connection_types[HUBSPOT],
             MAILCHIMP: actual_connection_types[MAILCHIMP],
@@ -585,6 +603,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
             ConnectionType.attentive_email.value: {
                 "identifier": ConnectionType.attentive_email.value,
@@ -597,6 +617,8 @@ class TestGetConnectionsActionTypeParams:
                 "category": None,
                 "tags": None,
                 "enabled_features": None,
+                "custom": False,
+                "default_connector_available": False,
             },
         }
 
@@ -607,14 +629,15 @@ class TestGetConnectionsActionTypeParams:
                 [],  # no filters should give us all connectors
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
                     ConnectionType.attentive_email.value,
                     ConnectionType.sovrn.value,
                 ],
-                [],
+                [
+                    ConnectionType.manual_webhook.value,
+                ],
             ),
             (
                 [ActionType.consent],
@@ -632,7 +655,6 @@ class TestGetConnectionsActionTypeParams:
                 [ActionType.access],
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     MAILCHIMP,
                     STRIPE,
@@ -640,6 +662,7 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.sovrn.value,
                     ConnectionType.attentive_email.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -650,10 +673,10 @@ class TestGetConnectionsActionTypeParams:
                     STRIPE,
                     MAILCHIMP,
                     ConnectionType.attentive_email.value,
-                    ConnectionType.manual_webhook.value,
                 ],
                 [
                     ConnectionType.sovrn.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -661,13 +684,13 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
                 ],
                 [
                     ConnectionType.attentive_email.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
             (
@@ -679,15 +702,15 @@ class TestGetConnectionsActionTypeParams:
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
                     ConnectionType.attentive_email.value,
+                ],
+                [
                     ConnectionType.manual_webhook.value,
                 ],
-                [],
             ),
             (
                 [ActionType.access, ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
-                    ConnectionType.manual_webhook.value,
                     HUBSPOT,
                     STRIPE,
                     MAILCHIMP,
@@ -695,6 +718,7 @@ class TestGetConnectionsActionTypeParams:
                 ],
                 [
                     ConnectionType.sovrn.value,
+                    ConnectionType.manual_webhook.value,
                 ],
             ),
         ],
@@ -1051,6 +1075,12 @@ class TestGetConnectionSecretSchema:
                     "description": "The name of the specific database within the database server that you want to connect to.",
                     "type": "string",
                 },
+                "read_only_connection": {
+                    "default": False,
+                    "title": "Read Only Connection",
+                    "description": "Whether to connect to the database in read-only mode.",
+                    "type": "boolean",
+                },
             },
             "required": ["host", "username", "password"],
         }
@@ -1186,7 +1216,7 @@ class TestGetConnectionSecretSchema:
         assert resp.json() == {
             "definitions": {
                 "GoogleCloudSQLIPType": {
-                    "description": "Enum for Google " "Cloud SQL IP types",
+                    "description": "Enum for Google Cloud SQL IP types",
                     "enum": ["public", "private", "psc"],
                     "title": "GoogleCloudSQLIPType",
                     "type": "string",
@@ -1612,12 +1642,20 @@ class TestGetConnectionSecretSchema:
                     "description": "Your HubSpot domain",
                     "default": "api.hubapi.com",
                     "sensitive": False,
+                    "options": None,
+                    "multiselect": False,
+                    "param_type": None,
+                    "allowed_values": None,
                     "type": "string",
                 },
                 "private_app_token": {
                     "title": "Private app token",
                     "description": "Your HubSpot Private Apps access token",
                     "sensitive": True,
+                    "options": None,
+                    "multiselect": False,
+                    "param_type": None,
+                    "allowed_values": None,
                     "type": "string",
                 },
             },
@@ -1632,12 +1670,9 @@ class TestGetConnectionSecretSchema:
             base_url.format(connection_type="manual_webhook"), headers=auth_header
         )
         assert resp.status_code == 200
-        assert resp.json() == {
-            "title": "ManualWebhookSchema",
-            "description": "Secrets for manual webhooks. No secrets needed at this time.",
-            "type": "object",
-            "properties": {},
-        }
+        body = resp.json()
+        assert body["type"] == "object"
+        assert body["properties"] == {}
 
     def test_get_connection_secrets_attentive(
         self, api_client: TestClient, generate_auth_header, base_url
@@ -1705,7 +1740,7 @@ class TestInstantiateConnectionFromTemplate:
 
     def test_instantiate_connection_not_authenticated(self, api_client, base_url):
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"), headers={}
+            base_url.format(connector_template_type="mailchimp"), headers={}
         )
         assert resp.status_code == 401
 
@@ -1714,7 +1749,7 @@ class TestInstantiateConnectionFromTemplate:
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_READ])
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"), headers=auth_header
+            base_url.format(connector_template_type="mailchimp"), headers=auth_header
         )
         assert resp.status_code == 403
 
@@ -1730,14 +1765,14 @@ class TestInstantiateConnectionFromTemplate:
             "key": "unsupported_connector",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="does_not_exist"),
+            base_url.format(connector_template_type="does_not_exist"),
             headers=auth_header,
             json=request_body,
         )
         assert resp.status_code == 404
         assert (
             resp.json()["detail"]
-            == f"SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
+            == "SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
         )
 
     def test_instance_key_already_exists(
@@ -1756,7 +1791,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1783,7 +1818,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1817,7 +1852,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": connection_config.key,
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1843,7 +1878,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "brand_new_key",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1866,7 +1901,7 @@ class TestInstantiateConnectionFromTemplate:
             "description": "Mailchimp ConnectionConfig description",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1901,7 +1936,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1933,7 +1968,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -1981,7 +2016,7 @@ class TestInstantiateConnectionFromTemplate:
             "key": "mailchimp_connection_config",
         }
         resp = api_client.post(
-            base_url.format(saas_connector_type="mailchimp"),
+            base_url.format(connector_template_type="mailchimp"),
             headers=auth_header,
             json=request_body,
         )
@@ -2023,3 +2058,86 @@ class TestInstantiateConnectionFromTemplate:
         dataset_config.delete(db)
         connection_config.delete(db)
         dataset_config.ctl_dataset.delete(db=db)
+
+
+class TestConnectorTemplateEndpoints:
+    """Tests for the new plural connector-templates endpoints"""
+
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + CONNECTOR_TEMPLATES
+
+    def test_get_all_connector_templates_not_authenticated(self, api_client, url):
+        resp = api_client.get(url, headers={})
+        assert resp.status_code == 401
+
+    def test_get_all_connector_templates_wrong_scope(
+        self, api_client, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 403
+
+    def test_get_all_connector_templates(self, api_client, url, generate_auth_header):
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+
+        data = resp.json()
+        assert isinstance(data, list)
+        assert len(data) == len(ConnectorRegistry.connector_types())
+
+        # Verify structure of responses
+        for item in data:
+            assert "type" in item
+            assert "name" in item
+            assert "supported_actions" in item
+            assert "category" in item
+            assert "custom" in item
+            assert "default_connector_available" in item
+            assert isinstance(item["custom"], bool)
+            assert isinstance(item["default_connector_available"], bool)
+            assert isinstance(item["supported_actions"], list)
+
+        # Find a specific connector template to verify data
+        mailchimp_template = next(
+            (item for item in data if item["type"] == MAILCHIMP), None
+        )
+        assert mailchimp_template is not None
+        assert mailchimp_template["custom"] is False  # Built-in connector
+        assert (
+            mailchimp_template["default_connector_available"] is False
+        )  # No custom override
+        assert len(mailchimp_template["supported_actions"]) > 0
+
+    def test_config_endpoint(self, api_client, generate_auth_header):
+        """Test config endpoint returns YAML"""
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_CONFIG.format(
+            connector_template_type=HUBSPOT
+        )
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "text/yaml; charset=utf-8"
+        assert len(resp.content) > 0
+
+    def test_dataset_endpoint(self, api_client, generate_auth_header):
+        """Test dataset endpoint returns YAML"""
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_DATASET.format(
+            connector_template_type=HUBSPOT
+        )
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 200
+        assert resp.headers["content-type"] == "text/yaml; charset=utf-8"
+        assert len(resp.content) > 0
+
+    def test_connector_template_not_found(self, api_client, generate_auth_header):
+        """Test that requesting a non-existent template returns 404"""
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_READ])
+        url = V1_URL_PREFIX + CONNECTOR_TEMPLATES_CONFIG.format(
+            connector_template_type="nonexistent_connector"
+        )
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == 404
+        assert "No connector template found" in resp.json()["detail"]

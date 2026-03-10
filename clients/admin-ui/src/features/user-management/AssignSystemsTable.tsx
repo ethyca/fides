@@ -1,13 +1,13 @@
 import {
-  AntButton as Button,
-  AntSwitch as Switch,
-  Box,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
+  Button,
+  ChakraBox as Box,
+  ChakraTable as Table,
+  ChakraTbody as Tbody,
+  ChakraTd as Td,
+  ChakraTh as Th,
+  ChakraThead as Thead,
+  ChakraTr as Tr,
+  Switch,
 } from "fidesui";
 import React from "react";
 

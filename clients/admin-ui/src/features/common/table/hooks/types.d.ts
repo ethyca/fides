@@ -1,4 +1,4 @@
-import type { AntFilterValue as FilterValue } from "fidesui";
+import type { FilterValue } from "fidesui";
 
 import type { PaginationConfig, PaginationState } from "../../pagination";
 import type { SearchConfig, SortingConfig, SortOrder } from "../../search";

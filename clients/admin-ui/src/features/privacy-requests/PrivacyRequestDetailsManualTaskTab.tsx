@@ -3,11 +3,11 @@ import {
   useGetAllEnabledAccessManualHooksQuery as useGetManualIntegrationsQuery,
 } from "datastore-connections/datastore-connection.slice";
 import {
-  AntButton as Button,
-  AntTypography as Typography,
-  Box,
-  Flex,
-  Stack,
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraStack as Stack,
+  Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useMemo } from "react";

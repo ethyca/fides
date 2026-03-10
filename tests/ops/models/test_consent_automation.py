@@ -6,7 +6,6 @@ from fides.api.models.consent_automation import ConsentableItem, ConsentAutomati
 
 
 class TestConsentAutomation:
-
     def test_create_consent_automation(
         self, db: Session, connection_config: ConnectionConfig
     ):

@@ -522,9 +522,7 @@ class TestDuplicateRequestFunctionality:
         multiple_identity_duplicate = duplicate_detection_service.is_duplicate_request(
             duplicate_request_with_multiple_identities
         )
-        assert (
-            not multiple_identity_duplicate
-        )  # This request is not a duplicate since it has both an email and phone number identity and is the first
+        assert not multiple_identity_duplicate  # This request is not a duplicate since it has both an email and phone number identity and is the first
         assert (
             privacy_request_with_email_identity.duplicate_request_group_id
             != duplicate_request_with_multiple_identities.duplicate_request_group_id
@@ -632,7 +630,6 @@ class TestDuplicateRequestFunctionality:
 
 
 class TestDuplicateRequestRunnerService:
-
     @pytest.mark.parametrize(
         "request_verified_at, duplicate_verified_at, expected_status",
         [
@@ -704,12 +701,12 @@ class TestDuplicateRequestRunnerService:
             db.refresh(duplicate_request)
             assert duplicate_request.status == expected_status
             if expected_status == PrivacyRequestStatus.duplicate:
-                error_log = duplicate_request.execution_logs.filter_by(
-                    status=ExecutionLogStatus.error
+                skipped_log = duplicate_request.execution_logs.filter_by(
+                    status=ExecutionLogStatus.skipped
                 ).first()
-                assert error_log is not None
+                assert skipped_log is not None
                 assert (
-                    error_log.message
+                    skipped_log.message
                     == f"Request {duplicate_request.id} is a duplicate: it is duplicating request(s) ['{privacy_request_with_email_identity.id}']."
                 )
 
@@ -757,18 +754,17 @@ class TestDuplicateRequestRunnerService:
             assert duplicate_request.status == PrivacyRequestStatus.duplicate
             # verify execution log is added
             assert duplicate_request.execution_logs is not None
-            error_log = duplicate_request.execution_logs.filter_by(
-                status=ExecutionLogStatus.error
+            skipped_log = duplicate_request.execution_logs.filter_by(
+                status=ExecutionLogStatus.skipped
             ).first()
-            assert error_log is not None
+            assert skipped_log is not None
             assert (
-                error_log.message
+                skipped_log.message
                 == f"Request {duplicate_request.id} is a duplicate: it is duplicating actioned request(s) ['{privacy_request_with_email_identity.id}']."
             )
 
 
 class TestDuplicatePrivacyRequestService:
-
     @pytest.fixture
     def mock_messaging_service(self) -> MessagingService:
         return mock.create_autospec(MessagingService)

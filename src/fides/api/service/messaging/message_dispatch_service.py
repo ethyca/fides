@@ -348,6 +348,8 @@ def _build_sms(  # pylint: disable=too-many-return-statements
         )
     if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION:
         return "Your privacy request for deletion has been completed."
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT:
+        return "Your consent request has been completed."
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE:
         return "Your privacy request has been approved and is currently processing."
     if action_type == MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY:
@@ -446,6 +448,11 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             subject=_render(messaging_template.content["subject"]),  # type: ignore
             body=_render(messaging_template.content["body"]),  # type: ignore
         )
+    if action_type == MessagingActionType.PRIVACY_REQUEST_COMPLETE_CONSENT:
+        return EmailForActionType(
+            subject=_render(messaging_template.content["subject"]),  # type: ignore
+            body=_render(messaging_template.content["body"]),  # type: ignore
+        )
     if action_type == MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION:
         # This action type does not use the default templates that are configurable in the Admin-UI.
         # They are instead hard-coded in fides, which we retrieve using get_email_template(action_type)
@@ -486,7 +493,6 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             ),
         )
     if action_type == MessagingActionType.EXTERNAL_USER_WELCOME:
-        base_template = get_email_template(action_type)
         # Generate display name for personalization
         display_name = body_params.username
         if body_params.first_name:
@@ -509,8 +515,26 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             "access_token": body_params.access_token,
         }
 
+        # Start with default subject
+        subject = "Welcome to our Privacy Center"
+
+        # If messaging template exists, extract customizable content
+        if messaging_template:
+            # Use custom subject if provided
+            if "subject" in messaging_template.content:
+                subject = _render(messaging_template.content["subject"], variables)
+
+            # Use custom body content to replace the intro text in HTML template
+            custom_body = messaging_template.content.get("body", "")
+            if custom_body.strip():
+                # Replace the default intro text with the custom body content
+                rendered_custom_body = _render(custom_body, variables)
+                variables["custom_intro"] = rendered_custom_body
+
+        # Always use the HTML template
+        base_template = get_email_template(action_type)
         return EmailForActionType(
-            subject="Welcome to our Privacy Center",
+            subject=subject,
             body=base_template.render(variables),
             template_variables=variables,
         )

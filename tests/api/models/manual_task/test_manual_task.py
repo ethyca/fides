@@ -11,8 +11,6 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.manual_task import (
     ManualTask,
-    ManualTaskLog,
-    ManualTaskLogStatus,
     ManualTaskParentEntityType,
     ManualTaskReference,
     ManualTaskReferenceType,
@@ -37,23 +35,6 @@ class TestManualTaskCreation:
         assert task.task_type == ManualTaskType.privacy_request
         assert task.parent_entity_id == "test_connection"
         assert task.parent_entity_type == "connection_config"
-
-    def test_create_task_creates_log(self, db: Session):
-        """Test that task creation creates a log entry."""
-        task = ManualTask.create(
-            db=db,
-            data={
-                "task_type": ManualTaskType.privacy_request,
-                "parent_entity_id": "test_connection",
-                "parent_entity_type": "connection_config",
-            },
-        )
-
-        # Verify log was created
-        log = db.query(ManualTaskLog).filter_by(task_id=task.id).first()
-        assert log is not None
-        assert log.status == ManualTaskLogStatus.created
-        assert "Created manual task" in log.message
 
     def test_unique_parent_entity_constraint(
         self, db: Session, manual_task: ManualTask
@@ -203,21 +184,6 @@ class TestManualTaskReferences:
 
 class TestManualTaskRelationships:
     """Tests for task relationships with other models."""
-
-    def test_task_logs_relationship(self, db: Session, manual_task: ManualTask):
-        """Test relationship with task logs."""
-        # Create a log
-        log = ManualTaskLog(
-            task_id=manual_task.id,
-            status=ManualTaskLogStatus.complete,
-            message="Test log",
-        )
-        db.add(log)
-        db.commit()
-
-        # Verify logs relationship
-        assert len(manual_task.logs) == 2  # One from creation + one we just added
-        assert any(l.message == "Test log" for l in manual_task.logs)
 
     def test_task_parent_entity_relationship(
         self, db: Session, manual_task: ManualTask

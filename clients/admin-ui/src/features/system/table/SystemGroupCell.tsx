@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntFlexProps as FlexProps,
-  AntSelect as Select,
-  AntTag as Tag,
+  Button,
+  Flex,
+  FlexProps,
   Icons,
+  Select,
+  Tag,
   useMessage,
 } from "fidesui";
 import { isEqual } from "lodash";

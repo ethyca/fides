@@ -5,24 +5,23 @@ from __future__ import annotations
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Index, String
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.cryptography.cryptographic_util import (
     hash_credential_with_salt,
     hash_value_with_salt,
 )
 from fides.api.cryptography.identity_salt import get_identity_salt
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
+from fides.api.db.base_class import (
+    Base,  # type: ignore[attr-defined]
+    JSONTypeOverride,
+)
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.consent import Consent, ConsentRequest
@@ -45,6 +44,34 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     A table for storing identity fields and values provided at privacy request
     creation time.
     """
+
+    @declared_attr
+    def __table_args__(cls) -> tuple:  # type: ignore[override]
+        """Define table-level constructs including indexes."""
+        return (
+            # Index on foreign key for better join performance and N+1 prevention
+            # Created via migration 3ff6449c099e
+            Index(
+                "ix_providedidentity_privacy_request_id",
+                "privacy_request_id",
+            ),
+            # Composite index for duplicate detection queries
+            # Optimizes EXISTS subqueries that match on privacy_request_id, field_name, and hashed_value
+            Index(
+                "ix_providedidentity_reqid_field_hash",
+                "privacy_request_id",
+                "field_name",
+                "hashed_value",
+            ),
+            # Hash migration tracking index from HashMigrationMixin
+            Index(
+                "idx_providedidentity_unmigrated",
+                "is_hash_migrated",
+                postgresql_where=cls.is_hash_migrated.is_(  # type: ignore[attr-defined]  # pylint: disable=no-member
+                    False
+                ),
+            ),
+        )
 
     privacy_request_id = Column(
         String,
@@ -72,14 +99,7 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
         nullable=True,
     )  # This field is used as a blind index for exact match searches
     encrypted_value = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=True,
     )  # Type bytea in the db
     consent = relationship(

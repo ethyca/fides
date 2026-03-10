@@ -8,11 +8,11 @@
  */
 
 import {
-  AntButton as Button,
-  Box,
-  BoxProps,
-  Checkbox,
-  ChevronDownIcon,
+  Button,
+  ChakraBox as Box,
+  ChakraBoxProps as BoxProps,
+  ChakraCheckbox as Checkbox,
+  ChakraChevronDownIcon as ChevronDownIcon,
 } from "fidesui";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 

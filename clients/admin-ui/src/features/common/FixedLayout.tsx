@@ -1,4 +1,4 @@
-import { Flex, FlexProps } from "fidesui";
+import { ChakraFlex as Flex, ChakraFlexProps as FlexProps } from "fidesui";
 import Head from "next/head";
 import React from "react";
 
@@ -28,7 +28,7 @@ const FixedLayout = ({
     data-testid={title}
     direction="column"
     height={fullHeight ? "100vh" : "calc(100vh - 48px)"}
-    width={fullWidth ? "100vw" : "calc(100vw - 240px)"}
+    width={fullWidth ? "100vw" : "100%"}
   >
     <Head>
       <title>Fides Admin UI - {title}</title>

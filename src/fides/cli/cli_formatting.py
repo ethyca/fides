@@ -50,7 +50,7 @@ rich_click.STYLE_OPTIONS_TABLE_SHOW_LINES = False
 rich_click.STYLE_OPTIONS_TABLE_LEADING = 0
 rich_click.STYLE_OPTIONS_TABLE_PAD_EDGE = False
 rich_click.STYLE_OPTIONS_TABLE_PADDING = (0, 1)
-rich_click.STYLE_OPTIONS_TABLE_BOX = ""
+rich_click.STYLE_OPTIONS_TABLE_BOX = None
 rich_click.STYLE_OPTIONS_TABLE_ROW_STYLES = None
 rich_click.STYLE_OPTIONS_TABLE_BORDER_STYLE = None
 rich_click.STYLE_COMMANDS_PANEL_BORDER = "dim"
@@ -59,7 +59,7 @@ rich_click.STYLE_COMMANDS_TABLE_SHOW_LINES = False
 rich_click.STYLE_COMMANDS_TABLE_LEADING = 0
 rich_click.STYLE_COMMANDS_TABLE_PAD_EDGE = False
 rich_click.STYLE_COMMANDS_TABLE_PADDING = (0, 1)
-rich_click.STYLE_COMMANDS_TABLE_BOX = ""
+rich_click.STYLE_COMMANDS_TABLE_BOX = None
 rich_click.STYLE_COMMANDS_TABLE_ROW_STYLES = None
 rich_click.STYLE_COMMANDS_TABLE_BORDER_STYLE = None
 rich_click.STYLE_ERRORS_PANEL_BORDER = "red"
@@ -106,9 +106,7 @@ rich_click.USE_RICH_MARKUP = (
     False  # Parse help strings for rich markup (eg. [red]my text[/])
 )
 rich_click.COMMAND_GROUPS = {}  # Define sorted groups of panels to display subcommands
-rich_click.OPTION_GROUPS = (
-    {}
-)  # Define sorted groups of panels to display options and arguments
+rich_click.OPTION_GROUPS = {}  # Define sorted groups of panels to display options and arguments
 rich_click.USE_CLICK_SHORT_HELP = (
     False  # Use click's default function to truncate help text
 )

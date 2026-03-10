@@ -7,7 +7,7 @@ import "fidesui/src/ant-theme/global.scss";
 
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { defaultAntTheme, FidesUIProvider, Flex } from "fidesui";
+import { ChakraFlex as Flex, defaultAntTheme, FidesUIProvider } from "fidesui";
 import type { AppProps } from "next/app";
 import { NuqsAdapter } from "nuqs/adapters/next/pages";
 import React, { ReactNode } from "react";
@@ -65,7 +65,12 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
                     <CommonSubscriptions />
                     <Flex width="100%" height="100%" flex={1}>
                       <MainSideNav />
-                      <Flex direction="column" width="100%">
+                      <Flex
+                        direction="column"
+                        flex={1}
+                        minWidth={0}
+                        overflow="hidden"
+                      >
                         <Component {...pageProps} />
                       </Flex>
                     </Flex>

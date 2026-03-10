@@ -85,6 +85,13 @@ export const transformTranslationResponseToCreate = (
     acknowledge_button_label: response.acknowledge_button_label ?? undefined,
     banner_title: response.banner_title ?? undefined,
     banner_description: response.banner_description ?? undefined,
+    // GPC fields
+    gpc_label: response.gpc_label ?? undefined,
+    gpc_title: response.gpc_title ?? undefined,
+    gpc_description: response.gpc_description ?? undefined,
+    gpc_status_applied_label: response.gpc_status_applied_label ?? undefined,
+    gpc_status_overridden_label:
+      response.gpc_status_overridden_label ?? undefined,
     purpose_header: response.purpose_header ?? undefined,
     privacy_policy_link_label: response.privacy_policy_link_label ?? undefined,
     privacy_policy_url: response.privacy_policy_url ?? undefined,
@@ -165,6 +172,12 @@ export const getTranslationFormFields = (
       privacy_policy_url: { included: true },
       privacy_preferences_link_label: { included: true },
       modal_link_label: { included: true },
+      // GPC fields for modal
+      gpc_label: { included: true },
+      gpc_title: { included: true },
+      gpc_description: { included: true },
+      gpc_status_applied_label: { included: true },
+      gpc_status_overridden_label: { included: true },
     };
   }
 
@@ -182,6 +195,12 @@ export const getTranslationFormFields = (
       privacy_policy_url: { included: true },
       privacy_preferences_link_label: { included: true, required: true },
       modal_link_label: { included: true },
+      // GPC fields for banner and modal
+      gpc_label: { included: true },
+      gpc_title: { included: true },
+      gpc_description: { included: true },
+      gpc_status_applied_label: { included: true },
+      gpc_status_overridden_label: { included: true },
     };
   }
 

@@ -82,6 +82,7 @@ import copy
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
+from enum import Enum
 from re import match, search
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
@@ -105,6 +106,17 @@ from fides.api.util.querytoken import QueryToken
 DatasetAddress = str
 SeedAddress = str
 EdgeDirection = Literal["from", "to"]
+
+
+class PropertyScope(str, Enum):
+    """Scope classification for collections during property-based DAG filtering.
+
+    IN_SCOPE: Collection belongs to a dataset matching the DSR property_id (or universal).
+    TRAVERSAL_ONLY: Collection is not in-scope but is needed as a bridge for FK traversal.
+    """
+
+    IN_SCOPE = "in_scope"
+    TRAVERSAL_ONLY = "traversal_only"
 
 
 class CollectionAddress:
@@ -464,6 +476,8 @@ class Collection(BaseModel):
     data_categories: Set[FidesKey] = set()
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
     partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]] = None
+    # Property-based filtering scope: IN_SCOPE (default) or TRAVERSAL_ONLY (bridge node)
+    property_scope: PropertyScope = PropertyScope.IN_SCOPE
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
@@ -575,9 +589,9 @@ class Collection(BaseModel):
         def build_field(serialized_field: dict) -> Field:
             """Convert a serialized field on RequestTask.collection.fields into a Scalar Field
             or Object Field"""
-            converted_references: List[Tuple[FieldAddress, Optional[EdgeDirection]]] = (
-                []
-            )
+            converted_references: List[
+                Tuple[FieldAddress, Optional[EdgeDirection]]
+            ] = []
             for reference in serialized_field.pop("references", []):
                 field_address: str = reference[0]
                 edge_direction: Optional[str] = reference[1]
@@ -737,3 +751,5 @@ class GraphDataset(BaseModel):
     after: Set[DatasetAddress] = set()
     # ConnectionConfig key
     connection_key: FidesKey
+    # Property IDs from DatasetConfig, used for property-based DAG filtering
+    property_ids: list[str] = []

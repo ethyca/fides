@@ -89,6 +89,51 @@ export interface FidesOptions {
   fides_disable_notices_served_api: boolean;
 
   /**
+   * Provide a custom ID for the current user, to include as an `external_id`
+   * when saving their user consent preferences to the Fides API and the
+   * fides_consent cookie.
+   *
+   * This can be used to link a user's consent preferences to a saved profile on
+   * your site, such as a CRM ID, etc.
+   *
+   * Empty or whitespace-only values are treated as not set (same as omitting or
+   * undefined), consistent with {@link Fides.setIdentity}.
+   *
+   * Note that the `fides_user_device_id` is still always generated and included
+   * in the saved user consent preferences, to ensure that per-device
+   * preferences are properly stored for reporting.
+   *
+   * Defaults to `undefined`.
+   *
+   * @example
+   * Set external ID at init via overrides (e.g. known before Fides loads):
+   * ```html
+   * <head>
+   *   <script>
+   *     window.fides_overrides = { fides_external_id: "example-crm-id-123" };
+   *   </script>
+   *   <script src="path/to/fides.js"></script>
+   * </head>
+   * ```
+   *
+   * @example
+   * Set external ID after init when the user logs in (see {@link Fides.setIdentity}):
+   * ```html
+   * <body>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     // When your app resolves the logged-in user, set their ID so consent is linked
+   *     function onUserLoggedIn(userId) {
+   *       Fides.setIdentity({ external_id: userId });
+   *     }
+   *   </script>
+   * </body>
+   * ```
+   *
+   */
+  fides_external_id?: string;
+
+  /**
    * When `true`, require FidesJS to "embed" it's UI into a specific `<div>` on
    * the page, instead of as an overlay over the `<body>` itself. This is useful
    * for creating a dedicated page to manage consent preferences on your site.
@@ -245,6 +290,30 @@ export interface FidesOptions {
   ot_fides_mapping: string;
 
   /**
+   * Given a Transcend → Fides notice mapping exists and the Transcend cookie exists,
+   * Fides will "migrate" those consents to Fides privacy notices, and write to the Fides cookie.
+   *
+   * This way, Fides customers that are migrating away from Transcend don't need to show
+   * their users new consent dialogues when switching to Fides.
+   *
+   * Example original transcendFidesMapping data:
+   * {
+   *    'Analytics': ['analytics_tracking'],
+   *    'SaleOfInfo': ['data_sales'],
+   *    'Advertising': ['advertising', 'targeted_ads']
+   * }
+   *
+   * To encode original data to the format expected by this field, use:
+   * encodeURIComponent(JSON.stringify(transcendFidesMapping))
+   *
+   * To decode this field, use:
+   * JSON.parse(decodeURIComponent(transcend_fides_mapping))
+   *
+   * Field defaults to `undefined`.
+   */
+  transcend_fides_mapping: string;
+
+  /**
    * Define how non-applicable privacy notices are handled.
    *
    * When set to "include", consent preferences will include notices in the system that are not applicable
@@ -345,4 +414,16 @@ export interface FidesOptions {
    * Defaults to `undefined`, which uses the standard `fides_consent` cookie name.
    */
   fides_cookie_suffix?: string;
+
+  /**
+   * Specifies the compression method to use for the consent cookie. When set to "gzip",
+   * compression is always applied regardless of cookie size. This can help reduce cookie
+   * size when storing consent preferences with TCF strings or many vendors.
+   *
+   * - "none" = No compression applied (default)
+   * - "gzip" = Always apply gzip compression to the cookie value
+   *
+   * Defaults to `"none"`.
+   */
+  fides_cookie_compression: "gzip" | "none";
 }

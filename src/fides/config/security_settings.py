@@ -1,7 +1,7 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import List, Optional, Pattern, Tuple, Union
+from typing import List, Literal, Optional, Pattern, Tuple, Union
 
 from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
@@ -13,7 +13,7 @@ from fides.api.cryptography.cryptographic_util import (
 )
 from fides.api.custom_types import URLOriginString
 from fides.api.oauth.roles import OWNER
-from fides.common.api.scope_registry import SCOPE_REGISTRY
+from fides.common.scope_registry import SCOPE_REGISTRY
 
 from .fides_settings import FidesSettings
 
@@ -97,6 +97,10 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="The header used to determine the client IP address for rate limiting. If not set or set to empty string, rate limiting will be disabled.",
     )
+    headers_mode: Union[Literal["none"], Literal["recommended"]] = Field(
+        default="none",
+        description="Controls what security headers are included in Fides server responses.",
+    )
     request_rate_limit: str = Field(
         default="2000/minute",
         description="The number of requests from a single IP address allowed to hit an endpoint within a rolling 60 second period.",
@@ -133,6 +137,12 @@ class SecuritySettings(FidesSettings):
     subject_request_download_link_ttl_seconds: int = Field(
         default=432000,
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",
+    )
+    disable_domain_validation: bool = Field(
+        default=False,
+        description="When true, disables domain validation for SaaS connector params globally. "
+        "Domain validation restricts connector endpoints to allowed values defined in the connector template. "
+        "Set via FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION.",
     )
     enable_audit_log_resource_middleware: Optional[bool] = Field(
         default=False,

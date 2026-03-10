@@ -1,4 +1,4 @@
-import { Link, LinkProps } from "fidesui";
+import { ChakraLink as Link, ChakraLinkProps as LinkProps } from "fidesui";
 
 import useI18n from "~/common/hooks/useI18n";
 import { PrivacyExperienceResponse } from "~/types/api";

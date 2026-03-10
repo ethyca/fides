@@ -3,7 +3,7 @@ from typing import Callable, List, Optional, Tuple
 from celery.app.task import Task
 from loguru import logger
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, selectinload
 from tenacity import (
     RetryCallState,
     retry,
@@ -21,11 +21,9 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
-from fides.api.models.worker_task import (
-    RESUMABLE_EXECUTION_LOG_STATUSES,
-    ExecutionLogStatus,
-)
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import (
@@ -48,11 +46,23 @@ def get_privacy_request_and_task(
     session: Session, privacy_request_id: str, privacy_request_task_id: str
 ) -> Tuple[PrivacyRequest, RequestTask]:
     """
-    Retrieves and validates a privacy request and its associated task
+    Retrieves and validates a privacy request and its associated task.
+    Eager loads policy.rules to avoid N+1 queries during manual task execution.
     """
 
-    privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
-        db=session, object_id=privacy_request_id
+    # Eager load relationships to avoid N+1 queries during manual task execution:
+    # - policy.rules: accessed by get_policy_convenience_fields()
+    # - provided_identities: accessed by get_persisted_identity()
+    # - custom_fields: accessed by get_persisted_custom_privacy_request_fields()
+    privacy_request: Optional[PrivacyRequest] = (
+        session.query(PrivacyRequest)
+        .options(
+            selectinload(PrivacyRequest.policy).selectinload(Policy.rules),  # type: ignore[attr-defined]
+            selectinload(PrivacyRequest.provided_identities),  # type: ignore[attr-defined]
+            selectinload(PrivacyRequest.custom_fields),  # type: ignore[attr-defined]
+        )
+        .filter(PrivacyRequest.id == privacy_request_id)
+        .first()
     )
     request_task: Optional[RequestTask] = RequestTask.get(
         db=session, object_id=privacy_request_task_id
@@ -165,7 +175,7 @@ def can_run_task_body(
     if request_task.is_root_task:
         # Shouldn't be possible but adding as a catch-all
         return False
-    if request_task.status not in RESUMABLE_EXECUTION_LOG_STATUSES:
+    if request_task.status not in ExecutionLogStatus.resumable_statuses():
         logger_method(request_task)(
             "Skipping {} task {} with status {}.",
             request_task.action_type,
@@ -251,10 +261,20 @@ def queue_downstream_tasks(
             privacy_request_proceed
         ):  # For Testing, this could be set to False, so we could just
             # run one of the graphs and not the entire privacy request
-            queue_privacy_request(
-                privacy_request_id=privacy_request.id,
-                from_step=next_step.value,
-            )
+            try:
+                queue_privacy_request(
+                    privacy_request_id=privacy_request.id,
+                    from_step=next_step.value,
+                )
+            except Exception as exc:
+                # queue_privacy_request already handles setting the privacy request to error state
+                # and creating execution logs, so we just log here and continue
+                logger.error(
+                    "Failed to queue privacy request {} after terminate node: {}",
+                    privacy_request.id,
+                    exc,
+                )
+        # Always mark terminator as complete to prevent re-processing
         request_task.update_status(session, ExecutionLogStatus.complete)
 
 

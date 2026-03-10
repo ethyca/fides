@@ -1,4 +1,11 @@
-import { Box, ErrorWarningIcon, Heading, HStack, Tag, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraHStack as HStack,
+  ChakraTag as Tag,
+  ChakraText as Text,
+  ErrorWarningIcon,
+} from "fidesui";
 import yaml from "js-yaml";
 import * as React from "react";
 

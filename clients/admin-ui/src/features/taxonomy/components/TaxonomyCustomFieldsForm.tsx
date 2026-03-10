@@ -1,15 +1,9 @@
-import {
-  AntForm as Form,
-  AntFormInstance as FormInstance,
-  AntInput as Input,
-  AntSelect as Select,
-  AntTypography as Typography,
-} from "fidesui";
+import { Form, FormInstance, Input, PageSpinner, Select } from "fidesui";
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";
-import FidesSpinner from "~/features/common/FidesSpinner";
-import { AllowedTypes } from "~/types/api";
+import { LegacyAllowedTypes } from "~/features/common/custom-fields/types";
+import CustomTaxonomySelect from "~/features/taxonomy/components/CustomTaxonomySelect";
 
 interface TaxonomyCustomFieldsFormProps {
   customFields: ReturnType<typeof useCustomFields>;
@@ -42,12 +36,8 @@ const TaxonomyCustomFieldsForm = ({
       layout="vertical"
       data-testid="custom-fields-form"
     >
-      <div className="mb-2">
-        <Typography.Title level={3}>Custom fields</Typography.Title>
-      </div>
-
       {isLoading ? (
-        <FidesSpinner />
+        <PageSpinner />
       ) : (
         <div>
           {!isEmpty(sortedCustomFieldDefinitionIds) && (
@@ -68,7 +58,7 @@ const TaxonomyCustomFieldsForm = ({
                   field_type: fieldType,
                 } = customFieldDefinition;
 
-                if (!allowListId && fieldType === AllowedTypes.STRING) {
+                if (!allowListId) {
                   return (
                     <Form.Item
                       key={definitionId}
@@ -76,7 +66,14 @@ const TaxonomyCustomFieldsForm = ({
                       label={name}
                       tooltip={description}
                     >
-                      <Input />
+                      {fieldType === LegacyAllowedTypes.STRING ? (
+                        <Input />
+                      ) : (
+                        <CustomTaxonomySelect
+                          taxonomyKey={fieldType}
+                          defaultValue={customFields.customFieldValues[id]}
+                        />
+                      )}
                     </Form.Item>
                   );
                 }
@@ -100,7 +97,11 @@ const TaxonomyCustomFieldsForm = ({
                   >
                     {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                     <Select
-                      mode={fieldType !== "string" ? "multiple" : undefined}
+                      mode={
+                        fieldType !== LegacyAllowedTypes.STRING
+                          ? "multiple"
+                          : undefined
+                      }
                       allowClear
                       options={options}
                     />

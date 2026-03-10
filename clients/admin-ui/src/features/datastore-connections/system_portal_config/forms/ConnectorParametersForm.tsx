@@ -2,7 +2,11 @@ import { CustomTextInput, Option } from "common/form/inputs";
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
-import { AntButton as Button, Spacer, VStack } from "fidesui";
+import {
+  Button,
+  ChakraSpacer as Spacer,
+  ChakraVStack as VStack,
+} from "fidesui";
 import { Form, Formik, FormikProps } from "formik";
 import _ from "lodash";
 import React from "react";
@@ -15,6 +19,7 @@ import {
   FIDES_DATASET_REFERENCE,
   useFormFieldsFromSchema,
 } from "~/features/common/form/useFormFieldsFromSchema";
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import {
   ConnectionConfigurationResponse,
@@ -267,6 +272,7 @@ export const ConnectorParametersForm = ({
                     options={datasetDropdownOptions}
                     layout="inline"
                     mode="multiple"
+                    optionRender={DatasetSelectOption}
                   />
                 )}
               <div className="flex gap-4">

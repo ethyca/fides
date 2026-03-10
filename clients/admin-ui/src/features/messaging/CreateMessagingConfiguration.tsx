@@ -1,4 +1,4 @@
-import { Heading } from "fidesui";
+import { ChakraHeading as Heading } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/BackButton";

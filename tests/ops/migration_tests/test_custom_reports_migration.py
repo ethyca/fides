@@ -11,7 +11,6 @@ from fides.api.schemas.custom_report import ReportType
 
 
 class TestCustomReportMigrationFunctions:
-
     def test_upgrade_custom_reports(self, db):
         db.execute(
             "INSERT INTO plus_custom_report (id, type, config) VALUES (:id, :type, :config)",

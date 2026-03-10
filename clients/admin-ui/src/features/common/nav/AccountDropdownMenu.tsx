@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntTypography as Typography,
-  Icons,
-} from "fidesui";
+import { Button, Dropdown, Icons, Typography } from "fidesui";
 import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";

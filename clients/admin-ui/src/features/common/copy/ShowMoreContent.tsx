@@ -1,4 +1,4 @@
-import { AntCollapse as Collapse, useDisclosure } from "fidesui";
+import { Collapse, useChakraDisclosure as useDisclosure } from "fidesui";
 import { ReactNode } from "react";
 
 const ShowMoreContent = ({ children }: { children: ReactNode }) => {

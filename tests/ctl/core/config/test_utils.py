@@ -1,10 +1,10 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from pathlib import Path as LocalPath
 from types import SimpleNamespace
 from typing import Generator
 
 import pytest
-from py._path.local import LocalPath
 from toml import dump, load
 
 from fides.config import FidesConfig
@@ -65,13 +65,13 @@ def test_update_config_file_new_value(
     updated_config = load(config_path)
 
     assert updated_config["cli"] is not None, "updated_config.cli should exist"
-    assert (
-        updated_config["cli"]["analytics_id"] == "updated_id"
-    ), "updated_config.cli.analytics_id should be 'updated_id'"
+    assert updated_config["cli"]["analytics_id"] == "updated_id", (
+        "updated_config.cli.analytics_id should be 'updated_id'"
+    )
     assert updated_config["user"] is not None, "updated_config.user should exist"
-    assert updated_config["user"][
-        "analytics_opt_out"
-    ], "updated_config.user.analytics_opt_out should be True"
+    assert updated_config["user"]["analytics_opt_out"], (
+        "updated_config.user.analytics_opt_out should be True"
+    )
 
 
 @pytest.mark.unit

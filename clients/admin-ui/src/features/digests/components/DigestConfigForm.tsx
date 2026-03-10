@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntForm as Form,
-  AntInput as Input,
-  AntSelect as Select,
-  AntSpace as Space,
+  Button,
+  Form,
+  Input,
+  Select,
+  Space,
   useMessage,
   WarningIcon,
 } from "fidesui";

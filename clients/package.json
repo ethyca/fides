@@ -21,7 +21,6 @@
     "format": "turbo run format",
     "format:ci": "turbo run format:ci",
     "test": "turbo run test",
-    "test:ci": "turbo run test:ci",
     "typecheck": "turbo run typecheck",
     "prod-export-admin-ui": "turbo run prod-export --filter=admin-ui",
     "export-admin-ui": "turbo run export --filter=admin-ui",
@@ -38,7 +37,7 @@
   "dependencies": {
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
-    "next": "^14.2.25",
+    "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

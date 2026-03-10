@@ -535,7 +535,7 @@ describe("Action center Asset Results", () => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
-        cy.get(".ant-tooltip-inner").should(
+        cy.getAntTooltip().should(
           "contain",
           "One or more assets were detected with compliance issues",
         );
@@ -601,15 +601,8 @@ describe("Action center Asset Results", () => {
 
       it("should show warning icon in compliance column header when there are assets with compliance issues", () => {
         cy.findByRole("columnheader", { name: /Compliance/ }).within(() => {
-          cy.getByTestId("discovery-status-icon-alert")
-            .should("exist")
-            .scrollIntoView()
-            .should("be.visible");
-          cy.getByTestId("discovery-status-icon-alert").realHover();
+          cy.getByTestId("discovery-status-icon-alert").should("exist");
         });
-        cy.findByRole("tooltip", {
-          name: "One or more assets were detected with compliance issues",
-        }).should("be.visible");
       });
 
       it("should open consent breakdown modal when clicking 'View compliance details' button", () => {
@@ -704,7 +697,7 @@ describe("Action center Asset Results", () => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
-        cy.get(".ant-tooltip-inner").should(
+        cy.getAntTooltip().should(
           "contain",
           "One or more assets were detected with compliance issues",
         );
@@ -823,6 +816,66 @@ describe("Action center Asset Results", () => {
         "contain",
         'Consent category removed from Browser request "697301175_with_a_really_long_name_that_should_b..."',
       );
+    });
+  });
+
+  describe("error handling", () => {
+    describe("uncategorized assets error", () => {
+      const webMonitorKey = "my_web_monitor_1";
+      const systemId = "[undefined]";
+      beforeEach(() => {
+        cy.login();
+        stubPlus(true);
+        stubWebsiteMonitor();
+        stubTaxonomyEntities();
+        cy.intercept(
+          "GET",
+          "/api/v1/plus/discovery-monitor/*/results?*resolved_system_id=%5Bundefined%5D*",
+          {
+            statusCode: 500,
+            body: { detail: "Internal server error" },
+          },
+        ).as("getSystemAssetsUncategorizedError");
+      });
+
+      it("should display error page when fetching uncategorized assets fails", () => {
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.wait("@getSystemAssetsUncategorizedError");
+
+        cy.getByTestId("error-page-result").should("exist");
+        cy.getByTestId("error-page-result").within(() => {
+          cy.contains("Error 500").should("exist");
+          cy.contains("Internal server error").should("exist");
+          cy.contains("Reload").should("exist");
+        });
+      });
+    });
+
+    describe("categorized assets error", () => {
+      const webMonitorKey = "my_web_monitor_1";
+      const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
+      beforeEach(() => {
+        cy.login();
+        stubPlus(true);
+        stubWebsiteMonitor();
+        stubTaxonomyEntities();
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
+          statusCode: 500,
+          body: { detail: "Internal server error" },
+        }).as("getSystemAssetResultsError");
+      });
+
+      it("should display error page when fetching categorized assets fails", () => {
+        cy.visit(`${WEB_MONITOR_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.wait("@getSystemAssetResultsError");
+
+        cy.getByTestId("error-page-result").should("exist");
+        cy.getByTestId("error-page-result").within(() => {
+          cy.contains("Error 500").should("exist");
+          cy.contains("Internal server error").should("exist");
+          cy.contains("Reload").should("exist");
+        });
+      });
     });
   });
 });

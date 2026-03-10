@@ -1,4 +1,7 @@
-import { Accordion, useDisclosure } from "fidesui";
+import {
+  ChakraAccordion as Accordion,
+  useChakraDisclosure as useDisclosure,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";

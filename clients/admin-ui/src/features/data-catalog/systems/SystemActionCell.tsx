@@ -1,9 +1,9 @@
 import {
-  AntButton,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
+  Button,
+  ChakraMenu as Menu,
+  ChakraMenuButton as MenuButton,
+  ChakraMenuItem as MenuItem,
+  ChakraMenuList as MenuList,
   MoreIcon,
 } from "fidesui";
 
@@ -15,7 +15,7 @@ const SystemActionsCell = ({ onDetailClick }: SystemActionsCellProps) => {
   return (
     <Menu>
       <MenuButton
-        as={AntButton}
+        as={Button}
         size="small"
         // @ts-expect-error - Ant type, not Chakra type because of `as` prop
         type="text"

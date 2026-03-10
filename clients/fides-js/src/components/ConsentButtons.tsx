@@ -58,6 +58,8 @@ export const ConsentButtons = ({
   const includeBrandLink = isInModal && options.showFidesBrandLink;
 
   return (
+    // The id="fides-button-group" is used by mobile SDKs (FidesPlus JanusSDK Android)
+    // Please DO NOT change this ID without coordinating a change in fidesplus
     <div id="fides-button-group">
       <div
         className={

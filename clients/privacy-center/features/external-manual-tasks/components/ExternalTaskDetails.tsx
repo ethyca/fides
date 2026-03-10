@@ -9,11 +9,7 @@
  * IMPORTANT: When updating admin-ui TaskDetails.tsx, review this component for sync!
  */
 
-import {
-  AntFlex as Flex,
-  AntTag as Tag,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, Tag, Typography } from "fidesui";
 
 import { ManualFieldListItem } from "../external-manual-tasks.slice";
 

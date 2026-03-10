@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntTag as Tag,
-  Flex,
-  Text,
-  useDisclosure,
+  Button,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  Tag,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { uniq } from "lodash";
 import React, { useContext, useMemo } from "react";

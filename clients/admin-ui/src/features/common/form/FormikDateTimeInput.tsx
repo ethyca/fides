@@ -1,9 +1,4 @@
-import {
-  AntDatePicker as DatePicker,
-  AntDatePickerProps as DatePickerProps,
-  AntForm as Form,
-  AntFormItemProps as FormItemProps,
-} from "fidesui";
+import { DatePicker, DatePickerProps, Form, FormItemProps } from "fidesui";
 
 /*
  * @description: Transitory component that migrates away from chakra while retaining formik

@@ -4,6 +4,7 @@ import {
 } from "~/features/common/custom-fields";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { SystemSchemaExtended } from "~/types/api";
+import type { UserResponse } from "~/types/api/models/UserResponse";
 
 type SystemWithDataStewards = SystemSchemaExtended & {
   data_stewards?: Array<{ username: string }>;
@@ -17,7 +18,7 @@ export type FormValues = Omit<
 > &
   CustomFieldsFormValues & {
     customFieldValues?: CustomFieldValues;
-    data_stewards: string;
+    data_stewards: string[];
     cookie_max_age_seconds?: number | string | null;
     legal_basis_for_profiling?: Array<string> | "";
     legal_basis_for_transfers?: Array<string> | "";
@@ -44,7 +45,7 @@ export const defaultInitialValues: FormValues = {
   joint_controller_info: "",
   data_security_practices: "",
   privacy_declarations: [],
-  data_stewards: "",
+  data_stewards: [],
   dpo: "",
   cookie_max_age_seconds: undefined,
   uses_cookies: false,
@@ -55,13 +56,14 @@ export const defaultInitialValues: FormValues = {
 };
 
 export const transformSystemToFormValues = (
-  system: SystemSchemaExtended,
+  system: SystemSchemaExtended & {
+    data_stewards?: Array<UserResponse> | null;
+  },
   customFieldValues?: CustomFieldValues,
 ): FormValues => {
   const systemWithDataStewards = system as SystemWithDataStewards;
-  const dataStewards = systemWithDataStewards.data_stewards
-    ?.map((user) => user.username)
-    .join(", ");
+  const dataStewards =
+    systemWithDataStewards.data_stewards?.map((user) => user.username) || [];
 
   return {
     ...system,
@@ -91,7 +93,7 @@ export const transformSystemToFormValues = (
     legal_basis_for_transfers: system.legal_basis_for_transfers
       ? system.legal_basis_for_transfers
       : "",
-    data_stewards: dataStewards || "",
+    data_stewards: dataStewards,
     system_groups: system.system_groups || [],
   };
 };

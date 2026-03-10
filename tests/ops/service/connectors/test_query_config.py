@@ -52,7 +52,6 @@ privacy_request = PrivacyRequest(id="234544")
 
 @mock.patch.multiple(QueryConfig, __abstractmethods__=set())
 class TestQueryConfig:
-
     def test_update_value_map_masking_strategy_override(
         self, erasure_policy_all_categories, connection_config
     ):
@@ -833,7 +832,6 @@ class TestSQLQueryConfig:
 
 class TestSQLLikeQueryConfig:
     def test_missing_namespace_meta_schema(self):
-
         class NewSQLNamespaceMeta(NamespaceMeta):
             schema: str
 

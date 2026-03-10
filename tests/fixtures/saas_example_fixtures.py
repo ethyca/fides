@@ -37,6 +37,7 @@ from fides.api.util.saas_util import (
     load_config,
     load_yaml_as_string,
 )
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import load_dataset
 
 
@@ -384,14 +385,16 @@ def oauth2_authorization_code_connection_config(
             "access": AccessLevel.write,
             "secrets": secrets,
             "saas_config": saas_config,
-            "system_id": system.id,
         },
     )
+    SystemIntegrationLinkRepository().create_or_update_link(
+        system_id=system.id,
+        connection_config_id=connection_config.id,
+        session=db,
+    )
+    db.commit()
     yield connection_config
     connection_config.delete(db)
-
-
-## TODO: base on the previous connection config to set up a new improved
 
 
 @pytest.fixture(scope="function")
@@ -798,6 +801,21 @@ def planet_express_functions() -> str:
     return load_as_string(
         "tests/fixtures/saas/test_data/planet_express/planet_express_functions.py"
     )
+
+
+@pytest.fixture
+def hubspot_yaml_config() -> str:
+    return load_yaml_as_string("data/saas/config/hubspot_config.yml")
+
+
+@pytest.fixture
+def hubspot_yaml_dataset() -> str:
+    return load_yaml_as_string("data/saas/dataset/hubspot_dataset.yml")
+
+
+@pytest.fixture
+def hubspot_yaml_icon() -> str:
+    return load_as_string("data/saas/icon/hubspot.svg")
 
 
 @pytest.fixture

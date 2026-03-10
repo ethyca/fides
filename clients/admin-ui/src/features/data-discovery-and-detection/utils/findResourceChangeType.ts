@@ -19,7 +19,7 @@ const findResourceChangeType = (resource: StagedResourceAPIResponse) => {
   if (
     resource.diff_status === DiffStatus.CLASSIFICATION_ADDITION ||
     resource.diff_status === DiffStatus.CLASSIFICATION_UPDATE ||
-    resource.diff_status === DiffStatus.APPROVED
+    resource.diff_status === DiffStatus.REVIEWED
   ) {
     return ResourceChangeType.CLASSIFICATION;
   }
@@ -37,7 +37,7 @@ const findResourceChangeType = (resource: StagedResourceAPIResponse) => {
   if (
     resource.child_diff_statuses[DiffStatus.CLASSIFICATION_ADDITION] ||
     resource.child_diff_statuses[DiffStatus.CLASSIFICATION_UPDATE] ||
-    resource.child_diff_statuses[DiffStatus.APPROVED]
+    resource.child_diff_statuses[DiffStatus.REVIEWED]
   ) {
     return ResourceChangeType.CLASSIFICATION;
   }

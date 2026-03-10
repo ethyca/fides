@@ -1,8 +1,4 @@
-import {
-  AntForm as Form,
-  AntFormItemProps as FormItemProps,
-  AntSelect as Select,
-} from "fidesui";
+import { Form, FormItemProps, Select } from "fidesui";
 import { ComponentProps, useState } from "react";
 
 export type FormikSelectProps = ComponentProps<typeof Select> &

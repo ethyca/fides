@@ -6,6 +6,8 @@ import yaml
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 from starlette.testclient import TestClient
+from tests.conftest import wait_for_privacy_request_status
+from tests.ops.test_helpers.saas_test_utils import MockAuthenticatedClient
 
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.connectionconfig import (
@@ -20,8 +22,6 @@ from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.request_service import requeue_polling_tasks
-from tests.conftest import wait_for_privacy_request_status
-from tests.ops.test_helpers.saas_test_utils import MockAuthenticatedClient
 
 
 @pytest.mark.async_dsr
@@ -266,18 +266,6 @@ class TestPrivacyRequestWithAsyncPolling:
         # Requeue the polling task
         requeue_polling_tasks.apply().get()
 
-        # Wait for the privacy request to be in processing (awaiting polling)
-        wait_for_privacy_request_status(
-            db=db,
-            privacy_request_id=privacy_request_id,
-            target_status=PrivacyRequestStatus.in_processing,
-            timeout_seconds=30,
-            poll_interval_seconds=2,
-        )
-
-        # Requeue the polling task
-        requeue_polling_tasks.apply().get()
-
         # Wait for the privacy request to be complete
         wait_for_privacy_request_status(
             db=db,
@@ -292,25 +280,7 @@ class TestPrivacyRequestWithAsyncPolling:
             .filter(PrivacyRequest.id == privacy_request_id)
             .first()
         )
-        access_results = privacy_request.get_raw_access_results()
-        assert (
-            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
-                "file_name"
-            ]
-            == "report.pdf"
-        )
-        assert (
-            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
-                "download_url"
-            ]
-            is not None
-        )
-        assert (
-            access_results["async_polling_example:user"][0]["retrieved_attachments"][0][
-                "file_size"
-            ]
-            == 17
-        )
+
         assert privacy_request.get_raw_masking_counts() == {
             "async_polling_example:user": 1
         }

@@ -1,10 +1,6 @@
 import classNames from "classnames";
-import {
-  AntInput as Input,
-  AntInputProps as InputProps,
-  Icons,
-  InputRef,
-} from "fidesui";
+import { Icons, Input, InputRef } from "fidesui";
+import { CustomInputProps } from "fidesui/src/hoc";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -14,8 +10,8 @@ import styles from "./SearchInput.module.scss";
 export const SEARCH_INPUT_HOTKEY = "/";
 
 export interface SearchInputProps
-  extends Omit<InputProps, "onChange" | "variant"> {
-  onChange: (value: string) => void;
+  extends Omit<CustomInputProps, "onChange" | "variant"> {
+  onChange?: (value: string) => void;
   withIcon?: boolean;
   variant?: "default" | "compact";
 }
@@ -28,7 +24,7 @@ const SearchInput = ({
   ...props
 }: SearchInputProps) => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
-    onChange(event.target.value);
+    onChange?.(event.target.value);
 
   const isCompact = variant === "compact";
   const inputRef = useRef<InputRef>(null);
@@ -38,9 +34,10 @@ const SearchInput = ({
     () => {
       inputRef.current?.focus();
     },
-    // useKey because we use with '?' elsewhere which conflicts with this hotkey
-    // reverse keyup and keydown because otherwise a literal "/" will get typed in the search input
-    { useKey: true, keyup: true, keydown: false },
+    // useKey because we use with '?' elsewhere which conflicts with this hotkey.
+    // `keyup` to prevent "/" from being typed in the input.
+    // `preventDefault` + `keydown` to stop Firefox Quick Find.
+    { useKey: true, keyup: true, keydown: true, preventDefault: true },
     [inputRef.current],
   );
 

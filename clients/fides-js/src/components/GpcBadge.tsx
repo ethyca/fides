@@ -8,13 +8,13 @@ export const GpcBadge = ({
   status: GpcStatus;
 } & React.HTMLAttributes<HTMLSpanElement>) => {
   const { i18n } = useI18n();
-  const gpcLabel = i18n.t("static.gpc");
+  const gpcLabel = i18n.t("exp.gpc_label");
   const statusValue = status.valueOf();
   let statusLabel = "";
   if (status === GpcStatus.APPLIED) {
-    statusLabel = i18n.t("static.gpc.status.applied");
+    statusLabel = i18n.t("exp.gpc_status_applied_label");
   } else if (status === GpcStatus.OVERRIDDEN) {
-    statusLabel = i18n.t("static.gpc.status.overridden");
+    statusLabel = i18n.t("exp.gpc_status_overridden_label");
   } else if (status === GpcStatus.NONE) {
     return null;
   }

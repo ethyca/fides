@@ -1,0 +1,16 @@
+[
+  {
+    "id": "access-task1",
+    "label": "Customer Data Export",
+    "help_text": "Export customer data for GDPR requests",
+    "field_type": "attachment",
+    "request_type": "access"
+  },
+  {
+    "id": "consent-task1",
+    "label": "Consent Preference Update",
+    "help_text": "Manually update consent preferences in third-party system",
+    "field_type": "checkbox",
+    "request_type": "consent"
+  }
+]

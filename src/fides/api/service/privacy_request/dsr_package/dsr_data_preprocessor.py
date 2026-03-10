@@ -34,9 +34,9 @@ class DSRDataPreprocessor:
 
         # Second pass: process data with redaction
         processed_data = {}
-        collection_indices: Dict[str, Dict[str, int]] = (
-            {}
-        )  # Track collection indices within each dataset
+        collection_indices: Dict[
+            str, Dict[str, int]
+        ] = {}  # Track collection indices within each dataset
 
         for key, rows in dsr_data.items():
             # The "attachment" key is used to pass in the privacy request's attachments into `dsr_data`.

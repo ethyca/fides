@@ -13,6 +13,7 @@ from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
+from fides.service.attachment_service import AttachmentService
 
 
 class AccessManualWebhook(Base):
@@ -82,7 +83,7 @@ class AccessManualWebhook(Base):
         """Build a dynamic Pydantic schema from fields defined on this webhook"""
 
         return create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
+            "ManualWebhookValidationModel",
             __config__=ConfigDict(extra="forbid"),
             **self.access_field_definitions(),
         )
@@ -95,8 +96,8 @@ class AccessManualWebhook(Base):
         vs str for access input validation.
         """
         return create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
-            model_config=ConfigDict(extra="forbid"),
+            "ManualWebhookValidationModel",
+            __config__=ConfigDict(extra="forbid"),
             **self.erasure_field_definitions(),
         )
 
@@ -105,7 +106,7 @@ class AccessManualWebhook(Base):
         """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
         fields that are saved and fields that are defined here."""
         return create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
+            "ManualWebhookValidationModel",
             __config__=ConfigDict(extra="ignore"),
             **self.access_field_definitions(),
         )
@@ -115,8 +116,8 @@ class AccessManualWebhook(Base):
         """Returns a dynamic Pydantic Schema for webhook fields that can keep the overlap between
         fields that are saved and fields that are defined here."""
         return create_model(  # type: ignore
-            __model_name="ManualWebhookValidationModel",
-            model_config=ConfigDict(extra="ignore"),
+            "ManualWebhookValidationModel",
+            __config__=ConfigDict(extra="ignore"),
             **self.erasure_field_definitions(),
         )
 
@@ -208,4 +209,4 @@ class AccessManualWebhook(Base):
         """Delete the attachment associated with the manual webhook"""
         attachment = self.get_attachment_by_id(db, attachment_id)
         if attachment:
-            attachment.delete(db)
+            AttachmentService(db).delete(attachment)

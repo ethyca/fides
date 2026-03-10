@@ -1,41 +1,33 @@
-import { ResourceTypes } from "~/types/api";
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
+import { TaxonomyTypeEnum } from "~/features/taxonomy/constants";
 
 export const RESOURCE_TYPE_MAP = new Map([
-  [ResourceTypes.SYSTEM, "system:information"],
-  [ResourceTypes.DATA_USE, "taxonomy:data use"],
-  [ResourceTypes.DATA_CATEGORY, "taxonomy:data category"],
-  [ResourceTypes.DATA_SUBJECT, "taxonomy:data subject"],
-  [ResourceTypes.PRIVACY_DECLARATION, "system:data use"],
+  [LegacyResourceTypes.SYSTEM, "system:information"],
+  [LegacyResourceTypes.DATA_USE, "taxonomy:data use"],
+  [LegacyResourceTypes.DATA_CATEGORY, "taxonomy:data category"],
+  [LegacyResourceTypes.DATA_SUBJECT, "taxonomy:data subject"],
+  [LegacyResourceTypes.PRIVACY_DECLARATION, "system:data use"],
 ]);
+
+export const VALUE_TYPE_RESOURCE_TYPE_MAP: Record<string, string> = {
+  [TaxonomyTypeEnum.DATA_CATEGORY]: "taxonomy:data category",
+  [TaxonomyTypeEnum.DATA_USE]: "taxonomy:data use",
+  [TaxonomyTypeEnum.DATA_SUBJECT]: "taxonomy:data subject",
+  [TaxonomyTypeEnum.SYSTEM_GROUP]: "taxonomy:system group",
+};
+
+export const FIDES_KEY_RESOURCE_TYPE_MAP: Record<string, string> = {
+  [TaxonomyTypeEnum.DATA_CATEGORY]: LegacyResourceTypes.DATA_CATEGORY,
+  [TaxonomyTypeEnum.DATA_USE]: LegacyResourceTypes.DATA_USE,
+  [TaxonomyTypeEnum.DATA_SUBJECT]: LegacyResourceTypes.DATA_SUBJECT,
+  [TaxonomyTypeEnum.SYSTEM_GROUP]: "system group",
+};
 
 export enum FieldTypes {
   SINGLE_SELECT = "singleSelect",
   MULTIPLE_SELECT = "multipleSelect",
   OPEN_TEXT = "openText",
 }
-
-export const RESOURCE_TYPE_OPTIONS = [
-  {
-    label: `taxonomy:${ResourceTypes.DATA_CATEGORY}`,
-    value: ResourceTypes.DATA_CATEGORY,
-  },
-  {
-    label: `taxonomy:${ResourceTypes.DATA_SUBJECT}`,
-    value: ResourceTypes.DATA_SUBJECT,
-  },
-  {
-    label: `taxonomy:${ResourceTypes.DATA_USE}`,
-    value: ResourceTypes.DATA_USE,
-  },
-  {
-    label: `${ResourceTypes.SYSTEM}:information`,
-    value: ResourceTypes.SYSTEM,
-  },
-  {
-    label: "system:data use",
-    value: ResourceTypes.PRIVACY_DECLARATION,
-  },
-];
 
 export const FIELD_TYPE_OPTIONS = [
   { label: "Single select", value: FieldTypes.SINGLE_SELECT },
@@ -47,4 +39,11 @@ export const FIELD_TYPE_LABEL_MAP: Record<FieldTypes, string> = {
   [FieldTypes.SINGLE_SELECT]: "Single-value select",
   [FieldTypes.MULTIPLE_SELECT]: "Multi-value select",
   [FieldTypes.OPEN_TEXT]: "Open text",
+};
+
+export const TAXONOMY_FIELD_TYPE_LABEL_MAP: Record<TaxonomyTypeEnum, string> = {
+  [TaxonomyTypeEnum.DATA_CATEGORY]: "Data category",
+  [TaxonomyTypeEnum.DATA_USE]: "Data use field",
+  [TaxonomyTypeEnum.DATA_SUBJECT]: "Data subject",
+  [TaxonomyTypeEnum.SYSTEM_GROUP]: "System group",
 };

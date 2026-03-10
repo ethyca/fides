@@ -8,14 +8,18 @@ import {
   useGetCustomFieldDefinitionsByResourceTypeQuery,
   useGetCustomFieldsForResourceQuery,
 } from "~/features/plus/plus.slice";
-import { CustomFieldWithId, ResourceTypes } from "~/types/api";
+import { CustomFieldWithId } from "~/types/api";
 
 import { filterWithId } from "./helpers";
-import { CustomFieldsFormValues, CustomFieldValues } from "./types";
+import {
+  CustomFieldsFormValues,
+  CustomFieldValues,
+  LegacyResourceTypes,
+} from "./types";
 
 type UseCustomFieldsOptions = {
   resourceFidesKey?: string;
-  resourceType?: ResourceTypes;
+  resourceType: LegacyResourceTypes | string;
 };
 
 export const useCustomFields = ({
@@ -31,11 +35,11 @@ export const useCustomFields = ({
   const queryFidesKey = useMemo(() => resourceFidesKey ?? "", []);
 
   const allAllowListQuery = useGetAllAllowListQuery(true, {
-    skip: !isEnabled || !resourceType,
+    skip: !isEnabled,
   });
   const customFieldDefinitionsQuery =
-    useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType!, {
-      skip: !isEnabled || !resourceType,
+    useGetCustomFieldDefinitionsByResourceTypeQuery(resourceType, {
+      skip: !isEnabled,
     });
   const {
     data,
@@ -43,8 +47,7 @@ export const useCustomFields = ({
     error,
     isError,
   } = useGetCustomFieldsForResourceQuery(resourceFidesKey ?? "", {
-    skip:
-      !resourceType || (queryFidesKey !== "" && !(isEnabled && queryFidesKey)),
+    skip: queryFidesKey !== "" && !(isEnabled && queryFidesKey),
   });
 
   const [bulkUpdateCustomFieldsMutationTrigger] =
@@ -130,7 +133,7 @@ export const useCustomFields = ({
    */
   const upsertCustomFields = useCallback(
     async (formValues: CustomFieldsFormValues) => {
-      if (!isEnabled || !resourceType) {
+      if (!isEnabled) {
         return;
       }
 

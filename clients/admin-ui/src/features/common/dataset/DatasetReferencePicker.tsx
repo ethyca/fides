@@ -1,15 +1,11 @@
-import {
-  AntFlex as Flex,
-  AntSelect as Select,
-  AntTreeSelect as TreeSelect,
-  AntTypography as Typography,
-} from "fidesui";
+import { Flex, Select, TreeSelect, Typography } from "fidesui";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   useGetAllFilteredDatasetsQuery,
   useGetDatasetByKeyQuery,
 } from "~/features/dataset/dataset.slice";
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import { DatasetCollection } from "~/types/api";
 
 import {
@@ -168,6 +164,7 @@ export const DatasetReferencePicker = ({
         showSearch
         style={{ width: "50%" }}
         data-testid="dataset-select"
+        optionRender={DatasetSelectOption}
       />
 
       <TreeSelect

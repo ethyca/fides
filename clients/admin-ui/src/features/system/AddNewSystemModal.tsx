@@ -1,8 +1,8 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTypography as Typography,
-  ModalProps,
+  Button,
+  ChakraModalProps as ModalProps,
+  Flex,
+  Typography,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useMemo, useRef, useState } from "react";

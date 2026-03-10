@@ -1,4 +1,4 @@
-import { AntDrawer as Drawer } from "fidesui";
+import { Drawer } from "fidesui";
 
 import { DetailsDrawerFooter } from "./DetailsDrawerFooter";
 import { DetailsDrawerTitle } from "./DetailsDrawerTitle";

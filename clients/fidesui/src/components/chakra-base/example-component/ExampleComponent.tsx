@@ -1,4 +1,10 @@
-import { Heading, HeadingProps, Stack, StackProps, Text } from "fidesui";
+import {
+  ChakraHeading as Heading,
+  ChakraHeadingProps as HeadingProps,
+  ChakraStack as Stack,
+  ChakraStackProps as StackProps,
+  ChakraText as Text,
+} from "fidesui";
 import React from "react";
 
 interface Props {

@@ -7,7 +7,6 @@ from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
-    ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskFieldType,
     ManualTaskInstance,
@@ -33,6 +32,7 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
+from fides.service.attachment_service import AttachmentService
 
 
 class ManualTaskGraphTask(GraphTask):
@@ -74,7 +74,6 @@ class ManualTaskGraphTask(GraphTask):
             return []
 
         result = self._run_request(
-            ManualTaskConfigurationType.access_privacy_request,
             ActionType.access,
             *inputs,
         )
@@ -91,7 +90,6 @@ class ManualTaskGraphTask(GraphTask):
     def erasure_request(
         self,
         retrieved_data: list[Row],  # This is not used for manual tasks.
-        *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument # TODO Remove when we stop support for DSR 2.0
         inputs: Optional[list[list[Row]]] = None,
     ) -> int:
         """Execute manual-task-driven erasure logic.
@@ -106,7 +104,6 @@ class ManualTaskGraphTask(GraphTask):
         if not inputs:
             inputs = []
         result = self._run_request(
-            ManualTaskConfigurationType.erasure_privacy_request,
             ActionType.erasure,
             *inputs,
         )
@@ -123,13 +120,42 @@ class ManualTaskGraphTask(GraphTask):
         self.log_end(ActionType.erasure, record_count=0)
         return 0
 
+    # Provide consent support for manual tasks
+    @retry(action_type=ActionType.consent, default_return=False)
+    def consent_request(self, identity: dict[str, Any]) -> bool:
+        """Execute manual-task-driven consent logic.
+        Calls _run_request with CONSENT configs.
+
+        For consent manual tasks, conditions are evaluated based on privacy_request.*
+        fields since consent DSRs don't have data flow through datasets.
+
+        Returns True if consent task is completed, False otherwise.
+        Raises AwaitingAsyncTask if user input is required.
+        """
+        # For consent, we don't have upstream data inputs like access/erasure
+        # Conditions should be based on privacy_request.* fields
+        result = self._run_request(
+            ActionType.consent,
+        )
+        if result is None:
+            # Conditional skip or not applicable already logged upstream
+            # For consent, return True to indicate "done" (nothing to do)
+            return True
+
+        # Mark consent_sent = True for DSR 3.0
+        if self.request_task.id:
+            self.request_task.consent_sent = True
+
+        # Picking up after awaiting input, mark consent node complete
+        self.log_end(ActionType.consent)
+        return True
+
     # ------------------------------------------------------------------------------------------------
     # Private methods
     # ------------------------------------------------------------------------------------------------
 
     def _run_request(
         self,
-        config_type: ManualTaskConfigurationType,
         action_type: ActionType,
         *inputs: list[Row],
     ) -> Optional[list[Row]]:
@@ -147,7 +173,7 @@ class ManualTaskGraphTask(GraphTask):
         # If any of these checks fail, complete immediately or mark as skipped
 
         # Check if any eligible manual tasks have applicable configs
-        if not self._check_manual_task_configs(manual_task, config_type, action_type):
+        if not self._check_manual_task_configs(manual_task, action_type):
             return None
 
         # Check if there are any rules for this action type
@@ -158,11 +184,19 @@ class ManualTaskGraphTask(GraphTask):
 
         # Extract conditional dependency data from inputs
         conditional_data = extract_conditional_dependency_data_from_inputs(
-            *inputs, manual_task=manual_task, input_keys=self.execution_node.input_keys
+            *inputs,
+            manual_task=manual_task,
+            input_keys=self.execution_node.input_keys,
+            privacy_request=self.resources.request,
         )
         # Evaluate conditional dependencies
+        # For consent tasks, only evaluate privacy_request.* conditions since
+        # consent DSRs don't have data flow through datasets
         evaluation_result = evaluate_conditional_dependencies(
-            self.resources.session, manual_task, conditional_data=conditional_data
+            self.resources.session,
+            manual_task,
+            conditional_data=conditional_data,
+            privacy_request_only=(action_type == ActionType.consent),
         )
         detailed_message: Optional[str] = None
         # if there were conditional dependencies and they were not met,
@@ -182,7 +216,7 @@ class ManualTaskGraphTask(GraphTask):
         self._ensure_manual_task_instances(
             manual_task,
             self.resources.request,
-            config_type,
+            action_type,
         )
 
         # Check if all manual task instances have submissions for applicable configs only
@@ -191,7 +225,6 @@ class ManualTaskGraphTask(GraphTask):
             detailed_message = format_evaluation_success_message(evaluation_result)
         result = self._set_submitted_data_or_raise_awaiting_async_task_callback(
             manual_task,
-            config_type,
             action_type,
             conditional_data=conditional_data,
             awaiting_detail_message=detailed_message,
@@ -201,17 +234,16 @@ class ManualTaskGraphTask(GraphTask):
     def _check_manual_task_configs(
         self,
         manual_task: ManualTask,
-        config_type: ManualTaskConfigurationType,
         action_type: ActionType,
     ) -> bool:
-        has_access_configs = [
+        has_configs = [
             config
             for config in manual_task.configs
-            if config.is_current and config.config_type == config_type
+            if config.is_current and config.config_type == action_type
         ]
 
-        if not has_access_configs:
-            # No access configs - complete immediately
+        if not has_configs:
+            # No configs for this action type - complete immediately
             self.log_end(action_type)
             return False
 
@@ -233,7 +265,6 @@ class ManualTaskGraphTask(GraphTask):
     def _set_submitted_data_or_raise_awaiting_async_task_callback(
         self,
         manual_task: ManualTask,
-        config_type: ManualTaskConfigurationType,
         action_type: ActionType,
         conditional_data: Optional[dict[str, Any]] = None,
         awaiting_detail_message: Optional[str] = None,
@@ -241,11 +272,11 @@ class ManualTaskGraphTask(GraphTask):
         """
         Set submitted data for a manual task and raise AwaitingAsyncTaskCallback if all instances are not completed
         """
-        # Check if all manual task instances have submissions for ACCESS configs only
+        # Check if all manual task instances have submissions for this action type
         submitted_data = self._get_submitted_data(
             manual_task,
             self.resources.request,
-            config_type,
+            action_type,
             conditional_data=conditional_data,
         )
 
@@ -270,9 +301,9 @@ class ManualTaskGraphTask(GraphTask):
         self,
         manual_task: ManualTask,
         privacy_request: PrivacyRequest,
-        allowed_config_type: "ManualTaskConfigurationType",
+        action_type: ActionType,
     ) -> None:
-        """Create ManualTaskInstances for configs matching `allowed_config_type` if they don't exist."""
+        """Create ManualTaskInstances for configs matching `action_type` if they don't exist."""
 
         # ------------------------------------------------------------------
         # Check if instances already exist for this task & entity with the SAME config type
@@ -285,7 +316,7 @@ class ManualTaskGraphTask(GraphTask):
                 instance
                 for instance in privacy_request.manual_task_instances
                 if instance.task_id == manual_task.id
-                and instance.config.config_type == allowed_config_type
+                and instance.config.config_type == action_type
             ),
             None,
         )
@@ -305,7 +336,7 @@ class ManualTaskGraphTask(GraphTask):
                     key=lambda c: c.version if hasattr(c, "version") else 0,
                     reverse=True,
                 )
-                if config.is_current and config.config_type == allowed_config_type
+                if config.is_current and config.config_type == action_type
             ),
             None,
         )
@@ -326,7 +357,7 @@ class ManualTaskGraphTask(GraphTask):
         self,
         manual_task: ManualTask,
         privacy_request: PrivacyRequest,
-        allowed_config_type: "ManualTaskConfigurationType",
+        action_type: ActionType,
         conditional_data: Optional[dict[str, Any]] = None,
     ) -> Optional[dict[str, Any]]:
         """
@@ -337,7 +368,7 @@ class ManualTaskGraphTask(GraphTask):
             instance
             for instance in privacy_request.manual_task_instances
             if instance.task_id == manual_task.id
-            and instance.config.config_type == allowed_config_type
+            and instance.config.config_type == action_type
         ]
 
         if not candidate_instances:
@@ -406,7 +437,7 @@ class ManualTaskGraphTask(GraphTask):
             submission.attachments,
         ):
             try:
-                size, url = attachment.retrieve_attachment()
+                size, url = AttachmentService().retrieve_url(attachment)
                 attachment_list.append(
                     {
                         "file_name": attachment.file_name,

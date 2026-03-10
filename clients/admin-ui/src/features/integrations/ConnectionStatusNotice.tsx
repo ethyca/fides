@@ -1,4 +1,9 @@
-import { CheckCircleIcon, Flex, Text, WarningTwoIcon } from "fidesui";
+import {
+  ChakraCheckCircleIcon as CheckCircleIcon,
+  ChakraFlex as Flex,
+  ChakraText as Text,
+  ChakraWarningTwoIcon as WarningTwoIcon,
+} from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
 import { ConnectionSystemTypeMap } from "~/types/api";
@@ -27,7 +32,11 @@ const ConnectionStatusNotice = ({
   }
 
   if (!testData.timestamp) {
-    return <Text data-testid="connection-status">Connection not tested</Text>;
+    return (
+      <Flex align="center">
+        <Text data-testid="connection-status">Connection not tested</Text>
+      </Flex>
+    );
   }
 
   const testDate = formatDate(testData.timestamp);

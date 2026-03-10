@@ -1,16 +1,16 @@
 import {
-  AntButton as Button,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-  Text,
-  useDisclosure,
-  useToast,
+  Button,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";

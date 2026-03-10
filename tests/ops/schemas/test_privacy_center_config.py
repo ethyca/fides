@@ -11,12 +11,12 @@ from fides.api.schemas.privacy_center_config import (
     LocationCustomPrivacyRequestField,
     PrivacyCenterConfig,
     get_field_type_discriminator,
+    reorder_custom_privacy_request_fields,
 )
 from fides.api.util.saas_util import load_as_string
 
 
 class TestPrivacyCenterConfig:
-
     @pytest.fixture
     def privacy_center_config(self) -> PrivacyCenterConfig:
         return PrivacyCenterConfig(
@@ -248,23 +248,23 @@ class TestPrivacyCenterConfig:
 
         # Non-location fields should NOT have ip_geolocation_hint or other location-specific properties
         text_field = fields["first_name"]
-        assert (
-            "ip_geolocation_hint" not in text_field
-        ), f"Text field should not have ip_geolocation_hint: {text_field}"
+        assert "ip_geolocation_hint" not in text_field, (
+            f"Text field should not have ip_geolocation_hint: {text_field}"
+        )
         assert text_field["field_type"] == "text"
         assert "options" in text_field  # Text fields can have options (though null)
 
         select_field = fields["preferred_format"]
-        assert (
-            "ip_geolocation_hint" not in select_field
-        ), f"Select field should not have ip_geolocation_hint: {select_field}"
+        assert "ip_geolocation_hint" not in select_field, (
+            f"Select field should not have ip_geolocation_hint: {select_field}"
+        )
         assert select_field["field_type"] == "select"
         assert select_field["options"] == ["JSON", "CSV"]
 
         multiselect_field = fields["topics"]
-        assert (
-            "ip_geolocation_hint" not in multiselect_field
-        ), f"Multiselect field should not have ip_geolocation_hint: {multiselect_field}"
+        assert "ip_geolocation_hint" not in multiselect_field, (
+            f"Multiselect field should not have ip_geolocation_hint: {multiselect_field}"
+        )
         assert multiselect_field["field_type"] == "multiselect"
         assert multiselect_field["options"] == ["Privacy", "Security", "Data"]
 
@@ -277,9 +277,9 @@ class TestPrivacyCenterConfig:
                 assert "field_type" in field_data
 
                 # Non-location fields should never have location-specific properties
-                assert (
-                    "ip_geolocation_hint" not in field_data
-                ), f"Non-location field '{field_name}' should not have ip_geolocation_hint"
+                assert "ip_geolocation_hint" not in field_data, (
+                    f"Non-location field '{field_name}' should not have ip_geolocation_hint"
+                )
 
     def test_discriminator_function_with_model_instances(self):
         """Test that the discriminator function works with model instances (not just dicts)"""
@@ -374,3 +374,142 @@ class TestPrivacyCenterConfig:
             .default.model_dump(by_alias=True)
             .keys()
         )
+
+
+class TestReorderCustomPrivacyRequestFields:
+    """Tests for reorder_custom_privacy_request_fields helper."""
+
+    def test_reorder_uses_order_list_and_removes_order_key(self):
+        """With custom_privacy_request_field_order present, fields are reordered and order key is removed."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "default_erasure_policy",
+                    "title": "Erase",
+                    "custom_privacy_request_fields": {
+                        "z_last": {"label": "Last", "field_type": "text"},
+                        "a_first": {"label": "First", "field_type": "text"},
+                        "m_mid": {"label": "Mid", "field_type": "text"},
+                    },
+                    "custom_privacy_request_field_order": [
+                        "a_first",
+                        "m_mid",
+                        "z_last",
+                    ],
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        assert "custom_privacy_request_field_order" not in result["actions"][0]
+        keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
+        assert keys == ["a_first", "m_mid", "z_last"]
+
+    def test_reorder_without_order_key_preserves_existing_key_order(self):
+        """Without custom_privacy_request_field_order, existing key order is preserved (backward compat)."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "p",
+                    "title": "T",
+                    "custom_privacy_request_fields": {
+                        "name": {"label": "Name", "field_type": "text"},
+                        "address": {"label": "Address", "field_type": "text"},
+                    },
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
+        assert keys == ["name", "address"]
+        assert "custom_privacy_request_field_order" not in result["actions"][0]
+
+    def test_reorder_returns_copy_and_removes_order_key_from_output(self):
+        """Result is a deep copy; order key is not present in the returned config."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "p",
+                    "title": "T",
+                    "custom_privacy_request_fields": {
+                        "a": {"label": "A"},
+                        "b": {"label": "B"},
+                    },
+                    "custom_privacy_request_field_order": ["b", "a"],
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        assert result is not config
+        assert result["actions"][0] is not config["actions"][0]
+        assert "custom_privacy_request_field_order" not in result["actions"][0]
+        assert list(result["actions"][0]["custom_privacy_request_fields"].keys()) == [
+            "b",
+            "a",
+        ]
+        assert "custom_privacy_request_field_order" in config["actions"][0]
+
+    def test_reorder_empty_actions_passthrough(self):
+        """Config with no actions or empty actions is returned as a copy unchanged."""
+        config = {"actions": []}
+        result = reorder_custom_privacy_request_fields(config)
+        assert result == {"actions": []}
+        assert result is not config
+
+    def test_reorder_action_without_custom_fields_unchanged(self):
+        """Actions without custom_privacy_request_fields are left unchanged."""
+        config = {
+            "actions": [
+                {"policy_key": "p", "title": "T"},
+                {
+                    "policy_key": "p2",
+                    "title": "T2",
+                    "custom_privacy_request_fields": {"x": {"label": "X"}},
+                    "custom_privacy_request_field_order": ["x"],
+                },
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        assert result["actions"][0] == {"policy_key": "p", "title": "T"}
+        assert "custom_privacy_request_field_order" not in result["actions"][1]
+        assert list(result["actions"][1]["custom_privacy_request_fields"].keys()) == [
+            "x"
+        ]
+
+    def test_reorder_ignores_order_keys_not_in_fields(self):
+        """Order keys not present in fields are silently skipped."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "p",
+                    "title": "T",
+                    "custom_privacy_request_fields": {
+                        "a": {"label": "A"},
+                        "b": {"label": "B"},
+                    },
+                    "custom_privacy_request_field_order": ["a", "deleted_field", "b"],
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
+        assert keys == ["a", "b"]  # deleted_field silently skipped
+
+    def test_reorder_appends_fields_not_in_order(self):
+        """Fields not in order list are appended at the end (prevents data loss)."""
+        config = {
+            "actions": [
+                {
+                    "policy_key": "p",
+                    "title": "T",
+                    "custom_privacy_request_fields": {
+                        "a": {"label": "A"},
+                        "b": {"label": "B"},
+                        "new_field": {"label": "New"},  # not in order list
+                    },
+                    "custom_privacy_request_field_order": ["b", "a"],  # stale
+                }
+            ]
+        }
+        result = reorder_custom_privacy_request_fields(config)
+        keys = list(result["actions"][0]["custom_privacy_request_fields"].keys())
+        assert keys == ["b", "a", "new_field"]  # new_field appended at end

@@ -1,12 +1,12 @@
 import {
-  AntButton as Button,
-  Box,
-  Divider,
-  Flex,
-  Grid,
-  Heading,
-  Link,
-  Text,
+  Button,
+  ChakraBox as Box,
+  ChakraDivider as Divider,
+  ChakraFlex as Flex,
+  ChakraGrid as Grid,
+  ChakraHeading as Heading,
+  ChakraLink as Link,
+  ChakraText as Text,
 } from "fidesui";
 import type { NextPage } from "next";
 

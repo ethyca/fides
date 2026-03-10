@@ -4,13 +4,13 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
 from fides.api.db.seed import get_client_id, load_default_access_policy
 from fides.api.util.data_category import get_user_data_categories
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_READ,
     DATASET_TEST,
@@ -112,7 +112,6 @@ class TestDatasetInputs:
 
 
 class TestDatasetReachability:
-
     @pytest.fixture(scope="function")
     def default_access_policy(self, db, default_data_categories) -> None:
         load_default_access_policy(db, get_client_id(db), get_user_data_categories())
@@ -377,7 +376,7 @@ class TestDatasetTest:
                         "msg": "Input should be a valid string",
                     }
                 ],
-                HTTP_422_UNPROCESSABLE_ENTITY,
+                HTTP_422_UNPROCESSABLE_CONTENT,
             ),
             (
                 {
@@ -390,7 +389,7 @@ class TestDatasetTest:
                         "msg": "Field required",
                     }
                 ],
-                HTTP_422_UNPROCESSABLE_ENTITY,
+                HTTP_422_UNPROCESSABLE_CONTENT,
             ),
         ],
     )

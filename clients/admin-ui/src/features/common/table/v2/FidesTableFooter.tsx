@@ -1,4 +1,4 @@
-import { Td, Tfoot, Tr } from "fidesui";
+import { ChakraTd as Td, ChakraTfoot as Tfoot, ChakraTr as Tr } from "fidesui";
 import React, { ReactNode } from "react";
 
 type Props = {

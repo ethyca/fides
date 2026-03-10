@@ -1,8 +1,8 @@
 import {
-  AntFlex as Flex,
-  AntSelect as Select,
+  Flex,
   ICustomMultiSelectProps,
   ICustomSelectProps,
+  Select,
 } from "fidesui";
 import { ReactNode } from "react";
 
@@ -39,7 +39,7 @@ const TaxonomyOption = ({
         <strong>{primaryName || name}</strong>
         {primaryName && `: ${name}`}
       </div>
-      <em>{description}</em>
+      <em className="overflow-hidden text-ellipsis">{description}</em>
     </Flex>
   );
 };

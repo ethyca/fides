@@ -1,4 +1,4 @@
-import { AntButton as Button, Code } from "fidesui";
+import { Button, ChakraCode as Code } from "fidesui";
 import { FallbackProps } from "react-error-boundary";
 
 import ErrorLayout from "~/components/ErrorLayout";

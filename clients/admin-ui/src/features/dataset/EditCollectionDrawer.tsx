@@ -1,5 +1,10 @@
 import { errorToastParams, successToastParams } from "common/toast";
-import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
+import {
+  ChakraText as Text,
+  ConfirmationModal,
+  useChakraDisclosure as useDisclosure,
+  useChakraToast as useToast,
+} from "fidesui";
 import { useMemo } from "react";
 
 import EditDrawer, {
@@ -33,8 +38,7 @@ const EditCollectionDrawer = ({
 }: Props) => {
   const collectionIndex = useMemo(
     () => dataset?.collections.indexOf(collection),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [collection, dataset?.collections],
   );
   const [updateDataset] = useUpdateDatasetMutation();
   const toast = useToast();

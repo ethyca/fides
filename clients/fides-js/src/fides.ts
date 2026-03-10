@@ -5,10 +5,8 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
-import {
-  readConsentFromAnyProvider,
-  registerDefaultProviders,
-} from "./lib/consent-migration";
+import { updateTcfStubGdprApplies } from "./lib/cmp-stubs";
+import { getConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
   FidesCookie,
@@ -22,7 +20,7 @@ import {
   OverrideType,
 } from "./lib/consent-types";
 import {
-  getFidesConsentCookie,
+  hasFidesConsentCookie,
   isNewFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
@@ -72,6 +70,10 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     tcfEnabled: this.config.options.tcfEnabled,
   });
 
+  // If a TCF stub exists on this page, set gdprApplies=false since the
+  // non-TCF bundle is loaded (indicating GDPR/TCF does not apply here).
+  updateTcfStubGdprApplies();
+
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
@@ -94,29 +96,31 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     experienceTranslationOverrides,
   };
 
-  /* THIRD PARTY CONSENT MIGRATION */
-
-  // Register any configured consent migration providers
-  registerDefaultProviders(optionsOverrides);
-
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
   this.config = config;
 
-  // Check for migrated consent from any registered providers
+  /* AUTOMATED CONSENT - Read all automated consent sources synchronously */
+  // This includes GPC, migrated consent from third-party providers (e.g., OneTrust),
+  // and notice consent string overrides from options
+  const automatedConsentContext = getConsentContext(
+    config.options,
+    optionsOverrides,
+  );
+
+  // Apply migrated consent to cookie if we have it and no existing Fides cookie
   let migratedConsent: NoticeConsent | undefined;
-
-  if (!getFidesConsentCookie(config.options.fidesCookieSuffix)) {
-    const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
-    if (consent && method) {
-      migratedConsent = consent;
-    }
+  if (
+    automatedConsentContext.migratedConsent &&
+    !hasFidesConsentCookie(config.options.fidesCookieSuffix)
+  ) {
+    migratedConsent = automatedConsentContext.migratedConsent;
   }
-  /* END THIRD PARTY CONSENT MIGRATION */
+  /* END AUTOMATED CONSENT */
 
-  this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
+  this.cookie = await getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
     ...migratedConsent,
@@ -181,6 +185,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     renderOverlay,
     updateExperience,
     overrides,
+    automatedConsentContext,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);

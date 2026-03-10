@@ -1,10 +1,4 @@
-import {
-  AntCol as Col,
-  AntPopover as Popover,
-  AntRow as Row,
-  AntSpace as Space,
-  Icons,
-} from "fidesui";
+import { Col, Icons, Popover, Row, Space } from "fidesui";
 
 import {
   AdditionIndicator,

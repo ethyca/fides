@@ -1,4 +1,4 @@
-import { Stack } from "fidesui";
+import { ChakraStack as Stack } from "fidesui";
 import { Form, Formik } from "formik";
 
 import { Dataset } from "~/types/api";

@@ -1,4 +1,4 @@
-import { Flex, Text } from "fidesui";
+import { ChakraFlex as Flex, ChakraText as Text } from "fidesui";
 
 import Toggle from "../Toggle";
 

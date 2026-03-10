@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  Box,
-  HStack,
-  Stack,
-  Text,
-  useDisclosure,
+  Button,
+  ChakraBox as Box,
+  ChakraHStack as HStack,
+  ChakraStack as Stack,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";

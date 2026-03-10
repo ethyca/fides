@@ -1,0 +1,30 @@
+name: Cache sidecar container image
+on:
+  workflow_call:
+    inputs:
+      image-name:
+        type: string
+        required: true
+        description: The name of the container image to cache
+      tag:
+        type: string
+        required: true
+        description: The tag of the container image to cache
+
+jobs:
+  cache-image:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Cache Docker images
+      uses: actions/cache@v4
+      with:
+        path: /tmp/docker-images # Path to store the tarball
+        key: docker-${{ runner.os }}-${{ inputs.image-name }}-${{ inputs.tag }}-${{ hashFiles('**/Dockerfile') }} # Key for the cache
+    - name: Pull and save image
+      run: |
+        docker pull ${{ inputs.image-name }}:${{ inputs.tag }}
+        docker save -o /tmp/docker-images/${{ inputs.image-name }}-${{ inputs.tag }}.tar ${{ inputs.image-name }}:${{ inputs.tag }}
+      if: steps.cache-image.outputs.cache-hit != 'true' # Only run if cache miss
+    - name: Load image from cache
+      run: docker load -i /tmp/docker-images/${{ inputs.image-name }}-${{ inputs.tag }}.tar
+      if: steps.cache-image.outputs.cache-hit == 'true' # Only run if cache hit

@@ -3,9 +3,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Type
 
-from sqlalchemy import Boolean, Column
+from sqlalchemy import Boolean, Column, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Query, RelationshipProperty, Session, relationship
@@ -197,11 +196,18 @@ class ExperienceTranslationBase:
         ),
     )
 
+    # GPC (Global Privacy Control) translatable fields
+    gpc_label = Column(String)  # "Global Privacy Control"
+    gpc_description = Column(String)  # Description shown when GPC is honored
+    gpc_status_applied_label = Column(String)  # "Applied"
+    gpc_status_overridden_label = Column(String)  # "Overridden"
+    gpc_title = Column(String)  # "Global Privacy Control detected"
+
+    modal_link_label = Column(String)
     privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     privacy_preferences_link_label = Column(String)
     purpose_header = Column(String)
-    modal_link_label = Column(String)
     reject_button_label = Column(String)
     save_button_label = Column(String)
     title = Column(String)
@@ -699,14 +705,14 @@ def upsert_privacy_experiences_after_config_update(
     Links regions to a PrivacyExperienceConfig by adding or removing PrivacyExperience records.
     """
     current_regions: List[PrivacyNoticeRegion] = experience_config.regions
-    removed_regions: List[PrivacyNoticeRegion] = (
-        [  # Regions that were not in the request, but currently attached to the Config
-            PrivacyNoticeRegion(reg)
-            for reg in {reg.value for reg in current_regions}.difference(
-                {reg.value for reg in regions}
-            )
-        ]
-    )
+    removed_regions: List[
+        PrivacyNoticeRegion
+    ] = [  # Regions that were not in the request, but currently attached to the Config
+        PrivacyNoticeRegion(reg)
+        for reg in {reg.value for reg in current_regions}.difference(
+            {reg.value for reg in regions}
+        )
+    ]
 
     # Delete any PrivacyExperiences whose regions are not in the request
     experience_config.experiences.filter(  # type: ignore[call-arg]

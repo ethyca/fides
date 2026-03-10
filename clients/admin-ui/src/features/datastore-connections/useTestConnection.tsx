@@ -1,4 +1,4 @@
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { formatDate } from "~/features/common/utils";

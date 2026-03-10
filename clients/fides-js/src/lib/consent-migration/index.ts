@@ -4,6 +4,7 @@ import {
   NoticeConsent,
 } from "../consent-types";
 import { OneTrustProvider } from "./onetrust";
+import { TranscendProvider } from "./transcend";
 import {
   ConsentMigrationProvider,
   ConsentMigrationProviderName,
@@ -38,6 +39,14 @@ export function registerDefaultProviders(
     registerProvider(
       ConsentMigrationProviderName.ONETRUST,
       new OneTrustProvider(),
+    );
+  }
+
+  // Register Transcend provider if configured
+  if (optionsOverrides.transcendFidesMapping) {
+    registerProvider(
+      ConsentMigrationProviderName.TRANSCEND,
+      new TranscendProvider(),
     );
   }
 }

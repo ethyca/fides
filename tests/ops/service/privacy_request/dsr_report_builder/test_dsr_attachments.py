@@ -19,7 +19,6 @@ EXPECTED_FILES = [
     "data/manualtask/manual_data/index.html",
     "data/manualtask2/index.html",
     "data/manualtask2/manual_data/index.html",
-    "attachments/index.html",
 ]
 
 
@@ -46,25 +45,18 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Verify that the attachments index file exists
-            self.assert_file_in_zip(
-                zip_file, f"{common_assertions['paths']['attachments_dir']}/index.html"
-            )
-
-            # Read and verify the content of the attachments index file
-            attachments_content = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Read and verify the attachments in clickme.html
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Verify both attachment links are present with their details
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["text"]["file_name"],
                 common_attachment_config["text"]["download_url"],
                 "1.0 KB",  # Assuming the file size is formatted as 1.0 KB
             )
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["binary"]["file_name"],
                 common_attachment_config["binary"]["download_url"],
                 "2.0 KB",  # Assuming the file size is formatted as 2.0 KB
@@ -91,14 +83,12 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
         report_streaming = builder_streaming.generate()
 
         with zipfile.ZipFile(io.BytesIO(report_streaming.getvalue())) as zip_file:
-            # Read the attachments index file
-            attachments_content = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Read the clickme.html file
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Verify that links point to local attachments directory
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["text"]["file_name"],
                 common_attachment_config["text"][
                     "file_name"
@@ -106,7 +96,7 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
                 "1.0 KB",
             )
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["binary"]["file_name"],
                 common_attachment_config["binary"][
                     "file_name"
@@ -116,7 +106,7 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
 
             # Verify that original download URLs are NOT present
             self.assert_html_not_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["text"]["download_url"],
                 common_attachment_config["binary"]["download_url"],
             )
@@ -128,20 +118,18 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
         report_default = builder_default.generate()
 
         with zipfile.ZipFile(io.BytesIO(report_default.getvalue())) as zip_file:
-            # Read the attachments index file
-            attachments_content = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Read the clickme.html file
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Verify that links point to original download URLs
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["text"]["file_name"],
                 common_attachment_config["text"]["download_url"],
                 "1.0 KB",
             )
             self.assert_html_contains(
-                attachments_content,
+                clickme_content,
                 common_attachment_config["binary"]["file_name"],
                 common_attachment_config["binary"]["download_url"],
                 "2.0 KB",
@@ -164,20 +152,16 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Read the attachments index file
-            attachments_content = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Read the clickme.html file
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
             # Verify that the TTL is displayed (should be 5 days by default)
             # The exact number will depend on the CONFIG.security.subject_request_download_link_ttl_seconds value
-            self.assert_html_contains(
-                attachments_content, "download links will expire in"
-            )
-            self.assert_html_contains(attachments_content, "days")
+            self.assert_html_contains(clickme_content, "download links will expire in")
+            self.assert_html_contains(clickme_content, "days")
 
             # Verify that the hardcoded "7 days" is not present
-            self.assert_html_not_contains(attachments_content, "7 days")
+            self.assert_html_not_contains(clickme_content, "7 days")
 
     def test_ttl_display_in_collection_templates(
         self,
@@ -308,24 +292,9 @@ class TestDSRReportBuilderAttachments(TestDSRReportBuilderBase):
                 manual_data, webhook_variants[webhook_type]["email"]
             )
 
-            # Verify that attachments directory exists but contains no actual attachment files
-            # (only the index.html file should be present)
-            attachment_files = [
-                name
-                for name in zip_file.namelist()
-                if name.startswith(f"{common_assertions['paths']['attachments_dir']}/")
-            ]
-            # Should only have the index.html file, no actual attachment files
-            assert len(attachment_files) == 1
-            assert (
-                attachment_files[0]
-                == f"{common_assertions['paths']['attachments_dir']}/index.html"
-            )
-
-            # Verify that the attachments index page exists and is accessible
-            self.assert_file_in_zip(
-                zip_file, f"{common_assertions['paths']['attachments_dir']}/index.html"
-            )
+            # Verify that attachments are shown in clickme.html when present
+            # When there are no attachments, the attachments section should not appear
+            clickme_content = zip_file.read("clickme.html").decode("utf-8")
 
 
 class TestDSRReportBuilderAttachmentHandling:
@@ -396,13 +365,8 @@ class TestDSRReportBuilderAttachmentHandling:
 
         # Create a ZipFile object from the BytesIO
         with zipfile.ZipFile(zip_file) as zip_file_obj:
-            # Check that attachments index was created
-            TestDSRReportBuilderBase.assert_file_in_zip(
-                zip_file_obj, "attachments/index.html"
-            )
-
-            # Check that the HTML contains the attachment links
-            html_content = zip_file_obj.read("attachments/index.html").decode("utf-8")
+            # Check that the HTML contains the attachment links in clickme.html
+            html_content = zip_file_obj.read("clickme.html").decode("utf-8")
             TestDSRReportBuilderBase.assert_html_contains(
                 html_content,
                 "test1.txt",
@@ -632,9 +596,9 @@ class TestDSRReportBuilderDuplicateFileNames:
         """Test that collection-specific and global attachment indexes correctly handle files with same names but different URLs
 
         Expected DSR Report Structure:
+        ├── clickme.html (main index with attachments section: all 4 attachments)
         ├── data/manualtask/manual_data/index.html (collection-specific: 1 text file)
-        ├── data/manualtask2/manual_data/index.html (collection-specific: 1 PDF + 2 text files)
-        └── attachments/index.html (global index: all 4 attachments)
+        └── data/manualtask2/manual_data/index.html (collection-specific: 1 PDF + 2 text files)
 
         Note: Each attachment appears twice in HTML (filename display + URL), so filename counts are doubled.
         """
@@ -651,18 +615,18 @@ class TestDSRReportBuilderDuplicateFileNames:
 
             # Verify the expected HTML structure is present
             for expected_html in EXPECTED_FILES:
-                assert (
-                    expected_html in all_files
-                ), f"Expected HTML file {expected_html} not found in zip. Available files: {all_files}"
+                assert expected_html in all_files, (
+                    f"Expected HTML file {expected_html} not found in zip. Available files: {all_files}"
+                )
 
             # 1. Verify dataset-specific collection indexes contain the correct attachments
             # Check manualtask dataset collection
             manualtask_collection_html = zip_file.read(
                 "data/manualtask/manual_data/index.html"
             ).decode("utf-8")
-            assert (
-                "test_file_text.txt" in manualtask_collection_html
-            ), "manualtask should have test_file_text.txt"
+            assert "test_file_text.txt" in manualtask_collection_html, (
+                "manualtask should have test_file_text.txt"
+            )
 
             # Check manualtask2 dataset collection
             manualtask2_collection_html = zip_file.read(
@@ -670,24 +634,24 @@ class TestDSRReportBuilderDuplicateFileNames:
             ).decode("utf-8")
             # manualtask2 has 3 files: 1 PDF + 2 text files with same name but different URLs
             # Since they have different URLs, they should keep original names (not incremented)
-            assert (
-                "test_file_pdf.pdf" in manualtask2_collection_html
-            ), "manualtask2 should have test_file_pdf.pdf"
-            assert (
-                "test_file_text.txt" in manualtask2_collection_html
-            ), "manualtask2 should have test_file_text.txt"
-            assert (
-                "test_file_text_1.txt" in manualtask2_collection_html
-            ), "manualtask2 should have test_file_text_1.txt"
+            assert "test_file_pdf.pdf" in manualtask2_collection_html, (
+                "manualtask2 should have test_file_pdf.pdf"
+            )
+            assert "test_file_text.txt" in manualtask2_collection_html, (
+                "manualtask2 should have test_file_text.txt"
+            )
+            assert "test_file_text_1.txt" in manualtask2_collection_html, (
+                "manualtask2 should have test_file_text_1.txt"
+            )
 
             # Verify that each dataset collection shows its own attachments
             # manualtask should only show its 1 text file
             manualtask_text_count = manualtask_collection_html.count(
                 "test_file_text.txt"
             )
-            assert (
-                manualtask_text_count >= 1
-            ), f"manualtask should show at least 1 test_file_text.txt, found {manualtask_text_count}"
+            assert manualtask_text_count >= 1, (
+                f"manualtask should show at least 1 test_file_text.txt, found {manualtask_text_count}"
+            )
 
             # manualtask2 should show its 3 files (1 PDF + 2 text files)
             manualtask2_text_count = manualtask2_collection_html.count(
@@ -696,17 +660,17 @@ class TestDSRReportBuilderDuplicateFileNames:
             manualtask2_pdf_count = manualtask2_collection_html.count(
                 "test_file_pdf.pdf"
             )
-            assert (
-                manualtask2_text_count >= 2
-            ), f"manualtask2 should show at least 2 test_file_text.txt files, found {manualtask2_text_count}"
-            assert (
-                manualtask2_pdf_count >= 1
-            ), f"manualtask2 should show at least 1 test_file_pdf.pdf, found {manualtask2_pdf_count}"
+            assert manualtask2_text_count >= 2, (
+                f"manualtask2 should show at least 2 test_file_text.txt files, found {manualtask2_text_count}"
+            )
+            assert manualtask2_pdf_count >= 1, (
+                f"manualtask2 should show at least 1 test_file_pdf.pdf, found {manualtask2_pdf_count}"
+            )
 
-            # 2. Verify global attachments index shows all attachments with dataset paths
-            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+            # 2. Verify attachments section in clickme.html shows all attachments with dataset paths
+            attachments_html = zip_file.read("clickme.html").decode("utf-8")
 
-            # Verify all expected filenames are present in the global attachments index
+            # Verify all expected filenames are present in the attachments section of clickme.html
             expected_filenames = [
                 "test_file_text.txt",  # From manualtask (1 occurrence)
                 "test_file_text.txt",  # From manualtask2 (2 occurrences, same name different URLs)
@@ -714,72 +678,72 @@ class TestDSRReportBuilderDuplicateFileNames:
             ]
 
             for expected_filename in expected_filenames:
-                assert (
-                    expected_filename in attachments_html
-                ), f"Expected filename {expected_filename} not found in global attachments index"
+                assert expected_filename in attachments_html, (
+                    f"Expected filename {expected_filename} not found in attachments section of clickme.html"
+                )
 
-            # Verify total counts in global attachments index
+            # Verify total counts in attachments section
             # Each attachment appears twice in the HTML (filename display + URL), so we need to count table rows
             # Count the number of attachment table rows (each row represents one attachment)
             attachment_rows = attachments_html.count(
                 'class="table-row" target="_blank"'
             )
-            assert (
-                attachment_rows == 4
-            ), f"Global attachments should have 4 total attachment rows, found {attachment_rows}"
+            assert attachment_rows == 4, (
+                f"Global attachments should have 4 total attachment rows, found {attachment_rows}"
+            )
 
             # Verify that test_file_text.txt appears in the expected number of attachment entries
             if enable_streaming:
-                # Incremented filename appears in global attachments index
+                # Incremented filename appears in attachments section
                 # test_file_text.txt appears 2 times (2 occurrences each) = 4 occurrences
                 # test_file_text_1.txt appears 1 times (2 occurrences each) = 2 occurrences
                 total_text_occurrences = attachments_html.count("test_file_text.txt")
-                assert (
-                    total_text_occurrences == 4
-                ), f"Global attachments should have 6 total occurrences of test_file_text.txt (3 attachments × 2 occurrences each), found {total_text_occurrences}"
+                assert total_text_occurrences == 4, (
+                    f"Global attachments should have 6 total occurrences of test_file_text.txt (3 attachments × 2 occurrences each), found {total_text_occurrences}"
+                )
                 total_text_1_occurrences = attachments_html.count(
                     "test_file_text_1.txt"
                 )
-                assert (
-                    total_text_1_occurrences == 2
-                ), f"Global attachments should have 2 total occurrences of test_file_text_1.txt (1 occurrence each), found {total_text_1_occurrences}"
+                assert total_text_1_occurrences == 2, (
+                    f"Global attachments should have 2 total occurrences of test_file_text_1.txt (1 occurrence each), found {total_text_1_occurrences}"
+                )
 
             else:
                 # Each attachment shows the filename twice (display + URL), so 3 attachments = 6 occurrences
                 total_text_occurrences = attachments_html.count("test_file_text.txt")
-                assert (
-                    total_text_occurrences == 6
-                ), f"Global attachments should have 6 total occurrences of test_file_text.txt (3 attachments × 2 occurrences each), found {total_text_occurrences}"
+                assert total_text_occurrences == 6, (
+                    f"Global attachments should have 6 total occurrences of test_file_text.txt (3 attachments × 2 occurrences each), found {total_text_occurrences}"
+                )
 
             total_pdf_occurrences = attachments_html.count("test_file_pdf.pdf")
-            assert (
-                total_pdf_occurrences == 2
-            ), f"Global attachments should have 2 occurrences of test_file_pdf.pdf (1 attachment × 2 occurrences each), found {total_pdf_occurrences}"
+            assert total_pdf_occurrences == 2, (
+                f"Global attachments should have 2 occurrences of test_file_pdf.pdf (1 attachment × 2 occurrences each), found {total_pdf_occurrences}"
+            )
 
             # 3. Verify all attachment IDs are present in global index
             if enable_streaming:
-                assert (
-                    "test_file_text.txt" in attachments_html
-                ), "First attachment ID not found in global index"
-                assert (
-                    "test_file_text_1.txt" in attachments_html
-                ), "Third attachment ID not found in global index"
-                assert (
-                    "test_file_pdf.pdf" in attachments_html
-                ), "Fourth attachment ID not found in global index"
+                assert "test_file_text.txt" in attachments_html, (
+                    "First attachment ID not found in global index"
+                )
+                assert "test_file_text_1.txt" in attachments_html, (
+                    "Third attachment ID not found in global index"
+                )
+                assert "test_file_pdf.pdf" in attachments_html, (
+                    "Fourth attachment ID not found in global index"
+                )
             else:
-                assert (
-                    "att_a60d13cc-e6ca-4783-ac7c-5539e4f68584" in attachments_html
-                ), "First attachment ID not found in global index"
-                assert (
-                    "att_2f8e58ac-54a8-4584-a93e-25d4b27d65b1" in attachments_html
-                ), "Second attachment ID not found in global index"
-                assert (
-                    "att_16edd701-8b7c-4276-b1d8-975cb32cabd5" in attachments_html
-                ), "Third attachment ID not found in global index"
-                assert (
-                    "att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf" in attachments_html
-                ), "Fourth attachment ID not found in global index"
+                assert "att_a60d13cc-e6ca-4783-ac7c-5539e4f68584" in attachments_html, (
+                    "First attachment ID not found in global index"
+                )
+                assert "att_2f8e58ac-54a8-4584-a93e-25d4b27d65b1" in attachments_html, (
+                    "Second attachment ID not found in global index"
+                )
+                assert "att_16edd701-8b7c-4276-b1d8-975cb32cabd5" in attachments_html, (
+                    "Third attachment ID not found in global index"
+                )
+                assert "att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf" in attachments_html, (
+                    "Fourth attachment ID not found in global index"
+                )
 
 
 class TestDSRReportBuilderRedactionHandling:
@@ -793,37 +757,37 @@ class TestDSRReportBuilderRedactionHandling:
     def assert_not_streaming_patterns(self, attachments_html):
         # In non-streaming mode, the display text only shows filenames, not dataset paths
         # So we can't verify redaction from the display text, but we can verify the attachments are present
-        assert (
-            "test_file_text.txt" in attachments_html
-        ), "Global attachments should show all filenames in non-streaming mode"
-        assert (
-            "test_file_pdf.pdf" in attachments_html
-        ), "Global attachments should show all filenames in non-streaming mode"
+        assert "test_file_text.txt" in attachments_html, (
+            "Global attachments should show all filenames in non-streaming mode"
+        )
+        assert "test_file_pdf.pdf" in attachments_html, (
+            "Global attachments should show all filenames in non-streaming mode"
+        )
         # Verify all attachment IDs are still present (only in non-streaming mode)
-        assert (
-            "att_a60d13cc-e6ca-4783-ac7c-5539e4f68584" in attachments_html
-        ), "First attachment ID not found in global index"
-        assert (
-            "att_2f8e58ac-54a8-4584-a93e-25d4b27d65b1" in attachments_html
-        ), "Second attachment ID not found in global index"
-        assert (
-            "att_16edd701-8b7c-4276-b1d8-975cb32cabd5" in attachments_html
-        ), "Third attachment ID not found in global index"
-        assert (
-            "att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf" in attachments_html
-        ), "Fourth attachment ID not found in global index"
+        assert "att_a60d13cc-e6ca-4783-ac7c-5539e4f68584" in attachments_html, (
+            "First attachment ID not found in global index"
+        )
+        assert "att_2f8e58ac-54a8-4584-a93e-25d4b27d65b1" in attachments_html, (
+            "Second attachment ID not found in global index"
+        )
+        assert "att_16edd701-8b7c-4276-b1d8-975cb32cabd5" in attachments_html, (
+            "Third attachment ID not found in global index"
+        )
+        assert "att_9ec66e19-458f-4fe6-8b72-6b9e112b05bf" in attachments_html, (
+            "Fourth attachment ID not found in global index"
+        )
 
     def assert_streaming_patterns(self, attachments_html):
         # In streaming mode, verify that the incremented attachment filenames are present
-        assert (
-            "test_file_text.txt" in attachments_html
-        ), "Global attachments should show all filenames in streaming mode"
-        assert (
-            "test_file_pdf.pdf" in attachments_html
-        ), "Global attachments should show all filenames in streaming mode"
-        assert (
-            "test_file_text_1.txt" in attachments_html
-        ), "Global attachments should show incremented filenames in streaming mode"
+        assert "test_file_text.txt" in attachments_html, (
+            "Global attachments should show all filenames in streaming mode"
+        )
+        assert "test_file_pdf.pdf" in attachments_html, (
+            "Global attachments should show all filenames in streaming mode"
+        )
+        assert "test_file_text_1.txt" in attachments_html, (
+            "Global attachments should show incremented filenames in streaming mode"
+        )
 
     @pytest.mark.parametrize("enable_streaming", [True, False])
     def test_redaction_patterns_affect_dataset_names_in_attachment_links(
@@ -855,46 +819,46 @@ class TestDSRReportBuilderRedactionHandling:
             all_files = zip_file.namelist()
 
             for expected_html in expected_html_files:
-                assert (
-                    expected_html in all_files
-                ), f"Expected HTML file {expected_html} not found in zip. Available files: {all_files}"
+                assert expected_html in all_files, (
+                    f"Expected HTML file {expected_html} not found in zip. Available files: {all_files}"
+                )
 
             # Verify dataset-specific collection indexes contain the correct attachments
             # Check redacted manualtask dataset collection (now dataset_1)
             redacted_collection_html = zip_file.read(
                 "data/dataset_1/manual_data/index.html"
             ).decode("utf-8")
-            assert (
-                "test_file_text.txt" in redacted_collection_html
-            ), "Redacted dataset should have test_file_text.txt"
+            assert "test_file_text.txt" in redacted_collection_html, (
+                "Redacted dataset should have test_file_text.txt"
+            )
 
             # Check non-redacted manualtask2 dataset collection
             non_redacted_collection_html = zip_file.read(
                 "data/manualtask2/manual_data/index.html"
             ).decode("utf-8")
-            assert (
-                "test_file_pdf.pdf" in non_redacted_collection_html
-            ), "Non-redacted dataset should have test_file_pdf.pdf"
-            assert (
-                "test_file_text.txt" in non_redacted_collection_html
-            ), "Non-redacted dataset should have test_file_text.txt"
+            assert "test_file_pdf.pdf" in non_redacted_collection_html, (
+                "Non-redacted dataset should have test_file_pdf.pdf"
+            )
+            assert "test_file_text.txt" in non_redacted_collection_html, (
+                "Non-redacted dataset should have test_file_text.txt"
+            )
 
-            # Verify global attachments index shows all attachments with correct dataset paths
-            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+            # Verify attachments section in clickme.html shows all attachments with correct dataset paths
+            attachments_html = zip_file.read("clickme.html").decode("utf-8")
 
             if enable_streaming:
                 # In streaming mode, the display text shows the dataset/collection paths
-                assert (
-                    "dataset_1" in attachments_html
-                ), "Global attachments should show redacted dataset name in streaming mode"
-                assert (
-                    "manualtask2" in attachments_html
-                ), "Global attachments should show non-redacted dataset name in streaming mode"
+                assert "dataset_1" in attachments_html, (
+                    "Global attachments should show redacted dataset name in streaming mode"
+                )
+                assert "manualtask2" in attachments_html, (
+                    "Global attachments should show non-redacted dataset name in streaming mode"
+                )
                 # Verify that the original dataset name "manualtask" does NOT appear as a standalone dataset name
                 # (it can appear as part of "manualtask2" which should not be redacted)
-                assert (
-                    "manualtask/manual_data:" not in attachments_html
-                ), "Original dataset name should not appear as standalone dataset in global attachments index in streaming mode"
+                assert "manualtask/manual_data:" not in attachments_html, (
+                    "Original dataset name should not appear as standalone dataset in attachments section in streaming mode"
+                )
                 self.assert_streaming_patterns(attachments_html)
             else:
                 self.assert_not_streaming_patterns(attachments_html)
@@ -928,45 +892,45 @@ class TestDSRReportBuilderRedactionHandling:
             ]
 
             for expected_html in expected_html_files:
-                assert (
-                    expected_html in zip_file.namelist()
-                ), f"Expected HTML file {expected_html} not found in zip"
+                assert expected_html in zip_file.namelist(), (
+                    f"Expected HTML file {expected_html} not found in zip"
+                )
 
             # 1. Verify dataset-specific collection indexes contain the correct attachments
             # Check redacted collection in manualtask dataset
             redacted_collection_html = zip_file.read(
                 "data/manualtask/collection_1/index.html"
             ).decode("utf-8")
-            assert (
-                "test_file_text.txt" in redacted_collection_html
-            ), "Redacted collection should have test_file_text.txt"
+            assert "test_file_text.txt" in redacted_collection_html, (
+                "Redacted collection should have test_file_text.txt"
+            )
 
             # Check redacted collection in manualtask2 dataset
             redacted_collection2_html = zip_file.read(
                 "data/manualtask2/collection_1/index.html"
             ).decode("utf-8")
-            assert (
-                "test_file_pdf.pdf" in redacted_collection2_html
-            ), "Redacted collection should have test_file_pdf.pdf"
-            assert (
-                "test_file_text.txt" in redacted_collection2_html
-            ), "Redacted collection should have test_file_text.txt"
-            assert (
-                "test_file_text_1.txt" in redacted_collection2_html
-            ), "Redacted collection should have test_file_text_1.txt"
+            assert "test_file_pdf.pdf" in redacted_collection2_html, (
+                "Redacted collection should have test_file_pdf.pdf"
+            )
+            assert "test_file_text.txt" in redacted_collection2_html, (
+                "Redacted collection should have test_file_text.txt"
+            )
+            assert "test_file_text_1.txt" in redacted_collection2_html, (
+                "Redacted collection should have test_file_text_1.txt"
+            )
 
-            # 2. Verify global attachments index shows all attachments with correct collection paths
-            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+            # 2. Verify attachments section in clickme.html shows all attachments with correct collection paths
+            attachments_html = zip_file.read("clickme.html").decode("utf-8")
 
             if enable_streaming:
                 # In streaming mode, the display text shows the dataset/collection paths
-                assert (
-                    "collection_1" in attachments_html
-                ), "Global attachments should show redacted collection name in streaming mode"
+                assert "collection_1" in attachments_html, (
+                    "Global attachments should show redacted collection name in streaming mode"
+                )
                 # Verify that the original collection name "manual_data" does NOT appear in the global index
-                assert (
-                    "manual_data:" not in attachments_html
-                ), "Original collection name should not appear in global attachments index in streaming mode"
+                assert "manual_data:" not in attachments_html, (
+                    "Original collection name should not appear in attachments section in streaming mode"
+                )
                 self.assert_streaming_patterns(attachments_html)
 
             else:
@@ -1009,51 +973,51 @@ class TestDSRReportBuilderRedactionHandling:
             ]
 
             for expected_html in expected_html_files:
-                assert (
-                    expected_html in zip_file.namelist()
-                ), f"Expected HTML file {expected_html} not found in zip"
+                assert expected_html in zip_file.namelist(), (
+                    f"Expected HTML file {expected_html} not found in zip"
+                )
 
             # 1. Verify dataset-specific collection indexes contain the correct attachments
             # Check both redacted dataset and collection in manualtask
             redacted_both_html = zip_file.read(
                 "data/dataset_1/collection_1/index.html"
             ).decode("utf-8")
-            assert (
-                "test_file_text.txt" in redacted_both_html
-            ), "Redacted dataset and collection should have test_file_text.txt"
+            assert "test_file_text.txt" in redacted_both_html, (
+                "Redacted dataset and collection should have test_file_text.txt"
+            )
 
             # Check redacted collection but non-redacted dataset in manualtask2
             redacted_collection_only_html = zip_file.read(
                 "data/manualtask2/collection_1/index.html"
             ).decode("utf-8")
-            assert (
-                "test_file_pdf.pdf" in redacted_collection_only_html
-            ), "Non-redacted dataset with redacted collection should have test_file_pdf.pdf"
-            assert (
-                "test_file_text.txt" in redacted_collection_only_html
-            ), "Non-redacted dataset with redacted collection should have test_file_text.txt"
+            assert "test_file_pdf.pdf" in redacted_collection_only_html, (
+                "Non-redacted dataset with redacted collection should have test_file_pdf.pdf"
+            )
+            assert "test_file_text.txt" in redacted_collection_only_html, (
+                "Non-redacted dataset with redacted collection should have test_file_text.txt"
+            )
 
-            # 2. Verify global attachments index shows all attachments with correct paths
-            attachments_html = zip_file.read("attachments/index.html").decode("utf-8")
+            # 2. Verify attachments section in clickme.html shows all attachments with correct paths
+            attachments_html = zip_file.read("clickme.html").decode("utf-8")
 
             if enable_streaming:
                 # In streaming mode, the display text shows the dataset/collection paths
-                assert (
-                    "dataset_1" in attachments_html
-                ), "Global attachments should show redacted dataset name in streaming mode"
-                assert (
-                    "manualtask2" in attachments_html
-                ), "Global attachments should show non-redacted dataset name in streaming mode"
-                assert (
-                    "collection_1" in attachments_html
-                ), "Global attachments should show redacted collection name in streaming mode"
+                assert "dataset_1" in attachments_html, (
+                    "Global attachments should show redacted dataset name in streaming mode"
+                )
+                assert "manualtask2" in attachments_html, (
+                    "Global attachments should show non-redacted dataset name in streaming mode"
+                )
+                assert "collection_1" in attachments_html, (
+                    "Global attachments should show redacted collection name in streaming mode"
+                )
                 # Verify that the original names do NOT appear in the global index
-                assert (
-                    "manualtask/manual_data:" not in attachments_html
-                ), "Original dataset name should not appear as standalone dataset in global attachments index in streaming mode"
-                assert (
-                    "manual_data:" not in attachments_html
-                ), "Original collection name should not appear in global attachments index in streaming mode"
+                assert "manualtask/manual_data:" not in attachments_html, (
+                    "Original dataset name should not appear as standalone dataset in attachments section in streaming mode"
+                )
+                assert "manual_data:" not in attachments_html, (
+                    "Original collection name should not appear in attachments section in streaming mode"
+                )
                 self.assert_streaming_patterns(attachments_html)
             else:
                 self.assert_not_streaming_patterns(attachments_html)

@@ -2,13 +2,13 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
-  AntButton as Button,
-  Box,
-  DeleteIcon,
-  Flex,
-  Spinner,
-  Text,
-  useToast,
+  Button,
+  ChakraBox as Box,
+  ChakraDeleteIcon as DeleteIcon,
+  ChakraFlex as Flex,
+  ChakraSpinner as Spinner,
+  ChakraText as Text,
+  useChakraToast as useToast,
 } from "fidesui";
 import { FieldArray, Form, Formik, FormikHelpers } from "formik";
 import type { NextPage } from "next";

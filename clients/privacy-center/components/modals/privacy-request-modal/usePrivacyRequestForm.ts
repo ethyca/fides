@@ -1,7 +1,8 @@
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
@@ -31,17 +32,19 @@ const fallbackNull = (
 ) => (value === undefined || value === "" ? null : value);
 
 const usePrivacyRequestForm = ({
-  onClose,
+  onExit,
   action,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
+  onSuccessWithoutVerification,
 }: {
-  onClose: () => void;
+  onExit: () => void;
   action?: ConfigPrivacyRequestOption;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  onSuccessWithoutVerification?: () => void;
 }) => {
   const settings = useSettings();
   const {
@@ -70,6 +73,7 @@ const usePrivacyRequestForm = ({
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
+  const [isSubmitPending, setIsSubmitPending] = useState(false);
   const searchParams = useSearchParams();
 
   const property = useProperty();
@@ -105,6 +109,7 @@ const usePrivacyRequestForm = ({
         // somehow we've reached a broken state, return
         return;
       }
+      setIsSubmitPending(true);
 
       // extract identity input values
       const identityInputValues = Object.fromEntries(
@@ -173,7 +178,7 @@ const usePrivacyRequestForm = ({
           policy_key: action.policy_key,
           property_id: property?.id || null,
           source: PrivacyRequestSource.PRIVACY_CENTER,
-          location: values?.location,
+          location: values?.location ? values.location : undefined,
         },
       ];
 
@@ -182,14 +187,15 @@ const usePrivacyRequestForm = ({
         error,
       }: {
         title: string;
-        error?: any;
+        error?: unknown;
       }) => {
+        setIsSubmitPending(false);
+        const errorMessage = typeof error === "string" ? error : undefined;
         toast({
           title,
-          description: error,
+          description: errorMessage,
           ...ErrorToastOptions,
         });
-        onClose();
       };
 
       try {
@@ -219,6 +225,12 @@ const usePrivacyRequestForm = ({
               "Your request was successful, please await further instructions.",
             ...SuccessToastOptions,
           });
+          // Call success handler if provided (for page flow), otherwise just close
+          if (onSuccessWithoutVerification) {
+            onSuccessWithoutVerification();
+          } else {
+            onExit();
+          }
         } else if (
           (isVerificationRequired &&
             data.succeeded.length &&
@@ -239,11 +251,6 @@ const usePrivacyRequestForm = ({
           title:
             "An unhandled error occurred while creating your privacy request",
         });
-        return;
-      }
-
-      if (!isVerificationRequired) {
-        onClose();
       }
     },
     validationSchema: Yup.object().shape({
@@ -281,6 +288,7 @@ const usePrivacyRequestForm = ({
 
   return {
     ...formik,
+    isSubmitting: formik.isSubmitting || isSubmitPending,
     legacyIdentityFields,
     customIdentityFields,
     customPrivacyRequestFields,

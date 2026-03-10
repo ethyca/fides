@@ -3,9 +3,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from fides.api.api.v1.endpoints.consent_request_endpoints import (
-    queue_privacy_request_to_propagate_consent_old_workflow,
-)
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.privacy_request import Consent, ConsentRequest, ProvidedIdentity
@@ -18,6 +15,9 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.v1.endpoints.consent_request_endpoints import (
+    queue_privacy_request_to_propagate_consent_old_workflow,
+)
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -116,7 +116,6 @@ def test_consent_request(db):
 
 
 class TestQueuePrivacyRequestToPropagateConsentHelper:
-
     @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
@@ -184,9 +183,9 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         assert request_data.consent_preferences[0].data_use == "marketing.advertising"
         assert request_data.consent_preferences[0].opt_in is False
 
-        assert (
-            call_kwargs["authenticated"] is True
-        ), "We already validated identity with a verification code earlier in the request"
+        assert call_kwargs["authenticated"] is True, (
+            "We already validated identity with a verification code earlier in the request"
+        )
 
         custom_fields = request_data.custom_privacy_request_fields
         if custom_fields:

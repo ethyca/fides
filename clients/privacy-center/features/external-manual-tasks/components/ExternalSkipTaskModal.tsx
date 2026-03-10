@@ -11,17 +11,17 @@
  */
 
 import {
-  AntButton as Button,
-  AntDivider as Divider,
-  AntInput as Input,
-  AntSpace as Space,
-  AntTypography as Typography,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
+  Button,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  Divider,
+  Input,
+  Space,
+  Typography,
 } from "fidesui";
 import { useState } from "react";
 

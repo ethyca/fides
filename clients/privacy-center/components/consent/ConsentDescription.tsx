@@ -1,4 +1,8 @@
-import { Box, Text, TextProps } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraText as Text,
+  ChakraTextProps as TextProps,
+} from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import useI18n from "~/common/hooks/useI18n";

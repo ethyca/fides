@@ -1,11 +1,11 @@
 import {
-  Box,
-  ExternalLinkIcon,
-  Flex,
+  ChakraBox as Box,
+  ChakraExternalLinkIcon as ExternalLinkIcon,
+  ChakraFlex as Flex,
+  ChakraSpacer as Spacer,
+  ChakraText as Text,
   SecondaryLink,
-  Spacer,
-  Text,
-  useToast,
+  useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import React from "react";

@@ -1,6 +1,11 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { AntButton as Button, Box, Flex, useToast } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  useChakraToast as useToast,
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";

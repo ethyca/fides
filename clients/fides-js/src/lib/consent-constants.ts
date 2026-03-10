@@ -93,6 +93,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       validationRegex: /(.*)/,
     },
     {
+      overrideName: "transcendFidesMapping",
+      overrideType: "string",
+      overrideKey: "transcend_fides_mapping",
+      validationRegex: /(.*)/,
+    },
+    {
       overrideName: "fidesDisabledNotices",
       overrideType: "array",
       overrideKey: "fides_disabled_notices",
@@ -147,6 +153,18 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideType: "string",
       overrideKey: "fides_cookie_suffix",
       validationRegex: /.*/,
+    },
+    {
+      overrideName: "fidesCookieCompression",
+      overrideType: "string",
+      overrideKey: "fides_cookie_compression",
+      validationRegex: /^(gzip|none)$/,
+    },
+    {
+      overrideName: "fidesExternalId",
+      overrideType: "string",
+      overrideKey: "fides_external_id",
+      validationRegex: /.+/,
     },
   ];
 

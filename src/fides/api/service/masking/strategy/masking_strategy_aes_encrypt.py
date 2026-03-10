@@ -60,7 +60,10 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
                     continue
 
                 nonce: bytes | None = self._generate_nonce(
-                    str(value), key_hmac, request_id, masking_meta  # type: ignore
+                    str(value),
+                    key_hmac,  # type: ignore[arg-type]
+                    request_id,
+                    masking_meta,  # type: ignore
                 )
                 masked: str = encrypt(str(value), key, nonce)  # type: ignore
                 if self.format_preservation is not None:
@@ -118,7 +121,10 @@ class AesEncryptionMaskingStrategy(MaskingStrategy):
         # Trim to 12 bytes, which is recommended length from aes gcm lib:
         # https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM.encrypt
         return hmac_encrypt_return_bytes(
-            value, key, salt, HmacMaskingConfiguration.Algorithm.sha_256  # type: ignore
+            value,
+            key,
+            salt,  # type: ignore[arg-type]
+            HmacMaskingConfiguration.Algorithm.sha_256,  # type: ignore
         )[:12]
 
     @classmethod

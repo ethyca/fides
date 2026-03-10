@@ -1,14 +1,14 @@
 import {
-  AntButton as Button,
-  AntDefaultOptionType as DefaultOptionType,
-  AntDropdown as Dropdown,
-  AntEmpty as Empty,
-  AntFlex as Flex,
-  AntMenu as Menu,
-  AntSpace as Space,
-  AntTable as Table,
-  AntTooltip as Tooltip,
+  Button,
+  DefaultOptionType,
+  Dropdown,
+  Empty,
+  Flex,
   Icons,
+  Menu,
+  Space,
+  Table,
+  Tooltip,
 } from "fidesui";
 import { useState } from "react";
 
@@ -73,6 +73,7 @@ export const DiscoveredAssetsTable = ({
 
     // Selection
     selectedUrns,
+    selectedRows,
     hasSelectedRows,
     resetSelections,
 
@@ -114,6 +115,10 @@ export const DiscoveredAssetsTable = ({
     setIsAddDataUseModalOpen(false);
   };
 
+  const hasUncategorizedSelectedAssets = selectedRows.some(
+    (asset: StagedResourceAPIResponse) => !asset.system,
+  );
+
   if (!monitorId || !systemId) {
     return null;
   }
@@ -134,7 +139,11 @@ export const DiscoveredAssetsTable = ({
         className="mb-4"
         data-testid="asset-state-filter"
       />
-      <Flex justify="space-between" align="center" className="mb-4">
+      <Flex
+        justify="space-between"
+        align="center"
+        className="sticky -top-6 z-10 mb-4 bg-white py-4"
+      >
         <DebouncedSearchInput
           value={searchQuery}
           onChange={updateSearch}
@@ -161,8 +170,19 @@ export const DiscoveredAssetsTable = ({
                     : [
                         {
                           key: "add",
-                          label: "Add",
+                          label: (
+                            <Tooltip
+                              title={
+                                hasUncategorizedSelectedAssets
+                                  ? "The selected assets must be assigned to a system before you can add them to the inventory."
+                                  : undefined
+                              }
+                            >
+                              Add
+                            </Tooltip>
+                          ),
                           onClick: handleBulkAdd,
+                          disabled: hasUncategorizedSelectedAssets,
                         },
                         {
                           key: "add-data-use",

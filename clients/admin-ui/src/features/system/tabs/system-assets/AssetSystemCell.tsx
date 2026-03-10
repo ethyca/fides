@@ -1,8 +1,8 @@
 import {
-  AntTag as Tag,
   ConfirmationModal,
   Icons,
-  useDisclosure,
+  Tag,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { truncate } from "lodash";
 import { MouseEventHandler, useCallback, useState } from "react";

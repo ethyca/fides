@@ -16,7 +16,7 @@ import {
 } from "@iabgpp/cmpapi";
 
 import { FidesEvent } from "./fides";
-import { getConsentContext } from "./lib/consent-context";
+import { getGpcContext } from "./lib/consent-context";
 import {
   FidesGlobal,
   FidesOptions,
@@ -192,7 +192,7 @@ const initializeGppCmpApi = () => {
             experience.privacy_notices,
           )))
     ) {
-      const context = getConsentContext();
+      const context = getGpcContext();
       const tcSet = setTcString(event, cmpApi);
       if (tcSet) {
         cmpApi.setApplicableSections([TcfEuV2.ID]);
@@ -249,7 +249,7 @@ const initializeGppCmpApi = () => {
       const sectionsChanged = setGppNoticesProvidedFromExperience({
         cmpApi,
         experience,
-        context: getConsentContext(),
+        context: getGpcContext(),
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -272,7 +272,7 @@ const initializeGppCmpApi = () => {
     }
   });
 
-  window.addEventListener("FidesUpdated", (event) => {
+  window.addEventListener("FidesUpdated", async (event) => {
     // In our flows, whenever FidesUpdated fires, the UI has closed
     cmpApi.setCmpDisplayStatus(CmpDisplayStatus.HIDDEN);
     const tcSet = setTcString(event, cmpApi);
@@ -287,7 +287,7 @@ const initializeGppCmpApi = () => {
         cmpApi,
         cookie: event.detail,
         experience: window.Fides.experience,
-        context: getConsentContext(),
+        context: getGpcContext(),
       });
       if (sectionsChanged.length) {
         cmpApi.setApplicableSections(sectionsChanged.map((s) => s.id));
@@ -301,7 +301,7 @@ const initializeGppCmpApi = () => {
       if (window.Fides.cookie) {
         window.Fides.fides_string = fidesString;
         window.Fides.cookie.fides_string = fidesString;
-        saveFidesCookie(window.Fides.cookie, window.Fides.options);
+        await saveFidesCookie(window.Fides.cookie, window.Fides.options);
         fidesDebugger("GPP: updated fides_string", fidesString);
       }
     }

@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntText as Text,
-  AntTooltip as Tooltip,
+  Button,
+  Flex,
   Icons,
+  Text,
+  Tooltip,
   UploadFile,
   useMessage,
 } from "fidesui";

@@ -12,6 +12,7 @@ from uuid import uuid4
 
 import boto3
 import google.auth.credentials
+import httpx
 import pytest
 import requests
 import yaml
@@ -59,13 +60,14 @@ from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPRO
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
-from fides.api.tasks import celery_app
+from fides.api.tasks import celery_app, celery_healthcheck
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
-from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
+from fides.common.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.async_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
@@ -232,7 +234,9 @@ def api_client():
 async def async_api_client():
     """Return an async client used to make API requests"""
     async with AsyncClient(
-        app=app, base_url="http://0.0.0.0:8080", follow_redirects=True
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://0.0.0.0:8080",
+        follow_redirects=True,
     ) as client:
         yield client
 
@@ -755,14 +759,90 @@ def integration_config():
 
 
 @pytest.fixture(scope="session")
-def celery_config():
-    return {"task_always_eager": False}
+def celery_config(request):
+    """
+    Configure celery for testing.
+
+    Uses a unique healthcheck port per xdist worker to prevent port conflicts
+    when running tests in parallel.
+    """
+    # Calculate unique port based on xdist worker_id
+    # This works at session scope by accessing request.config
+    if hasattr(request.config, "workerinput"):
+        # In a worker process (e.g., 'gw0', 'gw1', 'gw2')
+        worker_id = request.config.workerinput["workerid"]
+        worker_num = int(worker_id.replace("gw", ""))
+        healthcheck_port = 9000 + worker_num + 1
+    else:
+        # In the master process (or not using xdist)
+        healthcheck_port = 9000
+
+    return {
+        "task_always_eager": False,
+        "healthcheck_port": healthcheck_port,
+    }
 
 
 @pytest.fixture(scope="session")
 def celery_enable_logging():
     """Turns on celery output logs."""
     return True
+
+
+@pytest.fixture(scope="session")
+def celery_session_app(celery_session_app):
+    celery_healthcheck.register(celery_session_app)
+    return celery_session_app
+
+
+# This is here because the test suite occasionally fails to teardown the
+# Celery worker if it takes too long to terminate the worker thread. This
+# will prevent that and, instead, log a warning.
+# When Redis cluster is enabled, we skip starting the real worker (it can block
+# on cluster connections at teardown) and use task_always_eager so tasks run in-process.
+@pytest.fixture(scope="session")
+def celery_session_worker(
+    request,
+    celery_session_app,
+    celery_includes,
+    celery_class_tasks,
+    celery_worker_pool,
+    celery_worker_parameters,
+):
+    from celery.contrib.testing import worker
+
+    for module in celery_includes:
+        celery_session_app.loader.import_task_module(module)
+    for class_task in celery_class_tasks:
+        celery_session_app.register_task(class_task)
+
+    config = get_config()
+    if config.redis.cluster_enabled:
+        logger.info(
+            "Redis cluster enabled: skipping real Celery worker, using task_always_eager."
+        )
+        celery_session_app.conf.task_always_eager = True
+        # Minimal mock so tests that call .stop() or .reload() don't break
+        from types import SimpleNamespace
+
+        yield SimpleNamespace(stop=lambda: None, reload=lambda: None)
+        return
+
+    try:
+        logger.info("Starting safe celery session worker...")
+        with worker.start_worker(
+            celery_session_app,
+            pool=celery_worker_pool,
+            shutdown_timeout=10.0,
+            **celery_worker_parameters,
+        ) as w:
+            try:
+                yield w
+                logger.info("Done with celery worker, trying to dispose of it..")
+            except RuntimeError:
+                logger.warning("Failed to dispose of the celery worker.")
+    except RuntimeError as re:
+        logger.warning("Failed to stop the celery worker: " + str(re))
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -859,7 +939,7 @@ def access_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the access request for either DSR 2.0 and DSR 3.0
+    Function for testing the access request using DSR 3.0.
     """
     try:
         return access_runner(
@@ -869,7 +949,8 @@ def access_runner_tester(
             connection_configs,
             identity,
             session,
-            privacy_request_proceed=False,  # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
+            privacy_request_proceed=False,
+            # This allows the DSR 3.0 Access Runner to be tested in isolation, to just test running the access graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
@@ -888,7 +969,7 @@ def erasure_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the erasure runner for either DSR 2.0 and DSR 3.0
+    Function for testing the erasure runner using DSR 3.0.
     """
     try:
         return erasure_runner(
@@ -917,7 +998,7 @@ def consent_runner_tester(
     session: Session,
 ):
     """
-    Function for testing the consent request for either DSR 2.0 and DSR 3.0
+    Function for testing the consent request using DSR 3.0.
     """
     try:
         return consent_runner(
@@ -927,7 +1008,8 @@ def consent_runner_tester(
             connection_configs,
             identity,
             session,
-            privacy_request_proceed=False,  # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
+            privacy_request_proceed=False,
+            # This allows the DSR 3.0 Consent Runner to be tested in isolation, to just test running the consent graph without queuing the privacy request
         )
     except PrivacyRequestExit:
         # DSR 3.0 intentionally raises a PrivacyRequestExit status while it waits for
@@ -1502,16 +1584,21 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
         },
     )
 
-    ConnectionConfig.create(
+    connection_config = ConnectionConfig.create(
         db=db,
         data={
-            "system_id": system.id,
             "connection_type": "bigquery",
             "name": "test_connection",
             "secrets": {"password": "test_password"},
             "access": "write",
         },
     )
+    SystemIntegrationLinkRepository().create_or_update_link(
+        system_id=system.id,
+        connection_config_id=connection_config.id,
+        session=db,
+    )
+    db.commit()
 
     db.refresh(system)
     yield system
@@ -1955,11 +2042,11 @@ def viewer_and_approver_auth_header(viewer_and_approver_user):
 
 @pytest.mark.asyncio
 @pytest.fixture(scope="function")
-def seed_data(session):
+def seed_data(db: Session):
     """
     Fixture to load default resources into the database before a test.
     """
-    seed_db(session)
+    seed_db(db)
 
 
 @pytest.fixture(scope="function")
@@ -2039,14 +2126,38 @@ def monkeypatch_requests(test_client, monkeysession) -> None:
     Some places within the application, for example `fides.core.api`, use the `requests`
     library to interact with the webserver. This fixture patches those `requests` calls
     so that all of those tests instead interact with the test instance.
+
+    NOTE: This is dangerous, now that starlette's TestClient no longer accepts allow_redirects like requests
+    does - so this is not a direct drop-in any longer and the methods may need to be wrapped / transmogrified.
     """
+
+    # Flip allow_redirects from requests to follow_redirects in starlette
+    def _wrap_requests_post(url, **kwargs):
+        if kwargs.get("allow_redirects") is not None:
+            flag_value = kwargs.pop("allow_redirects")
+            kwargs["follow_redirects"] = flag_value
+
+        return test_client.post(url, **kwargs)
+
     monkeysession.setattr(requests, "get", test_client.get)
-    monkeysession.setattr(requests, "post", test_client.post)
+    monkeysession.setattr(requests, "post", _wrap_requests_post)
     monkeysession.setattr(requests, "put", test_client.put)
     monkeysession.setattr(requests, "patch", test_client.patch)
     monkeysession.setattr(requests, "delete", test_client.delete)
 
 
+@pytest.fixture
+def worker_id(request) -> str:
+    """Fixture to get the xdist worker ID (e.g., 'gw0', 'gw1') or 'master'."""
+    if hasattr(request.config, "workerinput"):
+        # In a worker process
+        return request.config.workerinput["workerid"]
+    else:
+        # In the master process (or not using xdist)
+        return "master"
+
+
+@pytest.hookimpl(optionalhook=True)
 def pytest_configure_node(node):
     """Pytest hook automatically called for each xdist worker node configuration."""
     if hasattr(node, "workerinput") and node.workerinput:
@@ -2345,6 +2456,18 @@ def mock_gcs_client(
             blobs[blob_name] = self
             return None
 
+        def mock_upload_from_string(
+            self,
+            data,
+            content_type=None,
+            num_retries=None,
+            client=None,
+            **kwargs,
+        ):
+            """Simulates uploading string/bytes data to the blob, storing it in the blobs dictionary."""
+            blobs[blob_name] = self
+            return None
+
         def mock_generate_signed_url(self, version, expiration, method, **kwargs):
             """Generates a signed URL for the blob, raising NotFound if the blob doesn't exist."""
             if blob_name not in blobs:
@@ -2367,6 +2490,12 @@ def mock_gcs_client(
         mock_blob.upload_from_file = types.MethodType(
             create_autospec(
                 storage.Blob.upload_from_file, side_effect=mock_upload_from_file
+            ),
+            mock_blob,
+        )
+        mock_blob.upload_from_string = types.MethodType(
+            create_autospec(
+                storage.Blob.upload_from_string, side_effect=mock_upload_from_string
             ),
             mock_blob,
         )

@@ -1,13 +1,12 @@
 import { useAPIHelper } from "common/hooks";
 import {
-  Box,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  VStack,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  Typography,
 } from "fidesui";
 import React, { useState } from "react";
 
@@ -20,6 +19,25 @@ type Props = {
   onClose: () => void;
   onConditionSaved: (condition: ConditionLeaf) => Promise<void>;
   editingCondition?: ConditionLeaf | null;
+  connectionKey: string;
+  /**
+   * When true, hides the dataset field source option and filters privacy request
+   * fields to only those available for consent requests.
+   */
+  isConsentOnly?: boolean;
+};
+
+const getModalDescription = (
+  isEditing: boolean,
+  isConsentOnly: boolean,
+): string => {
+  if (isEditing) {
+    return "Update the condition settings for task creation.";
+  }
+  if (isConsentOnly) {
+    return "Configure a new condition that must be met before a task is created. Select a privacy request field to create the condition.";
+  }
+  return "Configure a new condition that must be met before a task is created. Select a field from your datasets or from the privacy request to create the condition.";
 };
 
 const AddEditConditionModal = ({
@@ -27,6 +45,8 @@ const AddEditConditionModal = ({
   onClose,
   onConditionSaved,
   editingCondition,
+  connectionKey,
+  isConsentOnly = false,
 }: Props) => {
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,20 +84,18 @@ const AddEditConditionModal = ({
           {isEditing ? "Edit condition" : "Add condition"}
         </ModalHeader>
         <ModalCloseButton />
-        <ModalBody pb={6}>
-          <VStack align="stretch" gap="16px">
-            <Box color="gray.700" fontSize="14px">
-              {isEditing
-                ? "Update the condition settings for task creation."
-                : "Configure a new condition that must be met before a task is created. Select a field from your datasets to create the condition."}
-            </Box>
-            <AddConditionForm
-              onAdd={handleSubmit}
-              onCancel={handleCancel}
-              editingCondition={editingCondition}
-              isSubmitting={isSubmitting}
-            />
-          </VStack>
+        <ModalBody pb={0}>
+          <Typography.Paragraph>
+            {getModalDescription(isEditing, isConsentOnly)}
+          </Typography.Paragraph>
+          <AddConditionForm
+            onAdd={handleSubmit}
+            onCancel={handleCancel}
+            editingCondition={editingCondition}
+            isSubmitting={isSubmitting}
+            connectionKey={connectionKey}
+            isConsentOnly={isConsentOnly}
+          />
         </ModalBody>
       </ModalContent>
     </Modal>

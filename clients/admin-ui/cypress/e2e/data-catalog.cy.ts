@@ -92,10 +92,10 @@ describe("data catalog", () => {
       ).should("contain", "Classifying");
       cy.getByTestId(
         "row-bigquery_monitor.prj-bigquery-333333-col-status",
-      ).should("contain", "In review");
+      ).should("contain", "Classified");
       cy.getByTestId(
         "row-bigquery_monitor.prj-bigquery-444444-col-status",
-      ).should("contain", "Approved");
+      ).should("contain", "Reviewed");
     });
 
     it("should navigate to dataset view on click", () => {

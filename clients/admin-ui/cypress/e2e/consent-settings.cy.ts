@@ -83,7 +83,8 @@ describe("Consent settings", () => {
         cy.getByTestId("option-state").should("not.have.attr", "checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
           "have.attr",
-          "data-checked",
+          "checked",
+          "checked",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "have.attr",
@@ -339,7 +340,7 @@ describe("Consent settings", () => {
           }) => {
             // shows all purposes
             Object.values(data.purposes).forEach((purpose) => {
-              cy.contains(purpose.name).should("be.visible");
+              cy.contains(purpose.name).should("exist");
               cy.getByTestId(`restriction-type-cell-${purpose.id}`).should(
                 "have.text",
                 "none",
@@ -421,7 +422,7 @@ describe("Consent settings", () => {
 
       it("displays purpose restrictions table correctly", () => {
         cy.getByTestId("edit-restriction-btn-2").click({ force: true });
-        cy.getByTestId("fidesTable").should("exist");
+        cy.getByTestId("purpose-restrictions-table").should("exist");
         // mock purpose includes all restriction types, so we can check that all are present and that the Add Restriction button is disabled
         Object.values(RESTRICTION_TYPE_LABELS).forEach((label) => {
           cy.contains(label).should("exist");

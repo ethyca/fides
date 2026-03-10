@@ -1,14 +1,12 @@
 from sqlalchemy import Boolean, CheckConstraint, Column, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
-from fides.config import CONFIG
+from fides.api.db.base_class import (
+    Base,  # type: ignore[attr-defined]
+    JSONTypeOverride,
+)
+from fides.api.db.encryption_utils import encrypted_type
 
 
 class IdentitySalt(Base):
@@ -21,14 +19,7 @@ class IdentitySalt(Base):
         return "identity_salt"
 
     encrypted_value = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=True,
     )  # Type bytea in the db
     single_row = Column(

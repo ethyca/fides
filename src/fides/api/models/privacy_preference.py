@@ -4,17 +4,24 @@ import uuid
 from enum import Enum
 from typing import Any, Dict, Optional, Tuple
 
-from sqlalchemy import Boolean, Column, DateTime
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Query, Session, relationship
-from sqlalchemy_utils import StringEncryptedType
-from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.db.base_class import Base, JSONTypeOverride
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -25,7 +32,6 @@ from fides.api.models.privacy_request import PrivacyRequest, ProvidedIdentity
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.language import SupportedLanguage
 from fides.api.schemas.redis_cache import MultiValue
-from fides.config import CONFIG
 
 
 class RequestOrigin(Enum):
@@ -83,39 +89,19 @@ class ConsentIdentitiesMixin(HashMigrationMixin):
     """Encrypted and hashed identities for consent reporting and last saved preference retrieval"""
 
     email = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )  # Encrypted email
 
     fides_user_device = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )  # Encrypted fides user device
 
     phone_number = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )  # Encrypted phone number
 
     external_id = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )
 
     hashed_email = Column(
@@ -285,30 +271,15 @@ class LastServedNotice(Base):
     )
 
     email = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )  # Encrypted email
 
     fides_user_device = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )  # Encrypted fides user device
 
     phone_number = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )  # Encrypted phone number
 
     hashed_email = Column(
@@ -340,12 +311,7 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
     """
 
     anonymized_ip_address = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
@@ -391,7 +357,8 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
         return Column(String, ForeignKey(PrivacyNoticeHistory.id), index=True)
 
     # Preferences and Notices Served are saved in celery - there may be some gap in between
-    # when the data was received, and when we actually were able to save it to the db
+    # when the data was received, and when we actually were able to save it to the db.
+    # We also support sending in received at to allow migrations of data from other systems
     received_at = Column(DateTime(timezone=True))
 
     # Location where we received the request
@@ -400,12 +367,7 @@ class ConsentReportingMixinV2(ConsentIdentitiesMixin):
     url_recorded = Column(String)
 
     user_agent = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
     )
 
     user_geography = Column(String, index=True)
@@ -488,14 +450,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
 
     # Relevant identities are added to the report during request propagation
     secondary_user_ids = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
     )
 
     # The record of where we served the notice in the frontend, for conversion purposes.

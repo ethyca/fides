@@ -2,26 +2,27 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { PreferenceSource } from "./PreferenceSource";
+import type { PreferenceType } from "./PreferenceType";
+import type { PropagationPolicyKey } from "./PropagationPolicyKey";
 
 /**
  * Fides-defined metadata properties for a single preference value (includes backend-only fields).
  */
 export type PreferenceFidesMeta = {
   /**
-   * ISO timestamp when the preference was collected (auto-populated if not provided)
+   * The type of the preference value.
    */
-  collected_at?: string | null;
+  preference_type?: PreferenceType;
   /**
-   * Whether the preference value was created from a parent preference with override_children=true.
+   * The key of the policy that created the preference value, if any.
    */
-  override?: boolean | null;
+  policy_key?: PropagationPolicyKey | null;
   /**
-   * Whether the preference value was derived from a parent preference rather than being explicitly saved.
+   * The Fides property id where the preference was collected
    */
-  derived?: boolean | null;
+  property_id?: string | null;
   /**
-   * The source of the preference value.
+   * Identifier for the experience config history
    */
-  source?: PreferenceSource | null;
+  experience_config_history_id?: string | null;
 };

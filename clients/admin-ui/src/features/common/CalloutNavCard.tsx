@@ -1,4 +1,4 @@
-import { AntCard as Card, AntTypography as Typography, Box } from "fidesui";
+import { Card, ChakraBox as Box, Typography } from "fidesui";
 
 import styles from "./CalloutNavCard.module.scss";
 

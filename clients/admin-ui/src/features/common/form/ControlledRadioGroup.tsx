@@ -1,11 +1,11 @@
-import type { AntRadioGroupProps as RadioGroupProps } from "fidesui";
+import type { RadioGroupProps } from "fidesui";
 import {
-  AntFlex as Flex,
-  AntRadio as Radio,
-  FormControl,
-  Grid,
+  ChakraFormControl as FormControl,
+  ChakraGrid as Grid,
+  ChakraText as Text,
+  Flex,
+  Radio,
   RadioChangeEvent,
-  Text,
 } from "fidesui";
 import { useField } from "formik";
 

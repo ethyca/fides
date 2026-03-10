@@ -1,7 +1,8 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 
+import { LegacyResourceTypes } from "~/features/common/custom-fields/types";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useBulkUpdateCustomFieldsMutation } from "~/features/plus/plus.slice";
@@ -11,7 +12,6 @@ import {
   CustomFieldWithId,
   PrivacyDeclaration,
   PrivacyDeclarationResponse,
-  ResourceTypes,
   SystemResponse,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
@@ -47,7 +47,7 @@ const buildCustomFieldsPayload = (
   return {
     upsert: payloadUpsert,
     delete: payloadDelete,
-    resource_type: ResourceTypes.PRIVACY_DECLARATION,
+    resource_type: LegacyResourceTypes.PRIVACY_DECLARATION,
     resource_id: resourceId,
   };
 };

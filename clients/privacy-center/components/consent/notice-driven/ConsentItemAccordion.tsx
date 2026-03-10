@@ -1,12 +1,12 @@
 import { GpcStatus } from "fides-js";
 import {
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Flex,
-  Text,
+  ChakraAccordionButton as AccordionButton,
+  ChakraAccordionIcon as AccordionIcon,
+  ChakraAccordionItem as AccordionItem,
+  ChakraAccordionPanel as AccordionPanel,
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraText as Text,
 } from "fidesui";
 import React from "react";
 

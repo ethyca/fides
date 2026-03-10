@@ -11,7 +11,13 @@ import {
   CreateSaasConnectionConfigResponse,
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
-import { Box, Flex, Spacer, useToast, UseToastOptions } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraFlex as Flex,
+  ChakraSpacer as Spacer,
+  ChakraUseToastOptions as UseToastOptions,
+  useChakraToast as useToast,
+} from "fidesui";
 import router from "next/router";
 import { useMemo, useState } from "react";
 

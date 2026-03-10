@@ -1,9 +1,5 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import {
-  AntFlex as Flex,
-  AntNotification as notification,
-  Text,
-} from "fidesui";
+import { ChakraText as Text, Flex, useNotification } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import Script from "next/script";
@@ -80,6 +76,7 @@ const Preview = ({
 }) => {
   const router = useRouter();
   const isNewExperience = router.pathname.includes("/new");
+  const notification = useNotification();
   const { values } = useFormikContext<ExperienceConfigCreate>();
   const [noticesOnConfig, setNoticesOnConfig] = useState<
     PrivacyNoticeResponse[]
@@ -180,7 +177,7 @@ const Preview = ({
         key: "vendor-warning", // Prevent duplicate messages
       });
     }
-  }, [vendorReport?.total, values.component]);
+  }, [vendorReport?.total, values.component, notification]);
 
   useEffect(() => {
     if (
@@ -351,6 +348,9 @@ const Preview = ({
               ? "padding-bottom: 3rem;"
               : ""
           }
+        }
+        #preview-container .fides-sr-only {
+          display: none !important;
         }`}
         </style>
       ) : null}

@@ -1,4 +1,4 @@
-import { AntButton as Button, Box, Stack } from "fidesui";
+import { Button, ChakraBox as Box, ChakraStack as Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 

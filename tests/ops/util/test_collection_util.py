@@ -162,8 +162,9 @@ class TestUnflattenDict:
     def test_array_with_scalar_values(self):
         assert unflatten_dict({"A.0": "B", "A.1": "C"}) == {"A": ["B", "C"]}
 
+    # TODO: what is this test testing?
     def test_overwrite_existing_values(self):
-        assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}
+        assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}  # noqa: F601
 
     def test_conflicting_types(self):
         with pytest.raises(ValueError):

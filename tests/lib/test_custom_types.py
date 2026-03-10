@@ -21,7 +21,7 @@ DANGEROUS_STRINGS = [
     "'-alert(1)-'",
     "'-alert(1)//",
     "'-alert(1)//",
-    "</script><svg onload=alert(1)>" "<x contenteditable onblur=alert(1)>lose focus!",
+    "</script><svg onload=alert(1)><x contenteditable onblur=alert(1)>lose focus!",
     "<x onclick=alert(1)>click this!",
     "<x oncopy=alert(1)>copy this!",
     "<x oncontextmenu=alert(1)>right click this!",
@@ -199,7 +199,6 @@ class TestGppMechanismConsentValue:
 
 @pytest.mark.unit
 class TestURLOriginString:
-
     class TestModel(BaseModel):
         origin: URLOriginString
 

@@ -1,5 +1,11 @@
 import { useAlert } from "common/hooks/useAlert";
-import { AntButton as Button, Flex, ModalFooter, Text, VStack } from "fidesui";
+import {
+  Button,
+  ChakraFlex as Flex,
+  ChakraModalFooter as ModalFooter,
+  ChakraText as Text,
+  ChakraVStack as VStack,
+} from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import React, { Fragment, useRef, useState } from "react";
 

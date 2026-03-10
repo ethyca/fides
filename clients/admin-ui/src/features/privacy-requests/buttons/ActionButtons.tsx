@@ -1,4 +1,4 @@
-import { Flex } from "fidesui";
+import { ChakraFlex as Flex } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import ReprocessButton from "~/features/privacy-requests/buttons/ReprocessButton";

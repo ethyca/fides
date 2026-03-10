@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { act, renderHook } from "@testing-library/react";
-import {
-  AntTablePaginationConfig as TablePaginationConfig,
-  AntTableProps as TableProps,
-} from "fidesui";
+import { TablePaginationConfig, TableProps } from "fidesui";
 
 // Mock nuqs using shared mock implementation to prevent ESM issues
 // eslint-disable-next-line global-require
@@ -21,7 +18,7 @@ type SortKey = "name" | "createdAt";
 const isPaginationConfig = (
   pagination: TableProps<any>["pagination"],
 ): pagination is TablePaginationConfig => {
-  return pagination !== false && pagination != null;
+  return pagination !== false && pagination !== null;
 };
 
 describe("useAntTable", () => {

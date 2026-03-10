@@ -1,4 +1,9 @@
-import { AntButton as Button, Box, Stack, Text } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraStack as Stack,
+  ChakraText as Text,
+} from "fidesui";
 import { useRouter } from "next/router";
 
 import { MESSAGING_PROVIDERS_ROUTE } from "~/features/common/nav/routes";

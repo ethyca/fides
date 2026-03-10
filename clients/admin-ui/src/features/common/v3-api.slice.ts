@@ -3,15 +3,17 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import { addCommonHeaders } from "~/features/common/CommonHeaders";
+import { buildArrayQueryParams } from "~/features/common/utils";
 import type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "~/types/api";
 import type { ConsentCreate } from "~/types/api/models/ConsentCreate";
 import type { ConsentPreferenceResponse } from "~/types/api/models/ConsentPreferenceResponse";
 import type { ConsentResponse } from "~/types/api/models/ConsentResponse";
-import type { OverrideMode } from "~/types/api/models/OverrideMode";
+import type { PropagationPolicyKey } from "~/types/api/models/PropagationPolicyKey";
 
 export interface PrivacyExperienceQueryParams {
   region: string;
   show_disabled: boolean;
+  property_id?: string;
 }
 
 export interface CurrentPreferencesQueryParams {
@@ -58,23 +60,32 @@ export const privacyNoticesSandboxV3Api = v3Api.injectEndpoints({
   endpoints: (build) => ({
     savePrivacyPreferences: build.mutation<
       ConsentResponse,
-      { body: ConsentCreate; override_mode?: OverrideMode | null }
+      { body: ConsentCreate; policy?: PropagationPolicyKey | null }
     >({
-      query: ({ body, override_mode }) => ({
+      query: ({ body, policy }) => ({
         url: "privacy-preferences",
         method: "POST",
         body,
-        params: override_mode ? { override_mode } : undefined,
+        params: policy ? { policy } : undefined,
       }),
     }),
     getCurrentPreferences: build.query<
       ConsentPreferenceResponse[],
       CurrentPreferencesQueryParams
     >({
-      query: (params) => ({
-        url: `privacy-preferences/current`,
-        params,
-      }),
+      query: (params) => {
+        const arrayParams = buildArrayQueryParams({
+          notice_keys: params.notice_keys,
+        });
+
+        return {
+          url: `privacy-preferences/current?${arrayParams.toString()}`,
+          params: {
+            "identity.email": params["identity.email"],
+            include_descendants: true,
+          },
+        };
+      },
     }),
   }),
 });

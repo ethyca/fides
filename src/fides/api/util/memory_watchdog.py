@@ -37,7 +37,7 @@ def get_memory_watchdog_enabled() -> bool:
         bool: True if memory_watchdog_enabled is enabled, False otherwise (defaults to False)
     """
     try:
-        from fides.api.api.deps import get_autoclose_db_session as get_db
+        from fides.common.session_management import get_autoclose_db_session as get_db
         from fides.config.config_proxy import ConfigProxy
 
         with get_db() as db:
@@ -246,9 +246,7 @@ class MemoryWatchdog:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
-    def _signal_handler(
-        self, signum: int, frame: Optional[FrameType]
-    ) -> None:  # noqa: D401 – Celery uses signal handlers
+    def _signal_handler(self, signum: int, frame: Optional[FrameType]) -> None:  # noqa: D401 – Celery uses signal handlers
         """Convert the signal into an exception on the main thread."""
         current_percent = _system_memory_percent()
         logger.error("Memory limit exceeded: {}%", current_percent)

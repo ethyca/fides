@@ -1,4 +1,4 @@
-import { AntEmpty as Empty, useToast } from "fidesui";
+import { Empty, useChakraToast as useToast } from "fidesui";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -8,7 +8,11 @@ import {
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
-import { useAntTable, useTableState } from "~/features/common/table/hooks";
+import {
+  AntTableHookConfig,
+  useAntTable,
+  useTableState,
+} from "~/features/common/table/hooks";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   AlertLevel,
@@ -44,9 +48,6 @@ export const useDiscoveredSystemAggregateTable = ({
     ConsentAlertInfo | undefined
   >();
 
-  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
-    useActionCenterTabs();
-
   const tableState = useTableState<DiscoveredSystemAggregateColumnKeys>({
     sorting: {
       validColumns: Object.values(DiscoveredSystemAggregateColumnKeys),
@@ -56,13 +57,17 @@ export const useDiscoveredSystemAggregateTable = ({
   const { pageIndex, pageSize, searchQuery, updateSearch, resetState } =
     tableState;
 
-  const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
-    key: monitorId,
-    page: pageIndex,
-    size: pageSize,
-    search: searchQuery,
-    ...activeParams,
-  });
+  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
+    useActionCenterTabs();
+
+  const { data, error, isLoading, isFetching } =
+    useGetDiscoveredSystemAggregateQuery({
+      key: monitorId,
+      page: pageIndex,
+      size: pageSize,
+      search: searchQuery,
+      ...activeParams,
+    });
 
   const [addMonitorResultSystemsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultSystemsMutation();
@@ -80,8 +85,9 @@ export const useDiscoveredSystemAggregateTable = ({
 
   const rowClickUrl = useCallback(
     (record: SystemStagedResourcesAggregateRecord) => {
-      const newUrl = `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}/${record.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
-      return newUrl;
+      const recordId = record.id ?? UNCATEGORIZED_SEGMENT;
+      const activeTabHash = activeTab ? `#${activeTab}` : "";
+      return `${ACTION_CENTER_ROUTE}/${MONITOR_TYPES.WEBSITE}/${monitorId}/${recordId}${activeTabHash}`;
     },
     [monitorId, activeTab],
   );
@@ -103,6 +109,9 @@ export const useDiscoveredSystemAggregateTable = ({
             />
           ),
         },
+        sticky: {
+          offsetHeader: 40,
+        },
       },
     }),
     [getRecordKey, isLoading, isFetching, data?.items, data?.total],
@@ -111,7 +120,10 @@ export const useDiscoveredSystemAggregateTable = ({
   const antTable = useAntTable<
     SystemStagedResourcesAggregateRecord,
     DiscoveredSystemAggregateColumnKeys
-  >(tableState, antTableConfig);
+  >(
+    tableState,
+    antTableConfig as AntTableHookConfig<SystemStagedResourcesAggregateRecord>,
+  );
 
   const { selectedRows, resetSelections } = antTable;
 
@@ -129,7 +141,11 @@ export const useDiscoveredSystemAggregateTable = ({
     monitorId,
     onTabChange: handleTabChange,
     readonly: actionsDisabled,
-    allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
+    allowIgnore:
+      !("diff_status" in activeParams) ||
+      !(activeParams as { diff_status: DiffStatus[] }).diff_status.includes(
+        DiffStatus.MUTED,
+      ),
     consentStatus: firstPageConsentStatus,
     rowClickUrl,
   });
@@ -222,6 +238,7 @@ export const useDiscoveredSystemAggregateTable = ({
     // Table state and data
     columns,
     data,
+    error,
     isLoading,
     isFetching,
     searchQuery,

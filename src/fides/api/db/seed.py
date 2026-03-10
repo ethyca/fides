@@ -10,10 +10,6 @@ from loguru import logger as log
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from fides.api.api.v1.endpoints.dataset_config_endpoints import patch_dataset_configs
-from fides.api.api.v1.endpoints.saas_config_endpoints import (
-    instantiate_connection_from_template,
-)
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import FidesBase
 from fides.api.db.ctl_session import sync_session
@@ -53,8 +49,13 @@ from fides.api.util.connection_util import patch_connection_configs
 from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
+from fides.api.v1.endpoints.dataset_config_endpoints import patch_dataset_configs
+from fides.api.v1.endpoints.saas_config_endpoints import (
+    instantiate_connection_from_template,
+)
 from fides.config import CONFIG
 from fides.service.dataset.dataset_config_service import DatasetConfigService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 from .crud import upsert_resources
 from .samples import (
@@ -388,7 +389,7 @@ async def load_samples(async_session: AsyncSession) -> None:
                     )  # not supported by this API!
                     instantiate_connection_from_template(
                         db=db_session,
-                        saas_connector_type=connection.saas_connector_type,
+                        connector_template_type=connection.saas_connector_type,
                         template_values=SaasConnectionTemplateValues.model_validate(
                             saas_template_data
                         ),
@@ -480,19 +481,11 @@ async def load_samples(async_session: AsyncSession) -> None:
                         )
                         continue
 
-                    linked_connection_config = ConnectionConfig.create_or_update(
-                        db=db_session,
-                        data={
-                            **connection_config.__dict__,
-                            **{"system_id": system.id},
-                        },
-                        check_name=False,
+                    SystemIntegrationLinkRepository().create_or_update_link(
+                        system_id=system.id,
+                        connection_config_id=connection_config.id,
+                        session=db_session,
                     )
-                    if not linked_connection_config:
-                        log.debug(
-                            f"Failed to link sample connection '{connection.key}' to system '{system_key}'"
-                        )
-                        continue
 
     except QueryError:  # pragma: no cover
         pass  # The upsert_resources function will log any error
@@ -544,7 +537,7 @@ def load_default_organization(db: Session) -> None:
             pass
 
     log.debug(f"INSERTED {inserted} organization resource(s)")
-    log.debug(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
+    log.debug(f"SKIPPED {len(organizations) - inserted} organization resource(s)")
 
 
 def load_default_taxonomy(db: Session) -> None:

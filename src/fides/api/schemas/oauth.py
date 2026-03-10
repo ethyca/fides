@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 
 from fastapi import Form
 from fastapi.openapi.models import OAuthFlows
@@ -11,9 +11,14 @@ from fides.api.common_exceptions import InvalidAuthorizationSchemeError
 
 
 class AccessToken(BaseModel):
-    """A wrapper for the access_code returned upon successful authentication"""
+    """A wrapper for the access_code returned upon successful authentication."""
 
     access_token: str
+    token_type: Literal["Bearer"] = "Bearer"
+    expires_in: Optional[int] = None
+    """Seconds until the access token expires (OAuth2 standard)."""
+    expires_at: Optional[str] = None
+    """ISO 8601 datetime when the access token expires (for client convenience)."""
 
 
 # NOTE: Adapted from

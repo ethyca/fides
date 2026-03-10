@@ -1,4 +1,4 @@
-import { Text } from "fidesui";
+import { ChakraText as Text } from "fidesui";
 
 import ConnectedCircle from "../common/ConnectedCircle";
 import { formatDate } from "../common/utils";

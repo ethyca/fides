@@ -22,6 +22,26 @@ export type ExperienceTranslationResponse = {
    */
   banner_title?: string | null;
   /**
+   * Label for Global Privacy Control (e.g. 'Global Privacy Control')
+   */
+  gpc_label?: string | null;
+  /**
+   * Description shown when GPC preference is honored
+   */
+  gpc_description?: string | null;
+  /**
+   * Label shown when GPC is applied (e.g. 'Applied')
+   */
+  gpc_status_applied_label?: string | null;
+  /**
+   * Label shown when GPC is overridden (e.g. 'Overridden')
+   */
+  gpc_status_overridden_label?: string | null;
+  /**
+   * Title for GPC info section (e.g. 'Global Privacy Control detected')
+   */
+  gpc_title?: string | null;
+  /**
    * Whether the given translation is the default
    */
   is_default?: boolean | null;

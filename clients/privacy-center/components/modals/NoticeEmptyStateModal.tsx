@@ -1,12 +1,12 @@
 import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
+  ChakraButton as Button,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalFooter as ModalFooter,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraText as Text,
 } from "fidesui";
 
 const NoticeEmptyStateModal = ({

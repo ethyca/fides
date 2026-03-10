@@ -1,16 +1,16 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Box,
-  Checkbox,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalOverlay,
-  SimpleGrid,
+  ChakraAccordion as Accordion,
+  ChakraAccordionButton as AccordionButton,
+  ChakraAccordionIcon as AccordionIcon,
+  ChakraAccordionItem as AccordionItem,
+  ChakraAccordionPanel as AccordionPanel,
+  ChakraBox as Box,
+  ChakraCheckbox as Checkbox,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalContent as ModalContent,
+  ChakraModalOverlay as ModalOverlay,
+  ChakraSimpleGrid as SimpleGrid,
 } from "fidesui";
 import { useMemo, useState } from "react";
 

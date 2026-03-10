@@ -1,6 +1,9 @@
-import { UseDisclosureReturn, useToast } from "fidesui";
+import {
+  ChakraUseDisclosureReturn as UseDisclosureReturn,
+  PageSpinner,
+  useChakraToast as useToast,
+} from "fidesui";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import FormModal from "~/features/common/modals/FormModal";
@@ -13,9 +16,9 @@ import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-mon
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
 import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monitor/ConfigureWebsiteMonitorForm";
 import {
-  ConnectionConfigurationResponse,
+  ConnectionConfigurationResponseWithSystemKey,
   ConnectionSystemTypeMap,
-  MonitorConfig,
+  EditableMonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
 import { isErrorResult, RTKResult } from "~/types/errors";
@@ -41,10 +44,10 @@ const ConfigureMonitorModal = ({
   isWebsiteMonitor,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
-  monitor?: MonitorConfig;
+  monitor?: EditableMonitorConfig;
   isEditing?: boolean;
-  onAdvance: (m: MonitorConfig) => void;
-  integration: ConnectionConfigurationResponse;
+  onAdvance: (m: EditableMonitorConfig) => void;
+  integration: ConnectionConfigurationResponseWithSystemKey;
   integrationOption: ConnectionSystemTypeMap;
   isWebsiteMonitor?: boolean;
 }) => {
@@ -63,7 +66,7 @@ const ConfigureMonitorModal = ({
 
   const { successAlert, errorAlert } = useAlert();
 
-  const handleSubmit = async (values: MonitorConfig) => {
+  const handleSubmit = async (values: EditableMonitorConfig) => {
     let result: RTKResult | undefined;
     const timeout = setTimeout(() => {
       if (!result) {
@@ -75,7 +78,9 @@ const ConfigureMonitorModal = ({
         onClose();
       }
     }, TIMEOUT_DELAY);
+
     result = await putMonitorMutationTrigger(values);
+
     if (result) {
       clearTimeout(timeout);
       if (isErrorResult(result)) {
@@ -115,6 +120,7 @@ const ConfigureMonitorModal = ({
         <ConfigureWebsiteMonitorForm
           monitor={monitor}
           url={(integration.secrets as unknown as { url: string })?.url ?? ""}
+          integrationSystem={integration?.system_key}
           onClose={onClose}
           onSubmit={handleSubmit}
         />
@@ -140,6 +146,7 @@ const ConfigureMonitorModal = ({
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           databasesAvailable={databasesAvailable}
+          integrationSystem={integration?.system_key}
           integrationOption={integrationOption}
         />
       )}
@@ -154,7 +161,7 @@ const ConfigureMonitorModal = ({
             integrationKey={integration.key}
           />
         ) : (
-          <FidesSpinner />
+          <PageSpinner />
         ))}
     </FormModal>
   );

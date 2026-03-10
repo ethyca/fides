@@ -1,11 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntFlexProps as FlexProps,
-  AntTag as Tag,
-  AntTagProps as TagProps,
-  AntText as Text,
-} from "fidesui";
+import { Button, Flex, FlexProps, Tag, TagProps, Text } from "fidesui";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
 import { COLLAPSE_BUTTON_TEXT, TAG_MAX_WIDTH } from "./constants";

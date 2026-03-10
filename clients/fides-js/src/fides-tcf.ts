@@ -8,10 +8,10 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
-import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import { FidesCookie, isNewFidesCookie } from "./fides";
+import { getConsentContext } from "./lib/consent-context";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -19,10 +19,12 @@ import {
   FidesInitOptionsOverrides,
   FidesOverrides,
   GetPreferencesFnResp,
+  NoticeConsent,
   NoticeValues,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
+import { hasFidesConsentCookie } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
 import {
   dispatchConsentLoadedEvents,
@@ -51,12 +53,6 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 declare global {
   interface Window {
     __tcfapiLocator?: Window;
-    __tcfapi?: (
-      command: string,
-      version: number,
-      callback: (tcData: TCData, success: boolean) => void,
-      parameter?: number | string,
-    ) => void;
     __gpp?: GppFunction;
     __gppLocator?: Window;
   }
@@ -152,8 +148,29 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     },
   };
   this.config = config;
-  this.cookie = {
-    ...getInitialCookie(config),
+
+  /* AUTOMATED CONSENT - Read all automated consent sources synchronously */
+  // This includes GPC, migrated consent from third-party providers (e.g., OneTrust),
+  // and notice consent string overrides from options
+  const automatedConsentContext = getConsentContext(
+    config.options,
+    optionsOverrides,
+  );
+
+  // Apply migrated consent to cookie if we have it and no existing Fides cookie
+  let migratedConsent: NoticeConsent | undefined;
+  if (
+    automatedConsentContext.migratedConsent &&
+    !hasFidesConsentCookie(config.options.fidesCookieSuffix)
+  ) {
+    migratedConsent = automatedConsentContext.migratedConsent;
+  }
+  /* END AUTOMATED CONSENT */
+
+  this.cookie = await getInitialCookie(config);
+  this.cookie.consent = {
+    ...this.cookie.consent,
+    ...migratedConsent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -190,7 +207,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const hasExistingCookie = !isNewFidesCookie(this.cookie);
   // Initialize the TCF CMP API early so that listeners are established
   initializeTcfCmpApi();
-  if (hasExistingCookie || hasValidTCString) {
+  const hasMigratableConsent = !!migratedConsent;
+  if (hasExistingCookie || hasValidTCString || hasMigratableConsent) {
     /*
      * We have enough information to initialize the Fides object before we have a valid experience.
      * In this case, the experience is less important because the user has already consented to something.
@@ -219,6 +237,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     renderOverlay,
     updateExperience: updateTCFExperience,
     overrides,
+    automatedConsentContext,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);

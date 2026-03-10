@@ -1,5 +1,11 @@
 import { Table as TableInstance } from "@tanstack/react-table";
-import { AntButton as Button, HStack, Td, Text, Tr } from "fidesui";
+import {
+  Button,
+  ChakraHStack as HStack,
+  ChakraTd as Td,
+  ChakraText as Text,
+  ChakraTr as Tr,
+} from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 type RowSelectionBarProps<T> = {

@@ -39,6 +39,11 @@ class MicrosoftSQLServerSchema(ConnectionConfigSecretsSchema):
         title="Database",
         description="The name of the specific database within the database server that you want to connect to.",
     )
+    read_only_connection: Optional[bool] = Field(
+        default=False,
+        title="Read Only Connection",
+        description="Whether to connect to the database in read-only mode.",
+    )
 
     _required_components: ClassVar[List[str]] = [
         "host",

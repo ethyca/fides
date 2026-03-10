@@ -1,21 +1,16 @@
 /* eslint-disable react/no-unstable-nested-components */
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
-  AntEmpty as Empty,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
+  ChakraModal as Modal,
+  ChakraModalBody as ModalBody,
+  ChakraModalCloseButton as ModalCloseButton,
+  ChakraModalContent as ModalContent,
+  ChakraModalHeader as ModalHeader,
+  ChakraModalOverlay as ModalOverlay,
 } from "fidesui";
 
 import { PreferencesSaved } from "~/types/api";
 
-import { FidesTableV2 } from "../common/table/v2";
-import useTcfConsentColumns, {
-  TcfDetailRow,
-} from "./hooks/useTcfConsentColumns";
+import TcfConsentTable from "./TcfConsentTable";
 
 interface ConsentTcfDetailModalProps {
   isOpen: boolean;
@@ -28,22 +23,6 @@ const ConsentTcfDetailModal = ({
   onClose,
   tcfPreferences,
 }: ConsentTcfDetailModalProps) => {
-  const {
-    tcfColumns,
-    mapTcfPreferencesToRowColumns,
-    filterTcfConsentPreferences,
-  } = useTcfConsentColumns();
-  const tcfData = mapTcfPreferencesToRowColumns(tcfPreferences);
-  const filteredTcfData = filterTcfConsentPreferences(tcfData);
-
-  const tableInstance = useReactTable<TcfDetailRow>({
-    getCoreRowModel: getCoreRowModel(),
-    data: filteredTcfData || [],
-    columns: tcfColumns,
-    getRowId: (row) => `${row.key}-${row.id}`,
-    manualPagination: true,
-  });
-
   return (
     <Modal
       id="consent-lookup-modal"
@@ -59,16 +38,7 @@ const ConsentTcfDetailModal = ({
         <ModalHeader pb={2}>TCF Consent Details</ModalHeader>
         <ModalBody>
           <div className="mb-4">
-            <FidesTableV2<TcfDetailRow>
-              tableInstance={tableInstance}
-              emptyTableNotice={
-                <Empty
-                  description=" No data found"
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  imageStyle={{ marginBottom: 15 }}
-                />
-              }
-            />
+            <TcfConsentTable tcfPreferences={tcfPreferences} />
           </div>
         </ModalBody>
       </ModalContent>

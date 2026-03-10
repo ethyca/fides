@@ -7,6 +7,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
 from fides.api.util.connection_type import (
+    NoSuchConnectionTypeSecretSchemaError,
     get_connection_type_secret_schema,
     get_connection_types,
 )
@@ -15,8 +16,8 @@ from fides.api.util.connection_type import (
 def test_get_connection_types():
     data = [obj.model_dump(mode="json") for obj in get_connection_types()]
     assert (
-        len(data) == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
-    )  # there are 5 connection types that are not returned by the endpoint
+        len(data) == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 6
+    )  # there are 6 connection types that are not returned by the endpoint
 
     assert {
         "identifier": ConnectionType.postgres.value,
@@ -29,6 +30,8 @@ def test_get_connection_types():
         "category": None,
         "tags": None,
         "enabled_features": None,
+        "custom": False,
+        "default_connector_available": False,
     } in data
     first_saas_type = ConnectorRegistry.connector_types().pop()
     first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -58,6 +61,7 @@ def test_get_connection_types():
     assert "https" not in [item["identifier"] for item in data]
     assert "custom" not in [item["identifier"] for item in data]
     assert "manual" not in [item["identifier"] for item in data]
+    assert "manual_webhook" not in [item["identifier"] for item in data]
 
     assert {
         "identifier": ConnectionType.sovrn.value,
@@ -70,6 +74,8 @@ def test_get_connection_types():
         "category": None,
         "tags": None,
         "enabled_features": None,
+        "custom": False,
+        "default_connector_available": False,
     } in data
 
 
@@ -98,6 +104,8 @@ def connection_type_objects():
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         },
         ConnectionType.manual_webhook.value: {
             "identifier": ConnectionType.manual_webhook.value,
@@ -110,6 +118,8 @@ def connection_type_objects():
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         },
         HUBSPOT: actual_connection_types[HUBSPOT],
         MAILCHIMP: actual_connection_types[MAILCHIMP],
@@ -125,6 +135,8 @@ def connection_type_objects():
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         },
         ConnectionType.attentive_email.value: {
             "identifier": ConnectionType.attentive_email.value,
@@ -137,6 +149,8 @@ def connection_type_objects():
             "category": None,
             "tags": None,
             "enabled_features": None,
+            "custom": False,
+            "default_connector_available": False,
         },
     }
 
@@ -160,7 +174,6 @@ def connection_type_objects():
             [ActionType.access],
             [
                 ConnectionType.postgres.value,
-                ConnectionType.manual_webhook.value,
                 HUBSPOT,
                 MAILCHIMP,
                 STRIPE,
@@ -168,6 +181,7 @@ def connection_type_objects():
             [
                 ConnectionType.sovrn.value,
                 ConnectionType.attentive_email.value,
+                ConnectionType.manual_webhook.value,
             ],
         ),
         (
@@ -178,10 +192,10 @@ def connection_type_objects():
                 STRIPE,
                 MAILCHIMP,
                 ConnectionType.attentive_email.value,
-                ConnectionType.manual_webhook.value,
             ],
             [
                 ConnectionType.sovrn.value,
+                ConnectionType.manual_webhook.value,
             ],
         ),
         (
@@ -191,11 +205,11 @@ def connection_type_objects():
                 MAILCHIMP,
                 ConnectionType.sovrn.value,
                 ConnectionType.postgres.value,
-                ConnectionType.manual_webhook.value,
                 STRIPE,
             ],
             [
                 ConnectionType.attentive_email.value,
+                ConnectionType.manual_webhook.value,
             ],
         ),
         (
@@ -207,15 +221,15 @@ def connection_type_objects():
                 ConnectionType.postgres.value,
                 STRIPE,
                 ConnectionType.attentive_email.value,
+            ],
+            [
                 ConnectionType.manual_webhook.value,
             ],
-            [],
         ),
         (
             [ActionType.access, ActionType.erasure],
             [
                 ConnectionType.postgres.value,
-                ConnectionType.manual_webhook.value,
                 MAILCHIMP,
                 HUBSPOT,
                 STRIPE,
@@ -223,6 +237,7 @@ def connection_type_objects():
             ],
             [
                 ConnectionType.sovrn.value,
+                ConnectionType.manual_webhook.value,
             ],
         ),
     ],
@@ -242,6 +257,36 @@ def test_get_connection_types_action_type_filter(
     for connection_type in assert_not_in_data:
         obj = connection_type_objects[connection_type]
         assert obj not in data
+
+
+def test_get_connection_type_secret_schema_https():
+    """The https type was previously unreachable via get_connection_types(),
+    but it has a valid schema in secrets_schemas. Verify the fast path
+    returns it with the correct sensitive annotations."""
+    schema = get_connection_type_secret_schema(connection_type="https")
+
+    assert schema["properties"]["url"].get("sensitive") is not True
+    assert schema["properties"]["authorization"]["sensitive"] is True
+    assert schema["properties"]["headers"]["sensitive"] is True
+    assert "url" in schema.get("required", [])
+    assert "authorization" in schema.get("required", [])
+
+
+def test_get_connection_type_secret_schema_manual_webhook():
+    """manual_webhook has a schema with no secret fields.
+    Verify the fast path returns an empty-properties schema rather than raising."""
+    schema = get_connection_type_secret_schema(connection_type="manual_webhook")
+
+    assert schema["type"] == "object"
+    assert schema["properties"] == {}
+
+
+def test_get_connection_type_secret_schema_not_in_secrets_schemas():
+    """Types that exist in ConnectionType but have no entry in secrets_schemas
+    (e.g. the deprecated 'manual' type) should raise NoSuchConnectionTypeSecretSchemaError."""
+
+    with pytest.raises(NoSuchConnectionTypeSecretSchemaError):
+        get_connection_type_secret_schema(connection_type="manual")
 
 
 def test_get_connection_type_secret_schemas_aws():
@@ -294,6 +339,8 @@ def test_get_saas_connection_types_with_display_info(monkeypatch):
     mock_template.category = ConnectionCategory.ECOMMERCE
     mock_template.tags = ["tag1", "tag2"]
     mock_template.enabled_features = [IntegrationFeature.DSR_AUTOMATION]
+    mock_template.custom = False
+    mock_template.default_connector_available = False
 
     # Mock display info with values
     mock_display_info = Mock()
@@ -317,7 +364,6 @@ def test_get_saas_connection_types_with_display_info(monkeypatch):
             "fides.api.util.connection_type.load_config_from_string"
         ) as mock_load_config,
     ):
-
         mock_connector_types.return_value = ["test_connector"]
         mock_get_template.return_value = mock_template
         mock_load_config.return_value = {"test": "config"}
@@ -352,6 +398,8 @@ def test_get_saas_connection_types_with_no_display_info(monkeypatch):
     mock_template.category = None
     mock_template.tags = None
     mock_template.enabled_features = None
+    mock_template.custom = False
+    mock_template.default_connector_available = False
 
     # Mock SaaS config with no display_info
     mock_saas_config = Mock()
@@ -369,7 +417,6 @@ def test_get_saas_connection_types_with_no_display_info(monkeypatch):
             "fides.api.util.connection_type.load_config_from_string"
         ) as mock_load_config,
     ):
-
         mock_connector_types.return_value = ["test_connector"]
         mock_get_template.return_value = mock_template
         mock_load_config.return_value = {"test": "config"}
@@ -404,6 +451,8 @@ def test_get_saas_connection_types_config_parsing_exception():
     mock_template.category = None
     mock_template.tags = None
     mock_template.enabled_features = None
+    mock_template.custom = False
+    mock_template.default_connector_available = False
 
     with (
         patch(
@@ -414,7 +463,6 @@ def test_get_saas_connection_types_config_parsing_exception():
         ) as mock_get_template,
         patch("fides.api.util.connection_type.SaaSConfig") as mock_saas_config_class,
     ):
-
         mock_connector_types.return_value = ["test_connector"]
         mock_get_template.return_value = mock_template
         # Make SaaSConfig constructor raise an exception
@@ -450,6 +498,8 @@ def test_get_saas_connection_types_load_config_exception():
     mock_template.category = None
     mock_template.tags = None
     mock_template.enabled_features = None
+    mock_template.custom = False
+    mock_template.default_connector_available = False
 
     with (
         patch(
@@ -462,7 +512,6 @@ def test_get_saas_connection_types_load_config_exception():
             "fides.api.util.connection_type.load_config_from_string"
         ) as mock_load_config,
     ):
-
         mock_connector_types.return_value = ["test_connector"]
         mock_get_template.return_value = mock_template
         # Make load_config_from_string raise an exception

@@ -1,4 +1,4 @@
-import { AntDrawer as Drawer, Box, Text } from "fidesui";
+import { ChakraBox as Box, ChakraText as Text, Drawer } from "fidesui";
 import React, { useMemo } from "react";
 
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
@@ -23,7 +23,7 @@ const DatamapDrawer = ({
     includeDisabled: false,
   });
 
-  const { data: system, isLoading } = useGetSystemByFidesKeyQuery(
+  const { currentData: system, isFetching } = useGetSystemByFidesKeyQuery(
     selectedSystemId!,
     {
       skip: !selectedSystemId,
@@ -37,7 +37,7 @@ const DatamapDrawer = ({
       placement="right"
       width={480}
       title={system?.name ?? "System Information"}
-      loading={isLoading}
+      loading={isFetching}
     >
       {system ? (
         <div data-testid="datamap-drawer">

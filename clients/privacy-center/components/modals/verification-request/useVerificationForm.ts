@@ -1,4 +1,4 @@
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
 import { useCallback } from "react";

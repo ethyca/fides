@@ -1,8 +1,13 @@
+import { CUSTOM_TAG_COLOR } from "fidesui";
+
 import {
   ConsentStatus,
   DatastoreMonitorUpdates,
+  DiffStatus,
   WebMonitorUpdates,
 } from "~/types/api";
+
+import { ActionCenterTabHash } from "./hooks/useActionCenterTabs";
 
 export const DiscoveryStatusDisplayNames: Record<ConsentStatus, string> = {
   [ConsentStatus.WITH_CONSENT]: "Consent respected",
@@ -64,6 +69,7 @@ export enum ConsentBreakdownColumnKeys {
 
 export const MONITOR_UPDATES_TO_IGNORE = [
   "classified_low_confidence",
+  "classified_medium_confidence",
   "classified_high_confidence",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates
@@ -84,10 +90,10 @@ export const MONITOR_UPDATE_NAMES = new Map<
   ["iframe", ["iFrame", "iFrames"]],
   ["javascript_tag", ["JavaScript tag", "JavaScript tags"]],
   ["unlabeled", ["Unlabeled", "Unlabeled"]],
-  ["in_review", ["In review", "In review"]],
+  ["in_review", ["Classified", "Classified"]],
   ["classifying", ["Classifying", "Classifying"]],
   ["removals", ["Removal", "Removals"]],
-  ["approved", ["Approved", "Approved"]],
+  ["reviewed", ["Reviewed", "Reviewed"]],
 ]);
 
 export const MONITOR_UPDATE_ORDER = [
@@ -99,9 +105,82 @@ export const MONITOR_UPDATE_ORDER = [
   "unlabeled",
   "classifying",
   "in_review",
-  "approved",
+  "reviewed",
   "removals",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates
   | keyof WebMonitorUpdates
 )[];
+
+export enum ConfidenceLevelLabel {
+  HIGH = "High confidence",
+  MEDIUM = "Medium confidence",
+  LOW = "Low confidence",
+}
+
+export enum InfrastructureSystemBulkActionType {
+  ADD = "add",
+  IGNORE = "ignore",
+  RESTORE = "restore",
+}
+
+export const INFRASTRUCTURE_SYSTEMS_TABS = [
+  {
+    key: ActionCenterTabHash.ATTENTION_REQUIRED,
+    label: "Attention required",
+  },
+  {
+    key: ActionCenterTabHash.ADDED,
+    label: "Activity",
+  },
+  {
+    key: ActionCenterTabHash.IGNORED,
+    label: "Ignored",
+  },
+] as const;
+
+export const INFRASTRUCTURE_SYSTEM_FILTER_SECTION_KEYS = {
+  STATUS: "status-section",
+  VENDOR: "vendor-section",
+  DATA_USES: "data-uses-section",
+} as const;
+
+/**
+ * Vendor filter options - hardcoded as per requirements
+ */
+export const VENDOR_FILTER_OPTIONS = [
+  { key: "known", label: "Known vendors" },
+  { key: "unknown", label: "Unknown vendors" },
+] as const;
+
+/**
+ * Maps DiffStatus to display labels for infrastructure systems
+ */
+export const INFRASTRUCTURE_DIFF_STATUS_LABEL: Record<DiffStatus, string> = {
+  [DiffStatus.ADDITION]: "New",
+  [DiffStatus.CLASSIFICATION_ADDITION]: "Classified",
+  [DiffStatus.CLASSIFICATION_UPDATE]: "Classified",
+  [DiffStatus.REVIEWED]: "Reviewed",
+  [DiffStatus.MONITORED]: "Approved",
+  [DiffStatus.REMOVAL]: "Removed",
+  [DiffStatus.MUTED]: "Ignored",
+  [DiffStatus.CLASSIFICATION_QUEUED]: "Classifying",
+  [DiffStatus.CLASSIFYING]: "Classifying",
+  [DiffStatus.PROMOTING]: "Approving",
+  [DiffStatus.REMOVING]: "Removing",
+  [DiffStatus.CLASSIFICATION_ERROR]: "Error",
+  [DiffStatus.PROMOTION_ERROR]: "Error",
+  [DiffStatus.REMOVAL_PROMOTION_ERROR]: "Error",
+};
+
+/**
+ * Maps DiffStatus to tag colors for infrastructure systems
+ */
+export const INFRASTRUCTURE_DIFF_STATUS_COLOR: Partial<
+  Record<DiffStatus, CUSTOM_TAG_COLOR>
+> = {
+  [DiffStatus.ADDITION]: CUSTOM_TAG_COLOR.SUCCESS,
+  [DiffStatus.REMOVAL]: CUSTOM_TAG_COLOR.ERROR,
+  [DiffStatus.MONITORED]: CUSTOM_TAG_COLOR.DEFAULT,
+  [DiffStatus.MUTED]: CUSTOM_TAG_COLOR.DEFAULT,
+};

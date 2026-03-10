@@ -1,4 +1,4 @@
-import { AntTabs as Tabs, Box, Flex } from "fidesui";
+import { ChakraBox as Box, ChakraFlex as Flex, Tabs } from "fidesui";
 import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 
 import { useAppSelector } from "~/app/hooks";

@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntTypography as Typography,
-} from "fidesui";
+import { Button, Flex, Input, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 import type { PrivacyNoticeResponse } from "~/types/api";
@@ -13,6 +8,8 @@ import PreviewCard from "./PreviewCard";
 interface ExperienceConfigSectionProps {
   region: string;
   onRegionChange: (region: string) => void;
+  propertyId: string;
+  onPropertyIdChange: (propertyId: string) => void;
   onFetchExperience: () => void;
   isLoading: boolean;
   errorMessage: string;
@@ -56,6 +53,8 @@ const PrivacyNoticesList = ({
 const ExperienceConfigSection = ({
   region,
   onRegionChange,
+  propertyId,
+  onPropertyIdChange,
   onFetchExperience,
   isLoading,
   errorMessage,
@@ -86,6 +85,21 @@ const ExperienceConfigSection = ({
             >
               Fetch experience
             </Button>
+          </Flex>
+
+          <Typography.Text strong className="mb-2 block">
+            Property ID (optional)
+          </Typography.Text>
+          <Typography.Text type="secondary" className="mb-2 block">
+            Leave empty to retrieve experience with no property
+          </Typography.Text>
+          <Flex gap="small" className="mb-4">
+            <Input
+              placeholder="Property ID (e.g. FDS-1234)"
+              value={propertyId}
+              onChange={(e) => onPropertyIdChange(e.target.value)}
+              className="w-64"
+            />
           </Flex>
 
           {errorMessage && (

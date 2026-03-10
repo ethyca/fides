@@ -7,8 +7,8 @@
  */
 export enum FieldActionType {
   CLASSIFY = "classify",
-  APPROVE = "approve",
-  UN_APPROVE = "un-approve",
+  REVIEW = "review",
+  UN_REVIEW = "un-review",
   PROMOTE = "promote",
   PROMOTE_REMOVALS = "promote-removals",
   MUTE = "mute",

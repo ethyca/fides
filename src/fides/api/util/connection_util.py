@@ -6,9 +6,9 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field, ValidationError
 from sqlalchemy.orm import Session
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_CONTENT
 
-from fides.api.api import deps
+from fides.api import deps
 from fides.api.common_exceptions import (
     ConnectionNotFoundException,
     KeyOrNameAlreadyExists,
@@ -35,7 +35,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.common.api.v1.urn_registry import SAAS_CONFIG
+from fides.common.urn_registry import SAAS_CONFIG
 from fides.service.connection.connection_service import (
     ConnectionService,
     ConnectorTemplateNotFound,
@@ -55,9 +55,8 @@ def requeue_requires_input_requests(db: Session) -> None:
     lingering in a "requires_input" state.
     """
     if not AccessManualWebhook.get_enabled(db):
-        for pr in PrivacyRequest.filter(
-            db=db,
-            conditions=(PrivacyRequest.status == PrivacyRequestStatus.requires_input),
+        for pr in PrivacyRequest.query_without_large_columns(db).filter(
+            PrivacyRequest.status == PrivacyRequestStatus.requires_input
         ):
             logger.info(
                 "Queuing privacy request '{} with '{}' status now that manual inputs are no longer required.",
@@ -89,12 +88,14 @@ def validate_secrets(
         return connection_service.validate_secrets(request_body, connection_config)
     except SaaSConfigNotFoundException:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=validate_secrets_error_message(),
         )
     except FidesValidationError as e:
         # Check if the exception has the original pydantic errors attached
-        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=e.message
+        )
     except ValidationError as e:
         errors = e.errors(include_url=False, include_input=False)
         for err in errors:
@@ -102,14 +103,16 @@ def validate_secrets(
             # this may contain sensitive information
             err.pop("ctx", None)
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(errors),
         )
 
 
 def patch_connection_configs(
     db: Session,
-    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
+    configs: Annotated[
+        List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)
+    ],  # type: ignore
     system: Optional[System] = None,
 ) -> BulkPutConnectionConfiguration:
     created_or_updated: List[ConnectionConfigurationResponse] = []
@@ -159,13 +162,13 @@ def patch_connection_configs(
                 err.pop("ctx", None)
 
             raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=jsonable_encoder(errors),
             )
         except ValueError as exc:
             # Handle missing saas_connector_type and other validation errors
             raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=str(exc),
             )
         except Exception as e:
@@ -203,7 +206,7 @@ def get_connection_config_or_error(
 ) -> ConnectionConfig:
     """Helper to load the ConnectionConfig object or throw a 404"""
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
-    logger.info("Finding connection configuration with key '{}'", connection_key)
+    logger.debug("Finding connection configuration with key '{}'", connection_key)
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -277,7 +280,7 @@ def update_connection_secrets(
         )
     except SaaSConfigNotFoundException:
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=validate_secrets_error_message(),
         )
     except ValidationError as e:
@@ -287,9 +290,11 @@ def update_connection_secrets(
             # this may contain sensitive information
             err.pop("ctx", None)
         raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT,
             detail=jsonable_encoder(errors),
         )
     except FidesValidationError as e:
         # Check if the exception has the original pydantic errors attached
-        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message)
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail=e.message
+        )

@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  Box,
-  Heading,
-  Text,
-  useDisclosure,
+  Button,
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraText as Text,
+  useChakraDisclosure as useDisclosure,
 } from "fidesui";
 
 import AddSSOProviderModal from "~/features/openid-authentication/AddSSOProviderModal";

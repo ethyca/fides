@@ -7,17 +7,17 @@ const MODAL_TEXT =
   "You are about to disable this monitor. If you continue, it will no longer scan automatically.";
 
 export const MonitorConfigEnableCell = ({
-  record,
+  record: { stewards, enabled, ...data },
 }: {
   record: MonitorConfig;
 }) => {
   const [putMonitor] = usePutDiscoveryMonitorMutation();
   const handleToggle = async (toggleValue: boolean) =>
     putMonitor({
-      ...record,
+      ...data,
+      stewards: stewards?.map(({ id }) => id),
       enabled: toggleValue,
     });
-  const { enabled } = record;
 
   return (
     <EnableCell

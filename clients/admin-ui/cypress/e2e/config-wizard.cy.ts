@@ -56,7 +56,7 @@ describe("Config Wizard", () => {
       });
     });
 
-    it("Displays API errors and allows resubmission", () => {
+    it("Displays AWS error", () => {
       cy.intercept("POST", "/api/v1/generate", {
         statusCode: 403,
         body: {
@@ -65,20 +65,19 @@ describe("Config Wizard", () => {
       }).as("postGenerate403");
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate403");
-      // Expect the custom message for this specific error.
-      cy.getByTestId("scanner-error");
-      cy.getByTestId("permission-msg");
+      cy.getByTestId("error-page-result");
+      cy.contains("Fides was unable to scan AWS");
+    });
 
+    it("Displays generic error", () => {
       cy.intercept("POST", "/api/v1/generate", {
         statusCode: 500,
         body: "Internal Server Error",
       }).as("postGenerate500");
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate500");
-      // Expect the generic message with a log.
-      cy.getByTestId("scanner-error");
-      cy.getByTestId("generic-msg");
-      cy.getByTestId("error-log").contains("Internal Server Error");
+      cy.getByTestId("error-page-result");
+      cy.contains("Fides was unable to scan your infrastructure");
     });
 
     it("Allows stepping back to the previous step during an in-progress scan", () => {
@@ -107,8 +106,12 @@ describe("Config Wizard", () => {
       cy.getByTestId("okta-btn").click();
       // Fill form
       cy.getByTestId("authenticate-okta-form");
-      cy.getByTestId("input-orgUrl").type("https://ethyca.com/");
-      cy.getByTestId("input-token").type("fakeToken");
+      cy.getByTestId("input-orgUrl").type("https://dev-12345.okta.com");
+      cy.getByTestId("input-clientId").type("0oa1abc2def3ghi4jkl5");
+      cy.getByTestId("input-privateKey").type(
+        '{"kty":"RSA","kid":"test","n":"test","e":"AQAB","d":"test"}',
+        { parseSpecialCharSequences: false },
+      );
     });
 
     it("Allows submitting the form and reviewing the results", () => {
@@ -141,7 +144,7 @@ describe("Config Wizard", () => {
       });
     });
 
-    it("Displays API errors and allows resubmission", () => {
+    it("Displays 403 error", () => {
       cy.intercept("POST", "/api/v1/generate", {
         statusCode: 403,
         body: {
@@ -150,20 +153,19 @@ describe("Config Wizard", () => {
       }).as("postGenerate403");
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate403");
-      // Expect the general message with a log.
-      cy.getByTestId("scanner-error");
-      cy.getByTestId("generic-msg");
+      cy.getByTestId("error-page-result");
+      cy.contains("Fides was unable to scan your infrastructure");
+    });
 
+    it("Displays 500 error", () => {
       cy.intercept("POST", "/api/v1/generate", {
         statusCode: 500,
         body: "Internal Server Error",
       }).as("postGenerate500");
       cy.getByTestId("submit-btn").click();
       cy.wait("@postGenerate500");
-      // Expect the generic message with a log.
-      cy.getByTestId("scanner-error");
-      cy.getByTestId("generic-msg");
-      cy.getByTestId("error-log").contains("Internal Server Error");
+      cy.getByTestId("error-page-result");
+      cy.contains("Fides was unable to scan your infrastructure");
     });
   });
 });

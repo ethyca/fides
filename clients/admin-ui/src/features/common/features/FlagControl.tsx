@@ -1,9 +1,9 @@
 import {
-  AntSwitch as Switch,
-  Box,
-  FormControl,
-  FormLabel,
-  Text,
+  ChakraBox as Box,
+  ChakraFormControl as FormControl,
+  ChakraFormLabel as FormLabel,
+  ChakraText as Text,
+  Switch,
 } from "fidesui";
 
 import { camelToSentenceCase } from "../utils";

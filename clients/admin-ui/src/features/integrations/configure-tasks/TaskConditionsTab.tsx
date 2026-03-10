@@ -1,11 +1,12 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntList as List,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  AntTypography as Typography,
-  useDisclosure,
+  Alert,
+  Button,
+  Flex,
+  List,
+  Tag,
+  Tooltip,
+  Typography,
+  useChakraDisclosure as useDisclosure,
   useMessage,
   WarningIcon,
 } from "fidesui";
@@ -20,7 +21,9 @@ import { ConditionLeaf } from "~/types/api";
 
 import AddEditConditionModal from "./AddEditConditionModal";
 import { operatorLabels } from "./constants";
+import { useConfiguredRequestTypes } from "./hooks/useConfiguredRequestTypes";
 import { useSaveConditions } from "./hooks/useSaveConditions";
+import { formatConditionValue, formatFieldDisplay } from "./utils";
 
 const { Paragraph, Text } = Typography;
 
@@ -40,6 +43,9 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
   } | null>(null);
 
   const message = useMessage();
+
+  const { isConsentOnly, hasConsentTasks, hasAccessOrErasureTasks } =
+    useConfiguredRequestTypes({ connectionKey });
 
   const {
     isOpen: isDeleteOpen,
@@ -209,6 +215,18 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         </Paragraph>
       </div>
 
+      {/* Warning banner for mixed consent + access/erasure configurations */}
+      {hasConsentTasks && hasAccessOrErasureTasks && (
+        <Alert
+          message="Consent task limitations"
+          description="Dataset field conditions and some privacy request fields (like due date) are not evaluated for consent manual tasks. These conditions will only apply to access and erasure tasks."
+          type="warning"
+          showIcon
+          className="mb-4"
+          data-testid="consent-conditions-warning"
+        />
+      )}
+
       <div className="mb-4 flex items-center justify-end gap-2">
         <Button
           type="primary"
@@ -235,6 +253,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         renderItem={(condition: ConditionLeaf, index: number) => (
           <List.Item
             key={index}
+            aria-label={`Condition: ${formatFieldDisplay(condition.field_address)} ${operatorLabels[condition.operator]}${formatConditionValue(condition) ? ` ${formatConditionValue(condition)}` : ""}`}
             actions={[
               <Button
                 key="edit"
@@ -242,6 +261,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 onClick={() => handleOpenEditModal(index, condition)}
                 data-testid={`edit-condition-${index}-btn`}
                 className="px-1"
+                aria-label={`Edit condition for ${condition.field_address}`}
               >
                 Edit
               </Button>,
@@ -251,6 +271,7 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 onClick={() => handleDeleteCondition(index, condition)}
                 data-testid={`delete-condition-${index}-btn`}
                 className="px-1"
+                aria-label={`Delete condition for ${condition.field_address}`}
               >
                 Delete
               </Button>,
@@ -261,19 +282,20 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
                 <Flex gap={8} align="center" className="font-normal">
                   <div className="max-w-[300px]">
                     <Tooltip title={condition.field_address}>
-                      <Text>{condition.field_address.split(":").pop()}</Text>
+                      <Text>{formatFieldDisplay(condition.field_address)}</Text>
                     </Tooltip>
                   </div>
                   <Tag color="sandstone">
                     {operatorLabels[condition.operator]}
                   </Tag>
                   <div className="max-w-[300px]">
-                    {condition.value !== null &&
-                      condition.value !== undefined && (
-                        <Text ellipsis={{ tooltip: String(condition.value) }}>
-                          {String(condition.value)}
-                        </Text>
-                      )}
+                    {formatConditionValue(condition) && (
+                      <Text
+                        ellipsis={{ tooltip: formatConditionValue(condition) }}
+                      >
+                        {formatConditionValue(condition)}
+                      </Text>
+                    )}
                   </div>
                 </Flex>
               }
@@ -288,6 +310,8 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         onClose={handleCloseModal}
         onConditionSaved={handleConditionSaved}
         editingCondition={editingCondition}
+        connectionKey={connectionKey}
+        isConsentOnly={isConsentOnly}
       />
 
       <ConfirmationModal

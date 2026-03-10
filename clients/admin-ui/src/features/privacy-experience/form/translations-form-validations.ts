@@ -71,4 +71,25 @@ export const FIELD_VALIDATION_DATA: Record<
     label: "Default language",
     validation: Yup.boolean(),
   },
+  // GPC (Global Privacy Control) fields
+  gpc_label: {
+    label: "GPC label",
+    validation: Yup.string(),
+  },
+  gpc_title: {
+    label: "GPC title",
+    validation: Yup.string(),
+  },
+  gpc_description: {
+    label: "GPC description",
+    validation: Yup.string(),
+  },
+  gpc_status_applied_label: {
+    label: "GPC applied status label",
+    validation: Yup.string(),
+  },
+  gpc_status_overridden_label: {
+    label: "GPC overridden status label",
+    validation: Yup.string(),
+  },
 };

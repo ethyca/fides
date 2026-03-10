@@ -1,9 +1,5 @@
 import dayjs from "dayjs";
-import {
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  CUSTOM_TAG_COLOR,
-} from "fidesui";
+import { CUSTOM_TAG_COLOR, Tag, Tooltip } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 

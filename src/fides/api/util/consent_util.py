@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Query, Session
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_notice import (
@@ -220,7 +220,11 @@ def add_errored_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
-    add_errored_system_status_for_consent_reporting_on_preferences(db, privacy_request.privacy_preferences, connection_config)  # type: ignore[attr-defined]
+    add_errored_system_status_for_consent_reporting_on_preferences(
+        db,
+        privacy_request.privacy_preferences,  # type: ignore[attr-defined]
+        connection_config,
+    )
 
 
 def add_errored_system_status_for_consent_reporting_on_preferences(
@@ -285,7 +289,7 @@ def get_or_create_fides_user_device_id_provided_identity(
     """
     if not identity_data or not identity_data.fides_user_device_id:
         raise HTTPException(
-            HTTP_422_UNPROCESSABLE_ENTITY,
+            HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Fides user device id not found in identity data",
         )
 

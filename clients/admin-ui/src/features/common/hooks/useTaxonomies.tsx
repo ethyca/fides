@@ -142,6 +142,15 @@ const useTaxonomies = () => {
 
     return dataSubject.name;
   };
+  const getDataSubjectDisplayNameProps = (
+    dataSubjectKey: string,
+  ): DataDisplayNameProps => {
+    const dataSubject = getDataSubjectByKey(dataSubjectKey);
+    if (!dataSubject) {
+      return {};
+    }
+    return { name: dataSubject.name || dataSubjectKey };
+  };
 
   return {
     getDataUses,
@@ -155,6 +164,7 @@ const useTaxonomies = () => {
     getDataSubjects,
     getDataSubjectByKey,
     getDataSubjectDisplayName,
+    getDataSubjectDisplayNameProps,
     getPrimaryKey,
     isLoading,
   };

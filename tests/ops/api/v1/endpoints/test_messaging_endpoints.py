@@ -22,13 +22,13 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
     MessagingTemplateDefault,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     MESSAGING_READ,
     MESSAGING_TEMPLATE_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     BASIC_MESSAGING_TEMPLATES,
     MESSAGING_ACTIVE_DEFAULT,
     MESSAGING_BY_KEY,
@@ -927,7 +927,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         # just one of them
         assert response.status_code == 422
         assert (
-            f"Phone number must be formatted in E.164 format, i.e. '+15558675309'"
+            "Phone number must be formatted in E.164 format, i.e. '+15558675309'"
             in response.text
         )
 
@@ -947,7 +947,7 @@ class TestPutMessagingConfigSecretTwilioSms:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert response.status_code == 422
         assert (
-            f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied"
+            "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied"
             in response.text
         )
 
@@ -1045,10 +1045,13 @@ class TestPutMessagingConfigSecretsAWSSES:
             == "5678"
         )
         assert (
-            messaging_config_aws_ses.secrets[
-                MessagingServiceSecrets.AWS_AUTH_METHOD.value
-            ]
-        ) == "secret_keys"
+            (
+                messaging_config_aws_ses.secrets[
+                    MessagingServiceSecrets.AWS_AUTH_METHOD.value
+                ]
+            )
+            == "secret_keys"
+        )
 
 
 class TestGetMessagingConfigs:
@@ -2134,7 +2137,7 @@ class TestTestMessage:
         "info",
         [{"phone_number": "+19198675309"}, {"email": "some@email.com"}],
     )
-    @patch("fides.api.api.v1.endpoints.messaging_endpoints.dispatch_message")
+    @patch("fides.api.v1.endpoints.messaging_endpoints.dispatch_message")
     def test_test_message(
         self, mock_dispatch_message, info, generate_auth_header, url, api_client
     ):
@@ -2164,7 +2167,7 @@ class TestTestMessage:
         assert response.status_code == 400
 
     @patch(
-        "fides.api.api.v1.endpoints.messaging_endpoints.dispatch_message",
+        "fides.api.v1.endpoints.messaging_endpoints.dispatch_message",
         side_effect=MessageDispatchException("No service"),
     )
     def test_test_message_dispatch_error(

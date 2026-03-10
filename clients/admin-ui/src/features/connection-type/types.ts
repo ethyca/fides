@@ -1,5 +1,3 @@
-import { AddConnectionStep } from "datastore-connections/add-connection/types";
-
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -24,6 +22,7 @@ export type ConnectionTypeSecretSchemaProperty = {
   items?: { $ref: string };
   sensitive?: boolean;
   multiselect?: boolean;
+  multiline?: boolean;
   options?: string[];
 };
 
@@ -49,5 +48,4 @@ export type ConnectionTypeState = ConnectionTypeParams & {
   connection?: ConnectionConfigurationResponse;
   connectionOption?: ConnectionSystemTypeMap;
   connectionOptions: ConnectionSystemTypeMap[];
-  step: AddConnectionStep;
 };

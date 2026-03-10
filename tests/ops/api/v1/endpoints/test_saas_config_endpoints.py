@@ -1,9 +1,11 @@
+import copy
 import json
 from typing import Optional
 from unittest import mock
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -12,24 +14,20 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CLIENT_READ,
     CONNECTION_AUTHORIZE,
-    CONNECTOR_TEMPLATE_REGISTER,
     SAAS_CONFIG_CREATE_OR_UPDATE,
     SAAS_CONFIG_DELETE,
     SAAS_CONFIG_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     AUTHORIZE,
-    REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     V1_URL_PREFIX,
 )
-from fides.config import CONFIG
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import _reject_key
-from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
 
 @pytest.mark.unit_saas
@@ -199,7 +197,7 @@ class TestPutSaaSConfig:
         )
         assert response.status_code == 404
 
-    def test_patch_saas_config_create(
+    def test_patch_saas_config_create_rejected_without_template(
         self,
         saas_example_connection_config_without_saas_config,
         saas_example_config,
@@ -207,6 +205,8 @@ class TestPutSaaSConfig:
         db: Session,
         generate_auth_header,
     ) -> None:
+        """PATCHing a SaaS config onto a connection that has no existing config
+        and no registered template should be rejected."""
         path = V1_URL_PREFIX + SAAS_CONFIG
         path_params = {
             "connection_key": saas_example_connection_config_without_saas_config.key
@@ -217,16 +217,8 @@ class TestPutSaaSConfig:
         response = api_client.patch(
             saas_config_url, headers=auth_header, json=saas_example_config
         )
-        assert response.status_code == 200
-
-        updated_config = ConnectionConfig.get_by(
-            db=db,
-            field="key",
-            value=saas_example_connection_config_without_saas_config.key,
-        )
-        db.expire(updated_config)
-        saas_config = updated_config.saas_config
-        assert saas_config is not None
+        assert response.status_code == 422
+        assert "connector template" in response.json()["detail"].lower()
 
     def test_patch_saas_config_update(
         self,
@@ -423,6 +415,139 @@ class TestDeleteSaaSConfig:
         )
 
 
+@pytest.mark.unit_saas
+class TestPatchSaaSConfigAllowedValuesAfterDelete:
+    """Verify that deleting a SaaS config and re-PATCHing it cannot bypass
+    allowed_values restrictions (the template is used as a fallback)."""
+
+    @pytest.fixture
+    def _config_with_allowed_values(self, saas_example_config):
+        """Return a copy of the example config whose domain param has type and allowed_values."""
+        config = saas_example_config.copy()
+        config["fides_key"] = "domain_validation_delete_test"
+        for param in config["connector_params"]:
+            if param["name"] == "domain":
+                param["type"] = "endpoint"
+                param["default_value"] = "safe.example.com"
+                param["allowed_values"] = ["safe.example.com"]
+        return config
+
+    @pytest.fixture
+    def _connection_config(self, db, _config_with_allowed_values):
+        fides_key = _config_with_allowed_values["fides_key"]
+        cc = ConnectionConfig.create(
+            db=db,
+            data={
+                "key": fides_key,
+                "name": fides_key,
+                "connection_type": ConnectionType.saas,
+                "access": AccessLevel.write,
+                "saas_config": _config_with_allowed_values,
+            },
+        )
+        yield cc
+        cc.delete(db)
+
+    @pytest.fixture
+    def _template_yaml(self, _config_with_allowed_values):
+        """Build a minimal YAML string that mirrors the original config (as the template would)."""
+        return yaml.dump({"saas_config": _config_with_allowed_values})
+
+    def test_patch_after_delete_rejects_stripped_allowed_values(
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        _connection_config,
+        _config_with_allowed_values,
+        _template_yaml,
+    ):
+        """After deleting the SaaS config, PATCHing it back with allowed_values
+        removed should be rejected because the template still enforces them."""
+
+        _connection_config.update(db, data={"saas_config": None})
+        db.expire(_connection_config)
+        assert _connection_config.saas_config is None
+
+        tampered_config = copy.deepcopy(_config_with_allowed_values)
+        for param in tampered_config["connector_params"]:
+            if param["name"] == "domain":
+                param.pop("type", None)
+                param.pop("allowed_values", None)
+
+        url = get_saas_config_url(_connection_config)
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+
+        with mock.patch(
+            "fides.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
+        ) as mock_template:
+            mock_template.return_value = MagicMock(config=_template_yaml)
+            response = api_client.patch(url, headers=auth_header, json=tampered_config)
+
+        assert response.status_code == 422
+        detail = response.json()["detail"].lower()
+        assert "type" in detail or "allowed_values" in detail
+
+    def test_patch_after_delete_accepts_matching_allowed_values(
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        _connection_config,
+        _config_with_allowed_values,
+        _template_yaml,
+    ):
+        """After deleting the SaaS config, PATCHing it back with the same
+        allowed_values should succeed."""
+
+        _connection_config.update(db, data={"saas_config": None})
+        db.expire(_connection_config)
+        assert _connection_config.saas_config is None
+
+        url = get_saas_config_url(_connection_config)
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+
+        with mock.patch(
+            "fides.api.v1.endpoints.saas_config_endpoints.ConnectorRegistry.get_connector_template"
+        ) as mock_template:
+            mock_template.return_value = MagicMock(config=_template_yaml)
+            response = api_client.patch(
+                url, headers=auth_header, json=_config_with_allowed_values
+            )
+
+        assert response.status_code == 200
+
+    def test_patch_after_delete_rejects_unknown_type(
+        self,
+        db: Session,
+        api_client: TestClient,
+        generate_auth_header,
+        _connection_config,
+        _config_with_allowed_values,
+    ):
+        """After deleting the SaaS config, PATCHing with a different type that
+        has no registered template should be rejected outright."""
+
+        _connection_config.update(db, data={"saas_config": None})
+        db.expire(_connection_config)
+        assert _connection_config.saas_config is None
+
+        tampered_config = copy.deepcopy(_config_with_allowed_values)
+        tampered_config["type"] = "nonexistent_connector_type"
+        for param in tampered_config["connector_params"]:
+            if param["name"] == "domain":
+                param.pop("type", None)
+                param.pop("allowed_values", None)
+
+        url = get_saas_config_url(_connection_config)
+        auth_header = generate_auth_header(scopes=[SAAS_CONFIG_CREATE_OR_UPDATE])
+
+        response = api_client.patch(url, headers=auth_header, json=tampered_config)
+
+        assert response.status_code == 422
+        assert "connector template" in response.json()["detail"].lower()
+
+
 class TestAuthorizeConnection:
     @pytest.fixture
     def authorize_url(self, oauth2_authorization_code_connection_config) -> str:
@@ -444,7 +569,7 @@ class TestAuthorizeConnection:
         assert 403 == response.status_code
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
+        "fides.api.v1.endpoints.saas_config_endpoints.OAuth2AuthorizationCodeAuthenticationStrategy.get_authorization_url"
     )
     def test_get_authorize_url(
         self,
@@ -459,287 +584,3 @@ class TestAuthorizeConnection:
         response = api_client.get(authorize_url, headers=auth_header)
         response.raise_for_status()
         assert response.text == f'"{authorization_url}"'
-
-
-class TestRegisterConnectorTemplate:
-    @pytest.fixture
-    def register_connector_template_url(self) -> str:
-        return V1_URL_PREFIX + REGISTER_CONNECTOR_TEMPLATE
-
-    @pytest.fixture
-    def complete_connector_template(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_missing_config(
-        self,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_wrong_contents_config(
-        self,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": "planet_express_config",
-                "dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_invalid_config(
-        self,
-        planet_express_invalid_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_invalid_config,
-                "dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_missing_dataset(
-        self,
-        planet_express_config,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_wrong_contents_dataset(
-        self,
-        planet_express_config,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": "planet_express_dataset",
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_invalid_dataset(
-        self,
-        planet_express_config,
-        planet_express_invalid_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": planet_express_invalid_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_no_icon(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": planet_express_dataset,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_duplicate_configs(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "1_config.yml": planet_express_config,
-                "2_config.yml": planet_express_config,
-                "dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_duplicate_datasets(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "1_dataset.yml": planet_express_dataset,
-                "2_dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
-    def connector_template_duplicate_icons(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": planet_express_dataset,
-                "1_icon.svg": planet_express_icon,
-                "2_icon.svg": planet_express_icon,
-            }
-        )
-
-    def test_register_connector_template_wrong_scope(
-        self,
-        api_client: TestClient,
-        register_connector_template_url,
-        generate_auth_header,
-        complete_connector_template,
-    ):
-        auth_header = generate_auth_header(scopes=[CLIENT_READ])
-        response = api_client.post(
-            register_connector_template_url,
-            headers=auth_header,
-            files={
-                "file": (
-                    "template.zip",
-                    complete_connector_template,
-                    "application/zip",
-                )
-            },
-        )
-        assert response.status_code == 403
-
-    @pytest.mark.parametrize(
-        "zip_file, status_code, details",
-        [
-            (
-                "complete_connector_template",
-                200,
-                {"message": "Connector template successfully registered."},
-            ),
-            (
-                "connector_template_missing_config",
-                400,
-                {"detail": "Zip file does not contain a config.yml file."},
-            ),
-            (
-                "connector_template_wrong_contents_config",
-                400,
-                {
-                    "detail": "Config contents do not contain a 'saas_config' key at the root level. For example, check formatting, specifically indentation."
-                },
-            ),
-            (
-                "connector_template_invalid_config",
-                400,
-                {
-                    "detail": "1 validation error for SaaSConfig\ntest_request\n  Field required [type=missing, input_value={'fides_key': '<instance_...dentity': 'email'}]}}}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
-                },
-            ),
-            (
-                "connector_template_missing_dataset",
-                400,
-                {"detail": "Zip file does not contain a dataset.yml file."},
-            ),
-            (
-                "connector_template_wrong_contents_dataset",
-                400,
-                {
-                    "detail": "Dataset contents do not contain a 'dataset' key at the root level. For example, check formatting, specifically indentation."
-                },
-            ),
-            (
-                "connector_template_invalid_dataset",
-                400,
-                {
-                    "detail": "1 validation error for Dataset\ncollections.0.name\n  Field required [type=missing, input_value={'fides_meta': None, 'nam...': ['user.unique_id']}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
-                },
-            ),
-            (
-                "connector_template_no_icon",
-                200,
-                {"message": "Connector template successfully registered."},
-            ),
-            (
-                "connector_template_duplicate_configs",
-                400,
-                {
-                    "detail": "Multiple files ending with config.yml found, only one is allowed."
-                },
-            ),
-            (
-                "connector_template_duplicate_datasets",
-                400,
-                {
-                    "detail": "Multiple files ending with dataset.yml found, only one is allowed."
-                },
-            ),
-            (
-                "connector_template_duplicate_icons",
-                400,
-                {"detail": "Multiple svg files found, only one is allowed."},
-            ),
-        ],
-    )
-    def test_register_connector_template(
-        self,
-        api_client: TestClient,
-        register_connector_template_url,
-        generate_auth_header,
-        zip_file,
-        status_code,
-        details,
-        request,
-    ):
-        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
-            register_connector_template_url,
-            headers=auth_header,
-            files={
-                "file": (
-                    "template.zip",
-                    request.getfixturevalue(zip_file).read(),
-                    "application/zip",
-                )
-            },
-        )
-        assert response.status_code == status_code
-        assert response.json() == details

@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntForm as Form,
-  AntInput as Input,
-  AntText as Text,
-} from "fidesui";
+import { Button, Flex, Form, Input, Text } from "fidesui";
 import React from "react";
 
 import CustomFieldRenderer, {
@@ -12,32 +6,28 @@ import CustomFieldRenderer, {
 } from "~/components/common/CustomFieldRenderer";
 import { ModalViews } from "~/components/modals/types";
 import { PhoneInput } from "~/components/phone-input";
-import { useConfig } from "~/features/common/config.slice";
 import { CustomConfigField, PrivacyRequestOption } from "~/types/config";
 
 import usePrivacyRequestForm from "./usePrivacyRequestForm";
 
 type PrivacyRequestFormProps = {
-  onClose: () => void;
-  openAction: number | null;
+  onExit: () => void;
+  openAction: PrivacyRequestOption | undefined;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
+  onSuccessWithoutVerification?: () => void;
 };
 
 const PrivacyRequestForm = ({
-  onClose,
+  onExit,
   openAction,
   setCurrentView,
   setPrivacyRequestId,
   isVerificationRequired,
+  onSuccessWithoutVerification,
 }: PrivacyRequestFormProps) => {
-  const config = useConfig();
-
-  const action =
-    typeof openAction === "number"
-      ? (config.actions[openAction] as PrivacyRequestOption)
-      : undefined;
+  const action = openAction;
 
   const {
     errors,
@@ -56,11 +46,12 @@ const PrivacyRequestForm = ({
     customIdentityFields,
     customPrivacyRequestFields,
   } = usePrivacyRequestForm({
-    onClose,
+    onExit,
     action,
     setCurrentView,
     setPrivacyRequestId,
     isVerificationRequired,
+    onSuccessWithoutVerification,
   });
 
   if (!action) {
@@ -87,7 +78,6 @@ const PrivacyRequestForm = ({
             }
             help={touched.name && errors.name}
             required={nameInput === "required"}
-            hasFeedback={touched.name && !!errors.name}
             label="Name"
             htmlFor="name"
           >
@@ -108,7 +98,6 @@ const PrivacyRequestForm = ({
             }
             help={touched.email && errors.email}
             required={emailInput === "required"}
-            hasFeedback={touched.email && !!errors.email}
             label="Email"
             htmlFor="email"
           >
@@ -130,7 +119,6 @@ const PrivacyRequestForm = ({
             }
             help={touched.phone && errors.phone}
             required={phoneInput === "required"}
-            hasFeedback={touched.phone && !!errors.phone}
             label="Phone"
             htmlFor="phone"
           >
@@ -192,9 +180,6 @@ const PrivacyRequestForm = ({
                 }
                 help={touched[key] && errors[key]}
                 required={item.required !== false}
-                hasFeedback={
-                  item.field_type === "text" && touched[key] && !!errors[key]
-                }
                 label={item.label}
                 htmlFor={key}
               >
@@ -203,7 +188,7 @@ const PrivacyRequestForm = ({
             ) : null;
           })}
         <Flex justify="stretch" gap="middle">
-          <Button type="default" variant="outlined" onClick={onClose} block>
+          <Button type="default" variant="outlined" onClick={onExit} block>
             {action.cancelButtonText || "Cancel"}
           </Button>
           <Button

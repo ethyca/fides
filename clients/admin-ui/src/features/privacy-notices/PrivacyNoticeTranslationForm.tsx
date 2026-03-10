@@ -1,10 +1,10 @@
 import {
-  AntButton as Button,
-  AntSelect as Select,
-  AntTabs as Tabs,
-  Flex,
-  Heading,
+  Button,
+  ChakraFlex as Flex,
+  ChakraHeading as Heading,
   Icons,
+  Select,
+  Tabs,
 } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useState } from "react";

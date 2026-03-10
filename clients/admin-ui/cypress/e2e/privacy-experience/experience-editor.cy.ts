@@ -16,7 +16,6 @@ describe("Experience editor", () => {
     stubProperties();
     stubExperienceConfig();
     stubFidesCloud();
-    stubPrivacyNoticesCrud();
     stubTranslationConfig(false);
     stubLocations();
   });
@@ -24,7 +23,7 @@ describe("Experience editor", () => {
   describe("creating a new experience config", () => {
     beforeEach(() => {
       cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
-      cy.wait("@getNotices");
+      cy.wait("@getExperienceNotices");
     });
 
     it("can create an experience", () => {
@@ -101,6 +100,12 @@ describe("Experience editor", () => {
         "Banner and modal",
       );
       cy.getByTestId("add-privacy-notice").click();
+      cy.getByTestId("select-privacy-notice").click();
+      cy.get(".ant-select-dropdown")
+        .find(".ant-select-item")
+        .contains("Marketing")
+        .parent()
+        .should("have.class", "ant-select-item-option-disabled");
       cy.getByTestId("select-privacy-notice").antSelect(0);
       cy.getByTestId("input-show_layer1_notices").click();
       cy.get("#preview-container")
@@ -193,164 +198,278 @@ describe("Experience editor", () => {
       );
     });
 
-    it("shows a preview while editing TCF experience", () => {
-      cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
-        cy.intercept("GET", "/api/v1/experience-config/pri*", {
-          ...data,
-          component: "tcf_overlay",
-        }).as("getTCFExperience");
-      });
-      cy.wait("@getTCFExperience");
-      cy.getByTestId("input-dismissable").should("be.visible");
-      cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
-        "Manage your consent preferences",
-      );
-    });
-
-    it("shows a notification when vendor count is zero for TCF overlay", () => {
-      // Mock vendor report with zero vendors
-      cy.intercept(
-        "GET",
-        "/api/v1/plus/system/consent-management/report?page=1&size=1",
-        {
-          items: [],
-          total: 0,
-          page: 1,
-          size: 1,
-        },
-      ).as("getVendorReportEmpty");
-
-      cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
-        cy.intercept("GET", "/api/v1/experience-config/pri*", {
-          ...data,
-          component: "tcf_overlay",
-        }).as("getTCFExperience");
-      });
-
-      cy.wait("@getTCFExperience");
-      cy.wait("@getVendorReportEmpty");
-
-      // Check that the notification appears
-      cy.get(".ant-notification-notice")
-        .should("be.visible")
-        .within(() => {
-          cy.contains("No vendors available");
+    describe("TCF experience", () => {
+      it("shows a preview while editing TCF experience", () => {
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri*", {
+            ...data,
+            component: "tcf_overlay",
+          }).as("getTCFExperience");
         });
+        cy.wait("@getTCFExperience");
+        cy.getByTestId("input-dismissable").should("be.visible");
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
+          "Manage your consent preferences",
+        );
+      });
+
+      it("shows a notification when vendor count is zero for TCF overlay", () => {
+        // Mock vendor report with zero vendors
+        cy.intercept(
+          "GET",
+          "/api/v1/plus/system/consent-management/report?page=1&size=1",
+          {
+            items: [],
+            total: 0,
+            page: 1,
+            size: 1,
+          },
+        ).as("getVendorReportEmpty");
+
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri*", {
+            ...data,
+            component: "tcf_overlay",
+          }).as("getTCFExperience");
+        });
+
+        cy.wait("@getTCFExperience");
+        cy.wait("@getVendorReportEmpty");
+
+        // Check that the notification appears
+        cy.get(".ant-notification-notice")
+          .should("be.visible")
+          .within(() => {
+            cy.contains("No vendors available");
+          });
+      });
+
+      it("can edit the TCF configuration for a TCF experience", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: true,
+            },
+          },
+        });
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+            tcf_configuration_id: "tcf_config_1", // Assign initial config
+          }).as("getTCFExperience");
+        });
+        cy.intercept("PATCH", "/api/v1/experience-config/pri_001", {
+          fixture: "privacy-experiences/experienceConfig.json",
+        }).as("patchExperience");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+
+        // Verify the select is visible and has the initial value
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .contains("Default TCF Config");
+
+        // Change the TCF config
+        cy.getByTestId("controlled-select-tcf_configuration_id").antSelect(
+          "Strict TCF Config",
+        );
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchExperience").then((interception) => {
+          const { body } = interception.request;
+          expect(body.tcf_configuration_id).to.eql("tcf_config_2");
+        });
+        cy.getByTestId("toast-success-msg").should("exist");
+
+        // Clear the TCF config
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`); // Re-visit to reset state
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs");
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .find(".ant-select-clear")
+          .click();
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchExperience").then((interception) => {
+          const { body } = interception.request;
+          // Depending on backend behavior, this might be null or undefined
+          expect(body.tcf_configuration_id).to.be.oneOf([null, undefined]);
+        });
+        cy.getByTestId("toast-success-msg").should("exist");
+      });
+
+      it("disables the TCF Publisher Override configuration when the consent override is disabled", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: false,
+            },
+          },
+        });
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+            tcf_configuration_id: "tcf_config_1", // Assign initial config
+          }).as("getTCFExperience");
+        });
+        cy.intercept("PATCH", "/api/v1/experience-config/pri_001", {
+          fixture: "privacy-experiences/experienceConfig.json",
+        }).as("patchExperience");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .should("have.class", "ant-select-disabled");
+      });
+
+      it("disables the TCF Publisher Override configuration when there are no TCF configs", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: true,
+            },
+          },
+        });
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+          }).as("getTCFExperience");
+        });
+        cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
+          items: [],
+        }).as("getTcfConfigs");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .should("have.class", "ant-select-disabled");
+      });
+
+      it("shows a disabled option for GPP notices in TCF experience", () => {
+        cy.fixture("privacy-experiences/tcf-experience.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            component: "tcf_overlay",
+          }).as("getTCFExperience");
+        });
+        cy.wait("@getTCFExperience");
+        cy.getByTestId("add-privacy-notice").click();
+        cy.getByTestId("select-privacy-notice").click();
+        cy.get(".ant-select-dropdown")
+          .find(".ant-select-item")
+          .contains("GPP notices not supported in TCF")
+          .parent()
+          .should("have.class", "ant-select-item-option-disabled");
+      });
+
+      it("shows an error message when a GPP notice exists on a TCF experience", () => {
+        cy.fixture("privacy-experiences/tcf-experience.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            component: "tcf_overlay",
+            privacy_notices: [
+              {
+                id: "pri_9d74c917-acdc-43e3-98d3-0336942b3853",
+                name: "Data Sales, Sharing, and Targeted Advertising (GPP - US National)",
+              },
+            ],
+          }).as("getTCFExperience");
+        });
+        cy.getByTestId("gpp-notices-not-supported-alert").should("exist");
+      });
+    });
+  });
+
+  describe("disabled notices", () => {
+    const DISABLED_NOTICE_TOOLTIP =
+      "This notice is disabled and will not display. Enable it or remove it from this experience.";
+
+    describe("when editing an existing experience with a disabled notice", () => {
+      beforeEach(() => {
+        // Override the notices endpoint so the notice in the experience is also disabled in the list
+        cy.fixture("privacy-experiences/notices.json").then((data) => {
+          const notices = data.items.map((n: { id: string }) =>
+            n.id === "pri_b1244715-2adb-499f-abb2-e86b6c0040c2"
+              ? { ...n, disabled: true }
+              : n,
+          );
+          cy.intercept("GET", "/api/v1/privacy-notice*", {
+            ...data,
+            items: notices,
+          }).as("getExperienceNoticesDisabled");
+        });
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getExperienceDetail");
+      });
+
+      it("shows a warning icon with tooltip on a disabled notice row", () => {
+        cy.getByTestId(
+          "privacy-notice-row-pri_b1244715-2adb-499f-abb2-e86b6c0040c2",
+        )
+          .find("svg")
+          .should("exist");
+        cy.getByTestId(
+          "privacy-notice-row-pri_b1244715-2adb-499f-abb2-e86b6c0040c2",
+        )
+          .find("span[tabindex='0']")
+          .focus();
+        cy.getAntTooltip()
+          .should("be.visible")
+          .should("contain", DISABLED_NOTICE_TOOLTIP);
+      });
     });
 
-    it("can edit the TCF configuration for a TCF experience", () => {
-      cy.intercept("GET", "/api/v1/config*", {
-        body: {
-          consent: {
-            override_vendor_purposes: true,
-          },
-        },
+    describe("when an existing experience has a notice that became disabled", () => {
+      // A notice can become disabled after being added to an experience.
+      // Both tests use the edit path with a pre-existing experience that includes
+      // the disabled notice in its privacy_notice_ids.
+      beforeEach(() => {
+        // Override the notices endpoint so the notice is marked disabled in the list
+        cy.fixture("privacy-experiences/notices.json").then((data) => {
+          const notices = data.items.map((n: { id: string }) =>
+            n.id === "pri_b1244715-2adb-499f-abb2-e86b6c0040c2"
+              ? { ...n, disabled: true }
+              : n,
+          );
+          cy.intercept("GET", "/api/v1/privacy-notice*", {
+            ...data,
+            items: notices,
+          }).as("getExperienceNoticesDisabled");
+        });
       });
-      // Load a TCF experience that already has a config assigned
-      cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
-        cy.intercept("GET", "/api/v1/experience-config/pri_001", {
-          ...data,
-          id: "pri_001",
-          component: "tcf_overlay",
-          tcf_configuration_id: "tcf_config_1", // Assign initial config
-        }).as("getTCFExperience");
+
+      it("shows a warning icon on a notice that became disabled", () => {
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getExperienceDetail");
+        cy.getByTestId(
+          "privacy-notice-row-pri_b1244715-2adb-499f-abb2-e86b6c0040c2",
+        )
+          .find("svg")
+          .should("exist");
       });
-      cy.intercept("PATCH", "/api/v1/experience-config/pri_001", {
-        fixture: "privacy-experiences/experienceConfig.json",
-      }).as("patchExperience");
 
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
-      cy.wait("@getTCFExperience");
-      cy.wait("@getTcfConfigs"); // Make sure configs are loaded
-
-      // Verify the select is visible and has the initial value
-      cy.getByTestId("controlled-select-tcf_configuration_id")
-        .should("be.visible")
-        .contains("Default TCF Config");
-
-      // Change the TCF config
-      cy.getByTestId("controlled-select-tcf_configuration_id").antSelect(
-        "Strict TCF Config",
-      );
-      cy.getByTestId("save-btn").click();
-      cy.wait("@patchExperience").then((interception) => {
-        const { body } = interception.request;
-        expect(body.tcf_configuration_id).to.eql("tcf_config_2");
+      it("does not show a disabled notice in the preview", () => {
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getExperienceDetail");
+        // The preview container should not contain the disabled notice's name
+        cy.get(`#${PREVIEW_CONTAINER_ID}`)
+          .should("contain", "Manage your consent preferences")
+          .and("not.contain", "Example Notice");
       });
-      cy.getByTestId("toast-success-msg").should("exist");
-
-      // Clear the TCF config
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`); // Re-visit to reset state
-      cy.wait("@getTCFExperience");
-      cy.wait("@getTcfConfigs");
-      cy.getByTestId("controlled-select-tcf_configuration_id")
-        .should("be.visible")
-        .find(".ant-select-clear")
-        .click();
-      cy.getByTestId("save-btn").click();
-      cy.wait("@patchExperience").then((interception) => {
-        const { body } = interception.request;
-        // Depending on backend behavior, this might be null or undefined
-        expect(body.tcf_configuration_id).to.be.oneOf([null, undefined]);
-      });
-      cy.getByTestId("toast-success-msg").should("exist");
-    });
-
-    it("disables the TCF Publisher Override configuration when the consent override is disabled", () => {
-      cy.intercept("GET", "/api/v1/config*", {
-        body: {
-          consent: {
-            override_vendor_purposes: false,
-          },
-        },
-      });
-      // Load a TCF experience that already has a config assigned
-      cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
-        cy.intercept("GET", "/api/v1/experience-config/pri_001", {
-          ...data,
-          id: "pri_001",
-          component: "tcf_overlay",
-          tcf_configuration_id: "tcf_config_1", // Assign initial config
-        }).as("getTCFExperience");
-      });
-      cy.intercept("PATCH", "/api/v1/experience-config/pri_001", {
-        fixture: "privacy-experiences/experienceConfig.json",
-      }).as("patchExperience");
-
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
-      cy.wait("@getTCFExperience");
-      cy.wait("@getTcfConfigs"); // Make sure configs are loaded
-      cy.getByTestId("controlled-select-tcf_configuration_id")
-        .should("be.visible")
-        .should("have.class", "ant-select-disabled");
-    });
-
-    it("disables the TCF Publisher Override configuration when there are no TCF configs", () => {
-      cy.intercept("GET", "/api/v1/config*", {
-        body: {
-          consent: {
-            override_vendor_purposes: true,
-          },
-        },
-      });
-      // Load a TCF experience that already has a config assigned
-      cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
-        cy.intercept("GET", "/api/v1/experience-config/pri_001", {
-          ...data,
-          id: "pri_001",
-          component: "tcf_overlay",
-        }).as("getTCFExperience");
-      });
-      cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
-        items: [],
-      }).as("getTcfConfigs");
-
-      cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
-      cy.wait("@getTCFExperience");
-      cy.wait("@getTcfConfigs"); // Make sure configs are loaded
-      cy.getByTestId("controlled-select-tcf_configuration_id")
-        .should("be.visible")
-        .should("have.class", "ant-select-disabled");
     });
   });
 

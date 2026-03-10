@@ -22,14 +22,13 @@
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "lint": "next lint && eslint ./cypress/e2e/**/*.ts ./cypress/support/**/*.ts",
-    "lint:fix": "next lint --fix && eslint --fix ./cypress/e2e/**/*.ts ./cypress/support/**/*.ts",
+    "lint:fix": "eslint --fix . && eslint --fix ./cypress/e2e/**/*.ts ./cypress/support/**/*.ts",
     "lint-staged:fix": "lint-staged --diff=main",
     "openapi:generate": "openapi-ts --file openapi-ts-api.config.ts",
     "openapi:generate-dictionary": "openapi-ts --file openapi-ts-dictionary.config.ts",
     "start": "next start",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "test:ci": "npm run typecheck && jest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -60,10 +59,10 @@
     "lodash": "^4.17.21",
     "lodash.snakecase": "^4.1.1",
     "narrow-minded": "^1.2.1",
-    "next": "^14.2.25",
+    "next": "^14.2.35",
     "next-swagger-doc": "^0.4.0",
     "next-transpile-modules": "^10.0.0",
-    "nuqs": "^2.4.3",
+    "nuqs": "^2.8.8",
     "papaparse": "^5.5.3",
     "query-string": "^9.0.0",
     "react": "^18.3.1",
@@ -75,6 +74,7 @@
     "react-redux": "^9.1.2",
     "redux-persist": "^6.0.0",
     "swagger-ui-react": "^5.19.0",
+    "valibot": "^1.2.0",
     "yup": "^1.4.0"
   },
   "devDependencies": {

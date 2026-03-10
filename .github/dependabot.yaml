@@ -8,7 +8,7 @@ updates:
       - dependencies
       - python
       - dependabot
-    open-pull-requests-limit: 0  # Security updates only
+    open-pull-requests-limit: 0 # Security updates only
 
   # Frontend monorepo dependencies
   # Dependabot config must target /clients because package-lock.json is at the monorepo root
@@ -25,16 +25,6 @@ updates:
 
   - package-ecosystem: "npm"
     directory: "/clients/sample-app"
-    schedule:
-      interval: "weekly"
-    labels:
-      - dependencies
-      - javascript
-      - dependabot
-    open-pull-requests-limit: 0
-
-  - package-ecosystem: "npm"
-    directory: "/clients/cypress-e2e"
     schedule:
       interval: "weekly"
     labels:

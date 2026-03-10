@@ -1,4 +1,4 @@
-import { Skeleton, Stack } from "fidesui";
+import { ChakraSkeleton as Skeleton, ChakraStack as Stack } from "fidesui";
 import { FC } from "react";
 
 type Props = {

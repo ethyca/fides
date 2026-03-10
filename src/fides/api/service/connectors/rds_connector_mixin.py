@@ -20,7 +20,6 @@ CA_CERT_URL = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
 
 class RDSConnectorMixin(ABC):
-
     @property
     @abstractmethod
     def url_scheme(self) -> str:

@@ -16,6 +16,7 @@ export const defaultAntTheme: ThemeConfig = {
   cssVar: true,
   token: {
     fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+    fontFamilyCode: `"Basier Square Mono", 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`,
     colorText: palette.FIDESUI_MINOS,
     colorTextBase: palette.FIDESUI_MINOS,
     colorTextHeading: palette.FIDESUI_MINOS,
@@ -31,7 +32,6 @@ export const defaultAntTheme: ThemeConfig = {
     borderRadiusSM: 4,
     borderRadius: 6,
     borderRadiusLG: 6,
-    wireframe: true,
     colorErrorBg: "#ffdcd6", // custom override
     colorErrorBorder: "#f2aca5", // custom override
     colorWarningBg: "#ffecc9", // custom override
@@ -39,9 +39,14 @@ export const defaultAntTheme: ThemeConfig = {
     colorSuccessBorder: palette.FIDESUI_SUCCESS,
     colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
     colorBorder: palette.FIDESUI_NEUTRAL_100,
+    colorBorderSecondary: palette.FIDESUI_NEUTRAL_100,
+    colorSplit: palette.FIDESUI_NEUTRAL_100,
     zIndexPopupBase: 1500, // supersede Chakra's modal z-index
   },
   components: {
+    Avatar: {
+      colorTextPlaceholder: palette.FIDESUI_BG_DEFAULT,
+    },
     Alert: {
       colorInfoBg: palette.FIDESUI_FULL_WHITE,
       colorInfo: palette.FIDESUI_NEUTRAL_500,
@@ -55,7 +60,6 @@ export const defaultAntTheme: ThemeConfig = {
       textTextHoverColor: palette.FIDESUI_NEUTRAL_600,
     },
     Card: {
-      colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
       borderRadiusLG: 8,
     },
     Drawer: {
@@ -70,8 +74,14 @@ export const defaultAntTheme: ThemeConfig = {
     Select: {
       optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
+    Dropdown: {
+      controlItemBgActiveHover: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgHover: palette.FIDESUI_NEUTRAL_50,
+    },
     Menu: {
       itemHoverBg: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgActiveHover: palette.FIDESUI_NEUTRAL_50,
+      controlItemBgHover: palette.FIDESUI_NEUTRAL_50,
       darkItemBg: palette.FIDESUI_MINOS,
       darkItemColor: palette.FIDESUI_CORINTH,
       darkSubMenuItemBg: palette.FIDESUI_MINOS,

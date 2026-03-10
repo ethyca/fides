@@ -1,11 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntInput as Input,
-  AntTabs as Tabs,
-  AntTabsProps as TabsProps,
-  useMessage,
-} from "fidesui";
+import { Button, Flex, Input, Tabs, TabsProps, useMessage } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import { CommentType } from "~/types/api/models/CommentType";

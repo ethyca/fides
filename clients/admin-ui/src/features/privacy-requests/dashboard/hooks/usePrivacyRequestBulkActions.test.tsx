@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { AntMenuProps as MenuProps } from "fidesui";
+import { MenuProps } from "fidesui";
 
 import { PrivacyRequestResponse, PrivacyRequestStatus } from "~/types/api";
 
@@ -9,12 +9,14 @@ import { usePrivacyRequestBulkActions } from "./usePrivacyRequestBulkActions";
 const mockBulkApproveRequest = jest.fn();
 const mockBulkDenyRequest = jest.fn();
 const mockBulkSoftDeleteRequest = jest.fn();
+const mockBulkFinalizeRequest = jest.fn();
 const mockOpenDenyPrivacyRequestModal = jest.fn();
 
 jest.mock("../../privacy-requests.slice", () => ({
   useBulkApproveRequestMutation: () => [mockBulkApproveRequest],
   useBulkDenyRequestMutation: () => [mockBulkDenyRequest],
   useBulkSoftDeleteRequestMutation: () => [mockBulkSoftDeleteRequest],
+  useBulkFinalizeRequestMutation: () => [mockBulkFinalizeRequest],
 }));
 
 jest.mock("../../hooks/useDenyRequestModal", () => ({
@@ -30,15 +32,6 @@ const mockMessageApi = {
   warning: jest.fn(),
 };
 
-jest.mock("fidesui", () => ({
-  useMessage: jest.fn(() => mockMessageApi),
-  Icons: {
-    Checkmark: () => null,
-    Close: () => null,
-    TrashCan: () => null,
-  },
-}));
-
 const mockModalApi = {
   confirm: jest.fn(),
   info: jest.fn(),
@@ -46,6 +39,17 @@ const mockModalApi = {
   error: jest.fn(),
   warning: jest.fn(),
 } as any;
+
+jest.mock("fidesui", () => ({
+  useMessage: jest.fn(() => mockMessageApi),
+  useModal: jest.fn(() => mockModalApi),
+  Icons: {
+    Checkmark: () => null,
+    Close: () => null,
+    TrashCan: () => null,
+    Stamp: () => null,
+  },
+}));
 
 describe("usePrivacyRequestBulkActions", () => {
   // Shared test data
@@ -64,6 +68,11 @@ describe("usePrivacyRequestBulkActions", () => {
     status: PrivacyRequestStatus.COMPLETE,
   } as PrivacyRequestResponse;
 
+  const requiresFinalizationRequest: PrivacyRequestResponse = {
+    id: "4",
+    status: PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION,
+  } as PrivacyRequestResponse;
+
   const mockRequests: PrivacyRequestResponse[] = [
     pendingRequest1,
     completeRequest,
@@ -79,13 +88,12 @@ describe("usePrivacyRequestBulkActions", () => {
       usePrivacyRequestBulkActions({
         requests: mockRequests,
         selectedIds: ["1", "3"],
-        modalApi: mockModalApi,
       }),
     );
 
     const menuItems = result.current.bulkActionMenuItems;
 
-    expect(menuItems).toHaveLength(4);
+    expect(menuItems).toHaveLength(5);
     expect(menuItems[0]).toMatchObject({
       key: BulkActionType.APPROVE,
       label: "Approve",
@@ -96,11 +104,33 @@ describe("usePrivacyRequestBulkActions", () => {
       label: "Deny",
       disabled: false,
     });
-    expect(menuItems[3]).toMatchObject({
+    expect(menuItems[2]).toMatchObject({
+      key: BulkActionType.FINALIZE,
+      label: "Finalize",
+      disabled: true, // No requests in REQUIRES_MANUAL_FINALIZATION status
+    });
+    expect(menuItems[4]).toMatchObject({
       key: BulkActionType.DELETE,
       label: "Delete",
       disabled: false,
       danger: true,
+    });
+  });
+
+  it("enables finalize action when requests require manual finalization", () => {
+    const { result } = renderHook(() =>
+      usePrivacyRequestBulkActions({
+        requests: [requiresFinalizationRequest],
+        selectedIds: ["4"],
+      }),
+    );
+
+    const menuItems = result.current.bulkActionMenuItems;
+
+    expect(menuItems[2]).toMatchObject({
+      key: BulkActionType.FINALIZE,
+      label: "Finalize",
+      disabled: false,
     });
   });
 
@@ -117,7 +147,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -160,11 +189,10 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, pendingRequest2],
           selectedIds: ["1", "2"],
-          modalApi: mockModalApi,
         }),
       );
 
-      const deleteMenuItem = result.current.bulkActionMenuItems[3] as Extract<
+      const deleteMenuItem = result.current.bulkActionMenuItems[4] as Extract<
         MenuProps["items"],
         Array<any>
       >[number] & { onClick?: (e: any) => void };
@@ -190,6 +218,48 @@ describe("usePrivacyRequestBulkActions", () => {
       });
     });
 
+    it("finalize: shows confirmation modal and calls API successfully", async () => {
+      mockBulkFinalizeRequest.mockResolvedValue({
+        data: {
+          succeeded: [{ id: "4" }],
+          failed: [],
+        },
+      });
+
+      const { result } = renderHook(() =>
+        usePrivacyRequestBulkActions({
+          requests: [requiresFinalizationRequest],
+          selectedIds: ["4"],
+        }),
+      );
+
+      const finalizeMenuItem = result.current.bulkActionMenuItems[2] as Extract<
+        MenuProps["items"],
+        Array<any>
+      >[number] & { onClick?: (e: any) => void };
+
+      await act(async () => {
+        finalizeMenuItem?.onClick?.({} as any);
+      });
+
+      expect(mockModalApi.confirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Finalize privacy requests",
+          content:
+            "You are about to finalize 1 privacy request. Are you sure you want to continue?",
+        }),
+      );
+
+      const confirmCall = mockModalApi.confirm.mock.calls[0][0];
+      await act(async () => {
+        await confirmCall.onOk();
+      });
+
+      expect(mockBulkFinalizeRequest).toHaveBeenCalledWith({
+        request_ids: ["4"],
+      });
+    });
+
     it("deny: calls API with reason and passes warning message for partial support", async () => {
       mockOpenDenyPrivacyRequestModal.mockResolvedValue(
         "User requested withdrawal",
@@ -205,7 +275,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -239,7 +308,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1, completeRequest],
           selectedIds: ["1", "3"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -274,7 +342,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          modalApi: mockModalApi,
         }),
       );
 
@@ -298,7 +365,6 @@ describe("usePrivacyRequestBulkActions", () => {
         usePrivacyRequestBulkActions({
           requests: [pendingRequest1],
           selectedIds: ["1"],
-          modalApi: mockModalApi,
         }),
       );
 

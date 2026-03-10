@@ -1,4 +1,4 @@
-import { AntTypography as Typography, Box } from "fidesui";
+import { ChakraBox as Box, Typography } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";

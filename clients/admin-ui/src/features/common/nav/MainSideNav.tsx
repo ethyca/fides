@@ -1,9 +1,16 @@
-import { AntButton as Button, Box, Icons, VStack } from "fidesui";
+import {
+  Button,
+  ChakraBox as Box,
+  ChakraVStack as VStack,
+  Icons,
+} from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
+import React from "react";
 
-import logoImage from "~/../public/logo-white.svg";
+import logoCollapsed from "~/../public/logo-collapsed.svg";
+import logoExpanded from "~/../public/logo-expanded.svg";
 import { useAppDispatch } from "~/app/hooks";
 import { LOGIN_ROUTE } from "~/constants";
 import { logout, useLogoutMutation } from "~/features/auth";
@@ -14,45 +21,71 @@ import AccountDropdownMenu from "./AccountDropdownMenu";
 import { useNav } from "./hooks";
 import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
-import { INDEX_ROUTE } from "./routes";
+import styles from "./NavMenu.module.scss";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
 const NAV_WIDTH = "240px";
+const COLLAPSED_WIDTH = "80px";
 const OPENED_TOGGLES_LOCAL_STORAGE_KEY = "mainSideNavOpenKeys";
+const COLLAPSED_LOCAL_STORAGE_KEY = "mainSideNavCollapsed";
+
+const LOGO_FULL_WIDTH = 107;
+const LOGO_HEIGHT = 24;
+const LOGO_ICON_SIZE = 24;
+
+interface UnconnectedMainSideNavProps {
+  groups: NavGroup[];
+  active: ActiveNav | undefined;
+  handleLogout: () => Promise<void>;
+  collapsed?: boolean;
+  onCollapseToggle?: () => void;
+}
 
 /** Inner component which we export for component testing */
 export const UnconnectedMainSideNav = ({
   groups,
   active,
   handleLogout,
-}: {
-  groups: NavGroup[];
-  active: ActiveNav | undefined;
-  handleLogout: any;
-}) => {
+  collapsed = false,
+  onCollapseToggle,
+}: UnconnectedMainSideNavProps) => {
   const navMenuItems = groups
     .filter((group) => group.children.some((child) => !child.hidden)) // Only include groups with visible children
     .map((group) => ({
       key: group.title,
       icon: group.icon,
+      popupClassName: styles.flyout,
+      popupOffset: [12, 0],
       label: (
         <span data-testid={`${group.title}-nav-group`}>{group.title}</span>
       ),
-      children: group.children
-        .filter((child) => !child.hidden) // Filter out hidden routes from UI
-        .map((child) => ({
-          key: child.path,
-          // child label needs left margin/padding to align with group title
-          label: (
-            <NextLink
-              href={child.path}
-              data-testid={`${child.title}-nav-link`}
-              className="ml-4 pl-0.5"
-            >
-              {child.title}
-            </NextLink>
-          ),
-        })),
+      children: [
+        ...(collapsed
+          ? [
+              {
+                key: `${group.title}-header`,
+                label: (
+                  <span className={styles.flyoutHeader}>{group.title}</span>
+                ),
+                disabled: true,
+              },
+            ]
+          : []),
+        ...group.children
+          .filter((child) => !child.hidden)
+          .map((child) => ({
+            key: child.path,
+            label: (
+              <NextLink
+                href={child.path}
+                data-testid={`${child.title}-nav-link`}
+                className="ml-4 pl-0.5"
+              >
+                {child.title}
+              </NextLink>
+            ),
+          })),
+      ],
     }));
 
   const getActiveKeyFromUrl = () => {
@@ -106,56 +139,98 @@ export const UnconnectedMainSideNav = ({
     );
   };
 
+  const navWidth = collapsed ? COLLAPSED_WIDTH : NAV_WIDTH;
+
   return (
-    <Box
-      px={2}
-      pb={0}
-      pt={4}
-      minWidth={NAV_WIDTH}
-      maxWidth={NAV_WIDTH}
-      backgroundColor={NAV_BACKGROUND_COLOR}
-      height="100%"
-      overflow="auto"
+    <div
+      className={`${styles.navContainer} ${collapsed ? styles.navContainerCollapsed : styles.navContainerExpanded}`}
+      style={{
+        minWidth: navWidth,
+        maxWidth: navWidth,
+        backgroundColor: NAV_BACKGROUND_COLOR,
+      }}
     >
       <VStack
         as="nav"
-        alignItems="start"
+        alignItems="stretch"
         color="white"
         height="100%"
         justifyContent="space-between"
       >
         <Box width="100%">
-          <Box pb={6}>
-            <Box px={2}>
-              <NextLink href={INDEX_ROUTE}>
-                {/* this image gets priority because it's the largest contentful paint and above the fold
-                see https://nextjs.org/docs/pages/api-reference/components/image#priority */}
-                <Image src={logoImage} alt="Fides Logo" width={116} priority />
-              </NextLink>
-            </Box>
-          </Box>
+          <div
+            className={`${styles.logoWrapper} ${collapsed ? styles.logoWrapperCollapsed : styles.logoWrapperExpanded}`}
+          >
+            <button
+              type="button"
+              className={`inline-flex cursor-pointer p-0 ${styles.collapseToggle}`}
+              onClick={onCollapseToggle}
+              aria-label={
+                collapsed
+                  ? "Expand navigation menu"
+                  : "Collapse navigation menu"
+              }
+              data-testid="nav-collapse-toggle"
+            >
+              <div
+                className={styles.logoContainer}
+                style={{
+                  width: collapsed
+                    ? `${LOGO_ICON_SIZE}px`
+                    : `${LOGO_FULL_WIDTH}px`,
+                  height: `${LOGO_HEIGHT}px`,
+                }}
+              >
+                <div
+                  className={`${styles.logoImage} ${collapsed ? styles.logoImageHidden : styles.logoImageVisible}`}
+                >
+                  <Image
+                    src={logoExpanded}
+                    alt="Fides Logo"
+                    width={LOGO_FULL_WIDTH}
+                    height={LOGO_HEIGHT}
+                    priority
+                  />
+                </div>
+                <div
+                  className={`${styles.logoImage} ${collapsed ? styles.logoImageVisible : styles.logoImageHidden}`}
+                >
+                  <Image
+                    src={logoCollapsed}
+                    alt="Fides Logo"
+                    width={LOGO_ICON_SIZE}
+                    height={LOGO_ICON_SIZE}
+                    priority
+                  />
+                </div>
+              </div>
+            </button>
+          </div>
           <NavMenu
             items={navMenuItems}
             selectedKeys={activeKey ? [activeKey] : []}
             onOpenChange={handleOpenChange}
             defaultOpenKeys={getStartupOpenKeys()}
+            inlineCollapsed={collapsed}
           />
         </Box>
-        <Box alignItems="center" pb={4}>
+        <div
+          className={`${styles.bottomBar} ${collapsed ? styles.bottomBarCollapsed : styles.bottomBarExpanded}`}
+        >
           <Button
             type="primary"
             href="https://docs.ethyca.com"
             target="_blank"
-            className="border-none bg-transparent  hover:!bg-gray-700"
+            className={styles.helpButton}
             icon={<Icons.Help />}
             aria-label="Help"
           />
           <div className="inline-block">
             <AccountDropdownMenu onLogout={handleLogout} />
           </div>
-        </Box>
+        </div>
       </VStack>
-    </Box>
+    </div>
   );
 };
 
@@ -165,6 +240,25 @@ const MainSideNav = () => {
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useAppDispatch();
   const plusQuery = useGetHealthQuery();
+
+  const [collapsed, setCollapsed] = React.useState(false);
+
+  React.useEffect(() => {
+    const stored = localStorage.getItem(COLLAPSED_LOCAL_STORAGE_KEY);
+    if (stored === "true") {
+      setCollapsed(true);
+    }
+  }, []);
+
+  const toggleCollapsed = React.useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem(COLLAPSED_LOCAL_STORAGE_KEY, String(next));
+      }
+      return next;
+    });
+  }, []);
 
   const handleLogout = async () => {
     await logoutMutation({});
@@ -180,16 +274,25 @@ const MainSideNav = () => {
   // version of the nav during load, so that when the nav does load, it is fully featured.
   if (plusQuery.isLoading) {
     return (
-      <Box
-        minWidth={NAV_WIDTH}
-        maxWidth={NAV_WIDTH}
-        backgroundColor={NAV_BACKGROUND_COLOR}
-        height="100%"
+      <div
+        style={{
+          minWidth: NAV_WIDTH,
+          maxWidth: NAV_WIDTH,
+          backgroundColor: NAV_BACKGROUND_COLOR,
+          height: "100%",
+        }}
       />
     );
   }
 
-  return <UnconnectedMainSideNav {...nav} handleLogout={handleLogout} />;
+  return (
+    <UnconnectedMainSideNav
+      {...nav}
+      handleLogout={handleLogout}
+      collapsed={collapsed}
+      onCollapseToggle={toggleCollapsed}
+    />
+  );
 };
 
 export default MainSideNav;

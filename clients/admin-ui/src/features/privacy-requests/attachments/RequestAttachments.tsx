@@ -1,16 +1,16 @@
 import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntTitle as Title,
-  AntTooltip as Tooltip,
-  AntUpload as Upload,
+  Button,
+  Flex,
   Icons,
+  PageSpinner,
+  Title,
+  Tooltip,
+  Upload,
   UploadFile,
   useMessage,
 } from "fidesui";
 import { useCallback, useState } from "react";
 
-import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -103,7 +103,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
           <Title level={3}>Attachments</Title>
         </div>
         {isLoadingStorage || isLoadingAttachments ? (
-          <FidesSpinner size="md" alignment="start" />
+          <PageSpinner alignment="start" />
         ) : (
           <Upload
             name="attachment_file"

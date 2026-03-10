@@ -309,7 +309,6 @@ def hubspot_data(
     hubspot_test_client: HubspotTestClient,
     hubspot_identity_email: str,
 ) -> Generator:
-
     contact_id, user_id = create_hubspot_data(
         hubspot_test_client, email=hubspot_identity_email
     )

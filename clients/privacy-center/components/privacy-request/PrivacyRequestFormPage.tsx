@@ -1,0 +1,88 @@
+"use client";
+
+import { useMessage } from "fidesui";
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+
+import { decodePolicyKey, encodePolicyKey } from "~/common/policy-key";
+import { useConfig } from "~/features/common/config.slice";
+import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
+import { PrivacyRequestOption } from "~/types/config";
+
+import PrivacyRequestForm from "../modals/privacy-request-modal/PrivacyRequestForm";
+
+type PrivacyRequestFormPageProps = {
+  actionKey: string;
+};
+
+const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
+  const config = useConfig();
+  const router = useRouter();
+  const params = useParams();
+  const propertyPath = params?.propertyPath as string | undefined;
+  const basePath = propertyPath ? `/${propertyPath}` : "";
+  const [isVerificationRequired, setIsVerificationRequired] =
+    useState<boolean>(false);
+  const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
+
+  const messageApi = useMessage();
+
+  const policyKey = decodePolicyKey(actionKey);
+
+  const action = config.actions.find((a) => a.policy_key === policyKey) as
+    | PrivacyRequestOption
+    | undefined;
+
+  // Update verification requirement from API
+  useEffect(() => {
+    if (getIdVerificationConfigQuery.isSuccess) {
+      setIsVerificationRequired(
+        getIdVerificationConfigQuery.data.identity_verification_required,
+      );
+    }
+  }, [getIdVerificationConfigQuery]);
+
+  useEffect(() => {
+    if (!action) {
+      messageApi.error(`Invalid action key "${policyKey}" for privacy request`);
+      router.push(basePath || "/");
+    }
+  }, [action, policyKey, messageApi, router, basePath]);
+
+  const handleExit = () => {
+    router.push(basePath || "/");
+  };
+
+  const handleSetCurrentView = (view: string) => {
+    if (view === "identityVerification") {
+      router.push(
+        `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/verify`,
+      );
+    }
+  };
+
+  const handleSetPrivacyRequestId = (id: string) => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("privacyRequestId", id);
+    }
+  };
+
+  const handleSuccessWithoutVerification = () => {
+    router.push(
+      `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/success`,
+    );
+  };
+
+  return (
+    <PrivacyRequestForm
+      onExit={handleExit}
+      openAction={action}
+      setCurrentView={handleSetCurrentView}
+      setPrivacyRequestId={handleSetPrivacyRequestId}
+      isVerificationRequired={isVerificationRequired}
+      onSuccessWithoutVerification={handleSuccessWithoutVerification}
+    />
+  );
+};
+
+export default PrivacyRequestFormPage;

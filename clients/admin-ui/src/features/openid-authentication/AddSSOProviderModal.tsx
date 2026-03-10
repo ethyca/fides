@@ -1,4 +1,4 @@
-import { UseDisclosureReturn } from "fidesui";
+import { ChakraUseDisclosureReturn as UseDisclosureReturn } from "fidesui";
 
 import FormModal from "~/features/common/modals/FormModal";
 import SSOProviderForm from "~/features/openid-authentication/SSOProviderForm";

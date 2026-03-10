@@ -1,5 +1,10 @@
 import { PrivacyRequestResponse } from "~/features/privacy-requests/types";
-import { HealthCheck, PrivacyRequestStatus } from "~/types/api";
+import {
+  HealthCheck,
+  PolicyResponse,
+  PrivacyRequestStatus,
+  Schema,
+} from "~/types/api";
 
 export const stubTaxonomyEntities = () => {
   cy.intercept("GET", "/api/v1/data_category", {
@@ -400,6 +405,16 @@ export const stubPrivacyRequests = (
           },
         },
       ).as("getPrivacyRequestManager");
+      cy.intercept("GET", "/api/v1/policy*", {
+        fixture: "policies/list.json",
+      }).as("getPolicies");
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/connection/*/manual-task/dependency-conditions/privacy-request-fields",
+        {
+          fixture: "integration-management/privacy-request-fields.json",
+        },
+      ).as("getPrivacyRequestFields");
     },
   );
 
@@ -598,6 +613,9 @@ export const stubProperties = () => {
 };
 
 export const stubExperienceConfig = () => {
+  cy.intercept("GET", "/api/v1/privacy-notice*", {
+    fixture: "privacy-experiences/notices.json",
+  }).as("getExperienceNotices");
   cy.intercept("GET", "/api/v1/experience-config*", {
     fixture: "privacy-experiences/list.json",
   }).as("getExperiences");
@@ -1048,6 +1066,17 @@ export const stubCustomFields = () => {
     statusCode: 200,
     fixture: "custom-fields/allow-list.json",
   }).as("upsertAllowList");
+
+  // Get custom field locations
+  cy.intercept("GET", "/api/v1/plus/custom-fields/locations", {
+    body: [
+      "taxonomy:data_category",
+      "taxonomy:data_subject",
+      "taxonomy:data_use",
+      "system:information",
+      "system:data use",
+    ],
+  }).as("getCustomFieldLocations");
 };
 
 export const stubSystemGroups = () => {
@@ -1069,4 +1098,173 @@ export const stubOktaApps = () => {
   cy.intercept("GET", "/api/v1/plus/identity-provider-monitors/*/results", {
     fixture: "detection-discovery/results/okta-apps-list.json",
   }).as("getOktaApps");
+};
+
+export const stubInfrastructureSystems = (options?: {
+  fixture?: string;
+  patchStatus?: number;
+  patchResponse?: Partial<Schema> | { detail: string };
+  dynamicResponse?: (req: any) => any;
+}) => {
+  const fixture =
+    options?.fixture ||
+    "detection-discovery/results/infrastructure-systems-with-data-uses.json";
+
+  // GET - Identity Provider Monitor Results
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/identity-provider-monitors/*/results*",
+    (req) => {
+      if (options?.dynamicResponse) {
+        req.reply(options.dynamicResponse(req));
+      } else {
+        req.reply({ fixture });
+      }
+    },
+  ).as("getInfrastructureSystems");
+
+  // PATCH - Update infrastructure system data uses
+  cy.intercept("PATCH", "/api/v1/plus/identity-provider-monitors/*/results/*", {
+    statusCode: options?.patchStatus ?? 200,
+    body: options?.patchResponse ?? {
+      urn: "urn:okta:app:12345678-1234-1234-1234-123456789012",
+      user_assigned_data_uses: [],
+    },
+  }).as("updateInfrastructureSystemDataUses");
+};
+
+export const stubInfrastructureSystemsFilters = (monitorId: string) => {
+  cy.intercept(
+    "GET",
+    `/api/v1/plus/filters/idp_monitor_resources?monitor_config_id=${monitorId}*`,
+    {
+      fixture:
+        "detection-discovery/results/infrastructure-systems-filters.json",
+    },
+  ).as("getInfrastructureSystemsFilters");
+};
+
+export const stubInfrastructureSystemsBulkActions = (
+  monitorId: string,
+  options?: {
+    promoteStatus?: number;
+    promoteResponse?: any;
+    muteStatus?: number;
+    muteResponse?: any;
+    unmuteStatus?: number;
+    unmuteResponse?: any;
+  },
+) => {
+  cy.intercept(
+    "POST",
+    `/api/v1/plus/identity-provider-monitors/${monitorId}/results/bulk-promote`,
+    {
+      statusCode: options?.promoteStatus ?? 200,
+      body: options?.promoteResponse ?? {
+        summary: {
+          successful: 2,
+          failed: 0,
+          total_requested: 2,
+        },
+      },
+    },
+  ).as("bulkPromoteInfrastructureSystems");
+
+  cy.intercept(
+    "POST",
+    `/api/v1/plus/identity-provider-monitors/${monitorId}/results/bulk-mute`,
+    {
+      statusCode: options?.muteStatus ?? 200,
+      body: options?.muteResponse ?? {
+        summary: {
+          successful: 2,
+          failed: 0,
+          total_requested: 2,
+        },
+      },
+    },
+  ).as("bulkMuteInfrastructureSystems");
+
+  cy.intercept(
+    "POST",
+    `/api/v1/plus/identity-provider-monitors/${monitorId}/results/bulk-unmute`,
+    {
+      statusCode: options?.unmuteStatus ?? 200,
+      body: options?.unmuteResponse ?? {
+        summary: {
+          successful: 2,
+          failed: 0,
+          total_requested: 2,
+        },
+      },
+    },
+  ).as("bulkUnmuteInfrastructureSystems");
+};
+
+export const stubDSRPolicies = (options?: { isEmpty?: boolean }) => {
+  stubFeatureFlags();
+  cy.intercept("GET", "/api/v1/dsr/policy", {
+    fixture: options?.isEmpty
+      ? "policies/empty-list.json"
+      : "policies/list.json",
+  }).as("getDSRPolicies");
+  cy.intercept("GET", "/api/v1/plus/dsr/policy/default", {
+    body: {
+      access: "default_access_policy",
+      erasure: "default_erasure_policy",
+      consent: "default_consent_policy",
+    },
+  }).as("getDefaultPolicies");
+  cy.intercept("GET", "/api/v1/dsr/policy/*", {
+    body: {
+      name: "Default Erasure Policy",
+      key: "default_erasure_policy",
+      drp_action: "deletion",
+      execution_timeframe: 45,
+      rules: [
+        {
+          name: "Default Erasure Rule",
+          key: "default_erasure_policy_rule",
+          action_type: "erasure",
+          storage_destination: null,
+          masking_strategy: {
+            strategy: "hmac",
+          },
+        },
+      ],
+    },
+  }).as("getDSRPolicy");
+  cy.intercept("GET", "/api/v1/masking/strategy", {
+    body: [
+      {
+        name: "hmac",
+        description:
+          "Masks the input value by computing a hash using the HMAC algorithm",
+        configurations: [],
+      },
+      {
+        name: "null_rewrite",
+        description: "Masks the input value by replacing it with a null value",
+        configurations: [],
+      },
+    ],
+  }).as("getMaskingStrategies");
+  cy.intercept("PATCH", "/api/v1/dsr/policy", {
+    body: {
+      succeeded: [
+        {
+          name: "Test Policy",
+          key: "test_policy",
+          drp_action: null,
+          execution_timeframe: null,
+          rules: [],
+        },
+      ],
+      failed: [],
+    },
+  }).as("patchDSRPolicy");
+  cy.intercept("DELETE", "/api/v1/dsr/policy/*", {
+    statusCode: 200,
+    body: {},
+  }).as("deleteDSRPolicy");
 };

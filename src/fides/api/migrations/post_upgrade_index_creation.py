@@ -33,6 +33,9 @@ This means that after the constraint is created, the index will have the same na
 """
 
 POST_UPGRADE_INDEX_CREATION = "post_upgrade_index_creation"
+# This is the threshold for the number of rows in a table to create the index during application startup
+# The value follows the pattern established in migrations for the tables in the TABLE_OBJECT_MAP
+INDEX_ROW_COUNT_THRESHOLD = 1000000
 
 TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
     "currentprivacypreferencev2": [
@@ -93,6 +96,25 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "type": "index",
         },
     ],
+    "providedidentity": [
+        {
+            "name": "ix_providedidentity_privacy_request_id",
+            "statement": "CREATE INDEX CONCURRENTLY ix_providedidentity_privacy_request_id ON providedidentity (privacy_request_id)",
+            "type": "index",
+        },
+        {
+            "name": "ix_providedidentity_reqid_field_hash",
+            "statement": "CREATE INDEX CONCURRENTLY ix_providedidentity_reqid_field_hash ON providedidentity (privacy_request_id, field_name, hashed_value)",
+            "type": "index",
+        },
+    ],
+    "privacyrequest": [
+        {
+            "name": "ix_privacyrequest_policy_created",
+            "statement": "CREATE INDEX CONCURRENTLY ix_privacyrequest_policy_created ON privacyrequest (policy_id, created_at)",
+            "type": "index",
+        },
+    ],
     "servednoticehistory": [
         {
             "name": "ix_servednoticehistory_hashed_external_id",
@@ -141,6 +163,16 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_descendant ON stagedresourceancestor (descendant_urn)",
             "type": "index",
         },
+        {
+            "name": "ix_staged_resource_ancestor_desc_anc_dist",
+            "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_desc_anc_dist ON stagedresourceancestor (descendant_urn, ancestor_urn, distance)",
+            "type": "index",
+        },
+        {
+            "name": "ix_staged_resource_ancestor_anc_dist_desc",
+            "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_anc_dist_desc ON stagedresourceancestor (ancestor_urn, distance, descendant_urn)",
+            "type": "index",
+        },
     ],
     "stagedresource": [
         {
@@ -161,6 +193,16 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
         {
             "name": "idx_stagedresource_classifications_gin",
             "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_classifications_gin ON stagedresource USING GIN (classifications)",
+            "type": "index",
+        },
+        {
+            "name": "ix_stagedresource_monitor_leaf_status_urn",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_leaf_status_urn ON stagedresource (monitor_config_id, is_leaf, diff_status, urn) WHERE is_leaf IS NOT NULL",
+            "type": "index",
+        },
+        {
+            "name": "ix_stagedresource_leaf_true_monitor_status_urn",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_leaf_true_monitor_status_urn ON stagedresource (monitor_config_id, diff_status, urn) WHERE is_leaf IS TRUE",
             "type": "index",
         },
     ],
@@ -280,9 +322,9 @@ def initiate_post_upgrade_index_creation() -> None:
         logger.debug("Skipping post upgrade index creation in test mode")
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    )
 
     logger.info("Initiating scheduler for hash migration")
     scheduler.add_job(

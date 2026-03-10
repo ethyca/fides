@@ -22,11 +22,12 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
+from fides.api.util.domain_util import validate_value_against_allowed_list
 from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
-from fides.api.util.saas_util import deny_unsafe_hosts
+from fides.api.util.saas_util import deny_unsafe_hosts, is_domain_validation_disabled
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -34,6 +35,11 @@ if TYPE_CHECKING:
     from fides.api.schemas.limiter.rate_limit_config import RateLimitConfig
     from fides.api.schemas.saas.saas_config import ClientConfig
     from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
+
+
+# 3.05s per requests library recommendation to avoid TCP retransmission boundary edge cases.
+DEFAULT_CONNECT_TIMEOUT: float = 3.05
+DEFAULT_READ_TIMEOUT: float = 60  # 60s allows generous time for slow API responses while preventing indefinite worker stalls.
 
 
 class AuthenticatedClient:
@@ -48,6 +54,8 @@ class AuthenticatedClient:
         configuration: ConnectionConfig,
         client_config: ClientConfig,
         rate_limit_config: Optional[RateLimitConfig] = None,
+        connect_timeout: float = DEFAULT_CONNECT_TIMEOUT,
+        read_timeout: float = DEFAULT_READ_TIMEOUT,
     ):
         self.session = Session()
         self.session.verify = certifi.where()
@@ -55,6 +63,54 @@ class AuthenticatedClient:
         self.configuration = configuration
         self.client_config = client_config
         self.rate_limit_config = rate_limit_config
+        self.connect_timeout = connect_timeout
+        self.read_timeout = read_timeout
+        self._allowed_hosts: Optional[List[str]] = self._extract_allowed_hosts()
+
+    def _extract_allowed_hosts(self) -> Optional[List[str]]:
+        """One-time extraction of allowed host patterns from the SaaS config.
+
+        Returns None when validation should be skipped (disabled, no SaaS
+        config, no endpoint params with allowed_values, or any endpoint param
+        is self-hosted with an empty allowed_values list).  A non-None list
+        means every outbound host must match at least one entry.
+        """
+        if is_domain_validation_disabled():
+            return None
+
+        saas_config = self.configuration.get_saas_config()
+        if not saas_config:
+            return None
+
+        endpoint_params = [
+            cp
+            for cp in saas_config.connector_params
+            if cp.type == "endpoint" and cp.allowed_values is not None
+        ]
+        if not endpoint_params:
+            return None
+
+        # If any endpoint param is self-hosted (empty list), we cannot
+        # distinguish at runtime which param a request targets, so skip.
+        if any(
+            cp.allowed_values is not None and len(cp.allowed_values) == 0
+            for cp in endpoint_params
+        ):
+            return None
+
+        allowed = [v for cp in endpoint_params for v in (cp.allowed_values or [])]
+        return allowed if allowed else None
+
+    def _validate_request_domain(self, host: str) -> None:
+        """Defense-in-depth: validate the resolved host against the
+        pre-extracted allowed host patterns."""
+        if self._allowed_hosts is None:
+            return
+
+        host_without_port = host.split(":")[0] if ":" in host else host
+        validate_value_against_allowed_list(
+            host_without_port, self._allowed_hosts, "host"
+        )
 
     def get_authenticated_request(
         self, request_params: SaaSRequestParams
@@ -114,9 +170,7 @@ class AuthenticatedClient:
                     sleep_time = backoff_factor * (2 ** (attempt + 1))
                     try:
                         return func(*args, **kwargs)
-                    except (
-                        RequestFailureResponseException
-                    ) as exc:  # pylint: disable=W0703
+                    except RequestFailureResponseException as exc:  # pylint: disable=W0703
                         response: Response = exc.response
                         status_code: int = response.status_code
                         last_exception = ClientUnsuccessfulException(
@@ -220,13 +274,19 @@ class AuthenticatedClient:
             raise ValueError("The URL for the prepared request is missing.")
 
         # extract the hostname from the complete URL and verify its safety
-        deny_unsafe_hosts(urlparse(prepared_request.url).netloc)
+        request_host = urlparse(prepared_request.url).netloc
+        deny_unsafe_hosts(request_host)
+
+        # Defense-in-depth: validate the resolved host against allowed_values
+        self._validate_request_domain(request_host)
 
         # utf-8 encode the body before sending
         if isinstance(prepared_request.body, str):
             prepared_request.body = prepared_request.body.encode("utf-8")
 
-        response = self.session.send(prepared_request)
+        response = self.session.send(
+            prepared_request, timeout=(self.connect_timeout, self.read_timeout)
+        )
         ignore_error = self._should_ignore_error(
             status_code=response.status_code, errors_to_ignore=ignore_errors
         )

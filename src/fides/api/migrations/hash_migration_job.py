@@ -2,7 +2,6 @@ from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_autoclose_db_session
 from fides.api.db.base_class import FidesBase
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.migrations.hash_migration_tracker import HashMigrationTracker
@@ -13,6 +12,7 @@ from fides.api.models.privacy_preference import (
 )
 from fides.api.models.privacy_request import CustomPrivacyRequestField, ProvidedIdentity
 from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.common.session_management import get_autoclose_db_session
 from fides.config import CONFIG
 
 HASH_MIGRATION = "hash_migration"
@@ -31,9 +31,9 @@ def initiate_bcrypt_migration_task() -> None:
     if CONFIG.test_mode:
         return
 
-    assert (
-        scheduler.running
-    ), "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    assert scheduler.running, (
+        "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+    )
 
     logger.info("Initiating scheduler for hash migration")
     scheduler.add_job(

@@ -1,4 +1,4 @@
-import { useDisclosure } from "fidesui";
+import { useChakraDisclosure as useDisclosure } from "fidesui";
 import { useState } from "react";
 
 import PickerCard from "~/features/common/PickerCard";

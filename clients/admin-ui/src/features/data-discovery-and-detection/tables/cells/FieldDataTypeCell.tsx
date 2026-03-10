@@ -1,4 +1,4 @@
-import { AntTag as Tag, Flex } from "fidesui";
+import { ChakraFlex as Flex, Tag } from "fidesui";
 
 const FieldDataTypeCell = ({ type }: { type?: string | null }) => (
   <Flex align="center" h="full">

@@ -1,9 +1,4 @@
-import {
-  AntButton as Button,
-  AntFlex as Flex,
-  AntSpin as Spin,
-  AntTable as Table,
-} from "fidesui";
+import { Button, Flex, Spin, Table } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
 
 import {

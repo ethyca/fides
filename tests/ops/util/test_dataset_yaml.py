@@ -153,9 +153,9 @@ def test_dataset_yaml_format_invalid_format():
 def test_dataset_yaml_format_invalid_fides_keys():
     """Test that 'after' parameters are properly read"""
     dataset = __to_dataset__(example_dataset_yaml)
-    dataset.get("collections")[0].get("fidesops_meta").get("after")[
-        0
-    ] = "invalid*dataset*name.invalid*collection*name"
+    dataset.get("collections")[0].get("fidesops_meta").get("after")[0] = (
+        "invalid*dataset*name.invalid*collection*name"
+    )
     with pytest.raises(ValueError) as exc:
         d: Dataset = Dataset.model_validate(dataset)
         convert_dataset_to_graph(d, "ignore")

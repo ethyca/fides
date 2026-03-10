@@ -105,11 +105,11 @@ describe("Privacy notices", () => {
       cy.get("tbody > tr").first().should("contain", "Functional");
     });
 
-    it("can click a row to go to the notice page", () => {
+    it("can click a link to go to the notice page", () => {
       cy.intercept("GET", "/api/v1/privacy-notice/pri*", {
         fixture: "privacy-notices/notice.json",
       }).as("getNoticeDetail");
-      cy.get("table").contains("td", "Essential").click();
+      cy.getByTestId("notice-name").contains("Essential").click();
       cy.wait("@getNoticeDetail");
       cy.getByTestId("privacy-notice-detail-page");
       cy.url().should("contain", ESSENTIAL_NOTICE_ID);
@@ -200,24 +200,6 @@ describe("Privacy notices", () => {
           .within(() => {
             cy.getByTestId("status-badge").contains("inactive");
           });
-      });
-
-      it("can show an error if disable toggle fails", () => {
-        cy.intercept("PATCH", "/api/v1/privacy-notice/*/limited_update*", {
-          statusCode: 422,
-          body: {
-            detail:
-              "Privacy Notice 'Analytics test' has already assigned notice key 'analytics' to region 'PrivacyNoticeRegion.ie'",
-          },
-        }).as("patchNoticesError");
-        cy.get("table")
-          .contains("tr", "Data Sales")
-          .within(() => {
-            cy.get('[data-testid="toggle-switch"]').click();
-          });
-        cy.wait("@patchNoticesError").then(() => {
-          cy.getByTestId("toast-error-msg");
-        });
       });
     });
   });

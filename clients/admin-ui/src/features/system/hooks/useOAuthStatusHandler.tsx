@@ -1,4 +1,4 @@
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 

@@ -5,8 +5,8 @@ import { CatalogResourceStatus } from "~/features/data-catalog/utils";
 
 const STATUS_COLOR_MAP: Record<CatalogResourceStatus, CUSTOM_TAG_COLOR> = {
   [CatalogResourceStatus.ATTENTION_REQUIRED]: CUSTOM_TAG_COLOR.ERROR,
-  [CatalogResourceStatus.APPROVED]: CUSTOM_TAG_COLOR.SUCCESS,
-  [CatalogResourceStatus.IN_REVIEW]: CUSTOM_TAG_COLOR.WARNING,
+  [CatalogResourceStatus.REVIEWED]: CUSTOM_TAG_COLOR.SUCCESS,
+  [CatalogResourceStatus.CLASSIFIED]: CUSTOM_TAG_COLOR.WARNING,
   [CatalogResourceStatus.CLASSIFYING]: CUSTOM_TAG_COLOR.INFO,
   [CatalogResourceStatus.NONE]: CUSTOM_TAG_COLOR.MARBLE,
 };

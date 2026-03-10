@@ -1,4 +1,9 @@
-import { Box, Heading, Stack, Text } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraHeading as Heading,
+  ChakraStack as Stack,
+  ChakraText as Text,
+} from "fidesui";
 
 interface ErrorLayoutProps {
   title: string;

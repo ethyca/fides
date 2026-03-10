@@ -1,8 +1,12 @@
+# pylint: disable=too-many-lines
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fastapi import HTTPException
 from loguru import logger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session, selectinload
+from starlette.responses import StreamingResponse
+from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from fides.api.common_exceptions import (
     FidesopsException,
@@ -28,15 +32,21 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_center_config import LocationCustomPrivacyRequestField
+from fides.api.schemas.privacy_center_config import (
+    LocationCustomPrivacyRequestField,
+    reorder_custom_privacy_request_fields,
+)
 from fides.api.schemas.privacy_center_config import (
     PrivacyCenterConfig as PrivacyCenterConfigSchema,
 )
 from fides.api.schemas.privacy_request import (
+    BULK_PRIVACY_REQUEST_BATCH_SIZE,
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     CheckpointActionRequired,
+    PrivacyRequestBulkSelection,
     PrivacyRequestCreate,
+    PrivacyRequestFilter,
     PrivacyRequestResponse,
     PrivacyRequestResubmit,
     PrivacyRequestSource,
@@ -50,12 +60,22 @@ from fides.api.service.privacy_request.request_service import (
 )
 from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
+from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.common.session_management import get_autoclose_db_session
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
     send_privacy_request_receipt_message_to_user,
+)
+from fides.service.privacy_request.privacy_request_csv_download import (
+    privacy_request_csv_download,
+)
+from fides.service.privacy_request.privacy_request_query_utils import (
+    filter_privacy_request_queryset,
+    resolve_request_ids_from_filters,
+    sort_privacy_request_queryset,
 )
 
 
@@ -71,15 +91,69 @@ class PrivacyRequestService:
         self.messaging_service = messaging_service
 
     def get_privacy_request(self, privacy_request_id: str) -> Optional[PrivacyRequest]:
-        privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
-            self.db, object_id=privacy_request_id
+        privacy_request: Optional[PrivacyRequest] = (
+            PrivacyRequest.query_without_large_columns(self.db)
+            .filter(PrivacyRequest.id == privacy_request_id)
+            .first()
         )
         if not privacy_request:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
         return privacy_request
 
+    def filter_privacy_requests(
+        self,
+        query: Query,
+        filters: PrivacyRequestFilter,
+        identity: Optional[str] = None,
+        include_consent_webhook_requests: Optional[bool] = False,
+    ) -> Query:
+        """Apply filters to a privacy request query."""
+        return filter_privacy_request_queryset(
+            self.db,
+            query,
+            filters,
+            identity=identity,
+            include_consent_webhook_requests=include_consent_webhook_requests,
+        )
+
+    def sort_privacy_requests(
+        self,
+        query: Query,
+        sort_field: str,
+        sort_direction: ColumnSort,
+    ) -> Query:
+        """Sort a privacy request query by the given field and direction."""
+        return sort_privacy_request_queryset(query, sort_field, sort_direction)
+
+    def resolve_request_ids(
+        self,
+        privacy_requests: PrivacyRequestBulkSelection,
+    ) -> List[str]:
+        """Resolve privacy request IDs from either explicit IDs or filters.
+
+        Raises:
+            ValueError: If the filter query returns too many results
+        """
+        return resolve_request_ids_from_filters(self.db, privacy_requests)
+
+    def download_privacy_requests_csv(self, query: Query) -> StreamingResponse:
+        """Download privacy requests as CSV."""
+        return privacy_request_csv_download(self.db, query)
+
+    @classmethod
+    def get_batches_for_bulk_operation(cls, request_ids: List[str]) -> List[List[str]]:
+        """Get batches of request IDs for bulk operations."""
+        batches = []
+        if len(request_ids) > BULK_PRIVACY_REQUEST_BATCH_SIZE:
+            for i in range(0, len(request_ids), BULK_PRIVACY_REQUEST_BATCH_SIZE):
+                batches.append(request_ids[i : i + BULK_PRIVACY_REQUEST_BATCH_SIZE])
+        else:
+            batches.append(request_ids)
+        return batches
+
     def _validate_privacy_request_for_bulk_operation(
         self,
+        privacy_request: Optional[PrivacyRequest],
         request_id: str,
     ) -> PrivacyRequest:
         """
@@ -88,7 +162,6 @@ class PrivacyRequestService:
 
         Returns the validated privacy request.
         """
-        privacy_request = self.get_privacy_request(request_id)
         if not privacy_request:
             raise PrivacyRequestError(
                 f"No privacy request found with id '{request_id}'",
@@ -101,8 +174,19 @@ class PrivacyRequestService:
                     mode="json"
                 ),
             )
-
         return privacy_request
+
+    def _fetch_privacy_requests_for_bulk_operation(
+        self, request_ids: List[str]
+    ) -> Dict[str, PrivacyRequest]:
+        """Fetch privacy requests in a single query to avoid N+1. Eager loads custom_fields."""
+        privacy_requests = (
+            PrivacyRequest.query_without_large_columns(self.db)
+            .options(selectinload(PrivacyRequest.custom_fields))  # type: ignore[attr-defined]
+            .filter(PrivacyRequest.id.in_(request_ids))
+            .all()
+        )
+        return {pr.id: pr for pr in privacy_requests}
 
     def _validate_required_location_fields(
         self, privacy_request_data: PrivacyRequestCreate
@@ -160,24 +244,35 @@ class PrivacyRequestService:
         1) The request's property config (if provided)
         2) The default property's config (if available)
         3) The single-row Privacy Center config table (legacy/global)
+
+        Returns a copy of the config with custom_privacy_request_fields key order
+        restored when custom_privacy_request_field_order is present (JSONB does
+        not preserve object key order).
         """
         # 1) Request's property config
         if property_id:
             prop = Property.get_by(self.db, field="id", value=property_id)
             if prop and getattr(prop, "privacy_center_config", None):
-                return prop.privacy_center_config  # type: ignore[return-value]
+                return reorder_custom_privacy_request_fields(
+                    prop.privacy_center_config  # type: ignore[arg-type]
+                )
 
         # 2) Default property config
         default_prop = Property.get_by(self.db, field="is_default", value=True)
         if default_prop and getattr(default_prop, "privacy_center_config", None):
-            return default_prop.privacy_center_config  # type: ignore[return-value]
+            return reorder_custom_privacy_request_fields(
+                default_prop.privacy_center_config  # type: ignore[arg-type]
+            )
 
         # 3) Single-row global config
         privacy_center_config_record = PrivacyCenterConfigModel.filter(
-            db=self.db, conditions=PrivacyCenterConfigModel.single_row  # type: ignore[arg-type]
+            db=self.db,
+            conditions=PrivacyCenterConfigModel.single_row,  # type: ignore[arg-type]
         ).first()
         if privacy_center_config_record:
-            return privacy_center_config_record.config  # type: ignore[return-value]
+            return reorder_custom_privacy_request_fields(
+                privacy_center_config_record.config  # type: ignore[arg-type]
+            )
         return None
 
     def _parse_privacy_center_config(
@@ -519,71 +614,81 @@ class PrivacyRequestService:
         reviewed_by: Optional[str] = None,
         suppress_notification: Optional[bool] = False,
     ) -> BulkReviewResponse:
+        """Approve privacy requests."""
+        batches = self.get_batches_for_bulk_operation(request_ids)
+
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
-        for request_id in request_ids:
-            try:
-                privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
-                )
-            except PrivacyRequestError as exc:
-                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
-                continue
+        # Process each batch to avoid memory issues with large request lists
+        for batch in batches:
+            privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+                batch
+            )
 
-            if privacy_request.status not in [
-                PrivacyRequestStatus.pending,
-                PrivacyRequestStatus.duplicate,
-            ]:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Cannot transition status",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
+            for request_id in batch:
+                privacy_request = privacy_requests_dict.get(request_id)
+                try:
+                    privacy_request = self._validate_privacy_request_for_bulk_operation(
+                        privacy_request, request_id
                     )
-                )
-                continue
+                except PrivacyRequestError as exc:
+                    failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                    continue
 
-            try:
-                now = datetime.utcnow()
-                privacy_request.status = PrivacyRequestStatus.approved
-                privacy_request.reviewed_at = now
-                privacy_request.reviewed_by = reviewed_by
+                if privacy_request.status not in [
+                    PrivacyRequestStatus.pending,
+                    PrivacyRequestStatus.duplicate,
+                ]:
+                    failed.append(
+                        BulkUpdateFailed(
+                            message="Cannot transition status",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
+                    )
+                    continue
 
-                if privacy_request.custom_fields:  # type: ignore[attr-defined]
-                    privacy_request.custom_privacy_request_fields_approved_at = now
-                    privacy_request.custom_privacy_request_fields_approved_by = (
-                        reviewed_by
+                try:
+                    now = datetime.utcnow()
+                    privacy_request.status = PrivacyRequestStatus.approved
+                    privacy_request.reviewed_at = now
+                    privacy_request.reviewed_by = reviewed_by
+
+                    if privacy_request.custom_fields:  # type: ignore[attr-defined]
+                        privacy_request.custom_privacy_request_fields_approved_at = now
+                        privacy_request.custom_privacy_request_fields_approved_by = (
+                            reviewed_by
+                        )
+
+                    privacy_request.save(db=self.db)
+
+                    AuditLog.create(
+                        db=self.db,
+                        data={
+                            "privacy_request_id": privacy_request.id,
+                            "action": AuditLogAction.approved,
+                            "user_id": reviewed_by,
+                            "webhook_id": webhook_id,  # the last webhook reply received is what approves the entire request
+                        },
                     )
 
-                privacy_request.save(db=self.db)
+                    if not suppress_notification:
+                        self.messaging_service.send_request_approved(privacy_request)
+                    queue_privacy_request(privacy_request.id)
 
-                AuditLog.create(
-                    db=self.db,
-                    data={
-                        "privacy_request_id": privacy_request.id,
-                        "action": AuditLogAction.approved,
-                        "user_id": reviewed_by,
-                        "webhook_id": webhook_id,  # the last webhook reply received is what approves the entire request
-                    },
-                )
-
-                if not suppress_notification:
-                    self.messaging_service.send_request_approved(privacy_request)
-                queue_privacy_request(privacy_request.id)
-
-                succeeded.append(privacy_request)
-            except Exception as exc:
-                logger.exception(exc)
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Privacy request could not be updated",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
+                    succeeded.append(privacy_request)
+                except Exception as exc:
+                    logger.exception(exc)
+                    failed.append(
+                        BulkUpdateFailed(
+                            message="Privacy request could not be updated",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
                     )
-                )
 
         return BulkReviewResponse(succeeded=succeeded, failed=failed)
 
@@ -594,60 +699,74 @@ class PrivacyRequestService:
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
+        """Deny privacy requests.
+        Batching is done under the hood to avoid memory issues with large request lists.
+        """
+        batches = self.get_batches_for_bulk_operation(request_ids)
+
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
-        for request_id in request_ids:
-            try:
-                privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
-                )
-            except PrivacyRequestError as exc:
-                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
-                continue
+        # Fetch all privacy requests in one query to avoid N+1
+        for batch in batches:
+            privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+                batch
+            )
 
-            if privacy_request.status not in [
-                PrivacyRequestStatus.pending,
-                PrivacyRequestStatus.duplicate,
-            ]:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Cannot transition status",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
+            for request_id in batch:
+                privacy_request = privacy_requests_dict.get(request_id)
+                try:
+                    privacy_request = self._validate_privacy_request_for_bulk_operation(
+                        privacy_request, request_id
                     )
-                )
-                continue
+                except PrivacyRequestError as exc:
+                    failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                    continue
 
-            try:
-                privacy_request.status = PrivacyRequestStatus.denied
-                privacy_request.reviewed_at = datetime.utcnow()
-                privacy_request.reviewed_by = user_id
-                privacy_request.save(db=self.db)
-
-                AuditLog.create(
-                    db=self.db,
-                    data={
-                        "user_id": user_id,
-                        "privacy_request_id": privacy_request.id,
-                        "action": AuditLogAction.denied,
-                        "message": deny_reason,
-                    },
-                )
-
-                self.messaging_service.send_request_denied(privacy_request, deny_reason)
-
-                succeeded.append(privacy_request)
-            except Exception:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Privacy request could not be updated",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
+                if privacy_request.status not in [
+                    PrivacyRequestStatus.pending,
+                    PrivacyRequestStatus.duplicate,
+                ]:
+                    failed.append(
+                        BulkUpdateFailed(
+                            message="Cannot transition status",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
                     )
-                )
+                    continue
+
+                try:
+                    privacy_request.status = PrivacyRequestStatus.denied
+                    privacy_request.reviewed_at = datetime.utcnow()
+                    privacy_request.reviewed_by = user_id
+                    privacy_request.save(db=self.db)
+
+                    AuditLog.create(
+                        db=self.db,
+                        data={
+                            "user_id": user_id,
+                            "privacy_request_id": privacy_request.id,
+                            "action": AuditLogAction.denied,
+                            "message": deny_reason,
+                        },
+                    )
+
+                    self.messaging_service.send_request_denied(
+                        privacy_request, deny_reason
+                    )
+
+                    succeeded.append(privacy_request)
+                except Exception:
+                    failed.append(
+                        BulkUpdateFailed(
+                            message="Privacy request could not be updated",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
+                    )
 
         return BulkReviewResponse(succeeded=succeeded, failed=failed)
 
@@ -659,6 +778,8 @@ class PrivacyRequestService:
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
         """Cancel a list of privacy requests and/or report failure"""
+        batches = self.get_batches_for_bulk_operation(request_ids)
+
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
@@ -670,41 +791,48 @@ class PrivacyRequestService:
             PrivacyRequestStatus.error,
         ]
 
-        for request_id in request_ids:
-            try:
-                privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
-                )
-            except PrivacyRequestError as exc:
-                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
-                continue
+        # Process each batch to avoid memory issues with large request lists
+        for batch in batches:
+            privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+                batch
+            )
 
-            if privacy_request.status in terminal_states:
-                failed.append(
-                    BulkUpdateFailed(
-                        message=f"Cannot cancel privacy request in {privacy_request.status.value} status",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
+            for request_id in batch:
+                privacy_request = privacy_requests_dict.get(request_id)
+                try:
+                    privacy_request = self._validate_privacy_request_for_bulk_operation(
+                        privacy_request, request_id
                     )
-                )
-                continue
+                except PrivacyRequestError as exc:
+                    failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                    continue
 
-            try:
-                privacy_request.cancel_processing(
-                    db=self.db, cancel_reason=cancel_reason
-                )
-
-                succeeded.append(privacy_request)
-            except Exception:
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Privacy request could not be canceled",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
+                if privacy_request.status in terminal_states:
+                    failed.append(
+                        BulkUpdateFailed(
+                            message=f"Cannot cancel privacy request in {privacy_request.status.value} status",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
                     )
-                )
+                    continue
+
+                try:
+                    privacy_request.cancel_processing(
+                        db=self.db, cancel_reason=cancel_reason
+                    )
+
+                    succeeded.append(privacy_request)
+                except Exception:
+                    failed.append(
+                        BulkUpdateFailed(
+                            message="Privacy request could not be canceled",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
+                    )
 
         return BulkReviewResponse(succeeded=succeeded, failed=failed)
 
@@ -714,59 +842,135 @@ class PrivacyRequestService:
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
-        """Bulk finalize privacy requests that are in requires_manual_finalization status"""
+        """Finalize privacy requests."""
+        batches = self.get_batches_for_bulk_operation(request_ids)
         succeeded: List[PrivacyRequest] = []
         failed: List[BulkUpdateFailed] = []
 
-        for request_id in request_ids:
-            try:
-                privacy_request = self._validate_privacy_request_for_bulk_operation(
-                    request_id
-                )
-            except PrivacyRequestError as exc:
-                failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
-                continue
+        # Process each batch to avoid memory issues with large request lists
+        for batch in batches:
+            privacy_requests_dict = self._fetch_privacy_requests_for_bulk_operation(
+                batch
+            )
 
-            if (
-                privacy_request.status
-                != PrivacyRequestStatus.requires_manual_finalization
-            ):
-                failed.append(
-                    BulkUpdateFailed(
-                        message=f"Cannot manually finalize privacy request: status is {privacy_request.status}, not requires_manual_finalization",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
+            for request_id in batch:
+                privacy_request = privacy_requests_dict.get(request_id)
+                try:
+                    privacy_request = self._validate_privacy_request_for_bulk_operation(
+                        privacy_request, request_id
                     )
-                )
-                continue
+                except PrivacyRequestError as exc:
+                    failed.append(BulkUpdateFailed(message=exc.message, data=exc.data))
+                    continue
 
-            try:
-                # Set finalized_by and finalized_at here, so the request runner service knows not to
-                # put the request back into the requires_finalization state.
-                privacy_request.finalized_at = datetime.utcnow()
-                privacy_request.finalized_by = user_id
-                privacy_request.save(db=self.db)
-
-                # Queue the privacy request for finalization
-                queue_privacy_request(
-                    privacy_request_id=privacy_request.id,
-                    from_step=CurrentStep.finalization.value,
-                )
-
-                succeeded.append(privacy_request)
-            except Exception as exc:
-                logger.exception(exc)
-                failed.append(
-                    BulkUpdateFailed(
-                        message="Privacy request could not be finalized",
-                        data=PrivacyRequestResponse.model_validate(
-                            privacy_request
-                        ).model_dump(mode="json"),
+                if (
+                    privacy_request.status
+                    != PrivacyRequestStatus.requires_manual_finalization
+                ):
+                    failed.append(
+                        BulkUpdateFailed(
+                            message=f"Cannot manually finalize privacy request: status is {privacy_request.status}, not requires_manual_finalization",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
                     )
-                )
+                    continue
+
+                try:
+                    # Set finalized_by and finalized_at here, so the request runner service knows not to
+                    # put the request back into the requires_finalization state.
+                    privacy_request.finalized_at = datetime.utcnow()
+                    privacy_request.finalized_by = user_id
+                    privacy_request.save(db=self.db)
+
+                    # Queue the privacy request for finalization
+                    queue_privacy_request(
+                        privacy_request_id=privacy_request.id,
+                        from_step=CurrentStep.finalization.value,
+                    )
+
+                    succeeded.append(privacy_request)
+                except Exception as exc:
+                    logger.exception(exc)
+                    failed.append(
+                        BulkUpdateFailed(
+                            message="Privacy request could not be finalized",
+                            data=PrivacyRequestResponse.model_validate(
+                                privacy_request
+                            ).model_dump(mode="json"),
+                        )
+                    )
 
         return BulkReviewResponse(succeeded=succeeded, failed=failed)
+
+
+SCHEDULING_DATASET_NAME = "Privacy request scheduling"
+
+
+def _handle_scheduling_failure(
+    privacy_request_id: str,
+    error_message: str,
+) -> None:
+    """Handle a privacy request scheduling failure by setting it to error state.
+
+    Creates an ExecutionLog entry for visibility in the activity timeline and
+    marks the privacy request as errored with the detailed error message.
+    """
+
+    with get_autoclose_db_session() as db:
+        privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+        if privacy_request:
+            # Add execution log for activity timeline visibility
+            privacy_request.add_error_execution_log(
+                db,
+                connection_key=None,
+                dataset_name=SCHEDULING_DATASET_NAME,
+                collection_name=None,
+                message=error_message,
+                action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
+            )
+            # Mark the privacy request as errored with the error message
+            privacy_request.error_processing(db)
+            logger.error(
+                "Privacy request {} failed to schedule: {}",
+                privacy_request_id,
+                error_message,
+            )
+
+
+def _clear_scheduling_failure_if_exists(privacy_request_id: str) -> None:
+    """Log a success only if there was a previous scheduling failure.
+
+    This clears the error styling in the UI activity timeline when a retry succeeds.
+    """
+
+    with get_autoclose_db_session() as db:
+        # Check if the most recent scheduling log is an error
+        latest_scheduling_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request_id,
+                ExecutionLog.dataset_name == SCHEDULING_DATASET_NAME,
+            )
+            .order_by(ExecutionLog.created_at.desc())
+            .first()
+        )
+
+        if (
+            latest_scheduling_log
+            and latest_scheduling_log.status == ExecutionLogStatus.error
+        ):
+            privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+            if privacy_request:
+                privacy_request.add_success_execution_log(
+                    db,
+                    connection_key=None,
+                    dataset_name=SCHEDULING_DATASET_NAME,
+                    collection_name=None,
+                    message="Privacy request successfully queued for processing",
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore[arg-type]
+                )
 
 
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
@@ -774,24 +978,36 @@ def queue_privacy_request(
     privacy_request_id: str,
     from_webhook_id: Optional[str] = None,
     from_step: Optional[str] = None,
-) -> str:
+) -> Optional[str]:
+    """Queue a privacy request for processing.
+
+    Returns the task ID if successful, or None if scheduling fails.
+    On failure, the privacy request is marked as errored with the error message.
+    """
     logger.info("Queueing privacy request from step {}", from_step)
 
     from fides.api.service.privacy_request.request_runner_service import (
         run_privacy_request,
     )
 
-    task = run_privacy_request.apply_async(
-        queue=DSR_QUEUE_NAME,
-        kwargs={
-            "privacy_request_id": privacy_request_id,
-            "from_webhook_id": from_webhook_id,
-            "from_step": from_step,
-        },
-    )
-    cache_task_tracking_key(privacy_request_id, task.task_id)
+    try:
+        task = run_privacy_request.apply_async(
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_request_id,
+                "from_webhook_id": from_webhook_id,
+                "from_step": from_step,
+            },
+        )
+        cache_task_tracking_key(privacy_request_id, task.task_id)
 
-    return task.task_id
+        # Clear any previous scheduling failure in the activity timeline
+        _clear_scheduling_failure_if_exists(privacy_request_id)
+
+        return task.task_id
+    except Exception as exc:
+        _handle_scheduling_failure(privacy_request_id, str(exc))
+        raise
 
 
 def _create_or_update_custom_fields(
@@ -889,7 +1105,7 @@ def _requeue_privacy_request(
             f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
 
-    # Both DSR 2.0 and 3.0 cache checkpoint details
+    # Checkpoint details are cached in Redis
     checkpoint_details: Optional[CheckpointActionRequired] = (
         privacy_request.get_failed_checkpoint_details()
     )
@@ -948,10 +1164,24 @@ def _process_privacy_request_restart(
 
     privacy_request.status = PrivacyRequestStatus.in_processing
     privacy_request.save(db=db)
-    queue_privacy_request(
-        privacy_request_id=privacy_request.id,
-        from_step=failed_step.value if failed_step else None,
-    )
+    try:
+        queue_privacy_request(
+            privacy_request_id=privacy_request.id,
+            from_step=failed_step.value if failed_step else None,
+        )
+    except Exception as exc:
+        # queue_privacy_request handles setting error state in the DB,
+        # raise HTTP exception so the frontend can display the actual error message
+        logger.error(
+            "Failed to queue privacy request {} during restart: {}",
+            privacy_request.id,
+            exc,
+        )
+
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
 
     return privacy_request  # type: ignore[return-value]
 
@@ -986,4 +1216,14 @@ def handle_approval(
                 "message": "",
             },
         )
-        queue_privacy_request(privacy_request.id)
+        try:
+            queue_privacy_request(privacy_request.id)
+        except Exception as exc:
+            # queue_privacy_request already handles setting the privacy request
+            # to error state, so we just log here and allow the request creation
+            # to complete (the request will be in error status)
+            logger.error(
+                "Failed to queue privacy request {} during approval: {}",
+                privacy_request.id,
+                exc,
+            )

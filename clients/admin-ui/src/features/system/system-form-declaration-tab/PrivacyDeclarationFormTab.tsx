@@ -1,4 +1,7 @@
-import { Stack, useDisclosure } from "fidesui";
+import {
+  ChakraStack as Stack,
+  useChakraDisclosure as useDisclosure,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";

@@ -1,5 +1,5 @@
 import { Dayjs } from "dayjs";
-import { useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 

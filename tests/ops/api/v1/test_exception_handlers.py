@@ -3,8 +3,8 @@ import json
 import pytest
 from starlette.testclient import TestClient
 
-from fides.common.api.scope_registry import CLIENT_CREATE
-from fides.common.api.v1.urn_registry import HEALTH, PRIVACY_REQUESTS, V1_URL_PREFIX
+from fides.common.scope_registry import CLIENT_CREATE
+from fides.common.urn_registry import HEALTH, PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
 
@@ -48,6 +48,13 @@ class TestExceptionHandlers:
 
         # health endpoint should still work
         expected_response = "no cache configured"
+        response = api_client.get(HEALTH, params={"include_cache": True})
+        response_body = json.loads(response.text)
+        assert 200 == response.status_code
+        assert expected_response == response_body["cache"]
+
+        # health endpoint should still work without include_cache parameter
+        expected_response = "skipped"
         response = api_client.get(HEALTH)
         response_body = json.loads(response.text)
         assert 200 == response.status_code

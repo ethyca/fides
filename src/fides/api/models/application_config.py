@@ -9,13 +9,10 @@ from pydash.objects import get
 from sqlalchemy import Boolean, CheckConstraint, Column
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.db.base_class import Base, JSONTypeOverride
-from fides.config import CONFIG, FidesConfig
+from fides.api.db.encryption_utils import encrypted_type
+from fides.config import FidesConfig
 
 
 class ApplicationConfig(Base):
@@ -26,26 +23,12 @@ class ApplicationConfig(Base):
     """
 
     api_set = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=False,
         default={},
     )  # store as encrypted JSON blob since config settings may have sensitive data
     config_set = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=False,
         default={},
     )  # store as encrypted JSON blob since config settings may have sensitive data
@@ -77,7 +60,9 @@ class ApplicationConfig(Base):
 
         return cls.create(db=db, data=data)
 
-    def update(self, db: Session, data: Dict[str, Any], merge_updates: bool = True) -> ApplicationConfig:  # type: ignore[override]
+    def update(
+        self, db: Session, data: Dict[str, Any], merge_updates: bool = True
+    ) -> ApplicationConfig:  # type: ignore[override]
         """
         Updates the config record, merging contents of the particular JSON column that
         corresponds to the updated data.

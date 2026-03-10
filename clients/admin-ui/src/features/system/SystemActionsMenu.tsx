@@ -1,9 +1,9 @@
 import {
-  AntButton as Button,
-  AntDropdown as Dropdown,
-  AntModal as Modal,
-  AntTypography as Typography,
+  Button,
+  Dropdown,
   Icons,
+  Modal,
+  Typography,
   useMessage,
 } from "fidesui";
 import { useCallback, useMemo, useState } from "react";
@@ -46,6 +46,7 @@ const SystemActionsMenu = ({
     page: 1,
     size: 100,
     include_external: false,
+    exclude_approvers: true,
   });
 
   const [bulkDeleteSystems] = useBulkDeleteSystemsMutation();
@@ -83,6 +84,7 @@ const SystemActionsMenu = ({
       messageApi.success(
         `${selectedRowKeys.length} systems deleted successfully`,
       );
+      setDeleteModalIsOpen(false);
     }
   };
 
