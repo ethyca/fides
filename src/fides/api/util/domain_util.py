@@ -77,8 +77,7 @@ def validate_value_against_allowed_list(
 
     if monitor:
         logger.warning(
-            "Domain validation violation (monitor mode): %s "
-            "This would be blocked with DOMAIN_VALIDATION_MODE=enabled.",
+            "Domain validation violation (monitor mode): %s",
             violation_msg,
         )
         return
