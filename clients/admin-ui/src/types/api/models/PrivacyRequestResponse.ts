@@ -46,4 +46,7 @@ export type PrivacyRequestResponse = {
   finalized_at?: string | null;
   finalized_by?: string | null;
   duplicate_request_group_id?: string | null;
+  jira_ticket_key?: string | null;
+  jira_ticket_url?: string | null;
+  jira_ticket_status?: string | null;
 };
