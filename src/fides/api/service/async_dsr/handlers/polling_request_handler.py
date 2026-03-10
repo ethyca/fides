@@ -38,7 +38,7 @@ def send_and_handle_errors(
     """
     try:
         return client.send(prepared_request)
-    except (ClientUnsuccessfulException) as exc:
+    except ClientUnsuccessfulException as exc:
         response = exc.response
         if response is None:
             raise exception_cls(f"{request_label} failed with no response")
