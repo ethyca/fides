@@ -233,9 +233,9 @@ const AssessmentSettingsModal = ({
 
           {reassessmentEnabled && (
             <>
-              <Form.Item name="frequency_preset" label="Schedule frequency">
+              <Form.Item name="frequency_preset" label="Scan frequency">
                 <Select
-                  aria-label="Schedule frequency"
+                  aria-label="Scan frequency"
                   options={[
                     ...FREQUENCY_OPTIONS,
                     { label: "Custom (Advanced)", value: "custom" },
