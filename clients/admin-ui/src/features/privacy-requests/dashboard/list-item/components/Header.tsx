@@ -3,6 +3,7 @@ import { uniqBy } from "lodash";
 import { useRouter } from "next/router";
 import React from "react";
 
+import { useFlags } from "~/features/common/features";
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
@@ -17,6 +18,7 @@ interface HeaderProps {
 
 export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
   const router = useRouter();
+  const { flags } = useFlags();
 
   const uniqueRules = uniqBy(privacyRequest.policy.rules ?? [], "action_type");
 
@@ -47,6 +49,20 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
               {SubjectRequestActionTypeMap.get(rule.action_type)}
             </Tag>
           ))}
+        </Flex>
+      )}
+      {flags.alphaJiraIntegration && privacyRequest.jira_ticket_key && (
+        <Flex gap={4} align="center">
+          <Typography.Link
+            href={privacyRequest.jira_ticket_url ?? undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {privacyRequest.jira_ticket_key}
+          </Typography.Link>
+          {privacyRequest.jira_ticket_status && (
+            <Tag>{privacyRequest.jira_ticket_status}</Tag>
+          )}
         </Flex>
       )}
       <CopyTooltip contentToCopy={privacyRequest.id}>
