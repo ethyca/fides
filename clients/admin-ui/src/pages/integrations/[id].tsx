@@ -72,8 +72,7 @@ const IntegrationDetailView: NextPage = () => {
     isLoading: isTestLoading,
   } = useTestConnection(connection);
 
-  const isJira =
-    connection?.connection_type === ConnectionType.JIRA_TICKET;
+  const isJira = connection?.connection_type === ConnectionType.JIRA_TICKET;
 
   const defaultAuth = useIntegrationAuthorization({
     connection,

@@ -33,7 +33,9 @@ const ConnectionStatusNotice = ({
     return (
       <Flex align="center" data-testid="connection-status">
         <Text color="error-text.900">
-          {isJiraTicket ? "Connection not authorized" : "Authorization required"}
+          {isJiraTicket
+            ? "Connection not authorized"
+            : "Authorization required"}
         </Text>
       </Flex>
     );

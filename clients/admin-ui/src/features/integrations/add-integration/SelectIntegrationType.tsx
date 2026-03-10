@@ -43,7 +43,8 @@ export const useIntegrationFilters = () => {
     if (!alphaJiraIntegration) {
       staticIntegrations = staticIntegrations.filter(
         (integration) =>
-          integration.placeholder.connection_type !== ConnectionType.JIRA_TICKET,
+          integration.placeholder.connection_type !==
+          ConnectionType.JIRA_TICKET,
       );
     }
 

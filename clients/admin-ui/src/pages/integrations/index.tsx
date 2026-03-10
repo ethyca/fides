@@ -223,11 +223,12 @@ const IntegrationListView: NextPage = () => {
         };
 
         const { status, color } = getConnectionStatus();
-        const tooltipText = record.last_test_timestamp
-          ? `Last connection: ${formatDate(record.last_test_timestamp)}`
-          : isJiraTicket && !record.authorized
-            ? "Jira connection has not been authorized"
-            : "The connection has not been tested";
+        let tooltipText = "The connection has not been tested";
+        if (record.last_test_timestamp) {
+          tooltipText = `Last connection: ${formatDate(record.last_test_timestamp)}`;
+        } else if (isJiraTicket && !record.authorized) {
+          tooltipText = "Jira connection has not been authorized";
+        }
 
         return (
           <Tooltip title={tooltipText}>

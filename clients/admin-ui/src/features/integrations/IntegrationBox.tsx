@@ -67,8 +67,7 @@ const IntegrationBox = ({
     integration?.saas_config?.type as SaasConnectionTypes,
   );
 
-  const isJira =
-    integration?.connection_type === ConnectionType.JIRA_TICKET;
+  const isJira = integration?.connection_type === ConnectionType.JIRA_TICKET;
 
   const defaultAuth = useIntegrationAuthorization({
     connection: integration,
