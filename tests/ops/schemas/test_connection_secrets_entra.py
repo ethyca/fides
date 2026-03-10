@@ -81,15 +81,6 @@ class TestEntraSchema:
                 client_secret="",
             )
 
-    def test_client_secret_guid_rejected(self):
-        """Supplying the Secret ID (GUID) instead of the secret value is rejected."""
-        with pytest.raises(ValueError, match="secret value, not the secret ID"):
-            EntraSchema(
-                tenant_id=VALID_TENANT_ID,
-                client_id=VALID_CLIENT_ID,
-                client_secret="aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-            )
-
     def test_client_secret_stripped(self):
         """Whitespace around the client secret is stripped."""
         schema = EntraSchema(

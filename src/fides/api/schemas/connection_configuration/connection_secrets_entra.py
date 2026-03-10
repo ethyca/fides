@@ -73,17 +73,10 @@ class EntraSchema(ConnectionConfigSecretsSchema):
     @field_validator("client_secret")
     @classmethod
     def validate_client_secret(cls, value: str) -> str:
-        """Ensure client secret is non-empty and is the secret value, not the secret ID."""
+        """Ensure client secret is non-empty."""
         if not value or not value.strip():
             raise ValueError("Client secret cannot be empty")
-        cleaned = value.strip()
-        if ENTRA_UUID_PATTERN.match(cleaned):
-            raise ValueError(
-                "Client secret must be the secret value, not the secret ID. "
-                "In Azure Portal: App registrations > Your app > Certificates & secrets: "
-                "create or copy the secret's Value (long string), not the Secret ID (GUID)."
-            )
-        return cleaned
+        return value.strip()
 
 
 class EntraDocsSchema(EntraSchema, NoValidationSchema):
