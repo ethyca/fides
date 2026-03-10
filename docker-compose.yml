@@ -403,7 +403,7 @@ services:
     healthcheck:
       test: ["CMD", "valkey-cli", "-p", "6379", "-a", "redispassword", "ping"]
       interval: 2s
-      timeout: 3s
+          valkey-cli -a redispassword --cluster create valkey-cluster-node-1:6379 valkey-cluster-node-2:6379 valkey-cluster-node-3:6379 --cluster-replicas 0 --cluster-yes &&
       retries: 10
 
   valkey-cluster-node-3:
