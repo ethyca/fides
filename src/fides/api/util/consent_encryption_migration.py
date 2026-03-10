@@ -8,13 +8,11 @@ data before toggling FIDES__CONSENT__CONSENT_V3_ENCRYPTION_ENABLED.
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-from sqlalchemy import Text, text
+from sqlalchemy import text
 from sqlalchemy.orm import Session
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
+from sqlalchemy_utils.types.encrypted.encrypted_type import StringEncryptedType
 
+from fides.api.db.encryption_utils import encrypted_type
 from fides.config import CONFIG
 
 SELECT_QUERY = text(
@@ -51,12 +49,7 @@ class MigrationResult:
 
 def _make_encryptor() -> StringEncryptedType:
     """Build the encryptor used for transform (encrypt/decrypt)."""
-    return StringEncryptedType(
-        type_in=Text(),
-        key=CONFIG.security.app_encryption_key,
-        engine=AesGcmEngine,
-        padding="pkcs5",
-    )
+    return encrypted_type()
 
 
 def _is_encrypted(encryptor: StringEncryptedType, value: str) -> bool:

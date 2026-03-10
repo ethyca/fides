@@ -182,7 +182,7 @@ export type SystemResponseExtended = {
    * Describes the returned schema for a ConnectionConfiguration.
    *
    */
-  connection_configs: ConnectionConfigurationResponse | null;
+  connection_configs: Array<ConnectionConfigurationResponse> | null;
   /**
    * System managers of the current system
    */

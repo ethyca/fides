@@ -15,16 +15,15 @@ import { QuestionGroup } from "./types";
 interface QuestionGroupPanelProps {
   group: QuestionGroup;
   isExpanded: boolean;
+  onViewEvidence: () => void;
 }
 
 export const QuestionGroupPanel = ({
   group,
   isExpanded,
+  onViewEvidence,
 }: QuestionGroupPanelProps) => {
-  const answeredCount = group.questions.filter(
-    (q) => q.answer_text.trim().length > 0,
-  ).length;
-  const totalCount = group.questions.length;
+  const { answered_count: answeredCount, total_count: totalCount } = group;
   const isGroupCompleted = answeredCount === totalCount;
 
   return (
@@ -61,7 +60,10 @@ export const QuestionGroupPanel = ({
                 type="default"
                 icon={<Icons.Document />}
                 size="small"
-                disabled
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewEvidence();
+                }}
               >
                 View evidence
               </Button>
