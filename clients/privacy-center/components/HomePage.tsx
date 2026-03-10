@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ChakraBox as Box,
   ChakraFlex as Flex,
   ChakraHeading as Heading,
   ChakraLink as Link,
@@ -236,23 +237,25 @@ const HomePage: NextPage = () => {
         ))}
 
         {(SHOW_BRAND_LINK || policyLinks.length > 0) && (
-          <Stack flexDirection="column" alignItems="center">
-            {policyLinks.map(({ url, label }) => (
-              <Link
-                key={`${url}-${label}`}
-                fontSize={["small", "medium"]}
-                fontWeight="medium"
-                textAlign="center"
-                textDecoration="underline"
-                color="gray.800"
-                href={url}
-                isExternal
-              >
-                {label}
-              </Link>
-            ))}
-            <BrandLink position="relative" right="unset" />
-          </Stack>
+          <Box position="relative" width="100%">
+            <Stack flexDirection="column" alignItems="center">
+              {policyLinks.map(({ url, label }) => (
+                <Link
+                  key={`${url}-${label}`}
+                  fontSize={["small", "medium"]}
+                  fontWeight="medium"
+                  textAlign="center"
+                  textDecoration="underline"
+                  color="gray.800"
+                  href={url}
+                  isExternal
+                >
+                  {label}
+                </Link>
+              ))}
+            </Stack>
+            <BrandLink position="absolute" right={6} bottom={0} />
+          </Box>
         )}
       </Stack>
 
