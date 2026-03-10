@@ -26,6 +26,9 @@ export const useJiraAuthorization = ({
   const message = useMessage();
 
   const handleAuthorize = async () => {
+    if (isLoading) {
+      return;
+    }
     if (!connection?.key) {
       message.error("Authorization failed: connection key not found");
       return;

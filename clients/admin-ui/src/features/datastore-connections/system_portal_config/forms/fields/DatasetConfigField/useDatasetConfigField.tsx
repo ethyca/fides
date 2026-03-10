@@ -23,13 +23,16 @@ export const useDatasetConfigField = ({
   const [putDatasetConfig] = usePutDatasetConfigsMutation();
 
   const connectionKey = connectionConfig?.key ?? "";
-  const { data } = useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
-    skip: !connectionKey,
-  });
+  const { currentData } = useGetConnectionConfigDatasetConfigsQuery(
+    connectionKey,
+    {
+      skip: !connectionKey,
+    },
+  );
 
-  const initialDatasets = data?.items?.map((d) => d.fides_key) ?? [];
+  const initialDatasets = currentData?.items?.map((d) => d.fides_key) ?? [];
   const initialDatasetOptions =
-    data?.items?.map((d) => ({
+    currentData?.items?.map((d) => ({
       value: d.fides_key,
       label: d.ctl_dataset.name || d.fides_key,
     })) ?? [];
