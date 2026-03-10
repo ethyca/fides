@@ -15,6 +15,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { ReactNode, useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { getEffectivePrivacyCenterLinks } from "~/common/config-links";
 import { encodePolicyKey } from "~/common/policy-key";
 import sanitizeHTML from "~/common/sanitize-html";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
@@ -84,8 +85,7 @@ const HomePage: NextPage = () => {
 
   const { SHOW_BRAND_LINK, ALLOW_HTML_DESCRIPTION } = useSettings();
 
-  const showPrivacyPolicyLink =
-    !!config.privacy_policy_url && !!config.privacy_policy_url_text;
+  const policyLinks = getEffectivePrivacyCenterLinks(config);
 
   // Subscribe to experiences just to see if there are any notices.
   // The subscription automatically handles skipping if overlay is not enabled
@@ -235,21 +235,22 @@ const HomePage: NextPage = () => {
           </TextOrHtml>
         ))}
 
-        {(SHOW_BRAND_LINK || showPrivacyPolicyLink) && (
-          <Stack flexDirection="row">
-            {showPrivacyPolicyLink && (
+        {(SHOW_BRAND_LINK || policyLinks.length > 0) && (
+          <Stack flexDirection="column" alignItems="center">
+            {policyLinks.map(({ url, label }) => (
               <Link
+                key={url}
                 fontSize={["small", "medium"]}
                 fontWeight="medium"
                 textAlign="center"
                 textDecoration="underline"
                 color="gray.800"
-                href={config.privacy_policy_url!}
+                href={url}
                 isExternal
               >
-                {config.privacy_policy_url_text}
+                {label}
               </Link>
-            )}
+            ))}
             <BrandLink />
           </Stack>
         )}
