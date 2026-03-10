@@ -237,9 +237,9 @@ const HomePage: NextPage = () => {
 
         {(SHOW_BRAND_LINK || policyLinks.length > 0) && (
           <Stack flexDirection="column" alignItems="center">
-            {policyLinks.map(({ url, label }) => (
+            {policyLinks.map(({ url, label }, index) => (
               <Link
-                key={url}
+                key={`${url}-${index}`}
                 fontSize={["small", "medium"]}
                 fontWeight="medium"
                 textAlign="center"

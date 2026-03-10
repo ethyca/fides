@@ -82,8 +82,13 @@ export const AuthFormLayout = ({
             {/* Policy Links */}
             {policyLinks.length > 0 && (
               <Flex vertical align="center" gap="small">
-                {policyLinks.map(({ url, label }) => (
-                  <Link key={url} href={url} target="_blank">
+                {policyLinks.map(({ url, label }, index) => (
+                  <Link
+                    key={`${url}-${index}`}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {label}
                   </Link>
                 ))}
