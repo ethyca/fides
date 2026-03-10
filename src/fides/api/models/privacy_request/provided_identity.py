@@ -9,10 +9,6 @@ from sqlalchemy import Column, ForeignKey, Index, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.cryptography.cryptographic_util import (
     hash_credential_with_salt,
@@ -23,9 +19,9 @@ from fides.api.db.base_class import (
     Base,  # type: ignore[attr-defined]
     JSONTypeOverride,
 )
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.consent import Consent, ConsentRequest
@@ -103,14 +99,7 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
         nullable=True,
     )  # This field is used as a blind index for exact match searches
     encrypted_value = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=True,
     )  # Type bytea in the db
     consent = relationship(

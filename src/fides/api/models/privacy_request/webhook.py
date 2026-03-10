@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.models.policy import PolicyPreWebhook, WebhookDirection
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request.request_task import RequestTask
@@ -66,7 +67,7 @@ def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
     )
     return generate_jwe(
         json.dumps(jwe.model_dump(mode="json")),
-        CONFIG.security.app_encryption_key,
+        get_encryption_key(),
     )
 
 
@@ -81,7 +82,7 @@ def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> s
     )
     return generate_jwe(
         json.dumps(jwe.model_dump(mode="json")),
-        CONFIG.security.app_encryption_key,
+        get_encryption_key(),
     )
 
 
@@ -97,7 +98,7 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
     )
     return generate_jwe(
         json.dumps(jwe.model_dump(mode="json")),
-        CONFIG.security.app_encryption_key,
+        get_encryption_key(),
     )
 
 
@@ -124,5 +125,5 @@ def generate_privacy_request_download_token(privacy_request_id: str) -> str:
     )
     return generate_jwe(
         json.dumps(jwe.model_dump(mode="json")),
-        CONFIG.security.app_encryption_key,
+        get_encryption_key(),
     )
