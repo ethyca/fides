@@ -32,7 +32,7 @@ from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
     STORAGE_READ,
@@ -46,7 +46,7 @@ from fides.common.api.scope_registry import (
     USER_READ_OWN,
     USER_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     LOGIN,
     LOGOUT,
     USER_ACCEPT_INVITE,
@@ -2643,7 +2643,7 @@ class TestAcceptUserInvite:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "Invite code is invalid."
 
-    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
+    @mock.patch("fides.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
     def test_accept_invite_expired_code(self, mock_get_by, api_client: TestClient, url):
         # the expiration is based on the updated_at timestamp so we need to mock an expired FidesUserInvite to test this scenario
         mock_instance = mock.Mock(

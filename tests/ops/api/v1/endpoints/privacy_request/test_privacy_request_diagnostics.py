@@ -6,11 +6,11 @@ from zipfile import ZipFile
 from fastapi.testclient import TestClient
 
 from fides.api.models.privacy_request.provided_identity import ProvidedIdentity
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     PRIVACY_REQUEST_READ,
     STORAGE_CREATE_OR_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     PRIVACY_REQUEST_DIAGNOSTICS,
     V1_URL_PREFIX,
 )
