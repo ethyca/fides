@@ -1,0 +1,4 @@
+type: Changed
+description: Replaced domain validation boolean toggle with tri-state mode (enabled/monitor/disabled)
+pr: 7611
+labels: []
