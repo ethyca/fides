@@ -1,4 +1,5 @@
 from typing import Dict, List
+from urllib.parse import quote
 
 from sqlalchemy.engine import Engine, LegacyCursorResult, create_engine  # type: ignore
 
@@ -24,13 +25,15 @@ class MySQLConnector(SQLConnector):
     secrets_schema = MySQLSchema
 
     def build_uri(self) -> str:
-        """Build URI of format mysql+pymysql://[user[:password]@][netloc][:port][/dbname]"""
+        """Build URI of format mysql+pymysql://[user[:password]@][netloc][:port][/dbname].
+        Username and password are URL-encoded so that reserved characters (e.g. @, :) do not
+        break URI parsing."""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
         if config.username:
-            user = config.username
-            password = f":{config.password}" if config.password else ""
+            user = quote(str(config.username), safe="")
+            password = f":{quote(str(config.password), safe='')}" if config.password else ""
             user_password = f"{user}{password}@"
 
         netloc = config.host
@@ -40,13 +43,15 @@ class MySQLConnector(SQLConnector):
         return url
 
     def build_ssh_uri(self, local_address: tuple) -> str:
-        """Build URI of format mysql+pymysql://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
+        """Build URI of format mysql+pymysql://[user[:password]@][ssh_host][:ssh_port][/dbname].
+        Username and password are URL-encoded so that reserved characters (e.g. @, :) do not
+        break URI parsing."""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
         if config.username:
-            user = config.username
-            password = f":{config.password}" if config.password else ""
+            user = quote(str(config.username), safe="")
+            password = f":{quote(str(config.password), safe='')}" if config.password else ""
             user_password = f"{user}{password}@"
 
         local_host, local_port = local_address
