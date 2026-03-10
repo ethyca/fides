@@ -27,5 +27,9 @@ def mask_sensitive_fields(
                 new_connection_secrets[key] = "**********"
             else:
                 new_connection_secrets[key] = value
+        else:
+            # Preserve fields not in the schema (e.g. extra fields from
+            # schemas with extra="allow") — they are not sensitive.
+            new_connection_secrets[key] = value
 
     return new_connection_secrets
