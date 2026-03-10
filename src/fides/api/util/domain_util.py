@@ -37,7 +37,7 @@ def validate_value_against_allowed_list(
     value: str,
     allowed_values: List[str],
     param_name: str,
-    monitor: bool = False,
+    mode: DomainValidationMode = DomainValidationMode.enabled,
 ) -> None:
     """
     Validate that a value matches at least one of the allowed patterns.
@@ -56,9 +56,9 @@ def validate_value_against_allowed_list(
       - Subdomain wildcard: "*.salesforce.com"
       - Any position: "api.*.stripe.com"
 
-    When ``monitor`` is True, logs a warning instead of raising.
+    When ``mode`` is ``monitor``, logs a warning instead of raising.
     Raises ValueError if the value does not match any allowed pattern
-    and ``monitor`` is False.
+    and ``mode`` is ``enabled``.
     """
     if not allowed_values:
         return
@@ -75,7 +75,7 @@ def validate_value_against_allowed_list(
         f"allowed values: [{', '.join(allowed_values)}]."
     )
 
-    if monitor:
+    if mode == DomainValidationMode.monitor:
         logger.warning(
             "Domain validation violation (monitor mode): %s",
             violation_msg,

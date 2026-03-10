@@ -396,7 +396,7 @@ class ConnectorParam(BaseModel):
                     val,
                     allowed_values,
                     str(name),
-                    monitor=domain_mode == DomainValidationMode.monitor,
+                    mode=domain_mode,
                 )
 
         return values

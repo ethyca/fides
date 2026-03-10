@@ -91,7 +91,7 @@ class SaaSSchema(BaseModel, abc.ABC):
                         value,
                         allowed_values,
                         name,
-                        monitor=domain_mode == DomainValidationMode.monitor,
+                        mode=domain_mode,
                     )
 
         return values

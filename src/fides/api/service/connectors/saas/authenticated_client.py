@@ -117,7 +117,7 @@ class AuthenticatedClient:
             host_without_port,
             self._allowed_hosts,
             "host",
-            monitor=self._domain_validation_mode == DomainValidationMode.monitor,
+            mode=self._domain_validation_mode,
         )
 
     def get_authenticated_request(
