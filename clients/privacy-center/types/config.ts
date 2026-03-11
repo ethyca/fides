@@ -85,6 +85,7 @@ export type Config = {
   logo_path: string;
   logo_url?: string;
   favicon_path?: string;
+  page_title?: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: ConsentConfig;
