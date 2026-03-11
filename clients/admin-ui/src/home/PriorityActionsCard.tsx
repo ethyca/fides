@@ -2,10 +2,7 @@ import classNames from "classnames";
 import { Card, Empty, Flex, Skeleton, Tag, Typography } from "fidesui";
 import { useMemo, useState } from "react";
 
-import {
-  useGetPriorityActionsQuery,
-  type PriorityAction,
-} from "~/features/dashboard/dashboard.slice";
+import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 
 import cardStyles from "./dashboard-card.module.scss";
 import styles from "./PriorityActionsCard.module.scss";
@@ -15,7 +12,9 @@ export const PriorityActionsCard = () => {
   const [activeTab, setActiveTab] = useState("act_now");
 
   const filteredActions = useMemo(() => {
-    if (!actions?.items) return [];
+    if (!actions?.items) {
+      return [];
+    }
     if (activeTab === "act_now") {
       return actions.items.filter((a) => a.due_date !== null);
     }
@@ -58,44 +57,54 @@ export const PriorityActionsCard = () => {
       activeTabKey={activeTab}
       onTabChange={setActiveTab}
     >
-      {loading ? (
-        <Skeleton active />
-      ) : filteredActions.length === 0 ? (
-        <Flex align="center" justify="center" className={styles.emptyActions}>
-          <Empty
-            description={`No ${activeTab === "act_now" ? "urgent" : "upcoming"} actions`}
-          />
-        </Flex>
-      ) : (
-        <Flex vertical gap={8} className="pt-3">
-          {filteredActions.map((action) => (
-            <Card
-              key={action.id}
-              variant="borderless"
-              hoverable
-              className="cursor-pointer"
+      {(() => {
+        if (loading) {
+          return <Skeleton active />;
+        }
+        if (filteredActions.length === 0) {
+          return (
+            <Flex
+              align="center"
+              justify="center"
+              className={styles.emptyActions}
             >
-              <Flex justify="space-between" align="start">
-                <div>
-                  <Typography.Text strong>{action.title}</Typography.Text>
-                  <br />
-                  <Typography.Text type="secondary">
-                    {action.message}
-                  </Typography.Text>
-                </div>
-                <Flex gap={8} align="center">
-                  {action.due_date && (
-                    <Typography.Text type="secondary" className="text-sm">
-                      {new Date(action.due_date).toLocaleDateString()}
+              <Empty
+                description={`No ${activeTab === "act_now" ? "urgent" : "upcoming"} actions`}
+              />
+            </Flex>
+          );
+        }
+        return (
+          <Flex vertical gap={8} className="pt-3">
+            {filteredActions.map((action) => (
+              <Card
+                key={action.id}
+                variant="borderless"
+                hoverable
+                className="cursor-pointer"
+              >
+                <Flex justify="space-between" align="start">
+                  <div>
+                    <Typography.Text strong>{action.title}</Typography.Text>
+                    <br />
+                    <Typography.Text type="secondary">
+                      {action.message}
                     </Typography.Text>
-                  )}
-                  <Tag>{action.action.replace(/_/g, " ")}</Tag>
+                  </div>
+                  <Flex gap={8} align="center">
+                    {action.due_date && (
+                      <Typography.Text type="secondary" className="text-sm">
+                        {new Date(action.due_date).toLocaleDateString()}
+                      </Typography.Text>
+                    )}
+                    <Tag>{action.action.replace(/_/g, " ")}</Tag>
+                  </Flex>
                 </Flex>
-              </Flex>
-            </Card>
-          ))}
-        </Flex>
-      )}
+              </Card>
+            ))}
+          </Flex>
+        );
+      })()}
     </Card>
   );
 };

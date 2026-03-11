@@ -1,12 +1,7 @@
-import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import classNames from "classnames";
-import { Alert, Card, Statistic } from "fidesui";
-import { RadarChart } from "fidesui";
+import { Alert, Card, RadarChart, Statistic } from "fidesui";
 
-import {
-  useGetDashboardPostureQuery,
-  type PostureResponse,
-} from "~/features/dashboard/dashboard.slice";
+import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
 
 import cardStyles from "./dashboard-card.module.scss";
 import styles from "./PostureCard.module.scss";
@@ -17,8 +12,12 @@ const BAND_STATUS: Record<string, "warning" | "error" | undefined> = {
 };
 
 function getPostureAlertType(score: number): "error" | "warning" | "success" {
-  if (score < 40) return "error";
-  if (score < 80) return "warning";
+  if (score < 40) {
+    return "error";
+  }
+  if (score < 80) {
+    return "warning";
+  }
   return "success";
 }
 
@@ -43,21 +42,17 @@ export const PostureCard = () => {
       <>
         <Statistic value={postureScore} />
         <Statistic
-          trend={
-            diffDirection === "unchanged"
-              ? "neutral"
-              : diffDirection === "down"
-                ? "down"
-                : "up"
-          }
+          trend={(() => {
+            if (diffDirection === "unchanged") {
+              return "neutral" as const;
+            }
+            if (diffDirection === "down") {
+              return "down" as const;
+            }
+            return "up" as const;
+          })()}
           value={postureDiff}
-          prefix={
-            diffDirection === "down" ? (
-              <ArrowDownOutlined />
-            ) : (
-              <ArrowUpOutlined />
-            )
-          }
+          prefix={diffDirection === "down" ? "↓" : "↑"}
           className={cardStyles.smallStatistic}
         />
         <div className={classNames(styles.radarChartWrapper)}>
