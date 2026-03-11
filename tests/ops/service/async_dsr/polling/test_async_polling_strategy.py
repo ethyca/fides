@@ -8,6 +8,7 @@ from requests import Response
 
 from fides.api.common_exceptions import (
     AwaitingAsyncProcessing,
+    ClientUnsuccessfulException,
     FidesopsException,
     PrivacyRequestError,
 )
@@ -28,9 +29,6 @@ from fides.api.service.async_dsr.strategies.async_dsr_strategy_factory import (
 )
 from fides.api.service.async_dsr.strategies.async_dsr_strategy_polling import (
     AsyncPollingStrategy,
-)
-from fides.api.service.connectors.saas.authenticated_client import (
-    RequestFailureResponseException,
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import erasure_policy
@@ -376,23 +374,24 @@ class TestAsyncPollingStrategy:
             ignore_errors=[404, 409],  # Common errors to ignore, but not 500
         )
 
-        # Mock client that raises RequestFailureResponseException on send for 500 error
+        # Mock client that raises ClientUnsuccessfulException on send for 500 error.
+        # This mirrors what @retry_send produces after exhausting retries.
         mock_client = MagicMock()
         mock_response = Mock(spec=Response)
         mock_response.status_code = 500  # Server error NOT in ignore list
         mock_response.text = "Internal Server Error"
         mock_response.ok = False
 
-        # Since 500 is NOT in ignore_errors list, client.send should raise RequestFailureResponseException
-        mock_client.send.side_effect = RequestFailureResponseException(
-            response=mock_response
+        mock_client.send.side_effect = ClientUnsuccessfulException(
+            status_code=500, response=mock_response
         )
 
         input_data = {"email": "test@example.com"}
         policy = policy_factory(db)
 
-        # The RequestFailureResponseException should bubble up since 500 is not ignored
-        with pytest.raises(RequestFailureResponseException) as exc_info:
+        # send_and_handle_errors catches ClientUnsuccessfulException and wraps
+        # it as FidesopsException (the exception_cls for strategy callers)
+        with pytest.raises(FidesopsException) as exc_info:
             async_polling_strategy._handle_polling_initial_request(
                 request_task=request_task,
                 query_config=mock_query_config,
@@ -402,9 +401,9 @@ class TestAsyncPollingStrategy:
                 client=mock_client,
             )
 
-        # Verify the response details are preserved in the exception
-        assert exc_info.value.response.status_code == 500
-        assert exc_info.value.response.text == "Internal Server Error"
+        # Verify the error details are preserved in the exception message
+        assert "500" in str(exc_info.value)
+        assert "Internal Server Error" in str(exc_info.value)
 
     @pytest.mark.parametrize(
         "action_type,policy_factory",
@@ -626,7 +625,7 @@ class TestAsyncPollingStrategy:
         self, db, async_polling_strategy
     ):
         """
-        When all initial access requests return an ignored error (I.E ignore_errors: [409] on config)
+        When all initial access requests return an ignored error (i.e. ignore_errors: [409] on config)
         _initial_request_access should return [] instead of raising AwaitingAsyncProcessing.
         This prevents the task from looping back into the initial_async phase indefinitely.
         """
