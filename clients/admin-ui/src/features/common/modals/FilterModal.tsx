@@ -151,9 +151,9 @@ type FilterSectionProps = {
 };
 
 export const FilterSection = ({ heading, children }: FilterSectionProps) => (
-  <Box padding="12px 8px 8px 12px" maxHeight={600}>
+  <Box maxHeight={600}>
     {heading ? (
-      <Heading size="md" lineHeight={6} fontWeight="bold" mb={2}>
+      <Heading size="md" lineHeight={6} fontWeight="bold" mb={2} px={3}>
         {heading}
       </Heading>
     ) : null}
@@ -179,7 +179,7 @@ export const FilterModal = ({
     open={isOpen}
     onCancel={onClose}
     centered
-    width={MODAL_SIZE.md}
+    width={MODAL_SIZE.lg}
     title="Filters"
     footer={
       <Flex gap={12}>
