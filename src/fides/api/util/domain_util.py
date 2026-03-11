@@ -3,6 +3,20 @@
 import re
 from typing import List
 
+from loguru import logger
+
+from fides.api.common_exceptions import DomainValidationError
+from fides.config import CONFIG
+from fides.config.security_settings import DomainValidationMode
+
+
+def get_domain_validation_mode() -> DomainValidationMode:
+    """Return the effective domain validation mode, accounting for dev_mode."""
+    mode = CONFIG.security.domain_validation_mode
+    if CONFIG.dev_mode and mode == DomainValidationMode.enabled:
+        return DomainValidationMode.monitor
+    return mode
+
 
 def wildcard_to_regex(pattern: str) -> str:
     """
@@ -20,7 +34,10 @@ def wildcard_to_regex(pattern: str) -> str:
 
 
 def validate_value_against_allowed_list(
-    value: str, allowed_values: List[str], param_name: str
+    value: str,
+    allowed_values: List[str],
+    param_name: str,
+    mode: DomainValidationMode = DomainValidationMode.monitor,
 ) -> None:
     """
     Validate that a value matches at least one of the allowed patterns.
@@ -39,7 +56,9 @@ def validate_value_against_allowed_list(
       - Subdomain wildcard: "*.salesforce.com"
       - Any position: "api.*.stripe.com"
 
-    Raises ValueError if the value does not match any allowed pattern.
+    When ``mode`` is ``monitor``, logs a warning instead of raising.
+    Raises ValueError if the value does not match any allowed pattern
+    and ``mode`` is ``enabled``.
     """
     if not allowed_values:
         return
@@ -50,9 +69,22 @@ def validate_value_against_allowed_list(
         regex = wildcard_to_regex(pattern_stripped)
         if re.fullmatch(regex, value_stripped, re.IGNORECASE):
             return
-    raise ValueError(
+
+    violation_msg = (
         f"The value '{value}' for '{param_name}' is not in the list of "
-        f"allowed values: [{', '.join(allowed_values)}]. "
-        f"In the meantime, you may temporarily disable domain validation by setting "
-        f"the environment variable FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION=true."
+        f"allowed values: [{', '.join(allowed_values)}]."
+    )
+
+    if mode == DomainValidationMode.monitor:
+        logger.warning(
+            "Domain validation violation (monitor mode): {}",
+            violation_msg,
+        )
+        return
+
+    raise DomainValidationError(
+        f"{violation_msg} "
+        f"You may change the validation behavior by setting "
+        f"the environment variable FIDES__SECURITY__DOMAIN_VALIDATION_MODE "
+        f"to 'monitor' (log warnings only) or 'disabled' (skip validation)."
     )

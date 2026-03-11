@@ -7,6 +7,7 @@
   "logo_url": "https://fid.es",
   "links": [{ "label": "Privacy Policy", "url": "https://fid.es/privacy" }],
   "favicon_path": "/favicon.ico",
+  "page_title": "Privacy Center",
 
   "actions": [
     {

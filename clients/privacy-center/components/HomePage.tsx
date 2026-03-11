@@ -254,7 +254,7 @@ const HomePage: NextPage = () => {
                 </Link>
               ))}
             </Stack>
-            <BrandLink position="absolute" right={6} bottom={0} />
+            <BrandLink isHomePage position="absolute" right={6} bottom={0} />
           </Box>
         )}
       </Stack>
