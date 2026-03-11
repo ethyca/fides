@@ -137,7 +137,7 @@ describe("Privacy Requests", () => {
     it("allows approving a new request", () => {
       cy.getByTestId("privacy-request-actions-dropdown-btn").click();
       cy.getByTestId("privacy-request-approve-btn").click();
-      cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+      cy.getAntModalConfirmButtons().contains("OK").click();
 
       cy.wait("@approvePrivacyRequest")
         .its("request.body.request_ids")

@@ -191,7 +191,7 @@ describe.skip("Config wizard with plus settings", () => {
         cy.getByTestId(`checkbox-${s}`).click();
       });
       cy.getByTestId("register-btn").click();
-      cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+      cy.getAntModalConfirmButtons().contains("Continue").click();
       cy.wait("@upsertSystems").then((interception) => {
         const { body } = interception.request;
         expect(body.map((s) => s.fides_key)).to.eql(systems);

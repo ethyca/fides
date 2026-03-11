@@ -172,7 +172,7 @@ describe("Integration Management - Manual Task Configuration", () => {
         });
 
       // Confirm deletion
-      cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+      cy.getAntModalConfirmButtons().contains("OK").click();
 
       cy.wait("@deleteManualField");
       cy.wait("@getManualFields");

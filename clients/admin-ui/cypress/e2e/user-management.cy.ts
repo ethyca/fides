@@ -756,7 +756,7 @@ describe("User management", () => {
           cy.getByTestId("save-btn").click();
           cy.get(".downgrade-to-approver-confirmation-modal .ant-modal-confirm").within(
             () => {
-              cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+              cy.getAntModalConfirmButtons().contains("OK").click();
             },
           );
           cy.wait("@updatePermission");

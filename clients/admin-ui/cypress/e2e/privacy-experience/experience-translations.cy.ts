@@ -36,7 +36,7 @@ describe("Experience translations", () => {
     cy.getByTestId("input-translations.0.title").clear();
     cy.getByTestId("input-translations.0.title").type("Other");
     cy.getByTestId("cancel-btn").click();
-    cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+    cy.getAntModalConfirmButtons().contains("Discard").click();
     cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
       "Manage your consent preferences",
     );
@@ -47,7 +47,7 @@ describe("Experience translations", () => {
     cy.getByTestId("edit-language-row-fr").click({ force: true });
     cy.getByTestId("input-translations.1.is_default").click();
     cy.getByTestId("save-btn").click();
-    cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+    cy.getAntModalConfirmButtons().contains("Continue").click();
     cy.getByTestId("language-row-fr").contains("(Default)");
     cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
       "Gestion du consentement et des préférences",

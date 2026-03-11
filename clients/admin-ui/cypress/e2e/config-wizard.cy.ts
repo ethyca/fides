@@ -49,7 +49,7 @@ describe("Config Wizard", () => {
       // assert that the systems do POST
       cy.intercept("POST", "/api/v1/system/upsert", []).as("upsertSystems");
 
-      cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+      cy.getAntModalConfirmButtons().contains("Continue").click();
 
       cy.wait("@upsertSystems").then((interception) => {
         assert.isNotNull(interception.response.body, "Upsert call has data");
@@ -137,7 +137,7 @@ describe("Config Wizard", () => {
       // assert that the systems do POST
       cy.intercept("POST", "/api/v1/system/upsert", []).as("upsertSystems");
 
-      cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+      cy.getAntModalConfirmButtons().contains("Continue").click();
 
       cy.wait("@upsertSystems").then((interception) => {
         assert.isNotNull(interception.response.body, "Upsert call has data");

@@ -97,7 +97,7 @@ describe("Properties page", () => {
         cy.getByTestId("delete-property-button").click();
       });
       cy.get(".ant-modal-confirm").should("be.visible");
-      cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
+      cy.getAntModalConfirmButtons().contains("OK").click();
       cy.wait("@deleteProperty");
     });
   });

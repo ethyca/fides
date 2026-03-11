@@ -99,7 +99,7 @@ describe("Plus Bulk Vendor Add", () => {
       .click({ force: true });
     cy.get(".ant-modal-confirm");
     cy.getAntModalConfirmButtons()
-      .find(".ant-btn-primary")
+      .contains("OK")
       .click({ force: true });
     cy.wait("@postSystemVendors");
     cy.url().should("include", DATAMAP_ROUTE);
