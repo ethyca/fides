@@ -45,7 +45,7 @@ healthcheck_ping_timeout = 2.0 # number
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "9d87e25f18d99e7e2a70364a244fb526" # string
+analytics_id = "21524aaaf6496244e431bf04bd284af8" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -525,11 +525,12 @@ dsr_testing_tools_enabled = false # boolean
 # storage will be valid. The default is equal to 5 days.
 subject_request_download_link_ttl_seconds = 432000 # integer
 
-# When true, disables domain validation for SaaS connector params
-# globally. Domain validation restricts connector endpoints to allowed
-# values defined in the connector template. Set via
-# FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION.
-disable_domain_validation = false # boolean
+# Controls domain validation for SaaS connector params globally.
+# 'enabled' enforces validation and blocks disallowed domains.
+# 'monitor' validates but only logs warnings instead of blocking.
+# 'disabled' skips validation entirely. Set via
+# FIDES__SECURITY__DOMAIN_VALIDATION_MODE.
+domain_validation_mode = "monitor" # 
 
 # Either enables the collection of audit log resource data or bypasses
 # the middleware

@@ -2264,7 +2264,8 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">565</span>
 <span class="normal">566</span>
 <span class="normal">567</span>
-<span class="normal">568</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">568</span>
+<span class="normal">569</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -2311,7 +2312,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;9d87e25f18d99e7e2a70364a244fb526&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;21524aaaf6496244e431bf04bd284af8&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -2791,11 +2792,12 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># storage will be valid. The default is equal to 5 days.</span>
 <span class="n">subject_request_download_link_ttl_seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">432000</span><span class="w"> </span><span class="c1"># integer</span>
 
-<span class="c1"># When true, disables domain validation for SaaS connector params</span>
-<span class="c1"># globally. Domain validation restricts connector endpoints to allowed</span>
-<span class="c1"># values defined in the connector template. Set via</span>
-<span class="c1"># FIDES__SECURITY__DISABLE_DOMAIN_VALIDATION.</span>
-<span class="n">disable_domain_validation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+<span class="c1"># Controls domain validation for SaaS connector params globally.</span>
+<span class="c1"># &#39;enabled&#39; enforces validation and blocks disallowed domains.</span>
+<span class="c1"># &#39;monitor&#39; validates but only logs warnings instead of blocking.</span>
+<span class="c1"># &#39;disabled&#39; skips validation entirely. Set via</span>
+<span class="c1"># FIDES__SECURITY__DOMAIN_VALIDATION_MODE.</span>
+<span class="n">domain_validation_mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;monitor&quot;</span><span class="w"> </span><span class="c1"># </span>
 
 <span class="c1"># Either enables the collection of audit log resource data or bypasses</span>
 <span class="c1"># the middleware</span>
