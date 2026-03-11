@@ -1,0 +1,7 @@
+# Copy this file and rename it (e.g., pr-number.yaml or feature-name.yaml)
+# Fill in the required fields and delete this comment block
+
+type: Fixed
+description: Allow OAuth clients without an associated user to create comments on privacy requests
+pr: 7626
+labels: ["db-migration"] # Optional: ["high-risk", "db-migration"]
