@@ -73,7 +73,7 @@ const AssessmentSettingsModal = ({
     );
     const monthlyPreset = FREQUENCY_OPTIONS.find(
       (opt) => opt.value === "monthly",
-    )!;
+    );
     let frequencyPresetValue = "monthly";
     if (matchingPreset) {
       frequencyPresetValue = matchingPreset.value;
@@ -85,7 +85,7 @@ const AssessmentSettingsModal = ({
       chat_model_override: config.chat_model_override || "",
       reassessment_enabled: config.reassessment_enabled,
       frequency_preset: frequencyPresetValue,
-      reassessment_cron: config.reassessment_cron || monthlyPreset.cron,
+      reassessment_cron: config.reassessment_cron || monthlyPreset?.cron,
       slack_channel_id: config.slack_channel_id || undefined,
     };
   }, [config]);
