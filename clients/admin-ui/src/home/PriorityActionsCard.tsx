@@ -1,28 +1,17 @@
 import classNames from "classnames";
-import {
-  Card,
-  Empty,
-  Flex,
-  Skeleton,
-  Tag,
-  Typography,
-} from "fidesui";
+import { Card, Empty, Flex, Skeleton, Tag, Typography } from "fidesui";
 import { useMemo, useState } from "react";
 
-import type { PriorityAction } from "~/features/dashboard/dashboard.slice";
+import {
+  useGetPriorityActionsQuery,
+  type PriorityAction,
+} from "~/features/dashboard/dashboard.slice";
 
 import cardStyles from "./dashboard-card.module.scss";
 import styles from "./PriorityActionsCard.module.scss";
 
-interface PriorityActionsCardProps {
-  actions: { items: PriorityAction[] } | undefined;
-  loading: boolean;
-}
-
-const PriorityActionsCard = ({
-  actions,
-  loading,
-}: PriorityActionsCardProps) => {
+export const PriorityActionsCard = () => {
+  const { data: actions, isLoading: loading } = useGetPriorityActionsQuery();
   const [activeTab, setActiveTab] = useState("act_now");
 
   const filteredActions = useMemo(() => {
@@ -72,11 +61,7 @@ const PriorityActionsCard = ({
       {loading ? (
         <Skeleton active />
       ) : filteredActions.length === 0 ? (
-        <Flex
-          align="center"
-          justify="center"
-          className={styles.emptyActions}
-        >
+        <Flex align="center" justify="center" className={styles.emptyActions}>
           <Empty
             description={`No ${activeTab === "act_now" ? "urgent" : "upcoming"} actions`}
           />
@@ -100,10 +85,7 @@ const PriorityActionsCard = ({
                 </div>
                 <Flex gap={8} align="center">
                   {action.due_date && (
-                    <Typography.Text
-                      type="secondary"
-                      className="text-sm"
-                    >
+                    <Typography.Text type="secondary" className="text-sm">
                       {new Date(action.due_date).toLocaleDateString()}
                     </Typography.Text>
                   )}
@@ -117,5 +99,3 @@ const PriorityActionsCard = ({
     </Card>
   );
 };
-
-export default PriorityActionsCard;

@@ -3,7 +3,10 @@ import classNames from "classnames";
 import { Alert, Card, Statistic } from "fidesui";
 import { RadarChart } from "fidesui";
 
-import type { PostureResponse } from "~/features/dashboard/dashboard.slice";
+import {
+  useGetDashboardPostureQuery,
+  type PostureResponse,
+} from "~/features/dashboard/dashboard.slice";
 
 import cardStyles from "./dashboard-card.module.scss";
 import styles from "./PostureCard.module.scss";
@@ -19,11 +22,8 @@ function getPostureAlertType(score: number): "error" | "warning" | "success" {
   return "success";
 }
 
-interface PostureCardProps {
-  posture: PostureResponse | undefined;
-}
-
-const PostureCard = ({ posture }: PostureCardProps) => {
+export const PostureCard = () => {
+  const { data: posture } = useGetDashboardPostureQuery();
   const postureScore = posture?.score ?? 0;
   const postureDiff = posture?.diff_percent ?? 0;
   const diffDirection = posture?.diff_direction ?? "unchanged";
@@ -43,7 +43,13 @@ const PostureCard = ({ posture }: PostureCardProps) => {
       <>
         <Statistic value={postureScore} />
         <Statistic
-          trend={diffDirection === "unchanged" ? "neutral" : diffDirection === "down" ? "down" : "up"}
+          trend={
+            diffDirection === "unchanged"
+              ? "neutral"
+              : diffDirection === "down"
+                ? "down"
+                : "up"
+          }
           value={postureDiff}
           prefix={
             diffDirection === "down" ? (
@@ -55,7 +61,7 @@ const PostureCard = ({ posture }: PostureCardProps) => {
           className={cardStyles.smallStatistic}
         />
         <div className={classNames(styles.radarChartWrapper)}>
-          <RadarChart data={radarData} />
+          <RadarChart data={radarData} outerRadius="90%" />
         </div>
         {posture?.agent_annotation && (
           <Alert
@@ -68,5 +74,3 @@ const PostureCard = ({ posture }: PostureCardProps) => {
     </Card>
   );
 };
-
-export default PostureCard;
