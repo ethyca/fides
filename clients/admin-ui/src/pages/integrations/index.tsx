@@ -13,7 +13,13 @@ import {
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -92,7 +98,9 @@ const IntegrationListView: NextPage = () => {
     const jiraAuthStatus = router.query.jira_auth as string | undefined;
     if (jiraAuthStatus === "error") {
       oauthHandled.current = true;
-      message.error("Jira authorization failed. Check server logs for details.");
+      message.error(
+        "Jira authorization failed. Check server logs for details.",
+      );
       router.replace(INTEGRATION_MANAGEMENT_ROUTE, undefined, {
         shallow: true,
       });
