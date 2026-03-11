@@ -63,6 +63,7 @@
   --fides-overlay-font-family: Inter, sans-serif;
   --fides-base-font-size: 16px;
   --8px: calc(var(--fides-base-font-size) * 0.5);
+  --11px: calc(var(--fides-base-font-size) * 0.6875);
   --12px: calc(var(--fides-base-font-size) * 0.75);
   --14px: calc(var(--fides-base-font-size) * 0.875);
   --16px: calc(var(--fides-base-font-size) * 1);
@@ -206,6 +207,7 @@ div#fides-banner-inner div#fides-button-group {
   width: 100%;
   align-items: center;
   flex-direction: row-reverse;
+  flex-wrap: wrap;
 }
 
 .fides-modal-footer div#fides-button-group {
@@ -533,8 +535,46 @@ div#fides-consent-content .fides-modal-description {
   color: var(--fides-overlay-brand-link-logo-color);
 }
 
+.fides-attribution {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-size: var(--11px);
+  color: var(--fides-overlay-font-color);
+  white-space: nowrap;
+}
+
+.fides-attribution .ethyca-logo {
+  height: 1em;
+  width: auto;
+}
+
+.fides-attribution-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding-top: calc(var(--fides-overlay-padding) / 2);
+  margin-bottom: calc(var(--fides-overlay-padding) / -2);
+}
+
+.fides-modal-footer .fides-attribution-row {
+  padding-top: 0;
+  margin-bottom: 0;
+  align-items: flex-end;
+  position: absolute;
+  bottom: var(--fides-overlay-padding);
+  right: var(--fides-overlay-padding);
+}
+
 .fides-banner-secondary-actions {
   gap: 36px;
+}
+
+@media (max-width: 1024px) {
+  .fides-banner-secondary-actions {
+    gap: 12px;
+  }
 }
 
 .fides-no-scroll {
@@ -1270,11 +1310,18 @@ button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
   div.fides-privacy-policy-link {
     width: 100%;
   }
+
   .fides-modal-footer {
     max-width: 100%;
   }
-  .fides-banner-secondary-actions {
-    gap: 12px;
+
+  .fides-attribution-row {
+    padding-top: 0;
+    margin-bottom: 0;
+  }
+
+  .fides-modal-footer .fides-attribution-row {
+    position: initial;
   }
 
   /* ordering needs to be specific for mobile to work well and
