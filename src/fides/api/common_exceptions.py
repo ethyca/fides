@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException, status
 from starlette.status import (
@@ -255,8 +255,10 @@ class NotFoundException(HTTPException):
 class ClientUnsuccessfulException(FidesopsException):
     """Exception for when client call fails"""
 
-    def __init__(self, status_code: int):
+    def __init__(self, status_code: int, response: Optional[Any] = None):
         super().__init__(message=f"Client call failed with status code '{status_code}'")
+        self.status_code = status_code
+        self.response = response
 
 
 class NoSuchStrategyException(ValueError):
