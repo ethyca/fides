@@ -9,6 +9,7 @@ import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/mod
 
 import ClipboardButton from "../common/ClipboardButton";
 import RequestAttachments from "./attachments/RequestAttachments";
+import RequestJiraTickets from "./jira-tickets/RequestJiraTickets";
 import RequestCustomFields from "./RequestCustomFields";
 import RequestDetailsRow from "./RequestDetailsRow";
 
@@ -107,6 +108,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         </Form.Item>
       </Form>
       <RequestAttachments subjectRequest={subjectRequest} />
+      {hasPlus && <RequestJiraTickets subjectRequest={subjectRequest} />}
     </div>
   );
 };
