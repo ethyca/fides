@@ -22,6 +22,8 @@ from fides.api.service.connectors import (
     MySQLConnector,
     OktaConnector,
     PostgreSQLConnector,
+    RDSMySQLConnector,
+    RDSPostgresConnector,
     RedshiftConnector,
     SaaSConnector,
     ScyllaConnector,
@@ -89,6 +91,10 @@ class Connections:
             return FidesConnector(connection_config)
         if connection_config.connection_type == ConnectionType.s3:
             return S3Connector(connection_config)
+        if connection_config.connection_type == ConnectionType.rds_mysql:
+            return RDSMySQLConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.rds_postgres:
+            return RDSPostgresConnector(connection_config)
         if connection_config.connection_type == ConnectionType.scylla:
             return ScyllaConnector(connection_config)
         if connection_config.connection_type == ConnectionType.manual_task:

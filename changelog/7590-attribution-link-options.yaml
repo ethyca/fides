@@ -1,0 +1,4 @@
+type: Added
+description: Added configurable attribution link options to fides-js bundle
+pr: 7590
+labels: []

@@ -1,0 +1,4 @@
+type: Added
+description: Added namespace support for Postgres and RDS Postgres DSR execution
+pr: 7500
+labels: []

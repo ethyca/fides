@@ -1,0 +1,4 @@
+type: Changed
+description: Reconciled set_schema with namespace_meta to prevent conflicting search_path changes
+pr: 7510
+labels: []

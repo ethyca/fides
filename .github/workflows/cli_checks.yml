@@ -13,6 +13,10 @@ on:
       - "main"
       - "release-**"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 env:
   DEFAULT_PYTHON_VERSION: "3.13.11"
 

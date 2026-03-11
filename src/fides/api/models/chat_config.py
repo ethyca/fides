@@ -2,13 +2,9 @@
 
 from sqlalchemy import Boolean, Column, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.db.base_class import Base
-from fides.config import CONFIG
+from fides.api.db.encryption_utils import encrypted_type
 
 
 class ChatConfig(Base):
@@ -27,30 +23,15 @@ class ChatConfig(Base):
     workspace_url = Column(String, nullable=True)
     client_id = Column(String, nullable=True)
     client_secret = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
         nullable=True,
     )
     access_token = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
         nullable=True,
     )
     signing_secret = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
         nullable=True,
     )
     enabled = Column(Boolean, nullable=False, default=False)

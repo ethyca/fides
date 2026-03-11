@@ -9,13 +9,10 @@ from sqlalchemy import Boolean, Column, DateTime, Enum, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Session
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.db.base_class import Base, JSONTypeOverride
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.schemas.messaging.messaging import (
     EMAIL_MESSAGING_SERVICES,
     SMS_MESSAGING_SERVICES,
@@ -33,7 +30,6 @@ from fides.api.schemas.messaging.shared_schemas import (
     PossibleMessagingSecrets,
 )
 from fides.api.util.logger import Pii
-from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
 
@@ -92,14 +88,7 @@ class MessagingConfig(Base):
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
     secrets = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=True,
     )  # Type bytea in the db
 
