@@ -63,9 +63,9 @@
     "test": false,
     "production": false
   },
-  "dataProtectionAssessments": {
-    "label": "Data protection assessments",
-    "description": "Enable data protection impact assessments feature",
+  "privacyAssessments": {
+    "label": "Privacy assessments",
+    "description": "Enable privacy assessments feature",
     "development": true,
     "test": false,
     "production": false

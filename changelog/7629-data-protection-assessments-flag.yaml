@@ -1,4 +1,4 @@
 type: Changed
-description: Promoted data protection assessments feature flag from alpha to standard
+description: Promoted privacy assessments feature flag from alpha to standard
 pr: 7629
 labels: []
