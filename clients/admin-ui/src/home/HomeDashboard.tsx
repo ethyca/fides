@@ -1,19 +1,19 @@
 import { Col, Flex, Row } from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
+  useGetActivityFeedQuery,
   useGetAgentBriefingQuery,
   useGetAstralisQuery,
   useGetDashboardPostureQuery,
   useGetDashboardTrendsQuery,
-  useResetDashboardMutation,
+  useGetPriorityActionsQuery,
 } from "~/features/dashboard/dashboard.slice";
 
 import ActivityFeedCard from "./ActivityFeedCard";
 import AgentBriefingBanner from "./AgentBriefingBanner";
 import AstralisCard from "./AstralisCard";
-import { MOCK_ACTIVITY_FEED, MOCK_PRIORITY_ACTIONS } from "./mock-data";
 import PostureCard from "./PostureCard";
 import PriorityActionsCard from "./PriorityActionsCard";
 import TrendCards from "./TrendCards";
@@ -22,22 +22,13 @@ const HomeDashboard = () => {
   const router = useRouter();
   const [showBriefing, setShowBriefing] = useState(true);
 
-  const [resetDashboard, { isSuccess: resetDone }] =
-    useResetDashboardMutation();
-
-  useEffect(() => {
-    resetDashboard();
-  }, [resetDashboard]);
-
-  const skip = !resetDone;
-
-  const { data: posture } = useGetDashboardPostureQuery(undefined, { skip });
-  const { data: briefing } = useGetAgentBriefingQuery(undefined, { skip });
-  const { data: trends } = useGetDashboardTrendsQuery(
-    { period: "30d" },
-    { skip },
-  );
-  const { data: astralis } = useGetAstralisQuery(undefined, { skip });
+  const { data: posture } = useGetDashboardPostureQuery();
+  const { data: briefing } = useGetAgentBriefingQuery();
+  const { data: trends } = useGetDashboardTrendsQuery({ period: "30d" });
+  const { data: astralis } = useGetAstralisQuery();
+  const { data: priorityActions, isLoading: actionsLoading } =
+    useGetPriorityActionsQuery();
+  const { data: activityFeed } = useGetActivityFeedQuery();
 
   const metrics = trends?.metrics ? Object.values(trends.metrics) : [];
 
@@ -57,8 +48,8 @@ const HomeDashboard = () => {
         </Col>
         <Col xs={24} md={16} lg={16} xxl={16}>
           <PriorityActionsCard
-            actions={MOCK_PRIORITY_ACTIONS}
-            loading={false}
+            actions={priorityActions}
+            loading={actionsLoading}
           />
         </Col>
       </Row>
@@ -67,7 +58,7 @@ const HomeDashboard = () => {
 
       <Row gutter={24}>
         <Col xs={24} md={17}>
-          <ActivityFeedCard activityFeed={MOCK_ACTIVITY_FEED} />
+          <ActivityFeedCard activityFeed={activityFeed} />
         </Col>
         <Col xs={24} md={7}>
           <AstralisCard astralis={astralis} />

@@ -2,13 +2,11 @@ import type { GlobalToken } from "antd";
 import { Statistic, StatisticProps, theme } from "antd/lib";
 import React from "react";
 
-import { FONT_FAMILY_SERIF } from "../ant-theme/default-theme";
+import { FONT_FAMILY_DISPLAY } from "../ant-theme/default-theme";
 
 type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
 
 export type StatisticTrend = "up" | "down" | "neutral";
-
-/** Ant Design Statistic default contentFontSize is 24 px; "display" doubles it. */
 
 export type StatisticValueVariant = "default" | "display";
 
@@ -24,7 +22,7 @@ export interface CustomStatisticProps extends StatisticProps {
   /**
    * Visual variant for the statistic value.
    * - `"default"`: standard semibold value at the Ant Design default size
-   * - `"display"`: 2× larger (48 px) in the brand serif font (Basier Square)
+   * - `"display"`: 2× larger (48 px) in the brand display font (Basier Square)
    * @default "default"
    */
   valueVariant?: StatisticValueVariant;
@@ -50,14 +48,15 @@ const withCustomProps = (WrappedComponent: typeof Statistic) => {
       const trendColor = token[TREND_TOKEN_MAP[trend]];
 
       const displayStyle: React.CSSProperties =
-        valueVariant === "display" ? { fontSize: token.fontSizeHeading2 } : {};
+        valueVariant === "display"
+          ? { fontSize: token.fontSizeHeading2, fontFamily: FONT_FAMILY_DISPLAY }
+          : {};
 
       return (
         <WrappedComponent
           ref={ref}
           valueStyle={{
             fontWeight: 600, // semibold
-            fontFamily: FONT_FAMILY_SERIF,
             color: trendColor,
             ...displayStyle,
             ...valueStyle, // allow per-instance overrides
@@ -81,7 +80,7 @@ const withCustomProps = (WrappedComponent: typeof Statistic) => {
  *   the statistic value. `"up"` uses the success colour, `"down"` the error colour,
  *   and `"neutral"` the default text colour.
  * @param {"default" | "display"} [valueVariant="default"] - Controls the visual
- *   scale of the value. `"display"` renders at 48 px in the brand serif font
+ *   scale of the value. `"display"` renders at 48 px in the brand display font
  *   (Basier Square), intended for hero metrics on dashboards.
  *
  * @example

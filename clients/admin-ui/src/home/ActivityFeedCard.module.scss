@@ -1,4 +1,7 @@
-$terracotta: #b9704b;
+@use "sass:map";
+@use "fidesui/src/palette/palette.module.scss" as palette;
+
+$terracotta: map.get(palette.$colors, "terracotta");
 
 .activityList {
   max-height: calc(8 * 48px);

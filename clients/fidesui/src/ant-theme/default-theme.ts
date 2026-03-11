@@ -16,8 +16,7 @@ const warningColors = generate(palette.FIDESUI_WARNING);
  * 6. SCSS modules (for custom-component-specific styles)
  */
 
-/** Brand serif font stack — used for display-size statistic values. */
-export const FONT_FAMILY_SERIF =
+export const FONT_FAMILY_DISPLAY =
   '"Basier Square", Georgia, "Times New Roman", serif';
 
 export const defaultAntTheme: ThemeConfig = {

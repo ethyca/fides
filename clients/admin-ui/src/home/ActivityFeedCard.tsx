@@ -3,15 +3,10 @@ import { formatDistanceStrict } from "date-fns";
 import { Card, Empty, Flex, Skeleton, Typography } from "fidesui";
 
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
+import type { ActivityFeedItem } from "~/features/dashboard/dashboard.slice";
 
 import styles from "./ActivityFeedCard.module.scss";
 import cardStyles from "./dashboard-card.module.scss";
-
-interface ActivityFeedItem {
-  actor_type: "user" | "agent";
-  message: string;
-  timestamp: string;
-}
 
 interface ActivityFeedCardProps {
   activityFeed:
@@ -46,7 +41,7 @@ const ActivityFeedCard = ({ activityFeed }: ActivityFeedCardProps) => (
 
           return (
             <Flex
-              key={idx}
+              key={`${item.timestamp}-${item.actor_type}`}
               align="center"
               gap={12}
               className={classNames(styles.activityRow, {

@@ -44,7 +44,7 @@ const PostureCard = ({ posture }: PostureCardProps) => {
       <>
         <Statistic valueVariant="display" value={postureScore} />
         <Statistic
-          trend={diffDirection === "down" ? "down" : "up"}
+          trend={diffDirection === "unchanged" ? "neutral" : diffDirection === "down" ? "down" : "up"}
           value={postureDiff}
           prefix={
             diffDirection === "down" ? (

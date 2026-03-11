@@ -1,5 +1,8 @@
-$terracotta: #b9704b;
-$limestone: #f1efee;
+@use "sass:map";
+@use "fidesui/src/palette/palette.module.scss" as palette;
+
+$terracotta: map.get(palette.$colors, "terracotta");
+$limestone: map.get(palette.$colors, "limestone");
 
 .statRow {
   padding: 12px 0;

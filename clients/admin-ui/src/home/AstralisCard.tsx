@@ -41,10 +41,10 @@ const AstralisCard = ({ astralis }: AstralisCardProps) => (
         <Divider className={styles.astralisDivider} />
         <Flex vertical align="center" className={styles.autonomyBox}>
           <Typography.Text type="secondary" className={styles.autonomyLabel}>
-            AUTONOMY
+            Autonomy
           </Typography.Text>
           <Typography.Text strong className={styles.autonomyValue}>
-            {astralis.active_conversations + astralis.awaiting_response > 0
+            {astralis.completed_assessments + astralis.awaiting_response > 0
               ? Math.round(
                   (astralis.completed_assessments /
                     (astralis.completed_assessments +
@@ -54,10 +54,7 @@ const AstralisCard = ({ astralis }: AstralisCardProps) => (
               : 0}
             <span className={styles.autonomyPercent}>%</span>
           </Typography.Text>
-          <Typography.Text
-            type="secondary"
-            className={styles.autonomySubtitle}
-          >
+          <Typography.Text type="secondary" className={styles.autonomySubtitle}>
             of actions this month
           </Typography.Text>
         </Flex>

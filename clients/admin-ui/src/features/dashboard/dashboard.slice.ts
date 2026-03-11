@@ -88,7 +88,7 @@ export interface AstralisResponse {
   risks_identified: number;
 }
 
-interface ActivityFeedItem {
+export interface ActivityFeedItem {
   actor_type: "user" | "agent";
   message: string;
   timestamp: string;

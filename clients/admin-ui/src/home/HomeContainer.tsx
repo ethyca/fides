@@ -1,5 +1,4 @@
 import {
-  Alert,
   ConfigProvider,
   darkAntTheme,
   defaultAntTheme,
@@ -54,15 +53,6 @@ const HomeContainerInner = () => {
   return (
     <ConfigProvider theme={activeTheme}>
       <div className="min-h-full w-full" style={{ backgroundColor: bgColor }}>
-        <Alert
-          banner
-          type="warning"
-          message="BRIEFING · FEB 17, 2026"
-          description="Helios scanned 3 systems overnight. 12 fields classified, 4 need review — 2 flagged as biometric in US systems. DSR-4892 SLA deadline tomorrow, pending Marketing."
-          showIcon
-          primaryAction={{ label: "View actions →", onClick: () => {} }}
-          secondaryAction={{ label: "Dismiss", onClick: () => {} }}
-        />
         <Layout title="Home" padded={false}>
           <Flex vertical gap={40} className="pb-6">
             {alphaDarkMode && (
