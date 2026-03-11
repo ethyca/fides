@@ -1,5 +1,6 @@
 import pytest
 
+from fides.api.common_exceptions import DomainValidationError
 from fides.api.graph.config import (
     Collection,
     FieldAddress,
@@ -11,6 +12,7 @@ from fides.api.graph.config import (
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.util.collection_util import unflatten_dict
 from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.config.security_settings import DomainValidationMode
 from fides.api.util.saas_util import (
     assign_placeholders,
     check_dataset_missing_reference_values,
@@ -880,16 +882,25 @@ class TestValidateValueAgainstAllowedList:
     )
     def test_value_validation(self, value, allowed, should_pass):
         if should_pass:
-            validate_value_against_allowed_list(value, allowed, "domain")
+            validate_value_against_allowed_list(
+                value, allowed, "domain", mode=DomainValidationMode.enabled
+            )
         else:
-            with pytest.raises(ValueError):
-                validate_value_against_allowed_list(value, allowed, "domain")
+            with pytest.raises(DomainValidationError):
+                validate_value_against_allowed_list(
+                    value, allowed, "domain", mode=DomainValidationMode.enabled
+                )
 
     def test_error_message_includes_param_name(self):
         """Error message should include the param name and value."""
-        with pytest.raises(ValueError, match="The value 'evil.com' for 'domain'"):
+        with pytest.raises(
+            DomainValidationError, match="The value 'evil.com' for 'domain'"
+        ):
             validate_value_against_allowed_list(
-                "evil.com", ["api.stripe.com"], "domain"
+                "evil.com",
+                ["api.stripe.com"],
+                "domain",
+                mode=DomainValidationMode.enabled,
             )
 
     def test_empty_allowed_values_permits_any_value(self):
