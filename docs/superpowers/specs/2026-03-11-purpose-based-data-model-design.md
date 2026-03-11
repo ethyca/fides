@@ -60,7 +60,7 @@ Design notes:
 - At most one data subject (0..1 for MVP). Note: existing `PrivacyDeclaration.data_subjects` is `ARRAY(String)`. Declarations with multiple subjects will need to be split into multiple purposes during Phase 2 migration.
 - Data categories are optional (act as allowlist when specified)
 - `processes_special_category_data` from PrivacyDeclaration is intentionally omitted (derived: present when `special_category_legal_basis` is set)
-- All join tables reference `data_purpose.id` (UUID), not `fides_key`. API routes use `fides_key` as the URL identifier; services perform the `fides_key` to `id` lookup internally.
+- Consumer join tables (`system_purpose`, `data_consumer_purpose`) reference `data_purpose.id` (UUID), not `fides_key`. Dataset purposes are soft references by `fides_key` string. API routes use `fides_key` as the URL identifier; services perform the `fides_key` to `id` lookup internally for join table writes.
 - `flexible_legal_basis_for_processing` and `features` should be `NOT NULL` (matching PrivacyDeclaration pattern), with their `server_default` values.
 - All models require explicit `__tablename__` overrides (e.g., `__tablename__ = "data_purpose"`) since the auto-generated names from class names would produce `datapurpose`, `dataconsumer`, etc.
 
@@ -158,30 +158,18 @@ Join table: producer to user.
 
 Unique constraint on `(data_producer_id, user_id)`.
 
-#### `dataset_purpose`
-
-Join table: dataset to purpose. Audited.
-
-| Column | Type | Constraints |
-|--------|------|-------------|
-| `id` | String (UUID) | PK |
-| `dataset_id` | String (FK) | Not Null, references `ctl_datasets.id` |
-| `data_purpose_id` | String (FK) | Not Null, references `data_purpose.id` |
-| `assigned_by` | String (FK) | Nullable, references `fidesuser.id` |
-| `created_at` | DateTime(tz) | Auto |
-| `updated_at` | DateTime(tz) | Auto |
-
-Unique constraint on `(dataset_id, data_purpose_id)`.
-
 ### Extended Existing Tables
 
 #### `ctl_datasets`
 
-New column:
+New columns:
 
 | Column | Type | Constraints |
 |--------|------|-------------|
+| `data_purposes` | ARRAY(String) | server_default `{}`, Nullable |
 | `data_producer_id` | String (FK) | Nullable, references `data_producer.id` |
+
+`data_purposes` is an array of `fides_key` strings (soft references to `data_purpose`). Validated on write against the `data_purpose` table. This is the same pattern used at every level of the dataset hierarchy.
 
 #### Collection/Field JSON Schema Extension
 
@@ -190,7 +178,7 @@ The existing JSON blob for collections, fields, and sub-fields gains an optional
 ```yaml
 dataset:
   fides_key: customer_analytics_db
-  data_purposes: ["customer_marketing"]       # dataset level (join table)
+  data_purposes: ["customer_marketing"]       # dataset level (column on ctl_datasets)
   collections:
     - name: user_profiles
       data_purposes: ["personalization"]       # collection level (JSON)
@@ -202,7 +190,7 @@ dataset:
               data_purposes: ["content_curation"]  # sub-field level (JSON)
 ```
 
-Purposes are soft references (`fides_key` strings). Validated on write against the `data_purpose` table.
+All purpose references at every level (dataset, collection, field, sub-field) are soft references (`fides_key` strings). There is no `dataset_purpose` join table. Validated on write against the `data_purpose` table.
 
 **Additive inheritance:** Effective purposes at any level = own purposes + all ancestor purposes. No override or exclusion mechanism.
 
@@ -217,31 +205,37 @@ Purposes are soft references (`fides_key` strings). Validated on write against t
                                       |  - data_subject |
                                       +--------+--------+
                                                |
-                    +-----------+------+--------+--------+----------+
-                    |           |      |                 |          |
-              system_purpose    | data_consumer_purpose  |    dataset_purpose
-              (audited join)    |    (audited join)      |    (audited join)
-                    |           |         |              |          |
-             +------+------+   |  +------+-------+      |   +------+------+
-             | ctl_systems |   |  | data_consumer |      |   | ctl_datasets|
-             | (existing)  |   |  | (group/proj)  |      |   | (extended)  |
-             +-------------+   |  +--------------+       |   +------+------+
-                               |                         |          |
-                               |                         |     data_producer_id FK
-                               |                         |          |
-                               |                         |   +------+-------+
-                               |                         |   | data_producer |
-                               |                         |   +------+-------+
-                               |                         |          |
-                               |                         |   data_producer_member
-                               |                         |     (join table)
-                               |                         |          |
-                               |                         |   +------+------+
-                               |                         |   |  fidesuser  |
-                               |                         |   +-------------+
+                    +-----------+------+--------+--------+
+                    |           |      |                 |
+              system_purpose    | data_consumer_purpose  |
+              (audited join)    |    (audited join)      |
+                    |           |         |              |
+             +------+------+   |  +------+-------+      |
+             | ctl_systems |   |  | data_consumer |      |
+             | (existing)  |   |  | (group/proj)  |      |
+             +-------------+   |  +--------------+       |
                                |                         |
-                          Collection/Field JSON           |
-                          (soft data_purposes refs) ------+
+                          soft data_purposes refs        |
+                          (fides_key strings)            |
+                               |                         |
+                        +------+------+                  |
+                        | ctl_datasets|                  |
+                        | (extended)  |                  |
+                        |  + collections/fields JSON     |
+                        +------+------+                  |
+                               |                         |
+                          data_producer_id FK            |
+                               |                         |
+                        +------+-------+                 |
+                        | data_producer |                |
+                        +------+-------+                 |
+                               |                         |
+                        data_producer_member              |
+                          (join table)                   |
+                               |                         |
+                        +------+------+                  |
+                        |  fidesuser  |                  |
+                        +-------------+ -----------------+
 ```
 
 ---
@@ -256,7 +250,7 @@ All services live in **fidesplus**. Models and migrations in **fides OSS**.
 - Validates `data_use` references exist in the `DataUse` taxonomy
 - Validates `data_subject` references exist in the `DataSubject` taxonomy
 - Validates `fides_key` uniqueness
-- On delete: blocked by DB-level ON DELETE RESTRICT if the purpose is referenced by any `system_purpose`, `data_consumer_purpose`, or `dataset_purpose` rows. The `?force=true` query param bypasses this by first removing all join table references, then deleting the purpose. Collection-level JSON soft references are not FK-enforced; the service scans and warns about orphaned references but does not block on them.
+- On delete: blocked by DB-level ON DELETE RESTRICT if the purpose is referenced by any `system_purpose` or `data_consumer_purpose` rows. The `?force=true` query param bypasses this by first removing all join table references, then deleting the purpose. Dataset/collection/field-level purpose references are soft (string arrays, not FK-enforced); the service scans and warns about orphaned references but does not block on them.
 
 ### DataConsumerService
 
@@ -288,8 +282,9 @@ The core facade. Two internal code paths, one external interface.
 ### Dataset Purpose Handling
 
 Not a separate service. Integrated into the existing dataset write path:
-- On dataset create/update, if `data_purposes` is present at dataset level, validate and persist via `dataset_purpose` join table
-- If `data_purposes` is present at collection/field/sub-field levels in the JSON, validate all `fides_key` references and persist in the JSON blob
+- On dataset create/update, validate all `data_purposes` `fides_key` references at every level (dataset column, collection/field/sub-field JSON) against the `data_purpose` table
+- Dataset-level purposes are persisted as the `data_purposes` ARRAY column on `ctl_datasets`
+- Collection/field/sub-field-level purposes are persisted within the JSON blob
 - On dataset read, include `data_purposes` at each level as stored
 
 ### Repository Layer
@@ -421,8 +416,7 @@ Single migration file. Table creation order (respects FK dependencies):
 4. `data_consumer_purpose` (FKs to `data_consumer` + `data_purpose`)
 5. `system_purpose` (FKs to `ctl_systems` + `data_purpose`)
 6. `data_producer_member` (FKs to `data_producer` + `fidesuser`)
-7. `dataset_purpose` (FKs to `ctl_datasets` + `data_purpose`)
-8. ALTER `ctl_datasets`: add `data_producer_id` FK column
+7. ALTER `ctl_datasets`: add `data_purposes` ARRAY column + `data_producer_id` FK column
 
 Migration conventions:
 - All new nullable columns use `nullable=True`
@@ -437,8 +431,6 @@ Indexes:
 - `system_purpose(data_purpose_id)` — for "find all consumers for a purpose" queries
 - `data_consumer_purpose(data_consumer_id)` — for hydrating non-system consumers
 - `data_consumer_purpose(data_purpose_id)` — for "find all consumers for a purpose" queries
-- `dataset_purpose(dataset_id)` — for hydrating dataset purposes
-- `dataset_purpose(data_purpose_id)` — for "find all datasets for a purpose" queries
 - `data_producer_member(data_producer_id)` — for listing producer members
 - `data_producer_member(user_id)` — for finding a user's producer memberships
 
@@ -447,13 +439,11 @@ FK cascade/delete behavior:
 - `system_purpose.data_purpose_id` ON DELETE RESTRICT (prevent deleting a purpose that's in use)
 - `data_consumer_purpose.data_consumer_id` ON DELETE CASCADE (deleting a consumer removes its purpose links)
 - `data_consumer_purpose.data_purpose_id` ON DELETE RESTRICT (prevent deleting a purpose that's in use)
-- `dataset_purpose.dataset_id` ON DELETE CASCADE (deleting a dataset removes its purpose links)
-- `dataset_purpose.data_purpose_id` ON DELETE RESTRICT (prevent deleting a purpose that's in use)
 - `data_producer_member.data_producer_id` ON DELETE CASCADE (deleting a producer removes its member links)
 - `data_producer_member.user_id` ON DELETE CASCADE (deleting a user removes their producer memberships)
 - `ctl_datasets.data_producer_id` ON DELETE SET NULL (deleting a producer nullifies the FK on datasets)
 
-Downgrade: drop tables in reverse order, remove `data_producer_id` from `ctl_datasets`.
+Downgrade: drop tables in reverse order, remove `data_purposes` and `data_producer_id` from `ctl_datasets`.
 
 ### Backward Compatibility Guarantees
 
@@ -481,7 +471,7 @@ fidesplus setting: `purpose_based_model_enabled: bool = False`
 ### Phase 1: Schema + CRUD (implementation scope)
 
 **fides OSS:**
-- Alembic migration: all new tables, `data_producer_id` FK on `ctl_datasets`
+- Alembic migration: all new tables, `data_purposes` column + `data_producer_id` FK on `ctl_datasets`
 - SQLAlchemy models for all new tables
 - Extend dataset/collection/field Pydantic schemas with optional `data_purposes`
 
