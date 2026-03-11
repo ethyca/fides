@@ -81,7 +81,7 @@ interface TrendsResponse {
   metrics: Record<string, TrendMetric>;
 }
 
-interface AstralisResponse {
+export interface AstralisResponse {
   active_conversations: number;
   completed_assessments: number;
   awaiting_response: number;

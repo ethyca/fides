@@ -1,0 +1,5 @@
+.alertSm {
+  :global(.ant-alert-message) {
+    font-size: var(--ant-font-size-sm);
+  }
+}

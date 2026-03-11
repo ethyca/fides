@@ -1,0 +1,11 @@
+.radarChartWrapper {
+  margin-left: -12px;
+  margin-right: -12px;
+  aspect-ratio: 3/2;
+}
+
+.alertSm {
+  :global(.ant-alert-message) {
+    font-size: var(--ant-font-size-sm);
+  }
+}

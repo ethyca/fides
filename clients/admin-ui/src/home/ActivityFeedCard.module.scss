@@ -1,0 +1,42 @@
+$terracotta: #b9704b;
+
+.activityList {
+  max-height: calc(8 * 48px);
+  overflow-y: auto;
+}
+
+.activityRow {
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.activityRowAgent {
+  color: $terracotta;
+}
+
+.sparkleIcon {
+  color: $terracotta;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.activityDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--ant-color-text-quaternary);
+  flex-shrink: 0;
+}
+
+.activityMessage {
+  flex: 1;
+}
+
+.actorAgent {
+  color: $terracotta;
+}
+
+.relativeTime {
+  font-size: 14px;
+  flex-shrink: 0;
+}
