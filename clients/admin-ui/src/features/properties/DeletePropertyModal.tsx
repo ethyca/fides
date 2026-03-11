@@ -3,7 +3,6 @@ import {
   Tooltip,
   useChakraToast as useToast,
   useModal,
-  WarningIcon,
 } from "fidesui";
 import router from "next/router";
 import React from "react";
@@ -56,7 +55,6 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
         ),
         okText: "Ok",
         centered: true,
-        icon: <WarningIcon />,
         onOk: async () => {
           const result = await deletePropertyMutationTrigger(property.id!);
           if (isErrorResult(result)) {

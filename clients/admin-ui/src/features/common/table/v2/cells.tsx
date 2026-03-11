@@ -18,7 +18,6 @@ import {
   Tooltip,
   useChakraToast as useToast,
   useModal,
-  WarningIcon,
 } from "fidesui";
 import { FastField, useFormikContext } from "formik";
 import { isBoolean } from "lodash";
@@ -457,7 +456,6 @@ export const EnableCell = ({
         content: <Text color="gray.500">{message}</Text>,
         okText: "Confirm",
         centered: true,
-        icon: <WarningIcon color="orange.100" />,
         onOk: () => handlePatch({ enable: false }),
       });
     }

@@ -8,7 +8,6 @@ import {
   Typography,
   useMessage,
   useModal,
-  WarningIcon,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
@@ -150,7 +149,6 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         ),
         okText: "Delete",
         centered: true,
-        icon: <WarningIcon />,
         className: "delete-condition-modal",
         onOk: async () => {
           const originalConditions = conditions; // Capture current state

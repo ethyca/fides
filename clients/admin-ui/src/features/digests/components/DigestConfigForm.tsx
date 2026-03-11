@@ -6,7 +6,6 @@ import {
   Space,
   useMessage,
   useModal,
-  WarningIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -66,7 +65,6 @@ const DigestConfigForm = ({
       ),
       okText: "Delete",
       centered: true,
-      icon: <WarningIcon />,
       onOk: async () => {
         const result = await deleteDigestConfig({
           config_id: initialValues?.id as string,

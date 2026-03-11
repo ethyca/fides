@@ -1,4 +1,4 @@
-import { Button, Flex, List, Typography, useModal, WarningIcon } from "fidesui";
+import { Button, Flex, List, Typography, useModal } from "fidesui";
 import { useState } from "react";
 
 import { ConnectionConfigurationResponse } from "~/types/api";
@@ -42,7 +42,6 @@ const ManualTaskConfigList = ({ integration }: ManualTaskConfigListProps) => {
       ),
       okText: "Delete",
       centered: true,
-      icon: <WarningIcon />,
       onOk: () => deleteManualTask(task),
     });
   };

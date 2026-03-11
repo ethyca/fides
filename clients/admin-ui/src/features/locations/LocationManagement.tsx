@@ -6,7 +6,6 @@ import {
   ChakraVStack as VStack,
   useChakraToast as useToast,
   useModal,
-  WarningIcon,
 } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
@@ -135,7 +134,6 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
               content:
                 "Modifications in your location settings may also affect your regulation settings to simplify management. You can override any Fides-initiated changes directly in the regulation settings.",
               centered: true,
-              icon: <WarningIcon color="orange" />,
               onOk: handleSave,
             });
           }}
