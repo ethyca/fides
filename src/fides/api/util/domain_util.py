@@ -5,6 +5,7 @@ from typing import List
 
 from loguru import logger
 
+from fides.api.common_exceptions import DomainValidationError
 from fides.config import CONFIG
 from fides.config.security_settings import DomainValidationMode
 
@@ -81,7 +82,7 @@ def validate_value_against_allowed_list(
         )
         return
 
-    raise ValueError(
+    raise DomainValidationError(
         f"{violation_msg} "
         f"You may change the validation behavior by setting "
         f"the environment variable FIDES__SECURITY__DOMAIN_VALIDATION_MODE "

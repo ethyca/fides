@@ -11,7 +11,11 @@ from requests import ConnectionError, Response, Session
 from werkzeug.serving import make_server
 from werkzeug.wrappers import Response as WerkzeugResponse
 
-from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
+from fides.api.common_exceptions import (
+    ClientUnsuccessfulException,
+    ConnectionException,
+    DomainValidationError,
+)
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.schemas.saas.saas_config import ClientConfig, ConnectorParam
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
@@ -287,7 +291,9 @@ class TestValidateRequestDomain:
         if should_pass:
             client._validate_request_domain(host)
         else:
-            with pytest.raises(ValueError, match="not in the list of allowed values"):
+            with pytest.raises(
+                DomainValidationError, match="not in the list of allowed values"
+            ):
                 client._validate_request_domain(host)
 
     @mock.patch(
