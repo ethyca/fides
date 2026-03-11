@@ -293,15 +293,21 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
-  - name: backfill_history
-    description: 'Table used to track completed database backfill operations'
+  - name: post_upgrade_background_migration_tasks
+    description: 'Table used to track post-upgrade background migration tasks (backfills and deferred index creation)'
     data_categories: [system.operations]
     fields:
-    - name: backfill_name
-      description: 'Unique name of the backfill operation'
+    - name: id
+      description: 'Primary key (UUID)'
+      data_categories: [system.operations]
+    - name: key
+      description: 'Unique name of the migration task'
+      data_categories: [system.operations]
+    - name: task_type
+      description: 'Type of task (backfill or index)'
       data_categories: [system.operations]
     - name: completed_at
-      description: 'Timestamp when the backfill completed successfully'
+      description: 'Timestamp when the task completed successfully, NULL if in-progress'
       data_categories: [system.operations]
   - name: chat_config
     description: 'Configuration for chat providers (Slack, Microsoft Teams, etc.)'
@@ -2175,6 +2181,106 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
     - name: is_hash_migrated
+      data_categories: [system.operations]
+  - name: rbac_permission
+    description: 'Permission definitions for RBAC system'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: code
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: resource_type
+      data_categories: [system.operations]
+    - name: is_active
+      data_categories: [system.operations]
+  - name: rbac_role
+    description: 'Role definitions for RBAC system with hierarchy support'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: key
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: is_system_role
+      data_categories: [system.operations]
+    - name: is_active
+      data_categories: [system.operations]
+    - name: parent_role_id
+      data_categories: [system.operations]
+    - name: priority
+      data_categories: [system.operations]
+  - name: rbac_constraint
+    description: 'NIST RBAC constraint definitions (SoD and cardinality) with role sets and thresholds'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: name
+      data_categories: [system.operations]
+    - name: constraint_type
+      data_categories: [system.operations]
+    - name: threshold
+      data_categories: [system.operations]
+    - name: description
+      data_categories: [system.operations]
+    - name: is_active
+      data_categories: [system.operations]
+  - name: rbac_constraint_role
+    description: 'Junction table linking roles to NIST RBAC constraints (role_set members)'
+    fields:
+    - name: constraint_id
+      data_categories: [system.operations]
+    - name: role_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+  - name: rbac_role_permission
+    description: 'Junction table mapping roles to permissions'
+    fields:
+    - name: role_id
+      data_categories: [system.operations]
+    - name: permission_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+  - name: rbac_user_role
+    description: 'User role assignments with resource scoping and temporal validity'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: user_id
+      data_categories: [system.operations]
+    - name: role_id
+      data_categories: [system.operations]
+    - name: resource_type
+      data_categories: [system.operations]
+    - name: resource_id
+      data_categories: [system.operations]
+    - name: valid_from
+      data_categories: [system.operations]
+    - name: valid_until
+      data_categories: [system.operations]
+    - name: assigned_by
       data_categories: [system.operations]
   - name: rule
     data_categories: []

@@ -11,6 +11,8 @@ import { ReactNode } from "react";
 export type FeedbackType = "info" | "success" | "warning" | "error";
 export type ModalType = FeedbackType | "confirm";
 
+const ALERT_ICON_SIZE = 16;
+const ALERT_ICON_SIZE_WITH_DESC = 24;
 const MODAL_ICON_SIZE = 24;
 const MESSAGE_ICON_SIZE = 16;
 const NOTIFICATION_ICON_SIZE = 24;
@@ -80,6 +82,22 @@ const NOTIFICATION_ICON_MAP: Record<FeedbackType, ReactNode> = {
     NOTIFICATION_ICON_SIZE,
   ),
   error: inlineIcon(Misuse, "var(--fidesui-error)", NOTIFICATION_ICON_SIZE),
+};
+
+const ALERT_ICON_MAP: Record<FeedbackType, CarbonIconType> = {
+  info: InformationFilled,
+  success: CheckmarkFilled,
+  warning: WarningFilled,
+  error: Misuse,
+};
+
+export const getDefaultAlertIcon = (
+  type: FeedbackType,
+  hasDescription: boolean,
+): ReactNode => {
+  const Icon = ALERT_ICON_MAP[type];
+  const size = hasDescription ? ALERT_ICON_SIZE_WITH_DESC : ALERT_ICON_SIZE;
+  return <Icon size={size} />;
 };
 
 export const getDefaultModalIcon = (type: ModalType): ReactNode =>

@@ -93,7 +93,7 @@ def run_all_backfills(
     #
     # IMPORTANT: For each backfill added here, ensure its related migration's downgrade()
     # clears the backfill tracking to allow re-execution after rollback:
-    #   op.execute("DELETE FROM backfill_history WHERE backfill_name = 'your-backfill-name'")
+    #   op.execute("DELETE FROM post_upgrade_background_migration_tasks WHERE key = 'your-backfill-name' AND task_type = 'backfill'")
 
     return results
 
