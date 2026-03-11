@@ -17,8 +17,11 @@ type ConfigWithLinks = {
  * 3. Otherwise return an empty array.
  */
 export const getEffectivePrivacyCenterLinks = (
-  config: ConfigWithLinks,
+  config: ConfigWithLinks | undefined | null,
 ): PrivacyCenterLink[] => {
+  if (!config) {
+    return [];
+  }
   if (config.links && config.links.length > 0) {
     return config.links;
   }
