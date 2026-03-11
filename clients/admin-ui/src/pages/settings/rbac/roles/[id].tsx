@@ -31,6 +31,14 @@ import {
 } from "~/features/rbac";
 import type { RBACPermission, RBACRoleUpdate } from "~/types/api";
 
+// Scopes that are seeded in the database but have no corresponding endpoint.
+// These are hidden from the UI to avoid confusion.
+// See: fidesplus RBAC_SYSTEM.md documentation for details.
+const HIDDEN_UNUSED_SCOPES = [
+  "rbac_user_role:update", // No PUT endpoint for user role assignments
+  "rbac_constraint:update", // No PUT endpoint for constraints
+];
+
 const RoleDetailPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -71,15 +79,17 @@ const RoleDetailPage: NextPage = () => {
     if (!permissions) {
       return {};
     }
-    return permissions.reduce<Record<string, RBACPermission[]>>((acc, perm) => {
-      const resourceType = perm.resource_type || "general";
-      const result = { ...acc };
-      if (!result[resourceType]) {
-        result[resourceType] = [];
-      }
-      result[resourceType].push(perm);
-      return result;
-    }, {});
+    return permissions
+      .filter((perm) => !HIDDEN_UNUSED_SCOPES.includes(perm.code))
+      .reduce<Record<string, RBACPermission[]>>((acc, perm) => {
+        const resourceType = perm.resource_type || "general";
+        const result = { ...acc };
+        if (!result[resourceType]) {
+          result[resourceType] = [];
+        }
+        result[resourceType].push(perm);
+        return result;
+      }, {});
   }, [permissions]);
 
   // Filter out current role and system roles from parent options
