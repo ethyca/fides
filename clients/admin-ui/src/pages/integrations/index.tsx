@@ -9,10 +9,11 @@ import {
   Tooltip,
   Typography,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import ErrorPage from "~/features/common/errors/ErrorPage";
@@ -77,9 +78,28 @@ const IntegrationListView: NextPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
+  const message = useMessage();
+  const oauthHandled = useRef(false);
+
   const {
     flags: { newIntegrationManagement, alphaJiraIntegration },
   } = useFlags();
+
+  useEffect(() => {
+    if (oauthHandled.current) {
+      return;
+    }
+    const jiraAuthStatus = router.query.jira_auth as string | undefined;
+    if (jiraAuthStatus === "error") {
+      oauthHandled.current = true;
+      const errorMessage =
+        (router.query.message as string) || "Jira authorization failed";
+      message.error(errorMessage);
+      router.replace(INTEGRATION_MANAGEMENT_ROUTE, undefined, {
+        shallow: true,
+      });
+    }
+  }, [router.query.jira_auth, message, router]);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
