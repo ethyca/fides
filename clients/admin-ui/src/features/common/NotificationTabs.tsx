@@ -71,8 +71,7 @@ const NotificationTabs = () => {
   menuItems = menuItems.filter(
     (item) =>
       !("requiresFlag" in item) ||
-      (item.requiresFlag === "privacyAssessments" &&
-        flags?.privacyAssessments),
+      (item.requiresFlag === "privacyAssessments" && flags?.privacyAssessments),
   );
 
   // Filter scopes
