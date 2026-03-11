@@ -1,3 +1,5 @@
+import type { AttributionOptions } from "fides-js";
+
 import {
   buildAttributionOptions,
   getClientSettings,
@@ -124,5 +126,40 @@ describe("fides-js handler attribution config building", () => {
       destinationUrl: DEFAULT_ATTRIBUTION_DESTINATION_URL,
       nofollow: false,
     });
+  });
+});
+
+describe("AttributionLink component rendering logic", () => {
+  const buildRelAttribute = (attribution: AttributionOptions): string =>
+    `noopener noreferrer${attribution.nofollow ? " nofollow" : ""}`;
+
+  it("produces correct rel attribute without nofollow", () => {
+    const attribution: AttributionOptions = {
+      anchorText: "Powered by Ethyca",
+      destinationUrl: "https://ethyca.com",
+      nofollow: false,
+    };
+    expect(buildRelAttribute(attribution)).toBe("noopener noreferrer");
+  });
+
+  it("produces correct rel attribute with nofollow", () => {
+    const attribution: AttributionOptions = {
+      anchorText: "Powered by Ethyca",
+      destinationUrl: "https://ethyca.com",
+      nofollow: true,
+    };
+    expect(buildRelAttribute(attribution)).toBe("noopener noreferrer nofollow");
+  });
+
+  it("uses custom anchor text and destination URL", () => {
+    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED = "true";
+    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ANCHOR_TEXT =
+      "Privacy by Custom";
+    process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_DESTINATION_URL =
+      "https://custom.example.com";
+    const attribution = buildAttributionOptions(getClientSettings());
+    expect(attribution).toBeDefined();
+    expect(attribution!.anchorText).toBe("Privacy by Custom");
+    expect(attribution!.destinationUrl).toBe("https://custom.example.com");
   });
 });
