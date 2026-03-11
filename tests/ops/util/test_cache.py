@@ -16,6 +16,8 @@ from fides.api.util.cache import (
     FidesopsRedis,
     cache_task_tracking_key,
     celery_tasks_in_flight,
+    get_async_task_tracking_cache_key,
+    get_cache,
 )
 from fides.api.util.custom_json_encoder import (
     ENCODED_BYTES_PREFIX,
@@ -201,6 +203,16 @@ class TestCacheTaskTrackingKey:
         cache_task_tracking_key(privacy_request.id, "test_1234")
 
         assert privacy_request.get_cached_task_id() == "test_1234"
+
+    def test_cache_tracking_key_has_ttl(self, privacy_request):
+        """Verify async-execution keys are stored with a TTL to prevent leaking."""
+        cache_task_tracking_key(privacy_request.id, "test_1234")
+
+        raw_cache = get_cache()
+        ttl = raw_cache.ttl(
+            get_async_task_tracking_cache_key(privacy_request.id)
+        )
+        assert ttl > 0
 
     def test_cache_tracking_key_request_task(self, request_task):
         """Request Task celery tasks are cached in the same location as Privacy Request"""
