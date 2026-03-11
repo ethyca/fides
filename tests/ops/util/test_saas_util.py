@@ -20,9 +20,31 @@ from fides.api.util.saas_util import (
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
+    should_ignore_error,
     validate_connector_param_constraints_not_modified,
     validate_host_references_domain_restricted_params,
 )
+
+
+@pytest.mark.unit_saas
+class TestShouldIgnoreError:
+    """Tests for shared should_ignore_error used by AuthenticatedClient and polling."""
+
+    def test_ignore_all_when_true(self):
+        assert should_ignore_error(400, True) is True
+        assert should_ignore_error(500, True) is True
+
+    def test_ignore_none_when_false(self):
+        assert should_ignore_error(400, False) is False
+        assert should_ignore_error(404, False) is False
+
+    def test_ignore_only_listed_codes(self):
+        assert should_ignore_error(409, [409]) is True
+        assert should_ignore_error(404, [404, 409]) is True
+        assert should_ignore_error(500, [404, 409]) is False
+
+    def test_none_treated_as_do_not_ignore(self):
+        assert should_ignore_error(400, None) is False
 
 
 @pytest.mark.unit_saas
