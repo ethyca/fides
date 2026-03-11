@@ -209,9 +209,7 @@ class TestCacheTaskTrackingKey:
         cache_task_tracking_key(privacy_request.id, "test_1234")
 
         raw_cache = get_cache()
-        ttl = raw_cache.ttl(
-            get_async_task_tracking_cache_key(privacy_request.id)
-        )
+        ttl = raw_cache.ttl(get_async_task_tracking_cache_key(privacy_request.id))
         assert ttl > 0
 
     def test_cache_tracking_key_request_task(self, request_task):
