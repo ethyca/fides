@@ -33,14 +33,16 @@ Introduce a purpose-based data model built on four new first-class entities (Dat
 
 #### `data_purpose`
 
-Replaces PrivacyDeclaration as a standalone, reusable entity. Inherits from `FidesBase` for `fides_key`, `name`, `description`. No parent key / hierarchy.
+Replaces PrivacyDeclaration as a standalone, reusable entity. Inherits from both `Base` and `FidesBase` (like `System` and `Dataset`), giving it `id` (UUID PK from `Base`) plus `fides_key`, `name`, `description`, `organization_fides_key`, and `tags` (from `FidesBase`). No parent key / hierarchy. `fides_key` is used as the unique PK in `FidesBase`, but `id` is the actual PK used by join table FKs. This matches the existing dual-key pattern used by `System`, `Dataset`, etc.
 
 | Column | Type | Constraints |
 |--------|------|-------------|
-| `id` | String (UUID) | PK |
-| `fides_key` | String | Unique, Not Null, Indexed |
-| `name` | String | Not Null |
-| `description` | String | Nullable |
+| `id` | String (UUID) | PK (from `Base`) |
+| `fides_key` | String | Unique, Not Null, Indexed (from `FidesBase`) |
+| `name` | String | Not Null (from `FidesBase`) |
+| `description` | String | Nullable (from `FidesBase`) |
+| `organization_fides_key` | String | Nullable (from `FidesBase`, default "default_organization") |
+| `tags` | ARRAY(String) | Nullable (from `FidesBase`) |
 | `data_use` | String | Not Null, Indexed |
 | `data_subject` | String | Nullable |
 | `data_categories` | ARRAY(String) | server_default `{}` |
@@ -55,8 +57,18 @@ Replaces PrivacyDeclaration as a standalone, reusable entity. Inherits from `Fid
 
 Design notes:
 - One data use per purpose (deliberate constraint per PRD)
-- At most one data subject (0..1 for MVP)
+- At most one data subject (0..1 for MVP). Note: existing `PrivacyDeclaration.data_subjects` is `ARRAY(String)`. Declarations with multiple subjects will need to be split into multiple purposes during Phase 2 migration.
 - Data categories are optional (act as allowlist when specified)
+- `processes_special_category_data` from PrivacyDeclaration is intentionally omitted (derived: present when `special_category_legal_basis` is set)
+- All join tables reference `data_purpose.id` (UUID), not `fides_key`. API routes use `fides_key` as the URL identifier; services perform the `fides_key` to `id` lookup internally.
+- `flexible_legal_basis_for_processing` and `features` should be `NOT NULL` (matching PrivacyDeclaration pattern), with their `server_default` values.
+- All models require explicit `__tablename__` overrides (e.g., `__tablename__ = "data_purpose"`) since the auto-generated names from class names would produce `datapurpose`, `dataconsumer`, etc.
+
+**Facade field coercion (system-type consumers):** When mapping `ctl_systems` rows into `DataConsumerResponse`, the service must:
+- Set `type` to `"system"` (hardcoded)
+- Coalesce `tags` from `None` to `[]` (System's `tags` column has no server default)
+- Map `egress`/`ingress` from System's JSON columns to `Optional[dict]`
+- Populate `data_shared_with_third_parties`, `third_parties`, `shared_categories` from the system's privacy declarations where available
 
 #### `data_consumer`
 
@@ -81,7 +93,9 @@ Stores non-system consumers (groups, projects, custom types). System-type consum
 | `created_at` | DateTime(tz) | Auto |
 | `updated_at` | DateTime(tz) | Auto |
 
-Type extensibility: `type` is a string, not a DB enum. Seed values: `group`, `project`. Customers register additional types via API. The CHECK constraint prevents `system` type rows (those go through the facade).
+Type extensibility: `type` is a free-form string, not a DB enum. There is no type registry table. Seed values (`group`, `project`) are documented conventions, not enforced. Customers can use any string value except `system`. The CHECK constraint prevents `system` type rows (those go through the facade).
+
+Note: `data_consumer` has no `fides_key`. Non-system consumers are identified by opaque UUID `id` only. System-type consumers exposed via the facade have a `system_fides_key` available in the response schema (from `ctl_systems.fides_key`). This is a deliberate difference: purposes are taxonomy-like (hence `fides_key`), consumers are not.
 
 #### `data_consumer_purpose`
 
@@ -123,7 +137,7 @@ Lightweight entity representing people/teams responsible for data registration a
 | `name` | String | Not Null |
 | `description` | String | Nullable |
 | `external_id` | String | Nullable |
-| `monitor_id` | String (FK) | Nullable, references `monitorconfig.id` |
+| `monitor_id` | String (FK) | Nullable, references `monitorconfig.id` (UUID, not the `key` field) |
 | `contact_email` | String | Nullable |
 | `contact_slack_channel` | String | Nullable |
 | `contact_details` | JSON | Nullable |
@@ -242,7 +256,7 @@ All services live in **fidesplus**. Models and migrations in **fides OSS**.
 - Validates `data_use` references exist in the `DataUse` taxonomy
 - Validates `data_subject` references exist in the `DataSubject` taxonomy
 - Validates `fides_key` uniqueness
-- On delete: checks for referencing consumers (both `system_purpose` and `data_consumer_purpose`), datasets (`dataset_purpose` + collection JSON), and blocks or cascades based on policy
+- On delete: blocked by DB-level ON DELETE RESTRICT if the purpose is referenced by any `system_purpose`, `data_consumer_purpose`, or `dataset_purpose` rows. The `?force=true` query param bypasses this by first removing all join table references, then deleting the purpose. Collection-level JSON soft references are not FK-enforced; the service scans and warns about orphaned references but does not block on them.
 
 ### DataConsumerService
 
@@ -319,7 +333,7 @@ All routes in **fidesplus**, under `/api/v1/`.
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/data-consumer` | List all consumers (unified). Filters: `type`, `purpose_fides_key`, `tags` |
-| `GET` | `/data-consumer/{id}` | Get a single consumer. For `type=system`, `id` is the system `id`. |
+| `GET` | `/data-consumer/{id}` | Get a single consumer. Requires `?type=system` query param for system lookups (uses system `id`). Without `type` param, looks up in `data_consumer` table only. |
 | `POST` | `/data-consumer` | Create a non-system consumer. Returns 400 if `type=system`. |
 | `PUT` | `/data-consumer/{id}` | Update a non-system consumer. Returns 400 for system-type. |
 | `DELETE` | `/data-consumer/{id}` | Delete a non-system consumer. System-type cannot be deleted here. |
@@ -332,7 +346,7 @@ All routes in **fidesplus**, under `/api/v1/`.
 | `POST` | `/data-consumer/{id}/purpose/{fides_key}` | Add a single purpose |
 | `DELETE` | `/data-consumer/{id}/purpose/{fides_key}` | Remove a single purpose |
 
-Purpose assignment routes write to `system_purpose` or `data_consumer_purpose` based on type, transparently.
+Purpose assignment routes also require `?type=system` query param when operating on a system consumer. Without the param, the `{id}` is looked up in the `data_consumer` table only. This matches the GET-by-ID resolution strategy.
 
 ### Data Producer
 
@@ -367,25 +381,31 @@ Existing `GET /dataset/{fides_key}` response extended with these fields.
 class DataConsumerResponse(BaseModel):
     id: str
     name: str
-    description: str | None
-    type: str                        # "system", "group", "project", custom
-    external_id: str | None
-    purposes: list[DataPurposeResponse]
+    description: Optional[str]
+    type: str                                   # "system", "group", "project", custom
+    external_id: Optional[str]
+    purposes: List[DataPurposeResponse]
     # System-type only (from ctl_systems):
-    system_fides_key: str | None
-    vendor_id: str | None
-    # Non-system only:
-    egress: dict | None
-    ingress: dict | None
-    tags: list[str]
-    contact_email: str | None
-    contact_slack_channel: str | None
-    contact_details: dict | None
+    system_fides_key: Optional[str]
+    vendor_id: Optional[str]
+    # All types (from data_consumer table or ctl_systems+privacydeclaration):
+    egress: Optional[dict]
+    ingress: Optional[dict]
+    data_shared_with_third_parties: Optional[bool]
+    third_parties: Optional[str]
+    shared_categories: Optional[List[str]]
+    tags: List[str]
+    contact_email: Optional[str]
+    contact_slack_channel: Optional[str]
+    contact_details: Optional[dict]
     created_at: datetime
     updated_at: datetime
 ```
 
-System-specific fields (`cookie_max_age_seconds`, etc.) are not duplicated. Clients needing full system detail use existing system endpoints via `system_fides_key`.
+Notes:
+- Uses `Optional[X]` / `List[X]` (not `X | None` / `list[X]`) to match existing codebase Pydantic conventions.
+- `data_shared_with_third_parties`, `third_parties`, `shared_categories` are included for all types. For system-type consumers, these are populated from `ctl_systems`/`privacydeclaration` data where available.
+- System-specific fields (`cookie_max_age_seconds`, etc.) are not duplicated. Clients needing full system detail use existing system endpoints via `system_fides_key`.
 
 ---
 
@@ -408,8 +428,30 @@ Migration conventions:
 - All new nullable columns use `nullable=True`
 - Array columns use `server_default="{}"`
 - Boolean columns use `server_default` with explicit values
-- Partial indexes on `system_purpose(system_id)` and `data_consumer_purpose(data_consumer_id)`
-- Index on `data_purpose(data_use)` and `data_purpose(fides_key)`
+
+Indexes:
+- `data_purpose(fides_key)` — unique index (lookups by fides_key)
+- `data_purpose(data_use)` — for filtering by data use
+- `data_consumer(type)` — for filtering by type
+- `system_purpose(system_id)` — for hydrating system consumers
+- `system_purpose(data_purpose_id)` — for "find all consumers for a purpose" queries
+- `data_consumer_purpose(data_consumer_id)` — for hydrating non-system consumers
+- `data_consumer_purpose(data_purpose_id)` — for "find all consumers for a purpose" queries
+- `dataset_purpose(dataset_id)` — for hydrating dataset purposes
+- `dataset_purpose(data_purpose_id)` — for "find all datasets for a purpose" queries
+- `data_producer_member(data_producer_id)` — for listing producer members
+- `data_producer_member(user_id)` — for finding a user's producer memberships
+
+FK cascade/delete behavior:
+- `system_purpose.system_id` ON DELETE CASCADE (matches existing `privacydeclaration` cascade-on-system-delete behavior)
+- `system_purpose.data_purpose_id` ON DELETE RESTRICT (prevent deleting a purpose that's in use)
+- `data_consumer_purpose.data_consumer_id` ON DELETE CASCADE (deleting a consumer removes its purpose links)
+- `data_consumer_purpose.data_purpose_id` ON DELETE RESTRICT (prevent deleting a purpose that's in use)
+- `dataset_purpose.dataset_id` ON DELETE CASCADE (deleting a dataset removes its purpose links)
+- `dataset_purpose.data_purpose_id` ON DELETE RESTRICT (prevent deleting a purpose that's in use)
+- `data_producer_member.data_producer_id` ON DELETE CASCADE (deleting a producer removes its member links)
+- `data_producer_member.user_id` ON DELETE CASCADE (deleting a user removes their producer memberships)
+- `ctl_datasets.data_producer_id` ON DELETE SET NULL (deleting a producer nullifies the FK on datasets)
 
 Downgrade: drop tables in reverse order, remove `data_producer_id` from `ctl_datasets`.
 
