@@ -56,7 +56,7 @@ const NotificationTabs = () => {
       key: "chat-providers",
       label: "Chat providers",
       requiresPlus: true,
-      requiresFlag: "alphaDataProtectionAssessments" as const,
+      requiresFlag: "dataProtectionAssessments" as const,
       scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       path: CHAT_PROVIDERS_ROUTE,
     },
@@ -71,8 +71,8 @@ const NotificationTabs = () => {
   menuItems = menuItems.filter(
     (item) =>
       !("requiresFlag" in item) ||
-      (item.requiresFlag === "alphaDataProtectionAssessments" &&
-        flags?.alphaDataProtectionAssessments),
+      (item.requiresFlag === "dataProtectionAssessments" &&
+        flags?.dataProtectionAssessments),
   );
 
   // Filter scopes

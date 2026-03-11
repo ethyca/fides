@@ -99,7 +99,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     });
   };
 
-  if (!flags?.alphaDataProtectionAssessments) {
+  if (!flags?.dataProtectionAssessments) {
     return (
       <Layout title="Privacy assessment">
         <Result
