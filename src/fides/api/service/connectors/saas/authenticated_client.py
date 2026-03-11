@@ -33,7 +33,6 @@ from fides.api.util.logger_context_utils import (
 )
 from fides.api.util.saas_util import (
     deny_unsafe_hosts,
-    is_domain_validation_disabled,
     should_ignore_error,
 )
 from fides.config import CONFIG
