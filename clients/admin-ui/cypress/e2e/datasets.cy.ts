@@ -62,7 +62,7 @@ describe("Dataset", () => {
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("row-0-col-actions").find("button").click();
       cy.getByTestId("delete-btn").click();
-      cy.getAntModalConfirmButtons().contains("OK").click();
+      cy.getByTestId("continue-btn").click();
       cy.wait("@deleteDataset").then((interception) => {
         expect(interception.request.url).to.contain("demo_users_dataset");
       });
