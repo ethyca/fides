@@ -7,7 +7,7 @@ for rds_postgres, rds_mysql, and mysql connection types:
     database_instance_id  → database_instance_name
 
 Revision ID: 04281f44cc0b
-Revises: bf12f05ef8eb
+Revises: e3a9f1b2c4d5
 Create Date: 2026-03-06 20:33:13.839629
 
 """
@@ -16,7 +16,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "04281f44cc0b"
-down_revision = "bf12f05ef8eb"
+down_revision = "e3a9f1b2c4d5"
 branch_labels = None
 depends_on = None
 
