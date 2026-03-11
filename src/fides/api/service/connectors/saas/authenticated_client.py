@@ -15,6 +15,7 @@ from requests import PreparedRequest, Request, Response, Session
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
+    DomainValidationError,
     FidesopsException,
 )
 from fides.api.service.connectors.limiter.rate_limiter import (
@@ -193,6 +194,12 @@ class AuthenticatedClient:
                         sleep_time = (
                             retry_after_time if retry_after_time else sleep_time
                         )
+                    except DomainValidationError as exc:
+                        last_exception = ConnectionException(str(exc))
+                        logger.bind(
+                            **connection_exception_details(exc, self.uri)
+                        ).error("Connector request failed.")
+                        break
                     except Exception as exc:  # pylint: disable=W0703
                         dev_mode_log = f" with error: {exc}" if CONFIG.dev_mode else ""
                         last_exception = ConnectionException(
