@@ -67,7 +67,7 @@
     "label": "Data protection assessments",
     "description": "Enable data protection impact assessments feature",
     "development": true,
-    "test": true,
+    "test": false,
     "production": false
   },
   "alphaPolicies": {
