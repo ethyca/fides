@@ -96,8 +96,8 @@ class Comment(Base):
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
     )
-    # Not all users in the system have a user name, and users can be deleted.
-    # Store a non-normalized copy of user name for these cases.
+    # Not all users in the system have a username, and users can be deleted.
+    # Store a non-normalized copy of username for these cases.
     username = Column(String, nullable=True)
     comment_text = Column(String, nullable=False)
     comment_type = Column(EnumColumn(CommentType), nullable=False)
