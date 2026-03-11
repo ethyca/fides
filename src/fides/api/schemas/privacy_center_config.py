@@ -214,6 +214,7 @@ class PrivacyCenterConfig(FidesSchema):
     logo_path: Optional[str] = None
     logo_url: Optional[str] = None
     favicon_path: Optional[str] = None
+    page_title: Optional[str] = None
     actions: List[PrivacyRequestOption]
     include_consent: Optional[bool] = Field(alias="includeConsent", default=None)
     consent: ConsentConfig
