@@ -1,13 +1,12 @@
 """Shared helpers for domain-validation logic."""
 
-import logging
 import re
 from typing import List
 
+from loguru import logger
+
 from fides.config import CONFIG
 from fides.config.security_settings import DomainValidationMode
-
-logger = logging.getLogger(__name__)
 
 
 def get_domain_validation_mode() -> DomainValidationMode:
@@ -77,7 +76,7 @@ def validate_value_against_allowed_list(
 
     if mode == DomainValidationMode.monitor:
         logger.warning(
-            "Domain validation violation (monitor mode): %s",
+            "Domain validation violation (monitor mode): {}",
             violation_msg,
         )
         return
