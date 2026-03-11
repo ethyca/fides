@@ -74,7 +74,7 @@ export interface TrendMetric {
   value: number;
   history: number[];
   metadata: Record<string, unknown>;
-  diff_percent: number;
+  diff: number;
 }
 
 interface TrendsResponse {

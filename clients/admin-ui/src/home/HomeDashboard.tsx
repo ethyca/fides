@@ -19,9 +19,10 @@ import {
 import { RadarChart, Sparkline } from "fidesui";
 import { useRouter } from "next/router";
 import * as React from "react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
+import { nFormatter } from "~/features/common/utils";
 import {
   type PriorityAction,
   type TrendMetric,
@@ -216,19 +217,21 @@ const TREND_CARD_TITLES = [
   "Consent rate",
 ];
 
+const PERCENTAGE_INDICES = new Set([0, 1, 3]);
+
 const formatTrendValue = (metric: TrendMetric, index: number): string => {
-  if (index === 3) {
-    return `${(metric.value * 100).toFixed(1)}%`;
+  if (PERCENTAGE_INDICES.has(index)) {
+    return `${Math.round(metric.value * 100)}%`;
   }
-  return metric.value.toLocaleString();
+  return nFormatter(metric.value);
 };
 
 const formatTrendDiff = (metric: TrendMetric, index: number): string => {
   const abs = Math.abs(metric.diff);
-  if (index === 3) {
-    return `${(abs * 100).toFixed(1)}%`;
+  if (PERCENTAGE_INDICES.has(index)) {
+    return `${Math.round(abs * 100)}%`;
   }
-  return abs.toLocaleString();
+  return nFormatter(abs);
 };
 
 function getPostureAlertType(score: number): "error" | "warning" | "success" {
@@ -242,15 +245,15 @@ const HomeDashboardMockup = () => {
   const [activeTab, setActiveTab] = useState("act_now");
   const [showBriefing, setShowBriefing] = useState(true);
 
-  // const [resetDashboard, { isSuccess: resetDone }] =
-  //   useResetDashboardMutation();
+  const [resetDashboard, { isSuccess: resetDone }] =
+    useResetDashboardMutation();
 
-  // useEffect(() => {
-  //   resetDashboard();
-  // }, [resetDashboard]);
+  useEffect(() => {
+    resetDashboard();
+  }, [resetDashboard]);
 
-  // const skip = !resetDone;
-  const skip = false;
+  const skip = !resetDone;
+  // const skip = false;
 
   const { data: posture } = useGetDashboardPostureQuery(undefined, { skip });
   const { data: briefing } = useGetAgentBriefingQuery(undefined, { skip });
@@ -270,7 +273,7 @@ const HomeDashboardMockup = () => {
   }));
 
   const postureScore = posture?.score ?? 0;
-  const postureDiff = posture?.diff ?? 0;
+  const postureDiff = posture?.diff_percent ?? 0;
   const diffDirection = posture?.diff_direction ?? "unchanged";
 
   const filteredActions = useMemo(() => {
@@ -294,8 +297,8 @@ const HomeDashboardMockup = () => {
     [actions],
   );
 
-  const metrics = trends?.metrics ?? [];
-
+  const metrics = trends?.metrics ? Object.values(trends.metrics) : [];
+  console.log("METRICS", metrics);
   return (
     <Flex vertical gap={24} className="px-10 pb-6 pt-6">
       {/* Agent Briefing banner */}
@@ -324,6 +327,7 @@ const HomeDashboardMockup = () => {
         {/* Posture card */}
         <Col xs={24} md={8} lg={8} xxl={8}>
           <Card
+            size="small"
             title="Posture"
             variant="borderless"
             className="h-full"
@@ -366,6 +370,7 @@ const HomeDashboardMockup = () => {
             className="h-full"
             headerLayout="inline"
             showTitleDivider={false}
+            size="small"
             styles={CARD_STYLES}
             tabList={[
               {
@@ -446,6 +451,7 @@ const HomeDashboardMockup = () => {
           return (
             <Col key={title} xs={24} sm={12} md={6}>
               <Card
+                size="small"
                 variant="borderless"
                 title={title}
                 className="overflow-clip h-full"

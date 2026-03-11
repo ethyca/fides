@@ -1,15 +1,10 @@
 import { theme } from "antd/lib";
-import type { SVGProps } from "react";
+import type { ComponentProps } from "react";
+import { Text } from "recharts";
 
 import { CHART_TYPOGRAPHY } from "./chart-constants";
 
-export interface ChartTextProps extends SVGProps<SVGTextElement> {
-  x?: number;
-  y?: number;
-  fontFamily?: string;
-  fill?: string;
-  fillOpacity?: number;
-}
+export type ChartTextProps = ComponentProps<typeof Text>;
 
 export const ChartText = ({
   x,
@@ -22,11 +17,12 @@ export const ChartText = ({
 }: ChartTextProps) => {
   const { token } = theme.useToken();
   return (
-    <text
+    <Text
       x={x}
       y={y}
       textAnchor="middle"
-      dominantBaseline="central"
+      verticalAnchor="middle"
+      width={80}
       fontSize={token.fontSizeSM}
       fontFamily={fontFamily ?? token.fontFamilyCode}
       fontWeight={CHART_TYPOGRAPHY.fontWeight}
@@ -36,6 +32,6 @@ export const ChartText = ({
       {...props}
     >
       {children}
-    </text>
+    </Text>
   );
 };
