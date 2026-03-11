@@ -1,17 +1,43 @@
 import {
   ChakraLink as Link,
   ChakraLinkProps as LinkProps,
-  EthycaLogo,
+  Space,
 } from "fidesui";
 
 import { useSettings } from "~/features/common/settings.slice";
 
+import { AttributionLink } from "./AttributionLink";
+import { EthycaLogoSvg } from "./EthycaLogoSvg";
+
 const BrandLink = ({
+  isHomePage = false,
   position = "absolute",
   right = 6,
   ...props
-}: LinkProps) => {
-  const { SHOW_BRAND_LINK } = useSettings();
+}: LinkProps & { isHomePage?: boolean }) => {
+  const {
+    SHOW_BRAND_LINK,
+    ATTRIBUTION_ENABLED,
+    ATTRIBUTION_ANCHOR_TEXT,
+    ATTRIBUTION_DESTINATION_URL,
+    ATTRIBUTION_NOFOLLOW,
+  } = useSettings();
+
+  if (ATTRIBUTION_ENABLED) {
+    // On the homepage, the server-rendered AttributionLink handles this.
+    if (isHomePage) {
+      return null;
+    }
+    return (
+      <AttributionLink
+        attribution={{
+          anchorText: ATTRIBUTION_ANCHOR_TEXT,
+          destinationUrl: ATTRIBUTION_DESTINATION_URL,
+          nofollow: ATTRIBUTION_NOFOLLOW,
+        }}
+      />
+    );
+  }
 
   if (!SHOW_BRAND_LINK) {
     return null;
@@ -20,7 +46,6 @@ const BrandLink = ({
   return (
     <Link
       fontSize="8px"
-      color="gray.400"
       isExternal
       position={position}
       right={right}
@@ -29,14 +54,12 @@ const BrandLink = ({
       href="https://ethyca.com/"
       {...props}
     >
-      Powered by{" "}
-      <EthycaLogo
-        color="primary.900"
-        h="20px"
-        w="31px"
-        role="img"
-        aria-label="Ethyca"
-      />
+      <Space size={4}>
+        <div style={{ color: "var(--fidesui-neutral-500)" }}>Powered by</div>
+        <div style={{ color: "var(--fidesui-minos)" }}>
+          <EthycaLogoSvg />
+        </div>
+      </Space>
     </Link>
   );
 };
