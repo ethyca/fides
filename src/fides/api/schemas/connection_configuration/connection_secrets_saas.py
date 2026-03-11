@@ -20,8 +20,11 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
 from fides.api.schemas.saas.saas_config import SaaSConfig
-from fides.api.util.domain_util import validate_value_against_allowed_list
-from fides.api.util.saas_util import is_domain_validation_disabled
+from fides.api.util.domain_util import (
+    get_domain_validation_mode,
+    validate_value_against_allowed_list,
+)
+from fides.config.security_settings import DomainValidationMode
 
 
 class SaaSSchema(BaseModel, abc.ABC):
@@ -76,14 +79,20 @@ class SaaSSchema(BaseModel, abc.ABC):
 
                 param_type = connector_param.get("param_type")
                 allowed_values = connector_param.get("allowed_values")
+                domain_mode = get_domain_validation_mode()
                 if (
                     param_type == "endpoint"
                     and allowed_values is not None
                     and len(allowed_values) > 0
                     and isinstance(value, str)
-                    and not is_domain_validation_disabled()
+                    and domain_mode != DomainValidationMode.disabled
                 ):
-                    validate_value_against_allowed_list(value, allowed_values, name)
+                    validate_value_against_allowed_list(
+                        value,
+                        allowed_values,
+                        name,
+                        mode=domain_mode,
+                    )
 
         return values
 

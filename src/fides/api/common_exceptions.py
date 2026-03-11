@@ -412,3 +412,7 @@ class MissingNamespaceSchemaException(BaseException):
 
 class ConnectionNotFoundException(BaseException):
     """ConnectionConfig could not be found"""
+
+
+class DomainValidationError(ValueError):
+    """The request domain is not in the list of allowed values for this connector."""

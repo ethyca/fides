@@ -76,11 +76,6 @@ def deny_unsafe_hosts(host: str) -> str:
     return host
 
 
-def is_domain_validation_disabled() -> bool:
-    """Check if domain validation is disabled via config flags."""
-    return CONFIG.dev_mode or CONFIG.security.disable_domain_validation
-
-
 def validate_connector_param_constraints_not_modified(
     original_connector_params: List[Dict[str, Any]],
     incoming_connector_params: List[Dict[str, Any]],

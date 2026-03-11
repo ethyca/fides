@@ -15,6 +15,7 @@ from requests import PreparedRequest, Request, Response, Session
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     ConnectionException,
+    DomainValidationError,
     FidesopsException,
 )
 from fides.api.service.connectors.limiter.rate_limiter import (
@@ -22,17 +23,20 @@ from fides.api.service.connectors.limiter.rate_limiter import (
     RateLimiterPeriod,
     RateLimiterRequest,
 )
-from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.api.util.domain_util import (
+    get_domain_validation_mode,
+    validate_value_against_allowed_list,
+)
 from fides.api.util.logger_context_utils import (
     connection_exception_details,
     request_details,
 )
 from fides.api.util.saas_util import (
     deny_unsafe_hosts,
-    is_domain_validation_disabled,
     should_ignore_error,
 )
 from fides.config import CONFIG
+from fides.config.security_settings import DomainValidationMode
 
 if TYPE_CHECKING:
     from fides.api.models.connectionconfig import ConnectionConfig
@@ -69,6 +73,7 @@ class AuthenticatedClient:
         self.rate_limit_config = rate_limit_config
         self.connect_timeout = connect_timeout
         self.read_timeout = read_timeout
+        self._domain_validation_mode = get_domain_validation_mode()
         self._allowed_hosts: Optional[List[str]] = self._extract_allowed_hosts()
 
     def _extract_allowed_hosts(self) -> Optional[List[str]]:
@@ -79,7 +84,7 @@ class AuthenticatedClient:
         is self-hosted with an empty allowed_values list).  A non-None list
         means every outbound host must match at least one entry.
         """
-        if is_domain_validation_disabled():
+        if self._domain_validation_mode == DomainValidationMode.disabled:
             return None
 
         saas_config = self.configuration.get_saas_config()
@@ -113,7 +118,10 @@ class AuthenticatedClient:
 
         host_without_port = host.split(":")[0] if ":" in host else host
         validate_value_against_allowed_list(
-            host_without_port, self._allowed_hosts, "host"
+            host_without_port,
+            self._allowed_hosts,
+            "host",
+            mode=self._domain_validation_mode,
         )
 
     def get_authenticated_request(
@@ -189,6 +197,12 @@ class AuthenticatedClient:
                         sleep_time = (
                             retry_after_time if retry_after_time else sleep_time
                         )
+                    except DomainValidationError as exc:
+                        last_exception = ConnectionException(str(exc))
+                        logger.bind(
+                            **connection_exception_details(exc, self.uri)
+                        ).error("Connector request failed.")
+                        break
                     except Exception as exc:  # pylint: disable=W0703
                         dev_mode_log = f" with error: {exc}" if CONFIG.dev_mode else ""
                         last_exception = ConnectionException(
