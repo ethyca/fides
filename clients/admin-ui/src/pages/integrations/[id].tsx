@@ -103,9 +103,7 @@ const IntegrationDetailView: NextPage = () => {
       });
     } else if (jiraAuthStatus === "error") {
       oauthHandled.current = true;
-      const errorMessage =
-        (router.query.message as string) || "Jira authorization failed";
-      message.error(errorMessage);
+      message.error("Jira authorization failed. Check server logs for details.");
       router.replace(`${INTEGRATION_MANAGEMENT_ROUTE}/${id}`, undefined, {
         shallow: true,
       });

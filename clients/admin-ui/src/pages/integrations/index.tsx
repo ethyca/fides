@@ -92,9 +92,7 @@ const IntegrationListView: NextPage = () => {
     const jiraAuthStatus = router.query.jira_auth as string | undefined;
     if (jiraAuthStatus === "error") {
       oauthHandled.current = true;
-      const errorMessage =
-        (router.query.message as string) || "Jira authorization failed";
-      message.error(errorMessage);
+      message.error("Jira authorization failed. Check server logs for details.");
       router.replace(INTEGRATION_MANAGEMENT_ROUTE, undefined, {
         shallow: true,
       });
