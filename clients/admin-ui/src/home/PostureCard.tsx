@@ -61,7 +61,7 @@ export const PostureCard = () => {
           className={cardStyles.smallStatistic}
         />
         <div className={classNames(styles.radarChartWrapper)}>
-          <RadarChart data={radarData} outerRadius="90%" />
+          <RadarChart data={radarData} outerRadius="80%" />
         </div>
         {posture?.agent_annotation && (
           <Alert

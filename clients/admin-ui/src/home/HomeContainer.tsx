@@ -38,11 +38,9 @@ const HomeContainerInner = () => {
     return (
       <ConfigProvider theme={activeTheme}>
         <AntLayout className="h-screen">
-          {alphaDarkMode && (
-            <AntLayout.Header className="flex items-center justify-end px-10 h-12">
-              <ThemeModeSegmented />
-            </AntLayout.Header>
-          )}
+          <AntLayout.Header className="flex items-center justify-end px-10 h-12">
+            {alphaDarkMode && <ThemeModeSegmented />}
+          </AntLayout.Header>
           <AntLayout.Content className="overflow-auto">
             <HomeDashboard />
           </AntLayout.Content>
@@ -56,11 +54,6 @@ const HomeContainerInner = () => {
       <div className="min-h-full w-full" style={{ backgroundColor: bgColor }}>
         <Layout title="Home" padded={false}>
           <Flex vertical gap={40} className="pb-6">
-            {alphaDarkMode && (
-              <Flex className="absolute pl-2 pt-2">
-                <ThemeModeSegmented />
-              </Flex>
-            )}
             <HomeBanner />
             <HomeContent />
           </Flex>
