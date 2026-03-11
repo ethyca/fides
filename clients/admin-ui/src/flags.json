@@ -90,5 +90,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "alphaPurposeBasedAccessControl": {
+    "label": "Alpha purpose-based access control",
+    "description": "Enable purpose-based access control feature",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }

@@ -62,6 +62,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "dataCatalog",
         requiresPlus: true,
       },
+      {
+        title: "Access control",
+        path: routes.ACCESS_CONTROL_ROUTE,
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        requiresPlus: true,
+      },
     ],
   },
   {
@@ -233,6 +240,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.CONFIG_READ,
           ScopeRegistryEnum.CONFIG_UPDATE,
         ],
+      },
+      {
+        title: "Access policies",
+        path: routes.ACCESS_POLICIES_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [],
       },
     ],
   },
