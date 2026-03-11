@@ -43,10 +43,12 @@ const TrendCards = ({ metrics }: TrendCardsProps) => (
       return (
         <Col key={title} xs={24} sm={12} md={6}>
           <Card
-            size="small"
             variant="borderless"
             title={title}
-            className={classNames("overflow-clip h-full", cardStyles.dashboardCard)}
+            className={classNames(
+              "overflow-clip h-full",
+              cardStyles.dashboardCard,
+            )}
             showTitleDivider={false}
             cover={
               metric?.history ? (
