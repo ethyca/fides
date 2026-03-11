@@ -328,7 +328,9 @@ const IntegrationListView: NextPage = () => {
     ),
   };
 
-  if (error) {
+  const isAbortedRequest =
+    error && "status" in error && error.status === "FETCH_ERROR";
+  if (error && !isAbortedRequest) {
     return (
       <ErrorPage
         error={error}
