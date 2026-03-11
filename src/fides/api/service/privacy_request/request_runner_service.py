@@ -585,7 +585,6 @@ def run_privacy_request(
 
                 # Upload Access Results CHECKPOINT
                 access_result_urls: list[str] = []
-                raw_access_results: dict = privacy_request.get_raw_access_results()
                 if (
                     (
                         policy.get_rules_for_action(action_type=ActionType.access)
@@ -598,6 +597,7 @@ def run_privacy_request(
                         from_checkpoint=resume_step,
                     )
                 ):
+                    raw_access_results: dict = privacy_request.get_raw_access_results()
                     privacy_request.cache_failed_checkpoint_details(
                         CurrentStep.upload_access
                     )
