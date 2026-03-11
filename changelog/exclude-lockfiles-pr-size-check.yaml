@@ -1,4 +1,4 @@
 type: Developer Experience
 description: Exclude lockfiles (package-lock.json, uv.lock) from PR size check to prevent false failures on dependency update PRs
-pr: 0
+pr: 7625
 labels: []
