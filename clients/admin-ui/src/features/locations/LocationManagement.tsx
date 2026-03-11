@@ -4,8 +4,8 @@ import {
   ChakraSimpleGrid as SimpleGrid,
   ChakraText as Text,
   ChakraVStack as VStack,
-  useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
+  useModal,
   WarningIcon,
 } from "fidesui";
 import _ from "lodash";
@@ -13,7 +13,6 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import SearchInput from "~/features/common/SearchInput";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -31,7 +30,7 @@ import { groupLocationsByContinent } from "./transformations";
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
-  const confirmationDisclosure = useDisclosure();
+  const modal = useModal();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.locations?.filter((l) => l.id !== PrivacyNoticeRegion.GLOBAL) ?? [],
   );
@@ -127,22 +126,19 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           ),
         )}
       </SimpleGrid>
-      <ConfirmationModal
-        isOpen={confirmationDisclosure.isOpen}
-        onClose={confirmationDisclosure.onClose}
-        onConfirm={() => {
-          handleSave();
-          confirmationDisclosure.onClose();
-        }}
-        title="Regulation updates"
-        message="Modifications in your location settings may also affect your regulation settings to simplify management. You can override any Fides-initiated changes directly in the regulation settings."
-        isCentered
-        icon={<WarningIcon color="orange" />}
-      />
       {showSave ? (
         <Button
           type="primary"
-          onClick={confirmationDisclosure.onOpen}
+          onClick={() => {
+            modal.confirm({
+              title: "Regulation updates",
+              content:
+                "Modifications in your location settings may also affect your regulation settings to simplify management. You can override any Fides-initiated changes directly in the regulation settings.",
+              centered: true,
+              icon: <WarningIcon color="orange" />,
+              onOk: handleSave,
+            });
+          }}
           loading={isSaving}
           data-testid="save-btn"
         >

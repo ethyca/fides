@@ -1,6 +1,7 @@
 import { Button, Flex, Modal } from "fidesui";
 import { useState } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
@@ -144,7 +145,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
       title={modalTitle}
       centered
       destroyOnHidden
-      width={1010}
+      width={MODAL_SIZE.xl}
       footer={renderFooter()}
       styles={{
         content: {

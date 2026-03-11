@@ -390,7 +390,7 @@ describe("Consent settings", () => {
       it("allows deleting an existing restriction", () => {
         cy.getByTestId("edit-restriction-btn-2").click({ force: true });
         cy.getByTestId("delete-restriction-button").first().click();
-        cy.getByTestId("continue-btn").click();
+        cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
         cy.wait("@deleteRestriction");
         cy.contains("Publisher restriction deleted successfully").should(
           "be.visible",

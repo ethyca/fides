@@ -5,13 +5,13 @@ import {
   Select,
   Space,
   useMessage,
+  useModal,
   WarningIcon,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { NOTIFICATIONS_DIGESTS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { DigestType, MessagingMethod, ScopeRegistryEnum } from "~/types/api";
@@ -38,8 +38,8 @@ const DigestConfigForm = ({
   const [form] = Form.useForm<DigestConfigFormValues>();
   const router = useRouter();
   const messageApi = useMessage();
+  const modal = useModal();
   const [testEmailModalOpen, setTestEmailModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [timezone, setTimezone] = useState<string>(
     initialValues?.timezone || DEFAULT_TIMEZONE,
   );
@@ -56,32 +56,37 @@ const DigestConfigForm = ({
     useHasPermission([ScopeRegistryEnum.DIGEST_CONFIG_DELETE]) && isEditMode;
 
   const handleDeleteClick = () => {
-    setDeleteModalOpen(true);
-  };
+    modal.confirm({
+      title: "Delete digest configuration",
+      content: (
+        <span className="text-gray-500">
+          Are you sure you want to delete the digest &quot;
+          {initialValues?.name}&quot;? This action cannot be undone.
+        </span>
+      ),
+      okText: "Delete",
+      centered: true,
+      icon: <WarningIcon />,
+      onOk: async () => {
+        const result = await deleteDigestConfig({
+          config_id: initialValues?.id as string,
+          digest_config_type: DigestType.MANUAL_TASKS,
+        });
 
-  const confirmDelete = async () => {
-    const result = await deleteDigestConfig({
-      config_id: initialValues?.id as string,
-      digest_config_type: DigestType.MANUAL_TASKS,
-    });
+        if (isErrorResult(result)) {
+          messageApi.error(getErrorMessage(result.error));
+          return;
+        }
 
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-      setDeleteModalOpen(false);
-      return;
-    }
-
-    messageApi.success(
-      "Digest configuration deleted successfully",
-      undefined,
-      () => {
-        router.push(NOTIFICATIONS_DIGESTS_ROUTE);
+        messageApi.success(
+          "Digest configuration deleted successfully",
+          undefined,
+          () => {
+            router.push(NOTIFICATIONS_DIGESTS_ROUTE);
+          },
+        );
       },
-    );
-  };
-
-  const cancelDelete = () => {
-    setDeleteModalOpen(false);
+    });
   };
 
   const onSubmit = async (values: DigestConfigFormValues) => {
@@ -267,23 +272,6 @@ const DigestConfigForm = ({
           digestType={DigestType.MANUAL_TASKS}
         />
       )}
-
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={cancelDelete}
-        onConfirm={confirmDelete}
-        title="Delete digest configuration"
-        message={
-          <span className="text-gray-500">
-            Are you sure you want to delete the digest &quot;
-            {initialValues?.name}&quot;? This action cannot be undone.
-          </span>
-        }
-        continueButtonText="Delete"
-        isCentered
-        icon={<WarningIcon />}
-      />
     </>
   );
 };

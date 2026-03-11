@@ -1,8 +1,8 @@
 import {
   Button,
-  ChakraModalProps as ModalProps,
   ChakraText as Text,
   Flex,
+  Modal,
   useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -16,7 +16,6 @@ import {
   isErrorResult,
 } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
-import FormModal from "~/features/common/modals/FormModal";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useAddSystemAssetMutation,
@@ -25,7 +24,9 @@ import {
 import WrappedDataUseSelect from "~/features/system/tabs/system-assets/WrappedDataUseSelect";
 import { Asset } from "~/types/api";
 
-interface AddEditAssetModalProps extends Omit<ModalProps, "children"> {
+interface AddEditAssetModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   systemKey: string;
   asset?: Asset;
 }
@@ -68,7 +69,6 @@ const AddEditAssetModal = ({
   onClose,
   systemKey,
   asset,
-  ...props
 }: AddEditAssetModalProps) => {
   const isCreate = !asset;
 
@@ -117,11 +117,13 @@ const AddEditAssetModal = ({
   const initialValues = asset ?? DEFAULT_VALUES;
 
   return (
-    <FormModal
+    <Modal
       title={isCreate ? "Add asset" : "Edit asset"}
-      onClose={onClose}
-      isOpen={isOpen}
-      {...props}
+      onCancel={onClose}
+      open={isOpen}
+      centered
+      destroyOnClose
+      footer={null}
     >
       <Formik
         initialValues={initialValues}
@@ -214,7 +216,7 @@ const AddEditAssetModal = ({
           );
         }}
       </Formik>
-    </FormModal>
+    </Modal>
   );
 };
 

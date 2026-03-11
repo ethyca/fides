@@ -1,16 +1,7 @@
-import {
-  Button,
-  Flex,
-  Icons,
-  Spin,
-  Text,
-  Tooltip,
-  useChakraDisclosure as useDisclosure,
-} from "fidesui";
+import { Button, Flex, Icons, Spin, Text, Tooltip, useModal } from "fidesui";
 import { useCallback } from "react";
 
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
   type MonitorDeletionImpact,
@@ -102,10 +93,9 @@ const MonitorConfigActionsCell = ({
   isOktaMonitor?: boolean;
   onEditClick: () => void;
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const modal = useModal();
 
-  const [deleteMonitor, { isLoading: isDeleting }] =
-    useDeleteDiscoveryMonitorMutation();
+  const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
   const [
     fetchDeletionImpact,
     { data: deletionImpact, isLoading: isLoadingImpact },
@@ -139,20 +129,37 @@ const MonitorConfigActionsCell = ({
       return;
     }
     fetchDeletionImpact({ monitor_config_id: monitorId });
-    onOpen();
-  }, [monitorId, onOpen, fetchDeletionImpact]);
+    modal.confirm({
+      title: "Delete monitor",
+      content: (
+        <DeleteMonitorMessage
+          deletionImpact={deletionImpact}
+          isLoadingImpact={isLoadingImpact}
+        />
+      ),
+      okText: "Delete",
+      centered: true,
+      icon: null,
+      onOk: async () => {
+        const result = await deleteMonitor({
+          monitor_config_id: monitorId,
+        });
+        toastDeleteResult(result);
+      },
+    });
+  }, [
+    monitorId,
+    modal,
+    fetchDeletionImpact,
+    deletionImpact,
+    isLoadingImpact,
+    deleteMonitor,
+    toastDeleteResult,
+  ]);
 
   if (!monitorId) {
     return null;
   }
-
-  const handleDelete = async () => {
-    const result = await deleteMonitor({
-      monitor_config_id: monitorId,
-    });
-    toastDeleteResult(result);
-    onClose();
-  };
 
   const handleExecute = async () => {
     const result = isOktaMonitor
@@ -162,48 +169,31 @@ const MonitorConfigActionsCell = ({
   };
 
   return (
-    <>
-      <ConfirmationModal
-        isOpen={isOpen}
-        onClose={onClose}
-        onConfirm={handleDelete}
-        title="Delete monitor"
-        message={
-          <DeleteMonitorMessage
-            deletionImpact={deletionImpact}
-            isLoadingImpact={isLoadingImpact}
-          />
-        }
-        continueButtonText="Delete"
-        isCentered
-        isLoading={isDeleting}
-      />
-      <Flex gap={8}>
-        <Tooltip title="Edit">
-          <Button
-            onClick={onEditClick}
-            size="small"
-            icon={<Icons.Edit />}
-            data-testid="edit-monitor-btn"
-            aria-label="Edit monitor"
-          />
-        </Tooltip>
-        <Tooltip title="Delete">
-          <Button
-            onClick={handleOpenDeleteModal}
-            size="small"
-            icon={<Icons.TrashCan />}
-            aria-label="Delete monitor"
-            data-testid="delete-monitor-btn"
-          />
-        </Tooltip>
-        <ActionButton
-          onClick={handleExecute}
-          title="Scan"
-          loading={executeIsLoading}
+    <Flex gap={8}>
+      <Tooltip title="Edit">
+        <Button
+          onClick={onEditClick}
+          size="small"
+          icon={<Icons.Edit />}
+          data-testid="edit-monitor-btn"
+          aria-label="Edit monitor"
         />
-      </Flex>
-    </>
+      </Tooltip>
+      <Tooltip title="Delete">
+        <Button
+          onClick={handleOpenDeleteModal}
+          size="small"
+          icon={<Icons.TrashCan />}
+          aria-label="Delete monitor"
+          data-testid="delete-monitor-btn"
+        />
+      </Tooltip>
+      <ActionButton
+        onClick={handleExecute}
+        title="Scan"
+        loading={executeIsLoading}
+      />
+    </Flex>
   );
 };
 

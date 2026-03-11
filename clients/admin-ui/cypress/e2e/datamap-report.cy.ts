@@ -426,7 +426,7 @@ describe("Data map report table", () => {
           cy.getByTestId("checkbox-Analytics").within(() => {
             cy.get("[data-checked]").should("exist");
           });
-          cy.getByTestId("standard-dialog-close-btn").click();
+          cy.get(".ant-modal-close").click();
         });
       cy.getByTestId("column-data_categories").should(
         "contain.text",
@@ -478,7 +478,7 @@ describe("Data map report table", () => {
           cy.getByTestId("checkbox-Analytics").within(() => {
             cy.get("[data-checked]").should("not.exist");
           });
-          cy.getByTestId("standard-dialog-close-btn").click();
+          cy.get(".ant-modal-close").click();
         });
     });
     it("should allow the user cancel a report selection", () => {

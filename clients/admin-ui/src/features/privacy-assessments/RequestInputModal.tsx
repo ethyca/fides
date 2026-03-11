@@ -12,6 +12,7 @@ import {
 import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import { AnswerStatusTags } from "./AnswerStatusTags";
@@ -85,7 +86,7 @@ export const RequestInputModal = ({
       open={open}
       onCancel={onClose}
       afterOpenChange={handleAfterOpen}
-      width={600}
+      width={MODAL_SIZE.md}
       destroyOnClose
       okText="Send questions"
       okButtonProps={{

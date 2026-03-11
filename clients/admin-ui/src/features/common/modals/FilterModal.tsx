@@ -6,20 +6,15 @@ import {
   ChakraAccordionPanel as AccordionPanel,
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
-  ChakraDivider as Divider,
   ChakraHeading as Heading,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraModalProps as ModalProps,
   ChakraSimpleGrid as SimpleGrid,
   ChakraText as Text,
+  Flex,
+  Modal,
 } from "fidesui";
 import React, { ReactNode, useState } from "react";
+
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 
 export const getQueryParamsFromList = (
   optionList: Option[],
@@ -166,40 +161,45 @@ export const FilterSection = ({ heading, children }: FilterSectionProps) => (
   </Box>
 );
 
-export interface FilterModalProps extends ModalProps {
+// TODO: Migrate FilterModal consumers to use the CustomFilter component from fidesui instead
+export interface FilterModalProps {
   resetFilters: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  children?: ReactNode;
 }
+
 export const FilterModal = ({
   resetFilters,
   isOpen,
   onClose,
   children,
-  ...props
 }: FilterModalProps): JSX.Element => (
-  <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl" {...props}>
-    <ModalOverlay />
-    <ModalContent>
-      <ModalHeader>Filters</ModalHeader>
-      <ModalCloseButton />
-      <Divider />
-      <ModalBody
-        maxH="85vh"
-        padding="0px"
-        overflowX="auto"
-        style={{ scrollbarGutter: "stable" }}
-      >
-        {children}
-      </ModalBody>
-      <ModalFooter>
-        <Box display="flex" justifyContent="space-between" width="100%">
-          <Button onClick={resetFilters} className="mr-3 grow">
-            Reset filters
-          </Button>
-          <Button type="primary" onClick={onClose} className="grow">
-            Done
-          </Button>
-        </Box>
-      </ModalFooter>
-    </ModalContent>
+  <Modal
+    open={isOpen}
+    onCancel={onClose}
+    centered
+    width={MODAL_SIZE.md}
+    title="Filters"
+    footer={
+      <Flex gap={12}>
+        <Button onClick={resetFilters} className="flex-1">
+          Reset filters
+        </Button>
+        <Button type="primary" onClick={onClose} className="flex-1">
+          Done
+        </Button>
+      </Flex>
+    }
+    styles={{
+      body: {
+        maxHeight: "85vh",
+        padding: 0,
+        overflowX: "auto",
+        scrollbarGutter: "stable",
+      },
+    }}
+  >
+    {children}
   </Modal>
 );

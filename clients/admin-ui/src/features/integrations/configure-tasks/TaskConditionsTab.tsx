@@ -6,13 +6,12 @@ import {
   Tag,
   Tooltip,
   Typography,
-  useChakraDisclosure as useDisclosure,
   useMessage,
+  useModal,
   WarningIcon,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import {
   useGetManualTaskConfigQuery,
   useUpdateDependencyConditionsMutation,
@@ -37,21 +36,12 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
   const [editingCondition, setEditingCondition] =
     useState<ConditionLeaf | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [conditionToDelete, setConditionToDelete] = useState<{
-    index: number;
-    condition: ConditionLeaf;
-  } | null>(null);
 
   const message = useMessage();
+  const modal = useModal();
 
   const { isConsentOnly, hasConsentTasks, hasAccessOrErasureTasks } =
     useConfiguredRequestTypes({ connectionKey });
-
-  const {
-    isOpen: isDeleteOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
 
   const {
     data: manualTaskConfig,
@@ -150,36 +140,41 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
 
   const handleDeleteCondition = useCallback(
     (index: number, condition: ConditionLeaf) => {
-      setConditionToDelete({ index, condition });
-      onDeleteOpen();
+      modal.confirm({
+        title: "Delete condition",
+        content: (
+          <Text className="text-gray-500">
+            Are you sure you want to delete the condition for &ldquo;
+            {condition.field_address}&rdquo;? This action cannot be undone.
+          </Text>
+        ),
+        okText: "Delete",
+        centered: true,
+        icon: <WarningIcon />,
+        className: "delete-condition-modal",
+        onOk: async () => {
+          const originalConditions = conditions; // Capture current state
+          const updatedConditions = originalConditions.filter(
+            (_, i) => i !== index,
+          );
+
+          // Update local state optimistically
+          setConditions(updatedConditions);
+
+          // Auto-save to backend
+          try {
+            await saveConditions(updatedConditions);
+            message.success("Condition deleted successfully!");
+          } catch (err) {
+            message.error("Failed to delete condition. Please try again.");
+            // Revert to captured original state
+            setConditions(originalConditions);
+          }
+        },
+      });
     },
-    [onDeleteOpen],
+    [modal, conditions, saveConditions, message],
   );
-
-  const handleConfirmDelete = useCallback(async () => {
-    if (conditionToDelete) {
-      const originalConditions = conditions; // Capture current state
-      const updatedConditions = originalConditions.filter(
-        (_, i) => i !== conditionToDelete.index,
-      );
-
-      // Update local state optimistically
-      setConditions(updatedConditions);
-
-      // Auto-save to backend
-      try {
-        await saveConditions(updatedConditions);
-        message.success("Condition deleted successfully!");
-      } catch (err) {
-        message.error("Failed to delete condition. Please try again.");
-        // Revert to captured original state
-        setConditions(originalConditions);
-      }
-
-      setConditionToDelete(null);
-    }
-    onDeleteClose();
-  }, [conditionToDelete, onDeleteClose, conditions, saveConditions, message]);
 
   if (isLoading) {
     return (
@@ -312,27 +307,6 @@ const TaskConditionsTab = ({ connectionKey }: TaskConditionsTabProps) => {
         editingCondition={editingCondition}
         connectionKey={connectionKey}
         isConsentOnly={isConsentOnly}
-      />
-
-      <ConfirmationModal
-        isOpen={isDeleteOpen}
-        onClose={() => {
-          setConditionToDelete(null);
-          onDeleteClose();
-        }}
-        onConfirm={handleConfirmDelete}
-        title="Delete condition"
-        data-testid="delete-condition-modal"
-        message={
-          <Text className="text-gray-500">
-            Are you sure you want to delete the condition for &ldquo;
-            {conditionToDelete?.condition.field_address}&rdquo;? This action
-            cannot be undone.
-          </Text>
-        }
-        continueButtonText="Delete"
-        isCentered
-        icon={<WarningIcon />}
       />
     </div>
   );

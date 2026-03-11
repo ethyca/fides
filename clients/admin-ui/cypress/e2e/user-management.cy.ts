@@ -754,9 +754,9 @@ describe("User management", () => {
         it("can warn when assigning an approver", () => {
           cy.getByTestId("role-option-Approver").click();
           cy.getByTestId("save-btn").click();
-          cy.getByTestId("downgrade-to-approver-confirmation-modal").within(
+          cy.get(".downgrade-to-approver-confirmation-modal .ant-modal-confirm").within(
             () => {
-              cy.getByTestId("continue-btn").click();
+              cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
             },
           );
           cy.wait("@updatePermission");

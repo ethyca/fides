@@ -1,15 +1,14 @@
 import {
   ChakraText as Text,
   Tooltip,
-  useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
+  useModal,
   WarningIcon,
 } from "fidesui";
 import router from "next/router";
 import React from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -37,7 +36,7 @@ interface Props {
  */
 const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
   const toast = useToast();
-  const confirmationModal = useDisclosure();
+  const modal = useModal();
   const [deletePropertyMutationTrigger] = useDeletePropertyMutation();
 
   const disabled = property.experiences.length > 0;
@@ -45,19 +44,34 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
   const handleModalOpen = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation();
     if (!disabled) {
-      confirmationModal.onOpen();
+      modal.confirm({
+        title: `Delete ${property.name}`,
+        content: (
+          <Text color="gray.500">
+            You are about to delete property {property.name}. This action is not
+            reversible and will result in {property.name} no longer being
+            available for your data governance. Are you sure you want to
+            proceed?
+          </Text>
+        ),
+        okText: "Ok",
+        centered: true,
+        icon: <WarningIcon />,
+        onOk: async () => {
+          const result = await deletePropertyMutationTrigger(property.id!);
+          if (isErrorResult(result)) {
+            toast(errorToastParams(getErrorMessage(result.error)));
+            return;
+          }
+          router.push(`${PROPERTIES_ROUTE}`);
+          toast(
+            successToastParams(
+              `Property ${property.name} deleted successfully`,
+            ),
+          );
+        },
+      });
     }
-  };
-
-  const handleConfirm = async () => {
-    confirmationModal.onClose();
-    const result = await deletePropertyMutationTrigger(property.id!);
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-      return;
-    }
-    router.push(`${PROPERTIES_ROUTE}`);
-    toast(successToastParams(`Property ${property.name} deleted successfully`));
   };
 
   return (
@@ -77,23 +91,6 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
           })}
         </span>
       </Tooltip>
-      <ConfirmationModal
-        isOpen={confirmationModal.isOpen}
-        onClose={confirmationModal.onClose}
-        onConfirm={handleConfirm}
-        title={`Delete ${property.name}`}
-        message={
-          <Text color="gray.500">
-            You are about to delete property {property.name}. This action is not
-            reversible and will result in {property.name} no longer being
-            available for your data governance. Are you sure you want to
-            proceed?
-          </Text>
-        }
-        continueButtonText="Ok"
-        isCentered
-        icon={<WarningIcon />}
-      />
     </Restrict>
   );
 };

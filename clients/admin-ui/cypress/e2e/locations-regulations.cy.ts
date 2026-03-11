@@ -198,7 +198,7 @@ describe("Locations and regulations", () => {
       });
 
       cy.getByTestId("save-btn").click();
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
       cy.wait("@patchLocations").then((interception) => {
         const { body } = interception.request;
         // No changes to regulations
@@ -408,7 +408,7 @@ describe("Locations and regulations", () => {
       });
 
       cy.getByTestId("save-btn").click();
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().find(".ant-btn-primary").click();
       cy.wait("@patchLocations").then((interception) => {
         const { body } = interception.request;
         // No changes to locations
