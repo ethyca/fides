@@ -47,7 +47,7 @@ class ChangelogEntry:
 
     def to_markdown(self) -> str:
         """Convert entry to markdown format."""
-        entry = f"- {self.description}"
+        entry = f"- {self.description.strip()}"
         if self.pr:
             entry += f" [#{self.pr}]({GITHUB_REPO}/pull/{self.pr})"
         for label in self.labels:
@@ -59,6 +59,14 @@ class ChangelogEntry:
 # =============================================================================
 # Fragment Loading and Validation
 # =============================================================================
+
+
+PLACEHOLDER_DESCRIPTIONS = {
+    "Short description of the change",
+    "Description of the change",
+}
+
+FILENAME_PATTERN = re.compile(r"^(\d+)-.+\.ya?ml$")
 
 
 def validate_fragment_data(
@@ -96,11 +104,47 @@ def validate_fragment_data(
             f"Must be one of: {', '.join(CHANGELOG_TYPES)}"
         )
 
+    # Validate description is not a placeholder
+    description = data["description"].strip()
+    if description in PLACEHOLDER_DESCRIPTIONS:
+        return None, (
+            f"Placeholder description in {filename}: '{description}'. "
+            f"Please write an actual description of the change."
+        )
+
+    # Validate filename format: <pr_number>-<slug>.yaml
+    match = FILENAME_PATTERN.match(filename)
+    if not match:
+        return None, (
+            f"Invalid filename '{filename}'. "
+            f"Expected format: <pr_number>-<short-description>.yaml "
+            f"(e.g., 1234-add-user-endpoint.yaml)"
+        )
+
+    # Validate filename PR number matches the pr field
+    filename_pr = int(match.group(1))
+    if filename_pr != data["pr"]:
+        return None, (
+            f"PR number mismatch in {filename}: "
+            f"filename has {filename_pr} but pr field is {data['pr']}"
+        )
+
+    # Validate labels are recognized
+    labels = data.get("labels", [])
+    if labels:
+        invalid_labels = [label for label in labels if label not in LABEL_URLS]
+        if invalid_labels:
+            valid_labels = ", ".join(sorted(LABEL_URLS.keys()))
+            return None, (
+                f"Invalid label(s) in {filename}: {', '.join(invalid_labels)}. "
+                f"Valid labels are: {valid_labels}"
+            )
+
     entry = ChangelogEntry(
         entry_type=entry_type,
-        description=data["description"],
+        description=description,
         pr=data.get("pr"),
-        labels=data.get("labels", []),
+        labels=labels,
     )
     return entry, None
 
@@ -417,6 +461,18 @@ def _handle_validate(session: nox.Session) -> None:
         else:
             session.error("--files flag requires a comma-separated list of file paths")
 
+    # Check for PR number flag
+    expected_pr_number = None
+    if "--pr-number" in session.posargs:
+        pr_idx = session.posargs.index("--pr-number")
+        if pr_idx + 1 < len(session.posargs):
+            try:
+                expected_pr_number = int(session.posargs[pr_idx + 1])
+            except ValueError:
+                session.error("--pr-number flag requires an integer PR number")
+        else:
+            session.error("--pr-number flag requires a PR number")
+
     try:
         if files_filter:
             # Validate specific files
@@ -435,6 +491,21 @@ def _handle_validate(session: nox.Session) -> None:
                 session.log(f"  - {path.name}: type='{entry.type}', pr=#{entry.pr}")
     except ValueError as e:
         session.error(str(e))
+
+    # Validate PR number matches the current PR
+    if expected_pr_number and validated:
+        mismatched = [
+            (path, entry) for path, entry in validated if entry.pr != expected_pr_number
+        ]
+        if mismatched:
+            error_lines = [
+                f"Changelog entry PR number does not match the current PR (#{expected_pr_number}):"
+            ]
+            for path, entry in mismatched:
+                error_lines.append(
+                    f"  - {path.name}: has pr: {entry.pr}, expected pr: {expected_pr_number}"
+                )
+            session.error("\n".join(error_lines))
 
 
 def _handle_dry(
