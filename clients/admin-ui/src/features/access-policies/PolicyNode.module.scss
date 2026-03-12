@@ -24,6 +24,12 @@
   width: 100% !important;
 }
 
+.selectField {
+  border-top: 1px solid var(--ant-color-border) !important;
+  border-radius: 0 !important;
+  padding: 18px 4px 20px !important;
+  width: 100% !important;
+}
 .handle {
   background: var(--ant-color-text-quaternary);
   border: none;

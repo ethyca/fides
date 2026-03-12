@@ -59,7 +59,7 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
         onChange={onControlGroupChange}
         options={controlGroupOptions}
         variant="borderless"
-        className={styles.field}
+        className={styles.selectField}
         data-testid="policy-control-group-select"
         aria-label="Select control group"
       />
