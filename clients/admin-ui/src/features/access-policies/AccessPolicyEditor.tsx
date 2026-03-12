@@ -144,7 +144,7 @@ const CenterOnNewNode = ({
         minZoom: zoom,
         maxZoom: zoom,
         padding: 0.5,
-        duration: 500,
+        duration: 400,
       });
       onCentered();
     }, 150);
@@ -511,7 +511,7 @@ const AccessPolicyEditor = ({
         }
       />
 
-      <Flex gap="large" className="p-6">
+      <Flex gap="large">
         {/* Main area */}
         <Flex vertical flex={1} gap="middle">
           <Radio.Group
