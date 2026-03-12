@@ -1,4 +1,0 @@
-type: Changed
-description: Standardize RDS and MySQL namespace meta field names (database_id → database_name, database_instance_id → database_instance_name) in connector and data migration
-pr: 7589
-labels: ["db-migration"]

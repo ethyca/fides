@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Skip External-Datastores and External-SaaS-Connectors CI jobs in the merge queue to reduce queue latency
-pr: 7580
-labels: []

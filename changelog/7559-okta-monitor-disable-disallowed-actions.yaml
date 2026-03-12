@@ -1,4 +1,0 @@
-type: Changed
-description: Disabled disallowed actions in Okta monitor with explanatory tooltips
-pr: 7559
-labels: []
