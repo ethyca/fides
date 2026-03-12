@@ -65,3 +65,13 @@ class TestEntraConnector:
     def test_dsr_supported_false(self, entra_connection_config):
         connector = EntraConnector(entra_connection_config)
         assert connector.dsr_supported is False
+
+    def test_retrieve_data_returns_empty(self, entra_connection_config):
+        """retrieve_data is a no-op since DSR is not supported."""
+        connector = EntraConnector(entra_connection_config)
+        assert connector.retrieve_data(None, None, None, None, {}) == []
+
+    def test_mask_data_returns_zero(self, entra_connection_config):
+        """mask_data is a no-op since DSR is not supported."""
+        connector = EntraConnector(entra_connection_config)
+        assert connector.mask_data(None, None, None, None, []) == 0

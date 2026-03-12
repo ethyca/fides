@@ -1,21 +1,33 @@
 """Add entra to ConnectionType enum.
 
 Revision ID: b5c6d7e8f9a0
-Revises: 074796d61d8a
+Revises: e3a9f1b2c4d5
 Create Date: 2026-03-10
 
 """
+
+import re
 
 from alembic import op
 from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision = "b5c6d7e8f9a0"
-down_revision = "074796d61d8a"
+down_revision = "e3a9f1b2c4d5"
 branch_labels = None
 depends_on = None
 
 TYPE_TO_HANDLE = "entra"
+
+# Only allow safe enum identifiers (alphanumeric, underscores, hyphens)
+_SAFE_ENUM_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
+
+
+def _validate_enum_value(value: str) -> str:
+    """Validate that an enum value contains only safe characters."""
+    if not _SAFE_ENUM_RE.match(value):
+        raise ValueError(f"Unsafe enum value: {value!r}")
+    return value
 
 
 def get_enum_values():
@@ -23,7 +35,7 @@ def get_enum_values():
     result = conn.execute(
         text("SELECT unnest(enum_range(NULL::connectiontype))")
     ).fetchall()
-    return [row[0] for row in result]
+    return [_validate_enum_value(row[0]) for row in result]
 
 
 def upgrade():
@@ -47,7 +59,9 @@ def downgrade():
     # Remove 'entra' from ConnectionType enum.
     # WARNING: This permanently deletes any connectionconfig rows with connection_type='entra'.
     op.execute(
-        f"DELETE FROM connectionconfig WHERE connection_type IN ('{TYPE_TO_HANDLE}')"
+        text("DELETE FROM connectionconfig WHERE connection_type = :val").bindparams(
+            val=TYPE_TO_HANDLE
+        )
     )
     enum_values = sorted(
         set(f"'{v}'" for v in get_enum_values() if v != TYPE_TO_HANDLE)
