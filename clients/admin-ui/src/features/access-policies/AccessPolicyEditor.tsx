@@ -60,6 +60,7 @@ interface PolicyCanvasPanelProps {
   onNameChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
+  onAddNode?: () => void;
 }
 
 const PolicyCanvasPanel = ({
@@ -70,6 +71,7 @@ const PolicyCanvasPanel = ({
   onNameChange,
   onDescriptionChange,
   onControlGroupChange,
+  onAddNode,
 }: PolicyCanvasPanelProps) => {
   const nodes: Node[] = useMemo(
     () => [
@@ -86,6 +88,7 @@ const PolicyCanvasPanel = ({
           onNameChange,
           onDescriptionChange,
           onControlGroupChange,
+          onAddNode,
         },
       } satisfies PolicyNodeType,
     ],
@@ -97,6 +100,7 @@ const PolicyCanvasPanel = ({
       onNameChange,
       onDescriptionChange,
       onControlGroupChange,
+      onAddNode,
     ],
   );
 
@@ -163,6 +167,10 @@ const AccessPolicyEditor = ({
     (value: string | undefined) => setControlGroup(value),
     [],
   );
+
+  const handleAddNode = useCallback(() => {
+    // TODO: implement add node logic
+  }, []);
 
   const handleExport = () => {
     const blob = new Blob([yamlValue], { type: "text/yaml" });
@@ -251,6 +259,7 @@ const AccessPolicyEditor = ({
                 onNameChange={handleNameChange}
                 onDescriptionChange={handleDescriptionChange}
                 onControlGroupChange={handleControlGroupChange}
+                onAddNode={handleAddNode}
               />
             </ReactFlowProvider>
           )}

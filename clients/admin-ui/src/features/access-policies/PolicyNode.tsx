@@ -1,6 +1,7 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { Avatar, Flex, Icons, Input, Select, SelectProps, Text } from "fidesui";
 
+import NodeActions from "./NodeActions";
 import styles from "./PolicyNode.module.scss";
 
 export interface PolicyNodeData extends Record<string, unknown> {
@@ -11,6 +12,7 @@ export interface PolicyNodeData extends Record<string, unknown> {
   onNameChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
+  onAddNode?: () => void;
 }
 
 export type PolicyNodeType = Node<PolicyNodeData, "policyNode">;
@@ -24,6 +26,7 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
     onNameChange,
     onDescriptionChange,
     onControlGroupChange,
+    onAddNode,
   } = data;
 
   return (
@@ -63,6 +66,7 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
         data-testid="policy-control-group-select"
         aria-label="Select control group"
       />
+      <NodeActions onAddNode={onAddNode} />
       <Handle
         type="source"
         position={Position.Bottom}
