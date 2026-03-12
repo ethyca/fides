@@ -96,10 +96,7 @@ const MonitorConfigActionsCell = ({
   const modal = useModal();
 
   const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
-  const [
-    fetchDeletionImpact,
-    { data: deletionImpact, isLoading: isLoadingImpact },
-  ] = useLazyGetMonitorDeletionImpactQuery();
+  const [fetchDeletionImpact] = useLazyGetMonitorDeletionImpactQuery();
 
   const { toastResult: toastDeleteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred deleting this monitor",
@@ -124,18 +121,17 @@ const MonitorConfigActionsCell = ({
       : "Monitor execution successfully started",
   });
 
-  const handleOpenDeleteModal = useCallback(() => {
+  const handleOpenDeleteModal = useCallback(async () => {
     if (!monitorId) {
       return;
     }
-    fetchDeletionImpact({ monitor_config_id: monitorId });
+    const { data } = await fetchDeletionImpact({
+      monitor_config_id: monitorId,
+    });
     modal.confirm({
       title: "Delete monitor",
       content: (
-        <DeleteMonitorMessage
-          deletionImpact={deletionImpact}
-          isLoadingImpact={isLoadingImpact}
-        />
+        <DeleteMonitorMessage deletionImpact={data} isLoadingImpact={false} />
       ),
       okText: "Delete",
       centered: true,
@@ -147,15 +143,7 @@ const MonitorConfigActionsCell = ({
         toastDeleteResult(result);
       },
     });
-  }, [
-    monitorId,
-    modal,
-    fetchDeletionImpact,
-    deletionImpact,
-    isLoadingImpact,
-    deleteMonitor,
-    toastDeleteResult,
-  ]);
+  }, [monitorId, modal, fetchDeletionImpact, deleteMonitor, toastDeleteResult]);
 
   if (!monitorId) {
     return null;
