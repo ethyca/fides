@@ -18,7 +18,8 @@
 
 | Action | File | Responsibility |
 |--------|------|---------------|
-| Modify | `src/fides/api/models/sql_models.py` | Add DataPurpose model (alongside other FidesBase models), add Dataset columns, add System relationship |
+| Create | `src/fides/api/models/data_purpose.py` | DataPurpose model |
+| Modify | `src/fides/api/models/sql_models.py` | Add Dataset columns, add System relationship |
 | Create | `src/fides/api/models/data_consumer.py` | DataConsumer model, DataConsumerPurpose join table |
 | Create | `src/fides/api/models/system_purpose.py` | SystemPurpose join table |
 | Create | `src/fides/api/models/data_producer.py` | DataProducer model, DataProducerMember join table |
@@ -71,7 +72,7 @@
 ### Task 1: DataPurpose Model
 
 **Files:**
-- Modify: `src/fides/api/models/sql_models.py` (add DataPurpose class)
+- Create: `src/fides/api/models/data_purpose.py`
 - Test: `tests/ops/models/test_data_purpose.py`
 
 - [ ] **Step 1: Write the model test**
@@ -81,7 +82,7 @@
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.sql_models import DataPurpose
+from fides.api.models.data_purpose import DataPurpose
 
 
 @pytest.mark.postgres
@@ -168,10 +169,18 @@ Expected: ImportError (module does not exist yet)
 
 **Important:** `FidesBase` (the mixin providing `fides_key`, `name`, `description`, `organization_fides_key`, `tags`) is defined in `sql_models.py`, NOT in `base_class.py`. The `Base` class from `base_class.py` provides `id`, `created_at`, `updated_at`, and CRUD methods. Models inheriting both get a composite primary key (`id` + `fides_key`). This is the same pattern used by `System`, `Dataset`, `DataCategory`, etc. Join tables reference `data_purpose.id` (the UUID column), which works because `id` is part of the composite PK.
 
-Add the `DataPurpose` class to `src/fides/api/models/sql_models.py` (alongside the other FidesBase models) to avoid circular import issues:
+Create `src/fides/api/models/data_purpose.py`. Import `FidesBase` from `sql_models` and `Base` from `base_class`. There is no circular import since `sql_models.py` does not import from `data_purpose.py`.
 
 ```python
-# Add to src/fides/api/models/sql_models.py after the Dataset class
+# src/fides/api/models/data_purpose.py
+from typing import Any
+
+from sqlalchemy import ARRAY, Boolean, Column, String
+from sqlalchemy.orm import Session
+
+from fides.api.db.base_class import Base
+from fides.api.models.sql_models import FidesBase
+
 
 class DataPurpose(Base, FidesBase):
     """
@@ -215,7 +224,7 @@ Columns inherited from `Base` (do NOT redeclare): `id`, `created_at`, `updated_a
 
 Add to `src/fides/api/db/base.py`:
 ```python
-from fides.api.models.sql_models import DataPurpose  # noqa: F401
+from fides.api.models.data_purpose import DataPurpose  # noqa: F401
 ```
 
 - [ ] **Step 5: Run tests to verify they pass**
@@ -226,7 +235,7 @@ Expected: All 4 tests PASS
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/fides/api/models/sql_models.py src/fides/api/db/base.py tests/ops/models/test_data_purpose.py
+git add src/fides/api/models/data_purpose.py src/fides/api/db/base.py tests/ops/models/test_data_purpose.py
 git commit -m "feat: add DataPurpose model with unit tests"
 ```
 
@@ -246,7 +255,7 @@ git commit -m "feat: add DataPurpose model with unit tests"
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.sql_models import DataPurpose
+from fides.api.models.data_purpose import DataPurpose
 from fides.api.models.system_purpose import SystemPurpose
 from fides.api.models.sql_models import System
 
@@ -402,7 +411,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.data_consumer import DataConsumer, DataConsumerPurpose
-from fides.api.models.sql_models import DataPurpose
+from fides.api.models.data_purpose import DataPurpose
 
 
 @pytest.mark.postgres
@@ -861,7 +870,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.sql_models import Dataset
-from fides.api.models.sql_models import DataPurpose
+from fides.api.models.data_purpose import DataPurpose
 from fides.api.models.data_producer import DataProducer
 
 
@@ -1322,7 +1331,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fidesplus.service.data_purpose.data_purpose_service import DataPurposeService
-from fides.api.models.sql_models import DataPurpose
+from fides.api.models.data_purpose import DataPurpose
 
 
 @pytest.mark.integration
@@ -1451,7 +1460,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Query, Session
 
-from fides.api.models.sql_models import DataPurpose
+from fides.api.models.data_purpose import DataPurpose
 from fides.api.models.data_consumer import DataConsumerPurpose
 from fides.api.models.system_purpose import SystemPurpose
 from fides.api.models.sql_models import DataUse, DataSubject
