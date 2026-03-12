@@ -612,19 +612,6 @@ const AccessPolicyEditor = ({
           )}
         </Flex>
 
-        {/* Sidebar */}
-        <Flex vertical gap="middle" className="w-80">
-          <Flex vertical gap="small">
-            <Text>AI assistant</Text>
-            <Input.TextArea
-              placeholder="Ask AI to help build or explain your policy..."
-              aria-label="AI assistant"
-              rows={6}
-              disabled
-              data-testid="ai-chat-placeholder"
-            />
-          </Flex>
-        </Flex>
       </Flex>
     </Layout>
   );
