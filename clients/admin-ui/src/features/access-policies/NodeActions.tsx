@@ -41,7 +41,7 @@ const NodeActions = ({
         <Button
           type="text"
           size="small"
-          icon={<Icons.FlowData size={16} />}
+          icon={<Icons.Fork size={16} />}
           onClick={onAddAction}
           aria-label="Add action"
           data-testid="add-action-btn"
