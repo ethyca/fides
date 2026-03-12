@@ -96,8 +96,6 @@ const ConfigureMonitorForm = ({
 }) => {
   const isEditing = !!monitor;
 
-  const showLLMOption = true;
-
   const [form] = Form.useForm<MonitorConfigFormValues>();
   const { data: systemData, isLoading: isLoadingSystem } =
     useGetSystemByFidesKeyQuery(integrationSystem || skipToken);
@@ -265,7 +263,6 @@ const ConfigureMonitorForm = ({
         />
       </Form.Item>
       <LlmModelSelector
-        skip={!showLLMOption}
         useLlmClassifier={!!form.getFieldValue("use_llm_classifier")}
         modelOverridePlaceholder=""
       />
