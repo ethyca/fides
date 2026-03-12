@@ -1295,6 +1295,7 @@ class TestManualTaskGraphTaskHelperMethods:
         """A failed instance (e.g. deleted Jira ticket) should raise ValueError, not wait."""
         manual_task_instance.status = StatusType.failed
         manual_task_instance.save(db)
+        db.refresh(access_privacy_request)
 
         with (
             patch.object(
