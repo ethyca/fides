@@ -20,6 +20,10 @@ from fides.api.models.data_consumer import (  # noqa: F401
     DataConsumer,
     DataConsumerPurpose,
 )
+from fides.api.models.data_producer import (  # noqa: F401
+    DataProducer,
+    DataProducerMember,
+)
 from fides.api.models.data_purpose import DataPurpose  # noqa: F401
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.db_cache import DBCache
