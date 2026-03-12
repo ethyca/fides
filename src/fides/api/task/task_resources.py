@@ -97,7 +97,10 @@ class Connections:
             return RDSPostgresConnector(connection_config)
         if connection_config.connection_type == ConnectionType.scylla:
             return ScyllaConnector(connection_config)
-        if connection_config.connection_type == ConnectionType.manual_task:
+        if connection_config.connection_type in (
+            ConnectionType.manual_task,
+            ConnectionType.jira_ticket,
+        ):
             return ManualTaskConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
