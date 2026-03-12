@@ -1090,6 +1090,26 @@ class TestGraphTaskLogging:
         resources.privacy_request_task = rq
         return GraphTask(resources)
 
+    @pytest.fixture(scope="function")
+    def saas_graph_task(self, privacy_request, policy, db, saas_example_connection_config):
+      resources = TaskResources(
+          privacy_request,
+          policy,
+          [saas_example_connection_config],
+          EMPTY_REQUEST_TASK,
+          db,
+      )
+      tn = TraversalNode(generate_node("saas_ds", "saas_coll", "id"))
+      tn.node.dataset.connection_key = saas_example_connection_config.key
+      rq = tn.to_mock_request_task()
+      rq.action_type = ActionType.access
+      rq.status = ExecutionLogStatus.pending
+      rq.id = str(uuid.uuid4())
+      db.add(rq)
+      db.commit()
+      resources.privacy_request_task = rq
+      return GraphTask(resources)
+
     def test_log_start(self, graph_task, db, privacy_request):
         graph_task.log_start(action_type=ActionType.access)
 
@@ -1196,6 +1216,41 @@ class TestGraphTaskLogging:
         )
 
         assert execution_log.status == ExecutionLogStatus.complete
+
+    def test_saas_version_null_for_non_saas_connector(
+        self, graph_task, db, privacy_request
+    ):
+        """Non-SaaS connectors (postgres in this fixture) should produce null saas_version."""
+        graph_task.log_start(action_type=ActionType.access)
+
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "b",
+                ExecutionLog.dataset_name == "a",
+            )
+            .first()
+        )
+        assert execution_log is not None
+        assert execution_log.saas_version is None
+
+    def test_saas_version_populated_for_saas_connector(
+        self, saas_graph_task, saas_example_connection_config,  privacy_request, policy, db
+    ):
+        """SaaS connectors should stamp saas_version on every execution log entry."""
+        saas_graph_task.log_start(action_type=ActionType.access)
+        execution_log = (
+            db.query(ExecutionLog)
+            .filter(
+                ExecutionLog.privacy_request_id == privacy_request.id,
+                ExecutionLog.collection_name == "saas_coll",
+                ExecutionLog.dataset_name == "saas_ds",
+            )
+            .first()
+        )
+        assert execution_log is not None
+        assert execution_log.saas_version == saas_example_connection_config.saas_config["version"]
 
 
 class TestTraversalOnlyBehavior:
