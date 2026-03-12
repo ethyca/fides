@@ -2,8 +2,10 @@
   background: var(--ant-color-bg-container);
   border: 1px solid var(--ant-color-border);
   border-radius: var(--ant-border-radius-lg);
-  min-width: 360px;
+  width: 100%;
+  min-width: 150px;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .header {

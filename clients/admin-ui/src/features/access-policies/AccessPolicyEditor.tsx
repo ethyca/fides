@@ -43,7 +43,7 @@ export interface SidebarFormValues {
   control_group?: string;
 }
 
-interface AccessPolicyFormProps {
+interface AccessPolicyEditorProps {
   policyId?: string;
   initialValues?: AccessPolicy;
   onSave?: (values: SidebarFormValues, yaml: string) => void;
@@ -77,6 +77,7 @@ const PolicyCanvasPanel = ({
         id: "policy",
         type: "policyNode",
         position: { x: 0, y: 0 },
+        style: { width: 300 },
         data: {
           name,
           description,
@@ -120,12 +121,12 @@ const PolicyCanvasPanel = ({
   );
 };
 
-const AccessPolicyForm = ({
+const AccessPolicyEditor = ({
   policyId,
   initialValues,
   onSave,
   onDelete,
-}: AccessPolicyFormProps) => {
+}: AccessPolicyEditorProps) => {
   const isNew = !policyId;
 
   const { data: controlGroups = [] } = useGetControlGroupsQuery();
@@ -273,4 +274,4 @@ const AccessPolicyForm = ({
   );
 };
 
-export default AccessPolicyForm;
+export default AccessPolicyEditor;

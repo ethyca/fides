@@ -3,9 +3,9 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import { useCreateAccessPolicyMutation } from "~/features/access-policies/access-policies.slice";
-import AccessPolicyForm, {
+import AccessPolicyEditor, {
   SidebarFormValues,
-} from "~/features/access-policies/AccessPolicyForm";
+} from "~/features/access-policies/AccessPolicyEditor";
 import { getErrorMessage } from "~/features/common/helpers";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors";
@@ -25,7 +25,7 @@ const NewAccessPolicyPage: NextPage = () => {
     }
   };
 
-  return <AccessPolicyForm onSave={handleSave} />;
+  return <AccessPolicyEditor onSave={handleSave} />;
 };
 
 export default NewAccessPolicyPage;
