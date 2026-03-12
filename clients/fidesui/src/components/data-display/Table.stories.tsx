@@ -16,6 +16,7 @@ const TABLE_SIZE: Record<
   TableProps["size"]
 > = {
   large: "large",
+  medium: "medium",
   middle: "middle",
   small: "small",
 };

@@ -147,7 +147,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
       width={1010}
       footer={renderFooter()}
       styles={{
-        content: {
+        wrapper: {
           height: 700,
           display: "flex",
           flexDirection: "column",

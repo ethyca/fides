@@ -118,7 +118,7 @@ const ConsentReportingPage = () => {
                   },
                 ],
               }}
-              overlayStyle={{ width: "220px" }}
+              styles={{ root: { width: "220px" } }}
               trigger={["click"]}
             >
               <Button

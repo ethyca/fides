@@ -27,6 +27,8 @@ type AvatarSize = NonNullable<
 
 const AVATAR_SIZE: Record<AvatarSize, AvatarSize> = {
   default: "default",
+  medium: "medium",
+  middle: "middle",
   small: "small",
   large: "large",
 };

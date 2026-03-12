@@ -139,7 +139,8 @@ const AssessmentSettingsModal = ({
       title="Assessment settings"
       open={open}
       onCancel={onClose}
-      destroyOnClose
+      width={600}
+      destroyOnHidden
       footer={
         <Flex justify="flex-end" gap={8}>
           <Button onClick={onClose}>Cancel</Button>
@@ -216,7 +217,7 @@ const AssessmentSettingsModal = ({
                     .toLowerCase()
                     .includes(input.toLowerCase())
                 }
-                onDropdownVisibleChange={(visible) => {
+                onOpenChange={(visible) => {
                   if (visible) {
                     refetchChannels();
                   }

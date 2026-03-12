@@ -8,6 +8,8 @@ type SpinSize = NonNullable<SpinProps["size"]>;
 
 const SPIN_SIZE_OPTIONS: Record<SpinSize, SpinSize> = {
   default: "default",
+  medium: "medium",
+  middle: "middle",
   small: "small",
   large: "large",
 };
