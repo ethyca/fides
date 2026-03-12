@@ -79,7 +79,7 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
       )}
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         className={styles.handle}
       />
     </div>

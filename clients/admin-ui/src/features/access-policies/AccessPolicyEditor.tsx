@@ -11,6 +11,7 @@ import {
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
 import {
   Button,
@@ -23,12 +24,13 @@ import {
   Space,
   Text,
 } from "fidesui";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
+import useD3HierarchyLayout from "~/features/taxonomy/hooks/useD3HierarchyLayout";
 
 import {
   AccessPolicy,
@@ -74,7 +76,20 @@ interface PolicyCanvasPanelProps {
 }
 
 const POLICY_NODE_ID = "policy";
-const CONDITION_OFFSET_Y = 280;
+
+const FitViewOnLayoutChange = ({
+  nodesLength,
+  edgesLength,
+}: {
+  nodesLength: number;
+  edgesLength: number;
+}) => {
+  const { fitView } = useReactFlow();
+  useEffect(() => {
+    setTimeout(() => fitView({ padding: 0.5 }), 150);
+  }, [fitView, nodesLength, edgesLength]);
+  return null;
+};
 
 const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
   {
@@ -95,8 +110,6 @@ const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
   } satisfies PolicyNodeType,
 ];
 
-const ACTION_OFFSET_Y = 280;
-
 const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   const {
     name,
@@ -114,6 +127,16 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useD3HierarchyLayout({
+    nodes,
+    edges,
+    options: {
+      direction: "LR",
+      nodeWidth: 320,
+      nodeHeight: 100,
+    },
+  });
+
   const handleAddConditionFromNode = useCallback(
     (sourceNodeId: string) => {
       const sourceNode = nodes.find((n) => n.id === sourceNodeId);
@@ -121,24 +144,15 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         return;
       }
 
-      const childCount = edges.filter((e) => e.source === sourceNodeId).length;
       const conditionCount = nodes.filter(
         (n) => n.type === "conditionNode",
       ).length;
       const conditionId = `condition-${conditionCount + 1}`;
 
-      const newY =
-        sourceNodeId === POLICY_NODE_ID
-          ? CONDITION_OFFSET_Y + conditionCount * 120
-          : sourceNode.position.y + (childCount + 1) * 120;
-
       const newNode: ConditionNodeType = {
         id: conditionId,
         type: "conditionNode",
-        position: {
-          x: sourceNode.position.x,
-          y: newY,
-        },
+        position: { x: 0, y: 0 },
         style: { width: 300 },
         data: {},
       };
@@ -152,7 +166,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       setNodes((nds) => [...nds, newNode]);
       setEdges((eds) => [...eds, newEdge]);
     },
-    [nodes, edges, setNodes, setEdges],
+    [nodes, setNodes, setEdges],
   );
 
   const handleAddActionFromNode = useCallback(
@@ -162,22 +176,13 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         return;
       }
 
-      const childCount = edges.filter((e) => e.source === sourceNodeId).length;
       const actionCount = nodes.filter((n) => n.type === "actionNode").length;
       const actionId = `action-${actionCount + 1}`;
-
-      const newY =
-        sourceNodeId === POLICY_NODE_ID
-          ? ACTION_OFFSET_Y + childCount * 120
-          : sourceNode.position.y + (childCount + 1) * 120;
 
       const newNode: ActionNodeType = {
         id: actionId,
         type: "actionNode",
-        position: {
-          x: sourceNode.position.x,
-          y: newY,
-        },
+        position: { x: 0, y: 0 },
         style: { width: 300 },
         data: {},
       };
@@ -191,14 +196,14 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       setNodes((nds) => [...nds, newNode]);
       setEdges((eds) => [...eds, newEdge]);
     },
-    [nodes, edges, setNodes, setEdges],
+    [nodes, setNodes, setEdges],
   );
 
   const policyHasChildren = edges.some((e) => e.source === POLICY_NODE_ID);
 
   const nodesWithCallbacks = useMemo(
     () =>
-      nodes.map((node) => {
+      layoutedNodes.map((node) => {
         if (node.id === POLICY_NODE_ID && node.type === "policyNode") {
           return {
             ...node,
@@ -233,7 +238,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         return node;
       }),
     [
-      nodes,
+      layoutedNodes,
       edges,
       name,
       description,
@@ -259,7 +264,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     >
       <ReactFlow
         nodes={nodesWithCallbacks}
-        edges={edges}
+        edges={layoutedEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
@@ -268,6 +273,10 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
+        <FitViewOnLayoutChange
+          nodesLength={layoutedNodes.length}
+          edgesLength={layoutedEdges.length}
+        />
       </ReactFlow>
     </div>
   );

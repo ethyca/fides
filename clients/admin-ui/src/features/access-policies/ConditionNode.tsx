@@ -15,7 +15,7 @@ export type ConditionNodeType = Node<ConditionNodeData, "conditionNode">;
 
 const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
   <div className={styles.node} data-testid="condition-node">
-    <Handle type="target" position={Position.Top} className={styles.handle} />
+    <Handle type="target" position={Position.Left} className={styles.handle} />
     <Flex align="center" gap="small" className={styles.header}>
       <Avatar
         shape="square"
@@ -37,7 +37,7 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
     )}
     <Handle
       type="source"
-      position={Position.Bottom}
+      position={Position.Right}
       className={styles.handle}
     />
   </div>

@@ -9,7 +9,7 @@ export type ActionNodeType = Node<ActionNodeData, "actionNode">;
 
 const ActionNode = ({ data }: NodeProps<ActionNodeType>) => (
   <div className={styles.node} data-testid="action-node">
-    <Handle type="target" position={Position.Top} className={styles.handle} />
+    <Handle type="target" position={Position.Left} className={styles.handle} />
     <Flex align="center" gap="small" className={styles.header}>
       <Avatar
         shape="square"
@@ -24,7 +24,7 @@ const ActionNode = ({ data }: NodeProps<ActionNodeType>) => (
     </div>
     <Handle
       type="source"
-      position={Position.Bottom}
+      position={Position.Right}
       className={styles.handle}
     />
   </div>
