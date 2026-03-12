@@ -580,9 +580,7 @@ describe("Data map report table", () => {
       cy.getByTestId("export-modal")
         .contains("button", "Download")
         .should("be.visible");
-      cy.getByTestId("export-modal")
-        .contains("button", "Cancel")
-        .click();
+      cy.getByTestId("export-modal").contains("button", "Cancel").click();
       cy.getByTestId("export-modal").should("not.exist");
     });
 
