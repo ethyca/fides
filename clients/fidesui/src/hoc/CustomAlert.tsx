@@ -8,24 +8,20 @@ export interface CustomAlertProps extends AlertProps {}
 
 const withCustomProps = (WrappedComponent: typeof Alert) => {
   const WrappedAlert = React.forwardRef<AlertRef, CustomAlertProps>(
-    ({ showIcon, icon, type, banner, description, ...props }, ref) => {
-      // Mirror Ant's internal defaults so Carbon icons apply correctly:
-      // - banner mode defaults type to "warning" (not "info")
-      // - banner mode implicitly enables showIcon
-      const resolvedType = type ?? (banner ? "warning" : "info");
-      const resolvedShowIcon = showIcon ?? !!banner;
-
+    ({ showIcon = false, icon, type = "info", banner, description, ...props }, ref) => {
+      // Override Ant's banner-specific defaults so all alert types
+      // behave consistently.
       const carbonIcon =
-        resolvedShowIcon && icon === undefined
-          ? getDefaultAlertIcon(resolvedType, !!description)
+        showIcon && icon === undefined
+          ? getDefaultAlertIcon(type, !!description)
           : icon;
 
       return (
         <WrappedComponent
           ref={ref}
-          showIcon={resolvedShowIcon}
+          showIcon={showIcon}
           icon={carbonIcon}
-          type={resolvedType}
+          type={type}
           banner={banner}
           description={description}
           {...props}
@@ -46,8 +42,8 @@ const withCustomProps = (WrappedComponent: typeof Alert) => {
  * injected based on the alert `type`. Icons are sized at 16px for compact
  * alerts and 24px when a `description` is present.
  *
- * Banner mode (`banner={true}`) mirrors Ant's internal defaults: `showIcon`
- * defaults to true and `type` defaults to "warning" when not explicitly set.
+ * Banner mode (`banner={true}`) uses the same defaults as all other alert
+ * types (`showIcon=false`, `type="info"`), overriding Ant's internal defaults.
  *
  * All standard Alert props are supported. Passing a custom `icon` overrides
  * the Carbon default.
