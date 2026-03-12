@@ -1,7 +1,7 @@
 """Add entra to ConnectionType enum.
 
 Revision ID: b5c6d7e8f9a0
-Revises: e3a9f1b2c4d5
+Revises: 4ac4864180db
 Create Date: 2026-03-10
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision = "b5c6d7e8f9a0"
-down_revision = "e3a9f1b2c4d5"
+down_revision = "4ac4864180db"
 branch_labels = None
 depends_on = None
 
