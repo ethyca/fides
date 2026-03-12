@@ -1,12 +1,13 @@
 import { Segmented } from "fidesui";
 import type { NextPage } from "next";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import {
   useGetDataConsumerRequestsQuery,
   useGetDataConsumersByViolationsQuery,
 } from "~/features/access-control/access-control.slice";
 import AccessControlTabs from "~/features/access-control/AccessControlTabs";
+import FindingsTable from "~/features/access-control/summary/FindingsTable";
 import SummaryCards from "~/features/access-control/summary/SummaryCards";
 import type { TimeRange } from "~/features/access-control/types";
 import Layout from "~/features/common/Layout";
@@ -25,18 +26,15 @@ const TIME_RANGE_DAYS: Record<TimeRange, number> = {
 };
 
 const getDateRange = (timeRange: TimeRange) => {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - TIME_RANGE_DAYS[timeRange]);
-  return {
-    start_date: startDate.toISOString(),
-    end_date: endDate.toISOString(),
-  };
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - TIME_RANGE_DAYS[timeRange]);
+  return { start_date: start.toISOString(), end_date: end.toISOString() };
 };
 
 const AccessControlSummaryPage: NextPage = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>("7d");
-  const dateRange = useMemo(() => getDateRange(timeRange), [timeRange]);
+  const dateRange = getDateRange(timeRange);
 
   const { data: requestsData, isLoading: requestsLoading } =
     useGetDataConsumerRequestsQuery(dateRange);
@@ -67,6 +65,7 @@ const AccessControlSummaryPage: NextPage = () => {
           consumersData={consumersData?.items}
           loading={loading}
         />
+        <FindingsTable />
       </div>
     </Layout>
   );

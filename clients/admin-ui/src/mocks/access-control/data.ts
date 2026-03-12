@@ -64,87 +64,137 @@ export const dataConsumersByViolationsData: DataConsumerSummary[] = [
   { name: "Recommendation Engine", requests: 128, violations: 9 },
 ];
 
-export const policyViolationsData: PolicyViolationAggregate[] = [
-  {
-    policy: "Marketing Data Policy",
-    control: "No PII for third-party advertising",
-    violation_count: 34,
-    last_violation: "2026-03-11T14:23:00Z",
-  },
-  {
-    policy: "Marketing Data Policy",
-    control: "Consent required for email targeting",
-    violation_count: 28,
-    last_violation: "2026-03-11T12:15:00Z",
-  },
-  {
-    policy: "Data Retention Policy",
-    control: "Delete user data after 90 days",
-    violation_count: 22,
-    last_violation: "2026-03-10T18:45:00Z",
-  },
-  {
-    policy: "Access Control Policy",
-    control: "No cross-region data transfer without approval",
-    violation_count: 15,
-    last_violation: "2026-03-10T09:30:00Z",
-  },
-  {
-    policy: "PII Protection Policy",
-    control: "Mask SSN in non-production environments",
-    violation_count: 6,
-    last_violation: "2026-03-09T22:10:00Z",
-  },
+const POLICIES = [
+  "Marketing Data Policy",
+  "Data Retention Policy",
+  "Access Control Policy",
+  "PII Protection Policy",
+  "Third-Party Sharing Policy",
+  "Employee Data Policy",
+  "Financial Data Policy",
+  "Health Data Policy",
 ];
 
-export const policyViolationLogsData: PolicyViolationLog[] = [
-  {
-    timestamp: "2026-03-11T14:23:00Z",
-    consumer: "Analytics Service",
-    policy: "Marketing Data Policy",
-    dataset: "postgres.public.users",
-    data_use: "marketing.advertising.third_party.targeted",
-  },
-  {
-    timestamp: "2026-03-11T13:55:00Z",
-    consumer: "Marketing Pipeline",
-    policy: "Marketing Data Policy",
-    dataset: "postgres.public.email_preferences",
-    data_use: "marketing.advertising.first_party",
-  },
-  {
-    timestamp: "2026-03-11T12:15:00Z",
-    consumer: "Marketing Pipeline",
-    policy: "Marketing Data Policy",
-    dataset: "postgres.public.users",
-    data_use: "marketing.communications",
-  },
-  {
-    timestamp: "2026-03-10T18:45:00Z",
-    consumer: "Data Warehouse ETL",
-    policy: "Data Retention Policy",
-    dataset: "postgres.public.order_history",
-    data_use: "functional.service.improve",
-  },
-  {
-    timestamp: "2026-03-10T16:30:00Z",
-    consumer: "Analytics Service",
-    policy: "Marketing Data Policy",
-    dataset: "postgres.public.page_views",
-    data_use: "marketing.advertising.third_party",
-  },
-  {
-    timestamp: "2026-03-10T09:30:00Z",
-    consumer: "Customer Support Bot",
-    policy: "Access Control Policy",
-    dataset: "postgres.public.support_tickets",
-    data_use: "functional.service",
-  },
-  {
-    timestamp: "2026-03-09T22:10:00Z",
-    consumer: "Data Warehouse ETL",
-    policy: "PII Protection Policy",
-    dataset: "postgres.public.users",
-    data_use: "functional.service.improve",
-  },
+const CONTROLS: Record<string, string[]> = {
+  "Marketing Data Policy": [
+    "No PII for third-party advertising",
+    "Consent required for email targeting",
+    "No behavioral profiling without opt-in",
+    "Limit data collection to stated purpose",
+    "No sharing with unvetted ad networks",
+    "Anonymize analytics data before export",
+  ],
+  "Data Retention Policy": [
+    "Delete user data after 90 days",
+    "Purge inactive accounts annually",
+    "Archive logs after 30 days",
+    "Remove payment data after transaction",
+  ],
+  "Access Control Policy": [
+    "No cross-region data transfer without approval",
+    "Require MFA for sensitive data access",
+    "Restrict admin access to production",
+    "Enforce least-privilege for service accounts",
+    "Log all access to PII fields",
+  ],
+  "PII Protection Policy": [
+    "Mask SSN in non-production environments",
+    "Encrypt PII at rest and in transit",
+    "No PII in application logs",
+    "Tokenize credit card numbers",
+    "Redact email in public-facing exports",
+  ],
+  "Third-Party Sharing Policy": [
+    "DPA required before data sharing",
+    "No sharing of biometric data",
+    "Audit third-party access quarterly",
+    "Restrict fields shared with vendors",
+  ],
+  "Employee Data Policy": [
+    "HR data accessible only to HR systems",
+    "No employee data in analytics pipelines",
+    "Separate employee PII from product data",
+  ],
+  "Financial Data Policy": [
+    "PCI-DSS compliance for card data",
+    "No raw financial data in staging",
+    "Encrypt account numbers end-to-end",
+    "Restrict transaction data to billing service",
+  ],
+  "Health Data Policy": [
+    "HIPAA compliance for health records",
+    "No health data in marketing contexts",
+    "De-identify health data for research",
+    "Restrict access to authorized providers",
+  ],
+};
+
+const generateViolations = (): PolicyViolationAggregate[] => {
+  const baseTime = new Date("2026-03-11T14:23:00Z").getTime();
+
+  return POLICIES.flatMap((policy) =>
+    CONTROLS[policy].map((control, i) => ({
+      policy,
+      control,
+      violation_count: Math.floor(Math.random() * 40) + 2,
+      last_violation: new Date(baseTime - i * 2 * 60 * 60 * 1000).toISOString(),
+    })),
+  ).sort((a, b) => b.violation_count - a.violation_count);
+};
+
+export const policyViolationsData: PolicyViolationAggregate[] =
+  generateViolations();
+
+const LOG_CONSUMERS = [
+  "Analytics Service",
+  "Marketing Pipeline",
+  "Data Warehouse ETL",
+  "Customer Support Bot",
+  "Recommendation Engine",
+  "Billing Service",
+  "HR Portal",
+  "Research Platform",
 ];
+
+const LOG_DATASETS = [
+  "postgres.public.users",
+  "postgres.public.email_preferences",
+  "postgres.public.order_history",
+  "postgres.public.page_views",
+  "postgres.public.support_tickets",
+  "postgres.public.transactions",
+  "postgres.public.employee_records",
+  "postgres.public.health_records",
+  "postgres.public.payment_methods",
+  "snowflake.analytics.user_events",
+  "snowflake.analytics.sessions",
+  "redshift.warehouse.customer_profiles",
+];
+
+const LOG_DATA_USES = [
+  "marketing.advertising.third_party.targeted",
+  "marketing.advertising.first_party",
+  "marketing.communications",
+  "functional.service.improve",
+  "functional.service",
+  "essential.service.operations",
+  "personalize.content",
+  "analytics.reporting",
+  "third_party_sharing.legal_obligation",
+  "collect.provide",
+];
+
+const generateLogs = (): PolicyViolationLog[] => {
+  const baseTime = new Date("2026-03-11T14:23:00Z").getTime();
+  const allPolicies = Object.keys(CONTROLS);
+
+  return Array.from({ length: 50 }, (_, i) => ({
+    timestamp: new Date(baseTime - i * 45 * 60 * 1000).toISOString(),
+    consumer: LOG_CONSUMERS[i % LOG_CONSUMERS.length],
+    policy: allPolicies[i % allPolicies.length],
+    dataset: LOG_DATASETS[i % LOG_DATASETS.length],
+    data_use: LOG_DATA_USES[i % LOG_DATA_USES.length],
+  }));
+};
+
+export const policyViolationLogsData: PolicyViolationLog[] = generateLogs();
