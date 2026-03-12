@@ -1,11 +1,11 @@
 .actions {
   position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-16px, 10px);
+  top: 50%;
+  left: 100%;
+  transform: translate(10px, -50%);
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
   gap: 8px;
 
   &:hover .actionMenu {
@@ -21,7 +21,7 @@
 .actionMenu {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: flex-start;
   gap: 6px;
   opacity: 0;
   visibility: hidden;
@@ -79,4 +79,6 @@
 .actionLabel {
   color: var(--ant-color-text);
   font-size: var(--ant-font-size);
+  display: block;
+  word-break: keep-all;
 }

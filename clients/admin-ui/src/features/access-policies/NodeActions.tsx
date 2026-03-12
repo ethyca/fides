@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { Button, Flex, Icons, Text } from "fidesui";
+import { Button, Flex, Icons, Typography } from "fidesui";
 
 import styles from "./NodeActions.module.scss";
 
@@ -37,7 +37,9 @@ const NodeActions = ({
           data-testid="add-condition-btn"
           className={classNames(styles.iconButton, styles.conditionButton)}
         />
-        <Text className={styles.actionLabel}>Condition</Text>
+        <Typography.Text className={styles.actionLabel}>
+          Condition
+        </Typography.Text>
       </Flex>
       {showAddAction && (
         <Flex align="center" gap="small" className={styles.actionItem}>
@@ -50,7 +52,9 @@ const NodeActions = ({
             data-testid="add-action-btn"
             className={classNames(styles.iconButton, styles.actionButton)}
           />
-          <Text className={styles.actionLabel}>Action</Text>
+          <Typography.Text className={styles.actionLabel}>
+            Action
+          </Typography.Text>
         </Flex>
       )}
     </div>
