@@ -277,9 +277,11 @@ class ManualTaskGraphTask(GraphTask):
            the task is complete regardless of instance status. A ``failed`` status
            set by an external process (e.g. Jira poller) is superseded by explicit
            user submission.
-        2. Failed-instance check — only fires when no data has been submitted.
-           Catches the case where input can never arrive (e.g. Jira ticket deleted
-           with no prior submissions) and raises a hard error instead of waiting.
+        2. Failed-instance check — only fires when no data has been submitted
+           AND all instances for this task/action are failed. If a replacement
+           ticket has been linked (creating a new active instance), we wait for
+           that instead. Only when every instance is failed do we error, since
+           no input can ever arrive.
         3. Fall through to AwaitingAsyncTask if neither condition is met.
         """
         # Check if all manual task instances have submissions for this action type
@@ -296,17 +298,19 @@ class ManualTaskGraphTask(GraphTask):
 
             return result
 
-        # Check if any instance has been marked as failed by an external
-        # process (e.g. poller detected a deleted Jira ticket with no data).
-        # This is a hard error — don't wait for input that can't arrive.
-        failed_instances = [
+        # Check if all instances for this task/action have been marked as failed
+        # by an external process (e.g. poller detected a deleted Jira ticket
+        # with no data). Only error when there are no active instances — if a
+        # replacement ticket has been linked, a new active instance will exist
+        # alongside the old failed one, and we should wait for that instead.
+        matching_instances = [
             inst
             for inst in self.resources.request.manual_task_instances
-            if inst.task_id == manual_task.id
-            and inst.config.config_type == action_type
-            and inst.status == StatusType.failed
+            if inst.task_id == manual_task.id and inst.config.config_type == action_type
         ]
-        if failed_instances:
+        if matching_instances and all(
+            inst.status == StatusType.failed for inst in matching_instances
+        ):
             raise ValueError(
                 f"Manual task for {self.connection_key} has failed instances — "
                 f"cannot proceed without intervention"
