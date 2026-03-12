@@ -42,7 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added individual privacy assessment detail view with editable answer interface [#7473](https://github.com/ethyca/fides/pull/7473)
 - Added "Download troubleshooting data" action to the privacy request Admin UI [#7548](https://github.com/ethyca/fides/pull/7548)
 - Added real-time status indicator for privacy assessment evaluations [#7553](https://github.com/ethyca/fides/pull/7553)
-- Redis cluster support for cache and Celery; FidesopsRedis now accepts a single client (Redis or RedisCluster) and provides cluster-aware get_keys_by_prefix, delete_keys_by_prefix, and get_values
+- Redis cluster support for cache and Celery; FidesopsRedis now accepts a single client (Redis or RedisCluster) and provides cluster-aware get_keys_by_prefix, delete_keys_by_prefix, and get_values [#7487](https://github.com/ethyca/fides/pull/7487)
 - Added questionnaire workflow for privacy assessments, including request input modal, questionnaire status bar, and send reminder [#7515](https://github.com/ethyca/fides/pull/7515)
 - Added privacy assessment configuration model and Admin UI settings modal [#7470](https://github.com/ethyca/fides/pull/7470) https://github.com/ethyca/fides/labels/db-migration
 - Added configurable attribution link options to fides-js bundle [#7590](https://github.com/ethyca/fides/pull/7590)
@@ -50,7 +50,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added request type selector to policy creation form to auto-generate a default rule [#7545](https://github.com/ethyca/fides/pull/7545)
 - Add PDF report download button to privacy assessment detail page [#7535](https://github.com/ethyca/fides/pull/7535)
 - Added a RadarChart component, improved storybook display, refactored charts [#7505](https://github.com/ethyca/fides/pull/7505)
-- Add changelog entry for ENG-2865
+- Added tests against Valkey in addition to Redis to test both cluster and non-cluster configs [#7618](https://github.com/ethyca/fides/pull/7618)
 - Disabled delete button on default DSR policies with tooltip explanation [#7526](https://github.com/ethyca/fides/pull/7526)
 - Pluggable permission checker mechanism to allow RBAC extensions to override default permission logic [#7296](https://github.com/ethyca/fides/pull/7296)
 
