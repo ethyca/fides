@@ -1223,7 +1223,7 @@ requires-dist = [
     { name = "tenacity", specifier = "~=9.1.2" },
     { name = "tinycss2", specifier = "==1.2.1" },
     { name = "toml", specifier = "==0.10.2" },
-    { name = "tornado", specifier = "==6.5.5" },
+    { name = "tornado", specifier = "~=6.5.5" },
     { name = "twilio", specifier = "==7.15.0" },
     { name = "typer", specifier = "==0.20.0" },
     { name = "types-defusedxml", specifier = "==0.7.0.20240218" },
