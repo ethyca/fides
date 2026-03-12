@@ -1,12 +1,10 @@
-import { Button, Space } from "fidesui";
+import { Button, Flex, Icons, Space, Text } from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
+import PoliciesGrid from "~/features/access-policies/PoliciesGrid";
 import Layout from "~/features/common/Layout";
-import {
-  ACCESS_POLICIES_NEW_ROUTE,
-  ACCESS_POLICIES_ONBOARDING_ROUTE,
-} from "~/features/common/nav/routes";
+import { ACCESS_POLICIES_ONBOARDING_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const AccessPoliciesPage: NextPage = () => {
@@ -17,15 +15,37 @@ const AccessPoliciesPage: NextPage = () => {
         rightContent={
           <Space>
             <NextLink href={ACCESS_POLICIES_ONBOARDING_ROUTE} passHref>
-              <Button>Onboarding</Button>
+              <Button type="text">
+                <Flex align="center" gap={4}>
+                  <Icons.Settings size={16} />
+                  Update policy configuration
+                </Flex>
+              </Button>
             </NextLink>
-            <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
-              <Button type="primary">New policy</Button>
-            </NextLink>
+            <Button>Manage controls</Button>
+            <Button type="primary">New policy</Button>
           </Space>
         }
         isSticky
-      />
+      >
+        <div className="max-w-[75%]">
+          <Text type="secondary">
+            Purpose Based Access Control (PBAC) policies govern when systems and
+            users can access data based on its intended use. Policies are
+            organized into controls determined by your business vertical and
+            regulatory environment. Select &quot;Manage controls&quot; to add,
+            edit, or remove controls.{" "}
+            <a
+              href="https://docs.ethyca.com/guides/access-policies"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Learn more about PBAC
+            </a>
+          </Text>
+        </div>
+      </PageHeader>
+      <PoliciesGrid />
     </Layout>
   );
 };
