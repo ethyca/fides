@@ -8,7 +8,10 @@ export interface CustomAlertProps extends AlertProps {}
 
 const withCustomProps = (WrappedComponent: typeof Alert) => {
   const WrappedAlert = React.forwardRef<AlertRef, CustomAlertProps>(
-    ({ showIcon = false, icon, type = "info", banner, description, ...props }, ref) => {
+    (
+      { showIcon = false, icon, type = "info", banner, description, ...props },
+      ref,
+    ) => {
       // Override Ant's banner-specific defaults so all alert types
       // behave consistently.
       const carbonIcon =
