@@ -250,7 +250,7 @@ const HomePage: NextPage = () => {
                 {config.privacy_policy_url_text}
               </Link>
             )}
-            <BrandLink />
+            <BrandLink isHomePage />
           </Stack>
         )}
       </Stack>

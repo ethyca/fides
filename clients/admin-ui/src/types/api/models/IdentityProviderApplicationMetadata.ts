@@ -37,4 +37,16 @@ export type IdentityProviderApplicationMetadata = {
    * URL to vendor logo image from Compass service
    */
   vendor_logo_url?: string | null;
+  /**
+   * Extracted domain for Brandfetch logo lookup
+   */
+  domain?: string | null;
+  /**
+   * Application template name from IDP (e.g. oidc_client, google, salesforce)
+   */
+  system_type?: string | null;
+  /**
+   * Human-readable description of the application
+   */
+  description?: string | null;
 };
