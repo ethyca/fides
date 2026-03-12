@@ -410,6 +410,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Update status activities - create an execution log (which stores historical logs)
         and update the Request Task's current status.
         """
+        saas_config = self.connector.configuration.get_saas_config()
+        saas_version = saas_config.version if saas_config else None
+
         with get_db() as db:
             ExecutionLog.create(
                 db=db,
@@ -422,6 +425,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                     "status": status,
                     "privacy_request_id": self.resources.request.id,
                     "message": msg,
+                    "saas_version": saas_version,
                 },
             )
 
@@ -438,7 +442,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        logger.info("Starting node {}", self.key)
+        saas_config = self.connector.configuration.get_saas_config()
+        if saas_config:
+            logger.info(
+                "Starting node {} (integration version {})",
+                self.key,
+                saas_config.version,
+            )
+        else:
+            logger.info("Starting node {}", self.key)
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -446,7 +458,15 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        logger.info("Retrying node {}", self.key)
+        saas_config = self.connector.configuration.get_saas_config()
+        if saas_config:
+            logger.info(
+                "Retrying node {} (integration version {})",
+                self.key,
+                saas_config.version,
+            )
+        else:
+            logger.info("Retrying node {}", self.key)
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
