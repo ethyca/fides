@@ -25,7 +25,7 @@ import {
   Space,
   Text,
 } from "fidesui";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
@@ -85,17 +85,73 @@ interface PolicyCanvasPanelProps {
 
 const POLICY_NODE_ID = "policy";
 
-const FitViewOnLayoutChange = ({
-  nodesLength,
-  edgesLength,
-}: {
-  nodesLength: number;
-  edgesLength: number;
-}) => {
+const DEFAULT_ZOOM = 1;
+
+const CenterOnInitialLoad = ({ layoutedNodes }: { layoutedNodes: Node[] }) => {
   const { fitView } = useReactFlow();
+  const hasCenteredRef = useRef(false);
+
   useEffect(() => {
-    setTimeout(() => fitView({ padding: 0.5 }), 150);
-  }, [fitView, nodesLength, edgesLength]);
+    const allMeasured =
+      layoutedNodes.length > 0 &&
+      layoutedNodes.every((n) => (n as any).measured?.width);
+
+    if (hasCenteredRef.current || !allMeasured) {
+      return undefined;
+    }
+    hasCenteredRef.current = true;
+    const timer = setTimeout(
+      () =>
+        fitView({
+          nodes: layoutedNodes,
+          minZoom: DEFAULT_ZOOM,
+          maxZoom: DEFAULT_ZOOM,
+          padding: 0.5,
+          duration: 0,
+        }),
+      100,
+    );
+    return () => clearTimeout(timer);
+  }, [layoutedNodes, fitView]);
+
+  return null;
+};
+
+const CenterOnNewNode = ({
+  lastCreatedNodeId,
+  layoutedNodes,
+  onCentered,
+}: {
+  lastCreatedNodeId: string | null;
+  layoutedNodes: Node[];
+  onCentered: () => void;
+}) => {
+  const { fitView, getZoom } = useReactFlow();
+  useEffect(() => {
+    if (!lastCreatedNodeId || layoutedNodes.length === 0) {
+      return undefined;
+    }
+
+    const node = layoutedNodes.find((n) => n.id === lastCreatedNodeId);
+    if (!node) {
+      return undefined;
+    }
+
+    const zoom = getZoom();
+    const timer = setTimeout(() => {
+      fitView({
+        nodes: [node],
+        minZoom: zoom,
+        maxZoom: zoom,
+        padding: 0.5,
+        duration: 500,
+      });
+      onCentered();
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [lastCreatedNodeId, layoutedNodes, fitView, getZoom, onCentered]);
+
   return null;
 };
 
@@ -134,6 +190,13 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     createPolicyNode(props),
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const [lastCreatedNodeId, setLastCreatedNodeId] = useState<string | null>(
+    null,
+  );
+  const clearLastCreatedNodeId = useCallback(
+    () => setLastCreatedNodeId(null),
+    [],
+  );
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
     () =>
@@ -183,6 +246,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
 
       setNodes((nds) => [...nds, newNode]);
       setEdges((eds) => [...eds, newEdge]);
+      setLastCreatedNodeId(conditionId);
     },
     [nodes, setNodes, setEdges],
   );
@@ -214,6 +278,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
 
       setNodes((nds) => [...nds, newNode]);
       setEdges((eds) => [...eds, newEdge]);
+      setLastCreatedNodeId(actionId);
     },
     [nodes, setNodes, setEdges],
   );
@@ -248,6 +313,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
 
       setNodes((nds) => [...nds, newNode]);
       setEdges((eds) => [...eds, newEdge]);
+      setLastCreatedNodeId(constraintId);
     },
     [nodes, setNodes, setEdges],
   );
@@ -336,14 +402,15 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultEdgeOptions={{ type: "labeledEdge" }}
-        fitView
-        fitViewOptions={{ padding: 0.5 }}
+        defaultViewport={{ x: 0, y: 0, zoom: DEFAULT_ZOOM }}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
         <Controls />
-        <FitViewOnLayoutChange
-          nodesLength={layoutedNodes.length}
-          edgesLength={layoutedEdges.length}
+        <CenterOnInitialLoad layoutedNodes={layoutedNodes} />
+        <CenterOnNewNode
+          lastCreatedNodeId={lastCreatedNodeId}
+          layoutedNodes={layoutedNodes}
+          onCentered={clearLastCreatedNodeId}
         />
       </ReactFlow>
     </div>
