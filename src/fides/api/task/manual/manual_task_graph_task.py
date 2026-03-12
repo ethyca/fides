@@ -272,8 +272,15 @@ class ManualTaskGraphTask(GraphTask):
         """
         Set submitted data for a manual task and raise AwaitingAsyncTaskCallback if all instances are not completed.
 
-        If any instance has been marked as failed (e.g. Jira ticket deleted
-        with no data submitted), raises a hard error instead of waiting.
+        Order of checks matters:
+        1. Submitted data check first — if the user has already submitted data,
+           the task is complete regardless of instance status. A ``failed`` status
+           set by an external process (e.g. Jira poller) is superseded by explicit
+           user submission.
+        2. Failed-instance check — only fires when no data has been submitted.
+           Catches the case where input can never arrive (e.g. Jira ticket deleted
+           with no prior submissions) and raises a hard error instead of waiting.
+        3. Fall through to AwaitingAsyncTask if neither condition is met.
         """
         # Check if all manual task instances have submissions for this action type
         submitted_data = self._get_submitted_data(
