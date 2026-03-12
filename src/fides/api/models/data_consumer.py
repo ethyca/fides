@@ -1,4 +1,6 @@
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
     ARRAY,
@@ -13,6 +15,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+
+if TYPE_CHECKING:
+    from fides.api.models.data_purpose import DataPurpose
 
 
 class DataConsumer(Base):

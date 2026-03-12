@@ -1,7 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Column, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
+
+if TYPE_CHECKING:
+    from fides.api.models.data_purpose import DataPurpose
+    from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class SystemPurpose(Base):
@@ -33,5 +41,5 @@ class SystemPurpose(Base):
         nullable=True,
     )
 
-    system = relationship("System", lazy="selectin")
+    system = relationship("System", lazy="selectin")  # type: ignore[misc]
     data_purpose = relationship("DataPurpose", lazy="selectin")

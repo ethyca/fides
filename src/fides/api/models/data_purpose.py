@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
-from fides.api.models.sql_models import FidesBase
+from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
 
 
 class DataPurpose(Base, FidesBase):
