@@ -42,6 +42,14 @@ import ConditionNode, { ConditionNodeType } from "./ConditionNode";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import LabeledEdge from "./LabeledEdge";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
+import {
+  ActionType,
+  ConditionOperator,
+  ConditionProperty,
+  ConsentValue,
+  ConstraintType,
+  UserOperator,
+} from "./types";
 
 export enum EditorMode {
   Builder = "builder",
@@ -198,6 +206,17 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [],
   );
 
+  const updateNodeData = useCallback(
+    (nodeId: string, updates: Record<string, unknown>) => {
+      setNodes((nds) =>
+        nds.map((n) =>
+          n.id === nodeId ? { ...n, data: { ...n.data, ...updates } } : n,
+        ),
+      );
+    },
+    [setNodes],
+  );
+
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
     () =>
       getLayoutedElements(nodes, edges, "LR", {
@@ -350,6 +369,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onAddNode,
               onAddCondition: () => handleAddConditionFromNode(node.id),
               hasChildren,
+              onActionTypeChange: (value: ActionType) =>
+                updateNodeData(node.id, { actionType: value }),
             },
           };
         }
@@ -363,6 +384,39 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onAddCondition: () => handleAddConditionFromNode(node.id),
               onAddConstraint: () => handleAddConstraintFromNode(node.id),
               hasChildren,
+              onPropertyChange: (value: ConditionProperty) =>
+                updateNodeData(node.id, { property: value, values: [] }),
+              onValuesChange: (values: string[]) =>
+                updateNodeData(node.id, { values }),
+              onOperatorChange: (value: ConditionOperator) =>
+                updateNodeData(node.id, { operator: value }),
+            },
+          };
+        }
+        if (node.type === "constraintNode") {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              onConstraintTypeChange: (value: ConstraintType) =>
+                updateNodeData(node.id, {
+                  constraintType: value,
+                  preferenceKey: undefined,
+                  consentValue: undefined,
+                  userKey: undefined,
+                  userValue: undefined,
+                  userOperator: undefined,
+                }),
+              onPreferenceKeyChange: (value: string) =>
+                updateNodeData(node.id, { preferenceKey: value }),
+              onConsentValueChange: (value: ConsentValue) =>
+                updateNodeData(node.id, { consentValue: value }),
+              onUserKeyChange: (value: string) =>
+                updateNodeData(node.id, { userKey: value }),
+              onUserValueChange: (value: string) =>
+                updateNodeData(node.id, { userValue: value }),
+              onUserOperatorChange: (value: UserOperator) =>
+                updateNodeData(node.id, { userOperator: value }),
             },
           };
         }
@@ -382,6 +436,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       handleAddConditionFromNode,
       handleAddActionFromNode,
       handleAddConstraintFromNode,
+      updateNodeData,
       policyHasChildren,
     ],
   );

@@ -1,10 +1,14 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import { Avatar, Flex, Icons, Text } from "fidesui";
+import { Avatar, Flex, Form, Icons, Radio, Text } from "fidesui";
 
 import styles from "./ActionNode.module.scss";
+import { ACTION_TYPE_OPTIONS } from "./constants";
 import NodeActions from "./NodeActions";
+import { ActionType } from "./types";
 
 export interface ActionNodeData extends Record<string, unknown> {
+  actionType?: ActionType;
+  onActionTypeChange?: (value: ActionType) => void;
   onAddNode?: () => void;
   onAddCondition?: () => void;
   hasChildren?: boolean;
@@ -24,8 +28,19 @@ const ActionNode = ({ data }: NodeProps<ActionNodeType>) => (
       />
       <Text strong>Action</Text>
     </Flex>
-    <div className={styles.placeholder}>
-      <Text type="secondary">Placeholder</Text>
+    <div className={styles.body}>
+      <Form layout="vertical" className="nodrag">
+        <Form.Item className="mb-0">
+          <Radio.Group
+            value={data.actionType}
+            onChange={(e) => data.onActionTypeChange?.(e.target.value)}
+            optionType="button"
+            buttonStyle="solid"
+            options={ACTION_TYPE_OPTIONS}
+            className="w-full"
+          />
+        </Form.Item>
+      </Form>
     </div>
     {!data.hasChildren && (
       <NodeActions
