@@ -65,6 +65,17 @@
   }
 }
 
+.constraintButton {
+  background: var(--fidesui-nectar) !important;
+  color: var(--fidesui-minos) !important;
+
+  &:hover {
+    background: var(--fidesui-nectar) !important;
+    color: var(--fidesui-minos) !important;
+    opacity: 0.9;
+  }
+}
+
 .actionButton {
   background: var(--fidesui-terracotta) !important;
   color: var(--fidesui-full-white) !important;

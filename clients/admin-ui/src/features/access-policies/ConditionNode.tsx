@@ -7,6 +7,7 @@ import NodeActions from "./NodeActions";
 export interface ConditionNodeData extends Record<string, unknown> {
   onAddNode?: () => void;
   onAddCondition?: () => void;
+  onAddConstraint?: () => void;
   hasChildren?: boolean;
 }
 
@@ -31,6 +32,7 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => (
       <NodeActions
         onAddNode={data.onAddNode}
         onAddCondition={data.onAddCondition}
+        onAddConstraint={data.onAddConstraint}
         showAddAction={false}
       />
     )}

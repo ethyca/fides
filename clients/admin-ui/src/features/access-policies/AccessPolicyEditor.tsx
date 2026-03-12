@@ -38,6 +38,7 @@ import {
 } from "./access-policies.slice";
 import ActionNode, { ActionNodeType } from "./ActionNode";
 import ConditionNode, { ConditionNodeType } from "./ConditionNode";
+import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 
 export enum EditorMode {
@@ -61,6 +62,7 @@ interface AccessPolicyEditorProps {
 const nodeTypes: NodeTypes = {
   actionNode: ActionNode,
   conditionNode: ConditionNode,
+  constraintNode: ConstraintNode,
   policyNode: PolicyNode,
 };
 
@@ -200,6 +202,38 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [nodes, setNodes, setEdges],
   );
 
+  const handleAddConstraintFromNode = useCallback(
+    (sourceNodeId: string) => {
+      const sourceNode = nodes.find((n) => n.id === sourceNodeId);
+      if (!sourceNode) {
+        return;
+      }
+
+      const constraintCount = nodes.filter(
+        (n) => n.type === "constraintNode",
+      ).length;
+      const constraintId = `constraint-${constraintCount + 1}`;
+
+      const newNode: ConstraintNodeType = {
+        id: constraintId,
+        type: "constraintNode",
+        position: { x: 0, y: 0 },
+        style: { width: 300 },
+        data: {},
+      };
+
+      const newEdge: Edge = {
+        id: `e-${sourceNodeId}-${constraintId}`,
+        source: sourceNodeId,
+        target: constraintId,
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+      setEdges((eds) => [...eds, newEdge]);
+    },
+    [nodes, setNodes, setEdges],
+  );
+
   const policyHasChildren = edges.some((e) => e.source === POLICY_NODE_ID);
 
   const nodesWithCallbacks = useMemo(
@@ -243,6 +277,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               ...node.data,
               onAddNode,
               onAddCondition: () => handleAddConditionFromNode(node.id),
+              onAddConstraint: () => handleAddConstraintFromNode(node.id),
               hasChildren,
             },
           };
@@ -262,6 +297,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       onAddNode,
       handleAddConditionFromNode,
       handleAddActionFromNode,
+      handleAddConstraintFromNode,
       policyHasChildren,
     ],
   );

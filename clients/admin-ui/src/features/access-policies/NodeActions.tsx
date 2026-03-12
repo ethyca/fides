@@ -7,16 +7,20 @@ interface NodeActionsProps {
   onAddNode?: () => void;
   onAddCondition?: () => void;
   onAddAction?: () => void;
+  onAddConstraint?: () => void;
   showAddCondition?: boolean;
   showAddAction?: boolean;
+  showAddConstraint?: boolean;
 }
 
 const NodeActions = ({
   onAddNode,
   onAddCondition,
   onAddAction,
+  onAddConstraint,
   showAddCondition = true,
   showAddAction = true,
+  showAddConstraint = true,
 }: NodeActionsProps) => (
   <div className={styles.actions}>
     <Button
@@ -42,6 +46,22 @@ const NodeActions = ({
           />
           <Typography.Text className={styles.actionLabel}>
             Condition
+          </Typography.Text>
+        </Flex>
+      )}
+      {showAddConstraint && (
+        <Flex align="center" gap="small" className={styles.actionItem}>
+          <Button
+            type="text"
+            size="small"
+            icon={<Icons.Locked size={16} />}
+            onClick={onAddConstraint}
+            aria-label="Add constraint"
+            data-testid="add-constraint-btn"
+            className={classNames(styles.iconButton, styles.constraintButton)}
+          />
+          <Typography.Text className={styles.actionLabel}>
+            Constraint
           </Typography.Text>
         </Flex>
       )}

@@ -75,6 +75,7 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
           onAddNode={onAddNode}
           onAddAction={onAddAction}
           showAddCondition={false}
+          showAddConstraint={false}
         />
       )}
       <Handle
