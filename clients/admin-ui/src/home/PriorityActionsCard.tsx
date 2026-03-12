@@ -1,15 +1,26 @@
-import classNames from "classnames";
-import { Card, Empty, Flex, Skeleton, Tag, Typography } from "fidesui";
+import { Button, Card, Empty, Flex, List, Tag, Text } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 
-import cardStyles from "./dashboard-card.module.scss";
+import { MOCK_PRIORITY_ACTIONS } from "./__mocks__/priorityActionsMock";
 import styles from "./PriorityActionsCard.module.scss";
 
+const USE_MOCK = true;
+
 export const PriorityActionsCard = () => {
-  const { data: actions, isLoading: loading } = useGetPriorityActionsQuery();
+  const { data: apiActions, isLoading: apiLoading } =
+    useGetPriorityActionsQuery();
   const [activeTab, setActiveTab] = useState("act_now");
+
+  const actions = useMemo(
+    () =>
+      USE_MOCK
+        ? { items: MOCK_PRIORITY_ACTIONS, total: MOCK_PRIORITY_ACTIONS.length }
+        : apiActions,
+    [apiActions],
+  );
+  const loading = USE_MOCK ? false : apiLoading;
 
   const filteredActions = useMemo(() => {
     if (!actions?.items) {
@@ -21,20 +32,14 @@ export const PriorityActionsCard = () => {
     return actions.items.filter((a) => a.due_date === null);
   }, [actions, activeTab]);
 
-  const actNowCount = useMemo(
-    () => actions?.items?.filter((a) => a.due_date !== null).length ?? 0,
-    [actions],
-  );
-  const dueLaterCount = useMemo(
-    () => actions?.items?.filter((a) => a.due_date === null).length ?? 0,
-    [actions],
-  );
+  const actNowCount = actions?.items?.filter((a) => a.due_date !== null).length ?? 0;
+  const dueLaterCount = actions?.items?.filter((a) => a.due_date === null).length ?? 0;
 
   return (
     <Card
       title="Priority actions"
       variant="borderless"
-      className={classNames("h-full", cardStyles.dashboardCard)}
+      className={styles.cardContainer}
       headerLayout="inline"
       tabList={[
         {
@@ -57,12 +62,11 @@ export const PriorityActionsCard = () => {
       activeTabKey={activeTab}
       onTabChange={setActiveTab}
     >
-      {(() => {
-        if (loading) {
-          return <Skeleton active />;
-        }
-        if (filteredActions.length === 0) {
-          return (
+      <List
+        dataSource={filteredActions}
+        loading={loading}
+        locale={{
+          emptyText: (
             <Flex
               align="center"
               justify="center"
@@ -72,39 +76,33 @@ export const PriorityActionsCard = () => {
                 description={`No ${activeTab === "act_now" ? "urgent" : "upcoming"} actions`}
               />
             </Flex>
-          );
-        }
-        return (
-          <Flex vertical gap={8} className="pt-3">
-            {filteredActions.map((action) => (
-              <Card
-                key={action.id}
-                variant="borderless"
-                hoverable
-                className="cursor-pointer"
-              >
-                <Flex justify="space-between" align="start">
-                  <div>
-                    <Typography.Text strong>{action.title}</Typography.Text>
-                    <br />
-                    <Typography.Text type="secondary">
-                      {action.message}
-                    </Typography.Text>
-                  </div>
-                  <Flex gap={8} align="center">
-                    {action.due_date && (
-                      <Typography.Text type="secondary" className="text-sm">
-                        {new Date(action.due_date).toLocaleDateString()}
-                      </Typography.Text>
-                    )}
-                    <Tag>{action.action.replace(/_/g, " ")}</Tag>
-                  </Flex>
-                </Flex>
-              </Card>
-            ))}
-          </Flex>
-        );
-      })()}
+          ),
+        }}
+        size="small"
+        renderItem={(action) => (
+          <List.Item
+            key={action.id}
+            actions={[
+              <Button key="resolve" size="small" onClick={() => {}}>
+                Resolve issue
+              </Button>,
+            ]}
+          >
+            <List.Item.Meta
+              title={
+                <Text strong className="text-xs">
+                  {action.title}
+                </Text>
+              }
+              description={
+                <Text type="secondary" className="text-xs">
+                  {action.message}
+                </Text>
+              }
+            />
+          </List.Item>
+        )}
+      />
     </Card>
   );
 };

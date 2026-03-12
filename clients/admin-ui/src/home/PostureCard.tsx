@@ -37,35 +37,31 @@ export const PostureCard = () => {
     <Card
       title="Posture"
       variant="borderless"
-      className={classNames("h-full", cardStyles.dashboardCard)}
+      className={classNames(cardStyles.dashboardCard, styles.cardContainer)}
     >
-      <>
-        <Statistic value={postureScore} />
-        <Statistic
-          trend={(() => {
-            if (diffDirection === "unchanged") {
-              return "neutral" as const;
-            }
-            if (diffDirection === "down") {
-              return "down" as const;
-            }
-            return "up" as const;
-          })()}
-          value={postureDiff}
-          prefix={diffDirection === "down" ? "↓" : "↑"}
-          className={cardStyles.smallStatistic}
-        />
-        <div className={classNames(styles.radarChartWrapper)}>
+      <Statistic value={postureScore} />
+      <Statistic
+        trend={
+          diffDirection === "unchanged"
+            ? "neutral"
+            : (diffDirection as "up" | "down")
+        }
+        value={postureDiff}
+        prefix={diffDirection === "down" ? "↓" : "↑"}
+        className={cardStyles.smallStatistic}
+      />
+      <div className={styles.radarChartWrapper}>
+        <div className={styles.radarChartInner}>
           <RadarChart data={radarData} outerRadius="80%" />
         </div>
-        {posture?.agent_annotation && (
-          <Alert
-            type={getPostureAlertType(postureScore)}
-            message={posture.agent_annotation}
-            className={styles.alertSm}
-          />
-        )}
-      </>
+      </div>
+      {posture?.agent_annotation && (
+        <Alert
+          type={getPostureAlertType(postureScore)}
+          message={posture.agent_annotation}
+          className={styles.alertSm}
+        />
+      )}
     </Card>
   );
 };
