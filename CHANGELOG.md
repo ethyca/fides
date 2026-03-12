@@ -104,8 +104,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed watchdog false-positive that canceled DSRs with pending tasks legitimately awaiting upstream dependencies [#7525](https://github.com/ethyca/fides/pull/7525)
 - Fixed async polling requests not fully respecting `ignore_errors` configuration. [#7401](https://github.com/ethyca/fides/pull/7401)
 - Allow OAuth clients without an associated user to create comments on privacy requests [#7626](https://github.com/ethyca/fides/pull/7626) https://github.com/ethyca/fides/labels/db-migration
-- Fixed consent status tracking to key per-connection (connection_config.key) instead of per-system (system.fides_key). This changes the key shape in the affected_system_status JSONB column; existing rows are not backfilled.
- [#7557](https://github.com/ethyca/fides/pull/7557)
+- Fixed consent status tracking to key per-connection (connection_config.key) instead of per-system (system.fides_key). This changes the key shape in the affected_system_status JSONB column; existing rows are not backfilled. [#7557](https://github.com/ethyca/fides/pull/7557)
 - Added circuit breaker and socket timeouts to prevent startup hangs when Redis is unavailable [#7536](https://github.com/ethyca/fides/pull/7536)
 - Fixed MSSQL discovery monitor SIGSEGV by upgrading pymssql from 2.3.7 to 2.3.13 (bundles FreeTDS 1.4.27) [#7609](https://github.com/ethyca/fides/pull/7609)
 - Website monitor missing system filter in added tab [#7516](https://github.com/ethyca/fides/pull/7516)
