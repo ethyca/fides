@@ -7,12 +7,14 @@ interface NodeActionsProps {
   onAddNode?: () => void;
   onAddCondition?: () => void;
   onAddAction?: () => void;
+  showAddAction?: boolean;
 }
 
 const NodeActions = ({
   onAddNode,
   onAddCondition,
   onAddAction,
+  showAddAction = true,
 }: NodeActionsProps) => (
   <div className={styles.actions}>
     <Button
@@ -37,18 +39,20 @@ const NodeActions = ({
         />
         <Text className={styles.actionLabel}>Condition</Text>
       </Flex>
-      <Flex align="center" gap="small" className={styles.actionItem}>
-        <Button
-          type="text"
-          size="small"
-          icon={<Icons.Fork size={16} />}
-          onClick={onAddAction}
-          aria-label="Add action"
-          data-testid="add-action-btn"
-          className={classNames(styles.iconButton, styles.actionButton)}
-        />
-        <Text className={styles.actionLabel}>Action</Text>
-      </Flex>
+      {showAddAction && (
+        <Flex align="center" gap="small" className={styles.actionItem}>
+          <Button
+            type="text"
+            size="small"
+            icon={<Icons.Fork size={16} />}
+            onClick={onAddAction}
+            aria-label="Add action"
+            data-testid="add-action-btn"
+            className={classNames(styles.iconButton, styles.actionButton)}
+          />
+          <Text className={styles.actionLabel}>Action</Text>
+        </Flex>
+      )}
     </div>
   </div>
 );

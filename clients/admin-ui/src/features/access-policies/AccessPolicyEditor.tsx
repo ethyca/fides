@@ -3,10 +3,14 @@ import "@xyflow/react/dist/style.css";
 import {
   Background,
   BackgroundVariant,
+  Controls,
+  Edge,
   Node,
   NodeTypes,
   ReactFlow,
   ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
 } from "@xyflow/react";
 import {
   Button,
@@ -30,6 +34,8 @@ import {
   AccessPolicy,
   useGetControlGroupsQuery,
 } from "./access-policies.slice";
+import ActionNode, { ActionNodeType } from "./ActionNode";
+import ConditionNode, { ConditionNodeType } from "./ConditionNode";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 
 export enum EditorMode {
@@ -50,7 +56,11 @@ interface AccessPolicyEditorProps {
   onDelete?: () => void;
 }
 
-const nodeTypes: NodeTypes = { policyNode: PolicyNode };
+const nodeTypes: NodeTypes = {
+  actionNode: ActionNode,
+  conditionNode: ConditionNode,
+  policyNode: PolicyNode,
+};
 
 interface PolicyCanvasPanelProps {
   name: string;
@@ -61,44 +71,170 @@ interface PolicyCanvasPanelProps {
   onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
   onAddNode?: () => void;
-  onAddCondition?: () => void;
-  onAddAction?: () => void;
 }
 
-const PolicyCanvasPanel = ({
-  name,
-  description,
-  controlGroup,
-  controlGroupOptions,
-  onNameChange,
-  onDescriptionChange,
-  onControlGroupChange,
-  onAddNode,
-  onAddCondition,
-  onAddAction,
-}: PolicyCanvasPanelProps) => {
-  const nodes: Node[] = useMemo(
-    () => [
-      {
-        id: "policy",
-        type: "policyNode",
-        position: { x: 0, y: 0 },
-        style: { width: 300 },
-        data: {
-          name,
-          description,
-          controlGroup,
-          controlGroupOptions,
-          onNameChange,
-          onDescriptionChange,
-          onControlGroupChange,
-          onAddNode,
-          onAddCondition,
-          onAddAction,
+const POLICY_NODE_ID = "policy";
+const CONDITION_OFFSET_Y = 280;
+
+const createPolicyNode = (props: PolicyCanvasPanelProps): Node[] => [
+  {
+    id: POLICY_NODE_ID,
+    type: "policyNode",
+    position: { x: 0, y: 0 },
+    style: { width: 300 },
+    data: {
+      name: props.name,
+      description: props.description,
+      controlGroup: props.controlGroup,
+      controlGroupOptions: props.controlGroupOptions,
+      onNameChange: props.onNameChange,
+      onDescriptionChange: props.onDescriptionChange,
+      onControlGroupChange: props.onControlGroupChange,
+      onAddNode: props.onAddNode,
+    },
+  } satisfies PolicyNodeType,
+];
+
+const ACTION_OFFSET_Y = 280;
+
+const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
+  const {
+    name,
+    description,
+    controlGroup,
+    controlGroupOptions,
+    onNameChange,
+    onDescriptionChange,
+    onControlGroupChange,
+    onAddNode,
+  } = props;
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(
+    createPolicyNode(props),
+  );
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  const handleAddConditionFromNode = useCallback(
+    (sourceNodeId: string) => {
+      const sourceNode = nodes.find((n) => n.id === sourceNodeId);
+      if (!sourceNode) {
+        return;
+      }
+
+      const childCount = edges.filter((e) => e.source === sourceNodeId).length;
+      const conditionCount = nodes.filter(
+        (n) => n.type === "conditionNode",
+      ).length;
+      const conditionId = `condition-${conditionCount + 1}`;
+
+      const newY =
+        sourceNodeId === POLICY_NODE_ID
+          ? CONDITION_OFFSET_Y + conditionCount * 120
+          : sourceNode.position.y + (childCount + 1) * 120;
+
+      const newNode: ConditionNodeType = {
+        id: conditionId,
+        type: "conditionNode",
+        position: {
+          x: sourceNode.position.x,
+          y: newY,
         },
-      } satisfies PolicyNodeType,
-    ],
+        style: { width: 300 },
+        data: {},
+      };
+
+      const newEdge: Edge = {
+        id: `e-${sourceNodeId}-${conditionId}`,
+        source: sourceNodeId,
+        target: conditionId,
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+      setEdges((eds) => [...eds, newEdge]);
+    },
+    [nodes, edges, setNodes, setEdges],
+  );
+
+  const handleAddActionFromNode = useCallback(
+    (sourceNodeId: string) => {
+      const sourceNode = nodes.find((n) => n.id === sourceNodeId);
+      if (!sourceNode) {
+        return;
+      }
+
+      const childCount = edges.filter((e) => e.source === sourceNodeId).length;
+      const actionCount = nodes.filter((n) => n.type === "actionNode").length;
+      const actionId = `action-${actionCount + 1}`;
+
+      const newY =
+        sourceNodeId === POLICY_NODE_ID
+          ? ACTION_OFFSET_Y + childCount * 120
+          : sourceNode.position.y + (childCount + 1) * 120;
+
+      const newNode: ActionNodeType = {
+        id: actionId,
+        type: "actionNode",
+        position: {
+          x: sourceNode.position.x,
+          y: newY,
+        },
+        style: { width: 300 },
+        data: {},
+      };
+
+      const newEdge: Edge = {
+        id: `e-${sourceNodeId}-${actionId}`,
+        source: sourceNodeId,
+        target: actionId,
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+      setEdges((eds) => [...eds, newEdge]);
+    },
+    [nodes, edges, setNodes, setEdges],
+  );
+
+  const policyHasChildren = edges.some((e) => e.source === POLICY_NODE_ID);
+
+  const nodesWithCallbacks = useMemo(
+    () =>
+      nodes.map((node) => {
+        if (node.id === POLICY_NODE_ID && node.type === "policyNode") {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              name,
+              description,
+              controlGroup,
+              controlGroupOptions,
+              onNameChange,
+              onDescriptionChange,
+              onControlGroupChange,
+              onAddNode,
+              onAddCondition: () => handleAddConditionFromNode(POLICY_NODE_ID),
+              hasChildren: policyHasChildren,
+            },
+          };
+        }
+        if (node.type === "conditionNode") {
+          const hasChildren = edges.some((e) => e.source === node.id);
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              onAddNode,
+              onAddCondition: () => handleAddConditionFromNode(node.id),
+              onAddAction: () => handleAddActionFromNode(node.id),
+              hasChildren,
+            },
+          };
+        }
+        return node;
+      }),
     [
+      nodes,
+      edges,
       name,
       description,
       controlGroup,
@@ -107,8 +243,9 @@ const PolicyCanvasPanel = ({
       onDescriptionChange,
       onControlGroupChange,
       onAddNode,
-      onAddCondition,
-      onAddAction,
+      handleAddConditionFromNode,
+      handleAddActionFromNode,
+      policyHasChildren,
     ],
   );
 
@@ -121,13 +258,16 @@ const PolicyCanvasPanel = ({
       }}
     >
       <ReactFlow
-        nodes={nodes}
-        edges={[]}
+        nodes={nodesWithCallbacks}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{ padding: 0.5 }}
       >
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+        <Controls />
       </ReactFlow>
     </div>
   );
@@ -178,14 +318,6 @@ const AccessPolicyEditor = ({
 
   const handleAddNode = useCallback(() => {
     // TODO: implement add node logic
-  }, []);
-
-  const handleAddCondition = useCallback(() => {
-    // TODO: implement add condition logic
-  }, []);
-
-  const handleAddAction = useCallback(() => {
-    // TODO: implement add action logic
   }, []);
 
   const handleExport = () => {
@@ -276,8 +408,6 @@ const AccessPolicyEditor = ({
                 onDescriptionChange={handleDescriptionChange}
                 onControlGroupChange={handleControlGroupChange}
                 onAddNode={handleAddNode}
-                onAddCondition={handleAddCondition}
-                onAddAction={handleAddAction}
               />
             </ReactFlowProvider>
           )}
