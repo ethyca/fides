@@ -408,6 +408,13 @@ class Dataset(Base, FidesBase):
     data_categories = Column(ARRAY(String))
     collections = Column(JSON)
     fides_meta = Column(JSON)
+    data_purposes = Column(ARRAY(String), server_default="{}", nullable=True)
+    data_producer_id = Column(
+        String,
+        ForeignKey("data_producer.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    data_producer = relationship("DataProducer", lazy="selectin")
 
     @classmethod
     def create(
