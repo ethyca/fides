@@ -1,4 +1,0 @@
-type: Added # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Added UI alpha flag for Jira integration features
-pr: 7576 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]

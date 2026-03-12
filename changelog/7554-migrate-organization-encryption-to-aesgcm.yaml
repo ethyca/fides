@@ -1,4 +1,0 @@
-type: Changed
-description: Migrated Organization encrypted columns from pgcrypto to AES-GCM
-pr: 7554
-labels: ["db-migration"]
