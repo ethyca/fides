@@ -30,7 +30,7 @@ import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
-import useD3HierarchyLayout from "~/features/taxonomy/hooks/useD3HierarchyLayout";
+import { getLayoutedElements } from "~/features/datamap/layout-utils";
 
 import {
   AccessPolicy,
@@ -127,15 +127,16 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  const { nodes: layoutedNodes, edges: layoutedEdges } = useD3HierarchyLayout({
-    nodes,
-    edges,
-    options: {
-      direction: "LR",
-      nodeWidth: 320,
-      nodeHeight: 100,
-    },
-  });
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
+    () =>
+      getLayoutedElements(nodes, edges, "LR", {
+        ranksep: 80,
+        nodesep: 60,
+        nodeWidth: 320,
+        nodeHeight: 100,
+      }),
+    [nodes, edges],
+  );
 
   const handleAddConditionFromNode = useCallback(
     (sourceNodeId: string) => {

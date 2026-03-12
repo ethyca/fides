@@ -1,6 +1,28 @@
 import { Edge, Node, Position } from "@xyflow/react";
 import dagre from "dagre";
 
+export interface DagreLayoutOptions {
+  rankdir?: "LR" | "TB";
+  ranksep?: number;
+  nodesep?: number;
+  edgesep?: number;
+  marginx?: number;
+  marginy?: number;
+  nodeWidth?: number;
+  nodeHeight?: number;
+}
+
+const DEFAULT_OPTIONS: Required<DagreLayoutOptions> = {
+  rankdir: "LR",
+  ranksep: 60,
+  nodesep: 60,
+  edgesep: 50,
+  marginx: 15,
+  marginy: 15,
+  nodeWidth: 220,
+  nodeHeight: 70,
+};
+
 // The dagre layout algorithm needs a graph instance with nodes and edges
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -9,27 +31,27 @@ dagreGraph.setDefaultEdgeLabel(() => ({}));
 export const getLayoutedElements = (
   nodes: Node[],
   edges: Edge[],
-  direction: "LR" | "TB" = "LR", // Left to Right or Top to Bottom
+  direction: "LR" | "TB" = "LR",
+  options?: Partial<DagreLayoutOptions>,
 ) => {
+  const opts = { ...DEFAULT_OPTIONS, ...options, rankdir: direction };
+
   // Clear the layout
   dagreGraph.setGraph({
-    rankdir: direction,
-    // Bring the graph a bit tighter while still maintaining breathing room
-    // Additional spacing to give edges gentler angles and reduce overlap.
-    ranksep: 60, // Vertical spacing between ranks (rows/columns)
-    nodesep: 60, // Horizontal spacing between individual nodes
-    edgesep: 50, // Minimum distance between edges and other graph elements
-    marginx: 15, // Extra margin on the x-axis
-    marginy: 15, // Extra margin on the y-axis
+    rankdir: opts.rankdir,
+    ranksep: opts.ranksep,
+    nodesep: opts.nodesep,
+    edgesep: opts.edgesep,
+    marginx: opts.marginx,
+    marginy: opts.marginy,
   });
 
   // Set node width and height for layout calculation
-  // We intentionally add some padding to the node dimensions so that dagre
-  // allocates extra whitespace around each rendered node. This prevents
-  // edges (especially those with large arrowheads) from hugging the node
-  // border too closely.
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 220, height: 70 });
+    dagreGraph.setNode(node.id, {
+      width: opts.nodeWidth,
+      height: opts.nodeHeight,
+    });
   });
 
   // Add edges
@@ -53,8 +75,8 @@ export const getLayoutedElements = (
         y: nodeWithPosition.y - nodeWithPosition.height / 2,
       },
       // Set node source/target handles based on flow direction
-      sourcePosition: direction === "LR" ? Position.Right : Position.Bottom,
-      targetPosition: direction === "LR" ? Position.Left : Position.Top,
+      sourcePosition: opts.rankdir === "LR" ? Position.Right : Position.Bottom,
+      targetPosition: opts.rankdir === "LR" ? Position.Left : Position.Top,
     };
   });
 
