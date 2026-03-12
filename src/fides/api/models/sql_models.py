@@ -593,6 +593,12 @@ class System(Base, FidesBase):
         viewonly=True,
     )
 
+    system_purposes = relationship(
+        "SystemPurpose",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
     @classmethod
     def get_data_uses(
         cls: Type[System], systems: List[System], include_parents: bool = True

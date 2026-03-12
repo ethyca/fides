@@ -98,6 +98,7 @@ from fides.api.models.system_compass_sync import SystemCompassSync
 from fides.api.models.system_group import SystemGroup, SystemGroupMember
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
+from fides.api.models.system_purpose import SystemPurpose  # noqa: F401
 from fides.api.models.taxonomy import (
     Taxonomy,
     TaxonomyAllowedUsage,
