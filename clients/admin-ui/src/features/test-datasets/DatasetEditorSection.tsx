@@ -22,8 +22,9 @@ import { useUpdateDatasetMutation } from "~/features/dataset";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
   useGetDatasetReachabilityQuery,
+  usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { Dataset } from "~/types/api";
+import { ConnectionType, Dataset } from "~/types/api";
 
 import {
   selectCurrentDataset,
@@ -35,6 +36,7 @@ import { removeNulls } from "./helpers";
 
 interface EditorSectionProps {
   connectionKey: string;
+  connectionType?: ConnectionType;
 }
 
 const getReachabilityMessage = (details: any) => {
@@ -52,10 +54,15 @@ const getReachabilityMessage = (details: any) => {
   return details;
 };
 
-const EditorSection = ({ connectionKey }: EditorSectionProps) => {
+const EditorSection = ({
+  connectionKey,
+  connectionType,
+}: EditorSectionProps) => {
   const messageApi = useMessage();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
+  const [patchConnectionDatasets] = usePatchConnectionDatasetsMutation();
+  const isSaas = connectionType === ConnectionType.SAAS;
 
   const [editorContent, setEditorContent] = useState<string>("");
   const currentDataset = useAppSelector(selectCurrentDataset);
@@ -112,7 +119,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
 
   useEffect(() => {
     if (currentDataset?.ctl_dataset) {
-      setEditorContent(yaml.dump(removeNulls(currentDataset?.ctl_dataset)));
+      setEditorContent(yaml.dump(removeNulls(currentDataset.ctl_dataset)));
     }
   }, [currentDataset]);
 
@@ -127,18 +134,26 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     refetchReachability,
   ]);
 
-  useEffect(() => {
-    if (reachability) {
-      dispatch(setReachability(reachability.reachable));
-    }
-  }, [reachability, dispatch]);
-
   const handleDatasetChange = async (value: string) => {
     const selectedConfig = datasetConfigs?.items.find(
       (item) => item.fides_key === value,
     );
     if (selectedConfig) {
       dispatch(setCurrentDataset(selectedConfig));
+    }
+  };
+
+  const refreshEditorFromServer = async () => {
+    try {
+      const { data } = await refetchDatasets();
+      const refreshedDataset = data?.items.find(
+        (item) => item.fides_key === currentDataset?.fides_key,
+      );
+      if (refreshedDataset?.ctl_dataset) {
+        setEditorContent(yaml.dump(removeNulls(refreshedDataset.ctl_dataset)));
+      }
+    } catch {
+      // Silent — the primary error message is already shown
     }
   };
 
@@ -162,20 +177,51 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       return;
     }
 
-    // Then handle the API update
-    const result = await updateDataset(datasetValues);
+    // Use connection-aware endpoint for SaaS to enforce structural validation
+    if (isSaas) {
+      const result = await patchConnectionDatasets({
+        connectionKey,
+        datasets: [datasetValues],
+      });
 
-    if (isErrorResult(result)) {
-      messageApi.error(getErrorMessage(result.error));
-      return;
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        await refreshEditorFromServer();
+        return;
+      }
+
+      // The endpoint returns 200 with BulkPutDataset — check for failures in the response
+      const failedMessage = result.data?.failed?.[0]?.message;
+      if (failedMessage) {
+        messageApi.error(failedMessage);
+        await refreshEditorFromServer();
+        return;
+      }
+
+      const succeededDataset = result.data?.succeeded?.[0];
+      if (succeededDataset) {
+        dispatch(
+          setCurrentDataset({
+            fides_key: currentDataset.fides_key,
+            ctl_dataset: succeededDataset,
+          }),
+        );
+      }
+    } else {
+      const result = await updateDataset(datasetValues);
+
+      if (isErrorResult(result)) {
+        messageApi.error(getErrorMessage(result.error));
+        return;
+      }
+
+      dispatch(
+        setCurrentDataset({
+          fides_key: currentDataset.fides_key,
+          ctl_dataset: result.data,
+        }),
+      );
     }
-
-    dispatch(
-      setCurrentDataset({
-        fides_key: currentDataset.fides_key,
-        ctl_dataset: result.data,
-      }),
-    );
     messageApi.success("Successfully modified dataset");
     await refetchDatasets();
     await refetchReachability();

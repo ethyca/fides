@@ -27,7 +27,9 @@ const TestDatasetPage: NextPage = () => {
     skip: !systemId,
   });
 
-  const connectionKey = system?.connection_configs?.[0]?.key || "";
+  const connectionConfig = system?.connection_configs?.[0];
+  const connectionKey = connectionConfig?.key || "";
+  const connectionType = connectionConfig?.connection_type;
 
   if (isLoading) {
     return (
@@ -52,7 +54,7 @@ const TestDatasetPage: NextPage = () => {
             title: system?.name || "",
             href: `/systems/configure/${systemId}#integrations`,
           },
-          { title: "Test datasets" },
+          { title: "Edit dataset" },
         ]}
       />
       <Flex align="stretch" flex="1" gap="middle" vertical>
@@ -62,7 +64,10 @@ const TestDatasetPage: NextPage = () => {
           gap="middle"
           className="max-h-[60vh] min-h-0"
         >
-          <EditorSection connectionKey={connectionKey} />
+          <EditorSection
+            connectionKey={connectionKey}
+            connectionType={connectionType}
+          />
           <TestResultsSection connectionKey={connectionKey} />
         </Flex>
         <Flex vertical>

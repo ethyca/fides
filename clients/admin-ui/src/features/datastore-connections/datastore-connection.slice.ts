@@ -395,6 +395,17 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Datastore Connection"],
     }),
+    patchConnectionDatasets: build.mutation<
+      BulkPutDataset,
+      { connectionKey: string; datasets: any[] }
+    >({
+      query: ({ connectionKey, datasets }) => ({
+        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset`,
+        method: "PATCH",
+        body: datasets,
+      }),
+      invalidatesTags: () => ["Datastore Connection", "Datasets"],
+    }),
     getDatasetReachability: build.query<
       { reachable: boolean; details: string },
       { connectionKey: string; datasetKey: string; policyKey?: string }
@@ -435,6 +446,7 @@ export const {
   usePatchDatastoreConnectionSecretsMutation,
   useTestDatastoreConnectionDatasetsMutation,
   useGetDatasetInputsQuery,
+  usePatchConnectionDatasetsMutation,
   useGetDatasetReachabilityQuery,
 } = datastoreConnectionApi;
 
