@@ -26,7 +26,7 @@ from starlette.status import (
 
 from fides.api import deps
 from fides.api.deps import get_dataset_config_service
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.oauth.utils import verify_oauth_client
@@ -34,6 +34,7 @@ from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     DatasetConfigSchema,
+    DatasetProtectedFields,
     DatasetReachability,
     ValidateDatasetResponse,
 )
@@ -52,6 +53,7 @@ from fides.common.urn_registry import (
     DATASET_CONFIG_BY_KEY,
     DATASET_CONFIGS,
     DATASET_INPUTS,
+    DATASET_PROTECTED_FIELDS,
     DATASET_REACHABILITY,
     DATASET_VALIDATE,
     DATASETS,
@@ -588,6 +590,50 @@ def dataset_reachability(
         dataset_config, access_policy
     )
     return {"reachable": reachable, "details": details}
+
+
+@router.get(
+    DATASET_PROTECTED_FIELDS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=DatasetProtectedFields,
+)
+def get_dataset_protected_fields(
+    *,
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    dataset_key: FidesKey,
+) -> Dict[str, Any]:
+    """
+    Returns the fields that are protected on a SaaS dataset:
+    immutable top-level metadata fields and collection fields
+    referenced by the SaaS config.
+    """
+    from fides.api.schemas.saas.saas_config import SaaSConfig
+    from fides.service.connection.merge_configs_util import (
+        get_saas_config_referenced_field_paths,
+    )
+    from fides.service.dataset.validation_steps.saas import (
+        _IMMUTABLE_DATASET_FIELDS,
+    )
+
+    if (
+        connection_config.connection_type != ConnectionType.saas
+        or not connection_config.saas_config
+    ):
+        return {
+            "immutable_fields": [],
+            "protected_collection_fields": [],
+        }
+
+    saas_config = SaaSConfig(**connection_config.saas_config)
+    instance_key = connection_config.saas_config["fides_key"]
+    protected = get_saas_config_referenced_field_paths(saas_config, instance_key)
+
+    return {
+        "immutable_fields": list(_IMMUTABLE_DATASET_FIELDS),
+        "protected_collection_fields": [
+            {"collection": col, "field": field_path} for col, field_path in protected
+        ],
+    }
 
 
 @router.post(

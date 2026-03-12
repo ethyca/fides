@@ -12,7 +12,7 @@ import {
   useMessage,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -21,6 +21,7 @@ import { Editor } from "~/features/common/yaml/helpers";
 import { useUpdateDatasetMutation } from "~/features/dataset";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
+  useGetDatasetProtectedFieldsQuery,
   useGetDatasetReachabilityQuery,
   usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
@@ -65,6 +66,8 @@ const EditorSection = ({
   const isSaas = connectionType === ConnectionType.SAAS;
 
   const [editorContent, setEditorContent] = useState<string>("");
+  const editorRef = useRef<any>(null);
+  const decorationsRef = useRef<any>(null);
   const currentDataset = useAppSelector(selectCurrentDataset);
   const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
@@ -87,6 +90,122 @@ const EditorSection = ({
         skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
       },
     );
+
+  const { data: protectedFields } = useGetDatasetProtectedFieldsQuery(
+    {
+      connectionKey,
+      datasetKey: currentDataset?.fides_key || "",
+    },
+    {
+      skip: !isSaas || !connectionKey || !currentDataset?.fides_key,
+    },
+  );
+
+  /**
+   * Apply grey decorations to lines in the YAML editor that correspond to
+   * protected fields (immutable top-level metadata + SaaS config references).
+   * The server enforces immutability — this is a visual hint.
+   */
+  const applyProtectedDecorations = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor || !isSaas || !protectedFields) {
+      return;
+    }
+    const model = editor.getModel();
+    if (!model) {
+      return;
+    }
+
+    const lines = model.getLinesContent();
+    const ranges: any[] = [];
+
+    // Build protected dot-paths per collection and also collect all ancestor
+    // segments so that parent fields of nested references are also protected.
+    // e.g. "address.street" protects both "address" and "address.street"
+    const protectedPathsByCollection = new Map<string, Set<string>>();
+    protectedFields.protected_collection_fields.forEach((pf) => {
+      if (!protectedPathsByCollection.has(pf.collection)) {
+        protectedPathsByCollection.set(pf.collection, new Set());
+      }
+      const pathSet = protectedPathsByCollection.get(pf.collection)!;
+      // Add the full path and every ancestor prefix
+      const segments = pf.field.split(".");
+      segments.forEach((_, idx) => {
+        pathSet.add(segments.slice(0, idx + 1).join("."));
+      });
+    });
+
+    const immutableSet = new Set(protectedFields.immutable_fields);
+    let currentCollection = "";
+    // Track the field path stack: each entry is [indentLevel, fieldName]
+    const fieldStack: [number, string][] = [];
+
+    lines.forEach((line: string, i: number) => {
+      let isProtected = false;
+
+      // Top-level key (not indented)
+      if (/^\S/.test(line) && line.includes(":")) {
+        const key = line.split(":")[0].trim();
+        if (immutableSet.has(key)) {
+          isProtected = true;
+        }
+      }
+
+      // Match "- name: value" lines at any indentation
+      const nameMatch = line.match(/^(\s*)-\s+name:\s+(\S+)/);
+      if (nameMatch) {
+        const [, indent, name] = nameMatch;
+        const indentLevel = indent.length;
+
+        // Indentation <= 4 is a collection-level name
+        if (indentLevel <= 4) {
+          currentCollection = name;
+          fieldStack.length = 0;
+        } else {
+          // Pop stack entries at the same or deeper indentation
+          while (
+            fieldStack.length > 0 &&
+            fieldStack[fieldStack.length - 1][0] >= indentLevel
+          ) {
+            fieldStack.pop();
+          }
+          fieldStack.push([indentLevel, name]);
+
+          // Build the current dot-path from the stack
+          if (protectedPathsByCollection.has(currentCollection)) {
+            const currentPath = fieldStack.map(([, n]) => n).join(".");
+            if (
+              protectedPathsByCollection
+                .get(currentCollection)!
+                .has(currentPath)
+            ) {
+              isProtected = true;
+            }
+          }
+        }
+      }
+
+      if (isProtected) {
+        ranges.push({
+          range: {
+            startLineNumber: i + 1,
+            startColumn: 1,
+            endLineNumber: i + 1,
+            endColumn: line.length + 1,
+          },
+          options: {
+            isWholeLine: true,
+            inlineClassName: "immutable-line",
+          },
+        });
+      }
+    });
+
+    decorationsRef.current = editor.deltaDecorations(
+      decorationsRef.current || [],
+      ranges,
+    );
+  }, [isSaas, protectedFields]);
 
   useEffect(() => {
     if (reachability) {
@@ -122,6 +241,11 @@ const EditorSection = ({
       setEditorContent(yaml.dump(removeNulls(currentDataset.ctl_dataset)));
     }
   }, [currentDataset]);
+
+  // Re-apply decorations when content or protected fields change
+  useEffect(() => {
+    applyProtectedDecorations();
+  }, [editorContent, applyProtectedDecorations]);
 
   useEffect(() => {
     if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
@@ -305,7 +429,17 @@ const EditorSection = ({
           value={editorContent}
           height="100%"
           onChange={(value) => setEditorContent(value || "")}
-          onMount={() => {}}
+          onMount={(editor: any) => {
+            editorRef.current = editor;
+            decorationsRef.current = [];
+            if (!document.getElementById("immutable-line-style")) {
+              const style = document.createElement("style");
+              style.id = "immutable-line-style";
+              style.textContent = `.immutable-line { opacity: 0.5; }`;
+              document.head.appendChild(style);
+            }
+            applyProtectedDecorations();
+          }}
           options={{
             fontFamily: "Menlo",
             fontSize: 13,

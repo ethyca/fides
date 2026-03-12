@@ -422,6 +422,19 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       },
       providesTags: () => ["Datastore Connection"],
     }),
+    getDatasetProtectedFields: build.query<
+      {
+        immutable_fields: string[];
+        protected_collection_fields: { collection: string; field: string }[];
+      },
+      { connectionKey: string; datasetKey: string }
+    >({
+      query: ({ connectionKey, datasetKey }) => ({
+        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/protected-fields`,
+        method: "GET",
+      }),
+      providesTags: () => ["Datastore Connection"],
+    }),
   }),
 });
 
@@ -448,6 +461,7 @@ export const {
   useGetDatasetInputsQuery,
   usePatchConnectionDatasetsMutation,
   useGetDatasetReachabilityQuery,
+  useGetDatasetProtectedFieldsQuery,
 } = datastoreConnectionApi;
 
 /**

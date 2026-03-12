@@ -66,6 +66,20 @@ class DryRunDatasetResponse(FidesSchema):
     query: Any
 
 
+class ProtectedCollectionField(FidesSchema):
+    """A single field that is protected by the SaaS config."""
+
+    collection: str
+    field: str
+
+
+class DatasetProtectedFields(FidesSchema):
+    """Fields that cannot be modified on a SaaS dataset."""
+
+    immutable_fields: List[str]
+    protected_collection_fields: List[ProtectedCollectionField]
+
+
 class DatasetReachability(FidesSchema):
     """
     Response containing reachability details for a single dataset
