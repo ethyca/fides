@@ -255,7 +255,7 @@ div#fides-banner-heading {
 }
 
 .fides-experience-description-part {
-  display: inline;
+  display: contents;
 }
 
 div#fides-banner-notices {
