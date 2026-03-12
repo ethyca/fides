@@ -63,9 +63,9 @@
     "test": false,
     "production": false
   },
-  "alphaDataProtectionAssessments": {
-    "label": "Alpha data protection assessments",
-    "description": "Enable data protection impact assessments feature",
+  "privacyAssessments": {
+    "label": "Privacy assessments",
+    "description": "Enable privacy assessments feature",
     "development": true,
     "test": false,
     "production": false
@@ -94,6 +94,13 @@
   "alphaJiraIntegration": {
     "label": "Alpha Jira integration",
     "description": "Enable Jira DSR integration for creating and managing Jira issues from privacy requests",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaPurposeBasedAccessControl": {
+    "label": "Alpha purpose-based access control",
+    "description": "Enable purpose-based access control feature",
     "development": true,
     "test": false,
     "production": false
