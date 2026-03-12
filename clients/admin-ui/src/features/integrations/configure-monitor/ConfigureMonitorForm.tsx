@@ -9,10 +9,6 @@ import { useEffect, useState } from "react";
 import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { enumToOptions } from "~/features/common/helpers";
 import { formatUser } from "~/features/common/utils";
-import {
-  getMonitorType,
-  MONITOR_TYPES,
-} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
@@ -100,15 +96,7 @@ const ConfigureMonitorForm = ({
 }) => {
   const isEditing = !!monitor;
 
-  const isInfrastructureMonitor =
-    getMonitorType(integrationOption.identifier as ConnectionType) ===
-    MONITOR_TYPES.INFRASTRUCTURE;
-
-  /**
-   * Show the LLM classifier option if the monitor is not an infrastructure monitor.
-   * Infrastructure monitors (e.g., Okta) don't use classification.
-   */
-  const showLLMOption = !isInfrastructureMonitor;
+  const showLLMOption = true;
 
   const [form] = Form.useForm<MonitorConfigFormValues>();
   const { data: systemData, isLoading: isLoadingSystem } =
