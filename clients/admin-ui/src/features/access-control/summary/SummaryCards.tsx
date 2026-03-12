@@ -1,10 +1,12 @@
+import { Flex } from "fidesui";
+
 import type {
   DataConsumerRequestsResponse,
   DataConsumerSummary,
 } from "../types";
-import DataConsumersCard from "./DataConsumersCard";
-import ViolationRateCard from "./ViolationRateCard";
-import ViolationsOverTimeCard from "./ViolationsOverTimeCard";
+import { DataConsumersCard } from "./DataConsumersCard";
+import { ViolationRateCard } from "./ViolationRateCard";
+import { ViolationsOverTimeCard } from "./ViolationsOverTimeCard";
 
 interface SummaryCardsProps {
   requestsData?: DataConsumerRequestsResponse;
@@ -12,12 +14,12 @@ interface SummaryCardsProps {
   loading?: boolean;
 }
 
-const SummaryCards = ({
+export const SummaryCards = ({
   requestsData,
   consumersData,
   loading,
 }: SummaryCardsProps) => (
-  <div className="grid grid-cols-3 gap-4">
+  <Flex className="grid grid-cols-3 gap-4">
     <ViolationsOverTimeCard
       data={requestsData?.items ?? []}
       loading={loading}
@@ -28,7 +30,5 @@ const SummaryCards = ({
       loading={loading}
     />
     <DataConsumersCard data={consumersData ?? []} loading={loading} />
-  </div>
+  </Flex>
 );
-
-export default SummaryCards;
