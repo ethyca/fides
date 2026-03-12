@@ -5,6 +5,7 @@ stores Jira-specific fields (ticket key, URL, external status) that the
 polling service uses to track ticket lifecycle.
 """
 
+from enum import StrEnum
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, Index, String, text
@@ -18,6 +19,13 @@ if TYPE_CHECKING:
     from fides.api.models.manual_task import ManualTaskInstance
 
 DONE_STATUS_CATEGORY = "done"
+
+
+class DeletedStatus(StrEnum):
+    """Synthetic status for tickets that have been removed from Jira."""
+
+    CATEGORY = "deleted"
+    DISPLAY = "Deleted"
 
 
 class JiraTicketTask(Base):

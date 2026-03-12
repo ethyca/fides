@@ -8,6 +8,7 @@ from fides.api.models.manual_task import (
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
+    StatusType,
 )
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
@@ -1281,6 +1282,35 @@ class TestManualTaskGraphTaskHelperMethods:
                     manual_task,
                     ActionType.access,
                     awaiting_detail_message="Test detail",
+                )
+
+    def test_set_submitted_data_raises_error_for_failed_instance(
+        self,
+        manual_task_graph_task,
+        manual_task,
+        manual_task_instance,
+        access_privacy_request,
+        db,
+    ):
+        """A failed instance (e.g. deleted Jira ticket) should raise ValueError, not wait."""
+        manual_task_instance.status = StatusType.failed
+        manual_task_instance.save(db)
+
+        with (
+            patch.object(
+                manual_task_graph_task,
+                "_get_submitted_data",
+                autospec=True,
+                return_value=None,
+            ),
+        ):
+            with pytest.raises(
+                ValueError,
+                match="has failed instances",
+            ):
+                manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
+                    manual_task,
+                    ActionType.access,
                 )
 
     def test_ensure_manual_task_instances_with_config(

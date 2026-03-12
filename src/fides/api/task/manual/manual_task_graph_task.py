@@ -270,7 +270,10 @@ class ManualTaskGraphTask(GraphTask):
         awaiting_detail_message: Optional[str] = None,
     ) -> Optional[list[Row]]:
         """
-        Set submitted data for a manual task and raise AwaitingAsyncTaskCallback if all instances are not completed
+        Set submitted data for a manual task and raise AwaitingAsyncTaskCallback if all instances are not completed.
+
+        If any instance has been marked as failed (e.g. Jira ticket deleted
+        with no data submitted), raises a hard error instead of waiting.
         """
         # Check if all manual task instances have submissions for this action type
         submitted_data = self._get_submitted_data(
@@ -285,6 +288,22 @@ class ManualTaskGraphTask(GraphTask):
             self.request_task.access_data = result
 
             return result
+
+        # Check if any instance has been marked as failed by an external
+        # process (e.g. poller detected a deleted Jira ticket with no data).
+        # This is a hard error — don't wait for input that can't arrive.
+        failed_instances = [
+            inst
+            for inst in self.resources.request.manual_task_instances
+            if inst.task_id == manual_task.id
+            and inst.config.config_type == action_type
+            and inst.status == StatusType.failed
+        ]
+        if failed_instances:
+            raise ValueError(
+                f"Manual task for {self.connection_key} has failed instances — "
+                f"cannot proceed without intervention"
+            )
 
         # Set privacy request status to requires_input if not already set
         if self.resources.request.status != PrivacyRequestStatus.requires_input:
