@@ -95,6 +95,13 @@ def validate_fragment_data(
     if missing:
         return None, f"Missing required fields in {filename}: {', '.join(missing)}"
 
+    # Validate pr is an integer
+    if not isinstance(data["pr"], int):
+        return None, (
+            f"'pr' must be an integer in {filename} (e.g., pr: 1234), "
+            f"got: {data['pr']!r}"
+        )
+
     entry_type = data["type"]
     if entry_type not in CHANGELOG_TYPES:
         return None, (
