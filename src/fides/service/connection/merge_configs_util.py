@@ -93,6 +93,58 @@ def get_saas_config_referenced_fields(
     return referenced_fields
 
 
+def get_saas_config_referenced_field_paths(
+    saas_config: SaaSConfig,
+    instance_key: str,
+) -> set[tuple[str, str]]:
+    """
+    Like get_saas_config_referenced_fields but returns the full dot-delimited
+    field path (e.g. ``"address.street"``) instead of only the top-level name.
+
+    Returns:
+        Set of (collection_name, field_path) tuples.
+    """
+    referenced_fields: set[tuple[str, str]] = set()
+    valid_dataset_keys = {"<instance_fides_key>", instance_key}
+
+    def _extract_fides_dataset_reference(data: dict[str, Any]) -> None:
+        dataset = data.get("dataset", "")
+        field = data.get("field", "")
+        if dataset in valid_dataset_keys and field:
+            parts = field.split(".")
+            if len(parts) >= 2:
+                collection_name = parts[0]
+                field_path = ".".join(parts[1:])
+                referenced_fields.add((collection_name, field_path))
+
+    def _extract_dataset_ref(data: dict[str, Any]) -> None:
+        ref = data.get("dataset_reference", "")
+        if not ref:
+            return
+        parts = ref.split(".")
+        if len(parts) >= 3 and parts[0] in valid_dataset_keys:
+            collection_name = parts[1]
+            field_path = ".".join(parts[2:])
+            referenced_fields.add((collection_name, field_path))
+
+    def _traverse(obj: Any) -> None:
+        if isinstance(obj, dict):
+            if "dataset" in obj and "field" in obj:
+                _extract_fides_dataset_reference(obj)
+            elif "dataset_reference" in obj:
+                _extract_dataset_ref(obj)
+            for value in obj.values():
+                _traverse(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                _traverse(item)
+
+    config_dict = saas_config.model_dump()
+    _traverse(config_dict)
+
+    return referenced_fields
+
+
 def _get_fields(field: dict[str, Any]) -> list[dict[str, Any]]:
     """
     Returns the fields of a dataset.
