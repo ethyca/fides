@@ -6,7 +6,7 @@ import { useAntPagination } from "~/features/common/pagination/useAntPagination"
 
 import { getViolationsColumns } from "./violationsColumns";
 
-const FindingsTable = () => {
+export const FindingsTable = () => {
   const { paginationProps, pageIndex, pageSize } = useAntPagination({
     pageQueryKey: "findings_page",
     sizeQueryKey: "findings_size",
@@ -46,5 +46,3 @@ const FindingsTable = () => {
     </div>
   );
 };
-
-export default FindingsTable;
