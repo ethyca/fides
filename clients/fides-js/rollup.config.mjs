@@ -238,6 +238,13 @@ const previewScript = {
           src: "dist/fides-preview.js",
           dest: "../admin-ui/public/lib/",
         },
+        // Copy the official IAB TCF CMP stub so publishers can load it before
+        // fides.js to make window.__tcfapi available immediately for ad scripts.
+        {
+          src: "../node_modules/@iabtechlabtcf/stub/lib/stub.js",
+          dest: "../privacy-center/public/lib/",
+          rename: "fides-stub.js",
+        },
       ],
       verbose: true,
       hook: "writeBundle",

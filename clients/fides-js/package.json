@@ -54,6 +54,7 @@
     "@iabgpp/cmpapi": "3.1.7",
     "@iabtechlabtcf/cmpapi": "1.5.20",
     "@iabtechlabtcf/core": "1.5.20",
+    "@iabtechlabtcf/stub": "1.5.21",
     "@rollup/plugin-replace": "^6.0.2",
     "a11y-dialog": "^7.5.3",
     "astring": "^1.9.0",
