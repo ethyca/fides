@@ -1,9 +1,15 @@
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import JSON, Column, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+
+if TYPE_CHECKING:
+    from fides.api.models.detection_discovery import MonitorConfig
+    from fides.api.models.fides_user import FidesUser
 
 
 class DataProducer(Base):
