@@ -15,6 +15,7 @@ import {
   Input,
   notification,
   Radio,
+  SelectProps,
   Space,
   Text,
 } from "fidesui";
@@ -25,7 +26,10 @@ import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
 
-import { AccessPolicy } from "./access-policies.slice";
+import {
+  AccessPolicy,
+  useGetControlGroupsQuery,
+} from "./access-policies.slice";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 
 export enum EditorMode {
@@ -52,6 +56,7 @@ interface PolicyCanvasPanelProps {
   name: string;
   description: string;
   controlGroup?: string;
+  controlGroupOptions: NonNullable<SelectProps["options"]>;
   onNameChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
@@ -61,6 +66,7 @@ const PolicyCanvasPanel = ({
   name,
   description,
   controlGroup,
+  controlGroupOptions,
   onNameChange,
   onDescriptionChange,
   onControlGroupChange,
@@ -75,6 +81,7 @@ const PolicyCanvasPanel = ({
           name,
           description,
           controlGroup,
+          controlGroupOptions,
           onNameChange,
           onDescriptionChange,
           onControlGroupChange,
@@ -85,6 +92,7 @@ const PolicyCanvasPanel = ({
       name,
       description,
       controlGroup,
+      controlGroupOptions,
       onNameChange,
       onDescriptionChange,
       onControlGroupChange,
@@ -119,6 +127,13 @@ const AccessPolicyForm = ({
   onDelete,
 }: AccessPolicyFormProps) => {
   const isNew = !policyId;
+
+  const { data: controlGroups = [] } = useGetControlGroupsQuery();
+
+  const controlGroupOptions = useMemo(
+    () => controlGroups.map((cg) => ({ value: cg.key, label: cg.label })),
+    [controlGroups],
+  );
 
   const [mode, setMode] = useState<EditorMode>(EditorMode.Builder);
   const [yamlValue, setYamlValue] = useState<string>(initialValues?.yaml ?? "");
@@ -231,6 +246,7 @@ const AccessPolicyForm = ({
                 name={name}
                 description={description}
                 controlGroup={controlGroup}
+                controlGroupOptions={controlGroupOptions}
                 onNameChange={handleNameChange}
                 onDescriptionChange={handleDescriptionChange}
                 onControlGroupChange={handleControlGroupChange}

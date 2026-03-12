@@ -1,4 +1,26 @@
-import { AccessPolicy } from "~/features/access-policies/access-policies.slice";
+import {
+  AccessPolicy,
+  ControlGroup,
+} from "~/features/access-policies/access-policies.slice";
+
+export const mockControlGroups: ControlGroup[] = [
+  {
+    key: "eea_uk_gdpr",
+    label: "EEA/UK: GDPR Articles 5, 6 — Purpose limitation and lawful basis",
+  },
+  {
+    key: "us_glba_ccpa",
+    label: "US: GLBA, CCPA — Financial privacy and consumer rights",
+  },
+  {
+    key: "apac_pdpa_app",
+    label: "APAC: PDPA (Singapore), APP (Australia) — Personal data protection",
+  },
+  {
+    key: "global",
+    label: "Global: GDPR + GLBA + local equivalents",
+  },
+];
 
 export const mockAccessPolicies: AccessPolicy[] = [
   {
