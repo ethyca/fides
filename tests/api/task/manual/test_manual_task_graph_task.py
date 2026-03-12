@@ -1286,20 +1286,20 @@ class TestManualTaskGraphTaskHelperMethods:
 
     def test_set_submitted_data_raises_error_for_failed_instance(
         self,
-        manual_task_graph_task,
-        manual_task,
+        build_graph_task,
         manual_task_instance,
         access_privacy_request,
         db,
     ):
         """When all instances are failed (e.g. deleted Jira ticket), raise ValueError instead of waiting."""
+        manual_task, graph_task = build_graph_task
         manual_task_instance.status = StatusType.failed
         manual_task_instance.save(db)
         db.refresh(access_privacy_request)
 
         with (
             patch.object(
-                manual_task_graph_task,
+                graph_task,
                 "_get_submitted_data",
                 autospec=True,
                 return_value=None,
@@ -1309,7 +1309,7 @@ class TestManualTaskGraphTaskHelperMethods:
                 ValueError,
                 match="has failed instances",
             ):
-                manual_task_graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
+                graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
                     manual_task,
                     ActionType.access,
                 )
