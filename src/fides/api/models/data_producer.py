@@ -3,13 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import JSON, Column, ForeignKey, String, UniqueConstraint
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
 
 if TYPE_CHECKING:
-    from fides.api.models.detection_discovery import MonitorConfig
-    from fides.api.models.fides_user import FidesUser
+    from fides.api.models.detection_discovery import MonitorConfig  # noqa: F401
+    from fides.api.models.fides_user import FidesUser  # noqa: F401
 
 
 class DataProducer(Base):
@@ -18,7 +19,9 @@ class DataProducer(Base):
     and purpose assignment to datasets.
     """
 
-    __tablename__ = "data_producer"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "data_producer"
 
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
@@ -57,7 +60,7 @@ class DataProducerMember(Base):
     Join table linking a DataProducer to FidesUser members.
     """
 
-    __tablename__ = "data_producer_member"
+    __tablename__ = "data_producer_member"  # type: ignore[assignment]
     __table_args__ = (
         UniqueConstraint("data_producer_id", "user_id", name="uq_data_producer_member"),
     )
@@ -75,5 +78,5 @@ class DataProducerMember(Base):
         index=True,
     )
 
-    data_producer = relationship("DataProducer", lazy="selectin")
+    data_producer = relationship("DataProducer", lazy="selectin", overlaps="members")  # type: ignore[call-arg]
     user = relationship("FidesUser", lazy="selectin")

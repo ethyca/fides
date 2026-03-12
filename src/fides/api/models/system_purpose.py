@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, ForeignKey, String, UniqueConstraint
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
@@ -18,7 +19,10 @@ class SystemPurpose(Base):
     Used by the DataConsumer facade for system-type consumers.
     """
 
-    __tablename__ = "system_purpose"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "system_purpose"
+
     __table_args__ = (
         UniqueConstraint("system_id", "data_purpose_id", name="uq_system_purpose"),
     )
@@ -37,9 +41,9 @@ class SystemPurpose(Base):
     )
     assigned_by = Column(
         String,
-        ForeignKey("fidesuser.id"),
+        ForeignKey("fidesuser.id", ondelete="SET NULL"),
         nullable=True,
     )
 
-    system = relationship("System", lazy="selectin")  # type: ignore[misc]
+    system = relationship("System", lazy="selectin", overlaps="system_purposes")  # type: ignore[call-arg, misc]
     data_purpose = relationship("DataPurpose", lazy="selectin")

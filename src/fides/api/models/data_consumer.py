@@ -12,12 +12,13 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
 
 if TYPE_CHECKING:
-    from fides.api.models.data_purpose import DataPurpose
+    from fides.api.models.data_purpose import DataPurpose  # noqa: F401
 
 
 class DataConsumer(Base):
@@ -26,7 +27,10 @@ class DataConsumer(Base):
     System-type consumers are surfaced via a facade over ctl_systems.
     """
 
-    __tablename__ = "data_consumer"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "data_consumer"
+
     __table_args__ = (
         CheckConstraint("type != 'system'", name="ck_data_consumer_not_system"),
     )
@@ -69,7 +73,7 @@ class DataConsumerPurpose(Base):
     Audited join table linking a non-system DataConsumer to a DataPurpose.
     """
 
-    __tablename__ = "data_consumer_purpose"
+    __tablename__ = "data_consumer_purpose"  # type: ignore[assignment]
     __table_args__ = (
         UniqueConstraint(
             "data_consumer_id", "data_purpose_id", name="uq_data_consumer_purpose"
@@ -90,9 +94,11 @@ class DataConsumerPurpose(Base):
     )
     assigned_by = Column(
         String,
-        ForeignKey("fidesuser.id"),
+        ForeignKey("fidesuser.id", ondelete="SET NULL"),
         nullable=True,
     )
 
-    data_consumer = relationship("DataConsumer", lazy="selectin")
+    data_consumer = relationship(
+        "DataConsumer", lazy="selectin", overlaps="consumer_purposes"
+    )  # type: ignore[call-arg]
     data_purpose = relationship("DataPurpose", lazy="selectin")

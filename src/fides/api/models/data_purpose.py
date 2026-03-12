@@ -2,6 +2,7 @@ from typing import Any, Type
 
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
@@ -18,7 +19,9 @@ class DataPurpose(Base, FidesBase):
     description, organization_fides_key, and tags.
     """
 
-    __tablename__ = "data_purpose"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "data_purpose"
 
     data_use = Column(String, nullable=False, index=True)
     data_subject = Column(String, nullable=True)
