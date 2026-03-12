@@ -163,8 +163,8 @@ describe("Privacy notices", () => {
             cy.getByTestId("toggle-switch").click();
           });
 
-        cy.getByTestId("confirmation-modal");
-        cy.getByTestId("continue-btn").click();
+        cy.get(".ant-modal-confirm").should("exist");
+        cy.getAntModalConfirmButtons().contains("Confirm").click();
         cy.wait("@toggleEnabled").then((interception) => {
           const { body } = interception.request;
           expect(body).to.eql({ disabled: true });

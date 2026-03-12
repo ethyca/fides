@@ -754,11 +754,11 @@ describe("User management", () => {
         it("can warn when assigning an approver", () => {
           cy.getByTestId("role-option-Approver").click();
           cy.getByTestId("save-btn").click();
-          cy.get(
-            ".downgrade-to-approver-confirmation-modal .ant-modal-confirm",
-          ).within(() => {
-            cy.getAntModalConfirmButtons().contains("OK").click();
-          });
+          cy.getByTestId("downgrade-to-approver-confirmation-modal").within(
+            () => {
+              cy.getByTestId("continue-btn").click();
+            },
+          );
           cy.wait("@updatePermission");
         });
       });

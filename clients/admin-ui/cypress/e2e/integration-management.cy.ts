@@ -743,7 +743,7 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("delete-monitor-btn").click();
         });
         cy.get(".ant-modal-confirm").within(() => {
-          cy.getAntModalConfirmButtons().contains("OK").click();
+          cy.getAntModalConfirmButtons().contains("Delete").click();
         });
         cy.wait("@deleteMonitor");
       });
