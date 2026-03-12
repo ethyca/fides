@@ -85,7 +85,6 @@ from sqlalchemy.orm import Session
 from fides.api.models.data_purpose import DataPurpose
 
 
-@pytest.mark.postgres
 class TestDataPurposeModel:
     def test_create_data_purpose(self, db: Session):
         purpose = DataPurpose.create(
@@ -260,7 +259,6 @@ from fides.api.models.system_purpose import SystemPurpose
 from fides.api.models.sql_models import System
 
 
-@pytest.mark.postgres
 class TestSystemPurposeModel:
     @pytest.fixture
     def purpose(self, db: Session) -> DataPurpose:
@@ -414,7 +412,6 @@ from fides.api.models.data_consumer import DataConsumer, DataConsumerPurpose
 from fides.api.models.data_purpose import DataPurpose
 
 
-@pytest.mark.postgres
 class TestDataConsumerModel:
     def test_create_group_consumer(self, db: Session):
         consumer = DataConsumer.create(
@@ -466,7 +463,6 @@ class TestDataConsumerModel:
         assert consumer.type == "data_warehouse"
 
 
-@pytest.mark.postgres
 class TestDataConsumerPurposeModel:
     @pytest.fixture
     def purpose(self, db: Session) -> DataPurpose:
@@ -664,7 +660,6 @@ from sqlalchemy.orm import Session
 from fides.api.models.data_producer import DataProducer, DataProducerMember
 
 
-@pytest.mark.postgres
 class TestDataProducerModel:
     def test_create_data_producer(self, db: Session):
         producer = DataProducer.create(
@@ -699,7 +694,6 @@ class TestDataProducerModel:
         assert db.query(DataProducer).filter_by(id=producer_id).first() is None
 
 
-@pytest.mark.postgres
 class TestDataProducerMemberModel:
     @pytest.fixture
     def producer(self, db: Session) -> DataProducer:
@@ -874,7 +868,6 @@ from fides.api.models.data_purpose import DataPurpose
 from fides.api.models.data_producer import DataProducer
 
 
-@pytest.mark.postgres
 class TestDatasetPurposes:
     def test_dataset_with_purposes(self, db: Session):
         dataset = Dataset.create(
