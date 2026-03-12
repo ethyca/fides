@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [2.81.0](https://github.com/ethyca/fides/compare/2.80.1..2.81.0)
 
 ### Added
+- Enabled LLM classifier toggle for Okta infrastructure monitors [#7641](https://github.com/ethyca/fides/pull/7641)
 - Added questionnaire_tone_prompt column to privacy assessment config [#7563](https://github.com/ethyca/fides/pull/7563) https://github.com/ethyca/fides/labels/db-migration
 - Chromatic builds for fidesui [#7485](https://github.com/ethyca/fides/pull/7485)
 - Okta integration logo in action center [#7597](https://github.com/ethyca/fides/pull/7597)
