@@ -3,21 +3,22 @@ import "@xyflow/react/dist/style.css";
 import {
   Background,
   BackgroundVariant,
+  Node,
+  NodeTypes,
   ReactFlow,
   ReactFlowProvider,
 } from "@xyflow/react";
 import {
   Button,
   Flex,
-  Form,
   Icons,
   Input,
+  notification,
   Radio,
-  Select,
   Space,
   Text,
 } from "fidesui";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { ACCESS_POLICIES_ROUTE } from "~/features/common/nav/routes";
@@ -25,6 +26,7 @@ import PageHeader from "~/features/common/PageHeader";
 import { Editor } from "~/features/common/yaml/helpers";
 
 import { AccessPolicy } from "./access-policies.slice";
+import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 
 export enum EditorMode {
   Builder = "builder",
@@ -44,19 +46,71 @@ interface AccessPolicyFormProps {
   onDelete?: () => void;
 }
 
-const BuilderModePanel = () => (
-  <div
-    style={{
-      height: "calc(100vh - 220px)",
-      border: "1px solid var(--ant-color-border)",
-      borderRadius: "var(--ant-border-radius-lg)",
-    }}
-  >
-    <ReactFlow nodes={[]} edges={[]} fitView>
-      <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-    </ReactFlow>
-  </div>
-);
+const nodeTypes: NodeTypes = { policyNode: PolicyNode };
+
+interface PolicyCanvasPanelProps {
+  name: string;
+  description: string;
+  controlGroup?: string;
+  onNameChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
+  onControlGroupChange: (value: string | undefined) => void;
+}
+
+const PolicyCanvasPanel = ({
+  name,
+  description,
+  controlGroup,
+  onNameChange,
+  onDescriptionChange,
+  onControlGroupChange,
+}: PolicyCanvasPanelProps) => {
+  const nodes: Node[] = useMemo(
+    () => [
+      {
+        id: "policy",
+        type: "policyNode",
+        position: { x: 0, y: 0 },
+        data: {
+          name,
+          description,
+          controlGroup,
+          onNameChange,
+          onDescriptionChange,
+          onControlGroupChange,
+        },
+      } satisfies PolicyNodeType,
+    ],
+    [
+      name,
+      description,
+      controlGroup,
+      onNameChange,
+      onDescriptionChange,
+      onControlGroupChange,
+    ],
+  );
+
+  return (
+    <div
+      style={{
+        height: "calc(100vh - 220px)",
+        border: "1px solid var(--ant-color-border)",
+        borderRadius: "var(--ant-border-radius-lg)",
+      }}
+    >
+      <ReactFlow
+        nodes={nodes}
+        edges={[]}
+        nodeTypes={nodeTypes}
+        fitView
+        fitViewOptions={{ padding: 0.5 }}
+      >
+        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+      </ReactFlow>
+    </div>
+  );
+};
 
 const AccessPolicyForm = ({
   policyId,
@@ -65,29 +119,47 @@ const AccessPolicyForm = ({
   onDelete,
 }: AccessPolicyFormProps) => {
   const isNew = !policyId;
-  const [form] = Form.useForm<SidebarFormValues>();
 
   const [mode, setMode] = useState<EditorMode>(EditorMode.Builder);
   const [yamlValue, setYamlValue] = useState<string>(initialValues?.yaml ?? "");
+  const [name, setName] = useState(initialValues?.name ?? "");
+  const [description, setDescription] = useState(
+    initialValues?.description ?? "",
+  );
+  const [controlGroup, setControlGroup] = useState<string | undefined>(
+    initialValues?.control_group,
+  );
 
-  const handleFinish = (values: SidebarFormValues) => {
-    onSave?.(values, yamlValue);
+  const handleSave = () => {
+    if (!name.trim()) {
+      notification.error({ message: "Name is required." });
+      return;
+    }
+    onSave?.({ name, description, control_group: controlGroup }, yamlValue);
   };
+
+  const handleNameChange = useCallback((value: string) => setName(value), []);
+  const handleDescriptionChange = useCallback(
+    (value: string) => setDescription(value),
+    [],
+  );
+  const handleControlGroupChange = useCallback(
+    (value: string | undefined) => setControlGroup(value),
+    [],
+  );
 
   const handleExport = () => {
     const blob = new Blob([yamlValue], { type: "text/yaml" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${initialValues?.name ?? "policy"}.yaml`;
+    a.download = `${name || "policy"}.yaml`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const title = isNew ? "New access policy" : "Edit access policy";
-  const breadcrumbTitle = isNew
-    ? "New policy"
-    : (initialValues?.name ?? (policyId as string));
+  const breadcrumbTitle = isNew ? "New policy" : name || (policyId as string);
 
   return (
     <Layout title={title}>
@@ -116,11 +188,7 @@ const AccessPolicyForm = ({
             >
               Export
             </Button>
-            <Button
-              type="primary"
-              onClick={() => form.submit()}
-              data-testid="save-btn"
-            >
+            <Button type="primary" onClick={handleSave} data-testid="save-btn">
               Save
             </Button>
           </Space>
@@ -159,44 +227,20 @@ const AccessPolicyForm = ({
 
           {mode === EditorMode.Builder && (
             <ReactFlowProvider>
-              <BuilderModePanel />
+              <PolicyCanvasPanel
+                name={name}
+                description={description}
+                controlGroup={controlGroup}
+                onNameChange={handleNameChange}
+                onDescriptionChange={handleDescriptionChange}
+                onControlGroupChange={handleControlGroupChange}
+              />
             </ReactFlowProvider>
           )}
         </Flex>
 
         {/* Sidebar */}
         <Flex vertical gap="middle" className="w-80">
-          <Form
-            form={form}
-            layout="vertical"
-            initialValues={{
-              name: initialValues?.name ?? "",
-              description: initialValues?.description ?? "",
-              control_group: initialValues?.control_group,
-            }}
-            onFinish={handleFinish}
-          >
-            <Form.Item
-              label="Name"
-              name="name"
-              rules={[{ required: true, message: "Name is required" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item label="Description" name="description">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Control group" name="control_group">
-              <Select
-                placeholder="Select control group"
-                options={[]}
-                data-testid="control-group-select"
-                aria-label="Select control group"
-              />
-            </Form.Item>
-          </Form>
-
-          {/* AI chat placeholder */}
           <Flex vertical gap="small">
             <Text>AI assistant</Text>
             <Input.TextArea
