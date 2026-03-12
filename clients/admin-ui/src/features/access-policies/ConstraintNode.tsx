@@ -22,11 +22,7 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
     <div className={styles.placeholder}>
       <Text type="secondary">Placeholder</Text>
     </div>
-    <Handle
-      type="source"
-      position={Position.Right}
-      className={styles.handle}
-    />
+    <Handle type="source" position={Position.Right} className={styles.handle} />
   </div>
 );
 

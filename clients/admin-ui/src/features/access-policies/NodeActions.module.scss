@@ -66,12 +66,12 @@
 }
 
 .constraintButton {
-  background: var(--fidesui-nectar) !important;
-  color: var(--fidesui-minos) !important;
+  background: var(--fidesui-neutral-600) !important;
+  color: var(--fidesui-full-white) !important;
 
   &:hover {
-    background: var(--fidesui-nectar) !important;
-    color: var(--fidesui-minos) !important;
+    background: var(--fidesui-neutral-600) !important;
+    color: var(--fidesui-full-white) !important;
     opacity: 0.9;
   }
 }

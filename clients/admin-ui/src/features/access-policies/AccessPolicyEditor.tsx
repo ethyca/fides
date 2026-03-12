@@ -5,6 +5,7 @@ import {
   BackgroundVariant,
   Controls,
   Edge,
+  EdgeTypes,
   Node,
   NodeTypes,
   ReactFlow,
@@ -39,6 +40,7 @@ import {
 import ActionNode, { ActionNodeType } from "./ActionNode";
 import ConditionNode, { ConditionNodeType } from "./ConditionNode";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
+import LabeledEdge from "./LabeledEdge";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 
 export enum EditorMode {
@@ -64,6 +66,10 @@ const nodeTypes: NodeTypes = {
   conditionNode: ConditionNode,
   constraintNode: ConstraintNode,
   policyNode: PolicyNode,
+};
+
+const edgeTypes: EdgeTypes = {
+  labeledEdge: LabeledEdge,
 };
 
 interface PolicyCanvasPanelProps {
@@ -160,10 +166,19 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         data: {},
       };
 
+      let label: string | undefined;
+      if (sourceNode.type === "actionNode") {
+        label = "when";
+      } else if (sourceNode.type === "conditionNode") {
+        label = "and";
+      }
+
       const newEdge: Edge = {
         id: `e-${sourceNodeId}-${conditionId}`,
         source: sourceNodeId,
         target: conditionId,
+        type: "labeledEdge",
+        data: label ? { label } : undefined,
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -194,6 +209,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         id: `e-${sourceNodeId}-${actionId}`,
         source: sourceNodeId,
         target: actionId,
+        type: "labeledEdge",
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -226,6 +242,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         id: `e-${sourceNodeId}-${constraintId}`,
         source: sourceNodeId,
         target: constraintId,
+        type: "labeledEdge",
+        data: { label: "unless" },
       };
 
       setNodes((nds) => [...nds, newNode]);
@@ -316,6 +334,8 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={{ type: "labeledEdge" }}
         fitView
         fitViewOptions={{ padding: 0.5 }}
       >
