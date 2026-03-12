@@ -461,6 +461,7 @@ def _handle_validate(session: nox.Session) -> None:
         else:
             session.error("--pr-number flag requires a PR number")
 
+    validated: list = []
     try:
         if files_filter:
             # Validate specific files
