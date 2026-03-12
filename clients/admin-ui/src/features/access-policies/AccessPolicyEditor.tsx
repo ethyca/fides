@@ -61,6 +61,8 @@ interface PolicyCanvasPanelProps {
   onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
   onAddNode?: () => void;
+  onAddCondition?: () => void;
+  onAddAction?: () => void;
 }
 
 const PolicyCanvasPanel = ({
@@ -72,6 +74,8 @@ const PolicyCanvasPanel = ({
   onDescriptionChange,
   onControlGroupChange,
   onAddNode,
+  onAddCondition,
+  onAddAction,
 }: PolicyCanvasPanelProps) => {
   const nodes: Node[] = useMemo(
     () => [
@@ -89,6 +93,8 @@ const PolicyCanvasPanel = ({
           onDescriptionChange,
           onControlGroupChange,
           onAddNode,
+          onAddCondition,
+          onAddAction,
         },
       } satisfies PolicyNodeType,
     ],
@@ -101,6 +107,8 @@ const PolicyCanvasPanel = ({
       onDescriptionChange,
       onControlGroupChange,
       onAddNode,
+      onAddCondition,
+      onAddAction,
     ],
   );
 
@@ -170,6 +178,14 @@ const AccessPolicyEditor = ({
 
   const handleAddNode = useCallback(() => {
     // TODO: implement add node logic
+  }, []);
+
+  const handleAddCondition = useCallback(() => {
+    // TODO: implement add condition logic
+  }, []);
+
+  const handleAddAction = useCallback(() => {
+    // TODO: implement add action logic
   }, []);
 
   const handleExport = () => {
@@ -260,6 +276,8 @@ const AccessPolicyEditor = ({
                 onDescriptionChange={handleDescriptionChange}
                 onControlGroupChange={handleControlGroupChange}
                 onAddNode={handleAddNode}
+                onAddCondition={handleAddCondition}
+                onAddAction={handleAddAction}
               />
             </ReactFlowProvider>
           )}

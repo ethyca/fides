@@ -13,6 +13,8 @@ export interface PolicyNodeData extends Record<string, unknown> {
   onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
   onAddNode?: () => void;
+  onAddCondition?: () => void;
+  onAddAction?: () => void;
 }
 
 export type PolicyNodeType = Node<PolicyNodeData, "policyNode">;
@@ -27,6 +29,8 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
     onDescriptionChange,
     onControlGroupChange,
     onAddNode,
+    onAddCondition,
+    onAddAction,
   } = data;
 
   return (
@@ -66,7 +70,11 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
         data-testid="policy-control-group-select"
         aria-label="Select control group"
       />
-      <NodeActions onAddNode={onAddNode} />
+      <NodeActions
+        onAddNode={onAddNode}
+        onAddCondition={onAddCondition}
+        onAddAction={onAddAction}
+      />
       <Handle
         type="source"
         position={Position.Bottom}

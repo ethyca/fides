@@ -1,12 +1,19 @@
-import { Button, Icons } from "fidesui";
+import classNames from "classnames";
+import { Button, Flex, Icons, Text } from "fidesui";
 
 import styles from "./NodeActions.module.scss";
 
 interface NodeActionsProps {
   onAddNode?: () => void;
+  onAddCondition?: () => void;
+  onAddAction?: () => void;
 }
 
-const NodeActions = ({ onAddNode }: NodeActionsProps) => (
+const NodeActions = ({
+  onAddNode,
+  onAddCondition,
+  onAddAction,
+}: NodeActionsProps) => (
   <div className={styles.actions}>
     <Button
       type="primary"
@@ -15,8 +22,34 @@ const NodeActions = ({ onAddNode }: NodeActionsProps) => (
       onClick={onAddNode}
       aria-label="Add node"
       data-testid="add-node-btn"
-      className={styles.addButton}
+      className={classNames(styles.iconButton, styles.addButton)}
     />
+    <div className={styles.actionMenu}>
+      <Flex align="center" gap="small" className={styles.actionItem}>
+        <Button
+          type="text"
+          size="small"
+          icon={<Icons.SettingsAdjust size={16} />}
+          onClick={onAddCondition}
+          aria-label="Add condition"
+          data-testid="add-condition-btn"
+          className={classNames(styles.iconButton, styles.conditionButton)}
+        />
+        <Text className={styles.actionLabel}>Condition</Text>
+      </Flex>
+      <Flex align="center" gap="small" className={styles.actionItem}>
+        <Button
+          type="text"
+          size="small"
+          icon={<Icons.FlowData size={16} />}
+          onClick={onAddAction}
+          aria-label="Add action"
+          data-testid="add-action-btn"
+          className={classNames(styles.iconButton, styles.actionButton)}
+        />
+        <Text className={styles.actionLabel}>Action</Text>
+      </Flex>
+    </div>
   </div>
 );
 
