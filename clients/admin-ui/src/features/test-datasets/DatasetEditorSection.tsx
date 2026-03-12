@@ -66,6 +66,7 @@ const EditorSection = ({
   const isSaas = connectionType === ConnectionType.SAAS;
 
   const [editorContent, setEditorContent] = useState<string>("");
+  const [editorReady, setEditorReady] = useState(false);
   const editorRef = useRef<any>(null);
   const decorationsRef = useRef<any>(null);
   const currentDataset = useAppSelector(selectCurrentDataset);
@@ -102,33 +103,24 @@ const EditorSection = ({
   );
 
   /**
-   * Apply grey decorations to lines in the YAML editor that correspond to
-   * protected fields (immutable top-level metadata + SaaS config references).
-   * The server enforces immutability — this is a visual hint.
+   * Compute decoration ranges from editorContent (React state, always in sync)
+   * rather than from Monaco's model (which updates asynchronously).
+   * Covers immutable top-level metadata + SaaS config referenced fields.
    */
-  const applyProtectedDecorations = useCallback(() => {
-    const editor = editorRef.current;
-    if (!editor || !isSaas || !protectedFields) {
-      return;
-    }
-    const model = editor.getModel();
-    if (!model) {
-      return;
+  const protectedRanges = useMemo(() => {
+    if (!isSaas || !protectedFields || !editorContent) {
+      return [];
     }
 
-    const lines = model.getLinesContent();
+    const lines = editorContent.split("\n");
     const ranges: any[] = [];
 
-    // Build protected dot-paths per collection and also collect all ancestor
-    // segments so that parent fields of nested references are also protected.
-    // e.g. "address.street" protects both "address" and "address.street"
     const protectedPathsByCollection = new Map<string, Set<string>>();
     protectedFields.protected_collection_fields.forEach((pf) => {
       if (!protectedPathsByCollection.has(pf.collection)) {
         protectedPathsByCollection.set(pf.collection, new Set());
       }
       const pathSet = protectedPathsByCollection.get(pf.collection)!;
-      // Add the full path and every ancestor prefix
       const segments = pf.field.split(".");
       segments.forEach((_, idx) => {
         pathSet.add(segments.slice(0, idx + 1).join("."));
@@ -137,13 +129,11 @@ const EditorSection = ({
 
     const immutableSet = new Set(protectedFields.immutable_fields);
     let currentCollection = "";
-    // Track the field path stack: each entry is [indentLevel, fieldName]
     const fieldStack: [number, string][] = [];
 
     lines.forEach((line: string, i: number) => {
       let isProtected = false;
 
-      // Top-level key (not indented)
       if (/^\S/.test(line) && line.includes(":")) {
         const key = line.split(":")[0].trim();
         if (immutableSet.has(key)) {
@@ -151,18 +141,15 @@ const EditorSection = ({
         }
       }
 
-      // Match "- name: value" lines at any indentation
       const nameMatch = line.match(/^(\s*)-\s+name:\s+(\S+)/);
       if (nameMatch) {
         const [, indent, name] = nameMatch;
         const indentLevel = indent.length;
 
-        // Indentation <= 4 is a collection-level name
         if (indentLevel <= 4) {
           currentCollection = name;
           fieldStack.length = 0;
         } else {
-          // Pop stack entries at the same or deeper indentation
           while (
             fieldStack.length > 0 &&
             fieldStack[fieldStack.length - 1][0] >= indentLevel
@@ -171,7 +158,6 @@ const EditorSection = ({
           }
           fieldStack.push([indentLevel, name]);
 
-          // Build the current dot-path from the stack
           if (protectedPathsByCollection.has(currentCollection)) {
             const currentPath = fieldStack.map(([, n]) => n).join(".");
             if (
@@ -201,11 +187,20 @@ const EditorSection = ({
       }
     });
 
+    return ranges;
+  }, [isSaas, protectedFields, editorContent]);
+
+  // Apply precomputed ranges whenever they change or editor becomes available
+  const applyProtectedDecorations = useCallback(() => {
+    const editor = editorRef.current;
+    if (!editor) {
+      return;
+    }
     decorationsRef.current = editor.deltaDecorations(
       decorationsRef.current || [],
-      ranges,
+      protectedRanges,
     );
-  }, [isSaas, protectedFields]);
+  }, [protectedRanges]);
 
   useEffect(() => {
     if (reachability) {
@@ -242,10 +237,12 @@ const EditorSection = ({
     }
   }, [currentDataset]);
 
-  // Re-apply decorations when content or protected fields change
+  // Apply decorations whenever ranges change or editor becomes ready
   useEffect(() => {
-    applyProtectedDecorations();
-  }, [editorContent, applyProtectedDecorations]);
+    if (editorReady) {
+      applyProtectedDecorations();
+    }
+  }, [editorReady, applyProtectedDecorations]);
 
   useEffect(() => {
     if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
@@ -438,7 +435,7 @@ const EditorSection = ({
               style.textContent = `.immutable-line { opacity: 0.5; }`;
               document.head.appendChild(style);
             }
-            applyProtectedDecorations();
+            setEditorReady(true);
           }}
           options={{
             fontFamily: "Menlo",
@@ -452,6 +449,11 @@ const EditorSection = ({
           theme="light"
         />
       </Card>
+      {isSaas && protectedFields && (
+        <Typography.Text type="secondary" className="text-xs">
+          Greyed-out lines are protected and cannot be modified or deleted.
+        </Typography.Text>
+      )}
       {reachability && (
         <Alert
           type={reachability?.reachable ? "success" : "error"}
