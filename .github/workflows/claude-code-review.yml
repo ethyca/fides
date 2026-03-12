@@ -6,7 +6,7 @@
 # Triggers:
 #   - PR opened (non-draft) or moved out of draft
 #   - PR reopened
-#   - Comment containing "/code-review" on a PR
+#   - Comment containing "/code-review" on a PR (trusted users only)
 #
 # Required secrets:
 #   TALOS_DISPATCH_TOKEN — PAT or GitHub App token with write access to ethyca/talos
@@ -26,6 +26,7 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   dispatch-review:
@@ -40,6 +41,7 @@ jobs:
         github.event_name == 'issue_comment'
         && github.event.issue.pull_request
         && contains(github.event.comment.body, '/code-review')
+        && contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
       )
     steps:
       # For issue_comment events, we need to fetch PR metadata
@@ -56,7 +58,7 @@ jobs:
           echo "pr_number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
 
       - name: Dispatch code review to talos
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3
         with:
           token: ${{ secrets.TALOS_DISPATCH_TOKEN }}
           repository: ethyca/talos
