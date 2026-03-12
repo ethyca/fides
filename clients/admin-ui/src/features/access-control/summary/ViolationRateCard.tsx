@@ -6,7 +6,7 @@ interface ViolationRateCardProps {
   loading?: boolean;
 }
 
-const ViolationRateCard = ({
+export const ViolationRateCard = ({
   violations,
   totalRequests,
   loading,
@@ -20,10 +20,10 @@ const ViolationRateCard = ({
     <Card
       loading={loading}
       title={<Text strong>Violation rate</Text>}
-      style={{ height: "100%", display: "flex", flexDirection: "column" }}
+      className="h-full flex flex-col"
       styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
     >
-      <Flex vertical gap={12} style={{ marginTop: "auto" }}>
+      <Flex vertical gap={12} className="mt-auto">
         <Statistic
           value={`${rate}%`}
           valueStyle={{ fontSize: token.fontSizeHeading2 }}
@@ -47,5 +47,3 @@ const ViolationRateCard = ({
     </Card>
   );
 };
-
-export default ViolationRateCard;

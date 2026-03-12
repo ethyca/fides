@@ -7,7 +7,10 @@ interface DataConsumersCardProps {
   loading?: boolean;
 }
 
-const DataConsumersCard = ({ data, loading }: DataConsumersCardProps) => {
+export const DataConsumersCard = ({
+  data,
+  loading,
+}: DataConsumersCardProps) => {
   const { token } = antTheme.useToken();
   const items = data.slice(0, 5);
 
@@ -36,5 +39,3 @@ const DataConsumersCard = ({ data, loading }: DataConsumersCardProps) => {
     </Card>
   );
 };
-
-export default DataConsumersCard;

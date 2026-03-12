@@ -54,7 +54,7 @@ interface ViolationsOverTimeCardProps {
   loading?: boolean;
 }
 
-const ViolationsOverTimeCard = ({
+export const ViolationsOverTimeCard = ({
   data,
   loading,
 }: ViolationsOverTimeCardProps) => {
@@ -67,10 +67,10 @@ const ViolationsOverTimeCard = ({
     <Card
       loading={loading}
       title={<Text strong>Violations over time</Text>}
-      style={{ height: "100%", display: "flex", flexDirection: "column" }}
+      className="h-full flex flex-col"
       styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
     >
-      <div style={{ width: "100%", flex: 1, minHeight: 0 }}>
+      <div className="w-full flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
@@ -193,5 +193,3 @@ const ViolationsOverTimeCard = ({
     </Card>
   );
 };
-
-export default ViolationsOverTimeCard;
