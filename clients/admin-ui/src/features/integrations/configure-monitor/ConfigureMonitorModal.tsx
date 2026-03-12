@@ -119,6 +119,7 @@ const ConfigureMonitorModal = ({
         centered
         destroyOnClose
         footer={null}
+        data-testid="add-modal-content"
       >
         <ConfigureWebsiteMonitorForm
           monitor={monitor}
@@ -143,6 +144,7 @@ const ConfigureMonitorModal = ({
       centered
       destroyOnClose
       footer={null}
+      data-testid="add-modal-content"
     >
       {formStep === 0 && (
         <ConfigureMonitorForm
