@@ -3,37 +3,26 @@ import { useMemo, useState } from "react";
 
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 
-import { MOCK_PRIORITY_ACTIONS } from "./__mocks__/priorityActionsMock";
 import styles from "./PriorityActionsCard.module.scss";
 
-const USE_MOCK = true;
-
 export const PriorityActionsCard = () => {
-  const { data: apiActions, isLoading: apiLoading } =
-    useGetPriorityActionsQuery();
+  const { data, isLoading } = useGetPriorityActionsQuery();
   const [activeTab, setActiveTab] = useState("act_now");
 
-  const actions = useMemo(
-    () =>
-      USE_MOCK
-        ? { items: MOCK_PRIORITY_ACTIONS, total: MOCK_PRIORITY_ACTIONS.length }
-        : apiActions,
-    [apiActions],
-  );
-  const loading = USE_MOCK ? false : apiLoading;
-
   const filteredActions = useMemo(() => {
-    if (!actions?.items) {
+    if (!data?.items) {
       return [];
     }
     if (activeTab === "act_now") {
-      return actions.items.filter((a) => a.due_date !== null);
+      return data.items.filter((a) => a.due_date !== null);
     }
-    return actions.items.filter((a) => a.due_date === null);
-  }, [actions, activeTab]);
+    return data.items.filter((a) => a.due_date === null);
+  }, [data, activeTab]);
 
-  const actNowCount = actions?.items?.filter((a) => a.due_date !== null).length ?? 0;
-  const dueLaterCount = actions?.items?.filter((a) => a.due_date === null).length ?? 0;
+  const actNowCount =
+    data?.items?.filter((a) => a.due_date !== null).length ?? 0;
+  const dueLaterCount =
+    data?.items?.filter((a) => a.due_date === null).length ?? 0;
 
   return (
     <Card
@@ -64,7 +53,7 @@ export const PriorityActionsCard = () => {
     >
       <List
         dataSource={filteredActions}
-        loading={loading}
+        loading={isLoading}
         locale={{
           emptyText: (
             <Flex
