@@ -48,8 +48,8 @@ export const accessControlHandlers = () => {
         return res(
           ctx.status(200),
           ctx.json({
-            violations: sorted.reduce((s, c) => s + c.violations, 0),
-            total_requests: sorted.reduce((s, c) => s + c.requests, 0),
+            violations: sorted.reduce((sum, consumer) => sum + consumer.violations, 0),
+            total_requests: sorted.reduce((sum, consumer) => sum + consumer.requests, 0),
             items: sorted,
           }),
         );

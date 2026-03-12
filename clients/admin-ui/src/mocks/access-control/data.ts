@@ -13,9 +13,9 @@ const generateData = (
   violationRange: [number, number],
 ): DataConsumerRequestPoint[] => {
   const now = new Date("2026-03-12T12:00:00Z");
-  return Array.from({ length: count }, (_, i) => ({
+  return Array.from({ length: count }, (_, index) => ({
     timestamp: new Date(
-      now.getTime() - (count - 1 - i) * msPerPoint,
+      now.getTime() - (count - 1 - index) * msPerPoint,
     ).toISOString(),
     requests: Math.floor(Math.random() * requestRange[1]) + requestRange[0],
     violations:

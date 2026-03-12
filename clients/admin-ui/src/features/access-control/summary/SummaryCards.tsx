@@ -1,3 +1,5 @@
+import { Flex } from "fidesui";
+
 import type {
   DataConsumerRequestsResponse,
   DataConsumerSummary,
@@ -17,7 +19,7 @@ const SummaryCards = ({
   consumersData,
   loading,
 }: SummaryCardsProps) => (
-  <div className="grid grid-cols-3 gap-4">
+  <Flex gap={16} className="[&>*]:flex-1">
     <ViolationsOverTimeCard
       data={requestsData?.items ?? []}
       loading={loading}
@@ -28,7 +30,7 @@ const SummaryCards = ({
       loading={loading}
     />
     <DataConsumersCard data={consumersData ?? []} loading={loading} />
-  </div>
+  </Flex>
 );
 
 export default SummaryCards;
