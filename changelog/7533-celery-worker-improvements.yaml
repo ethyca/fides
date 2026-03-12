@@ -1,4 +1,0 @@
-type: Changed
-description: Improved Celery worker visibility, prefetch config, and env propagation
-pr: 7533
-labels: []

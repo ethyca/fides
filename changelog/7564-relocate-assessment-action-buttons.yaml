@@ -1,4 +1,0 @@
-type: Changed
-description: Moved delete and generate report buttons to the sticky page header in privacy assessment detail view
-pr: 7564
-labels: []

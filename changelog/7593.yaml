@@ -1,4 +1,0 @@
-type: Added
-description: Added support for a configurable browser tab title (`page_title`) in the Privacy Center config
-pr: 7593
-labels: []
