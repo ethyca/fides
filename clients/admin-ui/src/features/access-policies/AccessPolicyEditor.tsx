@@ -218,8 +218,20 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onDescriptionChange,
               onControlGroupChange,
               onAddNode,
-              onAddCondition: () => handleAddConditionFromNode(POLICY_NODE_ID),
+              onAddAction: () => handleAddActionFromNode(POLICY_NODE_ID),
               hasChildren: policyHasChildren,
+            },
+          };
+        }
+        if (node.type === "actionNode") {
+          const hasChildren = edges.some((e) => e.source === node.id);
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              onAddNode,
+              onAddCondition: () => handleAddConditionFromNode(node.id),
+              hasChildren,
             },
           };
         }
@@ -231,7 +243,6 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               ...node.data,
               onAddNode,
               onAddCondition: () => handleAddConditionFromNode(node.id),
-              onAddAction: () => handleAddActionFromNode(node.id),
               hasChildren,
             },
           };

@@ -7,6 +7,7 @@ interface NodeActionsProps {
   onAddNode?: () => void;
   onAddCondition?: () => void;
   onAddAction?: () => void;
+  showAddCondition?: boolean;
   showAddAction?: boolean;
 }
 
@@ -14,6 +15,7 @@ const NodeActions = ({
   onAddNode,
   onAddCondition,
   onAddAction,
+  showAddCondition = true,
   showAddAction = true,
 }: NodeActionsProps) => (
   <div className={styles.actions}>
@@ -27,20 +29,22 @@ const NodeActions = ({
       className={classNames(styles.iconButton, styles.addButton)}
     />
     <div className={styles.actionMenu}>
-      <Flex align="center" gap="small" className={styles.actionItem}>
-        <Button
-          type="text"
-          size="small"
-          icon={<Icons.SettingsAdjust size={16} />}
-          onClick={onAddCondition}
-          aria-label="Add condition"
-          data-testid="add-condition-btn"
-          className={classNames(styles.iconButton, styles.conditionButton)}
-        />
-        <Typography.Text className={styles.actionLabel}>
-          Condition
-        </Typography.Text>
-      </Flex>
+      {showAddCondition && (
+        <Flex align="center" gap="small" className={styles.actionItem}>
+          <Button
+            type="text"
+            size="small"
+            icon={<Icons.SettingsAdjust size={16} />}
+            onClick={onAddCondition}
+            aria-label="Add condition"
+            data-testid="add-condition-btn"
+            className={classNames(styles.iconButton, styles.conditionButton)}
+          />
+          <Typography.Text className={styles.actionLabel}>
+            Condition
+          </Typography.Text>
+        </Flex>
+      )}
       {showAddAction && (
         <Flex align="center" gap="small" className={styles.actionItem}>
           <Button

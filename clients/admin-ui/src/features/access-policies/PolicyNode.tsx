@@ -13,7 +13,7 @@ export interface PolicyNodeData extends Record<string, unknown> {
   onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
   onAddNode?: () => void;
-  onAddCondition?: () => void;
+  onAddAction?: () => void;
   hasChildren?: boolean;
 }
 
@@ -29,7 +29,7 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
     onDescriptionChange,
     onControlGroupChange,
     onAddNode,
-    onAddCondition,
+    onAddAction,
     hasChildren,
   } = data;
 
@@ -73,8 +73,8 @@ const PolicyNode = ({ data }: NodeProps<PolicyNodeType>) => {
       {!hasChildren && (
         <NodeActions
           onAddNode={onAddNode}
-          onAddCondition={onAddCondition}
-          showAddAction={false}
+          onAddAction={onAddAction}
+          showAddCondition={false}
         />
       )}
       <Handle

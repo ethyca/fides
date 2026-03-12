@@ -2,8 +2,13 @@ import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { Avatar, Flex, Icons, Text } from "fidesui";
 
 import styles from "./ActionNode.module.scss";
+import NodeActions from "./NodeActions";
 
-export interface ActionNodeData extends Record<string, unknown> {}
+export interface ActionNodeData extends Record<string, unknown> {
+  onAddNode?: () => void;
+  onAddCondition?: () => void;
+  hasChildren?: boolean;
+}
 
 export type ActionNodeType = Node<ActionNodeData, "actionNode">;
 
@@ -22,11 +27,14 @@ const ActionNode = ({ data }: NodeProps<ActionNodeType>) => (
     <div className={styles.placeholder}>
       <Text type="secondary">Placeholder</Text>
     </div>
-    <Handle
-      type="source"
-      position={Position.Right}
-      className={styles.handle}
-    />
+    {!data.hasChildren && (
+      <NodeActions
+        onAddNode={data.onAddNode}
+        onAddCondition={data.onAddCondition}
+        showAddAction={false}
+      />
+    )}
+    <Handle type="source" position={Position.Right} className={styles.handle} />
   </div>
 );
 
