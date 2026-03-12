@@ -1,6 +1,6 @@
 import { Segmented } from "fidesui";
 import type { NextPage } from "next";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   useGetDataConsumerRequestsQuery,
@@ -34,7 +34,7 @@ const getDateRange = (timeRange: TimeRange) => {
 
 const AccessControlSummaryPage: NextPage = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>("7d");
-  const dateRange = getDateRange(timeRange);
+  const dateRange = useMemo(() => getDateRange(timeRange), [timeRange]);
 
   const { data: requestsData, isLoading: requestsLoading } =
     useGetDataConsumerRequestsQuery(dateRange);
