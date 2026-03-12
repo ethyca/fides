@@ -44,7 +44,8 @@ export const EvidenceSection = ({
   const humanItems = evidence.filter(
     (e) =>
       e.type === EvidenceType.MANUAL_ENTRY ||
-      e.type === EvidenceType.SLACK_COMMUNICATION,
+      e.type === EvidenceType.SLACK_COMMUNICATION ||
+      e.type === EvidenceType.TEAM_INPUT,
   );
 
   const collapseItems = [
