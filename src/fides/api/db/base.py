@@ -16,6 +16,10 @@ from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.custom_report import CustomReport
+from fides.api.models.data_consumer import (  # noqa: F401
+    DataConsumer,
+    DataConsumerPurpose,
+)
 from fides.api.models.data_purpose import DataPurpose  # noqa: F401
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.db_cache import DBCache
