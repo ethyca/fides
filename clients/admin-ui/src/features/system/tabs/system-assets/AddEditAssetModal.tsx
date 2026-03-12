@@ -124,6 +124,7 @@ const AddEditAssetModal = ({
       centered
       destroyOnClose
       footer={null}
+      data-testid="add-modal-content"
     >
       <Formik
         initialValues={initialValues}

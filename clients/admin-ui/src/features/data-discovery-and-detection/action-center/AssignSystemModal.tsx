@@ -44,6 +44,7 @@ export const AssignSystemModal = ({
       centered
       destroyOnClose
       footer={null}
+      data-testid="add-modal-content"
     >
       <Flex vertical gap={20} className="pb-6 pt-4">
         <Text>

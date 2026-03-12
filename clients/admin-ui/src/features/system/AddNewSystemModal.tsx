@@ -177,6 +177,7 @@ export const AddNewSystemModal = ({
       open={isOpen}
       onCancel={handleCloseModal}
       centered
+      data-testid="add-modal-content"
       destroyOnClose
       footer={null}
     >
