@@ -1,13 +1,4 @@
-import {
-  Button,
-  ChakraDrawer as Drawer,
-  ChakraDrawerBody as DrawerBody,
-  ChakraDrawerCloseButton as DrawerCloseButton,
-  ChakraDrawerContent as DrawerContent,
-  ChakraDrawerFooter as DrawerFooter,
-  ChakraDrawerHeader as DrawerHeader,
-  ChakraDrawerOverlay as DrawerOverlay,
-} from "fidesui";
+import { Button, Drawer } from "fidesui";
 
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
 import EditDataUseCell from "~/features/data-catalog/systems/EditDataUseCell";
@@ -23,29 +14,28 @@ const CatalogSystemDetailDrawer = ({
   onClose: () => void;
 }) => {
   return (
-    <Drawer isOpen={!!system} onClose={onClose} size="md">
-      <DrawerOverlay />
-      <DrawerContent data-testid="system-details">
-        <DrawerHeader>{system?.name || system?.fides_key}</DrawerHeader>
-        <DrawerCloseButton />
-        <DrawerBody>
-          <InfoHeading text="Title" mt={0} />
-          <InfoText>{system?.name ?? system?.fides_key}</InfoText>
-          {system?.description && (
-            <>
-              <InfoHeading text="Description" />
-              <InfoText>{system?.description}</InfoText>
-            </>
-          )}
-          <InfoHeading text="Data uses" />
-          <EditDataUseCell system={system as SystemResponse} />
-        </DrawerBody>
-        <DrawerFooter>
-          <Button onClick={onEdit} data-testid="edit-system-btn">
-            Edit system
-          </Button>
-        </DrawerFooter>
-      </DrawerContent>
+    <Drawer
+      open={!!system}
+      onClose={onClose}
+      title={system?.name || system?.fides_key}
+      footer={
+        <Button onClick={onEdit} data-testid="edit-system-btn">
+          Edit system
+        </Button>
+      }
+    >
+      <div data-testid="system-details">
+        <InfoHeading text="Title" mt={0} />
+        <InfoText>{system?.name ?? system?.fides_key}</InfoText>
+        {system?.description && (
+          <>
+            <InfoHeading text="Description" />
+            <InfoText>{system?.description}</InfoText>
+          </>
+        )}
+        <InfoHeading text="Data uses" />
+        <EditDataUseCell system={system as SystemResponse} />
+      </div>
     </Drawer>
   );
 };

@@ -208,7 +208,6 @@ export type {
   CheckboxProps,
   CollapseProps,
   DatePickerProps,
-  DrawerProps,
   DropdownProps,
   FlexProps,
   FormInstance,
@@ -246,7 +245,6 @@ export {
   DatePicker,
   Descriptions,
   Divider,
-  Drawer,
   Dropdown,
   Empty,
   Flex,
@@ -296,6 +294,7 @@ export type {
   CustomStatisticProps as StatisticProps,
   StatisticTrend,
 } from "./hoc";
+export type { CustomDrawerProps as DrawerProps } from "./hoc/CustomDrawer";
 export {
   CustomAlert as Alert,
   CustomAvatar as Avatar,
@@ -311,6 +310,7 @@ export {
   CustomTooltip as Tooltip,
   CustomTypography as Typography,
 } from "./hoc";
+export { CustomDrawer as Drawer } from "./hoc/CustomDrawer";
 export type {
   CustomListProps as ListProps,
   RowSelection,

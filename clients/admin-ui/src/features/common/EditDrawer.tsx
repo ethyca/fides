@@ -1,20 +1,11 @@
-import {
-  Button,
-  ChakraBox as Box,
-  ChakraCloseIcon as CloseIcon,
-  ChakraDrawer as Drawer,
-  ChakraDrawerBody as DrawerBody,
-  ChakraDrawerContent as DrawerContent,
-  ChakraDrawerFooter as DrawerFooter,
-  ChakraDrawerHeader as DrawerHeader,
-  ChakraDrawerOverlay as DrawerOverlay,
-  ChakraText as Text,
-} from "fidesui";
+import { Button, Drawer, Flex } from "fidesui";
 import { ReactNode } from "react";
 
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 
 interface Props {
+  title?: ReactNode;
+  /** @deprecated Use `title` prop instead */
   header?: ReactNode;
   description?: string;
   isOpen: boolean;
@@ -23,13 +14,10 @@ interface Props {
   footer?: ReactNode;
 }
 
-export const EditDrawerHeader = ({ title }: { title: string }) => (
-  <DrawerHeader py={0} display="flex" alignItems="flex-start">
-    <Text mr="2" color="gray.700" fontSize="lg" lineHeight={1.8}>
-      {title}
-    </Text>
-  </DrawerHeader>
-);
+/**
+ * @deprecated Use `title` prop directly instead of wrapping in EditDrawerHeader.
+ */
+export const EditDrawerHeader = ({ title }: { title: string }) => title;
 
 export const EditDrawerFooter = ({
   onDelete,
@@ -45,8 +33,8 @@ export const EditDrawerFooter = ({
   isSaving?: boolean;
   onDelete?: () => void;
   onEditYaml?: () => void;
-} & Pick<Props, "onClose">) => (
-  <DrawerFooter justifyContent="space-between">
+}) => (
+  <Flex justify="space-between" align="center">
     {onDelete ? (
       <Button
         aria-label="delete"
@@ -54,7 +42,9 @@ export const EditDrawerFooter = ({
         onClick={onDelete}
         data-testid="delete-btn"
       />
-    ) : null}
+    ) : (
+      <span />
+    )}
     <div className="flex gap-2">
       {onEditYaml && (
         <Button onClick={onEditYaml} data-testid="edit-yaml-btn">
@@ -71,10 +61,11 @@ export const EditDrawerFooter = ({
         Save
       </Button>
     </div>
-  </DrawerFooter>
+  </Flex>
 );
 
 const EditDrawer = ({
+  title,
   header,
   description,
   isOpen,
@@ -82,40 +73,19 @@ const EditDrawer = ({
   children,
   footer,
 }: Props) => (
-  <Drawer placement="right" isOpen={isOpen} onClose={onClose} size="md">
-    <DrawerOverlay />
-    <DrawerContent data-testid="edit-drawer-content" py={2}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="top"
-        mr={2}
-        py={2}
-        gap={2}
-      >
-        <Box flex={1} minH={8}>
-          {header}
-        </Box>
-        <Box display="flex" justifyContent="flex-end" mr={2}>
-          <Button
-            aria-label="Close editor"
-            onClick={onClose}
-            data-testid="close-drawer-btn"
-            icon={<CloseIcon fontSize="smaller" />}
-          />
-        </Box>
-      </Box>
-
-      <DrawerBody pt={1}>
-        {description ? (
-          <Text fontSize="sm" mb={4} color="gray.600">
-            {description}
-          </Text>
-        ) : null}
-        {children}
-      </DrawerBody>
-      {footer}
-    </DrawerContent>
+  <Drawer
+    open={isOpen}
+    onClose={onClose}
+    title={title ?? header}
+    footer={footer}
+    rootClassName="edit-drawer-content"
+  >
+    <div data-testid="edit-drawer-content">
+      {description ? (
+        <p className="mb-4 text-sm text-gray-600">{description}</p>
+      ) : null}
+      {children}
+    </div>
   </Drawer>
 );
 

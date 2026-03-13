@@ -1,11 +1,4 @@
-import {
-  ChakraDrawer as Drawer,
-  ChakraDrawerBody as DrawerBody,
-  ChakraDrawerCloseButton as DrawerCloseButton,
-  ChakraDrawerContent as DrawerContent,
-  ChakraDrawerHeader as DrawerHeader,
-  ChakraDrawerOverlay as DrawerOverlay,
-} from "fidesui";
+import { Drawer } from "fidesui";
 
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
 import {
@@ -35,28 +28,27 @@ const CatalogResourceDetailDrawer = ({
     status === CatalogResourceStatus.CLASSIFIED;
 
   return (
-    <Drawer isOpen={!!resource} onClose={onClose} size="md">
-      <DrawerOverlay />
-      <DrawerContent data-testid="resource-details">
-        <DrawerHeader>{resource?.name || resource?.urn}</DrawerHeader>
-        <DrawerCloseButton />
-        <DrawerBody>
-          <InfoHeading text="Title" mt={0} />
-          <InfoText>{resource?.name ?? resource?.urn}</InfoText>
-          {resource?.description && (
-            <>
-              <InfoHeading text="Description" />
-              <InfoText>{resource?.description}</InfoText>
-            </>
-          )}
-          {showDataCategories && (
-            <>
-              <InfoHeading text="Data categories" />
-              <EditCategoryCell resource={resource!} />
-            </>
-          )}
-        </DrawerBody>
-      </DrawerContent>
+    <Drawer
+      open={!!resource}
+      onClose={onClose}
+      title={resource?.name || resource?.urn}
+    >
+      <div data-testid="resource-details">
+        <InfoHeading text="Title" mt={0} />
+        <InfoText>{resource?.name ?? resource?.urn}</InfoText>
+        {resource?.description && (
+          <>
+            <InfoHeading text="Description" />
+            <InfoText>{resource?.description}</InfoText>
+          </>
+        )}
+        {showDataCategories && (
+          <>
+            <InfoHeading text="Data categories" />
+            <EditCategoryCell resource={resource!} />
+          </>
+        )}
+      </div>
     </Drawer>
   );
 };

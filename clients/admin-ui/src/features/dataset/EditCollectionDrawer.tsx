@@ -94,7 +94,6 @@ const EditCollectionDrawer = ({
         }
         footer={
           <EditDrawerFooter
-            onClose={onClose}
             onDelete={onDeleteOpen}
             formId={FORM_ID}
           />

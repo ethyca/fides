@@ -141,6 +141,11 @@ declare global {
        */
       getAntModalClose: () => Chainable;
       /**
+       * Get the close button from an Ant Design Drawer component
+       * @example cy.getAntDrawerClose().click();
+       */
+      getAntDrawerClose: () => Chainable;
+      /**
        * Get the Ant Design tooltip
        */
       getAntTooltip: () => Chainable;
@@ -374,6 +379,7 @@ Cypress.Commands.add("getAntModalConfirmButtons", () =>
 Cypress.Commands.add("getAntModalClose", () =>
   cy.get(`.ant-modal-close:visible`),
 );
+Cypress.Commands.add("getAntDrawerClose", () => cy.get(".ant-drawer-close"));
 Cypress.Commands.add("getAntTooltip", () => cy.findByRole("tooltip"));
 
 export {};
