@@ -11,6 +11,16 @@ const BAND_STATUS: Record<string, "warning" | "error" | undefined> = {
   critical: "error",
 };
 
+function getDiffPrefix(direction: string): string | undefined {
+  if (direction === "unchanged") {
+    return undefined;
+  }
+  if (direction === "down") {
+    return "↓";
+  }
+  return "↑";
+}
+
 function getPostureAlertType(score: number): "error" | "warning" | "success" {
   if (score < 40) {
     return "error";
@@ -27,10 +37,10 @@ export const PostureCard = () => {
   const postureDiff = posture?.diff_percent ?? 0;
   const diffDirection = posture?.diff_direction ?? "unchanged";
 
-  const radarData = posture?.dimensions.map((d) => ({
-    subject: d.label,
-    value: d.score,
-    status: BAND_STATUS[d.band],
+  const radarData = posture?.dimensions.map((dimension) => ({
+    subject: dimension.label,
+    value: dimension.score,
+    status: BAND_STATUS[dimension.band],
   }));
 
   return (
@@ -47,7 +57,7 @@ export const PostureCard = () => {
             : (diffDirection as "up" | "down")
         }
         value={postureDiff}
-        prefix={diffDirection === "down" ? "↓" : "↑"}
+        prefix={getDiffPrefix(diffDirection)}
         className={cardStyles.smallStatistic}
       />
       <div className={styles.radarChartWrapper}>

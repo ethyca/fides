@@ -9,20 +9,19 @@ export const PriorityActionsCard = () => {
   const { data, isLoading } = useGetPriorityActionsQuery();
   const [activeTab, setActiveTab] = useState("act_now");
 
+  const actNowCount =
+    data?.items?.filter((action) => action.due_date !== null).length ?? 0;
+  const dueLaterCount = (data?.items?.length ?? 0) - actNowCount;
+
   const filteredActions = useMemo(() => {
     if (!data?.items) {
       return [];
     }
     if (activeTab === "act_now") {
-      return data.items.filter((a) => a.due_date !== null);
+      return data.items.filter((action) => action.due_date !== null);
     }
-    return data.items.filter((a) => a.due_date === null);
+    return data.items.filter((action) => action.due_date === null);
   }, [data, activeTab]);
-
-  const actNowCount =
-    data?.items?.filter((a) => a.due_date !== null).length ?? 0;
-  const dueLaterCount =
-    data?.items?.filter((a) => a.due_date === null).length ?? 0;
 
   return (
     <Card
@@ -72,6 +71,7 @@ export const PriorityActionsCard = () => {
           <List.Item
             key={action.id}
             actions={[
+              // TODO: wire up updatePriorityAction mutation
               <Button key="resolve" size="small" onClick={() => {}}>
                 Resolve issue
               </Button>,

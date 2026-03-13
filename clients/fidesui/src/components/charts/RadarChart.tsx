@@ -163,7 +163,6 @@ export const RadarChart = ({
             strokeLinecap={CHART_STROKE.strokeLinecap}
             strokeLinejoin={CHART_STROKE.strokeLinejoin}
             fill={`url(#${gradientId})`}
-            zIndex={500}
             dot={
               !empty ? (
                 <RadarDot
@@ -187,7 +186,6 @@ export const RadarChart = ({
           {!empty && (
             <PolarAngleAxis
               dataKey="subject"
-              zIndex={2001}
               tick={
                 <RadarTick
                   data={data!}
