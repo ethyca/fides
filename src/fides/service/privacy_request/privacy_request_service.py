@@ -987,11 +987,11 @@ def queue_privacy_request(
     Returns the task ID if successful, or None if scheduling fails.
     On failure, the privacy request is marked as errored with the error message.
     """
-    from fides.api.api.deps import (  # pylint: disable=cyclic-import
-        get_autoclose_db_session as get_db,
-    )
     from fides.api.service.privacy_request.request_runner_service import (
         run_privacy_request,
+    )
+    from fides.common.session_management import (  # pylint: disable=cyclic-import
+        get_autoclose_db_session as get_db,
     )
 
     logger.info("Queueing privacy request from step {}", from_step)
