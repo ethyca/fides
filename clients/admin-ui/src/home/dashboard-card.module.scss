@@ -1,9 +1,4 @@
 .dashboardCard {
-  :global(.ant-card-head) {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
-
   :global(.ant-card-head-title) {
     color: var(--ant-color-text-description);
   }

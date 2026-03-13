@@ -1,4 +1,5 @@
-import { Card, CardProps } from "antd/lib";
+import { Card, CardProps, Typography } from "antd/lib";
+import { theme } from "antd/lib";
 import classNames from "classnames";
 import React from "react";
 
@@ -19,24 +20,87 @@ export interface CustomCardProps extends CardProps {
    * @default "stacked"
    */
   headerLayout?: "stacked" | "inline";
+  /**
+   * Font used for the card title.
+   * - `"default"`: inherits the theme sans-serif font (Inter)
+   * - `"mono"`: renders the title in `fontFamilyCode` (Basier Square Mono) at a
+   *   smaller size (`token.fontSize`)
+   * @default "default"
+   */
+  titleFont?: "default" | "mono";
+  /**
+   * Whether to show the border between the card header and body.
+   * @default true
+   */
+  showTitleDivider?: boolean;
+  /**
+   * When true, wraps a string `title` in `<Typography.Title level={5}>` and
+   * removes the header divider and padding so the title flows with the body.
+   * @default false
+   */
+  titleHeading?: boolean;
 }
 
 const withCustomProps = (WrappedComponent: typeof Card) => {
   const WrappedCard = React.forwardRef<HTMLDivElement, CustomCardProps>(
     (
-      { coverPosition = "top", headerLayout = "stacked", className, ...props },
+      {
+        coverPosition = "top",
+        headerLayout = "stacked",
+        titleFont = "default",
+        showTitleDivider = true,
+        titleHeading = false,
+        className,
+        styles: stylesProp,
+        title,
+        ...props
+      },
       ref,
-    ) => (
-      <WrappedComponent
-        ref={ref}
-        className={classNames(
-          { [styles.bottomCover]: coverPosition === "bottom" },
-          { [styles.inlineHeader]: headerLayout === "inline" },
-          className,
-        )}
-        {...props}
-      />
-    ),
+    ) => {
+      const { token } = theme.useToken();
+
+      const effectiveShowDivider = titleHeading ? false : showTitleDivider;
+
+      const headerStyle: React.CSSProperties = effectiveShowDivider
+        ? {}
+        : { borderBottom: "none" };
+
+      if (titleHeading) {
+        headerStyle.padding = 0;
+      }
+
+      const titleStyle: React.CSSProperties =
+        titleFont === "mono"
+          ? { fontFamily: token.fontFamilyCode, fontSize: token.fontSize }
+          : {};
+
+      const resolvedTitle =
+        titleHeading && title ? (
+          <Typography.Title level={5} style={{ margin: 0 }}>
+            {title}
+          </Typography.Title>
+        ) : (
+          title
+        );
+
+      return (
+        <WrappedComponent
+          ref={ref}
+          className={classNames(
+            { [styles.bottomCover]: coverPosition === "bottom" },
+            { [styles.inlineHeader]: headerLayout === "inline" },
+            className,
+          )}
+          title={resolvedTitle}
+          styles={{
+            ...stylesProp,
+            header: { ...headerStyle, ...stylesProp?.header },
+            title: { ...titleStyle, ...stylesProp?.title },
+          }}
+          {...props}
+        />
+      );
+    },
   );
 
   WrappedCard.displayName = "CustomCard";
@@ -53,6 +117,10 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
  * @param {"stacked" | "inline"} [headerLayout="stacked"] - Controls how the card header is
  *   laid out when both a `title` and `tabList` are provided. Use `"inline"` to place the
  *   title and tab bar on the same row, with the tabs right-aligned.
+ * @param {"default" | "mono"} [titleFont="default"] - Controls the card title font.
+ *   Use `"mono"` for a smaller monospace title (Basier Square Mono).
+ * @param {boolean} [showTitleDivider=true] - Whether to render the border between the
+ *   card header and body. Set to `false` to remove the separator line.
  *
  * @example
  * // Card with a sparkline at the bottom
@@ -76,6 +144,17 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
  *   onTabChange={setActiveTab}
  * >
  *   <div>Tab content here</div>
+ * </CustomCard>
+ *
+ * @example
+ * // Dashboard-style card with mono title and no divider
+ * <CustomCard
+ *   variant="borderless"
+ *   title="Posture"
+ *   titleFont="mono"
+ *   showTitleDivider={false}
+ * >
+ *   <Statistic value={score} />
  * </CustomCard>
  */
 export const CustomCard = Object.assign(withCustomProps(Card), {

@@ -1,36 +1,56 @@
 import classNames from "classnames";
-import { Button, Card, Empty, Flex, List, Tag, Text } from "fidesui";
+import {
+  Card,
+  Empty,
+  Flex,
+  Skeleton,
+  Tag,
+  Typography,
+} from "fidesui";
+import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
-import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
+import type { PriorityAction } from "~/features/dashboard/dashboard.slice";
 
 import cardStyles from "./dashboard-card.module.scss";
 import styles from "./PriorityActionsCard.module.scss";
 
-export const PriorityActionsCard = () => {
-  const { data, isLoading } = useGetPriorityActionsQuery();
+interface PriorityActionsCardProps {
+  actions: { items: PriorityAction[] } | undefined;
+  loading: boolean;
+}
+
+const PriorityActionsCard = ({
+  actions,
+  loading,
+}: PriorityActionsCardProps) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("act_now");
 
-  const actNowCount =
-    data?.items?.filter((action) => action.due_date !== null).length ?? 0;
-  const dueLaterCount = (data?.items?.length ?? 0) - actNowCount;
-
   const filteredActions = useMemo(() => {
-    if (!data?.items) {
-      return [];
-    }
+    if (!actions?.items) return [];
     if (activeTab === "act_now") {
-      return data.items.filter((action) => action.due_date !== null);
+      return actions.items.filter((a) => a.due_date !== null);
     }
-    return data.items.filter((action) => action.due_date === null);
-  }, [data, activeTab]);
+    return actions.items.filter((a) => a.due_date === null);
+  }, [actions, activeTab]);
+
+  const actNowCount = useMemo(
+    () => actions?.items?.filter((a) => a.due_date !== null).length ?? 0,
+    [actions],
+  );
+  const dueLaterCount = useMemo(
+    () => actions?.items?.filter((a) => a.due_date === null).length ?? 0,
+    [actions],
+  );
 
   return (
     <Card
       title="Priority actions"
       variant="borderless"
-      className={classNames(cardStyles.dashboardCard, styles.cardContainer)}
+      className={classNames("h-full", cardStyles.dashboardCard)}
       headerLayout="inline"
+      showTitleDivider={false}
       tabList={[
         {
           key: "act_now",
@@ -52,48 +72,54 @@ export const PriorityActionsCard = () => {
       activeTabKey={activeTab}
       onTabChange={setActiveTab}
     >
-      <List
-        dataSource={filteredActions}
-        loading={isLoading}
-        locale={{
-          emptyText: (
-            <Flex
-              align="center"
-              justify="center"
-              className={styles.emptyActions}
+      {loading ? (
+        <Skeleton active />
+      ) : filteredActions.length === 0 ? (
+        <Flex
+          align="center"
+          justify="center"
+          className={styles.emptyActions}
+        >
+          <Empty
+            description={`No ${activeTab === "act_now" ? "urgent" : "upcoming"} actions`}
+          />
+        </Flex>
+      ) : (
+        <Flex vertical gap={8} className="pt-3">
+          {filteredActions.map((action) => (
+            <Card
+              key={action.id}
+              variant="borderless"
+              hoverable
+              onClick={() => router.push("/steward")}
+              className="cursor-pointer"
             >
-              <Empty
-                description={`No ${activeTab === "act_now" ? "urgent" : "upcoming"} actions`}
-              />
-            </Flex>
-          ),
-        }}
-        size="small"
-        renderItem={(action) => (
-          <List.Item
-            key={action.id}
-            actions={[
-              // TODO: wire up updatePriorityAction mutation
-              <Button key="resolve" size="small" onClick={() => {}}>
-                Resolve issue
-              </Button>,
-            ]}
-          >
-            <List.Item.Meta
-              title={
-                <Text strong className="text-xs">
-                  {action.title}
-                </Text>
-              }
-              description={
-                <Text type="secondary" className="text-xs">
-                  {action.message}
-                </Text>
-              }
-            />
-          </List.Item>
-        )}
-      />
+              <Flex justify="space-between" align="start">
+                <div>
+                  <Typography.Text strong>{action.title}</Typography.Text>
+                  <br />
+                  <Typography.Text type="secondary">
+                    {action.message}
+                  </Typography.Text>
+                </div>
+                <Flex gap={8} align="center">
+                  {action.due_date && (
+                    <Typography.Text
+                      type="secondary"
+                      className="text-sm"
+                    >
+                      {new Date(action.due_date).toLocaleDateString()}
+                    </Typography.Text>
+                  )}
+                  <Tag>{action.action.replace(/_/g, " ")}</Tag>
+                </Flex>
+              </Flex>
+            </Card>
+          ))}
+        </Flex>
+      )}
     </Card>
   );
 };
+
+export default PriorityActionsCard;

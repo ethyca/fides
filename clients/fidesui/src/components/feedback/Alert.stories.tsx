@@ -114,3 +114,15 @@ export const Compact: Story = {
   },
   parameters: { controls: { include: [] } },
 };
+
+export const WithActions: Story = {
+  args: {
+    type: "info",
+    message: "BRIEFING \u00b7 FEB 17, 2026",
+    description:
+      "Helios scanned 3 systems overnight. 12 fields classified, 4 need review \u2014 2 flagged as biometric in US systems. DSR-4892 SLA deadline tomorrow, pending Marketing.",
+    showIcon: true,
+    primaryAction: { label: "View actions \u2192", onClick: () => {} },
+    secondaryAction: { label: "Dismiss", onClick: () => {} },
+  },
+};

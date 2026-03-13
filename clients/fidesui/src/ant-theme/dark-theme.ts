@@ -1,3 +1,4 @@
+import { generate } from "@ant-design/colors";
 import { theme, ThemeConfig } from "antd";
 
 import palette from "../palette/palette.module.scss";
@@ -24,8 +25,34 @@ export const darkAntTheme: ThemeConfig = {
   },
   components: {
     ...defaultAntTheme.components,
+    Alert: {
+      colorInfoBg: generate(palette.FIDESUI_NEUTRAL_500, {
+        theme: "dark",
+        backgroundColor: palette.FIDESUI_BG_MINOS,
+      })[0],
+      colorInfo: generate(palette.FIDESUI_NEUTRAL_500, {
+        theme: "dark",
+        backgroundColor: palette.FIDESUI_BG_MINOS,
+      })[4],
+      colorWarningBg: generate(palette.FIDESUI_WARNING, {
+        theme: "dark",
+        backgroundColor: palette.FIDESUI_BG_MINOS,
+      })[0],
+      colorWarning: generate(palette.FIDESUI_WARNING, {
+        theme: "dark",
+        backgroundColor: palette.FIDESUI_BG_MINOS,
+      })[4],
+      colorErrorBg: generate(palette.FIDESUI_ERROR, {
+        theme: "dark",
+        backgroundColor: palette.FIDESUI_BG_MINOS,
+      })[0],
+      colorError: generate(palette.FIDESUI_ERROR, {
+        theme: "dark",
+        backgroundColor: palette.FIDESUI_BG_MINOS,
+      })[4],
+    },
     Layout: {
-      bodyBg: palette.FIDESUI_BG_MINOS,
+      bodyBg: palette.FIDESUI_NEUTRAL_1000,
     },
     Card: {
       colorBgContainer: palette.FIDESUI_MINOS,

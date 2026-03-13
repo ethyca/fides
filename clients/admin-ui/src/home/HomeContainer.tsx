@@ -15,7 +15,6 @@ import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
 
-import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
 
 const HomeDashboard = dynamic(() => import("./HomeDashboard"), {
@@ -38,9 +37,11 @@ const HomeContainerInner = () => {
     return (
       <ConfigProvider theme={activeTheme}>
         <AntLayout className="h-screen">
-          <AntLayout.Header className="flex h-12 items-center justify-end px-10">
-            {alphaDarkMode && <ThemeModeSegmented />}
-          </AntLayout.Header>
+          {alphaDarkMode && (
+            <AntLayout.Header className="flex items-center justify-end px-10 h-12">
+              <ThemeModeSegmented />
+            </AntLayout.Header>
+          )}
           <AntLayout.Content className="overflow-auto">
             <HomeDashboard />
           </AntLayout.Content>
@@ -54,7 +55,11 @@ const HomeContainerInner = () => {
       <div className="min-h-full w-full" style={{ backgroundColor: bgColor }}>
         <Layout title="Home" padded={false}>
           <Flex vertical gap={40} className="pb-6">
-            <HomeBanner />
+            {alphaDarkMode && (
+              <Flex className="absolute pl-2 pt-2">
+                <ThemeModeSegmented />
+              </Flex>
+            )}
             <HomeContent />
           </Flex>
         </Layout>

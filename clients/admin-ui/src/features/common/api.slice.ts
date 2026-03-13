@@ -34,6 +34,7 @@ export const baseApi = createApi({
     "Custom Field Definition",
     "Custom Fields",
     "Custom Reports",
+    "Fides Dashboard",
     "Data Categories",
     "System Groups",
     "Datamap",
