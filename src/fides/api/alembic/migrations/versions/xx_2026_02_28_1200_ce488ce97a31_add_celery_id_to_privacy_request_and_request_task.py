@@ -4,7 +4,7 @@ Moves Celery task ID tracking from ephemeral Redis cache to durable DB
 columns, following the pattern already established by MonitorTask.
 
 Revision ID: ce488ce97a31
-Revises: 074796d61d8a
+Revises: 4ac4864180db
 Create Date: 2026-02-28 12:00:00.000000
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "ce488ce97a31"
-down_revision = "074796d61d8a"
+down_revision = "4ac4864180db"
 branch_labels = None
 depends_on = None
 
