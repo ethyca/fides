@@ -1,8 +1,6 @@
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
-  Alert,
   Button,
-  Card,
   Flex,
   Icons,
   Select,
@@ -11,55 +9,29 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import yaml, { YAMLException } from "js-yaml";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import ClipboardButton from "~/features/common/ClipboardButton";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { Editor } from "~/features/common/yaml/helpers";
 import { useUpdateDatasetMutation } from "~/features/dataset";
-import {
-  useGetConnectionConfigDatasetConfigsQuery,
-  useGetDatasetReachabilityQuery,
-} from "~/features/datastore-connections";
+import { useGetConnectionConfigDatasetConfigsQuery } from "~/features/datastore-connections";
 import { Dataset } from "~/types/api";
 
-import {
-  selectCurrentDataset,
-  selectCurrentPolicyKey,
-  setCurrentDataset,
-  setReachability,
-} from "./dataset-test.slice";
+import { selectCurrentDataset, setCurrentDataset } from "./dataset-test.slice";
+import DatasetNodeEditor from "./DatasetNodeEditor";
 import { removeNulls } from "./helpers";
 
 interface EditorSectionProps {
   connectionKey: string;
 }
 
-const getReachabilityMessage = (details: any) => {
-  if (Array.isArray(details)) {
-    const firstDetail = details[0];
-
-    if (!firstDetail) {
-      return "";
-    }
-
-    const message = firstDetail.msg || "";
-    const location = firstDetail.loc ? ` (${firstDetail.loc})` : "";
-    return `${message}${location}`;
-  }
-  return details;
-};
-
 const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   const messageApi = useMessage();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
 
-  const [editorContent, setEditorContent] = useState<string>("");
+  const [localDataset, setLocalDataset] = useState<Dataset | undefined>();
   const currentDataset = useAppSelector(selectCurrentDataset);
-  const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
   const {
     data: datasetConfigs,
@@ -68,24 +40,6 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   } = useGetConnectionConfigDatasetConfigsQuery(connectionKey, {
     skip: !connectionKey,
   });
-
-  const { data: reachability, refetch: refetchReachability } =
-    useGetDatasetReachabilityQuery(
-      {
-        connectionKey,
-        datasetKey: currentDataset?.fides_key || "",
-        policyKey: currentPolicyKey,
-      },
-      {
-        skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
-      },
-    );
-
-  useEffect(() => {
-    if (reachability) {
-      dispatch(setReachability(reachability.reachable));
-    }
-  }, [reachability, dispatch]);
 
   const datasetOptions = useMemo(
     () =>
@@ -112,26 +66,9 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
 
   useEffect(() => {
     if (currentDataset?.ctl_dataset) {
-      setEditorContent(yaml.dump(removeNulls(currentDataset?.ctl_dataset)));
+      setLocalDataset(removeNulls(currentDataset.ctl_dataset) as Dataset);
     }
   }, [currentDataset]);
-
-  useEffect(() => {
-    if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
-      refetchReachability();
-    }
-  }, [
-    currentPolicyKey,
-    currentDataset?.fides_key,
-    connectionKey,
-    refetchReachability,
-  ]);
-
-  useEffect(() => {
-    if (reachability) {
-      dispatch(setReachability(reachability.reachable));
-    }
-  }, [reachability, dispatch]);
 
   const handleDatasetChange = async (value: string) => {
     const selectedConfig = datasetConfigs?.items.find(
@@ -142,28 +79,16 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     }
   };
 
+  const handleLocalDatasetChange = useCallback((updated: Dataset) => {
+    setLocalDataset(updated);
+  }, []);
+
   const handleSave = async () => {
-    if (!currentDataset) {
+    if (!currentDataset || !localDataset) {
       return;
     }
 
-    // Parse YAML first
-    let datasetValues: Dataset;
-    try {
-      datasetValues = yaml.load(editorContent) as Dataset;
-    } catch (yamlError) {
-      messageApi.error(
-        `YAML Parsing Error: ${
-          yamlError instanceof YAMLException
-            ? `${yamlError.reason} ${yamlError.mark ? `at line ${yamlError.mark.line}` : ""}`
-            : "Invalid YAML format"
-        }`,
-      );
-      return;
-    }
-
-    // Then handle the API update
-    const result = await updateDataset(datasetValues);
+    const result = await updateDataset(localDataset);
 
     if (isErrorResult(result)) {
       messageApi.error(getErrorMessage(result.error));
@@ -178,7 +103,6 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     );
     messageApi.success("Successfully modified dataset");
     await refetchDatasets();
-    await refetchReachability();
   };
 
   const handleRefresh = async () => {
@@ -188,7 +112,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
         (item) => item.fides_key === currentDataset?.fides_key,
       );
       if (refreshedDataset?.ctl_dataset) {
-        setEditorContent(yaml.dump(removeNulls(refreshedDataset.ctl_dataset)));
+        setLocalDataset(removeNulls(refreshedDataset.ctl_dataset) as Dataset);
       }
       messageApi.success("Successfully refreshed datasets");
     } catch (error) {
@@ -201,12 +125,14 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       align="stretch"
       flex="1"
       gap="small"
-      className="max-h-screen max-w-[70vw]"
       vertical
+      style={{ height: "100%", minHeight: 0 }}
     >
       <Flex align="center" justify="space-between">
         <Space>
-          <Typography.Title level={3}>Edit dataset: </Typography.Title>
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            Edit dataset:
+          </Typography.Title>
           <Select
             id="format"
             aria-label="Select a dataset"
@@ -218,7 +144,6 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           />
         </Space>
         <Space>
-          <ClipboardButton copyText={editorContent} />
           <Tooltip
             title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
             placement="top"
@@ -242,47 +167,22 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           </Tooltip>
         </Space>
       </Flex>
-      <Card
-        data-testid="empty-state"
-        className="flex flex-1"
-        styles={{
-          body: {
-            minHeight: "200px",
-            display: "flex",
-            flex: "1 1 auto",
-            paddingLeft: 0,
-          },
+      <div
+        style={{
+          flex: "1 1 auto",
+          minHeight: 0,
+          borderRadius: 8,
+          overflow: "hidden",
+          border: "1px solid #E2E8F0",
         }}
       >
-        <Editor
-          defaultLanguage="yaml"
-          value={editorContent}
-          height="100%"
-          onChange={(value) => setEditorContent(value || "")}
-          onMount={() => {}}
-          options={{
-            fontFamily: "Menlo",
-            fontSize: 13,
-            minimap: { enabled: false },
-            readOnly: false,
-            hideCursorInOverviewRuler: true,
-            overviewRulerBorder: false,
-            scrollBeyondLastLine: false,
-          }}
-          theme="light"
-        />
-      </Card>
-      {reachability && (
-        <Alert
-          type={reachability?.reachable ? "success" : "error"}
-          message={
-            reachability?.reachable
-              ? "Dataset is reachable"
-              : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`
-          }
-          showIcon
-        />
-      )}
+        {localDataset && (
+          <DatasetNodeEditor
+            dataset={localDataset}
+            onDatasetChange={handleLocalDatasetChange}
+          />
+        )}
+      </div>
     </Flex>
   );
 };

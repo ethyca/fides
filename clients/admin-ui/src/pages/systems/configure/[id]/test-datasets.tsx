@@ -1,4 +1,4 @@
-import { Flex, PageSpinner } from "fidesui";
+import { PageSpinner } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -7,8 +7,6 @@ import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import EditorSection from "~/features/test-datasets/DatasetEditorSection";
-import TestLogsSection from "~/features/test-datasets/TestLogsSection";
-import TestResultsSection from "~/features/test-datasets/TestRunnerSection";
 
 // Helper functions
 const getSystemId = (query: { id?: string | string[] }): string => {
@@ -52,23 +50,10 @@ const TestDatasetPage: NextPage = () => {
             title: system?.name || "",
             href: `/systems/configure/${systemId}#integrations`,
           },
-          { title: "Test datasets" },
+          { title: "Edit dataset" },
         ]}
       />
-      <Flex align="stretch" flex="1" gap="middle" vertical>
-        <Flex
-          align="stretch"
-          flex="1"
-          gap="middle"
-          className="max-h-[60vh] min-h-0"
-        >
-          <EditorSection connectionKey={connectionKey} />
-          <TestResultsSection connectionKey={connectionKey} />
-        </Flex>
-        <Flex vertical>
-          <TestLogsSection />
-        </Flex>
-      </Flex>
+      <EditorSection connectionKey={connectionKey} />
     </Layout>
   );
 };

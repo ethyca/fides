@@ -1,0 +1,75 @@
+.container {
+  position: relative;
+}
+
+.button {
+  transition:
+    background-color 300ms ease-in 0s,
+    color 300ms ease 0s,
+    border-color 300ms ease 0s,
+    box-shadow 300ms ease 0s;
+
+  height: 28px;
+  max-width: 240px;
+
+  --ant-color-text-disabled: var(--ant-color-text);
+
+  &--hover {
+    color: var(--ant-button-primary-color) !important;
+    background-color: var(--fidesui-minos) !important;
+    box-shadow:
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  }
+
+  &--parent-hover {
+    background-color: var(--fidesui-neutral-50);
+    border-color: var(--ant-button-default-border-color);
+    box-shadow:
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  }
+
+  &--inactive {
+    color: var(--fidesui-neutral-400);
+  }
+
+  &--protected {
+    font-style: italic;
+    opacity: 0.85;
+    border-color: #d69e2e;
+
+    &:hover {
+      border-color: #d69e2e !important;
+    }
+  }
+}
+
+// Root node: slightly bolder
+.button--root {
+  height: 32px;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 14px;
+  padding: 0 4px;
+  border-radius: 4px;
+  margin-left: 4px;
+  color: white;
+  background-color: var(--fidesui-minos);
+}
+
+.badge--warning {
+  background-color: #d69e2e;
+  font-size: 9px;
+}
+
+.badge--muted {
+  background-color: var(--fidesui-neutral-400);
+  color: white;
+}
