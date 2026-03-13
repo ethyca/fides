@@ -51,6 +51,8 @@ class ClientDetail(Base):
         ARRAY(String), nullable=False, server_default="{}", default=dict
     )
     monitors = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
+    name = Column(String, nullable=True)
+    description = Column(String, nullable=True)
     fides_key = Column(String, index=True, unique=True, nullable=True)
     user_id = Column(
         String, ForeignKey(FidesUser.id_field_path), nullable=True, unique=True
@@ -65,6 +67,8 @@ class ClientDetail(Base):
         client_secret_byte_length: int,
         *,
         scopes: list[str] | None = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
         fides_key: Optional[str] = None,
         user_id: Optional[str] = None,
         encoding: str = "UTF-8",
@@ -107,6 +111,8 @@ class ClientDetail(Base):
             "salt": salt,
             "hashed_secret": hashed_secret,
             "scopes": scopes,
+            "name": name,
+            "description": description,
             "fides_key": fides_key,
             "user_id": user_id,
             "roles": roles,
