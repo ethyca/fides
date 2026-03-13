@@ -282,7 +282,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Manual tasks don't connect to external systems, so the write access
         # concept doesn't apply. Humans manually record erasure confirmations
         # or consent preferences.
-        if connection_config.connection_type == ConnectionType.manual_task:
+        if connection_config.connection_type in (
+            ConnectionType.manual_task,
+            ConnectionType.jira_ticket,
+        ):
             return True
         return connection_config.access == AccessLevel.write
 
