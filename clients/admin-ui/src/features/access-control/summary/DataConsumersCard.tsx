@@ -1,40 +1,80 @@
-import { antTheme, Card, Divider, Flex, Text } from "fidesui";
+import { antTheme, Card, Flex, Text } from "fidesui";
 
 import type { DataConsumerSummary } from "../types";
 
 interface DataConsumersCardProps {
   data: DataConsumerSummary[];
+  activeCount: number;
   loading?: boolean;
 }
 
 export const DataConsumersCard = ({
   data,
+  activeCount,
   loading,
 }: DataConsumersCardProps) => {
   const { token } = antTheme.useToken();
   const items = data.slice(0, 5);
 
   return (
-    <Card loading={loading} title={<Text strong>Top data consumers</Text>}>
-      <Flex vertical>
-        {items.map((item, index) => (
-          <div key={item.name}>
-            {index > 0 && (
-              <Divider style={{ margin: `${token.marginXS}px 0` }} />
-            )}
-            <Flex justify="space-between" align="center">
-              <Text>{item.name}</Text>
-              <Flex gap={16}>
-                <Text type="secondary">
-                  {item.requests.toLocaleString()} requests
-                </Text>
-                <Text type="secondary">
-                  {item.violations.toLocaleString()} violations
-                </Text>
-              </Flex>
-            </Flex>
-          </div>
-        ))}
+    <Card
+      loading={loading}
+      title={<Text strong>Data consumers</Text>}
+      extra={
+        <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
+          {activeCount} active
+        </Text>
+      }
+    >
+      <Flex vertical gap={8}>
+        <div
+          className="grid gap-y-2"
+          style={{
+            gridTemplateColumns: "1fr auto auto",
+            columnGap: token.marginMD,
+          }}
+        >
+          <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
+            Consumer
+          </Text>
+          <Text
+            type="secondary"
+            style={{ fontSize: token.fontSizeSM, textAlign: "right" }}
+          >
+            Reqs
+          </Text>
+          <Text
+            type="secondary"
+            style={{ fontSize: token.fontSizeSM, textAlign: "right" }}
+          >
+            Viol
+          </Text>
+
+          {items.map((item) => (
+            <>
+              <Text key={`${item.name}-name`}>{item.name}</Text>
+              <Text
+                key={`${item.name}-reqs`}
+                style={{ textAlign: "right" }}
+              >
+                {item.requests.toLocaleString()}
+              </Text>
+              <Text
+                key={`${item.name}-viol`}
+                strong
+                style={{
+                  textAlign: "right",
+                  color:
+                    item.violations > 0
+                      ? token.colorError
+                      : token.colorSuccess,
+                }}
+              >
+                {item.violations.toLocaleString()}
+              </Text>
+            </>
+          ))}
+        </div>
       </Flex>
     </Card>
   );

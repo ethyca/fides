@@ -6,9 +6,17 @@ export interface DataConsumerRequestPoint {
   violations: number;
 }
 
+export interface TopPolicyViolation {
+  name: string;
+  count: number;
+}
+
 export interface DataConsumerRequestsResponse {
   violations: number;
   total_requests: number;
+  trend: number;
+  top_policies: TopPolicyViolation[];
+  total_policies: number;
   items: DataConsumerRequestPoint[];
 }
 
@@ -21,6 +29,7 @@ export interface DataConsumerSummary {
 export interface DataConsumersByViolationsResponse {
   violations: number;
   total_requests: number;
+  active_consumers: number;
   items: DataConsumerSummary[];
 }
 

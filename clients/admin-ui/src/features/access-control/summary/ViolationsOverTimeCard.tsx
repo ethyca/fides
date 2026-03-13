@@ -4,19 +4,12 @@ import {
   CHART_ANIMATION,
   CHART_STROKE,
   ChartText,
+  Statistic,
   Text,
 } from "fidesui";
 import { useId } from "react";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
 
@@ -49,13 +42,23 @@ const XAxisTick = ({ x, y, payload, pointCount, fill }: XAxisTickProps) => (
   </ChartText>
 );
 
+const formatTrend = (trend: number) => {
+  const pct = Math.abs(trend * 100).toFixed(0);
+  const sign = trend <= 0 ? "-" : "+";
+  return `${sign}${pct}% vs last mo`;
+};
+
 interface ViolationsOverTimeCardProps {
   data: DataConsumerRequestPoint[];
+  totalViolations: number;
+  trend: number;
   loading?: boolean;
 }
 
 export const ViolationsOverTimeCard = ({
   data,
+  totalViolations,
+  trend,
   loading,
 }: ViolationsOverTimeCardProps) => {
   const { token } = antTheme.useToken();
@@ -67,14 +70,42 @@ export const ViolationsOverTimeCard = ({
     <Card
       loading={loading}
       title={<Text strong>Violations over time</Text>}
-      className="h-full flex flex-col"
-      styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
+      extra={
+        <Text
+          style={{
+            color: trend <= 0 ? token.colorSuccess : token.colorError,
+            fontSize: token.fontSizeSM,
+          }}
+        >
+          {formatTrend(trend)}
+        </Text>
+      }
+      className="h-full flex flex-col overflow-clip"
+      styles={{
+        body: {
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingBottom: 0,
+        },
+      }}
     >
-      <div className="w-full flex-1 min-h-0">
+      <div className="px-6">
+        <Statistic
+          value={totalViolations}
+          valueStyle={{
+            color: token.colorError,
+            fontSize: token.fontSizeHeading2,
+          }}
+        />
+      </div>
+      <div className="w-full flex-1 min-h-0 mt-2">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
-            margin={{ top: 5, right: 5, bottom: 0, left: -15 }}
+            margin={{ top: 5, right: 0, bottom: 0, left: 0 }}
           >
             <defs>
               <linearGradient
@@ -114,31 +145,6 @@ export const ViolationsOverTimeCard = ({
                 />
               </linearGradient>
             </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke={token.colorBorderSecondary}
-              vertical={false}
-            />
-            <XAxis
-              dataKey="timestamp"
-              tickFormatter={(ts) => formatXAxisLabel(ts, pointCount)}
-              tick={
-                <XAxisTick
-                  pointCount={pointCount}
-                  fill={token.colorTextTertiary}
-                />
-              }
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{
-                fontSize: token.fontSizeSM,
-                fill: token.colorTextTertiary,
-              }}
-            />
             <Tooltip
               contentStyle={{
                 backgroundColor: token.colorBgElevated,
@@ -154,6 +160,18 @@ export const ViolationsOverTimeCard = ({
                   minute: "2-digit",
                 })
               }
+            />
+            <XAxis
+              dataKey="timestamp"
+              tickFormatter={(ts) => formatXAxisLabel(ts, pointCount)}
+              tick={
+                <XAxisTick
+                  pointCount={pointCount}
+                  fill={token.colorTextTertiary}
+                />
+              }
+              axisLine={false}
+              tickLine={false}
             />
             <Area
               type="monotone"

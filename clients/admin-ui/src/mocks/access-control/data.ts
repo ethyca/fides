@@ -35,6 +35,12 @@ const items24h = generateData(24, HOUR_MS, [10, 40], [0, 8]);
 const items7d = generateData(7, DAY_MS, [180, 100], [8, 20]);
 const items30d = generateData(30, DAY_MS, [140, 120], [5, 25]);
 
+const TOP_POLICIES = [
+  { name: "HIPAA_COMPLIANCE", count: 15 },
+  { name: "PII_SECURITY", count: 12 },
+  { name: "CCPA_RESTRICT", count: 10 },
+];
+
 export const dataConsumerRequestsData: Record<
   string,
   DataConsumerRequestsResponse
@@ -42,16 +48,25 @@ export const dataConsumerRequestsData: Record<
   "24h": {
     violations: sumField(items24h, "violations"),
     total_requests: sumField(items24h, "requests"),
+    trend: -0.08,
+    top_policies: TOP_POLICIES,
+    total_policies: 15,
     items: items24h,
   },
   "7d": {
     violations: sumField(items7d, "violations"),
     total_requests: sumField(items7d, "requests"),
+    trend: -0.18,
+    top_policies: TOP_POLICIES,
+    total_policies: 15,
     items: items7d,
   },
   "30d": {
     violations: sumField(items30d, "violations"),
     total_requests: sumField(items30d, "requests"),
+    trend: 0.021,
+    top_policies: TOP_POLICIES,
+    total_policies: 15,
     items: items30d,
   },
 };

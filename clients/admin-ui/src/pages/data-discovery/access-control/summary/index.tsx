@@ -62,7 +62,7 @@ const AccessControlSummaryPage: NextPage = () => {
         </div>
         <SummaryCards
           requestsData={requestsData}
-          consumersData={consumersData?.items}
+          consumersData={consumersData}
           loading={loading}
         />
         <FindingsTable />

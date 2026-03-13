@@ -1,7 +1,17 @@
 import { formatDistance } from "date-fns";
-import { type ColumnsType } from "fidesui";
+import { type ColumnsType, Tag } from "fidesui";
 
 import type { PolicyViolationAggregate } from "../types";
+
+const getViolationColor = (count: number) => {
+  if (count >= 100) {
+    return "error";
+  }
+  if (count >= 30) {
+    return "warning";
+  }
+  return "default";
+};
 
 export const getViolationsColumns =
   (): ColumnsType<PolicyViolationAggregate> => [
@@ -21,6 +31,9 @@ export const getViolationsColumns =
       key: "violation_count",
       width: 120,
       sorter: (a, b) => a.violation_count - b.violation_count,
+      render: (count: number) => (
+        <Tag color={getViolationColor(count)}>{count}</Tag>
+      ),
     },
     {
       title: "Last violation",
