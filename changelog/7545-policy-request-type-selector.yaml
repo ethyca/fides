@@ -1,4 +1,0 @@
-type: Added
-description: Added request type selector to policy creation form to auto-generate a default rule
-pr: 7545
-labels: []

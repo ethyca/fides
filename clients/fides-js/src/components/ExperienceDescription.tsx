@@ -13,9 +13,10 @@ const renderString = (string: string, allowHTMLDescription: boolean | null) => {
   // NOTE: We sanitize these descriptions server-side when configuring the
   // PrivacyExperience, so it's safe to trust these
   return allowHTMLDescription ? (
-    <span
+    <div
       // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: string.trim() }}
+      className="fides-experience-description-part"
     />
   ) : (
     stripHtml(string).trim()
