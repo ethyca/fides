@@ -101,7 +101,7 @@ export const ViolationRateCard = ({
           <Text strong>Top violated policies</Text>
           <div className="mt-1">
             <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
-              {topPolicies.map((p) => `${p.name} ${p.count}`).join(" \u00b7 ")}
+              {topPolicies.map((p) => `${p.name} ${p.count}`).join(" · ")}
             </Text>
           </div>
         </div>

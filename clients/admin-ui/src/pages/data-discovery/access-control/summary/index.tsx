@@ -6,7 +6,7 @@ import {
   useGetDataConsumerRequestsQuery,
   useGetDataConsumersByViolationsQuery,
 } from "~/features/access-control/access-control.slice";
-import AccessControlTabs from "~/features/access-control/AccessControlTabs";
+import { AccessControlTabs } from "~/features/access-control/AccessControlTabs";
 import { FindingsTable } from "~/features/access-control/summary/FindingsTable";
 import { SummaryCards } from "~/features/access-control/summary/SummaryCards";
 import type { TimeRange } from "~/features/access-control/types";

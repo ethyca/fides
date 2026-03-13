@@ -1,34 +1,37 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
-import type { TimeRange } from "~/features/access-control/types";
-
 import {
-  dataConsumerRequestsData,
+  aggregateLogsToChart,
+  allViolationLogs,
   dataConsumersByViolationsData,
-  policyViolationLogsData,
+  filterLogs,
+  LOG_CONSUMERS,
+  LOG_DATA_USES,
+  LOG_DATASETS,
+  POLICIES,
   policyViolationsData,
 } from "./data";
 
-const TIME_RANGE_KEYS: Record<string, TimeRange> = {
-  "1": "24h",
-  "7": "7d",
-  "30": "30d",
+const DEFAULT_START = new Date(Date.now() - 7 * 86_400_000).toISOString();
+const DEFAULT_END = new Date().toISOString();
+
+const getParam = (url: URL, key: string): string | string[] | null => {
+  const values = url.searchParams.getAll(key);
+  if (values.length === 0) {
+    return null;
+  }
+  return values.length === 1 ? values[0] : values;
 };
 
-const inferTimeRange = (
-  startDate: string | null,
-  endDate: string | null,
-): TimeRange => {
-  if (!startDate || !endDate) {
-    return "7d";
-  }
-  const diffDays = Math.round(
-    (new Date(endDate).getTime() - new Date(startDate).getTime()) /
-      (1000 * 60 * 60 * 24),
-  );
-  return TIME_RANGE_KEYS[String(diffDays)] ?? "7d";
-};
+const getFilters = (url: URL) => ({
+  consumer: getParam(url, "consumer"),
+  policy: getParam(url, "policy"),
+  dataset: getParam(url, "dataset"),
+  data_use: getParam(url, "data_use"),
+  start_date: url.searchParams.get("start_date"),
+  end_date: url.searchParams.get("end_date"),
+});
 
 export const accessControlHandlers = () => {
   const apiBase = "/api/v1";
@@ -62,13 +65,18 @@ export const accessControlHandlers = () => {
         );
       }
 
-      const timeRange = inferTimeRange(
-        req.url.searchParams.get("start_date"),
-        req.url.searchParams.get("end_date"),
-      );
+      const filters = getFilters(req.url);
+      const startDate = filters.start_date ?? DEFAULT_START;
+      const endDate = filters.end_date ?? DEFAULT_END;
+      const filtered = filterLogs(allViolationLogs, {
+        ...filters,
+        start_date: startDate,
+        end_date: endDate,
+      });
+
       return res(
         ctx.status(200),
-        ctx.json(dataConsumerRequestsData[timeRange]),
+        ctx.json(aggregateLogsToChart(filtered, startDate, endDate)),
       );
     }),
 
@@ -90,20 +98,44 @@ export const accessControlHandlers = () => {
       );
     }),
 
+    rest.get(`${apiBase}/access-control/facets`, (_req, res, ctx) =>
+      res(
+        ctx.status(200),
+        ctx.json({
+          consumers: LOG_CONSUMERS,
+          policies: POLICIES,
+          datasets: LOG_DATASETS,
+          data_uses: LOG_DATA_USES,
+        }),
+      ),
+    ),
+
+    rest.get(`${apiBase}/policy/violations/logs/:id`, (req, res, ctx) => {
+      const log = allViolationLogs.find((l) => l.id === req.params.id);
+      if (!log) {
+        return res(ctx.status(404), ctx.json({ detail: "Not found" }));
+      }
+      return res(ctx.status(200), ctx.json(log));
+    }),
+
     rest.get(`${apiBase}/policy/violations/logs`, (req, res, ctx) => {
       const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);
       const size = parseInt(req.url.searchParams.get("size") ?? "25", 10);
+
+      const filters = getFilters(req.url);
+      const filtered = filterLogs(allViolationLogs, filters);
+
       const start = (page - 1) * size;
-      const items = policyViolationLogsData.slice(start, start + size);
+      const items = filtered.slice(start, start + size);
 
       return res(
         ctx.status(200),
         ctx.json({
           items,
-          total: policyViolationLogsData.length,
+          total: filtered.length,
           page,
           size,
-          pages: Math.ceil(policyViolationLogsData.length / size),
+          pages: Math.ceil(filtered.length / size),
         }),
       );
     }),

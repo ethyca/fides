@@ -3,44 +3,29 @@ import {
   Card,
   CHART_ANIMATION,
   CHART_STROKE,
-  ChartText,
   Statistic,
   Text,
 } from "fidesui";
 import { useId } from "react";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
-
-const GRADIENT_START_OPACITY = 0.25;
-const GRADIENT_END_OPACITY = 0;
-
-const formatXAxisLabel = (timestamp: string, pointCount: number) => {
-  const date = new Date(timestamp);
-  if (pointCount <= 24) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  }
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
-interface XAxisTickProps {
-  x?: number;
-  y?: number;
-  payload?: { value: string };
-  pointCount: number;
-  fill?: string;
-}
-
-const XAxisTick = ({ x, y, payload, pointCount, fill }: XAxisTickProps) => (
-  <ChartText x={Number(x)} y={Number(y) + 12} fill={fill}>
-    {payload ? formatXAxisLabel(payload.value, pointCount) : null}
-  </ChartText>
-);
+import {
+  deriveInterval,
+  formatTimestamp,
+  tooltipLabelFormatter,
+  useTooltipContentStyle,
+  XAxisTick,
+} from "../utils";
 
 const formatTrend = (trend: number) => {
   const pct = Math.abs(trend * 100).toFixed(0);
@@ -64,7 +49,8 @@ export const ViolationsOverTimeCard = ({
   const { token } = antTheme.useToken();
   const violationsGradientId = `violations-gradient-${useId()}`;
   const requestsGradientId = `requests-gradient-${useId()}`;
-  const pointCount = data.length;
+  const intervalMs = deriveInterval(data);
+  const tooltipContentStyle = useTooltipContentStyle();
 
   return (
     <Card
@@ -105,7 +91,7 @@ export const ViolationsOverTimeCard = ({
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}
-            margin={{ top: 5, right: 0, bottom: 0, left: 0 }}
+            margin={{ top: 5, right: 5, bottom: 0, left: -15 }}
           >
             <defs>
               <linearGradient
@@ -118,12 +104,12 @@ export const ViolationsOverTimeCard = ({
                 <stop
                   offset="0%"
                   stopColor={token.colorText}
-                  stopOpacity={GRADIENT_START_OPACITY}
+                  stopOpacity={0.25}
                 />
                 <stop
                   offset="100%"
                   stopColor={token.colorText}
-                  stopOpacity={GRADIENT_END_OPACITY}
+                  stopOpacity={0}
                 />
               </linearGradient>
               <linearGradient
@@ -136,42 +122,45 @@ export const ViolationsOverTimeCard = ({
                 <stop
                   offset="0%"
                   stopColor={token.colorBorder}
-                  stopOpacity={GRADIENT_START_OPACITY}
+                  stopOpacity={0.25}
                 />
                 <stop
                   offset="100%"
                   stopColor={token.colorBorder}
-                  stopOpacity={GRADIENT_END_OPACITY}
+                  stopOpacity={0}
                 />
               </linearGradient>
             </defs>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: token.colorBgElevated,
-                border: `1px solid ${token.colorBorder}`,
-                borderRadius: token.borderRadiusLG,
-                boxShadow: token.boxShadowSecondary,
-              }}
-              labelFormatter={(label) =>
-                new Date(label).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })
-              }
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={token.colorBorderSecondary}
+              vertical={false}
             />
             <XAxis
               dataKey="timestamp"
-              tickFormatter={(ts) => formatXAxisLabel(ts, pointCount)}
+              tickFormatter={(ts) => formatTimestamp(ts, intervalMs)}
               tick={
                 <XAxisTick
-                  pointCount={pointCount}
+                  intervalMs={intervalMs}
                   fill={token.colorTextTertiary}
                 />
               }
               axisLine={false}
               tickLine={false}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{
+                fontSize: token.fontSizeSM,
+                fill: token.colorTextTertiary,
+              }}
+            />
+            <Tooltip
+              contentStyle={tooltipContentStyle}
+              labelFormatter={(label) =>
+                tooltipLabelFormatter(label, intervalMs)
+              }
             />
             <Area
               type="monotone"

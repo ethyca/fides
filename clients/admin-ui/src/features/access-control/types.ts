@@ -41,11 +41,16 @@ export interface PolicyViolationAggregate {
 }
 
 export interface PolicyViolationLog {
+  id: string;
   timestamp: string;
   consumer: string;
+  consumer_email: string;
   policy: string;
+  policy_description: string;
   dataset: string;
   data_use: string;
+  sql_statement: string;
+  ai_reason?: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -54,4 +59,11 @@ export interface PaginatedResponse<T> {
   page: number;
   size: number;
   pages: number;
+}
+
+export interface FacetOptionsResponse {
+  consumers: string[];
+  policies: string[];
+  datasets: string[];
+  data_uses: string[];
 }

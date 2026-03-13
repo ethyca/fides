@@ -3,6 +3,7 @@ import { baseApi } from "~/features/common/api.slice";
 import type {
   DataConsumerRequestsResponse,
   DataConsumersByViolationsResponse,
+  FacetOptionsResponse,
   PaginatedResponse,
   PolicyViolationAggregate,
   PolicyViolationLog,
@@ -11,8 +12,10 @@ import type {
 interface DataConsumerRequestsParams {
   start_date: string;
   end_date: string;
-  policy?: string;
-  data_uses?: string[];
+  consumer?: string | string[];
+  policy?: string | string[];
+  dataset?: string | string[];
+  data_use?: string | string[];
 }
 
 interface DataConsumersByViolationsParams {
@@ -25,6 +28,15 @@ interface DataConsumersByViolationsParams {
 interface PaginatedParams {
   page?: number;
   size?: number;
+}
+
+interface PolicyViolationLogsParams extends PaginatedParams {
+  consumer?: string;
+  policy?: string;
+  dataset?: string;
+  data_use?: string;
+  start_date?: string;
+  end_date?: string;
 }
 
 interface PolicyViolationsParams extends PaginatedParams {
@@ -71,11 +83,25 @@ const accessControlApi = baseApi.injectEndpoints({
 
     getPolicyViolationLogs: build.query<
       PaginatedResponse<PolicyViolationLog>,
-      PaginatedParams
+      PolicyViolationLogsParams
     >({
       query: (params) => ({
         url: "policy/violations/logs",
         params,
+      }),
+      providesTags: ["Access Control"],
+    }),
+
+    getViolationDetail: build.query<PolicyViolationLog, string>({
+      query: (id) => ({
+        url: `policy/violations/logs/${id}`,
+      }),
+      providesTags: ["Access Control"],
+    }),
+
+    getFacetOptions: build.query<FacetOptionsResponse, void>({
+      query: () => ({
+        url: "access-control/facets",
       }),
       providesTags: ["Access Control"],
     }),
@@ -87,4 +113,6 @@ export const {
   useGetDataConsumersByViolationsQuery,
   useGetPolicyViolationsQuery,
   useGetPolicyViolationLogsQuery,
+  useGetViolationDetailQuery,
+  useGetFacetOptionsQuery,
 } = accessControlApi;
