@@ -126,7 +126,7 @@ export enum ConfidenceLevelLabel {
 }
 
 export enum InfrastructureSystemBulkActionType {
-  ADD = "add",
+  APPROVE = "approve",
   IGNORE = "ignore",
   RESTORE = "restore",
 }

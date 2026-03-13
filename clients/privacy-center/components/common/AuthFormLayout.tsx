@@ -9,9 +9,10 @@
  * Used by both ExternalAuthLayout and PrivacyRequestLayout to avoid duplication.
  */
 
-import { Flex, Space, Typography } from "fidesui";
+import { Flex, Link, Space, Typography } from "fidesui";
 import React from "react";
 
+import { getEffectivePrivacyCenterLinks } from "~/common/config-links";
 import { useConfig } from "~/features/common/config.slice";
 
 import styles from "./AuthFormLayout.module.scss";
@@ -30,6 +31,7 @@ export const AuthFormLayout = ({
   dataTestId = "auth-form-layout",
 }: AuthFormLayoutProps) => {
   const config = useConfig();
+  const policyLinks = getEffectivePrivacyCenterLinks(config);
 
   return (
     <Flex
@@ -76,6 +78,22 @@ export const AuthFormLayout = ({
                 <div className={styles.formContent}>{children}</div>
               </Space>
             </div>
+
+            {/* Policy Links */}
+            {policyLinks.length > 0 && (
+              <Flex vertical align="center" gap="small">
+                {policyLinks.map(({ url, label }) => (
+                  <Link
+                    key={`${url}-${label}`}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </Flex>
+            )}
           </Space>
         </Space>
       </div>
