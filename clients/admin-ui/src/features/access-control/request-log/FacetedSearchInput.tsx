@@ -2,7 +2,7 @@ import { Select, Tag } from "fidesui";
 import type { CustomTagProps } from "rc-select/lib/BaseSelect";
 import { useMemo } from "react";
 
-const SEPARATOR = "::";
+export const SEPARATOR = "::";
 
 interface FacetDefinition {
   key: string;
@@ -16,7 +16,7 @@ interface FacetedSearchInputProps {
   onChange: (value: string[]) => void;
 }
 
-const FacetedSearchInput = ({
+export const FacetedSearchInput = ({
   facets,
   value,
   onChange,
@@ -65,5 +65,4 @@ const FacetedSearchInput = ({
   );
 };
 
-export { FacetedSearchInput, SEPARATOR };
 export type { FacetDefinition };

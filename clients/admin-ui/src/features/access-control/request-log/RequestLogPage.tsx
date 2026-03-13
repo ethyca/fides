@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { DatePicker, Flex } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   LOG_CONSUMERS,
@@ -26,17 +26,13 @@ const FACETS: FacetDefinition[] = [
   { key: "data_use", label: "Data use", options: LOG_DATA_USES },
 ];
 
-const getDefaultDateRange = (): [dayjs.Dayjs, dayjs.Dayjs] => {
-  return [dayjs().subtract(7, "day"), dayjs()];
-};
-
-const RequestLogPage = () => {
+export const RequestLogPage = () => {
   const router = useRouter();
   const policyParam =
     typeof router.query.policy === "string" ? router.query.policy : null;
 
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
-    getDefaultDateRange,
+    () => [dayjs().subtract(7, "day"), dayjs()],
   );
   const [searchValues, setSearchValues] = useState<string[]>(() =>
     policyParam ? [`policy${SEPARATOR}${policyParam}`] : [],
@@ -69,18 +65,7 @@ const RequestLogPage = () => {
   }, [searchValues, dateParams]);
 
   const { data: chartData, isLoading: chartLoading } =
-    useGetDataConsumerRequestsQuery(dateParams);
-
-  const handleDateRangeChange = useCallback(
-    (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
-      if (dates && dates[0] && dates[1]) {
-        setDateRange([dates[0], dates[1]]);
-      } else {
-        setDateRange(null);
-      }
-    },
-    [],
-  );
+    useGetDataConsumerRequestsQuery(filters);
 
   return (
     <div className="flex flex-col gap-4">
@@ -95,7 +80,13 @@ const RequestLogPage = () => {
         <DatePicker.RangePicker
           format="YYYY-MM-DD"
           value={dateRange}
-          onChange={handleDateRangeChange}
+          onChange={(dates) => {
+            if (dates && dates[0] && dates[1]) {
+              setDateRange([dates[0], dates[1]]);
+            } else {
+              setDateRange(null);
+            }
+          }}
           placeholder={["From", "To"]}
           allowClear
           aria-label="Date range"
@@ -113,5 +104,3 @@ const RequestLogPage = () => {
     </div>
   );
 };
-
-export { RequestLogPage };

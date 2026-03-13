@@ -6,13 +6,13 @@ import {
   ChartText,
   Flex,
   Statistic,
+  Typography,
 } from "fidesui";
-import { useId, useState } from "react";
+import palette from "fidesui/src/palette/palette.module.scss";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
   Bar,
   BarChart,
-  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -20,6 +20,8 @@ import {
 
 import type { DataConsumerRequestPoint } from "../types";
 import { formatTimestamp } from "../utils";
+
+const { Text } = Typography;
 
 const deriveInterval = (data: DataConsumerRequestPoint[]): number => {
   if (data.length < 2) {
@@ -45,174 +47,93 @@ const XAxisTick = ({ x, y, payload, intervalMs, fill }: XAxisTickProps) => (
   </ChartText>
 );
 
-const ACTIVE_OPACITY = 0.85;
-const INACTIVE_OPACITY = 0.25;
-const DEFAULT_OPACITY = 0.6;
-
 interface ViolationsBarChartCardProps {
   data: DataConsumerRequestPoint[];
   totalViolations: number;
   loading?: boolean;
 }
 
-const ViolationsBarChartCard = ({
+export const ViolationsBarChartCard = ({
   data,
   totalViolations,
   loading,
 }: ViolationsBarChartCardProps) => {
   const { token } = antTheme.useToken();
-  const rawId = useId().replace(/:/g, "");
-  const gradientActiveId = `bar-active-${rawId}`;
-  const gradientInactiveId = `bar-inactive-${rawId}`;
-  const gradientDefaultId = `bar-default-${rawId}`;
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const intervalMs = deriveInterval(data);
 
   return (
     <Card loading={loading}>
-      <Flex align="center" gap={24}>
-        <Statistic
-          title="Violations"
-          value={totalViolations}
-          className="shrink-0"
-        />
-        <div className="h-[120px] w-full min-w-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{ top: 5, right: 5, bottom: 0, left: 0 }}
-              onMouseMove={(state) => {
-                if (
-                  state &&
-                  state.activeTooltipIndex !== undefined &&
-                  typeof state.activeTooltipIndex === "number"
-                ) {
-                  setActiveIndex(state.activeTooltipIndex);
-                }
+      <div className="mb-2">
+        <Text type="secondary" className="text-xs font-semibold">
+          Violations over time
+        </Text>
+        <Flex align="baseline" gap="small" className="mt-1">
+          <Statistic
+            value={totalViolations}
+            valueStyle={{ fontSize: 28, fontWeight: 700 }}
+          />
+          <Text type="secondary" className="text-sm">
+            Total violations
+          </Text>
+        </Flex>
+      </div>
+      <div className="h-[120px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+            barCategoryGap="8%"
+          >
+            <XAxis
+              dataKey="timestamp"
+              tickFormatter={(ts) => formatTimestamp(ts, intervalMs)}
+              tick={
+                <XAxisTick
+                  intervalMs={intervalMs}
+                  fill={token.colorTextTertiary}
+                />
+              }
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              cursor={false}
+              contentStyle={{
+                backgroundColor: token.colorBgElevated,
+                border: `1px solid ${token.colorBorder}`,
+                borderRadius: token.borderRadiusLG,
+                boxShadow: token.boxShadowSecondary,
               }}
-              onMouseLeave={() => setActiveIndex(null)}
-            >
-              <defs>
-                <linearGradient
-                  id={gradientActiveId}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor={token.colorText}
-                    stopOpacity={ACTIVE_OPACITY}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor={token.colorText}
-                    stopOpacity={ACTIVE_OPACITY * 0.4}
-                  />
-                </linearGradient>
-                <linearGradient
-                  id={gradientInactiveId}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor={token.colorText}
-                    stopOpacity={INACTIVE_OPACITY}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor={token.colorText}
-                    stopOpacity={INACTIVE_OPACITY * 0.4}
-                  />
-                </linearGradient>
-                <linearGradient
-                  id={gradientDefaultId}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor={token.colorText}
-                    stopOpacity={DEFAULT_OPACITY}
-                  />
-                  <stop
-                    offset="100%"
-                    stopColor={token.colorText}
-                    stopOpacity={DEFAULT_OPACITY * 0.4}
-                  />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="timestamp"
-                tickFormatter={(ts) => formatTimestamp(ts, intervalMs)}
-                tick={
-                  <XAxisTick
-                    intervalMs={intervalMs}
-                    fill={token.colorTextTertiary}
-                  />
-                }
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                cursor={false}
-                contentStyle={{
-                  backgroundColor: token.colorBgElevated,
-                  border: `1px solid ${token.colorBorder}`,
-                  borderRadius: token.borderRadiusLG,
-                  boxShadow: token.boxShadowSecondary,
-                }}
-                labelFormatter={(label) => {
-                  const date = new Date(label);
-                  if (intervalMs < 86_400_000) {
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    });
-                  }
+              labelFormatter={(label) => {
+                const date = new Date(label);
+                if (intervalMs < 86_400_000) {
                   return date.toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
-                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
                   });
-                }}
-              />
-              <Bar
-                dataKey="violations"
-                name="Violations"
-                radius={[2, 2, 0, 0]}
-                isAnimationActive={CHART_ANIMATION.defaultDuration > 0}
-                animationDuration={CHART_ANIMATION.defaultDuration}
-                animationEasing={CHART_ANIMATION.easing}
-                maxBarSize={CHART_STROKE.strokeWidth * 8}
-              >
-                {data.map((entry, index) => {
-                  let gradientRef = gradientDefaultId;
-                  if (activeIndex !== null) {
-                    gradientRef =
-                      index === activeIndex
-                        ? gradientActiveId
-                        : gradientInactiveId;
-                  }
-                  return (
-                    <Cell key={entry.timestamp} fill={`url(#${gradientRef})`} />
-                  );
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </Flex>
+                }
+                return date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+              }}
+            />
+            <Bar
+              dataKey="violations"
+              name="Violations"
+              fill={palette.FIDESUI_MINOS}
+              radius={[1, 1, 0, 0]}
+              isAnimationActive={CHART_ANIMATION.defaultDuration > 0}
+              animationDuration={CHART_ANIMATION.defaultDuration}
+              animationEasing={CHART_ANIMATION.easing}
+              maxBarSize={CHART_STROKE.strokeWidth * 8}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </Card>
   );
 };
-
-export { ViolationsBarChartCard };

@@ -1,9 +1,11 @@
 import { Flex, Spin, Table } from "fidesui";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 
 import { useGetPolicyViolationLogsQuery } from "../access-control.slice";
 import type { PolicyViolationLog } from "../types";
 import { getRequestLogColumns } from "./requestLogColumns";
+
+const columns = getRequestLogColumns();
 
 interface RequestLogTableProps {
   filters: Record<string, string | undefined>;
@@ -12,7 +14,7 @@ interface RequestLogTableProps {
 
 const PAGE_SIZE = 25;
 
-const RequestLogTable = ({
+export const RequestLogTable = ({
   filters,
   onRowClick,
 }: RequestLogTableProps) => {
@@ -20,7 +22,6 @@ const RequestLogTable = ({
   const [allItems, setAllItems] = useState<PolicyViolationLog[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const columns = useMemo(() => getRequestLogColumns(), []);
 
   const queryParams = useMemo(
     () => ({
@@ -111,5 +112,3 @@ const RequestLogTable = ({
     </div>
   );
 };
-
-export { RequestLogTable };

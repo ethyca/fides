@@ -165,38 +165,88 @@ export const LOG_DATA_USES = [
   "collect.provide",
 ];
 
-const generateLogs = (): PolicyViolationLog[] => {
-  const baseTime = new Date("2026-03-11T14:23:00Z").getTime();
-  const allPolicies = Object.keys(CONTROLS);
-
-  return Array.from({ length: 50 }, (_, i) => ({
-    timestamp: new Date(baseTime - i * 45 * 60 * 1000).toISOString(),
-    consumer: LOG_CONSUMERS[i % LOG_CONSUMERS.length],
-    policy: allPolicies[i % allPolicies.length],
-    dataset: LOG_DATASETS[i % LOG_DATASETS.length],
-    data_use: LOG_DATA_USES[i % LOG_DATA_USES.length],
-  }));
+const seededRandom = (seed: number) => {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
 };
 
-export const policyViolationLogsData: PolicyViolationLog[] = generateLogs();
-
-let liveLogCounter = 0;
-
-export const generateLiveLogs = (count: number): PolicyViolationLog[] => {
-  const now = Date.now();
+const generateStableLogs = (): PolicyViolationLog[] => {
+  const now = new Date("2026-03-13T12:00:00Z").getTime();
   const allPolicies = Object.keys(CONTROLS);
+  const rand = seededRandom(42);
+  const LOG_COUNT = 2000;
 
-  return Array.from({ length: count }, (_, i) => {
-    const idx = liveLogCounter + i;
-    liveLogCounter += 1;
+  return Array.from({ length: LOG_COUNT }, (_, i) => {
+    const gap = 3 * 60_000 + Math.floor(rand() * 12 * 60_000);
     return {
-      timestamp: new Date(
-        now - i * (30_000 + Math.floor(Math.random() * 60_000)),
-      ).toISOString(),
-      consumer: LOG_CONSUMERS[idx % LOG_CONSUMERS.length],
-      policy: allPolicies[idx % allPolicies.length],
-      dataset: LOG_DATASETS[idx % LOG_DATASETS.length],
-      data_use: LOG_DATA_USES[idx % LOG_DATA_USES.length],
+      timestamp: new Date(now - i * gap).toISOString(),
+      consumer: LOG_CONSUMERS[Math.floor(rand() * LOG_CONSUMERS.length)],
+      policy: allPolicies[Math.floor(rand() * allPolicies.length)],
+      dataset: LOG_DATASETS[Math.floor(rand() * LOG_DATASETS.length)],
+      data_use: LOG_DATA_USES[Math.floor(rand() * LOG_DATA_USES.length)],
     };
+  }).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+};
+
+export const allViolationLogs: PolicyViolationLog[] = generateStableLogs();
+
+export interface LogFilters {
+  consumer?: string | null;
+  policy?: string | null;
+  dataset?: string | null;
+  data_use?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+}
+
+export const filterLogs = (
+  logs: PolicyViolationLog[],
+  filters: LogFilters,
+): PolicyViolationLog[] => {
+  return logs.filter((log) => {
+    if (filters.consumer && log.consumer !== filters.consumer) return false;
+    if (filters.policy && log.policy !== filters.policy) return false;
+    if (filters.dataset && log.dataset !== filters.dataset) return false;
+    if (filters.data_use && log.data_use !== filters.data_use) return false;
+    if (filters.start_date && log.timestamp < filters.start_date) return false;
+    if (filters.end_date && log.timestamp > filters.end_date) return false;
+    return true;
   });
+};
+
+export const aggregateLogsToChart = (
+  logs: PolicyViolationLog[],
+  startDate: string,
+  endDate: string,
+): DataConsumerRequestsResponse => {
+  const startMs = new Date(startDate).getTime();
+  const endMs = new Date(endDate).getTime();
+  const interval = pickInterval(startMs, endMs);
+  const flooredStart = Math.floor(startMs / interval) * interval;
+  const bucketCount = Math.max(1, Math.ceil((endMs - flooredStart) / interval));
+  const rand = seededRandom(7);
+
+  const buckets = Array.from({ length: bucketCount }, (_, i) => ({
+    timestamp: new Date(flooredStart + i * interval).toISOString(),
+    requests: 0,
+    violations: 0,
+  }));
+
+  for (const log of logs) {
+    const logMs = new Date(log.timestamp).getTime();
+    const idx = Math.floor((logMs - flooredStart) / interval);
+    if (idx >= 0 && idx < bucketCount) {
+      buckets[idx].violations += 1;
+      buckets[idx].requests += 3 + Math.floor(rand() * 4);
+    }
+  }
+
+  return {
+    violations: sumField(buckets, "violations"),
+    total_requests: sumField(buckets, "requests"),
+    items: buckets,
+  };
 };

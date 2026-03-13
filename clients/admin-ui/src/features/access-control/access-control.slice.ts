@@ -11,8 +11,10 @@ import type {
 interface DataConsumerRequestsParams {
   start_date: string;
   end_date: string;
+  consumer?: string;
   policy?: string;
-  data_uses?: string[];
+  dataset?: string;
+  data_use?: string;
 }
 
 interface DataConsumersByViolationsParams {

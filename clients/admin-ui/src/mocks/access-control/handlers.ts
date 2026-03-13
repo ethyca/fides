@@ -2,11 +2,24 @@
 import { rest } from "msw";
 
 import {
+  aggregateLogsToChart,
+  allViolationLogs,
   dataConsumersByViolationsData,
-  generateChartData,
-  generateLiveLogs,
+  filterLogs,
   policyViolationsData,
 } from "./data";
+
+const DEFAULT_START = new Date(Date.now() - 7 * 86_400_000).toISOString();
+const DEFAULT_END = new Date().toISOString();
+
+const getFilters = (url: URL) => ({
+  consumer: url.searchParams.get("consumer"),
+  policy: url.searchParams.get("policy"),
+  dataset: url.searchParams.get("dataset"),
+  data_use: url.searchParams.get("data_use"),
+  start_date: url.searchParams.get("start_date"),
+  end_date: url.searchParams.get("end_date"),
+});
 
 export const accessControlHandlers = () => {
   const apiBase = "/api/v1";
@@ -39,17 +52,18 @@ export const accessControlHandlers = () => {
         );
       }
 
-      const startDate = req.url.searchParams.get("start_date");
-      const endDate = req.url.searchParams.get("end_date");
+      const filters = getFilters(req.url);
+      const startDate = filters.start_date ?? DEFAULT_START;
+      const endDate = filters.end_date ?? DEFAULT_END;
+      const filtered = filterLogs(allViolationLogs, {
+        ...filters,
+        start_date: startDate,
+        end_date: endDate,
+      });
 
       return res(
         ctx.status(200),
-        ctx.json(
-          generateChartData(
-            startDate ?? new Date(Date.now() - 7 * 86_400_000).toISOString(),
-            endDate ?? new Date().toISOString(),
-          ),
-        ),
+        ctx.json(aggregateLogsToChart(filtered, startDate, endDate)),
       );
     }),
 
@@ -75,27 +89,8 @@ export const accessControlHandlers = () => {
       const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);
       const size = parseInt(req.url.searchParams.get("size") ?? "25", 10);
 
-      const consumer = req.url.searchParams.get("consumer");
-      const policy = req.url.searchParams.get("policy");
-      const dataset = req.url.searchParams.get("dataset");
-      const dataUse = req.url.searchParams.get("data_use");
-
-      const allLogs = generateLiveLogs(200);
-      const filtered = allLogs.filter((log) => {
-        if (consumer && log.consumer !== consumer) {
-          return false;
-        }
-        if (policy && log.policy !== policy) {
-          return false;
-        }
-        if (dataset && log.dataset !== dataset) {
-          return false;
-        }
-        if (dataUse && log.data_use !== dataUse) {
-          return false;
-        }
-        return true;
-      });
+      const filters = getFilters(req.url);
+      const filtered = filterLogs(allViolationLogs, filters);
 
       const start = (page - 1) * size;
       const items = filtered.slice(start, start + size);
