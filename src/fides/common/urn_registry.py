@@ -92,6 +92,9 @@ PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
 PRIVACY_REQUEST_SOFT_DELETE = "/privacy-request/{privacy_request_id}/soft-delete"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
+PRIVACY_REQUEST_EXECUTION_GRAPH = (
+    "/privacy-request/{privacy_request_id}/execution-graph"
+)
 PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
 PRIVACY_REQUEST_RESUBMIT = "/privacy-request/{privacy_request_id}/resubmit"
 REQUEST_TASK_CALLBACK = "/request-task/callback"

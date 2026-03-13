@@ -1226,16 +1226,28 @@ class PrivacyRequest(
             )
 
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
-        """Cancels a privacy request.  Currently should only cancel 'pending' tasks
-
-        Just in case, also tries to cancel sub tasks (Request Tasks) if applicable,
-        although these shouldn't exist if the Privacy Request is pending.
-        """
+        """Cancels a privacy request and marks any non-terminal RequestTasks as skipped."""
         if self.canceled_at is None:
             self.status = PrivacyRequestStatus.canceled
             self.cancel_reason = cancel_reason
             self.canceled_at = datetime.utcnow()
             self.save(db)
+
+            non_terminal = [
+                ExecutionLogStatus.pending,
+                ExecutionLogStatus.in_processing,
+                ExecutionLogStatus.retrying,
+                ExecutionLogStatus.polling,
+                ExecutionLogStatus.awaiting_processing,
+            ]
+            db.query(RequestTask).filter(
+                RequestTask.privacy_request_id == self.id,
+                RequestTask.status.in_(non_terminal),
+            ).update(
+                {RequestTask.status: ExecutionLogStatus.skipped},
+                synchronize_session="fetch",
+            )
+            db.commit()
 
             self.cancel_celery_tasks()
 

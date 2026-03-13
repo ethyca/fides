@@ -1,0 +1,182 @@
+.container {
+  position: relative;
+  min-width: 180px;
+}
+
+.node {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--fidesui-neutral-200);
+  background: var(--fidesui-bg-white);
+  font-size: 12px;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+
+  &--pending {
+    border-color: var(--fidesui-neutral-300);
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  &--executing {
+    border-color: var(--fidesui-info);
+    background: rgba(74, 144, 226, 0.08);
+    animation: executing-glow 2s ease-in-out infinite;
+  }
+
+  &--complete {
+    border-color: var(--fidesui-success);
+    background: rgba(82, 196, 26, 0.06);
+  }
+
+  &--skipped {
+    border-color: var(--fidesui-warning);
+    background: rgba(250, 173, 20, 0.06);
+    opacity: 0.8;
+  }
+
+  &--error {
+    border-color: var(--fidesui-error);
+    background: rgba(245, 34, 45, 0.06);
+    box-shadow: 0 0 0 1px var(--fidesui-error);
+  }
+
+  &--retrying {
+    border-color: var(--fidesui-warning);
+    background: rgba(250, 173, 20, 0.06);
+  }
+
+  &--paused {
+    border-color: var(--fidesui-neutral-400);
+    background: rgba(0, 0, 0, 0.02);
+    opacity: 0.8;
+  }
+
+  &--polling {
+    border-color: var(--fidesui-warning);
+    background: rgba(250, 173, 20, 0.06);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  &--root {
+    border-color: var(--fidesui-neutral-400);
+    background: var(--fidesui-neutral-50);
+    text-align: center;
+    border-style: dashed;
+    min-height: 56px;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.label {
+  font-weight: 600;
+  color: var(--fidesui-minos);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dataset-label {
+  font-size: 10px;
+  color: var(--fidesui-neutral-500);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &--pending {
+    background-color: var(--fidesui-neutral-400);
+  }
+
+  &--executing {
+    background-color: var(--fidesui-info);
+  }
+
+  &--complete {
+    background-color: var(--fidesui-success);
+  }
+
+  &--skipped {
+    background-color: var(--fidesui-warning);
+  }
+
+  &--error {
+    background-color: var(--fidesui-error);
+  }
+
+  &--retrying {
+    background-color: var(--fidesui-warning);
+  }
+
+  &--paused {
+    background-color: var(--fidesui-neutral-400);
+  }
+
+  &--polling {
+    background-color: var(--fidesui-warning);
+  }
+}
+
+.status-text {
+  font-size: 11px;
+  color: var(--fidesui-neutral-600);
+}
+
+.elapsed {
+  font-size: 10px;
+  color: var(--fidesui-info);
+}
+
+.error-message {
+  font-size: 10px;
+  color: var(--fidesui-error-text);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes executing-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px var(--fidesui-info),
+      0 1px 4px rgba(74, 144, 226, 0.25);
+    background: rgba(74, 144, 226, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--fidesui-info),
+      0 2px 8px rgba(74, 144, 226, 0.35);
+    background: rgba(74, 144, 226, 0.14);
+  }
+}

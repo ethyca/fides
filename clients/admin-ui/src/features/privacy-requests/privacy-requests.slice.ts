@@ -23,6 +23,7 @@ import {
   ConfigStorageDetailsRequest,
   ConfigStorageSecretsDetailsRequest,
   DenyPrivacyRequest,
+  ExecutionGraphResponse,
   GetUploadedManualWebhookDataRequest,
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
@@ -615,6 +616,21 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${privacy_request_id}/logs`,
       }),
     }),
+    getExecutionGraph: build.query<
+      ExecutionGraphResponse,
+      { privacy_request_id: string; action_type?: string }
+    >({
+      query: ({ privacy_request_id, action_type }) => {
+        const params = action_type
+          ? `?action_type=${action_type}`
+          : "";
+        return {
+          method: "GET",
+          url: `privacy-request/${privacy_request_id}/execution-graph${params}`,
+        };
+      },
+      providesTags: ["Request"],
+    }),
     postPrivacyRequestFinalize: build.mutation({
       query: ({ privacyRequestId }: { privacyRequestId: string }) => ({
         method: "POST",
@@ -652,6 +668,7 @@ export const {
   useLazyGetPrivacyRequestDiagnosticsQuery,
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,
+  useGetExecutionGraphQuery,
   usePostPrivacyRequestFinalizeMutation,
   useLazyDownloadPrivacyRequestCsvQuery,
   useLazyDownloadPrivacyRequestCsvV2Query,

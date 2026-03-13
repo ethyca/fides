@@ -447,6 +447,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             "starting", [], action_type, ExecutionLogStatus.in_processing
         )
 
+        from fides.api.task.execute_request_tasks import _maybe_artificial_delay
+
+        _maybe_artificial_delay(self.request_task)
+
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
         logger.info("Retrying node {}", self.key)
