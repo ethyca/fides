@@ -46,7 +46,7 @@ const RegulationModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       width={MODAL_SIZE.md}
       data-testid="regulation-modal"
       title="Select regulations"

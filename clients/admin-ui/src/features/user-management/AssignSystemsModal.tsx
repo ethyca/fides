@@ -84,7 +84,7 @@ const AssignSystemsModal = ({
         </div>
       }
       centered
-      destroyOnClose
+      destroyOnHidden
       width={MODAL_SIZE.md}
       footer={
         <div>

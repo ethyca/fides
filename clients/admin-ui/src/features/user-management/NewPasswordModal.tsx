@@ -92,7 +92,7 @@ const NewPasswordModal = ({ id }: Props) => {
             onCancel={onClose}
             title="Reset Password"
             centered
-            destroyOnClose
+            destroyOnHidden
             footer={null}
           >
             <Form>

@@ -70,7 +70,7 @@ const SubmitPrivacyRequestModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       data-testid="submit-request-modal"
       width={MODAL_SIZE.md}
       title="Create privacy request"
@@ -101,7 +101,7 @@ const PrivacyRequestLinkModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       title="Create a Privacy Request Link"
       footer={null}
     >

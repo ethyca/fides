@@ -67,7 +67,7 @@ const AddEditConditionModal = ({
       centered
       open={isOpen}
       onCancel={onClose}
-      destroyOnClose
+      destroyOnHidden
       data-testid="add-edit-condition-modal"
       styles={{ body: { minWidth: "650px" } }}
       title={isEditing ? "Edit condition" : "Add condition"}

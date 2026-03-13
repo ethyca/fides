@@ -40,7 +40,7 @@ const AddMessagingTemplateModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       width={MODAL_SIZE.md}
       data-testid="add-messaging-template-modal"
       title="Select message template"

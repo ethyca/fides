@@ -64,7 +64,7 @@ const NewJavaScriptTag = ({ property }: Props) => {
         open={modal.isOpen}
         onCancel={modal.onClose}
         centered
-        destroyOnClose
+        destroyOnHidden
         data-testid="copy-js-tag-modal"
         title="Install Fides Consent Manager"
         footer={null}

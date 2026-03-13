@@ -95,7 +95,7 @@ const AddManualTaskModal = ({
       centered
       open={isOpen}
       onCancel={onClose}
-      destroyOnClose
+      destroyOnHidden
       wrapProps={{ "data-testid": "add-manual-task-modal" }}
       styles={{ body: { minWidth: "775px" } }}
       title={isEditing ? "Edit manual task" : "Add manual task"}

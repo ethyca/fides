@@ -23,7 +23,7 @@ export const PrivacyDeclarationFormModal = ({
     open={isOpen}
     onCancel={onClose}
     centered={isCentered}
-    destroyOnClose
+    destroyOnHidden
     width={MODAL_SIZE.lg}
     data-testid={testId}
     title={heading}

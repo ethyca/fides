@@ -84,7 +84,7 @@ const SubgroupModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       width={MODAL_SIZE.md}
       wrapProps={{ "data-testid": "subgroup-modal" }}
       title="Select locations"

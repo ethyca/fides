@@ -93,7 +93,7 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
         onCancel={onClose}
         title="Update Password"
         centered
-        destroyOnClose
+        destroyOnHidden
         footer={
           <>
             <Button onClick={onClose} className="mr-2 w-1/2">

@@ -108,7 +108,7 @@ const OrphanedConnectionModal = ({
 
       <Modal
         centered
-        destroyOnClose
+        destroyOnHidden
         open={isOpen}
         onCancel={closeIfComplete}
         title="Unlinked Integrations"

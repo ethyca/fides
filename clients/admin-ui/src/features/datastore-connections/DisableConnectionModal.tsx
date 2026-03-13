@@ -75,7 +75,7 @@ const DisableConnectionModal = ({
       )}
       <Modal
         centered
-        destroyOnClose
+        destroyOnHidden
         open={isOpen}
         onCancel={closeIfComplete}
         title={`${disabled ? "Enable" : "Disable"} Connection`}

@@ -30,7 +30,7 @@ const ConsentReportDownloadModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       title="Download consent report"
       footer={null}
     >

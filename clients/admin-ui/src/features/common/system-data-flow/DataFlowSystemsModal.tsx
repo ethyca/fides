@@ -87,7 +87,7 @@ const DataFlowSystemsModal = ({
       onCancel={onClose}
       width={MODAL_SIZE.md}
       centered
-      destroyOnClose
+      destroyOnHidden
       data-testid="confirmation-modal"
       title={
         <div className="flex items-center justify-between pr-6">

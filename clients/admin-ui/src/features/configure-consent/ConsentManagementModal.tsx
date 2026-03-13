@@ -63,7 +63,7 @@ export const ConsentManagementModal = ({
       onCancel={onClose}
       width={MODAL_SIZE.xxl}
       centered
-      destroyOnClose
+      destroyOnHidden
       title={systemPurposeSummary ? systemPurposeSummary?.name : "Vendor"}
       footer={
         <>

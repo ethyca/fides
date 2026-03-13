@@ -152,7 +152,7 @@ export const CompleteTaskModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       width={MODAL_SIZE.lg}
       wrapProps={{ "data-testid": "complete-task-modal" }}
       title="Complete Task"

@@ -58,7 +58,7 @@ const ApprovePrivacyRequestModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       title="Privacy request approval"
       footer={
         <SimpleGrid columns={2} width="100%">

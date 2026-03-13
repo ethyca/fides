@@ -107,7 +107,7 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
         open={isOpen}
         onCancel={onClose}
         centered
-        destroyOnClose
+        destroyOnHidden
         title="Customize DSR"
         footer={null}
       >

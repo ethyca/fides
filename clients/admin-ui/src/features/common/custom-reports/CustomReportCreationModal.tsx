@@ -106,7 +106,7 @@ export const CustomReportCreationModal = ({
       title="Create a report"
       footer={null}
       centered
-      destroyOnClose
+      destroyOnHidden
     >
       <Formik
         initialValues={{

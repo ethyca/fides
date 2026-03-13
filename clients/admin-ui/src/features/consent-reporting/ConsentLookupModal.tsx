@@ -85,7 +85,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
       onCancel={onClose}
       width={MODAL_SIZE.xxl}
       centered
-      destroyOnClose
+      destroyOnHidden
       title="Consent preference lookup"
       footer={null}
     >

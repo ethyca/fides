@@ -87,7 +87,7 @@ const DeleteUserModal = ({
           data-testid="delete-user-modal"
           title="Delete User"
           centered
-          destroyOnClose
+          destroyOnHidden
           footer={null}
         >
           <Form>

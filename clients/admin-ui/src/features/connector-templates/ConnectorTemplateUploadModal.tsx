@@ -95,7 +95,7 @@ const ConnectorTemplateUploadModal = ({
       onCancel={onClose}
       width={MODAL_SIZE.md}
       centered
-      destroyOnClose
+      destroyOnHidden
       data-testid={testId}
       title="Upload integration template"
       footer={

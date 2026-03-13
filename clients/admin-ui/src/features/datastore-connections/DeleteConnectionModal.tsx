@@ -56,7 +56,7 @@ const DeleteConnectionModal = ({
 
       <Modal
         centered
-        destroyOnClose
+        destroyOnHidden
         open={isOpen}
         onCancel={closeIfComplete}
         title="Delete integration"

@@ -78,7 +78,7 @@ const CustomAssetUploadModal = ({
       onCancel={onClose}
       width={MODAL_SIZE.md}
       centered
-      destroyOnClose
+      destroyOnHidden
       data-testid={testId}
       title="Upload stylesheet"
       footer={

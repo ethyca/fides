@@ -40,7 +40,7 @@ const DenyPrivacyRequestModal = ({
           open={isOpen}
           onCancel={onClose}
           centered
-          destroyOnClose
+          destroyOnHidden
           data-testid="deny-privacy-request-modal"
           title="Privacy request denial"
           footer={null}

@@ -54,7 +54,7 @@ const JavaScriptTag = () => {
         open={modal.isOpen}
         onCancel={modal.onClose}
         centered
-        destroyOnClose
+        destroyOnHidden
         data-testid="copy-js-tag-modal"
         title="Copy JavaScript tag"
         footer={null}

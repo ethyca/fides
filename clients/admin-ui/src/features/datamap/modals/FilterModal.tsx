@@ -70,7 +70,7 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       title="Filters"
       footer={
         <Box display="flex" justifyContent="space-between" width="100%">

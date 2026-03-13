@@ -24,7 +24,7 @@ const ConsentTcfDetailModal = ({
       onCancel={onClose}
       width={MODAL_SIZE.xl}
       centered
-      destroyOnClose
+      destroyOnHidden
       title="TCF Consent Details"
       footer={null}
     >

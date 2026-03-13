@@ -102,7 +102,7 @@ export const ColumnSettingsModal = <T,>({
       onCancel={onClose}
       width={MODAL_SIZE.md}
       centered
-      destroyOnClose
+      destroyOnHidden
       title={headerText}
       footer={
         <div className="flex justify-between">

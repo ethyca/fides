@@ -49,7 +49,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
     open={isOpen}
     onCancel={onClose}
     centered
-    destroyOnClose
+    destroyOnHidden
     width={MODAL_SIZE.xl}
     title={
       <span className="pr-6">

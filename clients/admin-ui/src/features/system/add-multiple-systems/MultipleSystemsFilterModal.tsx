@@ -100,7 +100,7 @@ const MultipleSystemsFilterModal = <T,>({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       width={MODAL_SIZE.md}
       title="Filters"
       footer={

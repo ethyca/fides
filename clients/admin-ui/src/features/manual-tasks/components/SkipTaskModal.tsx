@@ -50,7 +50,7 @@ export const SkipTaskModal = ({
       open={isOpen}
       onCancel={onClose}
       centered
-      destroyOnClose
+      destroyOnHidden
       width={MODAL_SIZE.lg}
       wrapProps={{ "data-testid": "skip-task-modal" }}
       title="Skip Task"
