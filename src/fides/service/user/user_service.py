@@ -45,7 +45,7 @@ class UserService:
             FidesUserInvite.create(
                 db=self.db, data={"username": user.username, "invite_code": invite_code}
             )
-            user.update(self.db, data={"disabled": True})
+            user.update(self.db, data={"disabled": True, "disabled_reason": "pending_invite"})
             # TODO: refactor to use MessagingService
             dispatch_message(
                 self.db,

@@ -57,6 +57,7 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.oauth import AccessToken
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.user import (
+    DisabledReason,
     UserCreate,
     UserCreateResponse,
     UserForcePasswordReset,
@@ -611,6 +612,12 @@ def reinvite_user(
             detail="User does not have a pending invitation.",
         )
 
+    if user.disabled_reason and user.disabled_reason != DisabledReason.pending_invite:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="User is disabled for a reason other than a pending invitation.",
+        )
+
     user_invite = FidesUserInvite.get_by(db, field="username", value=user.username)
 
     if not user_invite:
@@ -624,6 +631,8 @@ def reinvite_user(
     user_invite.hashed_invite_code = hashed_invite_code
     user_invite.salt = salt
 
+    user_invite.save(db)
+
     try:
         dispatch_message(
             db,
@@ -636,22 +645,29 @@ def reinvite_user(
         )
     except Exception as exc:
         db.rollback()
-        logger.exception("Failed to dispatch reinvite email for user '{}'", user_id)
+        logger.exception("Failed to dispatch reinvite email")
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to send invitation email. Previous invitation remains valid. Please try again.",
+            detail="Failed to send invitation email. Please try again.",
         ) from exc
 
-    user_invite.save(db)
-
-    logger.info("User with id '{}' has been reinvited", user_id)
+    logger.info("Reinvite email dispatched for pending user")
 
 
 def populate_invite_status(
     db: Session, user: FidesUser, user_invite: Optional[FidesUserInvite] = None
 ) -> dict:
     """Helper function to populate invite status fields for a user."""
-    user_dict = user.__dict__.copy()
+    user_dict = {
+        "id": user.id,
+        "username": user.username,
+        "created_at": user.created_at,
+        "email_address": user.email_address,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "disabled": user.disabled,
+        "disabled_reason": user.disabled_reason,
+    }
 
     if user.username:
         user_invite_record = user_invite or FidesUserInvite.get_by(
@@ -926,16 +942,16 @@ def verify_invite_code(
             detail="Invite code is invalid.",
         )
 
-    if user_invite.is_expired():
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail="Invite code has expired.",
-        )
-
     if not user_invite.invite_code_valid(invite_code):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail="Invite code is invalid.",
+        )
+
+    if user_invite.is_expired():
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invite code has expired.",
         )
 
     return user_invite
