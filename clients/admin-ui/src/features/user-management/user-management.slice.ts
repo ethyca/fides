@@ -259,6 +259,12 @@ export const selectThisUsersScopes: (state: RootState) => ScopeRegistryEnum[] =
         if (rbacPermissions && rbacPermissions.length > 0) {
           return rbacPermissions as ScopeRegistryEnum[];
         }
+        // NOTE: We intentionally fall back to legacy permissions when rbacPermissions
+        // is empty ([]). This handles the root OAuth client (fidesadmin) which is not
+        // a FidesUser and has no RBAC role assignments. The backend enforces root client
+        // access via special case handling in the permission checker, and the frontend
+        // uses legacy permissions to determine UI visibility. This fallback is also
+        // needed during gradual RBAC rollout for users without RBAC roles assigned yet.
       }
 
       // Fall back to legacy permissions
