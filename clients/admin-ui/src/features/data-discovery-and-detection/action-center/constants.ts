@@ -6,6 +6,7 @@ import {
   DiffStatus,
   WebMonitorUpdates,
 } from "~/types/api";
+import { InfrastructureMonitorUpdates } from "~/types/api/models/InfrastructureMonitorUpdates";
 
 import { ActionCenterTabHash } from "./hooks/useActionCenterTabs";
 
@@ -81,7 +82,8 @@ export const MONITOR_UPDATE_NAMES = new Map<
   | keyof Omit<
       DatastoreMonitorUpdates,
       (typeof MONITOR_UPDATES_TO_IGNORE)[number]
-    >,
+    >
+  | keyof InfrastructureMonitorUpdates,
   [string, string]
 >([
   ["cookie", ["Cookie", "Cookies"]],
@@ -94,6 +96,8 @@ export const MONITOR_UPDATE_NAMES = new Map<
   ["classifying", ["Classifying", "Classifying"]],
   ["removals", ["Removal", "Removals"]],
   ["reviewed", ["Reviewed", "Reviewed"]],
+  ["known", ["Known System", "Known Systems"]],
+  ["unknown", ["Unknown System", "Unknown Systems"]],
 ]);
 
 export const MONITOR_UPDATE_ORDER = [
@@ -107,9 +111,12 @@ export const MONITOR_UPDATE_ORDER = [
   "in_review",
   "reviewed",
   "removals",
+  "known",
+  "unknown",
 ] as const satisfies readonly (
   | keyof DatastoreMonitorUpdates
   | keyof WebMonitorUpdates
+  | keyof InfrastructureMonitorUpdates
 )[];
 
 export enum ConfidenceLevelLabel {

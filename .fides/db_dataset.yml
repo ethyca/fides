@@ -91,6 +91,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: username
+      data_categories:
+        - user.account.username
   - name: answer_version
     description: 'Immutable history of assessment answer versions'
     fields:
@@ -293,15 +296,21 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
-  - name: backfill_history
-    description: 'Table used to track completed database backfill operations'
+  - name: post_upgrade_background_migration_tasks
+    description: 'Table used to track post-upgrade background migration tasks (backfills and deferred index creation)'
     data_categories: [system.operations]
     fields:
-    - name: backfill_name
-      description: 'Unique name of the backfill operation'
+    - name: id
+      description: 'Primary key (UUID)'
+      data_categories: [system.operations]
+    - name: key
+      description: 'Unique name of the migration task'
+      data_categories: [system.operations]
+    - name: task_type
+      description: 'Type of task (backfill or index)'
       data_categories: [system.operations]
     - name: completed_at
-      description: 'Timestamp when the backfill completed successfully'
+      description: 'Timestamp when the task completed successfully, NULL if in-progress'
       data_categories: [system.operations]
   - name: chat_config
     description: 'Configuration for chat providers (Slack, Microsoft Teams, etc.)'
@@ -375,6 +384,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: username
+      data_categories:
+        - user.account.username
   - name: comment_reference
     fields:
     - name: comment_id

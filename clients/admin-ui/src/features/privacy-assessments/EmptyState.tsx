@@ -14,11 +14,11 @@ export const EmptyState = ({ onRunAssessment }: EmptyStateProps) => (
         icon={<Icons.Document size={32} />}
       />
     }
-    title="No assessments run yet"
-    subTitle="Run assessments to evaluate your systems against regulatory frameworks and identify compliance gaps."
+    title="Assess your privacy compliance"
+    subTitle="Scan your systems, data maps, and policies to automatically generate assessments against regulatory frameworks."
     extra={
       <Button type="primary" icon={<Icons.Add />} onClick={onRunAssessment}>
-        Run assessment
+        Scan &amp; generate assessments
       </Button>
     }
     className="mt-20"

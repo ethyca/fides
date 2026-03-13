@@ -1,5 +1,6 @@
 import pytest
 
+from fides.api.common_exceptions import DomainValidationError
 from fides.api.graph.config import (
     Collection,
     FieldAddress,
@@ -18,9 +19,32 @@ from fides.api.util.saas_util import (
     merge_datasets,
     nullsafe_urlencode,
     replace_version,
+    should_ignore_error,
     validate_connector_param_constraints_not_modified,
     validate_host_references_domain_restricted_params,
 )
+from fides.config.security_settings import DomainValidationMode
+
+
+@pytest.mark.unit_saas
+class TestShouldIgnoreError:
+    """Tests for shared should_ignore_error used by AuthenticatedClient and polling."""
+
+    def test_ignore_all_when_true(self):
+        assert should_ignore_error(400, True) is True
+        assert should_ignore_error(500, True) is True
+
+    def test_ignore_none_when_false(self):
+        assert should_ignore_error(400, False) is False
+        assert should_ignore_error(404, False) is False
+
+    def test_ignore_only_listed_codes(self):
+        assert should_ignore_error(409, [409]) is True
+        assert should_ignore_error(404, [404, 409]) is True
+        assert should_ignore_error(500, [404, 409]) is False
+
+    def test_none_treated_as_do_not_ignore(self):
+        assert should_ignore_error(400, None) is False
 
 
 @pytest.mark.unit_saas
@@ -880,16 +904,25 @@ class TestValidateValueAgainstAllowedList:
     )
     def test_value_validation(self, value, allowed, should_pass):
         if should_pass:
-            validate_value_against_allowed_list(value, allowed, "domain")
+            validate_value_against_allowed_list(
+                value, allowed, "domain", mode=DomainValidationMode.enabled
+            )
         else:
-            with pytest.raises(ValueError):
-                validate_value_against_allowed_list(value, allowed, "domain")
+            with pytest.raises(DomainValidationError):
+                validate_value_against_allowed_list(
+                    value, allowed, "domain", mode=DomainValidationMode.enabled
+                )
 
     def test_error_message_includes_param_name(self):
         """Error message should include the param name and value."""
-        with pytest.raises(ValueError, match="The value 'evil.com' for 'domain'"):
+        with pytest.raises(
+            DomainValidationError, match="The value 'evil.com' for 'domain'"
+        ):
             validate_value_against_allowed_list(
-                "evil.com", ["api.stripe.com"], "domain"
+                "evil.com",
+                ["api.stripe.com"],
+                "domain",
+                mode=DomainValidationMode.enabled,
             )
 
     def test_empty_allowed_values_permits_any_value(self):
