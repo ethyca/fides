@@ -93,11 +93,13 @@ const EditFieldDrawer = ({
         header={<EditDrawerHeader title={`Field Name: ${field?.name}`} />}
         footer={<EditDrawerFooter onDelete={onDeleteOpen} formId={FORM_ID} />}
       >
-        <EditCollectionOrFieldForm
-          values={field!}
-          onSubmit={handleSubmit}
-          dataType="field"
-        />
+        {field && (
+          <EditCollectionOrFieldForm
+            values={field}
+            onSubmit={handleSubmit}
+            dataType="field"
+          />
+        )}
       </EditDrawer>
       <ConfirmationModal
         isOpen={deleteIsOpen}

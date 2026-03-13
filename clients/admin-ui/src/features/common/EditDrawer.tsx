@@ -80,6 +80,7 @@ const EditDrawer = ({
     title={title ?? header}
     footer={footer}
     maskClosable={false}
+    destroyOnHidden
   >
     <div data-testid="edit-drawer-content">
       {description ? (
