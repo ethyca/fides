@@ -1092,23 +1092,23 @@ class TestGraphTaskLogging:
 
     @pytest.fixture(scope="function")
     def saas_graph_task(self, privacy_request, policy, db, saas_example_connection_config):
-      resources = TaskResources(
-          privacy_request,
-          policy,
-          [saas_example_connection_config],
-          EMPTY_REQUEST_TASK,
-          db,
-      )
-      tn = TraversalNode(generate_node("saas_ds", "saas_coll", "id"))
-      tn.node.dataset.connection_key = saas_example_connection_config.key
-      rq = tn.to_mock_request_task()
-      rq.action_type = ActionType.access
-      rq.status = ExecutionLogStatus.pending
-      rq.id = str(uuid.uuid4())
-      db.add(rq)
-      db.commit()
-      resources.privacy_request_task = rq
-      return GraphTask(resources)
+        resources = TaskResources(
+            privacy_request,
+            policy,
+            [saas_example_connection_config],
+            EMPTY_REQUEST_TASK,
+            db,
+        )
+        tn = TraversalNode(generate_node("saas_ds", "saas_coll", "id"))
+        tn.node.dataset.connection_key = saas_example_connection_config.key
+        rq = tn.to_mock_request_task()
+        rq.action_type = ActionType.access
+        rq.status = ExecutionLogStatus.pending
+        rq.id = str(uuid.uuid4())
+        db.add(rq)
+        db.commit()
+        resources.privacy_request_task = rq
+        return GraphTask(resources)
 
     def test_log_start(self, graph_task, db, privacy_request):
         graph_task.log_start(action_type=ActionType.access)
@@ -1236,9 +1236,12 @@ class TestGraphTaskLogging:
         assert execution_log.saas_version is None
 
     def test_saas_version_populated_for_saas_connector(
-        self, saas_graph_task, saas_example_connection_config,  privacy_request, policy, db
+        self, saas_graph_task, saas_example_connection_config, privacy_request, policy, db
     ):
         """SaaS connectors should stamp saas_version on every execution log entry."""
+        expected_version = saas_example_connection_config.saas_config["version"]
+        assert saas_graph_task._saas_version == expected_version
+
         saas_graph_task.log_start(action_type=ActionType.access)
         execution_log = (
             db.query(ExecutionLog)
@@ -1250,7 +1253,7 @@ class TestGraphTaskLogging:
             .first()
         )
         assert execution_log is not None
-        assert execution_log.saas_version == saas_example_connection_config.saas_config["version"]
+        assert execution_log.saas_version == expected_version
 
 
 class TestTraversalOnlyBehavior:
