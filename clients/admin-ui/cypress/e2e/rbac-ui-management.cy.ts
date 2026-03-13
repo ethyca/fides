@@ -346,10 +346,20 @@ describe("RBAC UI Management", () => {
     });
 
     it("can delete a custom role via the UI", () => {
-      // Find the role row and click delete
+      // Find the role row and click delete button to open confirmation modal
       cy.contains("tr", roleName).within(() => {
         cy.contains("button", "Delete").click();
       });
+
+      // Confirmation modal should appear
+      cy.get('[data-testid="delete-role-confirmation-modal"]').should(
+        "be.visible"
+      );
+
+      // Click Delete in the confirmation modal
+      cy.get('[data-testid="delete-role-confirmation-modal"]')
+        .contains("button", "Delete")
+        .click();
 
       // Verify success message
       cy.contains("deleted successfully").should("be.visible");
