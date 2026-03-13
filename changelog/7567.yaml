@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Added --reload flag to `fides worker` CLI for automatic Celery worker hot-reload during development
-pr: 7567
-labels: []

@@ -164,8 +164,8 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
     >
       {step === IntegrationModalStep.LIST_VIEW && (
         <>
-          <Flex className="px-6 py-4">{filterBar}</Flex>
-          <Flex vertical flex={1} className="overflow-y-auto px-6 pb-4">
+          <Flex className="py-4">{filterBar}</Flex>
+          <Flex vertical flex={1} className="overflow-y-auto pb-4">
             <SelectIntegrationType
               filteredTypes={filteredTypes}
               isFiltering={isFiltering}
@@ -176,7 +176,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
         </>
       )}
       {step === IntegrationModalStep.DETAIL && (
-        <Flex vertical flex={1} className="overflow-y-auto p-6">
+        <Flex vertical flex={1} className="overflow-y-auto py-6">
           <IntegrationTypeDetail
             integrationType={integrationType}
             onConfigure={handleConfigure}
@@ -184,7 +184,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
         </Flex>
       )}
       {step === IntegrationModalStep.FORM && (
-        <Flex vertical flex={1} className="overflow-y-auto p-6">
+        <Flex vertical flex={1} className="overflow-y-auto py-6">
           <ConfigureIntegrationForm
             connectionOption={connectionOption!}
             onClose={handleCancel}

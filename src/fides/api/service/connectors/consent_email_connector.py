@@ -190,7 +190,9 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         )
         for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
             pref.cache_system_status(
-                db, self.configuration.system_key, ExecutionLogStatus.skipped
+                db,
+                self.configuration.consent_tracking_key,
+                ExecutionLogStatus.skipped,
             )
 
     def add_errored_log(self, db: Session, privacy_request: PrivacyRequest) -> None:

@@ -1,5 +1,0 @@
-type: Developer Experience # One of: Added, Changed, Developer Experience, Deprecated, Docs, Fixed, Removed, Security
-description: Adding more storybook stories
-pr: 7504 # PR number
-labels: [] # Optional: ["high-risk", "db-migration"]
-

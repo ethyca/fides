@@ -3,5 +3,6 @@
 /* eslint-disable */
 
 export type InfrastructureMonitorUpdates = {
-  okta_app?: number;
+  known?: number;
+  unknown?: number;
 };
