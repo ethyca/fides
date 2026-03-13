@@ -1,5 +1,5 @@
 import { useAppSelector } from "~/app/hooks";
-import { useFlags } from "~/features/common/features";
+import { useFeatures, useFlags } from "~/features/common/features";
 import { useGetHealthQuery } from "~/features/common/health.slice";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetHealthQuery as useGetPlusHealthQuery } from "~/features/plus/plus.slice";
@@ -9,6 +9,7 @@ import { selectThisUsersScopes } from "~/features/user-management";
 
 const useCommonSubscriptions = () => {
   const { flags } = useFlags();
+  const { plus: isPlusEnabled } = useFeatures();
 
   useGetHealthQuery();
   useGetPlusHealthQuery();
@@ -16,9 +17,12 @@ const useCommonSubscriptions = () => {
   useAppSelector(selectThisUsersScopes);
   useGetConfigurationSettingsQuery({ api_set: false });
 
-  // Fetch RBAC permissions when RBAC is enabled
+  // Fetch RBAC permissions when RBAC is enabled and Plus is available
+  // RBAC is part of the /plus/rbac/* API surface
   // This populates the cache so selectThisUsersScopes can use it
-  useGetMyRBACPermissionsQuery(undefined, { skip: !flags.alphaRbac });
+  useGetMyRBACPermissionsQuery(undefined, {
+    skip: !flags.alphaRbac || !isPlusEnabled,
+  });
 };
 
 /**
