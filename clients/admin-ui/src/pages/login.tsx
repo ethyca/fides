@@ -139,10 +139,10 @@ const useLogin = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(error);
-      const errorMsg = getErrorMessage(
-        error,
-        "Login failed. Please check your credentials and try again.",
-      );
+      const defaultErrorMsg = isFromInvite
+        ? "Setup failed. Please try the invite link again."
+        : "Login failed. Please check your credentials and try again.";
+      const errorMsg = getErrorMessage(error, defaultErrorMsg);
       toast({
         status: "error",
         description: errorMsg,
