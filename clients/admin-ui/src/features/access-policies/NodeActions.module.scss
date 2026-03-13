@@ -1,0 +1,95 @@
+.actions {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translate(10px, -50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+
+  &:hover .actionMenu {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.addButton {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.actionMenu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+}
+
+.actionItem {
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.iconButton {
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--ant-border-radius-lg) !important;
+  border: none !important;
+
+  svg {
+    fill: currentColor;
+  }
+}
+
+.conditionButton {
+  background: var(--fidesui-olive) !important;
+  color: var(--fidesui-full-white) !important;
+
+  &:hover {
+    background: var(--fidesui-olive) !important;
+    color: var(--fidesui-full-white) !important;
+    opacity: 0.9;
+  }
+}
+
+.constraintButton {
+  background: var(--fidesui-neutral-600) !important;
+  color: var(--fidesui-full-white) !important;
+
+  &:hover {
+    background: var(--fidesui-neutral-600) !important;
+    color: var(--fidesui-full-white) !important;
+    opacity: 0.9;
+  }
+}
+
+.actionButton {
+  background: var(--fidesui-terracotta) !important;
+  color: var(--fidesui-full-white) !important;
+
+  &:hover {
+    background: var(--fidesui-terracotta) !important;
+    color: var(--fidesui-full-white) !important;
+    opacity: 0.9;
+  }
+}
+
+.actionLabel {
+  color: var(--ant-color-text);
+  font-size: var(--ant-font-size);
+  display: block;
+  word-break: keep-all;
+}

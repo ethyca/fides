@@ -101,6 +101,8 @@ export const baseApi = createApi({
     "Privacy Assessment Tasks",
     "User Monitors",
     "Datastore Filters",
+    "Access Policies",
+    "Access Policy Control Groups",
   ],
   endpoints: () => ({}),
 });
