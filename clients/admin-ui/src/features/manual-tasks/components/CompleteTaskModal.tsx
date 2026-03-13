@@ -154,7 +154,7 @@ export const CompleteTaskModal = ({
       centered
       destroyOnClose
       width={MODAL_SIZE.lg}
-      data-testid="complete-task-modal"
+      wrapProps={{ "data-testid": "complete-task-modal" }}
       title="Complete Task"
       footer={
         <Space>

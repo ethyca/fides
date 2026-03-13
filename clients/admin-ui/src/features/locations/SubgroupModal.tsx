@@ -86,7 +86,7 @@ const SubgroupModal = ({
       centered
       destroyOnClose
       width={MODAL_SIZE.md}
-      data-testid="subgroup-modal"
+      wrapProps={{ "data-testid": "subgroup-modal" }}
       title="Select locations"
       footer={
         <div className="flex w-full justify-between">
