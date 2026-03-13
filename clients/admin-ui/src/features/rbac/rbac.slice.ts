@@ -110,6 +110,7 @@ export const rbacApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { userId }) => [
         { type: "RBAC User Roles", id: userId },
+        "RBAC User Roles", // Invalidate general tag to refetch getMyRBACPermissions
         "User",
       ],
     }),
@@ -124,6 +125,7 @@ export const rbacApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { userId }) => [
         { type: "RBAC User Roles", id: userId },
+        "RBAC User Roles", // Invalidate general tag to refetch getMyRBACPermissions
         "User",
       ],
     }),
