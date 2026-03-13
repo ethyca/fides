@@ -1,14 +1,5 @@
 import { useAlert, useAPIHelper } from "common/hooks";
-import {
-  ChakraBox as Box,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraVStack as VStack,
-} from "fidesui";
+import { ChakraBox as Box, ChakraVStack as VStack, Modal } from "fidesui";
 import React, { useState } from "react";
 
 import {
@@ -100,29 +91,29 @@ const AddManualTaskModal = ({
   };
 
   return (
-    <Modal isCentered isOpen={isOpen} size="lg" onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent minWidth="775px" data-testid="add-manual-task-modal">
-        <ModalHeader>
-          {isEditing ? "Edit manual task" : "Add manual task"}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>
-          <VStack align="stretch" gap="16px">
-            <Box color="gray.700" fontSize="14px">
-              {isEditing
-                ? "Update the manual task configuration for this integration."
-                : "Configure a new manual task for this integration. Define the task name, description, and any specific parameters needed for execution."}
-            </Box>
-            <AddManualTaskForm
-              isSubmitting={isSubmitting}
-              onSaveClick={handleSubmit}
-              onCancel={handleCancel}
-              editingTask={editingTask}
-            />
-          </VStack>
-        </ModalBody>
-      </ModalContent>
+    <Modal
+      centered
+      open={isOpen}
+      onCancel={onClose}
+      destroyOnClose
+      data-testid="add-manual-task-modal"
+      styles={{ body: { minWidth: "775px" } }}
+      title={isEditing ? "Edit manual task" : "Add manual task"}
+      footer={null}
+    >
+      <VStack align="stretch" gap="16px">
+        <Box color="gray.700" fontSize="14px">
+          {isEditing
+            ? "Update the manual task configuration for this integration."
+            : "Configure a new manual task for this integration. Define the task name, description, and any specific parameters needed for execution."}
+        </Box>
+        <AddManualTaskForm
+          isSubmitting={isSubmitting}
+          onSaveClick={handleSubmit}
+          onCancel={handleCancel}
+          editingTask={editingTask}
+        />
+      </VStack>
     </Modal>
   );
 };

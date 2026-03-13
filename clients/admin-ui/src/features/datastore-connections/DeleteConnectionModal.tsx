@@ -1,15 +1,9 @@
 import {
   Button,
   ChakraMenuItem as MenuItem,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
   ChakraText as Text,
+  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -60,26 +54,14 @@ const DeleteConnectionModal = ({
       )}
       {!showMenu && <Button onClick={onOpen}>Delete integration</Button>}
 
-      <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Delete integration</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Stack direction="column" spacing="15px">
-              <Text
-                color="gray.600"
-                fontSize="sm"
-                fontWeight="sm"
-                lineHeight="20px"
-              >
-                Deleting an integration may impact any privacy request that is
-                currently in progress. Do you wish to proceed?
-              </Text>
-            </Stack>
-          </ModalBody>
-
-          <ModalFooter className="flex gap-4">
+      <Modal
+        centered
+        destroyOnClose
+        open={isOpen}
+        onCancel={closeIfComplete}
+        title="Delete integration"
+        footer={
+          <div className="flex gap-4">
             <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
             </Button>
@@ -91,8 +73,20 @@ const DeleteConnectionModal = ({
             >
               Delete integration
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </div>
+        }
+      >
+        <Stack direction="column" spacing="15px">
+          <Text
+            color="gray.600"
+            fontSize="sm"
+            fontWeight="sm"
+            lineHeight="20px"
+          >
+            Deleting an integration may impact any privacy request that is
+            currently in progress. Do you wish to proceed?
+          </Text>
+        </Stack>
       </Modal>
     </>
   );

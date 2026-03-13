@@ -4,13 +4,7 @@ import {
   ChakraBox as Box,
   ChakraDivider as Divider,
   ChakraHeading as Heading,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
+  Modal,
 } from "fidesui";
 import React, { ReactNode, useContext, useMemo } from "react";
 
@@ -72,42 +66,41 @@ const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Filters</ModalHeader>
-        <ModalCloseButton />
-        <Divider />
-        <ModalBody maxH="85vh" padding="0px" overflowX="auto">
-          {anyFiltersActive(headers, [
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      title="Filters"
+      footer={
+        <Box display="flex" justifyContent="space-between" width="100%">
+          <Button onClick={resetFilters} className="mr-3 grow">
+            Reset Filters
+          </Button>
+          <Button onClick={onClose} type="primary" className="grow">
+            Done
+          </Button>
+        </Box>
+      }
+    >
+      <Divider />
+      {anyFiltersActive(headers, [
+        SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
+        DATA_CATEGORY_COLUMN_ID,
+        SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
+      ]) ? (
+        <FilterSection heading="Privacy attributes">
+          {renderHeaderFilter(
+            headers,
             SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-            DATA_CATEGORY_COLUMN_ID,
+          )}
+          {renderHeaderFilter(headers, DATA_CATEGORY_COLUMN_ID)}
+          {renderHeaderFilter(
+            headers,
             SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
-          ]) ? (
-            <FilterSection heading="Privacy attributes">
-              {renderHeaderFilter(
-                headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
-              )}
-              {renderHeaderFilter(headers, DATA_CATEGORY_COLUMN_ID)}
-              {renderHeaderFilter(
-                headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
-              )}
-            </FilterSection>
-          ) : null}
-        </ModalBody>
-        <ModalFooter>
-          <Box display="flex" justifyContent="space-between" width="100%">
-            <Button onClick={resetFilters} className="mr-3 grow">
-              Reset Filters
-            </Button>
-            <Button onClick={onClose} type="primary" className="grow">
-              Done
-            </Button>
-          </Box>
-        </ModalFooter>
-      </ModalContent>
+          )}
+        </FilterSection>
+      ) : null}
     </Modal>
   );
 };

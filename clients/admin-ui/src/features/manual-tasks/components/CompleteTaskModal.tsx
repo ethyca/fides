@@ -1,21 +1,16 @@
 import {
   Button,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   Checkbox,
   Divider,
   Input,
+  Modal,
   Space,
-  Typography,
   Upload,
   useMessage,
 } from "fidesui";
 import { useState } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { ManualFieldListItem, ManualTaskFieldType } from "~/types/api";
 
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
@@ -153,62 +148,61 @@ export const CompleteTaskModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="700px" isCentered>
-      <ModalOverlay />
-      <ModalContent maxWidth="700px" data-testid="complete-task-modal">
-        <ModalHeader>
-          <Typography.Title level={4}>Complete Task</Typography.Title>
-        </ModalHeader>
-        <ModalBody>
-          <div className="flex flex-col space-y-6">
-            <div>
-              <TaskDetails task={task} />
-            </div>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      width={MODAL_SIZE.lg}
+      data-testid="complete-task-modal"
+      title="Complete Task"
+      footer={
+        <Space>
+          <Button
+            onClick={handleCancel}
+            disabled={isLoading}
+            data-testid="complete-modal-cancel-button"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            onClick={handleSave}
+            loading={isLoading}
+            disabled={!isRequiredFieldFilled()}
+            data-testid="complete-modal-save-button"
+          >
+            Save
+          </Button>
+        </Space>
+      }
+    >
+      <div className="flex flex-col space-y-6">
+        <div>
+          <TaskDetails task={task} />
+        </div>
 
-            <Divider />
+        <Divider />
 
-            <div>
-              <div className="flex flex-col space-y-4">
-                {renderTaskInput()}
+        <div>
+          <div className="flex flex-col space-y-4">
+            {renderTaskInput()}
 
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-gray-700">
-                    Internal comment
-                  </div>
-                  <Input.TextArea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Add any additional comments..."
-                    rows={3}
-                    data-testid="complete-modal-comment-input"
-                  />
-                </div>
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-700">
+                Internal comment
               </div>
+              <Input.TextArea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Add any additional comments..."
+                rows={3}
+                data-testid="complete-modal-comment-input"
+              />
             </div>
           </div>
-        </ModalBody>
-
-        <ModalFooter>
-          <Space>
-            <Button
-              onClick={handleCancel}
-              disabled={isLoading}
-              data-testid="complete-modal-cancel-button"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              onClick={handleSave}
-              loading={isLoading}
-              disabled={!isRequiredFieldFilled()}
-              data-testid="complete-modal-save-button"
-            >
-              Save
-            </Button>
-          </Space>
-        </ModalFooter>
-      </ModalContent>
+        </div>
+      </div>
     </Modal>
   );
 };

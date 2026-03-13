@@ -4,18 +4,13 @@ import {
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraDivider as Divider,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraText as Text,
+  Modal,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
 import { vendorSourceLabels, VendorSources } from "~/features/common/helpers";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 
 type FilterCheckboxProps = {
   onChange: () => void;
@@ -101,49 +96,49 @@ const MultipleSystemsFilterModal = <T,>({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Filters</ModalHeader>
-        <ModalCloseButton />
-        <Divider />
-        <ModalBody maxH="85vh" px={6} py={4} overflowX="auto">
-          <Text fontSize="md" fontWeight="bold" mb={2}>
-            Sources
-          </Text>
-          <FilterCheckbox
-            onChange={() => {
-              setFilters((prev) => ({ ...prev, GVL: !prev.GVL }));
-            }}
-            displayText={vendorSourceLabels.gvl.fullName}
-            isChecked={filters.GVL}
-            value="gvl"
-          />
-          <FilterCheckbox
-            onChange={() => {
-              setFilters((prev) => ({ ...prev, AC: !prev.AC }));
-            }}
-            displayText={vendorSourceLabels.gacp.fullName}
-            isChecked={filters.AC}
-            value="gacp"
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Box display="flex" justifyContent="space-between" width="100%">
-            <Button onClick={resetFilters} className="mr-3 grow">
-              Reset Filters
-            </Button>
-            <Button
-              data-testid="filter-done-btn"
-              type="primary"
-              onClick={onClose}
-              className="grow"
-            >
-              Done
-            </Button>
-          </Box>
-        </ModalFooter>
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      width={MODAL_SIZE.md}
+      title="Filters"
+      footer={
+        <Box display="flex" justifyContent="space-between" width="100%">
+          <Button onClick={resetFilters} className="mr-3 grow">
+            Reset Filters
+          </Button>
+          <Button
+            data-testid="filter-done-btn"
+            type="primary"
+            onClick={onClose}
+            className="grow"
+          >
+            Done
+          </Button>
+        </Box>
+      }
+    >
+      <Divider />
+      <Text fontSize="md" fontWeight="bold" mb={2}>
+        Sources
+      </Text>
+      <FilterCheckbox
+        onChange={() => {
+          setFilters((prev) => ({ ...prev, GVL: !prev.GVL }));
+        }}
+        displayText={vendorSourceLabels.gvl.fullName}
+        isChecked={filters.GVL}
+        value="gvl"
+      />
+      <FilterCheckbox
+        onChange={() => {
+          setFilters((prev) => ({ ...prev, AC: !prev.AC }));
+        }}
+        displayText={vendorSourceLabels.gacp.fullName}
+        isChecked={filters.AC}
+        value="gacp"
+      />
     </Modal>
   );
 };

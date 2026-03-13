@@ -2,14 +2,8 @@ import {
   Button,
   ChakraFormControl as FormControl,
   ChakraInput as Input,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
+  Modal,
   useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
 } from "fidesui";
@@ -94,39 +88,14 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
       <Button onClick={onOpen} data-testid="update-password-btn">
         Update password
       </Button>
-      <Modal isCentered isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Update Password</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Stack direction="column" spacing="15px">
-              <FormControl>
-                <Input
-                  isRequired
-                  name="oldPassword"
-                  onChange={handleChange}
-                  placeholder="Old Password"
-                  type="password"
-                  value={oldPasswordValue}
-                  data-testid="input-oldPassword"
-                />
-              </FormControl>
-              <FormControl>
-                <Input
-                  isRequired
-                  name="newPassword"
-                  onChange={handleChange}
-                  placeholder="New Password"
-                  type="password"
-                  value={newPasswordValue}
-                  data-testid="input-newPassword"
-                />
-              </FormControl>
-            </Stack>
-          </ModalBody>
-
-          <ModalFooter>
+      <Modal
+        open={isOpen}
+        onCancel={onClose}
+        title="Update Password"
+        centered
+        destroyOnClose
+        footer={
+          <>
             <Button onClick={onClose} className="mr-2 w-1/2">
               Cancel
             </Button>
@@ -141,8 +110,33 @@ const UpdatePasswordModal = ({ id }: UpdatePasswordModalProps) => {
             >
               Change Password
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </>
+        }
+      >
+        <Stack direction="column" spacing="15px">
+          <FormControl>
+            <Input
+              isRequired
+              name="oldPassword"
+              onChange={handleChange}
+              placeholder="Old Password"
+              type="password"
+              value={oldPasswordValue}
+              data-testid="input-oldPassword"
+            />
+          </FormControl>
+          <FormControl>
+            <Input
+              isRequired
+              name="newPassword"
+              onChange={handleChange}
+              placeholder="New Password"
+              type="password"
+              value={newPasswordValue}
+              data-testid="input-newPassword"
+            />
+          </FormControl>
+        </Stack>
       </Modal>
     </>
   );

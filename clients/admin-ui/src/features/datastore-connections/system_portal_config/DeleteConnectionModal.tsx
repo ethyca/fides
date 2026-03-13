@@ -1,16 +1,10 @@
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraSpacer as Spacer,
   ChakraStack as Stack,
   ChakraText as Text,
+  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import React from "react";
@@ -57,26 +51,14 @@ const DeleteConnectionModal = ({
         </Flex>
       </>
 
-      <Modal isCentered isOpen={isOpen} onClose={closeIfComplete}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Delete integration</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Stack direction="column" spacing="15px">
-              <Text
-                color="gray.600"
-                fontSize="sm"
-                fontWeight="sm"
-                lineHeight="20px"
-              >
-                Deleting an integration may impact any privacy request that is
-                currently in progress. Do you wish to proceed?
-              </Text>
-            </Stack>
-          </ModalBody>
-
-          <ModalFooter>
+      <Modal
+        centered
+        destroyOnClose
+        open={isOpen}
+        onCancel={closeIfComplete}
+        title="Delete integration"
+        footer={
+          <div>
             <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
             </Button>
@@ -88,8 +70,20 @@ const DeleteConnectionModal = ({
             >
               Delete integration
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </div>
+        }
+      >
+        <Stack direction="column" spacing="15px">
+          <Text
+            color="gray.600"
+            fontSize="sm"
+            fontWeight="sm"
+            lineHeight="20px"
+          >
+            Deleting an integration may impact any privacy request that is
+            currently in progress. Do you wish to proceed?
+          </Text>
+        </Stack>
       </Modal>
     </>
   );

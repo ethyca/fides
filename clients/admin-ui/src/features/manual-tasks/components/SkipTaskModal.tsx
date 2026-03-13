@@ -1,19 +1,7 @@
-import {
-  Button,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  Divider,
-  Input,
-  Space,
-  Typography,
-  useMessage,
-} from "fidesui";
+import { Button, Divider, Input, Modal, Space, useMessage } from "fidesui";
 import { useState } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { ManualFieldListItem } from "~/types/api";
 
 import { useSkipTaskMutation } from "../manual-tasks.slice";
@@ -58,64 +46,63 @@ export const SkipTaskModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="700px" isCentered>
-      <ModalOverlay />
-      <ModalContent maxWidth="700px" data-testid="skip-task-modal">
-        <ModalHeader>
-          <Typography.Title level={4}>Skip Task</Typography.Title>
-        </ModalHeader>
-        <ModalBody>
-          <div className="flex flex-col space-y-6">
-            {/* Details */}
-            <div>
-              <TaskDetails task={task} />
-            </div>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      width={MODAL_SIZE.lg}
+      data-testid="skip-task-modal"
+      title="Skip Task"
+      footer={
+        <Space>
+          <Button
+            onClick={handleCancel}
+            disabled={isLoading}
+            data-testid="skip-modal-cancel-button"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            onClick={handleSave}
+            loading={isLoading}
+            disabled={!comment.trim()}
+            danger
+            data-testid="skip-modal-skip-button"
+          >
+            Skip Task
+          </Button>
+        </Space>
+      }
+    >
+      <div className="flex flex-col space-y-6">
+        {/* Details */}
+        <div>
+          <TaskDetails task={task} />
+        </div>
 
-            {/* Divider for separation */}
-            <Divider />
+        {/* Divider for separation */}
+        <Divider />
 
-            {/* Skip Reason Section */}
-            <div>
-              <div className="flex flex-col space-y-4">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-gray-700">
-                    Reason for skipping (Required)
-                  </div>
-                  <Input.TextArea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Please provide a reason for skipping this task..."
-                    rows={4}
-                    data-testid="skip-modal-comment-input"
-                  />
-                </div>
+        {/* Skip Reason Section */}
+        <div>
+          <div className="flex flex-col space-y-4">
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-700">
+                Reason for skipping (Required)
               </div>
+              <Input.TextArea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Please provide a reason for skipping this task..."
+                rows={4}
+                data-testid="skip-modal-comment-input"
+              />
             </div>
           </div>
-        </ModalBody>
-
-        <ModalFooter>
-          <Space>
-            <Button
-              onClick={handleCancel}
-              disabled={isLoading}
-              data-testid="skip-modal-cancel-button"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              onClick={handleSave}
-              loading={isLoading}
-              disabled={!comment.trim()}
-              danger
-              data-testid="skip-modal-skip-button"
-            >
-              Skip Task
-            </Button>
-          </Space>
-        </ModalFooter>
-      </ModalContent>
+        </div>
+      </div>
     </Modal>
   );
 };

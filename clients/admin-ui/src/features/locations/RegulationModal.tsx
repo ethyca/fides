@@ -1,17 +1,16 @@
 import {
+  Button,
   ChakraCheckbox as Checkbox,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalOverlay as ModalOverlay,
   ChakraSimpleGrid as SimpleGrid,
+  Modal,
 } from "fidesui";
 import { useState } from "react";
 
 import { usePicker } from "~/features/common/hooks/usePicker";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { LocationRegulationBase } from "~/types/api";
 
-import { Footer, Header, HeaderCheckboxRow } from "./modal";
+import { HeaderCheckboxRow } from "./modal";
 
 const RegulationModal = ({
   regulations,
@@ -43,34 +42,45 @@ const RegulationModal = ({
   const continentName = regulations[0].continent;
 
   return (
-    <Modal size="2xl" isOpen={isOpen} onClose={onClose} isCentered>
-      <ModalOverlay />
-      <ModalContent data-testid="regulation-modal">
-        <Header title="Select regulations" />
-        <ModalBody p={6} maxHeight="70vh" overflowY="auto">
-          <HeaderCheckboxRow
-            title={continentName as string}
-            allSelected={allSelected}
-            onToggleAll={handleToggleAll}
-            numSelected={numSelected}
-          />
-          <SimpleGrid columns={3} spacing={6} paddingInline={4}>
-            {regulations.map((regulation) => (
-              <Checkbox
-                size="sm"
-                colorScheme="complimentary"
-                key={regulation.id}
-                isChecked={draftSelected.includes(regulation.id)}
-                onChange={() => handleToggleSelection(regulation.id)}
-                data-testid={`${regulation.name}-checkbox`}
-              >
-                {regulation.name}
-              </Checkbox>
-            ))}
-          </SimpleGrid>
-        </ModalBody>
-        <Footer onApply={handleApply} onClose={onClose} />
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      width={MODAL_SIZE.md}
+      data-testid="regulation-modal"
+      title="Select regulations"
+      footer={
+        <div className="flex w-full justify-between">
+          <Button onClick={onClose} data-testid="cancel-btn">
+            Cancel
+          </Button>
+          <Button type="primary" onClick={handleApply} data-testid="apply-btn">
+            Apply
+          </Button>
+        </div>
+      }
+    >
+      <HeaderCheckboxRow
+        title={continentName as string}
+        allSelected={allSelected}
+        onToggleAll={handleToggleAll}
+        numSelected={numSelected}
+      />
+      <SimpleGrid columns={3} spacing={6} paddingInline={4}>
+        {regulations.map((regulation) => (
+          <Checkbox
+            size="sm"
+            colorScheme="complimentary"
+            key={regulation.id}
+            isChecked={draftSelected.includes(regulation.id)}
+            onChange={() => handleToggleSelection(regulation.id)}
+            data-testid={`${regulation.name}-checkbox`}
+          >
+            {regulation.name}
+          </Checkbox>
+        ))}
+      </SimpleGrid>
     </Modal>
   );
 };

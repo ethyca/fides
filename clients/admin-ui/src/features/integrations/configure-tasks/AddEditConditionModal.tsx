@@ -1,13 +1,5 @@
 import { useAPIHelper } from "common/hooks";
-import {
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  Typography,
-} from "fidesui";
+import { Modal, Typography } from "fidesui";
 import React, { useState } from "react";
 
 import { ConditionLeaf } from "~/types/api";
@@ -72,32 +64,26 @@ const AddEditConditionModal = ({
 
   return (
     <Modal
-      isCentered
-      isOpen={isOpen}
-      size="lg"
-      onClose={onClose}
+      centered
+      open={isOpen}
+      onCancel={onClose}
+      destroyOnClose
       data-testid="add-edit-condition-modal"
+      styles={{ body: { minWidth: "650px" } }}
+      title={isEditing ? "Edit condition" : "Add condition"}
+      footer={null}
     >
-      <ModalOverlay />
-      <ModalContent minWidth="650px">
-        <ModalHeader>
-          {isEditing ? "Edit condition" : "Add condition"}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={0}>
-          <Typography.Paragraph>
-            {getModalDescription(isEditing, isConsentOnly)}
-          </Typography.Paragraph>
-          <AddConditionForm
-            onAdd={handleSubmit}
-            onCancel={handleCancel}
-            editingCondition={editingCondition}
-            isSubmitting={isSubmitting}
-            connectionKey={connectionKey}
-            isConsentOnly={isConsentOnly}
-          />
-        </ModalBody>
-      </ModalContent>
+      <Typography.Paragraph>
+        {getModalDescription(isEditing, isConsentOnly)}
+      </Typography.Paragraph>
+      <AddConditionForm
+        onAdd={handleSubmit}
+        onCancel={handleCancel}
+        editingCondition={editingCondition}
+        isSubmitting={isSubmitting}
+        connectionKey={connectionKey}
+        isConsentOnly={isConsentOnly}
+      />
     </Modal>
   );
 };

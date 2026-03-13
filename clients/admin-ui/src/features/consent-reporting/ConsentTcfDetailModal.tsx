@@ -1,13 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
-import {
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-} from "fidesui";
+import { Modal } from "fidesui";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { PreferencesSaved } from "~/types/api";
 
 import TcfConsentTable from "./TcfConsentTable";
@@ -25,23 +19,18 @@ const ConsentTcfDetailModal = ({
 }: ConsentTcfDetailModalProps) => {
   return (
     <Modal
-      id="consent-lookup-modal"
-      isOpen={isOpen}
-      onClose={onClose}
-      size="4xl"
-      returnFocusOnClose={false}
-      isCentered
+      data-testid="consent-tcf-detail-modal"
+      open={isOpen}
+      onCancel={onClose}
+      width={MODAL_SIZE.xl}
+      centered
+      destroyOnClose
+      title="TCF Consent Details"
+      footer={null}
     >
-      <ModalOverlay />
-      <ModalContent data-testid="consent-tcf-detail-modal">
-        <ModalCloseButton />
-        <ModalHeader pb={2}>TCF Consent Details</ModalHeader>
-        <ModalBody>
-          <div className="mb-4">
-            <TcfConsentTable tcfPreferences={tcfPreferences} />
-          </div>
-        </ModalBody>
-      </ModalContent>
+      <div className="mb-4">
+        <TcfConsentTable tcfPreferences={tcfPreferences} />
+      </div>
     </Modal>
   );
 };
