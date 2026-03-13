@@ -79,6 +79,7 @@ const EditDrawer = ({
     onClose={onClose}
     title={title ?? header}
     footer={footer}
+    maskClosable={false}
   >
     <div data-testid="edit-drawer-content">
       {description ? (

@@ -42,6 +42,7 @@ const LogDrawer = ({
       onClose={onClose}
       width="50vw"
       autoFocus={false}
+      destroyOnHidden
       title={
         <Flex align="center" gap="small">
           {isViewingError && (
