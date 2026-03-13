@@ -55,6 +55,10 @@ const defaultSecurityHeadersMode = (
   return "none";
 };
 
+export const DEFAULT_ATTRIBUTION_ANCHOR_TEXT = "Consent powered by Ethyca";
+export const DEFAULT_ATTRIBUTION_DESTINATION_URL =
+  "https://www.ethyca.com/janus";
+
 const loadEnvironmentVariables = () => {
   // Load environment variables
   const settings: PrivacyCenterSettings = {
@@ -188,6 +192,22 @@ const loadEnvironmentVariables = () => {
       (process.env.FIDES_PRIVACY_CENTER__FIDES_COOKIE_COMPRESSION as
         | "gzip"
         | "none") || "none",
+    // Attribution link options
+    ATTRIBUTION_ENABLED:
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ENABLED === "true", // default: false
+    ATTRIBUTION_ANCHOR_TEXT:
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_ANCHOR_TEXT ||
+      DEFAULT_ATTRIBUTION_ANCHOR_TEXT,
+    ATTRIBUTION_DESTINATION_URL: (() => {
+      const url =
+        process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_DESTINATION_URL ||
+        DEFAULT_ATTRIBUTION_DESTINATION_URL;
+      return url.startsWith("https://") || url.startsWith("http://")
+        ? url
+        : DEFAULT_ATTRIBUTION_DESTINATION_URL;
+    })(),
+    ATTRIBUTION_NOFOLLOW:
+      process.env.FIDES_PRIVACY_CENTER__ATTRIBUTION_NOFOLLOW === "true", // default: false
   };
   return settings;
 };

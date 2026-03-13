@@ -53,6 +53,9 @@ def format_value_for_toml(value: str, value_type: str) -> str:
         return str(value).lower()
     if value_type == "array":
         return "[]"
+    # Quote string values whose schema type wasn't resolved (e.g. enums)
+    if isinstance(value, str):
+        return f'"{value}"'
     return value
 
 

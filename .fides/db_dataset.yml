@@ -91,6 +91,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: username
+      data_categories:
+        - user.account.username
   - name: answer_version
     description: 'Immutable history of assessment answer versions'
     fields:
@@ -381,6 +384,9 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+    - name: username
+      data_categories:
+        - user.account.username
   - name: comment_reference
     fields:
     - name: comment_id
