@@ -5,7 +5,7 @@ import type {
   PolicyViolationAggregate,
   PolicyViolationLog,
 } from "~/features/access-control/types";
-import { pickInterval } from "~/features/access-control/utils";
+import { pickInterval } from "fidesui";
 
 const sumField = (
   items: DataConsumerRequestPoint[],

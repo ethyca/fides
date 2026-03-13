@@ -3,11 +3,16 @@ import {
   Card,
   CHART_ANIMATION,
   CHART_STROKE,
+  ChartGradient,
+  deriveInterval,
+  formatTimestamp,
   Statistic,
   Text,
+  tooltipLabelFormatter,
+  useTooltipContentStyle,
+  XAxisTick,
 } from "fidesui";
 import { useId } from "react";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import {
   Area,
   AreaChart,
@@ -19,14 +24,6 @@ import {
 } from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
-import {
-  deriveInterval,
-  formatTimestamp,
-  formatTrend,
-  tooltipLabelFormatter,
-  useTooltipContentStyle,
-  XAxisTick,
-} from "../utils";
 
 interface ViolationsOverTimeCardProps {
   data: DataConsumerRequestPoint[];
@@ -52,14 +49,16 @@ export const ViolationsOverTimeCard = ({
       loading={loading}
       title={<Text strong>Violations over time</Text>}
       extra={
-        <Text
-          style={{
+        <Statistic
+          value={Math.abs(trend * 100)}
+          precision={1}
+          prefix={trend <= 0 ? "-" : "+"}
+          suffix="% vs last mo"
+          valueStyle={{
             color: trend <= 0 ? token.colorSuccess : token.colorError,
             fontSize: token.fontSizeSM,
           }}
-        >
-          {formatTrend(trend)}
-        </Text>
+        />
       }
       className="flex h-full flex-col text-clip"
       styles={{
@@ -88,44 +87,8 @@ export const ViolationsOverTimeCard = ({
             data={data}
             margin={{ top: 5, right: 5, bottom: 0, left: -15 }}
           >
-            <defs>
-              <linearGradient
-                id={violationsGradientId}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop
-                  offset="0%"
-                  stopColor={token.colorText}
-                  stopOpacity={0.25}
-                />
-                <stop
-                  offset="100%"
-                  stopColor={token.colorText}
-                  stopOpacity={0}
-                />
-              </linearGradient>
-              <linearGradient
-                id={requestsGradientId}
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop
-                  offset="0%"
-                  stopColor={token.colorBorder}
-                  stopOpacity={0.25}
-                />
-                <stop
-                  offset="100%"
-                  stopColor={token.colorBorder}
-                  stopOpacity={0}
-                />
-              </linearGradient>
-            </defs>
+            <ChartGradient id={violationsGradientId} color={token.colorText} />
+            <ChartGradient id={requestsGradientId} color={token.colorBorder} />
             <CartesianGrid
               strokeDasharray="3 3"
               stroke={token.colorBorderSecondary}

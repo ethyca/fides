@@ -1,13 +1,6 @@
-import { antTheme, Card, Flex, Text } from "fidesui";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { Cell, Pie, PieChart } from "recharts";
+import { antTheme, Card, DonutChart, Flex, Statistic, Text } from "fidesui";
 
 import type { TopPolicyViolation } from "../types";
-import { formatTrend } from "../utils";
-
-const DONUT_SIZE = 100;
-const INNER_RADIUS = 35;
-const OUTER_RADIUS = 48;
 
 interface ViolationRateCardProps {
   violations: number;
@@ -31,11 +24,6 @@ export const ViolationRateCard = ({
     totalRequests > 0 ? (violations / totalRequests) * 100 : 0;
   const rate = ratePercent > 0 ? ratePercent.toFixed(1) : "0";
 
-  const donutData = [
-    { name: "Violations", value: violations },
-    { name: "Clean", value: Math.max(0, totalRequests - violations) },
-  ];
-
   return (
     <Card
       loading={loading}
@@ -50,45 +38,42 @@ export const ViolationRateCard = ({
     >
       <Flex vertical gap={16} className="flex-1">
         <Flex align="center" gap={16}>
-          <div
-            className="relative shrink-0"
-            style={{ width: DONUT_SIZE, height: DONUT_SIZE }}
-          >
-            <PieChart width={DONUT_SIZE} height={DONUT_SIZE}>
-              <Pie
-                data={donutData}
-                cx={DONUT_SIZE / 2 - 1}
-                cy={DONUT_SIZE / 2 - 1}
-                innerRadius={INNER_RADIUS}
-                outerRadius={OUTER_RADIUS}
-                dataKey="value"
-                startAngle={90}
-                endAngle={-270}
-                stroke="none"
-              >
-                <Cell fill={token.colorText} />
-                <Cell fill={token.colorBorderSecondary} />
-              </Pie>
-            </PieChart>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Text strong style={{ fontSize: token.fontSizeLG }}>
-                {rate}%
-              </Text>
-            </div>
+          <div className="h-[100px] w-[100px] shrink-0">
+            <DonutChart
+              segments={[
+                {
+                  value: violations,
+                  color: "colorText",
+                  name: "Violations",
+                },
+                {
+                  value: Math.max(0, totalRequests - violations),
+                  color: "colorBorderSecondary",
+                  name: "Clean",
+                },
+              ]}
+              centerLabel={
+                <Text strong style={{ fontSize: token.fontSizeLG }}>
+                  {rate}%
+                </Text>
+              }
+            />
           </div>
           <Flex vertical gap={2}>
             <Text strong>Violations</Text>
             <Text type="secondary">
               {violations.toLocaleString()} of {totalRequests.toLocaleString()}
             </Text>
-            <Text
-              style={{
+            <Statistic
+              value={Math.abs(trend * 100)}
+              precision={1}
+              prefix={trend <= 0 ? "-" : "+"}
+              suffix="% vs last mo"
+              valueStyle={{
                 color: trend <= 0 ? token.colorSuccess : token.colorError,
                 fontSize: token.fontSizeSM,
               }}
-            >
-              {formatTrend(trend)}
-            </Text>
+            />
           </Flex>
         </Flex>
 
