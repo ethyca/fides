@@ -1,7 +1,9 @@
 import dayjs from "dayjs";
-import { DatePicker, Flex } from "fidesui";
+import { DatePicker, Flex, Switch, Typography } from "fidesui";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import type { PolicyViolationLog } from "../types";
 
 import {
   useGetDataConsumerRequestsQuery,
@@ -57,8 +59,17 @@ export const RequestLogPage = () => {
     null,
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [liveTail, setLiveTail] = useState(false);
+  const [liveTailItems, setLiveTailItems] = useState<PolicyViolationLog[]>([]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const dateParams = useMemo(() => {
+    if (liveTail) {
+      return {
+        start_date: dayjs().subtract(12, "hour").toISOString(),
+        end_date: dayjs().toISOString(),
+      };
+    }
     if (!dateRange) {
       return {
         start_date: dayjs().subtract(1, "day").toISOString(),
@@ -69,7 +80,7 @@ export const RequestLogPage = () => {
       start_date: dateRange[0].toISOString(),
       end_date: dateRange[1].toISOString(),
     };
-  }, [dateRange]);
+  }, [dateRange, liveTail]);
 
   const facetFilters = useMemo(() => {
     const result: Partial<Record<FacetKey, string | string[]>> = {};
@@ -94,6 +105,43 @@ export const RequestLogPage = () => {
     () => ({ ...dateParams, ...facetFilters }),
     [dateParams, facetFilters],
   );
+
+  const generateMockItems = useCallback((): PolicyViolationLog[] => {
+    const consumers = ["Analytics Service", "ML Pipeline", "Reporting API", "Data Export", "BI Dashboard"];
+    const policies = ["Restrict PII Access", "Data Minimization", "Purpose Limitation", "Consent Required"];
+    const datasets = ["postgres.users", "postgres.orders", "snowflake.events", "bigquery.analytics"];
+    const dataUses = ["marketing", "analytics", "ml_training", "third_party_sharing"];
+    const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+    const count = Math.floor(Math.random() * 6) + 1;
+
+    return Array.from({ length: count }, (_, i) => ({
+      id: `live-${Date.now()}-${i}`,
+      timestamp: dayjs().toISOString(),
+      consumer: pick(consumers),
+      consumer_email: `service-${Math.floor(Math.random() * 100)}@example.com`,
+      policy: pick(policies),
+      policy_description: "Auto-generated violation during live tail",
+      dataset: pick(datasets),
+      data_use: pick(dataUses),
+      sql_statement: `SELECT * FROM ${pick(["users", "orders", "events"])} WHERE id = ${Math.floor(Math.random() * 1000)}`,
+    }));
+  }, []);
+
+  useEffect(() => {
+    if (liveTail) {
+      intervalRef.current = setInterval(() => {
+        setLiveTailItems((prev) => [...generateMockItems(), ...prev]);
+      }, 2000);
+    } else {
+      setLiveTailItems([]);
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [liveTail, generateMockItems]);
 
   const { data: chartData, isLoading: chartLoading } =
     useGetDataConsumerRequestsQuery(filters);
@@ -120,9 +168,22 @@ export const RequestLogPage = () => {
           }}
           placeholder={["From", "To"]}
           allowClear
+          disabled={liveTail}
           aria-label="Date range"
           className="w-60"
         />
+        <Flex align="center" gap={8}>
+          <Switch
+            size="small"
+            checked={liveTail}
+            onChange={setLiveTail}
+          />
+          <Typography.Text
+            className={liveTail ? "text-green-600" : "text-gray-500"}
+          >
+            Live tail
+          </Typography.Text>
+        </Flex>
       </Flex>
 
       <ViolationsBarChartCard
@@ -133,6 +194,7 @@ export const RequestLogPage = () => {
 
       <RequestLogTable
         filters={filters}
+        liveTailItems={liveTailItems}
         onRowClick={(record) => {
           setSelectedViolationId(record.id);
           setDrawerOpen(true);
