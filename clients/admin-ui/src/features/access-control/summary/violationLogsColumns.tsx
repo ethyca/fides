@@ -34,7 +34,7 @@ export const getViolationLogsColumns = (): ColumnsType<PolicyViolationLog> => [
     dataIndex: "dataset",
     key: "dataset",
     render: (value: string) => (
-      <span style={{ fontFamily: "monospace" }}>{value}</span>
+      <span className="font-mono">{value}</span>
     ),
   },
   {
@@ -42,7 +42,7 @@ export const getViolationLogsColumns = (): ColumnsType<PolicyViolationLog> => [
     dataIndex: "data_use",
     key: "data_use",
     render: (value: string) => (
-      <span style={{ fontFamily: "monospace" }}>{value}</span>
+      <span className="font-mono">{value}</span>
     ),
   },
   {

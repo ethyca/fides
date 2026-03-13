@@ -80,7 +80,7 @@ export const ViolationsOverTimeCard = ({
           {formatTrend(trend)}
         </Text>
       }
-      className="h-full flex flex-col overflow-clip"
+      className="flex h-full flex-col text-clip"
       styles={{
         body: {
           flex: 1,
@@ -101,7 +101,7 @@ export const ViolationsOverTimeCard = ({
           }}
         />
       </div>
-      <div className="w-full flex-1 min-h-0 mt-2">
+      <div className="mt-2 min-h-0 w-full flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}

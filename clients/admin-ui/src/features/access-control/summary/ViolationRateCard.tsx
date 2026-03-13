@@ -50,13 +50,13 @@ export const ViolationRateCard = ({
           {totalPolicies} policies
         </Text>
       }
-      className="h-full flex flex-col"
+      className="flex h-full flex-col"
       styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
     >
       <Flex vertical gap={16} className="flex-1">
         <Flex align="center" gap={16}>
           <div
-            className="relative flex-shrink-0"
+            className="relative shrink-0"
             style={{ width: DONUT_SIZE, height: DONUT_SIZE }}
           >
             <PieChart width={DONUT_SIZE} height={DONUT_SIZE}>
@@ -101,9 +101,7 @@ export const ViolationRateCard = ({
           <Text strong>Top violated policies</Text>
           <div className="mt-1">
             <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
-              {topPolicies
-                .map((p) => `${p.name} ${p.count}`)
-                .join(" \u00b7 ")}
+              {topPolicies.map((p) => `${p.name} ${p.count}`).join(" \u00b7 ")}
             </Text>
           </div>
         </div>

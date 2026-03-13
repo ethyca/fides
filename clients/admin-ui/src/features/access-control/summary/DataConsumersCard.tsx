@@ -1,4 +1,5 @@
 import { antTheme, Card, Flex, Text } from "fidesui";
+import { Fragment } from "react";
 
 import type { DataConsumerSummary } from "../types";
 
@@ -51,28 +52,22 @@ export const DataConsumersCard = ({
           </Text>
 
           {items.map((item) => (
-            <>
-              <Text key={`${item.name}-name`}>{item.name}</Text>
-              <Text
-                key={`${item.name}-reqs`}
-                style={{ textAlign: "right" }}
-              >
+            <Fragment key={item.name}>
+              <Text>{item.name}</Text>
+              <Text style={{ textAlign: "right" }}>
                 {item.requests.toLocaleString()}
               </Text>
               <Text
-                key={`${item.name}-viol`}
                 strong
                 style={{
                   textAlign: "right",
                   color:
-                    item.violations > 0
-                      ? token.colorError
-                      : token.colorSuccess,
+                    item.violations > 0 ? token.colorError : token.colorSuccess,
                 }}
               >
                 {item.violations.toLocaleString()}
               </Text>
-            </>
+            </Fragment>
           ))}
         </div>
       </Flex>

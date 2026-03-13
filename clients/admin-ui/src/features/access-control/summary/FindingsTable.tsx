@@ -21,7 +21,7 @@ export const FindingsTable = () => {
 
   return (
     <div className="mt-6">
-      <Typography.Title level={5} style={{ margin: 0, marginBottom: 16 }}>
+      <Typography.Title level={5} className="!mb-4 !mt-0">
         Findings
       </Typography.Title>
       <Table
@@ -32,7 +32,7 @@ export const FindingsTable = () => {
         rowKey={(record) => `${record.policy}-${record.control}`}
         size="small"
         bordered={false}
-        onRow={() => ({ style: { cursor: "pointer" }, onClick: () => {} })}
+        onRow={() => ({ style: { cursor: "pointer" } })}
       />
       {(data?.total ?? 0) > 0 && (
         <Flex justify="end" className="mt-4">
