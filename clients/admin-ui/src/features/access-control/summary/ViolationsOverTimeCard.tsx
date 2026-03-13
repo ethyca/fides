@@ -19,33 +19,32 @@ import {
 } from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
+import { formatTimestamp } from "../utils";
 
 const GRADIENT_START_OPACITY = 0.25;
 const GRADIENT_END_OPACITY = 0;
 
-const formatXAxisLabel = (timestamp: string, pointCount: number) => {
-  const date = new Date(timestamp);
-  if (pointCount <= 24) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+const deriveInterval = (data: DataConsumerRequestPoint[]): number => {
+  if (data.length < 2) {
+    return 3_600_000;
   }
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return (
+    new Date(data[1].timestamp).getTime() -
+    new Date(data[0].timestamp).getTime()
+  );
 };
 
 interface XAxisTickProps {
   x?: number;
   y?: number;
   payload?: { value: string };
-  pointCount: number;
+  intervalMs: number;
   fill?: string;
 }
 
-const XAxisTick = ({ x, y, payload, pointCount, fill }: XAxisTickProps) => (
+const XAxisTick = ({ x, y, payload, intervalMs, fill }: XAxisTickProps) => (
   <ChartText x={Number(x)} y={Number(y) + 12} fill={fill}>
-    {payload ? formatXAxisLabel(payload.value, pointCount) : null}
+    {payload ? formatTimestamp(payload.value, intervalMs) : null}
   </ChartText>
 );
 
@@ -61,7 +60,7 @@ export const ViolationsOverTimeCard = ({
   const { token } = antTheme.useToken();
   const violationsGradientId = `violations-gradient-${useId()}`;
   const requestsGradientId = `requests-gradient-${useId()}`;
-  const pointCount = data.length;
+  const intervalMs = deriveInterval(data);
 
   return (
     <Card
@@ -121,10 +120,10 @@ export const ViolationsOverTimeCard = ({
             />
             <XAxis
               dataKey="timestamp"
-              tickFormatter={(ts) => formatXAxisLabel(ts, pointCount)}
+              tickFormatter={(ts) => formatTimestamp(ts, intervalMs)}
               tick={
                 <XAxisTick
-                  pointCount={pointCount}
+                  intervalMs={intervalMs}
                   fill={token.colorTextTertiary}
                 />
               }
@@ -146,14 +145,22 @@ export const ViolationsOverTimeCard = ({
                 borderRadius: token.borderRadiusLG,
                 boxShadow: token.boxShadowSecondary,
               }}
-              labelFormatter={(label) =>
-                new Date(label).toLocaleDateString("en-US", {
+              labelFormatter={(label) => {
+                const date = new Date(label);
+                if (intervalMs < 86_400_000) {
+                  return date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  });
+                }
+                return date.toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                })
-              }
+                  year: "numeric",
+                });
+              }}
             />
             <Area
               type="monotone"

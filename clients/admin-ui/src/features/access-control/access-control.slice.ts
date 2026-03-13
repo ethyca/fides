@@ -27,6 +27,15 @@ interface PaginatedParams {
   size?: number;
 }
 
+interface PolicyViolationLogsParams extends PaginatedParams {
+  consumer?: string;
+  policy?: string;
+  dataset?: string;
+  data_use?: string;
+  start_date?: string;
+  end_date?: string;
+}
+
 interface PolicyViolationsParams extends PaginatedParams {
   policy?: string;
   control?: string;
@@ -71,7 +80,7 @@ const accessControlApi = baseApi.injectEndpoints({
 
     getPolicyViolationLogs: build.query<
       PaginatedResponse<PolicyViolationLog>,
-      PaginatedParams
+      PolicyViolationLogsParams
     >({
       query: (params) => ({
         url: "policy/violations/logs",

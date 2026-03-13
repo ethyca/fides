@@ -5,55 +5,36 @@ import type {
   PolicyViolationAggregate,
   PolicyViolationLog,
 } from "~/features/access-control/types";
-
-const generateData = (
-  count: number,
-  msPerPoint: number,
-  requestRange: [number, number],
-  violationRange: [number, number],
-): DataConsumerRequestPoint[] => {
-  const now = new Date("2026-03-12T12:00:00Z");
-  return Array.from({ length: count }, (_, index) => ({
-    timestamp: new Date(
-      now.getTime() - (count - 1 - index) * msPerPoint,
-    ).toISOString(),
-    requests: Math.floor(Math.random() * requestRange[1]) + requestRange[0],
-    violations:
-      Math.floor(Math.random() * violationRange[1]) + violationRange[0],
-  }));
-};
+import { pickInterval } from "~/features/access-control/utils";
 
 const sumField = (
   items: DataConsumerRequestPoint[],
   field: "requests" | "violations",
 ) => items.reduce((sum, item) => sum + item[field], 0);
 
-const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
-
-const items24h = generateData(24, HOUR_MS, [10, 40], [0, 8]);
-const items7d = generateData(7, DAY_MS, [180, 100], [8, 20]);
-const items30d = generateData(30, DAY_MS, [140, 120], [5, 25]);
-
-export const dataConsumerRequestsData: Record<
-  string,
-  DataConsumerRequestsResponse
-> = {
-  "24h": {
-    violations: sumField(items24h, "violations"),
-    total_requests: sumField(items24h, "requests"),
-    items: items24h,
-  },
-  "7d": {
-    violations: sumField(items7d, "violations"),
-    total_requests: sumField(items7d, "requests"),
-    items: items7d,
-  },
-  "30d": {
-    violations: sumField(items30d, "violations"),
-    total_requests: sumField(items30d, "requests"),
-    items: items30d,
-  },
+export const generateChartData = (
+  startDate: string,
+  endDate: string,
+  requestRange: [number, number] = [10, 40],
+  violationRange: [number, number] = [0, 8],
+): DataConsumerRequestsResponse => {
+  const startMs = new Date(startDate).getTime();
+  const endMs = new Date(endDate).getTime();
+  const interval = pickInterval(startMs, endMs);
+  const flooredStart = Math.floor(startMs / interval) * interval;
+  const count = Math.max(1, Math.ceil((endMs - flooredStart) / interval));
+  const items = Array.from({ length: count }, (_, i) => ({
+    timestamp: new Date(flooredStart + i * interval).toISOString(),
+    requests:
+      Math.floor(Math.random() * requestRange[1]) + requestRange[0],
+    violations:
+      Math.floor(Math.random() * violationRange[1]) + violationRange[0],
+  }));
+  return {
+    violations: sumField(items, "violations"),
+    total_requests: sumField(items, "requests"),
+    items,
+  };
 };
 
 export const dataConsumersByViolationsData: DataConsumerSummary[] = [
@@ -64,7 +45,7 @@ export const dataConsumersByViolationsData: DataConsumerSummary[] = [
   { name: "Recommendation Engine", requests: 128, violations: 9 },
 ];
 
-const POLICIES = [
+export const POLICIES = [
   "Marketing Data Policy",
   "Data Retention Policy",
   "Access Control Policy",
@@ -145,7 +126,7 @@ const generateViolations = (): PolicyViolationAggregate[] => {
 export const policyViolationsData: PolicyViolationAggregate[] =
   generateViolations();
 
-const LOG_CONSUMERS = [
+export const LOG_CONSUMERS = [
   "Analytics Service",
   "Marketing Pipeline",
   "Data Warehouse ETL",
@@ -156,7 +137,7 @@ const LOG_CONSUMERS = [
   "Research Platform",
 ];
 
-const LOG_DATASETS = [
+export const LOG_DATASETS = [
   "postgres.public.users",
   "postgres.public.email_preferences",
   "postgres.public.order_history",
@@ -171,7 +152,7 @@ const LOG_DATASETS = [
   "redshift.warehouse.customer_profiles",
 ];
 
-const LOG_DATA_USES = [
+export const LOG_DATA_USES = [
   "marketing.advertising.third_party.targeted",
   "marketing.advertising.first_party",
   "marketing.communications",
@@ -198,3 +179,24 @@ const generateLogs = (): PolicyViolationLog[] => {
 };
 
 export const policyViolationLogsData: PolicyViolationLog[] = generateLogs();
+
+let liveLogCounter = 0;
+
+export const generateLiveLogs = (count: number): PolicyViolationLog[] => {
+  const now = Date.now();
+  const allPolicies = Object.keys(CONTROLS);
+
+  return Array.from({ length: count }, (_, i) => {
+    const idx = liveLogCounter + i;
+    liveLogCounter += 1;
+    return {
+      timestamp: new Date(
+        now - i * (30_000 + Math.floor(Math.random() * 60_000)),
+      ).toISOString(),
+      consumer: LOG_CONSUMERS[idx % LOG_CONSUMERS.length],
+      policy: allPolicies[idx % allPolicies.length],
+      dataset: LOG_DATASETS[idx % LOG_DATASETS.length],
+      data_use: LOG_DATA_USES[idx % LOG_DATA_USES.length],
+    };
+  });
+};
