@@ -43,12 +43,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         exact: true,
         scopes: [],
       },
-      {
-        title: "Steward",
-        path: routes.STEWARD_ROUTE,
-        scopes: [],
-        hidden: true,
-      },
     ],
   },
   {
