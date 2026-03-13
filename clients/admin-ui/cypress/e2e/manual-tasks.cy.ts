@@ -127,7 +127,9 @@ describe("Manual Tasks", () => {
       // Verify modal opens
       cy.getByTestId("complete-task-modal").should("be.visible");
       cy.getByTestId("complete-task-modal").within(() => {
-        cy.get(".ant-modal-title").contains("Complete Task").should("be.visible");
+        cy.get(".ant-modal-title")
+          .contains("Complete Task")
+          .should("be.visible");
 
         // Close modal for next test
         cy.getByTestId("complete-modal-cancel-button").click();
@@ -728,7 +730,9 @@ describe("Manual Tasks", () => {
       // Verify modal opens and can be used
       cy.getByTestId("complete-task-modal").should("be.visible");
       cy.getByTestId("complete-task-modal").within(() => {
-        cy.get(".ant-modal-title").contains("Complete Task").should("be.visible");
+        cy.get(".ant-modal-title")
+          .contains("Complete Task")
+          .should("be.visible");
         // Close modal
         cy.getByTestId("complete-modal-cancel-button").click();
       });
