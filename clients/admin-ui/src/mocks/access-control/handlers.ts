@@ -18,7 +18,9 @@ const DEFAULT_END = new Date().toISOString();
 
 const getParam = (url: URL, key: string): string | string[] | null => {
   const values = url.searchParams.getAll(key);
-  if (values.length === 0) return null;
+  if (values.length === 0) {
+    return null;
+  }
   return values.length === 1 ? values[0] : values;
 };
 

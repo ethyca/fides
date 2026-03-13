@@ -50,7 +50,13 @@ interface XAxisTickProps {
   fill?: string;
 }
 
-export const XAxisTick = ({ x, y, payload, intervalMs, fill }: XAxisTickProps) => (
+export const XAxisTick = ({
+  x,
+  y,
+  payload,
+  intervalMs,
+  fill,
+}: XAxisTickProps) => (
   <ChartText x={Number(x)} y={Number(y) + 12} fill={fill}>
     {payload ? formatTimestamp(payload.value, intervalMs) : null}
   </ChartText>

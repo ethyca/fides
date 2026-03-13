@@ -1,10 +1,4 @@
-import {
-  antTheme,
-  Card,
-  CHART_ANIMATION,
-  CHART_STROKE,
-  Text,
-} from "fidesui";
+import { antTheme, Card, CHART_ANIMATION, CHART_STROKE, Text } from "fidesui";
 import { useId } from "react";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
@@ -18,7 +12,13 @@ import {
 } from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
-import { deriveInterval, formatTimestamp, tooltipLabelFormatter, useTooltipContentStyle, XAxisTick } from "../utils";
+import {
+  deriveInterval,
+  formatTimestamp,
+  tooltipLabelFormatter,
+  useTooltipContentStyle,
+  XAxisTick,
+} from "../utils";
 
 interface ViolationsOverTimeCardProps {
   data: DataConsumerRequestPoint[];
@@ -113,7 +113,9 @@ export const ViolationsOverTimeCard = ({
             />
             <Tooltip
               contentStyle={tooltipContentStyle}
-              labelFormatter={(label) => tooltipLabelFormatter(label, intervalMs)}
+              labelFormatter={(label) =>
+                tooltipLabelFormatter(label, intervalMs)
+              }
             />
             <Area
               type="monotone"

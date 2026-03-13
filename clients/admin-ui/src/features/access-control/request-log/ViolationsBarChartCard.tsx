@@ -9,16 +9,16 @@ import {
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-} from "recharts";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
-import { deriveInterval, formatTimestamp, tooltipLabelFormatter, useTooltipContentStyle, XAxisTick } from "../utils";
+import {
+  deriveInterval,
+  formatTimestamp,
+  tooltipLabelFormatter,
+  useTooltipContentStyle,
+  XAxisTick,
+} from "../utils";
 
 const { Text } = Typography;
 
@@ -75,7 +75,9 @@ export const ViolationsBarChartCard = ({
             <Tooltip
               cursor={false}
               contentStyle={tooltipContentStyle}
-              labelFormatter={(label) => tooltipLabelFormatter(label, intervalMs)}
+              labelFormatter={(label) =>
+                tooltipLabelFormatter(label, intervalMs)
+              }
             />
             <Bar
               dataKey="violations"

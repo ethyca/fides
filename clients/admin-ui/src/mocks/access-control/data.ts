@@ -25,8 +25,7 @@ export const generateChartData = (
   const count = Math.max(1, Math.ceil((endMs - flooredStart) / interval));
   const items = Array.from({ length: count }, (_, i) => ({
     timestamp: new Date(flooredStart + i * interval).toISOString(),
-    requests:
-      Math.floor(Math.random() * requestRange[1]) + requestRange[0],
+    requests: Math.floor(Math.random() * requestRange[1]) + requestRange[0],
     violations:
       Math.floor(Math.random() * violationRange[1]) + violationRange[0],
   }));
@@ -240,7 +239,10 @@ const generateStableLogs = (): PolicyViolationLog[] => {
       dataset: LOG_DATASETS[Math.floor(rand() * LOG_DATASETS.length)],
       data_use: LOG_DATA_USES[Math.floor(rand() * LOG_DATA_USES.length)],
       sql_statement: SQL_STATEMENTS[Math.floor(rand() * SQL_STATEMENTS.length)],
-      ai_reason: rand() < 0.7 ? AI_REASONS[Math.floor(rand() * AI_REASONS.length)] : undefined,
+      ai_reason:
+        rand() < 0.7
+          ? AI_REASONS[Math.floor(rand() * AI_REASONS.length)]
+          : undefined,
     };
   }).sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 };
@@ -260,7 +262,9 @@ const matchesFilter = (
   value: string,
   filter: string | string[] | null | undefined,
 ): boolean => {
-  if (!filter) return true;
+  if (!filter) {
+    return true;
+  }
   return Array.isArray(filter) ? filter.includes(value) : value === filter;
 };
 
@@ -269,12 +273,24 @@ export const filterLogs = (
   filters: LogFilters,
 ): PolicyViolationLog[] => {
   return logs.filter((log) => {
-    if (!matchesFilter(log.consumer, filters.consumer)) return false;
-    if (!matchesFilter(log.policy, filters.policy)) return false;
-    if (!matchesFilter(log.dataset, filters.dataset)) return false;
-    if (!matchesFilter(log.data_use, filters.data_use)) return false;
-    if (filters.start_date && log.timestamp < filters.start_date) return false;
-    if (filters.end_date && log.timestamp > filters.end_date) return false;
+    if (!matchesFilter(log.consumer, filters.consumer)) {
+      return false;
+    }
+    if (!matchesFilter(log.policy, filters.policy)) {
+      return false;
+    }
+    if (!matchesFilter(log.dataset, filters.dataset)) {
+      return false;
+    }
+    if (!matchesFilter(log.data_use, filters.data_use)) {
+      return false;
+    }
+    if (filters.start_date && log.timestamp < filters.start_date) {
+      return false;
+    }
+    if (filters.end_date && log.timestamp > filters.end_date) {
+      return false;
+    }
     return true;
   });
 };
@@ -297,14 +313,14 @@ export const aggregateLogsToChart = (
     violations: 0,
   }));
 
-  for (const log of logs) {
+  logs.forEach((log) => {
     const logMs = new Date(log.timestamp).getTime();
     const idx = Math.floor((logMs - flooredStart) / interval);
     if (idx >= 0 && idx < bucketCount) {
       buckets[idx].violations += 1;
       buckets[idx].requests += 3 + Math.floor(rand() * 4);
     }
-  }
+  });
 
   return {
     violations: sumField(buckets, "violations"),

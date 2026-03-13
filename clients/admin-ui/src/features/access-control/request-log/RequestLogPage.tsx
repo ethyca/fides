@@ -27,10 +27,22 @@ export const RequestLogPage = () => {
 
   const facets: FacetDefinition[] = useMemo(
     () => [
-      { key: "consumer", label: "Consumer", options: facetOptions?.consumers ?? [] },
+      {
+        key: "consumer",
+        label: "Consumer",
+        options: facetOptions?.consumers ?? [],
+      },
       { key: "policy", label: "Policy", options: facetOptions?.policies ?? [] },
-      { key: "dataset", label: "Dataset", options: facetOptions?.datasets ?? [] },
-      { key: "data_use", label: "Data use", options: facetOptions?.data_uses ?? [] },
+      {
+        key: "dataset",
+        label: "Dataset",
+        options: facetOptions?.datasets ?? [],
+      },
+      {
+        key: "data_use",
+        label: "Data use",
+        options: facetOptions?.data_uses ?? [],
+      },
     ],
     [facetOptions],
   );
@@ -41,8 +53,9 @@ export const RequestLogPage = () => {
   const [searchValues, setSearchValues] = useState<string[]>(() =>
     policyParam ? [`policy${SEPARATOR}${policyParam}`] : [],
   );
-  const [selectedViolationId, setSelectedViolationId] =
-    useState<string | null>(null);
+  const [selectedViolationId, setSelectedViolationId] = useState<string | null>(
+    null,
+  );
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const dateParams = useMemo(() => {
