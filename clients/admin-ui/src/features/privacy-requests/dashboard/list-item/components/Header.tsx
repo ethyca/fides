@@ -7,12 +7,12 @@ import { useFlags } from "~/features/common/features";
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
-import { PrivacyRequestResponse } from "~/types/api";
+import { PrivacyRequestResponseExtended } from "~/types/api";
 
 import { IdentityValueWithKey } from "../../utils";
 
 interface HeaderProps {
-  privacyRequest: PrivacyRequestResponse;
+  privacyRequest: PrivacyRequestResponseExtended;
   primaryIdentity: IdentityValueWithKey | null;
 }
 
@@ -51,17 +51,17 @@ export const Header = ({ privacyRequest, primaryIdentity }: HeaderProps) => {
           ))}
         </Flex>
       )}
-      {flags.alphaJiraIntegration && privacyRequest.jira_ticket_key && (
+      {flags.alphaJiraIntegration && privacyRequest.jira_tickets?.[0] && (
         <Flex gap={4} align="center">
           <Typography.Link
-            href={privacyRequest.jira_ticket_url ?? undefined}
+            href={privacyRequest.jira_tickets[0].ticket_url}
             target="_blank"
             rel="noopener noreferrer"
           >
-            {privacyRequest.jira_ticket_key}
+            {privacyRequest.jira_tickets[0].ticket_key}
           </Typography.Link>
-          {privacyRequest.jira_ticket_status && (
-            <Tag>{privacyRequest.jira_ticket_status}</Tag>
+          {privacyRequest.jira_tickets[0].status && (
+            <Tag>{privacyRequest.jira_tickets[0].status}</Tag>
           )}
         </Flex>
       )}

@@ -3,16 +3,21 @@
 /* eslint-disable */
 
 import type { CheckpointActionRequiredDetails } from "./CheckpointActionRequiredDetails";
-import type { IdentityValue } from "./IdentityValue";
+import type { fides__api__schemas__privacy_request__IdentityValue } from "./fides__api__schemas__privacy_request__IdentityValue";
+import type { JiraTicketSummary } from "./JiraTicketSummary";
 import type { PolicyResponse } from "./PolicyResponse";
 import type { PrivacyRequestSource } from "./PrivacyRequestSource";
 import type { PrivacyRequestStatus } from "./PrivacyRequestStatus";
 import type { PrivacyRequestUser } from "./PrivacyRequestUser";
 
 /**
- * Schema to check the status of a PrivacyRequest
+ * Extends the base PrivacyRequestResponse with Jira ticket data.
+ *
+ * When one or more Jira tickets are linked to the privacy request
+ * (via ManualTaskInstance → JiraTicketTask), they are included in
+ * ``jira_tickets``. Empty list when no tickets exist.
  */
-export type PrivacyRequestResponse = {
+export type PrivacyRequestResponseExtended = {
   id: string;
   created_at?: string | null;
   started_processing_at?: string | null;
@@ -26,13 +31,11 @@ export type PrivacyRequestResponse = {
   paused_at?: string | null;
   status: PrivacyRequestStatus;
   external_id?: string | null;
-  identity?: Record<string, string | IdentityValue | null> | null;
-  // custom_privacy_request_fields was manually overriden to have the correct type
-  // until the generated types work correctly
-  custom_privacy_request_fields?: Record<
+  identity?: Record<
     string,
-    { label: string; value: string | number | Array<string | number> }
+    string | fides__api__schemas__privacy_request__IdentityValue | null
   > | null;
+  custom_privacy_request_fields?: null;
   policy: PolicyResponse;
   action_required_details?: CheckpointActionRequiredDetails | null;
   resume_endpoint?: string | null;
@@ -46,4 +49,5 @@ export type PrivacyRequestResponse = {
   finalized_at?: string | null;
   finalized_by?: string | null;
   duplicate_request_group_id?: string | null;
+  jira_tickets?: Array<JiraTicketSummary>;
 };
