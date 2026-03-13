@@ -22,6 +22,7 @@ from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
+from fides.api.schemas.client import ClientCreateRequest
 from fides.common.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -128,7 +129,7 @@ class TestCreateClient:
         response = api_client.post(
             url,
             headers=auth_header,
-            json=scopes,
+            json={"scopes": scopes},
         )
         response_body = json.loads(response.text)
         assert 200 == response.status_code
@@ -152,11 +153,52 @@ class TestCreateClient:
         response = api_client.post(
             url,
             headers=auth_header,
-            json=["invalid-scope"],
+            json={"scopes": ["invalid-scope"]},
         )
 
         assert 403 == response.status_code
         assert response.json()["detail"].startswith("Invalid Scope.")
+
+    def test_create_client_with_name_and_description(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_CREATE])
+
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"name": "My Integration", "description": "Used for DSR pipeline"},
+        )
+        assert 200 == response.status_code
+        response_body = response.json()
+        assert list(response_body.keys()) == ["client_id", "client_secret"]
+
+        new_client = ClientDetail.get(
+            db, object_id=response_body["client_id"], config=CONFIG
+        )
+        assert new_client.name == "My Integration"
+        assert new_client.description == "Used for DSR pipeline"
+
+        new_client.delete(db)
+
+    def test_create_client_empty_name_rejected(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_CREATE])
+
+        response = api_client.post(
+            url,
+            headers=auth_header,
+            json={"name": ""},
+        )
+        assert 422 == response.status_code
 
     def test_create_client_with_root_client(self, url, api_client):
         data = {

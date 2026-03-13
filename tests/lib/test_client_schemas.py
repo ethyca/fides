@@ -11,9 +11,10 @@ from fides.common.scope_registry import CLIENT_READ, PRIVACY_REQUEST_READ
 
 
 class TestClientCreateRequest:
-    def test_name_is_required(self):
-        with pytest.raises(ValidationError):
-            ClientCreateRequest(scopes=[CLIENT_READ])
+    def test_name_is_optional(self):
+        # name is optional at the API level; the UI form enforces it
+        req = ClientCreateRequest(scopes=[CLIENT_READ])
+        assert req.name is None
 
     def test_scopes_default_to_empty(self):
         req = ClientCreateRequest(name="My Client")

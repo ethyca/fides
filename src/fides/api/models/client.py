@@ -129,6 +129,7 @@ class ClientDetail(Base):
             client = super().create(
                 db,
                 data=data,
+                check_name=False,
             )
         return client, secret  # type: ignore
 

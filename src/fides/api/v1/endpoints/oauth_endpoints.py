@@ -26,7 +26,7 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
-from fides.api.schemas.client import ClientCreatedResponse
+from fides.api.schemas.client import ClientCreateRequest, ClientCreatedResponse
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -138,27 +138,31 @@ def create_client(
     *,
     request: Request,
     db: Session = Depends(get_db),
-    scopes: List[str] = Body([]),
+    body: Optional[ClientCreateRequest] = Body(None),
     requesting_client: ClientDetail = Security(
         verify_oauth_client, scopes=[CLIENT_CREATE]
     ),
 ) -> ClientCreatedResponse:
     """Creates a new client and returns the credentials. Only direct scopes can be added to the client via this endpoint."""
     logger.info("Creating new client")
-    if not all(scope in SCOPE_REGISTRY for scope in scopes):
+    if body is None:
+        body = ClientCreateRequest()
+    if not all(scope in SCOPE_REGISTRY for scope in body.scopes):
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
             detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
         )
 
     # Security check: Verify that the requesting client has all the scopes they're trying to assign
-    verify_client_can_assign_scopes(request, requesting_client, scopes, db)
+    verify_client_can_assign_scopes(request, requesting_client, body.scopes, db)
 
     client, secret = ClientDetail.create_client_and_secret(
         db,
         CONFIG.security.oauth_client_id_length_bytes,
         CONFIG.security.oauth_client_secret_length_bytes,
-        scopes=scopes,
+        scopes=body.scopes,
+        name=body.name,
+        description=body.description,
     )
     return ClientCreatedResponse(client_id=client.id, client_secret=secret)
 
