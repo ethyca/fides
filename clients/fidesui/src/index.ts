@@ -295,6 +295,7 @@ export type {
   StatisticTrend,
 } from "./hoc";
 export type { CustomDrawerProps as DrawerProps } from "./hoc/CustomDrawer";
+export { DRAWER_SIZE_MAP } from "./hoc/CustomDrawer";
 export {
   CustomAlert as Alert,
   CustomAvatar as Avatar,

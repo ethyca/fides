@@ -1,6 +1,6 @@
 import { Drawer, DrawerProps } from "antd/lib";
 
-const DRAWER_SIZE_MAP = {
+export const DRAWER_SIZE_MAP = {
   md: 480,
   lg: 720,
   xl: 992,
@@ -19,10 +19,7 @@ export interface CustomDrawerProps extends Omit<DrawerProps, "width"> {
  * Defaults:
  * - width: "md" (480px)
  */
-export const CustomDrawer = ({
-  width = "md",
-  ...props
-}: CustomDrawerProps) => {
+export const CustomDrawer = ({ width = "md", ...props }: CustomDrawerProps) => {
   const resolvedWidth =
     typeof width === "string" && width in DRAWER_SIZE_MAP
       ? DRAWER_SIZE_MAP[width as DrawerSize]

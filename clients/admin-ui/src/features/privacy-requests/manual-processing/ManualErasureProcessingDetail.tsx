@@ -14,7 +14,7 @@ import {
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import * as Yup from "yup";
 
 import { ManualProcessingDetailProps } from "./types";
@@ -26,7 +26,6 @@ const ManualErasureProcessingDetail = ({
   onSaveClick,
 }: ManualProcessingDetailProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const firstField = useRef(null);
 
   const handleSubmit = async (values: any, _actions: any) => {
     const params: PatchUploadManualWebhookDataRequest = {

@@ -14,7 +14,7 @@ import {
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik } from "formik";
 import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import * as Yup from "yup";
 
 import { ManualProcessingDetailProps } from "./types";
@@ -26,7 +26,6 @@ const ManualAccessProcessingDetail = ({
   onSaveClick,
 }: ManualProcessingDetailProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const firstField = useRef(null);
 
   const handleSubmit = async (values: any, _actions: any) => {
     const params: PatchUploadManualWebhookDataRequest = {
@@ -96,7 +95,7 @@ const ManualAccessProcessingDetail = ({
           >
             <Form id="manual-detail-form" noValidate>
               <VStack align="stretch" gap="16px">
-                {Object.entries(data.fields).map(([key], index) => (
+                {Object.entries(data.fields).map(([key]) => (
                   <HStack key={key}>
                     <Field id={key} name={key}>
                       {({ field }: { field: FieldInputProps<string> }) => (
@@ -118,7 +117,6 @@ const ManualAccessProcessingDetail = ({
                             autoComplete="off"
                             color="gray.700"
                             placeholder={`Please enter ${key}`}
-                            ref={index === 0 ? firstField : undefined}
                             size="sm"
                           />
                         </FormControl>

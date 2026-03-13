@@ -1,5 +1,5 @@
 import { Button, Drawer, Flex } from "fidesui";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 
@@ -17,7 +17,8 @@ interface Props {
 /**
  * @deprecated Use `title` prop directly instead of wrapping in EditDrawerHeader.
  */
-export const EditDrawerHeader = ({ title }: { title: string }) => title;
+export const EditDrawerHeader = ({ title }: { title: string }): ReactNode =>
+  title;
 
 export const EditDrawerFooter = ({
   onDelete,
@@ -78,7 +79,6 @@ const EditDrawer = ({
     onClose={onClose}
     title={title ?? header}
     footer={footer}
-    rootClassName="edit-drawer-content"
   >
     <div data-testid="edit-drawer-content">
       {description ? (
