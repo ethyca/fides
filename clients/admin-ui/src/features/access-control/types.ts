@@ -32,11 +32,16 @@ export interface PolicyViolationAggregate {
 }
 
 export interface PolicyViolationLog {
+  id: string;
   timestamp: string;
   consumer: string;
+  consumer_email: string;
   policy: string;
+  policy_description: string;
   dataset: string;
   data_use: string;
+  sql_statement: string;
+  ai_reason?: string;
 }
 
 export interface PaginatedResponse<T> {

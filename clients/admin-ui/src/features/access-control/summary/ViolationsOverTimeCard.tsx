@@ -18,10 +18,7 @@ import {
 } from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
-import { deriveInterval, formatTimestamp, XAxisTick } from "../utils";
-
-const GRADIENT_START_OPACITY = 0.25;
-const GRADIENT_END_OPACITY = 0;
+import { deriveInterval, formatTimestamp, tooltipLabelFormatter, useTooltipContentStyle, XAxisTick } from "../utils";
 
 interface ViolationsOverTimeCardProps {
   data: DataConsumerRequestPoint[];
@@ -36,6 +33,7 @@ export const ViolationsOverTimeCard = ({
   const violationsGradientId = `violations-gradient-${useId()}`;
   const requestsGradientId = `requests-gradient-${useId()}`;
   const intervalMs = deriveInterval(data);
+  const tooltipContentStyle = useTooltipContentStyle();
 
   return (
     <Card
@@ -61,12 +59,12 @@ export const ViolationsOverTimeCard = ({
                 <stop
                   offset="0%"
                   stopColor={token.colorText}
-                  stopOpacity={GRADIENT_START_OPACITY}
+                  stopOpacity={0.25}
                 />
                 <stop
                   offset="100%"
                   stopColor={token.colorText}
-                  stopOpacity={GRADIENT_END_OPACITY}
+                  stopOpacity={0}
                 />
               </linearGradient>
               <linearGradient
@@ -79,12 +77,12 @@ export const ViolationsOverTimeCard = ({
                 <stop
                   offset="0%"
                   stopColor={token.colorBorder}
-                  stopOpacity={GRADIENT_START_OPACITY}
+                  stopOpacity={0.25}
                 />
                 <stop
                   offset="100%"
                   stopColor={token.colorBorder}
-                  stopOpacity={GRADIENT_END_OPACITY}
+                  stopOpacity={0}
                 />
               </linearGradient>
             </defs>
@@ -114,28 +112,8 @@ export const ViolationsOverTimeCard = ({
               }}
             />
             <Tooltip
-              contentStyle={{
-                backgroundColor: token.colorBgElevated,
-                border: `1px solid ${token.colorBorder}`,
-                borderRadius: token.borderRadiusLG,
-                boxShadow: token.boxShadowSecondary,
-              }}
-              labelFormatter={(label) => {
-                const date = new Date(label);
-                if (intervalMs < 86_400_000) {
-                  return date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  });
-                }
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                });
-              }}
+              contentStyle={tooltipContentStyle}
+              labelFormatter={(label) => tooltipLabelFormatter(label, intervalMs)}
             />
             <Area
               type="monotone"

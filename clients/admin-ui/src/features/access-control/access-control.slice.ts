@@ -16,7 +16,6 @@ interface DataConsumerRequestsParams {
   policy?: string | string[];
   dataset?: string | string[];
   data_use?: string | string[];
-  [key: string]: string | string[] | undefined;
 }
 
 interface DataConsumersByViolationsParams {
@@ -93,6 +92,13 @@ const accessControlApi = baseApi.injectEndpoints({
       providesTags: ["Access Control"],
     }),
 
+    getViolationDetail: build.query<PolicyViolationLog, string>({
+      query: (id) => ({
+        url: `policy/violations/logs/${id}`,
+      }),
+      providesTags: ["Access Control"],
+    }),
+
     getFacetOptions: build.query<FacetOptionsResponse, void>({
       query: () => ({
         url: "access-control/facets",
@@ -107,5 +113,6 @@ export const {
   useGetDataConsumersByViolationsQuery,
   useGetPolicyViolationsQuery,
   useGetPolicyViolationLogsQuery,
+  useGetViolationDetailQuery,
   useGetFacetOptionsQuery,
 } = accessControlApi;

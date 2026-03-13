@@ -7,8 +7,7 @@ import { getRequestLogColumns } from "./requestLogColumns";
 
 const columns = getRequestLogColumns();
 
-const getRowKey = (record: PolicyViolationLog) =>
-  `${record.timestamp}-${record.consumer}-${record.dataset}`;
+const getRowKey = (record: PolicyViolationLog) => record.id;
 
 interface RequestLogTableProps {
   filters: Record<string, string | string[] | undefined>;
@@ -47,17 +46,10 @@ export const RequestLogTable = ({
     if (!data) {
       return;
     }
-
     if (page === 1) {
       setAllItems(data.items);
     } else {
-      setAllItems((prev) => {
-        const existingKeys = new Set(prev.map(getRowKey));
-        const newItems = data.items.filter(
-          (item) => !existingKeys.has(getRowKey(item)),
-        );
-        return [...prev, ...newItems];
-      });
+      setAllItems((prev) => [...prev, ...data.items]);
     }
     setHasMore(page < data.pages);
   }, [data, page]);

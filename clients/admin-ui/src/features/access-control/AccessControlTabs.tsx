@@ -6,7 +6,7 @@ import {
   ACCESS_CONTROL_SUMMARY_ROUTE,
 } from "~/features/common/nav/routes";
 
-const AccessControlTabs = () => {
+export const AccessControlTabs = () => {
   const router = useRouter();
   const currentPath = router.pathname;
 
@@ -54,4 +54,3 @@ const AccessControlTabs = () => {
   );
 };
 
-export default AccessControlTabs;

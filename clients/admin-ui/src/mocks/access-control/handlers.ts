@@ -16,11 +16,17 @@ import {
 const DEFAULT_START = new Date(Date.now() - 7 * 86_400_000).toISOString();
 const DEFAULT_END = new Date().toISOString();
 
+const getParam = (url: URL, key: string): string | string[] | null => {
+  const values = url.searchParams.getAll(key);
+  if (values.length === 0) return null;
+  return values.length === 1 ? values[0] : values;
+};
+
 const getFilters = (url: URL) => ({
-  consumer: url.searchParams.get("consumer"),
-  policy: url.searchParams.get("policy"),
-  dataset: url.searchParams.get("dataset"),
-  data_use: url.searchParams.get("data_use"),
+  consumer: getParam(url, "consumer"),
+  policy: getParam(url, "policy"),
+  dataset: getParam(url, "dataset"),
+  data_use: getParam(url, "data_use"),
   start_date: url.searchParams.get("start_date"),
   end_date: url.searchParams.get("end_date"),
 });
@@ -100,6 +106,14 @@ export const accessControlHandlers = () => {
         }),
       ),
     ),
+
+    rest.get(`${apiBase}/policy/violations/logs/:id`, (req, res, ctx) => {
+      const log = allViolationLogs.find((l) => l.id === req.params.id);
+      if (!log) {
+        return res(ctx.status(404), ctx.json({ detail: "Not found" }));
+      }
+      return res(ctx.status(200), ctx.json(log));
+    }),
 
     rest.get(`${apiBase}/policy/violations/logs`, (req, res, ctx) => {
       const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);

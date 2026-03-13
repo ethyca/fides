@@ -47,7 +47,7 @@ export const FindingsTable = () => {
         size="small"
         bordered={false}
         onRow={(record) => ({
-          style: { cursor: "pointer" },
+          className: "cursor-pointer",
           onClick: () => handleRowClick(record),
         })}
       />

@@ -13,7 +13,10 @@ import {
   SEPARATOR,
 } from "./FacetedSearchInput";
 import { RequestLogTable } from "./RequestLogTable";
+import { ViolationDetailDrawer } from "./ViolationDetailDrawer";
 import { ViolationsBarChartCard } from "./ViolationsBarChartCard";
+
+type FacetKey = "consumer" | "policy" | "dataset" | "data_use";
 
 export const RequestLogPage = () => {
   const router = useRouter();
@@ -38,6 +41,9 @@ export const RequestLogPage = () => {
   const [searchValues, setSearchValues] = useState<string[]>(() =>
     policyParam ? [`policy${SEPARATOR}${policyParam}`] : [],
   );
+  const [selectedViolationId, setSelectedViolationId] =
+    useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const dateParams = useMemo(() => {
     if (!dateRange) {
@@ -53,17 +59,18 @@ export const RequestLogPage = () => {
   }, [dateRange]);
 
   const facetFilters = useMemo(() => {
-    const result: Record<string, string | string[] | undefined> = {};
+    const result: Partial<Record<FacetKey, string | string[]>> = {};
     searchValues.forEach((val) => {
       const [key, value] = val.split(SEPARATOR);
       if (key && value) {
-        const existing = result[key];
+        const facetKey = key as FacetKey;
+        const existing = result[facetKey];
         if (Array.isArray(existing)) {
           existing.push(value);
         } else if (typeof existing === "string") {
-          result[key] = [existing, value];
+          result[facetKey] = [existing, value];
         } else {
-          result[key] = value;
+          result[facetKey] = value;
         }
       }
     });
@@ -111,7 +118,19 @@ export const RequestLogPage = () => {
         loading={chartLoading}
       />
 
-      <RequestLogTable filters={filters} />
+      <RequestLogTable
+        filters={filters}
+        onRowClick={(record) => {
+          setSelectedViolationId(record.id);
+          setDrawerOpen(true);
+        }}
+      />
+
+      <ViolationDetailDrawer
+        violationId={selectedViolationId}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
     </Flex>
   );
 };

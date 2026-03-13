@@ -1,9 +1,10 @@
-import { ChartText } from "fidesui";
+import { antTheme, ChartText } from "fidesui";
+import type { CSSProperties } from "react";
 
 import type { DataConsumerRequestPoint } from "./types";
 
-const HOUR_MS = 3_600_000;
-const DAY_MS = 86_400_000;
+export const HOUR_MS = 3_600_000;
+export const DAY_MS = 86_400_000;
 
 export const pickInterval = (startMs: number, endMs: number): number => {
   const rangeMs = endMs - startMs;
@@ -54,3 +55,33 @@ export const XAxisTick = ({ x, y, payload, intervalMs, fill }: XAxisTickProps) =
     {payload ? formatTimestamp(payload.value, intervalMs) : null}
   </ChartText>
 );
+
+export const useTooltipContentStyle = (): CSSProperties => {
+  const { token } = antTheme.useToken();
+  return {
+    backgroundColor: token.colorBgElevated,
+    border: `1px solid ${token.colorBorder}`,
+    borderRadius: token.borderRadiusLG,
+    boxShadow: token.boxShadowSecondary,
+  };
+};
+
+export const tooltipLabelFormatter = (
+  label: string,
+  intervalMs: number,
+): string => {
+  const date = new Date(label);
+  if (intervalMs < DAY_MS) {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};

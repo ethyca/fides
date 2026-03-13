@@ -18,7 +18,7 @@ import {
 } from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
-import { deriveInterval, formatTimestamp, XAxisTick } from "../utils";
+import { deriveInterval, formatTimestamp, tooltipLabelFormatter, useTooltipContentStyle, XAxisTick } from "../utils";
 
 const { Text } = Typography;
 
@@ -35,6 +35,7 @@ export const ViolationsBarChartCard = ({
 }: ViolationsBarChartCardProps) => {
   const { token } = antTheme.useToken();
   const intervalMs = deriveInterval(data);
+  const tooltipContentStyle = useTooltipContentStyle();
 
   return (
     <Card loading={loading}>
@@ -73,28 +74,8 @@ export const ViolationsBarChartCard = ({
             />
             <Tooltip
               cursor={false}
-              contentStyle={{
-                backgroundColor: token.colorBgElevated,
-                border: `1px solid ${token.colorBorder}`,
-                borderRadius: token.borderRadiusLG,
-                boxShadow: token.boxShadowSecondary,
-              }}
-              labelFormatter={(label) => {
-                const date = new Date(label);
-                if (intervalMs < 86_400_000) {
-                  return date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  });
-                }
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                });
-              }}
+              contentStyle={tooltipContentStyle}
+              labelFormatter={(label) => tooltipLabelFormatter(label, intervalMs)}
             />
             <Bar
               dataKey="violations"

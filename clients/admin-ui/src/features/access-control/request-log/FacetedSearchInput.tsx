@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 export const SEPARATOR = "::";
 
-interface FacetDefinition {
+export interface FacetDefinition {
   key: string;
   label: string;
   options: string[];
@@ -64,5 +64,3 @@ export const FacetedSearchInput = ({
     />
   );
 };
-
-export type { FacetDefinition };
