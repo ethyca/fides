@@ -53,6 +53,7 @@ describe("Home", () => {
     }).as("getExperience");
 
     cy.visit("/");
+    cy.getByTestId("home");
     cy.overrideSettings(settings);
 
     // Wait for the API calls to complete before interacting with the page

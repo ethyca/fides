@@ -21,10 +21,6 @@ from sqlalchemy.orm import (
     relationship,
 )
 from sqlalchemy.orm.dynamic import AppenderQuery
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.common_exceptions import (
     IdentityVerificationException,
@@ -41,6 +37,7 @@ from fides.api.db.base_class import (
     Base,  # type: ignore[attr-defined]
     JSONTypeOverride,
 )
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -316,12 +313,7 @@ class PrivacyRequest(
     # Encrypted filtered access results saved for later retrieval
     _filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
         "filtered_final_upload",
-        StringEncryptedType(
-            type_in=JSONTypeOverride,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
     )
 
     # Use descriptor for automatic external storage handling
@@ -331,12 +323,7 @@ class PrivacyRequest(
 
     # Encrypted filtered access results saved for later retrieval
     access_result_urls = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
-        StringEncryptedType(
-            type_in=JSONTypeOverride,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
     )
 
     # Non-DB fields that are optionally added throughout the codebase
@@ -1740,14 +1727,7 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
         nullable=True,
     )  # This field is used as a blind index for exact match searches
     encrypted_value = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
+        MutableDict.as_mutable(encrypted_type(type_in=JSONTypeOverride)),
         nullable=True,
     )  # Type bytea in the db
 

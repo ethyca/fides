@@ -14,6 +14,7 @@ from fides.api.service.privacy_request.request_service import (
     requeue_interrupted_tasks,
 )
 from fides.api.util.cache import (
+    cache_task_tracking_key,
     get_cache,
     get_privacy_request_retry_count,
     increment_privacy_request_retry_count,
@@ -559,6 +560,176 @@ class TestRequeueInterruptedTasks:
 
         requeue_interrupted_tasks.apply().get()
         mock_requeue_privacy_request.assert_not_called()
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
+    )
+    def test_pending_task_awaiting_upstream_is_not_canceled(
+        self,
+        mock_celery_tasks_in_flight,
+        mock_requeue_privacy_request,
+        mock_cancel_interrupted_tasks,
+        db,
+        policy,
+    ):
+        """Pending task with incomplete upstream deps is not canceled.
+
+        A pending request task that has never been dispatched to Celery because its
+        upstream tasks are not yet complete should not trigger cancellation — it is
+        legitimately waiting, not stuck.
+
+        The upstream task's celery ID must be in the queue so the watchdog passes over
+        it (active, not stuck) and proceeds to evaluate the downstream pending task.
+        """
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        upstream_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.in_processing,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:upstream",
+                "dataset_name": "test_dataset",
+                "collection_name": "upstream",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+        # Cache the upstream task's celery ID and put it in the queue so the watchdog
+        # treats it as active and continues past it to the downstream pending task.
+        cache_task_tracking_key(upstream_task.id, "upstream_task_celery_id")
+
+        # Pending task waiting on upstream_task — no cache key because it hasn't been queued
+        downstream_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:downstream",
+                "dataset_name": "test_dataset",
+                "collection_name": "downstream",
+                "upstream_tasks": [upstream_task.collection_address],
+                "downstream_tasks": [],
+            },
+        )
+        # Do NOT cache a subtask ID — it hasn't been dispatched yet
+
+        with mock.patch(
+            "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+            return_value=["upstream_task_celery_id"],
+        ):
+            requeue_interrupted_tasks.apply().get()
+            mock_cancel_interrupted_tasks.assert_not_called()
+            mock_requeue_privacy_request.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "has_upstream",
+        [
+            pytest.param(True, id="complete_upstream"),
+            pytest.param(False, id="root_task_no_upstream"),
+        ],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        return_value=[],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
+    )
+    def test_pending_task_with_no_cache_key_is_canceled(
+        self,
+        mock_celery_tasks_in_flight,
+        mock_get_task_ids_from_dsr_queue,
+        mock_requeue_privacy_request,
+        mock_cancel_interrupted_tasks,
+        db,
+        policy,
+        has_upstream,
+    ):
+        """Pending task with no cache key is canceled when not legitimately waiting.
+
+        Covers two stuck scenarios:
+        - A task whose upstream deps are all complete but it was never dispatched
+        - A root task (no upstream deps) that was never dispatched
+        Both should trigger cancellation.
+        """
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        upstream_task = None
+        if has_upstream:
+            upstream_task = RequestTask.create(
+                db,
+                data={
+                    "action_type": ActionType.access,
+                    "status": ExecutionLogStatus.complete,
+                    "privacy_request_id": privacy_request.id,
+                    "collection_address": "test_dataset:upstream",
+                    "dataset_name": "test_dataset",
+                    "collection_name": "upstream",
+                    "upstream_tasks": [],
+                    "downstream_tasks": [],
+                },
+            )
+
+        stuck_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:stuck",
+                "dataset_name": "test_dataset",
+                "collection_name": "stuck",
+                "upstream_tasks": [upstream_task.collection_address]
+                if has_upstream
+                else [],
+                "downstream_tasks": [],
+            },
+        )
+        # Do NOT cache a subtask ID
+
+        requeue_interrupted_tasks.apply().get()
+        mock_cancel_interrupted_tasks.assert_called_once()
 
     def test_aquired_locks_prevent_duplicate_runs(self, loguru_caplog):
         """Test that multiple instances of the task do not run simultaneously.

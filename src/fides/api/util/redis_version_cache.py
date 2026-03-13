@@ -11,19 +11,59 @@ infrequently (e.g. connector templates), where the per-request staleness
 check must be as cheap as possible.
 """
 
+import time
 from functools import wraps
 from threading import Lock
 from typing import Any, Callable, Dict, Optional, TypeVar
 
 from loguru import logger
+from redis.exceptions import RedisError
 
+from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
 from fides.api.util.cache import get_cache
+
+_REDIS_INFRASTRUCTURE_ERRORS = (
+    RedisConnectionError,
+    RedisNotConfigured,
+    RedisError,
+    ConnectionError,
+    TimeoutError,
+    OSError,
+)
 
 R = TypeVar("R")
 
 _cache_store: Dict[str, Dict[str, Any]] = {}
 _cache_lock = Lock()
 _UNVERIFIED = object()
+
+_REDIS_CIRCUIT_BREAKER_COOLDOWN = 30.0
+_redis_last_failure: float = 0.0
+_redis_failure_lock = Lock()
+
+
+def _redis_circuit_open() -> bool:
+    """Return True if Redis recently failed and we should skip retrying."""
+    with _redis_failure_lock:
+        if _redis_last_failure == 0.0:
+            return False
+        return (
+            time.monotonic() - _redis_last_failure
+        ) < _REDIS_CIRCUIT_BREAKER_COOLDOWN
+
+
+def _record_redis_failure() -> None:
+    """Record that a Redis call just failed, opening the circuit breaker."""
+    global _redis_last_failure
+    with _redis_failure_lock:
+        _redis_last_failure = time.monotonic()
+
+
+def _reset_redis_circuit() -> None:
+    """Reset the circuit breaker after a successful Redis call."""
+    global _redis_last_failure
+    with _redis_failure_lock:
+        _redis_last_failure = 0.0
 
 
 def _get_redis_version(redis_key: str) -> Optional[str]:
@@ -32,18 +72,38 @@ def _get_redis_version(redis_key: str) -> Optional[str]:
     Returns the string value of the key, or ``None`` if the key does not
     exist.  Raises on connection failure so the caller can decide how to
     handle it.
+
+    Uses a circuit breaker to avoid repeated slow timeouts when Redis is
+    down: after the first failure, subsequent calls within the cooldown
+    window raise immediately without contacting Redis.
     """
-    cache = get_cache()
-    return cache.get(redis_key)
+    if _redis_circuit_open():
+        raise ConnectionError("Redis circuit breaker is open")
+    try:
+        cache = get_cache()
+        value = cache.get(redis_key)
+    except _REDIS_INFRASTRUCTURE_ERRORS:
+        _record_redis_failure()
+        raise
+    _reset_redis_circuit()
+    return value
 
 
 def _bump_redis_version(redis_key: str) -> None:
     """Increment the version counter in Redis.
 
     If the key does not exist yet, ``INCR`` creates it with value ``1``.
+    Resets the circuit breaker on success since Redis is reachable.
     """
-    cache = get_cache()
-    cache.incr(redis_key)
+    if _redis_circuit_open():
+        raise ConnectionError("Redis circuit breaker is open")
+    try:
+        cache = get_cache()
+        cache.incr(redis_key)
+    except _REDIS_INFRASTRUCTURE_ERRORS:
+        _record_redis_failure()
+        raise
+    _reset_redis_circuit()
 
 
 def redis_version_cached(
@@ -81,20 +141,22 @@ def redis_version_cached(
             # Read the current version from Redis
             try:
                 current_version = _get_redis_version(redis_key)
-            except Exception:
+            except Exception as e:
                 # Redis is down – prefer stale data over a DB round-trip
                 with _cache_lock:
                     cached = _cache_store.get(cache_key)
                     if cached is not None:
                         cached["version"] = _UNVERIFIED
-                        logger.debug(
-                            "redis_version_cache '{}': Redis unavailable, returning stale cached value",
+                        logger.exception(
+                            "redis_version_cache '{}': Redis unavailable, returning stale cached value. Exception: {}",
                             cache_key,
+                            e,
                         )
                         return cached["value"]
-                logger.debug(
-                    "redis_version_cache '{}': Redis unavailable and no cached value, calling function directly",
+                logger.exception(
+                    "redis_version_cache '{}': Redis unavailable and no cached value, calling function directly. Exception: {}",
                     cache_key,
+                    e,
                 )
                 value = func(*args, **kwargs)
 

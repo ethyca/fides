@@ -11,12 +11,9 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, RelationshipProperty, Session, defer, relationship
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.db.base_class import Base, JSONTypeOverride  # type: ignore[attr-defined]
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -128,24 +125,14 @@ class RequestTask(WorkerTask, Base):
     # by data category for the end user.
     _access_data = Column(  # An encrypted JSON String - saved as a list of Rows
         "access_data",
-        StringEncryptedType(
-            type_in=JSONTypeOverride,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
     )
 
     # This is the raw access data saved in erasure format (with placeholders preserved) to perform a masking request.
     # First saved on the access node, and then copied to the corresponding erasure node.
     _data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
         "data_for_erasures",
-        StringEncryptedType(
-            type_in=JSONTypeOverride,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
     )
 
     # Use descriptors for automatic external storage handling
@@ -406,12 +393,7 @@ class RequestTaskSubRequest(Base):
     # Individual sub-request data (e.g., request_id, status, result data)
     # Additional fields for enhanced sub-request tracking
     param_values = Column(  # An encrypted JSON String - saved as a dict
-        StringEncryptedType(
-            type_in=JSONTypeOverride,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
         nullable=False,
     )
     status = Column(String, nullable=False)
@@ -421,12 +403,7 @@ class RequestTaskSubRequest(Base):
     # by data category for the end user.
     _access_data = Column(  # An encrypted JSON String - saved as a list of Rows
         "access_data",
-        StringEncryptedType(
-            type_in=JSONTypeOverride,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=JSONTypeOverride),
     )
 
     # Use descriptors for automatic external storage handling

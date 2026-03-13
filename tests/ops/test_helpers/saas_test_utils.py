@@ -8,8 +8,10 @@ from zipfile import ZipFile
 
 from requests import PreparedRequest, Request
 
+from fides.api.common_exceptions import ClientUnsuccessfulException
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
+from fides.api.util.saas_util import should_ignore_error
 
 
 @dataclass
@@ -224,6 +226,13 @@ class MockAuthenticatedClient(Mock):
                     mock_response.text = json_text
                     mock_response.content = json_text.encode("utf-8")
 
+                if not mock_response.ok:
+                    if should_ignore_error(mock_response.status_code, ignore_errors):
+                        return mock_response
+                    raise ClientUnsuccessfulException(
+                        status_code=mock_response.status_code,
+                        response=mock_response,
+                    )
                 return mock_response
 
         raise ValueError(f"No mock response for {key}")

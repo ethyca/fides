@@ -20,7 +20,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.sql import Select
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     CustomField,
@@ -364,7 +364,7 @@ async def delete_resource(
 
             log.bind(error="SQL Query integrity error!").error(raw_error_text)
             raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=error_message,
             )
         except SQLAlchemyError as e:

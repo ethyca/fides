@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException, status
 from starlette.status import (
@@ -9,7 +9,7 @@ from starlette.status import (
     HTTP_404_NOT_FOUND,
 )
 
-from fides.common.api.scope_registry import SCOPE_REGISTRY as SCOPES
+from fides.common.scope_registry import SCOPE_REGISTRY as SCOPES
 
 
 class FidesopsException(Exception):
@@ -255,8 +255,10 @@ class NotFoundException(HTTPException):
 class ClientUnsuccessfulException(FidesopsException):
     """Exception for when client call fails"""
 
-    def __init__(self, status_code: int):
+    def __init__(self, status_code: int, response: Optional[Any] = None):
         super().__init__(message=f"Client call failed with status code '{status_code}'")
+        self.status_code = status_code
+        self.response = response
 
 
 class NoSuchStrategyException(ValueError):
@@ -320,7 +322,7 @@ class ClientWriteFailedError(HTTPException):
 
     def __init__(self) -> None:
         super().__init__(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Failed to create client",
         )
 
@@ -368,7 +370,7 @@ class InvalidScopeError(HTTPException):
         SCOPES.sort()
 
         super().__init__(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail={
                 "error": "Invalid scope provided",
                 "invalid_scopes": invalid_scopes,
@@ -410,3 +412,7 @@ class MissingNamespaceSchemaException(BaseException):
 
 class ConnectionNotFoundException(BaseException):
     """ConnectionConfig could not be found"""
+
+
+class DomainValidationError(ValueError):
+    """The request domain is not in the list of allowed values for this connector."""

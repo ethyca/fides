@@ -1,3 +1,5 @@
+import { saveAs } from "file-saver";
+
 import { baseApi } from "~/features/common/api.slice";
 import type {
   CreateAssessmentRequest,
@@ -6,9 +8,11 @@ import type {
 
 import {
   AssessmentEvidenceResponse,
+  AssessmentTaskPage,
+  AssessmentTaskResponse,
   BulkUpdateAnswersRequest,
   BulkUpdateAnswersResponse,
-  CreatePrivacyAssessmentResponse,
+  CreateAssessmentTaskResponse,
   CreateQuestionnaireRequest,
   CreateReminderRequest,
   GetAssessmentEvidenceParams,
@@ -61,15 +65,35 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
     }),
 
     createPrivacyAssessment: build.mutation<
-      CreatePrivacyAssessmentResponse,
+      CreateAssessmentTaskResponse,
       CreateAssessmentRequest
     >({
       query: (body) => ({
         url: "plus/privacy-assessments",
         method: "POST",
-        body,
+        body: { high_risk_only: false, ...body }, // Temporary fix to ensure all assessments are generated
       }),
-      invalidatesTags: ["Privacy Assessment"],
+      invalidatesTags: ["Privacy Assessment", "Privacy Assessment Tasks"],
+    }),
+
+    getAssessmentTasks: build.query<
+      AssessmentTaskPage,
+      { page?: number; size?: number; status?: string } | void
+    >({
+      query: (params) => ({
+        url: "plus/privacy-assessments/tasks",
+        params: params ?? undefined,
+      }),
+      providesTags: ["Privacy Assessment Tasks"],
+    }),
+
+    getAssessmentTask: build.query<AssessmentTaskResponse, string>({
+      query: (taskId) => ({
+        url: `plus/privacy-assessments/tasks/${taskId}`,
+      }),
+      providesTags: (_result, _error, taskId) => [
+        { type: "Privacy Assessment Tasks", id: taskId },
+      ],
     }),
 
     updatePrivacyAssessment: build.mutation<
@@ -100,7 +124,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       { id: string; questionId: string; body: UpdateAnswerRequest }
     >({
       query: ({ id, questionId, body }) => ({
-        url: `plus/privacy-assessments/${id}/answers/${questionId}`,
+        url: `plus/privacy-assessments/${id}/questions/${questionId}`,
         method: "PUT",
         body,
       }),
@@ -116,7 +140,7 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
       { id: string; body: BulkUpdateAnswersRequest }
     >({
       query: ({ id, body }) => ({
-        url: `plus/privacy-assessments/${id}/answers`,
+        url: `plus/privacy-assessments/${id}/questions`,
         method: "PUT",
         body,
       }),
@@ -206,6 +230,50 @@ const privacyAssessmentsApi = baseApi.injectEndpoints({
         url: "plus/privacy-assessments/config/defaults",
       }),
     }),
+
+    // PDF Report Download
+    downloadAssessmentReport: build.mutation<void, string>({
+      query: (id) => ({
+        url: `plus/privacy-assessments/${id}/pdf?export_mode=external`,
+        method: "GET",
+        responseHandler: async (response) => {
+          // Check for HTTP errors before treating response as PDF
+          if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+              const errorBody = await response.text();
+              const errorJson = JSON.parse(errorBody);
+              errorMessage =
+                errorJson.detail || errorJson.message || errorMessage;
+            } catch {
+              // If error body isn't JSON, use the default HTTP error message
+            }
+            throw new Error(errorMessage);
+          }
+
+          const contentDisposition = response.headers.get(
+            "content-disposition",
+          );
+          let filename = "assessment-report.pdf";
+
+          if (contentDisposition) {
+            // Try to extract filename from content-disposition header
+            // Handles both: filename="name.pdf" and filename=name.pdf
+            const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+            if (match && match[1]) {
+              filename = match[1].trim();
+            }
+          }
+
+          const arrayBuffer = await response.arrayBuffer();
+          const blob = new Blob([arrayBuffer], {
+            type: response.headers.get("content-type") || "application/pdf",
+          });
+          saveAs(blob, filename);
+          return { data: undefined };
+        },
+      }),
+    }),
   }),
 });
 
@@ -226,6 +294,10 @@ export const {
   useGetAssessmentConfigQuery,
   useUpdateAssessmentConfigMutation,
   useGetAssessmentConfigDefaultsQuery,
+  // PDF Report
+  useDownloadAssessmentReportMutation,
+  // Assessment Tasks
+  useGetAssessmentTasksQuery,
 } = privacyAssessmentsApi;
 
 export { privacyAssessmentsApi };

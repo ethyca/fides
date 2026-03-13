@@ -85,11 +85,20 @@ export type Config = {
   logo_path: string;
   logo_url?: string;
   favicon_path?: string;
+  page_title?: string;
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: ConsentConfig;
+  /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url?: string;
+  /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string;
+  links?: PrivacyCenterLink[];
+};
+
+export type PrivacyCenterLink = {
+  label: string;
+  url: string;
 };
 
 export type LegacyConsentConfig = {

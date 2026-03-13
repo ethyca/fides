@@ -10,7 +10,6 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncProcessing,
@@ -64,6 +63,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
+from fides.common.session_management import get_autoclose_db_session as get_db
 from fides.config import CONFIG
 
 COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldPath]]]
@@ -282,7 +282,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Manual tasks don't connect to external systems, so the write access
         # concept doesn't apply. Humans manually record erasure confirmations
         # or consent preferences.
-        if connection_config.connection_type == ConnectionType.manual_task:
+        if connection_config.connection_type in (
+            ConnectionType.manual_task,
+            ConnectionType.jira_ticket,
+        ):
             return True
         return connection_config.access == AccessLevel.write
 
@@ -894,7 +897,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
                 pref.cache_system_status(
                     db,
-                    self.connector.configuration.system_key,  # type: ignore[arg-type]
+                    self.connector.configuration.consent_tracking_key,
                     ExecutionLogStatus.skipped,
                 )
 

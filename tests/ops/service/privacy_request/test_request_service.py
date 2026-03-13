@@ -21,7 +21,8 @@ from fides.api.service.privacy_request.request_service import (
     remove_saved_dsr_data,
     requeue_interrupted_tasks,
 )
-from fides.common.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
+from fides.api.util.cache import cache_task_tracking_key
+from fides.common.urn_registry import LOGIN, V1_URL_PREFIX
 from fides.config import CONFIG
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestError
 
@@ -825,7 +826,9 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         mock_redis_lock.return_value.__enter__.return_value = True
         mock_get_queue_tasks.return_value = []
         mock_tasks_in_flight.return_value = False
-        mock_get_request_tasks.return_value = {"request_task_id_1": "subtask_id"}
+        mock_get_request_tasks.return_value = [
+            ("request_task_id_1", "subtask_id", ExecutionLogStatus.in_processing, False)
+        ]
 
         with mock.patch.object(
             requeue_interrupted_tasks, "get_new_session"
