@@ -18,12 +18,10 @@ import {
   Button,
   Flex,
   Icons,
-  Input,
   notification,
   Radio,
   SelectProps,
   Space,
-  Text,
 } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -611,7 +609,6 @@ const AccessPolicyEditor = ({
             </ReactFlowProvider>
           )}
         </Flex>
-
       </Flex>
     </Layout>
   );
