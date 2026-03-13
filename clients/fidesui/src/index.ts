@@ -288,20 +288,20 @@ export type {
   CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
   CustomCardProps as CardProps,
+  CustomDrawerProps as DrawerProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
   CustomStatisticProps as StatisticProps,
   StatisticTrend,
 } from "./hoc";
-export type { CustomDrawerProps as DrawerProps } from "./hoc/CustomDrawer";
-export { DRAWER_SIZE_MAP } from "./hoc/CustomDrawer";
 export {
   CustomAlert as Alert,
   CustomAvatar as Avatar,
   CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
+  CustomDrawer as Drawer,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
@@ -311,7 +311,7 @@ export {
   CustomTooltip as Tooltip,
   CustomTypography as Typography,
 } from "./hoc";
-export { CustomDrawer as Drawer } from "./hoc/CustomDrawer";
+export { DRAWER_SIZE_MAP } from "./hoc/CustomDrawer";
 export type {
   CustomListProps as ListProps,
   RowSelection,
