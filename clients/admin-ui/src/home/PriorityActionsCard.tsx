@@ -1,8 +1,10 @@
+import classNames from "classnames";
 import { Button, Card, Empty, Flex, List, Tag, Text } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useGetPriorityActionsQuery } from "~/features/dashboard/dashboard.slice";
 
+import cardStyles from "./dashboard-card.module.scss";
 import styles from "./PriorityActionsCard.module.scss";
 
 export const PriorityActionsCard = () => {
@@ -27,7 +29,7 @@ export const PriorityActionsCard = () => {
     <Card
       title="Priority actions"
       variant="borderless"
-      className={styles.cardContainer}
+      className={classNames(cardStyles.dashboardCard, styles.cardContainer)}
       headerLayout="inline"
       tabList={[
         {
