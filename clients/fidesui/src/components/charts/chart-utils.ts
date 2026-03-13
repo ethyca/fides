@@ -2,8 +2,6 @@ import { theme } from "antd/lib";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 
-import { ChartText } from "./ChartText";
-
 export const HOUR_MS = 3_600_000;
 export const DAY_MS = 86_400_000;
 
@@ -95,23 +93,3 @@ export const useTooltipContentStyle = (): CSSProperties => {
     boxShadow: token.boxShadowSecondary,
   };
 };
-
-interface XAxisTickProps {
-  x?: number;
-  y?: number;
-  payload?: { value: string };
-  intervalMs: number;
-  fill?: string;
-}
-
-export const XAxisTick = ({
-  x,
-  y,
-  payload,
-  intervalMs,
-  fill,
-}: XAxisTickProps) => (
-  <ChartText x={Number(x)} y={Number(y) + 12} fill={fill}>
-    {payload ? formatTimestamp(payload.value, intervalMs) : null}
-  </ChartText>
-);

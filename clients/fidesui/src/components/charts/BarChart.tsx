@@ -13,8 +13,8 @@ import {
   formatTimestamp,
   tooltipLabelFormatter,
   useTooltipContentStyle,
-  XAxisTick,
 } from "./chart-utils";
+import { XAxisTick } from "./XAxisTick";
 
 export interface BarChartDataPoint {
   label: string;

@@ -345,8 +345,8 @@ export {
   pickInterval,
   tooltipLabelFormatter,
   useTooltipContentStyle,
-  XAxisTick,
 } from "./components/charts/chart-utils";
+export { XAxisTick } from "./components/charts/XAxisTick";
 export type {
   BarChartDataPoint,
   BarChartProps,
