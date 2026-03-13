@@ -43,7 +43,7 @@ export const RequestLogTable = ({
   }, [filters]);
 
   useEffect(() => {
-    if (!data) {
+    if (!data || data.page !== page) {
       return;
     }
     if (page === 1) {

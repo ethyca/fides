@@ -5,6 +5,8 @@ import {
   Drawer,
   Flex,
   Icons,
+  Result,
+  Spin,
   Tag,
   Typography,
 } from "fidesui";
@@ -27,7 +29,11 @@ export const ViolationDetailDrawer = ({
   open,
   onClose,
 }: ViolationDetailDrawerProps) => {
-  const { data: violation } = useGetViolationDetailQuery(violationId!, {
+  const {
+    data: violation,
+    isLoading,
+    error,
+  } = useGetViolationDetailQuery(violationId!, {
     skip: !violationId,
   });
 
@@ -64,6 +70,18 @@ export const ViolationDetailDrawer = ({
         </Flex>
       }
     >
+      {isLoading && (
+        <Flex justify="center" align="center" className="py-16">
+          <Spin />
+        </Flex>
+      )}
+      {error && (
+        <Result
+          status="error"
+          title="Failed to load violation details"
+          subTitle="Please try again later."
+        />
+      )}
       {violation && timestamp && (
         <div className="space-y-6">
           <div>

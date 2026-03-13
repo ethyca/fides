@@ -3,16 +3,11 @@ import { antTheme, Card, Flex, Text } from "fidesui";
 import { Cell, Pie, PieChart } from "recharts";
 
 import type { TopPolicyViolation } from "../types";
+import { formatTrend } from "../utils";
 
 const DONUT_SIZE = 100;
 const INNER_RADIUS = 35;
 const OUTER_RADIUS = 48;
-
-const formatTrend = (trend: number) => {
-  const pct = Math.abs(trend * 100).toFixed(1);
-  const sign = trend <= 0 ? "-" : "+";
-  return `${sign}${pct}% vs last mo`;
-};
 
 interface ViolationRateCardProps {
   violations: number;

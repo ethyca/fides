@@ -1,5 +1,5 @@
 import { antTheme, Card, Flex, Text } from "fidesui";
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 
 import type { DataConsumerSummary } from "../types";
 
@@ -15,7 +15,7 @@ export const DataConsumersCard = ({
   loading,
 }: DataConsumersCardProps) => {
   const { token } = antTheme.useToken();
-  const items = data.slice(0, 5);
+  const items = useMemo(() => data.slice(0, 5), [data]);
 
   return (
     <Card

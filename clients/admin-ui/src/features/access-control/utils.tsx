@@ -72,6 +72,12 @@ export const useTooltipContentStyle = (): CSSProperties => {
   };
 };
 
+export const formatTrend = (trend: number): string => {
+  const pct = Math.abs(trend * 100).toFixed(1);
+  const sign = trend <= 0 ? "-" : "+";
+  return `${sign}${pct}% vs last mo`;
+};
+
 export const tooltipLabelFormatter = (
   label: string,
   intervalMs: number,

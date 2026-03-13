@@ -22,16 +22,11 @@ import type { DataConsumerRequestPoint } from "../types";
 import {
   deriveInterval,
   formatTimestamp,
+  formatTrend,
   tooltipLabelFormatter,
   useTooltipContentStyle,
   XAxisTick,
 } from "../utils";
-
-const formatTrend = (trend: number) => {
-  const pct = Math.abs(trend * 100).toFixed(0);
-  const sign = trend <= 0 ? "-" : "+";
-  return `${sign}${pct}% vs last mo`;
-};
 
 interface ViolationsOverTimeCardProps {
   data: DataConsumerRequestPoint[];
