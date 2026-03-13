@@ -1,3 +1,20 @@
 .emptyActions {
   min-height: 200px;
 }
+
+.cardContainer {
+  height: 100%;
+  max-height: inherit;
+  display: flex;
+  flex-direction: column;
+
+  :global(.ant-card-head) {
+    flex-shrink: 0;
+  }
+
+  :global(.ant-card-body) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}

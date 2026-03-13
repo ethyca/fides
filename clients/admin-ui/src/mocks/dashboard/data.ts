@@ -1,6 +1,10 @@
 import type {
+  ActivityFeedItem,
+  AgentBriefingResponse,
+  AstralisResponse,
   PostureResponse,
   PriorityAction,
+  TrendsResponse,
 } from "~/features/dashboard/dashboard.slice";
 
 export const mockPosture: PostureResponse = {
@@ -162,5 +166,120 @@ export const mockPriorityActions: PriorityAction[] = [
     action: "system_review",
     action_data: { flow_count: 5, source: "crm", destination: "warehouse" },
     status: "pending",
+  },
+];
+
+export const mockAgentBriefing: AgentBriefingResponse = {
+  briefing:
+    "Good morning — Astralis resolved 4 actions overnight. 2 items need your attention: a consent anomaly in EU and an overdue erasure request.",
+  quick_actions: [
+    {
+      id: "qa-1",
+      title: "Review consent anomaly",
+      action: "consent_anomaly",
+      action_url: "/steward",
+    },
+    {
+      id: "qa-2",
+      title: "Process erasure request",
+      action: "dsr_action",
+      action_url: "/steward",
+    },
+  ],
+};
+
+export const mockTrends: TrendsResponse = {
+  metrics: {
+    data_sharing: {
+      name: "Data sharing",
+      value: 0.73,
+      history: [0.65, 0.67, 0.68, 0.7, 0.69, 0.71, 0.72, 0.73],
+      metadata: {},
+      diff: 0.03,
+    },
+    active_users: {
+      name: "Active users",
+      value: 0.82,
+      history: [0.78, 0.79, 0.8, 0.81, 0.8, 0.82, 0.81, 0.82],
+      metadata: {},
+      diff: 0.01,
+    },
+    total_requests: {
+      name: "Total requests",
+      value: 1247,
+      history: [980, 1020, 1050, 1100, 1130, 1180, 1210, 1247],
+      metadata: {},
+      diff: 37,
+    },
+    consent_rate: {
+      name: "Consent rate",
+      value: 0.68,
+      history: [0.74, 0.73, 0.72, 0.71, 0.7, 0.69, 0.68, 0.68],
+      metadata: {},
+      diff: -0.02,
+    },
+  },
+};
+
+export const mockAstralis: AstralisResponse = {
+  active_conversations: 3,
+  completed_assessments: 12,
+  awaiting_response: 4,
+  risks_identified: 7,
+};
+
+const hoursAgo = (h: number) =>
+  new Date(Date.now() - h * 3_600_000).toISOString();
+
+export const mockActivityFeedItems: ActivityFeedItem[] = [
+  {
+    actor_type: "agent",
+    message: "completed PIA for the new Marketing Analytics platform",
+    timestamp: hoursAgo(0.5),
+  },
+  {
+    actor_type: "user",
+    message: "approved data mapping for CRM system",
+    timestamp: hoursAgo(1),
+  },
+  {
+    actor_type: "agent",
+    message: "flagged consent anomaly in EU region — opt-in rate dropped 12%",
+    timestamp: hoursAgo(2),
+  },
+  {
+    actor_type: "user",
+    message: "resolved DSR #4821 (erasure request)",
+    timestamp: hoursAgo(3),
+  },
+  {
+    actor_type: "agent",
+    message: "auto-classified 38 new data fields in Warehouse schema",
+    timestamp: hoursAgo(5),
+  },
+  {
+    actor_type: "user",
+    message: "updated retention policy for HR records",
+    timestamp: hoursAgo(8),
+  },
+  {
+    actor_type: "agent",
+    message: "identified 3 systems sharing data without a legal basis",
+    timestamp: hoursAgo(14),
+  },
+  {
+    actor_type: "user",
+    message: "assigned steward role to J. Martinez for Finance dept",
+    timestamp: hoursAgo(22),
+  },
+  {
+    actor_type: "agent",
+    message: "generated monthly compliance summary report",
+    timestamp: hoursAgo(36),
+  },
+  {
+    actor_type: "user",
+    message: "added new vendor Snowflake to system registry",
+    timestamp: hoursAgo(48),
   },
 ];

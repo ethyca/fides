@@ -26,7 +26,7 @@ interface QuickAction {
   action_url: string;
 }
 
-interface AgentBriefingResponse {
+export interface AgentBriefingResponse {
   briefing: string;
   quick_actions: QuickAction[];
 }
@@ -77,7 +77,7 @@ export interface TrendMetric {
   diff: number;
 }
 
-interface TrendsResponse {
+export interface TrendsResponse {
   metrics: Record<string, TrendMetric>;
 }
 
@@ -94,7 +94,7 @@ export interface ActivityFeedItem {
   timestamp: string;
 }
 
-interface ActivityFeedResponse {
+export interface ActivityFeedResponse {
   items: ActivityFeedItem[];
   total: number;
   page: number;

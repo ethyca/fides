@@ -38,7 +38,7 @@ const HomeContainerInner = () => {
       <ConfigProvider theme={activeTheme}>
         <AntLayout className="h-screen">
           {alphaDarkMode && (
-            <AntLayout.Header className="flex items-center justify-end px-10 h-12">
+            <AntLayout.Header className="flex h-12 items-center justify-end px-10">
               <ThemeModeSegmented />
             </AntLayout.Header>
           )}
