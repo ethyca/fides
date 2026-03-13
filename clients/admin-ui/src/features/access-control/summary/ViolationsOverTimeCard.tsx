@@ -39,10 +39,10 @@ export const ViolationsOverTimeCard = ({
     <Card
       loading={loading}
       title={<Text strong>Violations over time</Text>}
-      className="h-full flex flex-col"
+      className="flex h-full flex-col"
       styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
     >
-      <div className="w-full flex-1 min-h-0">
+      <div className="min-h-0 w-full flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}

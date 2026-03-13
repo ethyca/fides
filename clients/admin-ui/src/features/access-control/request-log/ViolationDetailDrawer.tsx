@@ -8,105 +8,13 @@ import {
   Tag,
   Typography,
 } from "fidesui";
-import type { ReactNode } from "react";
+import { useMemo } from "react";
+
+import { Editor } from "~/features/common/yaml/helpers";
 
 import { useGetViolationDetailQuery } from "../access-control.slice";
 
 const { Text, Title } = Typography;
-
-const SQL_COLORS = {
-  keyword: "text-[#7b4ea9]",
-  string: "text-[#5a9a68]",
-  number: "text-[#b9704b]",
-  operator: "text-[#e59d47]",
-  default: "text-neutral-10",
-};
-
-const SQL_KEYWORDS = new Set([
-  "SELECT",
-  "FROM",
-  "WHERE",
-  "AND",
-  "OR",
-  "INSERT",
-  "INTO",
-  "UPDATE",
-  "DELETE",
-  "JOIN",
-  "LEFT",
-  "RIGHT",
-  "INNER",
-  "OUTER",
-  "ON",
-  "GROUP",
-  "BY",
-  "ORDER",
-  "LIMIT",
-  "OFFSET",
-  "AS",
-  "IN",
-  "NOT",
-  "NULL",
-  "IS",
-  "LIKE",
-  "BETWEEN",
-  "EXISTS",
-  "HAVING",
-  "UNION",
-  "ALL",
-  "DISTINCT",
-  "SET",
-  "VALUES",
-  "CREATE",
-  "DROP",
-  "ALTER",
-  "TABLE",
-  "INDEX",
-  "SAMPLE",
-  "INTERVAL",
-  "NOW",
-]);
-
-const highlightSQL = (sql: string): ReactNode[] =>
-  Array.from(sql.matchAll(
-    /'[^']*'|"[^"]*"|\b\d+(?:\.\d+)?\b|[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*|\S|\s+/g,
-  )).map((match) => {
-    const token = match[0];
-    const key = `${match.index}-${token}`;
-    if (token.startsWith("'") || token.startsWith('"')) {
-      return (
-        <span key={key} className={SQL_COLORS.string}>
-          {token}
-        </span>
-      );
-    }
-    if (/^\d/.test(token)) {
-      return (
-        <span key={key} className={SQL_COLORS.number}>
-          {token}
-        </span>
-      );
-    }
-    if (SQL_KEYWORDS.has(token.toUpperCase())) {
-      return (
-        <span key={key} className={`${SQL_COLORS.keyword} font-semibold`}>
-          {token}
-        </span>
-      );
-    }
-    if (/^[=<>!*+\-/();,]$/.test(token)) {
-      return (
-        <span key={key} className={SQL_COLORS.operator}>
-          {token}
-        </span>
-      );
-    }
-    return (
-      <span key={key} className={SQL_COLORS.default}>
-        {token}
-      </span>
-    );
-  });
 
 interface ViolationDetailDrawerProps {
   violationId: string | null;
@@ -133,6 +41,14 @@ export const ViolationDetailDrawer = ({
     : "";
 
   const timestamp = violation ? new Date(violation.timestamp) : null;
+
+  const editorHeight = useMemo(() => {
+    if (!violation) {
+      return 80;
+    }
+    const lineCount = violation.sql_statement.split("\n").length;
+    return Math.max(80, lineCount * 18 + 24);
+  }, [violation]);
 
   return (
     <Drawer
@@ -228,10 +144,30 @@ export const ViolationDetailDrawer = ({
             <Text className="mb-2 block text-xs font-semibold text-neutral-10">
               Request context
             </Text>
-            <div className="rounded-lg bg-gray-50 p-5">
-              <pre className="m-0 whitespace-pre-wrap font-mono text-xs leading-relaxed">
-                {highlightSQL(violation.sql_statement)}
-              </pre>
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <Editor
+                defaultLanguage="sql"
+                value={violation.sql_statement}
+                height={editorHeight}
+                theme="light"
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: false },
+                  lineNumbers: "off",
+                  scrollBeyondLastLine: false,
+                  folding: false,
+                  fontSize: 12,
+                  fontFamily: "Menlo, monospace",
+                  wordWrap: "on",
+                  padding: { top: 12, bottom: 12 },
+                  renderLineHighlight: "none",
+                  overviewRulerLanes: 0,
+                  scrollbar: {
+                    vertical: "hidden",
+                    horizontal: "hidden",
+                  },
+                }}
+              />
             </div>
           </div>
 

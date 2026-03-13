@@ -20,7 +20,7 @@ export const ViolationRateCard = ({
     <Card
       loading={loading}
       title={<Text strong>Violation rate</Text>}
-      className="h-full flex flex-col"
+      className="flex h-full flex-col"
       styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
     >
       <Flex vertical gap={12} className="mt-auto">
