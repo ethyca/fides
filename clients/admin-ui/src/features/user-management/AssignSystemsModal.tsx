@@ -76,12 +76,12 @@ const AssignSystemsModal = ({
       onCancel={onClose}
       data-testid="confirmation-modal"
       title={
-        <div className="flex items-center justify-between pr-6">
+        <Flex align="center" justify="space-between" className="pr-6">
           <span>Assign systems</span>
           <Tag color="success">
             Assigned to {assignedSystems.length} systems
           </Tag>
-        </div>
+        </Flex>
       }
       centered
       destroyOnHidden

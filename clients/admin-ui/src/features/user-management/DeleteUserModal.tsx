@@ -6,6 +6,7 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
   ChakraUseDisclosureReturn as UseDisclosureReturn,
+  Flex,
   Modal,
   useChakraToast as useToast,
 } from "fidesui";
@@ -75,21 +76,21 @@ const DeleteUserModal = ({
   });
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={handleDeleteUser}
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      data-testid="delete-user-modal"
+      title="Delete User"
+      centered
+      destroyOnHidden
+      footer={null}
     >
-      {({ isSubmitting, dirty, isValid }) => (
-        <Modal
-          open={isOpen}
-          onCancel={onClose}
-          data-testid="delete-user-modal"
-          title="Delete User"
-          centered
-          destroyOnHidden
-          footer={null}
-        >
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={handleDeleteUser}
+      >
+        {({ isSubmitting, dirty, isValid }) => (
           <Form>
             <Alert
               status="warning"
@@ -120,7 +121,7 @@ const DeleteUserModal = ({
               />
             </Stack>
 
-            <div className="mt-4 flex w-full gap-2">
+            <Flex className="mt-4 w-full" gap="small">
               <Button onClick={onClose} className="w-1/2">
                 Cancel
               </Button>
@@ -134,11 +135,11 @@ const DeleteUserModal = ({
               >
                 Delete User
               </Button>
-            </div>
+            </Flex>
           </Form>
-        </Modal>
-      )}
-    </Formik>
+        )}
+      </Formik>
+    </Modal>
   );
 };
 

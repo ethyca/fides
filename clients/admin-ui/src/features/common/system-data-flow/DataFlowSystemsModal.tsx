@@ -90,15 +90,15 @@ const DataFlowSystemsModal = ({
       destroyOnHidden
       data-testid="confirmation-modal"
       title={
-        <div className="flex items-center justify-between pr-6">
+        <Flex align="center" justify="space-between" className="pr-6">
           <span>Configure {flowType.toLocaleLowerCase()} systems</span>
           <Tag color="success">
             Assigned to {selectedDataFlows.length} systems
           </Tag>
-        </div>
+        </Flex>
       }
       footer={
-        <div className="flex justify-start gap-2">
+        <Flex justify="flex-start" gap="small">
           <Button onClick={onClose} className="mr-2" data-testid="cancel-btn">
             Cancel
           </Button>
@@ -111,7 +111,7 @@ const DataFlowSystemsModal = ({
               Confirm
             </Button>
           )}
-        </div>
+        </Flex>
       }
     >
       <div data-testid="assign-systems-modal-body">

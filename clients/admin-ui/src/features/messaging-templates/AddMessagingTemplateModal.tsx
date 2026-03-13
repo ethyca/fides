@@ -2,6 +2,7 @@ import {
   Button,
   ChakraBox as Box,
   ChakraText as Text,
+  Flex,
   Modal,
   Select,
 } from "fidesui";
@@ -45,7 +46,7 @@ const AddMessagingTemplateModal = ({
       data-testid="add-messaging-template-modal"
       title="Select message template"
       footer={
-        <div className="flex w-full gap-4">
+        <Flex className="w-full" gap="middle">
           <Button onClick={onClose} data-testid="cancel-btn" className="grow">
             Cancel
           </Button>
@@ -58,7 +59,7 @@ const AddMessagingTemplateModal = ({
           >
             Next
           </Button>
-        </div>
+        </Flex>
       }
     >
       <Text

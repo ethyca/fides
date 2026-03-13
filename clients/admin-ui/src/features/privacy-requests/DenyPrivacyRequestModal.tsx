@@ -28,23 +28,23 @@ const DenyPrivacyRequestModal = ({
     [onDenyRequest, onClose],
   );
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={Yup.object({
-        denialReason: Yup.string().required().label("Reason for denial"),
-      })}
-      onSubmit={handleSubmit}
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnHidden
+      data-testid="deny-privacy-request-modal"
+      title="Privacy request denial"
+      footer={null}
     >
-      {({ isSubmitting, dirty, isValid }) => (
-        <Modal
-          open={isOpen}
-          onCancel={onClose}
-          centered
-          destroyOnHidden
-          data-testid="deny-privacy-request-modal"
-          title="Privacy request denial"
-          footer={null}
-        >
+      <Formik
+        initialValues={initialValues}
+        validationSchema={Yup.object({
+          denialReason: Yup.string().required().label("Reason for denial"),
+        })}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting, dirty, isValid }) => (
           <Form>
             <div className="mb-2 text-sm text-gray-500">
               Please enter a reason for denying this privacy request. Please
@@ -73,9 +73,9 @@ const DenyPrivacyRequestModal = ({
               </Button>
             </Flex>
           </Form>
-        </Modal>
-      )}
-    </Formik>
+        )}
+      </Formik>
+    </Modal>
   );
 };
 

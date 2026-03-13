@@ -2,6 +2,7 @@ import {
   Button,
   ChakraStack as Stack,
   ChakraText as Text,
+  Flex,
   Modal,
   useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
@@ -81,20 +82,20 @@ const NewPasswordModal = ({ id }: Props) => {
       <Button onClick={onOpen} data-testid="reset-password-btn">
         Reset password
       </Button>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={ValidationSchema}
-        onSubmit={handleResetPassword}
+      <Modal
+        open={isOpen}
+        onCancel={onClose}
+        title="Reset Password"
+        centered
+        destroyOnHidden
+        footer={null}
       >
-        {({ isSubmitting, dirty, isValid }) => (
-          <Modal
-            open={isOpen}
-            onCancel={onClose}
-            title="Reset Password"
-            centered
-            destroyOnHidden
-            footer={null}
-          >
+        <Formik
+          initialValues={initialValues}
+          validationSchema={ValidationSchema}
+          onSubmit={handleResetPassword}
+        >
+          {({ isSubmitting, dirty, isValid }) => (
             <Form>
               <Stack direction="column" spacing={4}>
                 <Text mb={2}>Choose a new password for this user.</Text>
@@ -116,7 +117,7 @@ const NewPasswordModal = ({ id }: Props) => {
                 />
               </Stack>
 
-              <div className="mt-4 flex w-full gap-2">
+              <Flex className="mt-4 w-full" gap="small">
                 <Button onClick={onClose} className="w-1/2">
                   Cancel
                 </Button>
@@ -130,11 +131,11 @@ const NewPasswordModal = ({ id }: Props) => {
                 >
                   Change Password
                 </Button>
-              </div>
+              </Flex>
             </Form>
-          </Modal>
-        )}
-      </Formik>
+          )}
+        </Formik>
+      </Modal>
     </>
   );
 };

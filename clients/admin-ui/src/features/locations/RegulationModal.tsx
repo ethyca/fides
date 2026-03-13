@@ -2,6 +2,7 @@ import {
   Button,
   ChakraCheckbox as Checkbox,
   ChakraSimpleGrid as SimpleGrid,
+  Flex,
   Modal,
 } from "fidesui";
 import { useState } from "react";
@@ -51,14 +52,14 @@ const RegulationModal = ({
       data-testid="regulation-modal"
       title="Select regulations"
       footer={
-        <div className="flex w-full justify-between">
+        <Flex className="w-full" justify="space-between">
           <Button onClick={onClose} data-testid="cancel-btn">
             Cancel
           </Button>
           <Button type="primary" onClick={handleApply} data-testid="apply-btn">
             Apply
           </Button>
-        </div>
+        </Flex>
       }
     >
       <HeaderCheckboxRow

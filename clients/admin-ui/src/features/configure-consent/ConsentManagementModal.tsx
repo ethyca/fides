@@ -61,7 +61,7 @@ export const ConsentManagementModal = ({
     <Modal
       open={isOpen}
       onCancel={onClose}
-      width={MODAL_SIZE.xxl}
+      width={MODAL_SIZE.lg}
       centered
       destroyOnHidden
       title={systemPurposeSummary ? systemPurposeSummary?.name : "Vendor"}

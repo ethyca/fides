@@ -263,7 +263,7 @@ describe("Data map report table", () => {
             "Custom Title",
           );
         });
-        cy.get(".ant-modal-close:visible").click();
+        cy.getAntModalClose().click();
 
         // check filter modal
         cy.getByTestId("filter-multiple-systems-btn").click();
@@ -423,7 +423,7 @@ describe("Data map report table", () => {
         "aria-checked",
         "false",
       );
-      cy.get(".ant-modal-close:visible").click();
+      cy.getAntModalClose().click();
       cy.getByTestId("filter-multiple-systems-btn").click();
       cy.getByTestId("datamap-report-filter-modal")
         .should("be.visible")
@@ -475,7 +475,7 @@ describe("Data map report table", () => {
         "aria-checked",
         "true",
       );
-      cy.get(".ant-modal-close:visible").click();
+      cy.getAntModalClose().click();
       cy.getByTestId("filter-multiple-systems-btn").click();
       cy.getByTestId("datamap-report-filter-modal")
         .should("be.visible")

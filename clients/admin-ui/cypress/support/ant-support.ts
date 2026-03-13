@@ -137,6 +137,10 @@ declare global {
        */
       getAntModalConfirmButtons: () => Chainable;
       /**
+       * Get the close button from a visible Ant Design Modal component
+       */
+      getAntModalClose: () => Chainable;
+      /**
        * Get the Ant Design tooltip
        */
       getAntTooltip: () => Chainable;
@@ -366,6 +370,9 @@ Cypress.Commands.add("getAntModalHeader", () => cy.get(`.ant-modal-header`));
 Cypress.Commands.add("getAntModalFooter", () => cy.get(`.ant-modal-footer`));
 Cypress.Commands.add("getAntModalConfirmButtons", () =>
   cy.get(`.ant-modal-confirm-btns`),
+);
+Cypress.Commands.add("getAntModalClose", () =>
+  cy.get(`.ant-modal-close:visible`),
 );
 Cypress.Commands.add("getAntTooltip", () => cy.findByRole("tooltip"));
 
