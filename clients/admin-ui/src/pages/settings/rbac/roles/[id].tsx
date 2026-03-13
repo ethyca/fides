@@ -29,7 +29,41 @@ import {
   useUpdateRoleMutation,
   useUpdateRolePermissionsMutation,
 } from "~/features/rbac";
-import type { RBACPermission, RBACRoleUpdate } from "~/types/api";
+import type { RBACPermission, RBACRole, RBACRoleUpdate } from "~/types/api";
+
+/**
+ * Get all descendant role IDs for a given role.
+ * Used to prevent inheritance cycles - a role cannot have one of its
+ * descendants as a parent (which would create A -> B -> A cycles).
+ */
+const getDescendantRoleIds = (
+  roleId: string,
+  allRoles: RBACRole[],
+): Set<string> => {
+  const descendants = new Set<string>();
+
+  const collectDescendants = (parentIds: string[]): void => {
+    if (parentIds.length === 0) {
+      return;
+    }
+
+    const children = allRoles.filter(
+      (r) => r.parent_role_id && parentIds.includes(r.parent_role_id),
+    );
+    const newChildIds = children
+      .map((c) => c.id)
+      .filter((id) => !descendants.has(id));
+
+    newChildIds.forEach((id) => descendants.add(id));
+
+    if (newChildIds.length > 0) {
+      collectDescendants(newChildIds);
+    }
+  };
+
+  collectDescendants([roleId]);
+  return descendants;
+};
 
 // Scopes that are seeded in the database but have no corresponding endpoint.
 // These are hidden from the UI to avoid confusion.
@@ -92,13 +126,15 @@ const RoleDetailPage: NextPage = () => {
       }, {});
   }, [permissions]);
 
-  // Filter out current role and system roles from parent options
+  // Filter out current role and its descendants from parent options
+  // to prevent inheritance cycles (A -> B -> A)
   const parentRoleOptions = useMemo(() => {
-    if (!allRoles) {
+    if (!allRoles || !id) {
       return [];
     }
+    const descendantIds = getDescendantRoleIds(id as string, allRoles);
     return allRoles
-      .filter((r) => r.id !== id)
+      .filter((r) => r.id !== id && !descendantIds.has(r.id))
       .map((r) => ({
         label: `${r.name} (${r.key})`,
         value: r.id,

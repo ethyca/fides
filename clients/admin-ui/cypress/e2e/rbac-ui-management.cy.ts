@@ -319,6 +319,68 @@ describe("RBAC UI Management", () => {
     });
   });
 
+  describe("Role Hierarchy Cycle Prevention", () => {
+    let parentRoleId: string;
+    let parentRoleName: string;
+    let childRoleId: string;
+    let childRoleName: string;
+
+    beforeEach(() => {
+      // Create parent role
+      const testId = uniqueId();
+      parentRoleName = `${TEST_ROLE_PREFIX}_parent_${testId}`;
+      childRoleName = `${TEST_ROLE_PREFIX}_child_${testId}`;
+
+      // Create the parent role first
+      cy.request({
+        method: "POST",
+        url: `${API_URL}/api/v1/plus/rbac/roles`,
+        headers: { Authorization: `Bearer ${adminToken}` },
+        body: {
+          name: parentRoleName,
+          key: parentRoleName.toLowerCase(),
+          description: "Parent role for cycle test",
+        },
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        parentRoleId = response.body.id;
+
+        // Create child role with parent_role_id pointing to the parent
+        cy.request({
+          method: "POST",
+          url: `${API_URL}/api/v1/plus/rbac/roles`,
+          headers: { Authorization: `Bearer ${adminToken}` },
+          body: {
+            name: childRoleName,
+            key: childRoleName.toLowerCase(),
+            description: "Child role for cycle test",
+            parent_role_id: parentRoleId,
+          },
+        }).then((childResponse) => {
+          expect(childResponse.status).to.eq(201);
+          childRoleId = childResponse.body.id;
+        });
+      });
+    });
+
+    it("prevents selecting a descendant as parent role (cycle prevention)", () => {
+      // Navigate to the parent role edit page
+      visitWithAuth(`/settings/rbac/roles/${parentRoleId}`, true);
+
+      // Open the parent role dropdown
+      cy.get(".ant-select").first().click();
+
+      // The child role should NOT appear in the dropdown options
+      // because selecting it would create a cycle (parent -> child -> parent)
+      cy.get(".ant-select-dropdown").should("be.visible");
+      cy.get(".ant-select-dropdown").should("not.contain", childRoleName);
+
+      // But other roles (like system roles) should still be available
+      // The dropdown should have options available
+      cy.get(".ant-select-item-option").should("exist");
+    });
+  });
+
   describe("Delete Role via UI", () => {
     let testRoleId: string;
     let roleName: string;
