@@ -14,18 +14,11 @@ import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { useFlags } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import {
-  useAssignUserRoleMutation,
-  useGetRolesQuery,
-  useGetUserRolesQuery,
-  useRemoveUserRoleMutation,
-} from "~/features/rbac/rbac.slice";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
@@ -45,11 +38,15 @@ const defaultInitialValues = {
 
 export type FormValues = typeof defaultInitialValues;
 
+/**
+ * Legacy permissions form for non-RBAC mode.
+ *
+ * When RBAC is enabled (alphaRbac flag), UserManagementTabs renders RolesForm
+ * instead of this component. This component only handles legacy permissions.
+ */
 const PermissionsForm = () => {
   const toast = useToast();
   const router = useRouter();
-  const { flags } = useFlags();
-  const isRbacEnabled = flags.alphaRbac;
 
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
@@ -72,165 +69,33 @@ const PermissionsForm = () => {
   }, [initialManagedSystems]);
 
   // Legacy permission hooks
-  const { data: userPermissions, isLoading: isLoadingLegacy } =
-    useGetUserPermissionsQuery(activeUserId ?? "", {
+  const { data: userPermissions, isLoading } = useGetUserPermissionsQuery(
+    activeUserId ?? "",
+    {
       skip: !activeUserId,
-    });
+    },
+  );
 
   const [updateUserPermissionMutationTrigger] =
     useUpdateUserPermissionsMutation();
 
-  // RBAC hooks - only fetch when RBAC is enabled
-  const { data: rbacRoles, isLoading: isLoadingRbacRoles } = useGetRolesQuery(
-    {},
-    { skip: !isRbacEnabled },
-  );
-  const { data: userRbacRoles, isLoading: isLoadingUserRbacRoles } =
-    useGetUserRolesQuery(
-      { userId: activeUserId ?? "" },
-      { skip: !activeUserId || !isRbacEnabled },
-    );
-  const [assignUserRole] = useAssignUserRoleMutation();
-  const [removeUserRole] = useRemoveUserRoleMutation();
-
-  // Create a map of role keys to role IDs for RBAC
-  const roleKeyToIdMap = useMemo(() => {
-    if (!rbacRoles) {
-      return {};
-    }
-    return rbacRoles.reduce<Record<string, string>>(
-      (acc, role) => ({
-        ...acc,
-        [role.key]: role.id,
-      }),
-      {},
-    );
-  }, [rbacRoles]);
-
-  // Get current RBAC role keys from user's RBAC role assignments
-  const currentRbacRoleKeys = useMemo(() => {
-    if (!userRbacRoles || !rbacRoles) {
-      return [];
-    }
-    return userRbacRoles
-      .map((ur) => {
-        const role = rbacRoles.find((r) => r.id === ur.role_id);
-        return role?.key;
-      })
-      .filter((key): key is string => !!key);
-  }, [userRbacRoles, rbacRoles]);
-
-  const isLoading = isRbacEnabled
-    ? isLoadingRbacRoles || isLoadingUserRbacRoles
-    : isLoadingLegacy;
-
   // Check if the current user is an external respondent
   const isExternalRespondent = useMemo(() => {
-    if (isRbacEnabled) {
-      return currentRbacRoleKeys.includes("external_respondent");
-    }
     return Boolean(
       userPermissions?.roles?.includes(RoleRegistryEnum.EXTERNAL_RESPONDENT),
     );
-  }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
+  }, [userPermissions?.roles]);
 
-  // Use RBAC roles when enabled, otherwise fall back to legacy permissions
-  // Must be defined here (before early returns) to satisfy React's Rules of Hooks
   const initialValues = useMemo(() => {
-    if (isRbacEnabled) {
-      return currentRbacRoleKeys.length > 0
-        ? { roles: currentRbacRoleKeys as RoleRegistryEnum[] }
-        : defaultInitialValues;
-    }
     return userPermissions?.roles
       ? { roles: userPermissions.roles }
       : defaultInitialValues;
-  }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
+  }, [userPermissions?.roles]);
 
-  // Check if target user is an owner (works with both RBAC and legacy)
+  // Check if target user is an owner
   const targetUserIsOwner = useMemo(() => {
-    if (isRbacEnabled) {
-      return currentRbacRoleKeys.includes("owner");
-    }
     return userPermissions?.roles?.includes(RoleRegistryEnum.OWNER);
-  }, [isRbacEnabled, currentRbacRoleKeys, userPermissions?.roles]);
-
-  const updatePermissionsRbac = async (values: FormValues) => {
-    if (!activeUserId || !userRbacRoles) {
-      return;
-    }
-
-    const selectedRoleKeys = values.roles as string[];
-    const currentRoleKeys = currentRbacRoleKeys;
-
-    // Determine roles to add and remove
-    const rolesToAdd = selectedRoleKeys.filter(
-      (key) => !currentRoleKeys.includes(key),
-    );
-    const rolesToRemove = currentRoleKeys.filter(
-      (key) => !selectedRoleKeys.includes(key),
-    );
-
-    // Remove roles that are no longer selected
-    const removeResults = await Promise.all(
-      rolesToRemove.map((roleKey) => {
-        const assignment = userRbacRoles.find((ur) => {
-          const role = rbacRoles?.find((r) => r.id === ur.role_id);
-          return role?.key === roleKey;
-        });
-        if (assignment) {
-          return removeUserRole({
-            userId: activeUserId,
-            assignmentId: assignment.id,
-          });
-        }
-        return Promise.resolve(null);
-      }),
-    );
-
-    const removeError = removeResults.find(
-      (result) => result && isErrorResult(result),
-    );
-    if (removeError && isErrorResult(removeError)) {
-      toast(errorToastParams(getErrorMessage(removeError.error)));
-      return;
-    }
-
-    // Add newly selected roles
-    const addResults = await Promise.all(
-      rolesToAdd
-        .filter((roleKey) => roleKeyToIdMap[roleKey])
-        .map((roleKey) =>
-          assignUserRole({
-            userId: activeUserId,
-            data: { role_id: roleKeyToIdMap[roleKey] },
-          }),
-        ),
-    );
-
-    const addError = addResults.find((result) => isErrorResult(result));
-    if (addError && isErrorResult(addError)) {
-      toast(errorToastParams(getErrorMessage(addError.error)));
-      return;
-    }
-
-    // Save managed systems (same as legacy - managed systems are independent of RBAC)
-    // Skip for approver role as the backend handles this automatically
-    const skipAssigningSystems = selectedRoleKeys.includes("approver");
-    if (!skipAssigningSystems) {
-      const fidesKeys = assignedSystems.map((s) => s.fides_key);
-      const userSystemsResult = await updateUserManagedSystemsTrigger({
-        userId: activeUserId,
-        fidesKeys,
-      });
-      if (isErrorResult(userSystemsResult)) {
-        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
-        return;
-      }
-    }
-
-    toast(successToastParams("RBAC permissions updated"));
-  };
+  }, [userPermissions?.roles]);
 
   const updatePermissionsLegacy = async (values: FormValues) => {
     if (!activeUserId) {
@@ -275,11 +140,7 @@ const PermissionsForm = () => {
       return;
     }
 
-    if (isRbacEnabled) {
-      await updatePermissionsRbac(values);
-    } else {
-      await updatePermissionsLegacy(values);
-    }
+    await updatePermissionsLegacy(values);
   };
 
   const handleSubmit = async (values: FormValues) => {
