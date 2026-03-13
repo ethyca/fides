@@ -46,3 +46,10 @@ export interface PaginatedResponse<T> {
   size: number;
   pages: number;
 }
+
+export interface FacetOptionsResponse {
+  consumers: string[];
+  policies: string[];
+  datasets: string[];
+  data_uses: string[];
+}

@@ -1,4 +1,4 @@
-import { antTheme, Card, Divider, Flex, Text } from "fidesui";
+import { Card, Divider, Flex, Text } from "fidesui";
 
 import type { DataConsumerSummary } from "../types";
 
@@ -11,7 +11,6 @@ export const DataConsumersCard = ({
   data,
   loading,
 }: DataConsumersCardProps) => {
-  const { token } = antTheme.useToken();
   const items = data.slice(0, 5);
 
   return (
@@ -20,7 +19,7 @@ export const DataConsumersCard = ({
         {items.map((item, index) => (
           <div key={item.name}>
             {index > 0 && (
-              <Divider style={{ margin: `${token.marginXS}px 0` }} />
+              <Divider className="my-1" />
             )}
             <Flex justify="space-between" align="center">
               <Text>{item.name}</Text>

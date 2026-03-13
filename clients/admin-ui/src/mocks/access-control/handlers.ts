@@ -6,6 +6,10 @@ import {
   allViolationLogs,
   dataConsumersByViolationsData,
   filterLogs,
+  LOG_CONSUMERS,
+  LOG_DATA_USES,
+  LOG_DATASETS,
+  POLICIES,
   policyViolationsData,
 } from "./data";
 
@@ -84,6 +88,18 @@ export const accessControlHandlers = () => {
         }),
       );
     }),
+
+    rest.get(`${apiBase}/access-control/facets`, (_req, res, ctx) =>
+      res(
+        ctx.status(200),
+        ctx.json({
+          consumers: LOG_CONSUMERS,
+          policies: POLICIES,
+          datasets: LOG_DATASETS,
+          data_uses: LOG_DATA_USES,
+        }),
+      ),
+    ),
 
     rest.get(`${apiBase}/policy/violations/logs`, (req, res, ctx) => {
       const page = parseInt(req.url.searchParams.get("page") ?? "1", 10);

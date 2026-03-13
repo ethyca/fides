@@ -1,5 +1,5 @@
 import { Flex, Spin, Table } from "fidesui";
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useGetPolicyViolationLogsQuery } from "../access-control.slice";
 import type { PolicyViolationLog } from "../types";
@@ -7,8 +7,11 @@ import { getRequestLogColumns } from "./requestLogColumns";
 
 const columns = getRequestLogColumns();
 
+const getRowKey = (record: PolicyViolationLog) =>
+  `${record.timestamp}-${record.consumer}-${record.dataset}`;
+
 interface RequestLogTableProps {
-  filters: Record<string, string | undefined>;
+  filters: Record<string, string | string[] | undefined>;
   onRowClick?: (record: PolicyViolationLog) => void;
 }
 
@@ -49,11 +52,9 @@ export const RequestLogTable = ({
       setAllItems(data.items);
     } else {
       setAllItems((prev) => {
-        const existingKeys = new Set(
-          prev.map((item) => item.timestamp + item.consumer),
-        );
+        const existingKeys = new Set(prev.map(getRowKey));
         const newItems = data.items.filter(
-          (item) => !existingKeys.has(item.timestamp + item.consumer),
+          (item) => !existingKeys.has(getRowKey(item)),
         );
         return [...prev, ...newItems];
       });
@@ -93,12 +94,10 @@ export const RequestLogTable = ({
         columns={columns}
         pagination={false}
         bordered={false}
-        rowKey={(record) =>
-          `${record.timestamp}-${record.consumer}-${record.dataset}`
-        }
+        rowKey={getRowKey}
         onRow={(record) => ({
           onClick: () => onRowClick?.(record),
-          style: { cursor: onRowClick ? "pointer" : undefined },
+          className: onRowClick ? "cursor-pointer" : undefined,
         })}
         size="small"
         sticky

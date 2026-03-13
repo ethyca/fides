@@ -3,6 +3,7 @@ import { baseApi } from "~/features/common/api.slice";
 import type {
   DataConsumerRequestsResponse,
   DataConsumersByViolationsResponse,
+  FacetOptionsResponse,
   PaginatedResponse,
   PolicyViolationAggregate,
   PolicyViolationLog,
@@ -11,10 +12,11 @@ import type {
 interface DataConsumerRequestsParams {
   start_date: string;
   end_date: string;
-  consumer?: string;
-  policy?: string;
-  dataset?: string;
-  data_use?: string;
+  consumer?: string | string[];
+  policy?: string | string[];
+  dataset?: string | string[];
+  data_use?: string | string[];
+  [key: string]: string | string[] | undefined;
 }
 
 interface DataConsumersByViolationsParams {
@@ -90,6 +92,13 @@ const accessControlApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Access Control"],
     }),
+
+    getFacetOptions: build.query<FacetOptionsResponse, void>({
+      query: () => ({
+        url: "access-control/facets",
+      }),
+      providesTags: ["Access Control"],
+    }),
   }),
 });
 
@@ -98,4 +107,5 @@ export const {
   useGetDataConsumersByViolationsQuery,
   useGetPolicyViolationsQuery,
   useGetPolicyViolationLogsQuery,
+  useGetFacetOptionsQuery,
 } = accessControlApi;

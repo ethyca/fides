@@ -4,13 +4,9 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import {
-  LOG_CONSUMERS,
-  LOG_DATA_USES,
-  LOG_DATASETS,
-  POLICIES,
-} from "~/mocks/access-control/data";
-
-import { useGetDataConsumerRequestsQuery } from "../access-control.slice";
+  useGetDataConsumerRequestsQuery,
+  useGetFacetOptionsQuery,
+} from "../access-control.slice";
 import {
   type FacetDefinition,
   FacetedSearchInput,
@@ -19,17 +15,22 @@ import {
 import { RequestLogTable } from "./RequestLogTable";
 import { ViolationsBarChartCard } from "./ViolationsBarChartCard";
 
-const FACETS: FacetDefinition[] = [
-  { key: "consumer", label: "Consumer", options: LOG_CONSUMERS },
-  { key: "policy", label: "Policy", options: POLICIES },
-  { key: "dataset", label: "Dataset", options: LOG_DATASETS },
-  { key: "data_use", label: "Data use", options: LOG_DATA_USES },
-];
-
 export const RequestLogPage = () => {
   const router = useRouter();
   const policyParam =
     typeof router.query.policy === "string" ? router.query.policy : null;
+
+  const { data: facetOptions } = useGetFacetOptionsQuery();
+
+  const facets: FacetDefinition[] = useMemo(
+    () => [
+      { key: "consumer", label: "Consumer", options: facetOptions?.consumers ?? [] },
+      { key: "policy", label: "Policy", options: facetOptions?.policies ?? [] },
+      { key: "dataset", label: "Dataset", options: facetOptions?.datasets ?? [] },
+      { key: "data_use", label: "Data use", options: facetOptions?.data_uses ?? [] },
+    ],
+    [facetOptions],
+  );
 
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(
     () => [dayjs().subtract(7, "day"), dayjs()],
@@ -51,28 +52,38 @@ export const RequestLogPage = () => {
     };
   }, [dateRange]);
 
-  const filters = useMemo(() => {
-    const result: Record<string, string | undefined> = {
-      ...dateParams,
-    };
+  const facetFilters = useMemo(() => {
+    const result: Record<string, string | string[] | undefined> = {};
     searchValues.forEach((val) => {
       const [key, value] = val.split(SEPARATOR);
       if (key && value) {
-        result[key] = value;
+        const existing = result[key];
+        if (Array.isArray(existing)) {
+          existing.push(value);
+        } else if (typeof existing === "string") {
+          result[key] = [existing, value];
+        } else {
+          result[key] = value;
+        }
       }
     });
     return result;
-  }, [searchValues, dateParams]);
+  }, [searchValues]);
+
+  const filters = useMemo(
+    () => ({ ...dateParams, ...facetFilters }),
+    [dateParams, facetFilters],
+  );
 
   const { data: chartData, isLoading: chartLoading } =
     useGetDataConsumerRequestsQuery(filters);
 
   return (
-    <div className="flex flex-col gap-4">
+    <Flex vertical gap={16}>
       <Flex gap={12} align="center">
         <div className="flex-1">
           <FacetedSearchInput
-            facets={FACETS}
+            facets={facets}
             value={searchValues}
             onChange={setSearchValues}
           />
@@ -101,6 +112,6 @@ export const RequestLogPage = () => {
       />
 
       <RequestLogTable filters={filters} />
-    </div>
+    </Flex>
   );
 };

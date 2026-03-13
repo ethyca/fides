@@ -3,7 +3,6 @@ import {
   Card,
   CHART_ANIMATION,
   CHART_STROKE,
-  ChartText,
   Text,
 } from "fidesui";
 import { useId } from "react";
@@ -19,34 +18,10 @@ import {
 } from "recharts";
 
 import type { DataConsumerRequestPoint } from "../types";
-import { formatTimestamp } from "../utils";
+import { deriveInterval, formatTimestamp, XAxisTick } from "../utils";
 
 const GRADIENT_START_OPACITY = 0.25;
 const GRADIENT_END_OPACITY = 0;
-
-const deriveInterval = (data: DataConsumerRequestPoint[]): number => {
-  if (data.length < 2) {
-    return 3_600_000;
-  }
-  return (
-    new Date(data[1].timestamp).getTime() -
-    new Date(data[0].timestamp).getTime()
-  );
-};
-
-interface XAxisTickProps {
-  x?: number;
-  y?: number;
-  payload?: { value: string };
-  intervalMs: number;
-  fill?: string;
-}
-
-const XAxisTick = ({ x, y, payload, intervalMs, fill }: XAxisTickProps) => (
-  <ChartText x={Number(x)} y={Number(y) + 12} fill={fill}>
-    {payload ? formatTimestamp(payload.value, intervalMs) : null}
-  </ChartText>
-);
 
 interface ViolationsOverTimeCardProps {
   data: DataConsumerRequestPoint[];
