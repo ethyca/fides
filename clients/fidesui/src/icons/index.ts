@@ -6,7 +6,6 @@ export { default as ArrowUpLineIcon } from "./ArrowUpLine";
 export { default as CloseSolidIcon } from "./CloseSolid";
 export { default as DownloadSolidIcon } from "./DownloadSolid";
 export { default as ErrorWarningIcon } from "./ErrorWarning";
-export { default as EthycaLogo } from "./EthycaLogo";
 export { default as EyeIcon } from "./Eye";
 export { default as GearIcon } from "./Gear";
 export { default as GreenCheckCircleIcon } from "./GreenCheckCircle";

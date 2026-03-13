@@ -14,6 +14,7 @@ from requests.exceptions import (  # pylint: disable=redefined-builtin
     TooManyRedirects,
 )
 
+from fides.api.common_exceptions import DomainValidationError
 from fides.config import CONFIG
 
 
@@ -41,6 +42,7 @@ class ErrorGroup(StrEnum):
     authentication_error = "AuthenticationError"
     client_error = "ClientSideError"
     server_error = "ServerSideError"
+    domain_blocked = "DomainBlocked"
 
 
 class Contextualizable:
@@ -196,7 +198,10 @@ def connection_exception_details(exception: Exception, url: str) -> Dict[str, An
         LoggerContextKeys.error_details.value: f"Unknown exception connecting to {url}.",
         LoggerContextKeys.status_code.value: None,
     }
-    if isinstance(exception, ConnectTimeout):
+    if isinstance(exception, DomainValidationError):
+        details[LoggerContextKeys.error_group.value] = ErrorGroup.domain_blocked.value
+        details[LoggerContextKeys.error_details.value] = str(exception)
+    elif isinstance(exception, ConnectTimeout):
         details[LoggerContextKeys.error_details.value] = (
             f"Timeout occurred connecting to {url}."
         )

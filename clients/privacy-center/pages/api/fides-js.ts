@@ -18,7 +18,11 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import pRetry from "p-retry";
 
-import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
+import {
+  buildAttributionOptions,
+  getFidesApiUrl,
+  loadServerSettings,
+} from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import { MissingExperienceBehaviors } from "~/app/server-utils/PrivacyCenterSettings";
 import { createRequestLogger } from "~/app/server-utils/requestLogger";
@@ -381,6 +385,7 @@ export default async function handler(
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
       showFidesBrandLink: environment.settings.SHOW_BRAND_LINK,
+      attribution: buildAttributionOptions(environment.settings),
       fidesString,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
