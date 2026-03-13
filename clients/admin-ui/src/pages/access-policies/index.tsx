@@ -4,7 +4,10 @@ import NextLink from "next/link";
 
 import PoliciesGrid from "~/features/access-policies/PoliciesGrid";
 import Layout from "~/features/common/Layout";
-import { ACCESS_POLICIES_ONBOARDING_ROUTE } from "~/features/common/nav/routes";
+import {
+  ACCESS_POLICIES_NEW_ROUTE,
+  ACCESS_POLICIES_ONBOARDING_ROUTE,
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const AccessPoliciesPage: NextPage = () => {
@@ -23,7 +26,9 @@ const AccessPoliciesPage: NextPage = () => {
               </Button>
             </NextLink>
             <Button>Manage controls</Button>
-            <Button type="primary">New policy</Button>
+            <NextLink href={ACCESS_POLICIES_NEW_ROUTE} passHref>
+              <Button type="primary">New policy</Button>
+            </NextLink>
           </Space>
         }
         isSticky
