@@ -92,14 +92,14 @@ export interface ExecutionGraphResponse {
   nodes: ExecutionGraphNode[];
 }
 
-export interface DatasetGraphNodeData {
+export type DatasetGraphNodeData = {
   datasetName: string;
   status: ExecutionGraphNodeStatus;
   totalCollections: number;
   completedCollections: number;
   errorCount: number;
   executingCount: number;
-}
+};
 
 export type GetUploadedManualWebhookDataRequest = {
   connection_key: string;

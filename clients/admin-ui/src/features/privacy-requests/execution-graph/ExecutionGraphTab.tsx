@@ -1,10 +1,18 @@
-import { Breadcrumb, Flex, Segmented, Space, Tag, Typography } from "fidesui";
+import {
+  Breadcrumb,
+  CUSTOM_TAG_COLOR,
+  Flex,
+  Segmented,
+  Space,
+  Tag,
+  Typography,
+} from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
 import { useGetExecutionGraphQuery } from "../privacy-requests.slice";
-import { ExecutionGraphNode, ExecutionGraphNodeStatus } from "../types";
+import { ExecutionGraphNodeStatus } from "../types";
 import { isInternalNode } from "./execution-graph.constants";
 import ExecutionGraphView from "./ExecutionGraphView";
 import { useExecutionGraphNavigation } from "./useExecutionGraphNavigation";
@@ -15,15 +23,15 @@ const ACTION_TYPE_OPTIONS = [
   { label: "Consent", value: "consent" },
 ];
 
-const STATUS_TAG_COLORS: Record<ExecutionGraphNodeStatus, string> = {
-  pending: "default",
-  executing: "processing",
-  complete: "success",
-  error: "error",
-  skipped: "warning",
-  retrying: "warning",
-  paused: "default",
-  polling: "warning",
+const STATUS_TAG_COLORS: Record<ExecutionGraphNodeStatus, CUSTOM_TAG_COLOR> = {
+  pending: CUSTOM_TAG_COLOR.DEFAULT,
+  executing: CUSTOM_TAG_COLOR.INFO,
+  complete: CUSTOM_TAG_COLOR.SUCCESS,
+  error: CUSTOM_TAG_COLOR.ERROR,
+  skipped: CUSTOM_TAG_COLOR.WARNING,
+  retrying: CUSTOM_TAG_COLOR.WARNING,
+  paused: CUSTOM_TAG_COLOR.DEFAULT,
+  polling: CUSTOM_TAG_COLOR.WARNING,
 };
 
 const TERMINAL_STATES = [
