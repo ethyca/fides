@@ -37,15 +37,6 @@ export const ViolationDetailDrawer = ({
     skip: !violationId,
   });
 
-  const initials = violation
-    ? violation.consumer
-        .split(/[\s-]/)
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "";
-
   const timestamp = violation ? new Date(violation.timestamp) : null;
 
   const editorHeight = useMemo(() => {
@@ -53,7 +44,7 @@ export const ViolationDetailDrawer = ({
       return 80;
     }
     const lineCount = violation.sql_statement.split("\n").length;
-    return Math.max(80, lineCount * 18 + 24);
+    return Math.max(80, lineCount * 18 + 42);
   }, [violation]);
 
   return (
@@ -101,25 +92,18 @@ export const ViolationDetailDrawer = ({
             </Text>
             <Flex justify="space-between" align="center">
               <Flex align="center" gap="middle">
-                <Avatar size="large" className="!bg-neutral-9 !text-white">
-                  {initials}
-                </Avatar>
                 <div>
                   <Text strong className="block">
                     {violation.consumer}
                   </Text>
-                  <Text type="secondary" className="text-sm">
+                  <a
+                    href={`mailto:${violation.consumer_email}`}
+                    className="text-sm text-neutral-10/60 hover:underline"
+                  >
                     {violation.consumer_email}
-                  </Text>
+                  </a>
                 </div>
               </Flex>
-              <Button
-                size="small"
-                icon={<Icons.LogoSlack size={14} />}
-                type="text"
-              >
-                Slack
-              </Button>
             </Flex>
           </div>
 
