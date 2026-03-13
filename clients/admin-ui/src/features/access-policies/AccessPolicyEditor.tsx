@@ -39,6 +39,7 @@ import ActionNode, { ActionNodeType } from "./ActionNode";
 import ConditionNode, { ConditionNodeType } from "./ConditionNode";
 import ConstraintNode, { ConstraintNodeType } from "./ConstraintNode";
 import LabeledEdge from "./LabeledEdge";
+import { nodesToYaml, yamlToNodesAndEdges } from "./policy-yaml";
 import PolicyNode, { PolicyNodeType } from "./PolicyNode";
 import {
   ActionType,
@@ -52,6 +53,7 @@ import {
 export enum EditorMode {
   Builder = "builder",
   Code = "code",
+  Split = "split",
 }
 
 export interface SidebarFormValues {
@@ -87,6 +89,8 @@ interface PolicyCanvasPanelProps {
   onDescriptionChange: (value: string) => void;
   onControlGroupChange: (value: string | undefined) => void;
   onAddNode?: () => void;
+  onYamlChange?: (yaml: string) => void;
+  initialYaml?: string;
 }
 
 const POLICY_NODE_ID = "policy";
@@ -100,7 +104,9 @@ const CenterOnInitialLoad = ({ layoutedNodes }: { layoutedNodes: Node[] }) => {
   useEffect(() => {
     const allMeasured =
       layoutedNodes.length > 0 &&
-      layoutedNodes.every((n) => (n as any).measured?.width);
+      layoutedNodes.every(
+        (n) => (n as Node & { measured?: { width?: number } }).measured?.width,
+      );
 
     if (hasCenteredRef.current || !allMeasured) {
       return undefined;
@@ -190,12 +196,23 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     onDescriptionChange,
     onControlGroupChange,
     onAddNode,
+    onYamlChange,
+    initialYaml,
   } = props;
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(
-    createPolicyNode(props),
+  const initialResult = useMemo(
+    () => (initialYaml ? yamlToNodesAndEdges(initialYaml) : null),
+    // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(
+    initialResult?.nodes ?? createPolicyNode(props),
+  );
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(
+    initialResult?.edges ?? [],
+  );
   const [lastCreatedNodeId, setLastCreatedNodeId] = useState<string | null>(
     null,
   );
@@ -214,6 +231,40 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     },
     [setNodes],
   );
+
+  // Wrap policy-level field changes so the nodes state stays in sync for nodesToYaml
+  const handleNameChange = useCallback(
+    (value: string) => {
+      updateNodeData(POLICY_NODE_ID, { name: value });
+      onNameChange(value);
+    },
+    [updateNodeData, onNameChange],
+  );
+
+  const handleDescriptionChange = useCallback(
+    (value: string) => {
+      updateNodeData(POLICY_NODE_ID, { description: value });
+      onDescriptionChange(value);
+    },
+    [updateNodeData, onDescriptionChange],
+  );
+
+  const handleControlGroupChange = useCallback(
+    (value: string | undefined) => {
+      updateNodeData(POLICY_NODE_ID, { controlGroup: value });
+      onControlGroupChange(value);
+    },
+    [updateNodeData, onControlGroupChange],
+  );
+
+  // Derive YAML from nodes/edges and call onYamlChange
+  useEffect(() => {
+    if (!onYamlChange) {
+      return;
+    }
+    const derived = nodesToYaml(nodes, edges);
+    onYamlChange(derived);
+  }, [nodes, edges, onYamlChange]);
 
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(
     () =>
@@ -349,9 +400,9 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               description,
               controlGroup,
               controlGroupOptions,
-              onNameChange,
-              onDescriptionChange,
-              onControlGroupChange,
+              onNameChange: handleNameChange,
+              onDescriptionChange: handleDescriptionChange,
+              onControlGroupChange: handleControlGroupChange,
               onAddNode,
               onAddAction: () => handleAddActionFromNode(POLICY_NODE_ID),
               hasChildren: policyHasChildren,
@@ -427,9 +478,9 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       description,
       controlGroup,
       controlGroupOptions,
-      onNameChange,
-      onDescriptionChange,
-      onControlGroupChange,
+      handleNameChange,
+      handleDescriptionChange,
+      handleControlGroupChange,
       onAddNode,
       handleAddConditionFromNode,
       handleAddActionFromNode,
@@ -495,6 +546,24 @@ const AccessPolicyEditor = ({
     initialValues?.control_group,
   );
 
+  // Key that forces PolicyCanvasPanel to re-mount when switching from code to builder/split
+  const [canvasKey, setCanvasKey] = useState(0);
+
+  const handleModeChange = useCallback(
+    (newMode: EditorMode) => {
+      // When switching from code-only to a canvas mode, re-parse the YAML into nodes
+      if (mode === EditorMode.Code && newMode !== EditorMode.Code) {
+        setCanvasKey((k) => k + 1);
+      }
+      setMode(newMode);
+    },
+    [mode],
+  );
+
+  const handleYamlChange = useCallback((derivedYaml: string) => {
+    setYamlValue(derivedYaml);
+  }, []);
+
   const handleSave = () => {
     if (!name.trim()) {
       notification.error({ message: "Name is required." });
@@ -530,6 +599,22 @@ const AccessPolicyEditor = ({
   const title = isNew ? "New access policy" : "Edit access policy";
   const breadcrumbTitle = isNew ? "New policy" : name || (policyId as string);
 
+  const canvasPanel = (
+    <PolicyCanvasPanel
+      key={canvasKey}
+      name={name}
+      description={description}
+      controlGroup={controlGroup}
+      controlGroupOptions={controlGroupOptions}
+      onNameChange={handleNameChange}
+      onDescriptionChange={handleDescriptionChange}
+      onControlGroupChange={handleControlGroupChange}
+      onAddNode={handleAddNode}
+      onYamlChange={handleYamlChange}
+      initialYaml={yamlValue || undefined}
+    />
+  );
+
   return (
     <Layout title={title}>
       <PageHeader
@@ -564,51 +649,61 @@ const AccessPolicyEditor = ({
         }
       />
 
-      <Flex gap="large">
-        {/* Main area */}
-        <Flex vertical flex={1} gap="middle">
-          <Radio.Group
-            value={mode}
-            onChange={(e) => setMode(e.target.value)}
-            optionType="button"
-            buttonStyle="solid"
-            options={[
-              { label: "Builder", value: EditorMode.Builder },
-              { label: "Code", value: EditorMode.Code },
-            ]}
-            data-testid="mode-toggle"
+      <Flex vertical gap="middle">
+        <Radio.Group
+          value={mode}
+          onChange={(e) => handleModeChange(e.target.value)}
+          optionType="button"
+          buttonStyle="solid"
+          options={[
+            { label: "Builder", value: EditorMode.Builder },
+            { label: "Split", value: EditorMode.Split },
+            { label: "Code", value: EditorMode.Code },
+          ]}
+          data-testid="mode-toggle"
+        />
+
+        {mode === EditorMode.Code && (
+          <Editor
+            defaultLanguage="yaml"
+            value={yamlValue}
+            height="calc(100vh - 220px)"
+            onChange={(val) => setYamlValue(val ?? "")}
+            options={{
+              fontFamily: "Menlo",
+              fontSize: 13,
+              minimap: { enabled: false },
+            }}
+            theme="light"
           />
+        )}
 
-          {mode === EditorMode.Code && (
-            <Editor
-              defaultLanguage="yaml"
-              value={yamlValue}
-              height="calc(100vh - 220px)"
-              onChange={(val) => setYamlValue(val ?? "")}
-              options={{
-                fontFamily: "Menlo",
-                fontSize: 13,
-                minimap: { enabled: false },
-              }}
-              theme="light"
-            />
-          )}
+        {mode === EditorMode.Builder && (
+          <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
+        )}
 
-          {mode === EditorMode.Builder && (
-            <ReactFlowProvider>
-              <PolicyCanvasPanel
-                name={name}
-                description={description}
-                controlGroup={controlGroup}
-                controlGroupOptions={controlGroupOptions}
-                onNameChange={handleNameChange}
-                onDescriptionChange={handleDescriptionChange}
-                onControlGroupChange={handleControlGroupChange}
-                onAddNode={handleAddNode}
+        {mode === EditorMode.Split && (
+          <Flex gap="middle">
+            <div style={{ flex: "0 0 60%" }}>
+              <ReactFlowProvider>{canvasPanel}</ReactFlowProvider>
+            </div>
+            <div style={{ flex: "0 0 calc(40% - 8px)" }}>
+              <Editor
+                defaultLanguage="yaml"
+                value={yamlValue}
+                height="calc(100vh - 220px)"
+                options={{
+                  fontFamily: "Menlo",
+                  fontSize: 13,
+                  minimap: { enabled: false },
+                  readOnly: true,
+                  domReadOnly: true,
+                }}
+                theme="light"
               />
-            </ReactFlowProvider>
-          )}
-        </Flex>
+            </div>
+          </Flex>
+        )}
       </Flex>
     </Layout>
   );

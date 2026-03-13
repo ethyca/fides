@@ -32,3 +32,48 @@ export enum UserOperator {
   LESS_THAN = "less_than",
   CONTAINS = "contains",
 }
+
+// YAML format interfaces
+
+export interface ConditionClause {
+  operator?: ConditionOperator;
+  values: string[];
+}
+
+export interface ConditionMap {
+  data_category?: ConditionClause;
+  data_use?: ConditionClause;
+  data_subject?: ConditionClause;
+}
+
+export interface ConsentConstraintItem {
+  consent: {
+    preference_key: string[];
+    value: ConsentValue;
+  };
+}
+
+export interface UserConstraintItem {
+  user: {
+    key: string;
+    value: string | number;
+    operator: UserOperator;
+  };
+}
+
+export type ConstraintItem = ConsentConstraintItem | UserConstraintItem;
+
+export interface UnlessBlock {
+  any?: ConstraintItem[];
+  all?: ConstraintItem[];
+}
+
+export interface AccessPolicyYaml {
+  fides_key?: string;
+  name: string;
+  description?: string;
+  enabled?: boolean;
+  allow?: ConditionMap;
+  deny?: ConditionMap;
+  unless?: UnlessBlock;
+}
