@@ -21,8 +21,8 @@ from fides.api.util.api_router import APIRouter
 from fides.api.v1.endpoints.privacy_request_endpoints import (
     get_privacy_request_or_error,
 )
-from fides.common.api.scope_registry import PRIVACY_REQUEST_READ
-from fides.common.api.v1.urn_registry import (
+from fides.common.scope_registry import PRIVACY_REQUEST_READ
+from fides.common.urn_registry import (
     PRIVACY_REQUEST_EXECUTION_GRAPH,
     V1_URL_PREFIX,
 )
