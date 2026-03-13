@@ -35,7 +35,7 @@ const ActivityFeedCard = ({ activityFeed }: ActivityFeedCardProps) => (
   >
     {activityFeed?.items ? (
       <Flex vertical gap={0} className={styles.activityList}>
-        {activityFeed.items.map((item, idx) => {
+        {activityFeed.items.map((item) => {
           const isAgent = item.actor_type === "agent";
           const relativeTime = formatRelativeTime(item.timestamp);
 
@@ -62,10 +62,7 @@ const ActivityFeedCard = ({ activityFeed }: ActivityFeedCardProps) => (
                 </Typography.Text>{" "}
                 {item.message}
               </Typography.Text>
-              <Typography.Text
-                type="secondary"
-                className={styles.relativeTime}
-              >
+              <Typography.Text type="secondary" className={styles.relativeTime}>
                 {relativeTime}
               </Typography.Text>
             </Flex>
