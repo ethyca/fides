@@ -4,6 +4,8 @@ import { DiffStatus } from "~/types/api";
 
 import { InfrastructureSystemBulkActionType } from "../constants";
 
+const { APPROVE, RESTORE, IGNORE } = InfrastructureSystemBulkActionType;
+
 interface GetBulkActionsMenuItemsConfig {
   isIgnoredTab: boolean;
   allowIgnore: boolean;
@@ -16,44 +18,34 @@ export const getBulkActionsMenuItems = ({
   allowIgnore,
   isBulkActionInProgress,
   onBulkAction,
-}: GetBulkActionsMenuItemsConfig): MenuProps["items"] => {
-  if (isIgnoredTab) {
-    return [
-      {
-        key: InfrastructureSystemBulkActionType.ADD,
-        label: "Add",
-        onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
-        disabled: isBulkActionInProgress,
-      },
-      {
-        key: InfrastructureSystemBulkActionType.RESTORE,
-        label: "Restore",
-        onClick: () => onBulkAction(InfrastructureSystemBulkActionType.RESTORE),
-        disabled: isBulkActionInProgress,
-      },
-    ];
-  }
-
-  return [
-    {
-      key: InfrastructureSystemBulkActionType.ADD,
-      label: "Add",
-      onClick: () => onBulkAction(InfrastructureSystemBulkActionType.ADD),
-      disabled: isBulkActionInProgress,
-    },
-    ...(allowIgnore
-      ? [
-          {
-            key: InfrastructureSystemBulkActionType.IGNORE,
-            label: "Ignore",
-            onClick: () =>
-              onBulkAction(InfrastructureSystemBulkActionType.IGNORE),
-            disabled: isBulkActionInProgress,
-          },
-        ]
-      : []),
-  ];
-};
+}: GetBulkActionsMenuItemsConfig): MenuProps["items"] => [
+  {
+    key: APPROVE,
+    label: "Approve",
+    onClick: () => onBulkAction(APPROVE),
+    disabled: isBulkActionInProgress,
+  },
+  ...(isIgnoredTab
+    ? [
+        {
+          key: RESTORE,
+          label: "Restore",
+          onClick: () => onBulkAction(RESTORE),
+          disabled: isBulkActionInProgress,
+        },
+      ]
+    : []),
+  ...(allowIgnore
+    ? [
+        {
+          key: IGNORE,
+          label: "Ignore",
+          onClick: () => onBulkAction(IGNORE),
+          disabled: isBulkActionInProgress,
+        },
+      ]
+    : []),
+];
 
 export const shouldAllowIgnore = (
   activeDiffStatusFilters: DiffStatus[] | DiffStatus | undefined,

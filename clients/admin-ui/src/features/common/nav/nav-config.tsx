@@ -130,7 +130,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Policies",
         path: routes.POLICIES_ROUTE,
-        requiresFlag: "alphaPolicies",
+        requiresFlag: "policies",
         scopes: [ScopeRegistryEnum.POLICY_READ],
       },
     ],

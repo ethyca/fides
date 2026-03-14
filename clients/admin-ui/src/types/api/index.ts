@@ -552,6 +552,7 @@ export type { ResourceFilter } from "./models/ResourceFilter";
 export { ResourceTypes } from "./models/ResourceTypes";
 export { ResponseFormat } from "./models/ResponseFormat";
 export type { ResponseWithMessage } from "./models/ResponseWithMessage";
+export { ResurfaceBehavior } from "./models/ResurfaceBehavior";
 export type { RevertAnswerRequest } from "./models/RevertAnswerRequest";
 export type { ReviewPrivacyRequestIds } from "./models/ReviewPrivacyRequestIds";
 export { RoleRegistryEnum } from "./models/RoleRegistryEnum";
