@@ -247,10 +247,17 @@ const RolesForm = () => {
         return;
       }
 
-      // Save managed systems if the role supports it
-      // Skip for roles that cannot have systems (like approver)
-      if (selectedRolesAllowSystemAssignment) {
-        const fidesKeys = assignedSystems.map((s) => s.fides_key);
+      // Save managed systems - clear them if switching to roles that don't support systems
+      // When selectedRolesAllowSystemAssignment is false but user had systems before,
+      // we need to clear them by sending an empty array
+      const fidesKeys = selectedRolesAllowSystemAssignment
+        ? assignedSystems.map((s) => s.fides_key)
+        : [];
+
+      if (
+        selectedRolesAllowSystemAssignment ||
+        initialManagedSystems.length > 0
+      ) {
         const userSystemsResult = await updateUserManagedSystemsTrigger({
           userId: activeUserId,
           fidesKeys,

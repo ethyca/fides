@@ -86,8 +86,16 @@ const RoleDetailPage: NextPage = () => {
   } = useGetRoleByIdQuery(id as string, {
     skip: !id,
   });
-  const { data: allRoles } = useGetRolesQuery({});
-  const { data: permissions } = useGetPermissionsQuery({});
+  const {
+    data: allRoles,
+    isLoading: isRolesLoading,
+    error: rolesError,
+  } = useGetRolesQuery({});
+  const {
+    data: permissions,
+    isLoading: isPermissionsLoading,
+    error: permissionsError,
+  } = useGetPermissionsQuery({});
   const [updateRole, { isLoading: isUpdating }] = useUpdateRoleMutation();
   const [updatePermissions, { isLoading: isUpdatingPermissions }] =
     useUpdateRolePermissionsMutation();
@@ -174,16 +182,16 @@ const RoleDetailPage: NextPage = () => {
     );
   };
 
-  if (error) {
+  if (error || rolesError || permissionsError) {
     return (
       <ErrorPage
-        error={error}
-        defaultMessage="A problem occurred while fetching the role"
+        error={error ?? rolesError ?? permissionsError}
+        defaultMessage="A problem occurred while fetching RBAC data"
       />
     );
   }
 
-  if (isLoading || !role) {
+  if (isLoading || isRolesLoading || isPermissionsLoading || !role) {
     return (
       <Layout title="Loading...">
         <Flex justify="center" align="center" style={{ minHeight: 400 }}>
