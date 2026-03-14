@@ -39,7 +39,7 @@ const meta = {
   args: {
     title: "Card Title",
     variant: "borderless",
-    children: <div className="p-2">Card body content</div>,
+    children: <div>Card body content</div>,
   },
   argTypes: {
     coverPosition: {

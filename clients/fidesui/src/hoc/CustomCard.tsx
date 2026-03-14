@@ -13,13 +13,6 @@ export interface CustomCardProps extends CardProps {
    */
   coverPosition?: "top" | "bottom";
   /**
-   * Layout of the card header when both a `title` and `tabList` are provided.
-   * - `"stacked"`: default Ant Design behaviour (title above tabs)
-   * - `"inline"`: title and tabs rendered on the same row, with tabs right-aligned
-   * @default "stacked"
-   */
-  headerLayout?: "stacked" | "inline";
-  /**
    * Font used for the card title.
    * - `"default"`: inherits the theme sans-serif font
    * - `"mono"`: renders the title in the monospace code font
@@ -44,13 +37,13 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
     (
       {
         coverPosition = "top",
-        headerLayout = "stacked",
         titleFont = "default",
         showTitleDivider = true,
-        titleHeading = false,
+        titleHeading = true,
         className,
         styles: stylesProp,
         title,
+        size,
         ...props
       },
       ref,
@@ -64,7 +57,9 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
         : { borderBottom: "none" };
 
       if (titleHeading) {
-        headerStyle.padding = 0;
+        const hPad = size === "small" ? token.paddingSM : token.paddingLG;
+        headerStyle.minHeight = "unset";
+        headerStyle.padding = `${hPad}px ${hPad}px 0`;
       }
 
       const titleStyle: React.CSSProperties =
@@ -86,10 +81,12 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
           ref={ref}
           className={classNames(
             { [styles.bottomCover]: coverPosition === "bottom" },
-            { [styles.inlineHeader]: headerLayout === "inline" },
+            { [styles.inlineHeader]: !!props.tabList },
+            { [styles.titleHeading]: titleHeading },
             className,
           )}
           title={resolvedTitle}
+          size={size}
           styles={{
             ...stylesProp,
             header: { ...headerStyle, ...stylesProp?.header },
@@ -112,11 +109,7 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
  * @param {"top" | "bottom"} [coverPosition="top"] - Controls where the `cover` content is
  *   displayed relative to the card body. Use `"bottom"` to place a sparkline or chart
  *   below the card content.
- * @param {"stacked" | "inline"} [headerLayout="stacked"] - Controls how the card header is
- *   laid out when both a `title` and `tabList` are provided. Use `"inline"` to place the
- *   title and tab bar on the same row, with the tabs right-aligned.
  * @param {"default" | "mono"} [titleFont="default"] - Controls the card title font.
- *   Use `"mono"` for a smaller monospace title (Basier Square Mono).
  * @param {boolean} [showTitleDivider=true] - Whether to render the border between the
  *   card header and body. Set to `false` to remove the separator line.
  *
@@ -136,7 +129,6 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
  * <CustomCard
  *   variant="borderless"
  *   title="Overview"
- *   headerLayout="inline"
  *   tabList={[{ key: "a", label: "Tab A" }, { key: "b", label: "Tab B" }]}
  *   activeTabKey={activeTab}
  *   onTabChange={setActiveTab}
