@@ -463,4 +463,61 @@ describe("RBAC UI Management", () => {
       cy.url().should("match", /\/settings\/rbac\/roles\/[a-zA-Z0-9_-]+$/);
     });
   });
+
+  describe("User Role Assignment", () => {
+    let testUserId: string;
+    let testUsername: string;
+
+    beforeEach(() => {
+      // Create a test user via API
+      const testId = uniqueId();
+      testUsername = `${TEST_ROLE_PREFIX}_user_${testId}`;
+
+      cy.request({
+        method: "POST",
+        url: `${API_URL}/api/v1/user`,
+        headers: { Authorization: `Bearer ${adminToken}` },
+        body: {
+          username: testUsername,
+          password: "TestPassword123!",
+          email_address: `${testUsername}@example.com`,
+        },
+      }).then((response) => {
+        expect(response.status).to.eq(201);
+        testUserId = response.body.id;
+      });
+    });
+
+    afterEach(() => {
+      // Clean up test user
+      if (testUserId) {
+        cy.request({
+          method: "DELETE",
+          url: `${API_URL}/api/v1/user/${testUserId}`,
+          headers: { Authorization: `Bearer ${adminToken}` },
+          failOnStatusCode: false,
+        });
+      }
+    });
+
+    it("can assign an RBAC role to a user via the Roles tab", () => {
+      // Navigate to user profile with RBAC enabled
+      visitWithAuth(`/user-management/profile/${testUserId}`, true);
+
+      // Click on Roles tab (labeled "Roles" when RBAC is enabled)
+      cy.contains("Roles").click();
+
+      // The RolesForm should show available roles as Cards with checkboxes
+      // Select the Viewer role (a system role that should always exist)
+      cy.contains(".ant-card", "Viewer")
+        .find(".ant-checkbox-input")
+        .check({ force: true });
+
+      // Save the role assignment (use specific test ID to avoid Profile tab's Save button)
+      cy.get('[data-testid="save-btn"]').click();
+
+      // Verify success message
+      cy.contains("Roles updated successfully").should("be.visible");
+    });
+  });
 });

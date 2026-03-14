@@ -65,11 +65,14 @@ const RolesForm = () => {
 
   // RBAC data fetching
   const { data: rbacRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
-  const { data: userRbacRoles, isLoading: isLoadingUserRoles } =
-    useGetUserRolesQuery(
-      { userId: activeUserId ?? "" },
-      { skip: !activeUserId },
-    );
+  const {
+    data: userRbacRoles,
+    isLoading: isLoadingUserRoles,
+    refetch: refetchUserRoles,
+  } = useGetUserRolesQuery(
+    { userId: activeUserId ?? "" },
+    { skip: !activeUserId },
+  );
 
   const [assignUserRole] = useAssignUserRoleMutation();
   const [removeUserRole] = useRemoveUserRoleMutation();
@@ -221,6 +224,8 @@ const RolesForm = () => {
       );
       if (removeError && isErrorResult(removeError)) {
         message.error(getErrorMessage(removeError.error));
+        // Refetch to sync UI with actual server state after partial failure
+        refetchUserRoles();
         return;
       }
 
@@ -237,6 +242,8 @@ const RolesForm = () => {
       const addError = addResults.find((result) => isErrorResult(result));
       if (addError && isErrorResult(addError)) {
         message.error(getErrorMessage(addError.error));
+        // Refetch to sync UI with actual server state after partial failure
+        refetchUserRoles();
         return;
       }
 
@@ -250,6 +257,8 @@ const RolesForm = () => {
         });
         if (isErrorResult(userSystemsResult)) {
           message.error(getErrorMessage(userSystemsResult.error));
+          // Refetch to sync UI with actual server state after partial failure
+          refetchUserRoles();
           return;
         }
       }
