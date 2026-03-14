@@ -1,15 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import {
-  Avatar,
-  Button,
-  Divider,
-  Flex,
-  Progress,
-  Space,
-  Steps,
-  Tag,
-  Typography,
-} from "antd/lib";
+import { Button, Flex, Typography } from "antd/lib";
 import { useState } from "react";
 
 import type { CardProps } from "../index";
@@ -70,224 +60,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/* ------------------------------------------------------------------ */
-/*  New custom props                                                   */
-/* ------------------------------------------------------------------ */
-
 export const Default: Story = {};
-
-export const MonoTitle: Story = {
-  args: {
-    titleFont: "mono",
-  },
-};
-
-export const NoDivider: Story = {
-  args: {
-    showTitleDivider: false,
-  },
-};
-
-/** Opt out of titleHeading to get the classic Ant Design card header */
-export const ClassicHeader: Story = {
-  args: {
-    titleHeading: false,
-    showTitleDivider: true,
-  },
-};
-
-export const MonoNoDivider: Story = {
-  args: {
-    titleFont: "mono",
-    showTitleDivider: false,
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/*  Side-by-side comparisons: existing (Title in body) vs title prop   */
-/* ------------------------------------------------------------------ */
-
-const CompareLabel = ({ children }: { children: React.ReactNode }) => (
-  <Text type="secondary" strong className="mb-2 block text-xs uppercase">
-    {children}
-  </Text>
-);
-
-/** PolicyBox pattern — existing Title-in-body vs title prop */
-export const ComparePolicyBox: Story = {
-  name: "Compare: PolicyBox",
-  decorators: [
-    () => (
-      <Flex gap="middle" className="w-[800px]">
-        <div className="flex-1">
-          <CompareLabel>Existing (Title in body)</CompareLabel>
-          <Card>
-            <Flex justify="space-between" align="flex-start">
-              <Flex vertical gap="small">
-                <Title level={5}>Access Request Policy</Title>
-                <Text type="secondary" code>
-                  default_access_policy
-                </Text>
-                <Text type="secondary">Execution timeframe: 45 days</Text>
-              </Flex>
-              <Flex gap="small">
-                <Button>Edit</Button>
-                <Button danger>Delete</Button>
-              </Flex>
-            </Flex>
-          </Card>
-        </div>
-        <div className="flex-1">
-          <CompareLabel>New (title prop)</CompareLabel>
-          <Card title="Access Request Policy">
-            <Flex justify="space-between" align="flex-start">
-              <Flex vertical gap="small">
-                <Text type="secondary" code>
-                  default_access_policy
-                </Text>
-                <Text type="secondary">Execution timeframe: 45 days</Text>
-              </Flex>
-              <Flex gap="small">
-                <Button>Edit</Button>
-                <Button danger>Delete</Button>
-              </Flex>
-            </Flex>
-          </Card>
-        </div>
-      </Flex>
-    ),
-  ],
-};
-
-/** ConfigurationCard pattern — existing JSX-in-title vs titleHeading */
-export const CompareConfigurationCard: Story = {
-  name: "Compare: ConfigurationCard",
-  decorators: [
-    () => (
-      <Flex gap="middle" className="w-[800px]">
-        <div className="flex-1">
-          <CompareLabel>Existing (JSX title prop)</CompareLabel>
-          <Card
-            titleHeading={false}
-            title={
-              <Space>
-                <Avatar size={24}>C</Avatar>
-                <Title level={5} style={{ margin: 0 }}>
-                  Configuration
-                </Title>
-              </Space>
-            }
-          >
-            <Flex vertical gap="middle" className="py-2">
-              <Text type="secondary">Provider settings go here.</Text>
-              <Button type="primary">Save</Button>
-            </Flex>
-          </Card>
-        </div>
-        <div className="flex-1">
-          <CompareLabel>New (title prop + titleHeading)</CompareLabel>
-          <Card title="Configuration">
-            <Flex vertical gap="middle" className="py-2">
-              <Text type="secondary">Provider settings go here.</Text>
-              <Button type="primary">Save</Button>
-            </Flex>
-          </Card>
-        </div>
-      </Flex>
-    ),
-  ],
-};
-
-/** AssessmentCard pattern — existing Title-in-body vs title prop */
-export const CompareAssessmentCard: Story = {
-  name: "Compare: AssessmentCard",
-  decorators: [
-    () => {
-      const assessmentBody = (
-        <>
-          <Text type="secondary">
-            Processing <Tag>user.behavior</Tag> for <Tag>analytics</Tag>
-          </Text>
-          <Tag color="orange">Medium risk</Tag>
-          <Divider className="my-3" />
-          <Flex justify="space-between">
-            <Text type="secondary">Completeness</Text>
-            <Text strong>65%</Text>
-          </Flex>
-          <Progress percent={65} showInfo={false} size="small" />
-          <Flex justify="space-between" align="center" className="mt-1">
-            <Text type="secondary">In progress</Text>
-            <Button type="link" className="p-0">
-              Resume
-            </Button>
-          </Flex>
-        </>
-      );
-      return (
-        <Flex gap="middle" className="w-[800px]">
-          <div className="flex-1">
-            <CompareLabel>Existing (Title in body)</CompareLabel>
-            <Card>
-              <Flex vertical gap="small" justify="space-between">
-                <Title level={5} style={{ marginBottom: "auto" }}>
-                  User Analytics Assessment
-                </Title>
-                {assessmentBody}
-              </Flex>
-            </Card>
-          </div>
-          <div className="flex-1">
-            <CompareLabel>New (title prop)</CompareLabel>
-            <Card title="User Analytics Assessment">
-              <Flex vertical gap="small" justify="space-between">
-                {assessmentBody}
-              </Flex>
-            </Card>
-          </div>
-        </Flex>
-      );
-    },
-  ],
-};
-
-/** IntegrationSetupSteps pattern — classic header vs titleHeading */
-export const CompareIntegrationSetup: Story = {
-  name: "Compare: IntegrationSetupSteps",
-  decorators: [
-    () => {
-      const stepsContent = (
-        <Steps
-          direction="vertical"
-          current={1}
-          size="small"
-          items={[
-            { title: "Create integration", status: "finish" as const },
-            { title: "Authorize integration", status: "process" as const },
-            { title: "Create monitor", status: "wait" as const },
-          ]}
-        />
-      );
-      return (
-        <Flex gap="middle" className="w-[800px]">
-          <div className="flex-1">
-            <CompareLabel>Existing (classic header)</CompareLabel>
-            <Card title="Integration setup" titleHeading={false}>
-              {stepsContent}
-            </Card>
-          </div>
-          <div className="flex-1">
-            <CompareLabel>New (titleHeading default)</CompareLabel>
-            <Card title="Integration setup">{stepsContent}</Card>
-          </div>
-        </Flex>
-      );
-    },
-  ],
-};
-
-/* ------------------------------------------------------------------ */
-/*  Tab stories                                                        */
-/* ------------------------------------------------------------------ */
 
 const TAB_CONTENT: Record<string, string> = {
   a: "Content A",
@@ -323,4 +96,114 @@ export const WithTabs: Story = {
       </div>
     );
   },
+};
+
+export const WithExtra: Story = {
+  args: {
+    title: "Access Request Policy",
+    extra: (
+      <Flex gap="small">
+        <Button>Edit</Button>
+        <Button danger>Delete</Button>
+      </Flex>
+    ),
+    children: (
+      <Flex vertical gap="small">
+        <Text type="secondary" code>
+          default_access_policy
+        </Text>
+        <Text type="secondary">Execution timeframe: 45 days</Text>
+      </Flex>
+    ),
+  },
+};
+
+/* ------------------------------------------------------------------ */
+/*  Comparison: existing Title-in-body vs title prop                   */
+/* ------------------------------------------------------------------ */
+
+const CompareLabel = ({ children }: { children: React.ReactNode }) => (
+  <Text type="secondary" strong className="mb-2 block text-xs uppercase">
+    {children}
+  </Text>
+);
+
+export const CompareTitleInBody: Story = {
+  name: "Compare: Title in body vs title prop",
+  decorators: [
+    () => (
+      <Flex gap="middle" className="w-[800px]">
+        <div className="flex-1">
+          <CompareLabel>Existing (Title in body)</CompareLabel>
+          <Card>
+            <Flex vertical gap="small">
+              <Title level={5}>Access Request Policy</Title>
+              <Text type="secondary" code>
+                default_access_policy
+              </Text>
+              <Text type="secondary">Execution timeframe: 45 days</Text>
+            </Flex>
+          </Card>
+        </div>
+        <div className="flex-1">
+          <CompareLabel>New (title prop)</CompareLabel>
+          <Card title="Access Request Policy">
+            <Flex vertical gap="small">
+              <Text type="secondary" code>
+                default_access_policy
+              </Text>
+              <Text type="secondary">Execution timeframe: 45 days</Text>
+            </Flex>
+          </Card>
+        </div>
+      </Flex>
+    ),
+  ],
+};
+
+export const CompareWithActions: Story = {
+  name: "Compare: Actions in body vs extra prop",
+  decorators: [
+    () => (
+      <Flex gap="middle" className="w-[800px]">
+        <div className="flex-1">
+          <CompareLabel>Existing (buttons in body)</CompareLabel>
+          <Card>
+            <Flex justify="space-between" align="flex-start">
+              <Flex vertical gap="small">
+                <Title level={5}>Access Request Policy</Title>
+                <Text type="secondary" code>
+                  default_access_policy
+                </Text>
+                <Text type="secondary">Execution timeframe: 45 days</Text>
+              </Flex>
+              <Flex gap="small">
+                <Button>Edit</Button>
+                <Button danger>Delete</Button>
+              </Flex>
+            </Flex>
+          </Card>
+        </div>
+        <div className="flex-1">
+          <CompareLabel>New (extra prop)</CompareLabel>
+          <Card
+            title="Access Request Policy"
+            extra={
+              <Flex gap="small">
+                <Button>Edit</Button>
+                <Button danger>Delete</Button>
+              </Flex>
+            }
+          >
+            <Flex vertical gap="small">
+              <Text type="secondary" code>
+                default_access_policy
+              </Text>
+              <Text type="secondary">Execution timeframe: 45 days</Text>
+            </Flex>
+          </Card>
+        </div>
+      </Flex>
+    ),
+  ],
 };
