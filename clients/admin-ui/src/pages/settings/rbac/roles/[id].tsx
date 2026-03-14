@@ -117,12 +117,12 @@ const RoleDetailPage: NextPage = () => {
       .filter((perm) => !HIDDEN_UNUSED_SCOPES.includes(perm.code))
       .reduce<Record<string, RBACPermission[]>>((acc, perm) => {
         const resourceType = perm.resource_type || "general";
-        const result = { ...acc };
-        if (!result[resourceType]) {
-          result[resourceType] = [];
+        if (!acc[resourceType]) {
+          // eslint-disable-next-line no-param-reassign
+          acc[resourceType] = [];
         }
-        result[resourceType].push(perm);
-        return result;
+        acc[resourceType].push(perm);
+        return acc;
       }, {});
   }, [permissions]);
 

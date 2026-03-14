@@ -283,6 +283,11 @@ describe("RBAC UI Management", () => {
       // Verify permissions section is visible
       cy.contains("Permissions").should("be.visible");
 
+      // Verify permissions are grouped by resource type
+      // The groupedPermissions memo groups permissions and renders each group
+      // with a heading (e.g., "system", "privacy request", "user", etc.)
+      cy.get("h5.capitalize").should("have.length.at.least", 1);
+
       // Find a permission checkbox and toggle it
       cy.get(".ant-checkbox-input").first().check({ force: true });
 
