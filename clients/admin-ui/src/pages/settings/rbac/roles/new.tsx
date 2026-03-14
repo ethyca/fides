@@ -27,7 +27,7 @@ const NewRolePage: NextPage = () => {
   const { data: allRoles } = useGetRolesQuery({});
   const [createRole, { isLoading }] = useCreateRoleMutation();
 
-  // Filter out system roles from parent options
+  // Build parent role options - all roles including system roles can be parents
   const parentRoleOptions = useMemo(() => {
     if (!allRoles) {
       return [];
