@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   ChakraBox as Box,
-  ChakraHeading as Heading,
   ChakraStack as Stack,
   ChakraText as Text,
   useChakraToast as useToast,
@@ -82,30 +81,15 @@ import { ScopeRegistryEnum, SystemResponse } from "~/types/api";
 
 import { formatUser } from "../common/utils";
 
-const SystemHeading = ({ system }: { system?: SystemResponse }) => {
-  const isManual = !system;
-  const headingName = isManual
-    ? "your new system"
-    : (system.name ?? "this system");
-
-  return (
-    <Heading as="h3" size="lg">
-      Describe {headingName}
-    </Heading>
-  );
-};
-
 interface Props {
   onSuccess: (system: SystemResponse) => void;
   system?: SystemResponse;
-  withHeader?: boolean;
   children?: React.ReactNode;
 }
 
 const SystemInformationForm = ({
   onSuccess,
   system: passedInSystem,
-  withHeader,
   children,
 }: Props) => {
   const { data: systems = [] } = useGetAllSystemsQuery();
@@ -475,15 +459,12 @@ const SystemInformationForm = ({
             style={{ border: "none", padding: 0 }}
           >
             <Stack spacing={0} maxWidth={{ base: "100%", lg: "70%" }}>
-              {withHeader ? <SystemHeading system={passedInSystem} /> : null}
-
               <Text fontSize="sm" fontWeight="medium">
                 By providing a small amount of additional context for each
                 system we can make reporting and understanding our tech stack
                 much easier for everyone from engineering to legal teams. So
                 let&apos;s do this now.
               </Text>
-              {withHeader ? <SystemHeading system={passedInSystem} /> : null}
 
               <SystemFormInputGroup heading="System details">
                 {features.dictionaryService ? (
