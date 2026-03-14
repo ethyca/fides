@@ -1,5 +1,4 @@
-import { Card, CardProps, Typography } from "antd/lib";
-import { theme } from "antd/lib";
+import { Card, CardProps, Typography, theme } from "antd/lib";
 import classNames from "classnames";
 import React from "react";
 
@@ -22,9 +21,8 @@ export interface CustomCardProps extends CardProps {
   headerLayout?: "stacked" | "inline";
   /**
    * Font used for the card title.
-   * - `"default"`: inherits the theme sans-serif font (Inter)
-   * - `"mono"`: renders the title in `fontFamilyCode` (Basier Square Mono) at a
-   *   smaller size (`token.fontSize`)
+   * - `"default"`: inherits the theme sans-serif font
+   * - `"mono"`: renders the title in the monospace code font
    * @default "default"
    */
   titleFont?: "default" | "mono";
@@ -34,8 +32,8 @@ export interface CustomCardProps extends CardProps {
    */
   showTitleDivider?: boolean;
   /**
-   * When true, wraps a string `title` in `<Typography.Title level={5}>` and
-   * removes the header divider and padding so the title flows with the body.
+   * When true, renders the title as a heading and removes the header divider
+   * and padding so the title flows with the body.
    * @default false
    */
   titleHeading?: boolean;
@@ -144,17 +142,6 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
  *   onTabChange={setActiveTab}
  * >
  *   <div>Tab content here</div>
- * </CustomCard>
- *
- * @example
- * // Dashboard-style card with mono title and no divider
- * <CustomCard
- *   variant="borderless"
- *   title="Posture"
- *   titleFont="mono"
- *   showTitleDivider={false}
- * >
- *   <Statistic value={score} />
  * </CustomCard>
  */
 export const CustomCard = Object.assign(withCustomProps(Card), {
