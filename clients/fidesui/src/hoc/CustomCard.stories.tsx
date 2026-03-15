@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Button, Flex, Typography } from "antd/lib";
+import { Avatar, Button, Flex, Space, Tag, Typography } from "antd/lib";
 import { useState } from "react";
 
 import type { CardProps } from "../index";
@@ -15,14 +15,6 @@ const COVER_POSITION: Record<
   bottom: "bottom",
 };
 
-const TITLE_FONT: Record<
-  NonNullable<CardProps["titleFont"]>,
-  CardProps["titleFont"]
-> = {
-  default: "default",
-  mono: "mono",
-};
-
 const meta = {
   title: "Data Display/Card",
   component: Card,
@@ -35,16 +27,6 @@ const meta = {
     coverPosition: {
       control: "select",
       options: Object.values(COVER_POSITION),
-    },
-    titleFont: {
-      control: "select",
-      options: Object.values(TITLE_FONT),
-    },
-    showTitleDivider: {
-      control: "boolean",
-    },
-    titleHeading: {
-      control: "boolean",
     },
   },
   decorators: [
@@ -115,6 +97,31 @@ export const WithExtra: Story = {
         <Text type="secondary">Execution timeframe: 45 days</Text>
       </Flex>
     ),
+  },
+};
+
+/** Mimics ConfidenceCard: JSX title, small size, hidden body, actions */
+export const JsxTitle: Story = {
+  args: {
+    size: "small",
+    title: (
+      <Space>
+        <Avatar size={24}>AI</Avatar>
+        <Text type="secondary" className="font-normal">
+          1,204 fields
+        </Text>
+        <Text>High confidence</Text>
+        <Tag color="green">High</Tag>
+      </Space>
+    ),
+    actions: [
+      <Button key="review" type="text" size="small">
+        Review
+      </Button>,
+      <Button key="approve" type="text" size="small">
+        Approve
+      </Button>,
+    ],
   },
 };
 
