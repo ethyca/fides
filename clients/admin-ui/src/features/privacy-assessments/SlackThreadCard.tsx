@@ -1,4 +1,5 @@
-import { Collapse, Flex, Link, List, Text } from "fidesui";
+import { Collapse, Flex, List, Text } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import { formatDate } from "~/features/common/utils";
 
@@ -15,25 +16,31 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
     return null;
   }
   return (
-    <div className={styles.evidenceCard}>
-      <Text strong className={styles.cardTitle}>
+    <div className={styles.slackCard}>
+      <Text
+        strong
+        style={{ fontSize: 13, color: "#1A1F36", display: "block" }}
+        className={styles.cardTitle}
+      >
         Stakeholder communication
       </Text>
-      <Text type="secondary" size="sm" className="block">
+
+      <Text
+        style={{
+          fontSize: 13,
+          color: "#4B5563",
+          display: "block",
+          lineHeight: 1.5,
+          marginBottom: 8,
+        }}
+      >
+        {item.value}
+      </Text>
+
+      <Text type="secondary" style={{ fontSize: 12, display: "block" }}>
         {data.channel || "N/A"} &middot; {data.messages.length} messages
         &middot; {formatDate(item.created_at)}
       </Text>
-
-      {data.thread_url && (
-        <Link
-          href={data.thread_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.threadLink}
-        >
-          View thread in Slack
-        </Link>
-      )}
 
       {data.messages.length > 0 && (
         <Collapse
@@ -48,15 +55,23 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
                   size="small"
                   dataSource={data.messages}
                   renderItem={(msg: SlackMessage) => (
-                    <List.Item className={styles.messageItem}>
+                    <List.Item
+                      style={{
+                        padding: "8px 0",
+                        borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
+                      }}
+                    >
                       <List.Item.Meta
                         title={
                           <Flex align="center" gap="small">
-                            <Text strong size="sm">
+                            <Text strong style={{ fontSize: 12 }}>
                               {msg.sender}
                             </Text>
                             {msg.timestamp && (
-                              <Text type="secondary" size="sm">
+                              <Text
+                                type="secondary"
+                                style={{ fontSize: 11 }}
+                              >
                                 {new Date(msg.timestamp).toLocaleString(
                                   "en-US",
                                   {
@@ -70,7 +85,11 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
                             )}
                           </Flex>
                         }
-                        description={<Text size="sm">{msg.text}</Text>}
+                        description={
+                          <Text style={{ fontSize: 13, marginTop: 4 }}>
+                            {msg.text}
+                          </Text>
+                        }
                       />
                     </List.Item>
                   )}
