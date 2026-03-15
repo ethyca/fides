@@ -22,7 +22,7 @@ const SlackThreadCard = ({ item }: { item: EvidenceItem }) => {
         strong
         style={{
           fontSize: 13,
-          color: "#1A1F36",
+          color: palette.FIDESUI_NEUTRAL_900,
           display: "block",
           marginBottom: 8,
         }}
