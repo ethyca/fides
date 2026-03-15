@@ -1602,6 +1602,12 @@ dataset:
     - name: privacy_assessment_task_id
       data_categories:
       - system.operations
+    - name: context_snapshot
+      data_categories:
+      - system.operations
+    - name: last_evaluated_at
+      data_categories:
+      - system.operations
   - name: privacy_assessment_config
     description: 'Global configuration for privacy assessments (single-row table)'
     fields:
@@ -1681,6 +1687,9 @@ dataset:
       data_categories:
       - system.operations
     - name: llm_model
+      data_categories:
+      - system.operations
+    - name: high_risk_only
       data_categories:
       - system.operations
   - name: policy
