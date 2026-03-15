@@ -42,6 +42,10 @@ describe("configureNavGroups", () => {
 
     expect(findGroup(navGroups, "Privacy requests").children).toMatchObject([
       { title: "Request manager", path: routes.PRIVACY_REQUESTS_ROUTE },
+      {
+        title: "Pre-approval webhooks",
+        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+      },
     ]);
   });
 
@@ -110,7 +114,7 @@ describe("configureNavGroups", () => {
       ]);
     });
 
-    it("shows pre-approval webhooks under settings with correct scopes", () => {
+    it("shows pre-approval webhooks under privacy requests with correct scopes", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
         userScopes: [
@@ -118,11 +122,11 @@ describe("configureNavGroups", () => {
           ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
         ],
       });
-      const settingsChildren = findGroup(
+      const privacyRequestsChildren = findGroup(
         navGroups,
-        "Settings",
+        "Privacy requests",
       ).children.map((c) => ({ title: c.title, path: c.path }));
-      expect(settingsChildren).toContainEqual({
+      expect(privacyRequestsChildren).toContainEqual({
         title: "Pre-approval webhooks",
         path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
       });

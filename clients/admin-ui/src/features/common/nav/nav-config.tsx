@@ -128,6 +128,14 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Pre-approval webhooks",
+        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+        scopes: [
+          ScopeRegistryEnum.WEBHOOK_READ,
+          ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
+        ],
+      },
+      {
         title: "Policies",
         path: routes.POLICIES_ROUTE,
         requiresFlag: "policies",
@@ -282,14 +290,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Privacy requests",
         path: routes.PRIVACY_REQUESTS_SETTINGS_ROUTE,
         scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_REDACTION_PATTERNS_UPDATE],
-      },
-      {
-        title: "Pre-approval webhooks",
-        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
-        scopes: [
-          ScopeRegistryEnum.WEBHOOK_READ,
-          ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
-        ],
       },
       {
         title: "Users",
