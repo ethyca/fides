@@ -110,6 +110,24 @@ describe("configureNavGroups", () => {
       ]);
     });
 
+    it("shows pre-approval webhooks under settings with correct scopes", () => {
+      const navGroups = configureNavGroups({
+        config: NAV_CONFIG,
+        userScopes: [
+          ScopeRegistryEnum.WEBHOOK_READ,
+          ScopeRegistryEnum.WEBHOOK_CREATE_OR_UPDATE,
+        ],
+      });
+      const settingsChildren = findGroup(
+        navGroups,
+        "Settings",
+      ).children.map((c) => ({ title: c.title, path: c.path }));
+      expect(settingsChildren).toContainEqual({
+        title: "Pre-approval webhooks",
+        path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
+      });
+    });
+
     it("does not show /plus/datamap if plus is not enabled but user has the scope", () => {
       const navGroups = configureNavGroups({
         config: NAV_CONFIG,
