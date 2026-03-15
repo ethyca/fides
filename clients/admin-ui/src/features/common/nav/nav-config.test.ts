@@ -47,7 +47,6 @@ describe("configureNavGroups", () => {
         path: routes.PRE_APPROVAL_WEBHOOKS_ROUTE,
       },
     ]);
-
   });
 
   it("includes the Plus routes when running with Fidesplus API", () => {

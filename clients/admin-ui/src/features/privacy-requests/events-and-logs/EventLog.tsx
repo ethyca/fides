@@ -202,78 +202,88 @@ const EventLog = ({
       (isAuditStatusWithDetails(detail.status) && detail.message);
 
     return (
-    <Tr
-      key={detail.updated_at}
-      backgroundColor={
-        hasExpandableDetails ? palette.FIDESUI_NEUTRAL_50 : "unset"
-      }
-      onClick={() => {
-        if (hasExpandableDetails) {
-          onDetailPanel(detail.message, detail.status);
+      <Tr
+        key={detail.updated_at}
+        backgroundColor={
+          hasExpandableDetails ? palette.FIDESUI_NEUTRAL_50 : "unset"
         }
-      }}
-      style={{
-        cursor: hasExpandableDetails ? "pointer" : "unset",
-      }}
-      _hover={{ backgroundColor: palette.FIDESUI_NEUTRAL_50 }}
-    >
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {formatDate(detail.updated_at)}
-        </Text>
-      </Td>
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {getActionTypeLabel(detail.action_type)}
-        </Text>
-      </Td>
-      <Td>
-        {ExecutionLogStatusLabels[detail.status] ? (
-          <Tag color={ExecutionLogStatusColors[detail.status]}>
-            {ExecutionLogStatusLabels[detail.status]}
-          </Tag>
-        ) : (
+        onClick={() => {
+          if (hasExpandableDetails) {
+            onDetailPanel(detail.message, detail.status);
+          }
+        }}
+        style={{
+          cursor: hasExpandableDetails ? "pointer" : "unset",
+        }}
+        _hover={{ backgroundColor: palette.FIDESUI_NEUTRAL_50 }}
+      >
+        <Td>
           <Text
             color="gray.600"
             fontSize="xs"
             lineHeight="4"
             fontWeight="medium"
           >
-            {detail.status}
+            {formatDate(detail.updated_at)}
           </Text>
+        </Td>
+        <Td>
+          <Text
+            color="gray.600"
+            fontSize="xs"
+            lineHeight="4"
+            fontWeight="medium"
+          >
+            {getActionTypeLabel(detail.action_type)}
+          </Text>
+        </Td>
+        <Td>
+          {ExecutionLogStatusLabels[detail.status] ? (
+            <Tag color={ExecutionLogStatusColors[detail.status]}>
+              {ExecutionLogStatusLabels[detail.status]}
+            </Tag>
+          ) : (
+            <Text
+              color="gray.600"
+              fontSize="xs"
+              lineHeight="4"
+              fontWeight="medium"
+            >
+              {detail.status}
+            </Text>
+          )}
+        </Td>
+        {hasDatasetEntries && (
+          <Td>
+            <Text
+              color="gray.600"
+              fontSize="xs"
+              lineHeight="4"
+              fontWeight="medium"
+            >
+              {extractRecordCountOrTotal(
+                detail,
+                allEventLogs || eventLogs,
+                privacyRequestActionType,
+              )}
+            </Text>
+          </Td>
         )}
-      </Td>
-      {hasDatasetEntries && (
-        <Td>
-          <Text
-            color="gray.600"
-            fontSize="xs"
-            lineHeight="4"
-            fontWeight="medium"
-          >
-            {extractRecordCountOrTotal(
-              detail,
-              allEventLogs || eventLogs,
-              privacyRequestActionType,
-            )}
-          </Text>
-        </Td>
-      )}
-      {hasDatasetEntries && !isRequestFinishedView && (
-        <Td>
-          <Text
-            color="gray.600"
-            fontSize="xs"
-            lineHeight="4"
-            fontWeight="medium"
-          >
-            {(detail.status as string) === "finished"
-              ? "Request completed"
-              : detail.collection_name}
-          </Text>
-        </Td>
-      )}
-    </Tr>
+        {hasDatasetEntries && !isRequestFinishedView && (
+          <Td>
+            <Text
+              color="gray.600"
+              fontSize="xs"
+              lineHeight="4"
+              fontWeight="medium"
+            >
+              {(detail.status as string) === "finished"
+                ? "Request completed"
+                : detail.collection_name}
+            </Text>
+          </Td>
+        )}
+      </Tr>
     );
   });
 

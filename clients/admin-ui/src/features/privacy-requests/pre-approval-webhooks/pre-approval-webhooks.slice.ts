@@ -9,15 +9,14 @@ const PRE_APPROVAL_WEBHOOK_ROUTE = "/dsr/webhook/pre_approval";
 
 const preApprovalWebhooksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getPreApprovalWebhooks: build.query<
-      Page_PreApprovalWebhookResponse_,
-      void
-    >({
-      query: () => ({
-        url: PRE_APPROVAL_WEBHOOK_ROUTE,
-      }),
-      providesTags: ["Pre-Approval Webhooks"],
-    }),
+    getPreApprovalWebhooks: build.query<Page_PreApprovalWebhookResponse_, void>(
+      {
+        query: () => ({
+          url: PRE_APPROVAL_WEBHOOK_ROUTE,
+        }),
+        providesTags: ["Pre-Approval Webhooks"],
+      },
+    ),
     createOrUpdatePreApprovalWebhooks: build.mutation<
       PreApprovalWebhookResponse[],
       PreApprovalWebhookCreate[]

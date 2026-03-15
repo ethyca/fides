@@ -245,9 +245,7 @@ const PreApprovalWebhooksPage = () => {
           <Form.Item
             label="Webhook name"
             name="name"
-            rules={[
-              { required: true, message: "Please enter a webhook name" },
-            ]}
+            rules={[{ required: true, message: "Please enter a webhook name" }]}
           >
             <Input placeholder="e.g. Identity Verification Service" />
           </Form.Item>
