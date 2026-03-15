@@ -34,7 +34,6 @@ export enum EvidenceType {
   SYSTEM = "system",
   AI_ANALYSIS = "ai_analysis",
   MANUAL_ENTRY = "manual_entry",
-  SLACK_COMMUNICATION = "slack_communication",
   TEAM_INPUT = "team_input",
 }
 
