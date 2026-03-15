@@ -531,7 +531,7 @@ class TestCreatePrivacyRequest:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
-        assert response_data[0]["status"] == "pending"
+        assert response_data[0]["status"] == "awaiting_pre_approval"
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
         pr.delete(db=db)
         assert not run_access_request_mock.called
@@ -6316,11 +6316,11 @@ class TestVerifyIdentity:
         assert resp.status_code == 200
 
         resp = resp.json()
-        assert resp["status"] == "pending"
+        assert resp["status"] == "awaiting_pre_approval"
         assert resp["identity_verified_at"] is not None
 
         db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.pending
+        assert privacy_request.status == PrivacyRequestStatus.awaiting_pre_approval
         assert privacy_request.identity_verified_at is not None
 
         approved_audit_log: AuditLog = AuditLog.filter(
