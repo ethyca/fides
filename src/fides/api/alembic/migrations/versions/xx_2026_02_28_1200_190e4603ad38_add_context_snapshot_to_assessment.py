@@ -1,7 +1,7 @@
 """Add context_snapshot, last_evaluated_at, and high_risk_only columns
 
 Revision ID: 190e4603ad38
-Revises: 074796d61d8a
+Revises: ea20059aee77
 Create Date: 2026-02-28 12:00:00.000000
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision = "190e4603ad38"
-down_revision = "4ac4864180db"
+down_revision = "ea20059aee77"
 branch_labels = None
 depends_on = None
 
