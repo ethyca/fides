@@ -112,6 +112,9 @@ class PrivacyAssessmentTask(WorkerTask, Base):
     created_by = Column(String, nullable=True)
     use_llm = Column(Boolean, nullable=False, default=False)
     llm_model = Column(String, nullable=True)
+    high_risk_only = Column(
+        Boolean, nullable=False, server_default="true", default=True
+    )
 
     assessments = relationship(
         "PrivacyAssessment",

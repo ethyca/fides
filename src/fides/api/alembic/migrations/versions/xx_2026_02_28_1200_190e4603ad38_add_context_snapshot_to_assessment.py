@@ -1,4 +1,4 @@
-"""Add context_snapshot and last_evaluated_at to privacy_assessment
+"""Add context_snapshot, last_evaluated_at, and high_risk_only columns
 
 Revision ID: 190e4603ad38
 Revises: 074796d61d8a
@@ -33,8 +33,18 @@ def upgrade():
             nullable=True,
         ),
     )
+    op.add_column(
+        "privacy_assessment_task",
+        sa.Column(
+            "high_risk_only",
+            sa.Boolean(),
+            server_default="true",
+            nullable=False,
+        ),
+    )
 
 
 def downgrade():
+    op.drop_column("privacy_assessment_task", "high_risk_only")
     op.drop_column("privacy_assessment", "last_evaluated_at")
     op.drop_column("privacy_assessment", "context_snapshot")
