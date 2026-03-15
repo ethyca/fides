@@ -11,14 +11,14 @@ import {
   Typography,
   useMessage,
 } from "fidesui";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import {
   useGetDatastoreConnectionByKeyQuery,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections/datastore-connection.slice";
-import { getErrorMessage } from "~/features/common/helpers";
 import { PreApprovalWebhookResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
