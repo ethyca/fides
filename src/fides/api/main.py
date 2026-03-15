@@ -19,7 +19,7 @@ from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 from uvicorn import Config, Server
 
 import fides
@@ -65,6 +65,7 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.rate_limit import safe_rate_limit_key
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
+from fides.service.jira.polling_task import initiate_jira_ticket_polling
 
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
 
@@ -102,6 +103,7 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_scheduled_dsr_data_removal()
     initiate_interrupted_task_requeue_poll()
     initiate_polling_task_requeue()
+    initiate_jira_ticket_polling()
     initiate_bcrypt_migration_task()
     initiate_post_upgrade_index_creation()
     initiate_post_upgrade_backfill()
@@ -247,7 +249,7 @@ async def request_validation_exception_handler(
     password from being returned in the error message
     """
     return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=HTTP_422_UNPROCESSABLE_CONTENT,
         content={
             "detail": jsonable_encoder(exc.errors(), exclude={"input", "url", "ctx"})
         },

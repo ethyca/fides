@@ -203,7 +203,7 @@ export type {
   TablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
-  AvatarProps,
+  BadgeProps,
   ButtonProps,
   CheckboxProps,
   CollapseProps,
@@ -219,6 +219,7 @@ export type {
   InputRef,
   MenuProps,
   ModalProps,
+  PopoverProps,
   ProgressProps,
   RadioChangeEvent,
   RadioGroupProps,
@@ -233,17 +234,15 @@ export type {
   UploadProps,
 } from "antd/lib";
 export {
-  Alert,
   AutoComplete,
-  Avatar,
   Badge,
   Breadcrumb,
   Button,
-  Card,
   Cascader,
   Checkbox,
   Col,
   Collapse,
+  ConfigProvider,
   DatePicker,
   Descriptions,
   Divider,
@@ -288,16 +287,25 @@ export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
 export type {
+  CustomAlertProps as AlertProps,
+  CustomAvatarProps as AvatarProps,
+  CustomCardProps as CardProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
+  CustomStatisticProps as StatisticProps,
+  StatisticTrend,
 } from "./hoc";
 export {
+  CustomAlert as Alert,
+  CustomAvatar as Avatar,
+  CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
+  CustomStatistic as Statistic,
   CustomTable as Table,
   CustomTag as Tag,
   CustomTooltip as Tooltip,
@@ -322,8 +330,27 @@ export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
+export type { AntColorTokenKey } from "./components/charts/chart-constants";
+export {
+  CHART_ANIMATION,
+  CHART_GRADIENT,
+  CHART_STROKE,
+  CHART_TYPOGRAPHY,
+} from "./components/charts/chart-constants";
+export type { ChartTextProps } from "./components/charts/ChartText";
+export { ChartText } from "./components/charts/ChartText";
+export type {
+  RadarChartDataPoint,
+  RadarChartProps,
+  RadarPointStatus,
+} from "./components/charts/RadarChart";
+export { RadarChart } from "./components/charts/RadarChart";
+export type { SparklineProps } from "./components/charts/Sparkline";
+export { Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
+export type { TagListProps } from "./components/data-display/TagList";
+export { TagList } from "./components/data-display/TagList";
 
 // Export animation components
 export type {
@@ -379,13 +406,22 @@ export {
 export * as Icons from "@carbon/icons-react";
 /* end prefixed icons */
 
-export { FidesUIProvider, useMessage, useModal } from "./FidesUIProvider";
+export {
+  FidesUIProvider,
+  useMessage,
+  useModal,
+  useNotification,
+} from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**
  * Ant Design Theme System
  */
-export { createDefaultAntTheme, defaultAntTheme } from "./ant-theme";
+export {
+  createDefaultAntTheme,
+  darkAntTheme,
+  defaultAntTheme,
+} from "./ant-theme";
 export { theme as antTheme } from "antd";
 
 /**
@@ -404,5 +440,9 @@ export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-
 /**
  * Custom Hooks
  */
-export type { UseFormModalOptions } from "./hooks";
-export { useFormModal } from "./hooks";
+export type {
+  ThemeMode,
+  ThemeModeProviderProps,
+  UseFormModalOptions,
+} from "./hooks";
+export { ThemeModeProvider, useFormModal, useThemeMode } from "./hooks";

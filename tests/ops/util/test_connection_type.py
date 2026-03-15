@@ -7,6 +7,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
 from fides.api.util.connection_type import (
+    NoSuchConnectionTypeSecretSchemaError,
     get_connection_type_secret_schema,
     get_connection_types,
 )
@@ -256,6 +257,36 @@ def test_get_connection_types_action_type_filter(
     for connection_type in assert_not_in_data:
         obj = connection_type_objects[connection_type]
         assert obj not in data
+
+
+def test_get_connection_type_secret_schema_https():
+    """The https type was previously unreachable via get_connection_types(),
+    but it has a valid schema in secrets_schemas. Verify the fast path
+    returns it with the correct sensitive annotations."""
+    schema = get_connection_type_secret_schema(connection_type="https")
+
+    assert schema["properties"]["url"].get("sensitive") is not True
+    assert schema["properties"]["authorization"]["sensitive"] is True
+    assert schema["properties"]["headers"]["sensitive"] is True
+    assert "url" in schema.get("required", [])
+    assert "authorization" in schema.get("required", [])
+
+
+def test_get_connection_type_secret_schema_manual_webhook():
+    """manual_webhook has a schema with no secret fields.
+    Verify the fast path returns an empty-properties schema rather than raising."""
+    schema = get_connection_type_secret_schema(connection_type="manual_webhook")
+
+    assert schema["type"] == "object"
+    assert schema["properties"] == {}
+
+
+def test_get_connection_type_secret_schema_not_in_secrets_schemas():
+    """Types that exist in ConnectionType but have no entry in secrets_schemas
+    (e.g. the deprecated 'manual' type) should raise NoSuchConnectionTypeSecretSchemaError."""
+
+    with pytest.raises(NoSuchConnectionTypeSecretSchemaError):
+        get_connection_type_secret_schema(connection_type="manual")
 
 
 def test_get_connection_type_secret_schemas_aws():

@@ -11,6 +11,10 @@ import {
   DEFAULT_CONFIRMATION_PROPS,
   FIELD_ACTION_COMPLETED,
 } from "./FieldActions.const";
+import {
+  MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
+  ResourceStatusLabel,
+} from "./MonitorFields.const";
 
 export const getActionModalProps = (
   verb: string,
@@ -112,3 +116,11 @@ export const parseFiltersToFilterValue = (
   }
   return undefined;
 };
+
+export const intoDiffStatus = (resourceStatusLabel: ResourceStatusLabel) =>
+  Object.values(DiffStatus).flatMap((status) =>
+    MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[status].label ===
+    resourceStatusLabel
+      ? [status]
+      : [],
+  );

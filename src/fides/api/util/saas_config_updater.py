@@ -1,8 +1,10 @@
+import copy
 from typing import Iterable
 
 from loguru import logger
 from packaging.version import Version
 from packaging.version import parse as parse_version
+from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -27,29 +29,40 @@ def update_saas_configs(db: Session) -> None:
     """
     event_audit_service = EventAuditService(db)
     saas_connection_service = ConnectionService(db, event_audit_service)
-    for connector_type in ConnectorRegistry.connector_types():
+    all_templates = ConnectorRegistry.get_combined_templates()
+    for connector_type, template in all_templates.items():
         logger.debug(
             "Determining if any updates are needed for connectors of type {} based on templates...",
             connector_type,
-        )
-        template: ConnectorTemplate = ConnectorRegistry.get_connector_template(  # type: ignore
-            connector_type
         )
 
         # Store the original template dataset (with placeholders) instead of the modified version
         template_dataset_json = load_dataset_from_string(template.dataset)
 
-        SaasTemplateDataset.get_or_create(
+        _, stored_dataset_template = SaasTemplateDataset.get_or_create(
             db=db,
             connector_type=connector_type,
             dataset_json=template_dataset_json,
+        )
+
+        # Snapshot the stored baseline before the loop. update_saas_instance writes back
+        # to SaasTemplateDataset on every call, so without this snapshot the first
+        # iteration would overwrite the row and corrupt the merge baseline for all
+        # subsequent iterations of the same connector type.
+        stored_dataset_json_snapshot = (
+            copy.deepcopy(stored_dataset_template.dataset_json)
+            if isinstance(stored_dataset_template.dataset_json, dict)
+            else None
         )
 
         saas_config = SaaSConfig(**load_config_from_string(template.config))
         template_version: Version = parse_version(saas_config.version)
         connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
             db=db,
-            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+            conditions=(
+                sa_func.lower(ConnectionConfig.saas_config["type"].astext)
+                == connector_type.lower()
+            ),
         ).all()
         for connection_config in connection_configs:
             saas_config_instance = SaaSConfig.model_validate(
@@ -68,6 +81,7 @@ def update_saas_configs(db: Session) -> None:
                         connection_config,
                         template,
                         saas_config_instance,
+                        stored_dataset_json=stored_dataset_json_snapshot,
                     )
                 except Exception:
                     logger.exception(

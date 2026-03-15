@@ -4,6 +4,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from snowflake.sqlalchemy import URL as Snowflake_URL
 from sqlalchemy import text
+from sqlalchemy.engine import Engine  # type: ignore
 from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
@@ -67,6 +68,9 @@ class SnowflakeConnector(SQLConnector):
             private_key_encoded = serialization.load_pem_private_key(
                 config.private_key.encode(),
                 password=password,
+                # default_backend() is deprecated since cryptography 36.0 (2021-11-21);
+                # the backend argument is silently accepted but no longer required.
+                # https://cryptography.io/en/36.0.0/faq/#faq-missing-backend
                 backend=default_backend(),
             )
             private_key = private_key_encoded.private_bytes(
@@ -90,7 +94,9 @@ class SnowflakeConnector(SQLConnector):
         query_config = self.query_config(node)
         return query_config.generate_table_name()
 
-    def table_exists(self, qualified_table_name: str) -> bool:
+    def table_exists(
+        self, qualified_table_name: str, engine: Engine | None = None
+    ) -> bool:
         """
         Check if table exists in Snowflake using the proper three-part naming convention.
 

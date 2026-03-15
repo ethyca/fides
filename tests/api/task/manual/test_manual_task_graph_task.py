@@ -8,6 +8,7 @@ from fides.api.models.manual_task import (
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
+    StatusType,
 )
 from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
@@ -330,10 +331,13 @@ class TestManualTaskDataAggregation:
     ):
         """Test successful attachment field processing"""
         # Mock the attachment retrieval
-        with patch.object(
-            attachment_for_access_package, "retrieve_attachment", autospec=True
-        ) as mock_retrieve:
-            mock_retrieve.return_value = (1234, "https://example.com/file.pdf")
+        with patch(
+            "fides.api.task.manual.manual_task_graph_task.AttachmentService"
+        ) as mock_service:
+            mock_service.return_value.retrieve_url.return_value = (
+                1234,
+                "https://example.com/file.pdf",
+            )
 
             result = manual_task_graph_task._process_attachment_field(
                 manual_task_submission_attachment
@@ -382,10 +386,12 @@ class TestManualTaskDataAggregation:
     ):
         """Test attachment field processing with retrieval error"""
         # Mock the attachment retrieval to raise an exception
-        with patch.object(
-            attachment_for_access_package, "retrieve_attachment", autospec=True
-        ) as mock_retrieve:
-            mock_retrieve.side_effect = Exception("Storage error")
+        with patch(
+            "fides.api.task.manual.manual_task_graph_task.AttachmentService"
+        ) as mock_service:
+            mock_service.return_value.retrieve_url.side_effect = Exception(
+                "Storage error"
+            )
 
             result = manual_task_graph_task._process_attachment_field(
                 manual_task_submission_attachment
@@ -403,16 +409,14 @@ class TestManualTaskDataAggregation:
     ):
         """Test attachment field processing with multiple attachments"""
         # Mock the attachment retrieval for multiple attachments
-        with (
-            patch.object(
-                multiple_attachments_for_access[0], "retrieve_attachment", autospec=True
-            ) as mock_retrieve1,
-            patch.object(
-                multiple_attachments_for_access[1], "retrieve_attachment", autospec=True
-            ) as mock_retrieve2,
-        ):
-            mock_retrieve1.return_value = (2560, "https://example.com/doc1.pdf")
-            mock_retrieve2.return_value = (1024, "https://example.com/doc2.pdf")
+        with patch(
+            "fides.api.task.manual.manual_task_graph_task.AttachmentService"
+        ) as mock_service:
+            # Configure side_effect to return different values for each call
+            mock_service.return_value.retrieve_url.side_effect = [
+                (2560, "https://example.com/doc1.pdf"),
+                (1024, "https://example.com/doc2.pdf"),
+            ]
 
             result = manual_task_graph_task._process_attachment_field(
                 manual_task_submission_attachment
@@ -444,9 +448,10 @@ class TestManualTaskDataAggregation:
         # Get the instance from the submission
         instance = manual_task_submission_attachment.instance
 
-        # Mock the attachment retrieval
-        with patch.object(
-            attachment_for_access_package, "retrieve_attachment", autospec=True
+        # Mock the AttachmentService retrieve_url method
+        with patch(
+            "fides.api.task.manual.manual_task_graph_task.AttachmentService.retrieve_url",
+            autospec=True,
         ) as mock_retrieve:
             mock_retrieve.return_value = (1234, "https://example.com/file.pdf")
 
@@ -1277,6 +1282,36 @@ class TestManualTaskGraphTaskHelperMethods:
                     manual_task,
                     ActionType.access,
                     awaiting_detail_message="Test detail",
+                )
+
+    def test_set_submitted_data_raises_error_for_failed_instance(
+        self,
+        build_graph_task,
+        manual_task_instance,
+        access_privacy_request,
+        db,
+    ):
+        """When all instances are failed (e.g. deleted Jira ticket), raise ValueError instead of waiting."""
+        manual_task, graph_task = build_graph_task
+        manual_task_instance.status = StatusType.failed
+        manual_task_instance.save(db)
+        db.refresh(access_privacy_request)
+
+        with (
+            patch.object(
+                graph_task,
+                "_get_submitted_data",
+                autospec=True,
+                return_value=None,
+            ),
+        ):
+            with pytest.raises(
+                ValueError,
+                match="has failed instances",
+            ):
+                graph_task._set_submitted_data_or_raise_awaiting_async_task_callback(
+                    manual_task,
+                    ActionType.access,
                 )
 
     def test_ensure_manual_task_instances_with_config(

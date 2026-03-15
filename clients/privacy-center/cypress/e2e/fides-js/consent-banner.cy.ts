@@ -4543,4 +4543,68 @@ describe("Consent overlay", () => {
       });
     });
   });
+
+  describe("when a TCF stub exists on the page (non-TCF experience)", () => {
+    /**
+     * Simulate the scenario where a publisher loads the open-source IAB TCF
+     * stub before fides.js. The stub defaults gdprApplies to undefined.
+     * When fides.js (non-TCF) initializes, it should set gdprApplies=false
+     * so that compliant ad scripts can proceed.
+     */
+    let stubGdprApplies: boolean | undefined;
+
+    beforeEach(() => {
+      stubGdprApplies = undefined;
+
+      // Install a minimal TCF stub before fides.js loads
+      cy.on("window:before:load", (win) => {
+        /* eslint-disable no-underscore-dangle, no-param-reassign */
+        (win as any).__tcfapi = (
+          command: string,
+          version: number,
+          callback: any,
+          parameter?: any,
+        ) => {
+          if (
+            command === "setGdprApplies" &&
+            version === 2 &&
+            typeof parameter === "boolean"
+          ) {
+            stubGdprApplies = parameter;
+            if (typeof callback === "function") {
+              callback("set", true);
+            }
+          } else if (command === "ping" && typeof callback === "function") {
+            callback({
+              gdprApplies: stubGdprApplies,
+              cmpLoaded: false,
+              cmpStatus: "stub",
+            });
+          }
+        };
+        /* eslint-enable no-underscore-dangle, no-param-reassign */
+      });
+
+      stubConfig({
+        options: {
+          isOverlayEnabled: true,
+        },
+      });
+    });
+
+    it("sets gdprApplies to false on the existing TCF stub", () => {
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window().then((win) => {
+          // Verify the stub was updated by calling ping
+          (win as any).__tcfapi(
+            "ping",
+            2,
+            (pingData: { gdprApplies: boolean | undefined }) => {
+              expect(pingData.gdprApplies).to.eq(false);
+            },
+          );
+        });
+      });
+    });
+  });
 });

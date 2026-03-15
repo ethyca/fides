@@ -47,9 +47,7 @@ class TestCreateConnectionEventDetails:
         assert (
             result["configuration_changes"]["last_run_timestamp"] is None
         )  # Should be None for new connection
-        assert (
-            result["configuration_changes"]["system_id"] == connection_config.system_id
-        )
+        assert "system_id" not in result["configuration_changes"]
         assert (
             result["configuration_changes"]["enabled_actions"] is None
         )  # Should be None if not set
@@ -86,10 +84,7 @@ class TestCreateConnectionEventDetails:
             result["configuration_changes"]["disabled"]
             == saas_example_connection_config.disabled
         )
-        assert (
-            result["configuration_changes"]["system_id"]
-            == saas_example_connection_config.system_id
-        )
+        assert "system_id" not in result["configuration_changes"]
         assert "saas_config" in result["configuration_changes"]
         assert (
             result["configuration_changes"]["saas_config"]

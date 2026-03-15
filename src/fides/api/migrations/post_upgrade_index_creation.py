@@ -1,16 +1,3 @@
-import json
-from typing import Dict, List
-
-from loguru import logger
-from redis.lock import Lock
-from sqlalchemy import text
-from sqlalchemy.orm import Session
-
-from fides.api.db.session import get_db_session
-from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.lock import redis_lock
-from fides.config import CONFIG
-
 """
 This utility is used to detect indices or constraints that were deferred as part
 of a standard Fides/Alembic migration.
@@ -30,13 +17,39 @@ the index or the constraint can be used to determine if an index has executed.
 When using the ADD CONSTRAINT USING INDEX syntax, the index specified in the command is
 automatically renamed to match the name of the constraint being added.
 This means that after the constraint is created, the index will have the same name as the constraint.
+
+Each entry in ``TABLE_OBJECT_MAP`` must include a ``migration_key`` matching a row in
+``post_upgrade_background_migration_tasks`` (task_type='index'). These rows are inserted
+by Alembic migrations to register deferred objects. Objects whose migration_key is not
+yet registered are skipped. After successful creation, ``completed_at`` is set to ``now()``
+on the registration row.
+
 """
+
+import json
+from typing import Dict, List, Optional
+
+from loguru import logger
+from redis.lock import Lock
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from fides.api.db.session import get_db_session
+from fides.api.migrations.backfill_scripts.utils import get_registered_index_keys
+from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.util.lock import redis_lock
+from fides.config import CONFIG
 
 POST_UPGRADE_INDEX_CREATION = "post_upgrade_index_creation"
 # This is the threshold for the number of rows in a table to create the index during application startup
 # The value follows the pattern established in migrations for the tables in the TABLE_OBJECT_MAP
 INDEX_ROW_COUNT_THRESHOLD = 1000000
 
+# Each entry must include a `migration_key` that matches a row in the
+# post_upgrade_background_migration_tasks table (task_type='index').
+# These rows are inserted by Alembic migrations to register deferred objects.
+# If the migration_key is not found in the table, the object is skipped —
+# this means the registration migration has not yet run.
 TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
     "currentprivacypreferencev2": [
         {
@@ -44,49 +57,58 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_email_property_id ON currentprivacypreferencev2 (email, property_id)",
             "type": "index",
             "constraint_name": "last_saved_for_email_per_property_id",
+            "migration_key": "ix_currentprivacypreferencev2_email_property_id",
         },
         {
             "name": "ix_currentprivacypreferencev2_external_id_property_id",
             "statement": "CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_external_id_property_id ON currentprivacypreferencev2 (external_id, property_id)",
             "type": "index",
             "constraint_name": "last_saved_for_external_id_per_property_id",
+            "migration_key": "ix_currentprivacypreferencev2_external_id_property_id",
         },
         {
             "name": "ix_currentprivacypreferencev2_fides_user_device_property_id",
             "statement": "CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_fides_user_device_property_id ON currentprivacypreferencev2 (fides_user_device, property_id)",
             "type": "index",
             "constraint_name": "last_saved_for_fides_user_device_per_property_id",
+            "migration_key": "ix_currentprivacypreferencev2_fides_user_device_property_id",
         },
         {
             "name": "ix_currentprivacypreferencev2_phone_number_property_id",
             "statement": "CREATE UNIQUE INDEX CONCURRENTLY ix_currentprivacypreferencev2_phone_number_property_id ON currentprivacypreferencev2 (phone_number, property_id)",
             "type": "index",
             "constraint_name": "last_saved_for_phone_number_per_property_id",
+            "migration_key": "ix_currentprivacypreferencev2_phone_number_property_id",
         },
         {
             "name": "ix_currentprivacypreferencev2_hashed_external_id",
             "statement": "CREATE INDEX CONCURRENTLY ix_currentprivacypreferencev2_hashed_external_id ON currentprivacypreferencev2 (hashed_external_id)",
             "type": "index",
+            "migration_key": "ix_currentprivacypreferencev2_hashed_external_id",
         },
         {
             "name": "last_saved_for_email_per_property_id",
             "statement": "ALTER TABLE currentprivacypreferencev2 ADD CONSTRAINT last_saved_for_email_per_property_id UNIQUE USING INDEX ix_currentprivacypreferencev2_email_property_id",
             "type": "constraint",
+            "migration_key": "last_saved_for_email_per_property_id",
         },
         {
             "name": "last_saved_for_external_id_per_property_id",
             "statement": "ALTER TABLE currentprivacypreferencev2 ADD CONSTRAINT last_saved_for_external_id_per_property_id UNIQUE USING INDEX ix_currentprivacypreferencev2_external_id_property_id",
             "type": "constraint",
+            "migration_key": "last_saved_for_external_id_per_property_id",
         },
         {
             "name": "last_saved_for_fides_user_device_per_property_id",
             "statement": "ALTER TABLE currentprivacypreferencev2 ADD CONSTRAINT last_saved_for_fides_user_device_per_property_id UNIQUE USING INDEX ix_currentprivacypreferencev2_fides_user_device_property_id",
             "type": "constraint",
+            "migration_key": "last_saved_for_fides_user_device_per_property_id",
         },
         {
             "name": "last_saved_for_phone_number_per_property_id",
             "statement": "ALTER TABLE currentprivacypreferencev2 ADD CONSTRAINT last_saved_for_phone_number_per_property_id UNIQUE USING INDEX ix_currentprivacypreferencev2_phone_number_property_id",
             "type": "constraint",
+            "migration_key": "last_saved_for_phone_number_per_property_id",
         },
     ],
     "privacypreferencehistory": [
@@ -94,6 +116,7 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "name": "ix_privacypreferencehistory_hashed_external_id",
             "statement": "CREATE INDEX CONCURRENTLY ix_privacypreferencehistory_hashed_external_id ON privacypreferencehistory (hashed_external_id)",
             "type": "index",
+            "migration_key": "ix_privacypreferencehistory_hashed_external_id",
         },
     ],
     "providedidentity": [
@@ -101,11 +124,13 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "name": "ix_providedidentity_privacy_request_id",
             "statement": "CREATE INDEX CONCURRENTLY ix_providedidentity_privacy_request_id ON providedidentity (privacy_request_id)",
             "type": "index",
+            "migration_key": "ix_providedidentity_privacy_request_id",
         },
         {
             "name": "ix_providedidentity_reqid_field_hash",
             "statement": "CREATE INDEX CONCURRENTLY ix_providedidentity_reqid_field_hash ON providedidentity (privacy_request_id, field_name, hashed_value)",
             "type": "index",
+            "migration_key": "ix_providedidentity_reqid_field_hash",
         },
     ],
     "privacyrequest": [
@@ -113,6 +138,7 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "name": "ix_privacyrequest_policy_created",
             "statement": "CREATE INDEX CONCURRENTLY ix_privacyrequest_policy_created ON privacyrequest (policy_id, created_at)",
             "type": "index",
+            "migration_key": "ix_privacyrequest_policy_created",
         },
     ],
     "servednoticehistory": [
@@ -120,6 +146,7 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "name": "ix_servednoticehistory_hashed_external_id",
             "statement": "CREATE INDEX CONCURRENTLY ix_servednoticehistory_hashed_external_id ON servednoticehistory (hashed_external_id)",
             "type": "index",
+            "migration_key": "ix_servednoticehistory_hashed_external_id",
         },
     ],
     "stagedresourceancestor": [
@@ -128,6 +155,7 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "name": "ix_staged_resource_ancestor_pkey",
             "statement": "CREATE UNIQUE INDEX CONCURRENTLY ix_staged_resource_ancestor_pkey ON stagedresourceancestor (id)",
             "type": "index",
+            "migration_key": "ix_staged_resource_ancestor_pkey",
         },
         # unique constraint + index
         {
@@ -135,38 +163,51 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "statement": "CREATE UNIQUE INDEX CONCURRENTLY ix_staged_resource_ancestor_unique ON stagedresourceancestor (ancestor_urn, descendant_urn)",
             "type": "index",
             "constraint_name": "uq_staged_resource_ancestor",
+            "migration_key": "ix_staged_resource_ancestor_unique",
         },
         {
             "name": "uq_staged_resource_ancestor",
             "statement": "ALTER TABLE stagedresourceancestor ADD CONSTRAINT uq_staged_resource_ancestor UNIQUE USING INDEX ix_staged_resource_ancestor_unique",
             "type": "constraint",
+            "migration_key": "uq_staged_resource_ancestor",
         },
         # foreign key constraints
         {
             "name": "fk_staged_resource_ancestor_ancestor",
             "statement": "ALTER TABLE stagedresourceancestor ADD CONSTRAINT fk_staged_resource_ancestor_ancestor FOREIGN KEY (ancestor_urn) REFERENCES stagedresource (urn) ON DELETE CASCADE",
             "type": "constraint",
+            "migration_key": "fk_staged_resource_ancestor_ancestor",
         },
         {
             "name": "fk_staged_resource_ancestor_descendant",
             "statement": "ALTER TABLE stagedresourceancestor ADD CONSTRAINT fk_staged_resource_ancestor_descendant FOREIGN KEY (descendant_urn) REFERENCES stagedresource (urn) ON DELETE CASCADE",
             "type": "constraint",
+            "migration_key": "fk_staged_resource_ancestor_descendant",
         },
         # column indexes
         {
             "name": "ix_staged_resource_ancestor_ancestor",
             "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_ancestor ON stagedresourceancestor (ancestor_urn)",
             "type": "index",
+            "migration_key": "ix_staged_resource_ancestor_ancestor",
         },
         {
             "name": "ix_staged_resource_ancestor_descendant",
             "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_descendant ON stagedresourceancestor (descendant_urn)",
             "type": "index",
+            "migration_key": "ix_staged_resource_ancestor_descendant",
         },
         {
             "name": "ix_staged_resource_ancestor_desc_anc_dist",
             "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_desc_anc_dist ON stagedresourceancestor (descendant_urn, ancestor_urn, distance)",
             "type": "index",
+            "migration_key": "ix_staged_resource_ancestor_desc_anc_dist",
+        },
+        {
+            "name": "ix_staged_resource_ancestor_anc_dist_desc",
+            "statement": "CREATE INDEX CONCURRENTLY ix_staged_resource_ancestor_anc_dist_desc ON stagedresourceancestor (ancestor_urn, distance, descendant_urn)",
+            "type": "index",
+            "migration_key": "ix_staged_resource_ancestor_anc_dist_desc",
         },
     ],
     "stagedresource": [
@@ -174,26 +215,37 @@ TABLE_OBJECT_MAP: Dict[str, List[Dict[str, str]]] = {
             "name": "ix_stagedresource_monitor_config_resource_type_consent",
             "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_config_resource_type_consent ON stagedresource (monitor_config_id, resource_type, (meta->>'consent_aggregated'))",
             "type": "index",
+            "migration_key": "ix_stagedresource_monitor_config_resource_type_consent",
         },
         {
             "name": "ix_stagedresource_system_vendor_consent",
             "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_system_vendor_consent ON stagedresource (system_id, vendor_id, (meta->>'consent_aggregated'))",
             "type": "index",
+            "migration_key": "ix_stagedresource_system_vendor_consent",
         },
         {
             "name": "idx_stagedresource_user_categories_gin",
             "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_user_categories_gin ON stagedresource USING GIN (user_assigned_data_categories)",
             "type": "index",
+            "migration_key": "idx_stagedresource_user_categories_gin",
         },
         {
             "name": "idx_stagedresource_classifications_gin",
             "statement": "CREATE INDEX CONCURRENTLY idx_stagedresource_classifications_gin ON stagedresource USING GIN (classifications)",
             "type": "index",
+            "migration_key": "idx_stagedresource_classifications_gin",
         },
         {
             "name": "ix_stagedresource_monitor_leaf_status_urn",
             "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_monitor_leaf_status_urn ON stagedresource (monitor_config_id, is_leaf, diff_status, urn) WHERE is_leaf IS NOT NULL",
             "type": "index",
+            "migration_key": "ix_stagedresource_monitor_leaf_status_urn",
+        },
+        {
+            "name": "ix_stagedresource_leaf_true_monitor_status_urn",
+            "statement": "CREATE INDEX CONCURRENTLY ix_stagedresource_leaf_true_monitor_status_urn ON stagedresource (monitor_config_id, diff_status, urn) WHERE is_leaf IS TRUE",
+            "type": "index",
+            "migration_key": "ix_stagedresource_leaf_true_monitor_status_urn",
         },
     ],
 }
@@ -233,35 +285,102 @@ def create_object(db: Session, object_statement: str, object_name: str) -> None:
     logger.info(f"Successfully created index/constraint object: '{object_name}'")
 
 
+def is_registered(
+    object_data: Dict[str, str],
+    registered_keys: Dict,
+) -> bool:
+    """Check whether this object's migration_key has been registered by a migration.
+
+    Returns True if the key is present in the registration table.
+    Returns False (and logs an error) if the key is missing.
+    Raises ValueError if the object definition is missing a migration_key entirely.
+    """
+    migration_key = object_data.get("migration_key")
+    if not migration_key:
+        raise ValueError(
+            f"Object '{object_data['name']}' is missing a migration_key. "
+            "All entries in TABLE_OBJECT_MAP must have a migration_key "
+            "to be tracked in post_upgrade_background_migration_tasks."
+        )
+
+    if migration_key in registered_keys:
+        return True
+
+    logger.error(
+        f"Skipping {object_data['name']}: migration_key '{migration_key}' "
+        "not found in post_upgrade_background_migration_tasks — "
+        "the registration migration may not have run"
+    )
+    return False
+
+
+def should_skip_existing(db: Session, object_data: Dict[str, str]) -> bool:
+    """Return True if the object (or its parent constraint) already exists in Postgres."""
+    object_name = object_data["name"]
+
+    if check_object_exists(db, object_name):
+        logger.debug(
+            f"Object {object_name} already exists, skipping index/constraint creation"
+        )
+        return True
+
+    # For indexes that back a constraint, skip if the constraint already exists
+    # (the constraint creation renames the index to match the constraint name).
+    if object_data["type"] == "index":
+        constraint_name = object_data.get("constraint_name")
+        if constraint_name and check_object_exists(db, constraint_name):
+            logger.debug(
+                f"Constraint {constraint_name} already exists, "
+                f"skipping index creation for {object_name}"
+            )
+            return True
+
+    return False
+
+
+def mark_index_completed(db: Session, migration_key: Optional[str]) -> None:
+    """Set completed_at on the migration task row after successful object creation."""
+    if not migration_key:
+        return
+
+    db.execute(
+        text(
+            "UPDATE post_upgrade_background_migration_tasks "
+            "SET completed_at = now() "
+            "WHERE key = :key AND task_type = 'index' "
+            "AND completed_at IS NULL"
+        ),
+        {"key": migration_key},
+    )
+    db.commit()
+
+
 def check_and_create_objects(
     db: Session, table_object_map: Dict[str, List[Dict[str, str]]], lock: Lock
 ) -> Dict[str, str]:
     """Returns a dictionary of any indices or constraints that were created."""
     object_info: Dict[str, str] = {}
-    for _, objects in table_object_map.items():
+    registered_keys = get_registered_index_keys(db)
+
+    for objects in table_object_map.values():
         for object_data in objects:
-            object_name = object_data["name"]
-            object_statement = object_data["statement"]
-            object_type = object_data["type"]
-            object_exists = check_object_exists(db, object_name)
+            if not is_registered(object_data, registered_keys):
+                lock.reacquire()
+                continue
 
-            if not object_exists:
-                if object_type == "index":
-                    constraint_name = object_data.get("constraint_name")
-                    if constraint_name:
-                        constraint_exists = check_object_exists(db, constraint_name)
-                        if constraint_exists:
-                            logger.debug(
-                                f"Constraint {constraint_name} already exists, skipping index creation for {object_name}"
-                            )
-                            continue
+            migration_key = object_data.get("migration_key")
+            if registered_keys[migration_key]["completed_at"] is not None:
+                lock.reacquire()
+                continue
 
-                create_object(db, object_statement, object_name)
-                object_info[object_name] = "created"
-            else:
-                logger.debug(
-                    f"Object {object_name} already exists, skipping index/constraint creation"
-                )
+            if should_skip_existing(db, object_data):
+                mark_index_completed(db, migration_key)
+                lock.reacquire()
+                continue
+
+            create_object(db, object_data["statement"], object_data["name"])
+            mark_index_completed(db, migration_key)
+            object_info[object_data["name"]] = "created"
             lock.reacquire()
 
     return object_info
@@ -275,8 +394,10 @@ POST_UPGRADE_INDEX_CREATION_LOCK_TIMEOUT_SECONDS = 600  # 10 minutes
 
 def post_upgrade_index_creation_task() -> None:
     """
-    Task for creating indices and constraints that were deferred
-    as part of a standard Fides/Alembic migration.
+    Task for creating indices and constraints that were deferred as part of a
+    standard Fides/Alembic migration. This task will only create objects from
+    the TABLE_OBJECT_MAP whose migration_key has been registered as a key in
+    the post_upgrade_background_migration_tasks table.
 
     This task is to be kicked off as a background task during application startup,
     after standard migrations have been applied.
@@ -306,17 +427,17 @@ def post_upgrade_index_creation_task() -> None:
 
 
 def initiate_post_upgrade_index_creation() -> None:
-    """Initiates scheduler to migrate all non-credential tables using a bcrypt hash to use a SHA-256 hash"""
+    """Initiates scheduler for post-upgrade deferred index and constraint creation."""
 
     if CONFIG.test_mode:
         logger.debug("Skipping post upgrade index creation in test mode")
         return
 
     assert scheduler.running, (
-        "Scheduler is not running! Cannot migrate tables with bcrypt hashes."
+        "Scheduler is not running! Cannot run post-upgrade index creation."
     )
 
-    logger.info("Initiating scheduler for hash migration")
+    logger.info("Initiating scheduler for post-upgrade index creation")
     scheduler.add_job(
         func=post_upgrade_index_creation_task,
         id=POST_UPGRADE_INDEX_CREATION,

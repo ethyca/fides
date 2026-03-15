@@ -27,8 +27,9 @@ const PropagationPolicyDropdown = ({
       label: "Cascade up and down all",
     },
     {
-      value: PropagationPolicyKeyEnum.CASCADE_DOWN_ALL_CASCADE_UP_OPT_IN,
-      label: "Cascade down all, cascade up opt in",
+      value:
+        PropagationPolicyKeyEnum.CASCADE_DOWN_ALL_CASCADE_UP_OPT_IN_ALL_OPT_OUT_CONSERVATIVE,
+      label: "Cascade down all, cascade up opt in (all) opt out (conservative)",
     },
   ];
 

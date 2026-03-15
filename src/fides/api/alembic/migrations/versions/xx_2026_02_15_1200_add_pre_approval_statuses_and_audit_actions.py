@@ -1,7 +1,7 @@
 """add pre-approval statuses and audit log actions
 
 Revision ID: b1c2d3e4f5a6
-Revises: a0109cdde920
+Revises: 04281f44cc0b
 Create Date: 2026-02-15 12:00:00.000000
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b1c2d3e4f5a6"
-down_revision = "a0109cdde920"
+down_revision = "04281f44cc0b"
 branch_labels = None
 depends_on = None
 

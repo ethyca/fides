@@ -87,8 +87,8 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
                 "Namespace meta is not set. Please call pre_client_creation_hook before creating the client."
             )
 
-        database_instance_name = self.namespace_meta["database_instance_id"]
-        db_name = self.namespace_meta["database_id"]
+        database_instance_name = self.namespace_meta["database_instance_name"]
+        db_name = self.namespace_meta["database_name"]
         db_info = self.get_database_instance_connection_info(database_instance_name)
         return self.create_engine(
             db_username=self.typed_secrets.db_username,

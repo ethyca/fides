@@ -1,4 +1,4 @@
-import { ChakraFlex as Flex, ChakraSimpleGrid as SimpleGrid } from "fidesui";
+import { Col, Flex, Row } from "fidesui";
 import NextLink from "next/link";
 import * as React from "react";
 import { useMemo } from "react";
@@ -27,20 +27,22 @@ const HomeContent = () => {
   );
 
   return (
-    <Flex paddingX={10} data-testid="home-content">
-      <SimpleGrid columns={{ md: 2, xl: 3 }} spacing="24px">
+    <Flex className="px-10" data-testid="home-content">
+      <Row gutter={[24, 24]} className="w-full">
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
-            <NextLink href={item.href} key={item.key} className="flex">
-              <CalloutNavCard
-                title={item.name}
-                description={item.description}
-                color={item.color}
-              />
-            </NextLink>
+            <Col key={item.key} xs={24} md={12} xl={8}>
+              <NextLink href={item.href} className="flex h-full">
+                <CalloutNavCard
+                  title={item.name}
+                  description={item.description}
+                  color={item.color}
+                />
+              </NextLink>
+            </Col>
           ))}
-      </SimpleGrid>
+      </Row>
     </Flex>
   );
 };

@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from loguru import logger
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
+from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.util.collection_util import Row
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.config import CONFIG
@@ -49,7 +50,7 @@ def encrypt_with_sqlalchemy_utils(data: List[Row]) -> bytes:
 
         # Encrypt using SQLAlchemy-Utils AesGcmEngine
         engine = AesGcmEngine()
-        key = CONFIG.security.app_encryption_key
+        key = get_encryption_key()
         engine._update_key(key)  # pylint: disable=protected-access
 
         # AesGcmEngine expects string input
@@ -83,7 +84,7 @@ def decrypt_with_sqlalchemy_utils(encrypted_bytes: bytes) -> List[Row]:
     try:
         # Decrypt using SQLAlchemy-Utils AesGcmEngine
         engine = AesGcmEngine()
-        key = CONFIG.security.app_encryption_key
+        key = get_encryption_key()
         engine._update_key(key)  # pylint: disable=protected-access
 
         # AesGcmEngine expects string input
@@ -148,6 +149,9 @@ def encrypt_with_cryptography(
         nonce = os.urandom(12)  # 96-bit nonce for AES-GCM
 
         # Create cipher
+        # default_backend() is deprecated since cryptography 36.0 (2021-11-21);
+        # the backend argument is silently accepted but no longer required.
+        # https://cryptography.io/en/36.0.0/faq/#faq-missing-backend
         cipher = Cipher(
             algorithms.AES(key), modes.GCM(nonce), backend=default_backend()
         )
@@ -230,6 +234,9 @@ def decrypt_with_cryptography(
 
         # Use SQLAlchemy-Utils compatible key
         key = _get_sqlalchemy_compatible_key()
+        # default_backend() is deprecated since cryptography 36.0 (2021-11-21);
+        # the backend argument is silently accepted but no longer required.
+        # https://cryptography.io/en/36.0.0/faq/#faq-missing-backend
         cipher = Cipher(
             algorithms.AES(key), modes.GCM(nonce, tag), backend=default_backend()
         )
@@ -261,7 +268,7 @@ def decrypt_with_cryptography(
 
 def _get_sqlalchemy_compatible_key() -> bytes:
     """Get 32-byte encryption key compatible with SQLAlchemy-Utils AesGcmEngine."""
-    app_key = CONFIG.security.app_encryption_key.encode(CONFIG.security.encoding)
+    app_key = get_encryption_key().encode(CONFIG.security.encoding)
     # SQLAlchemy-Utils always uses SHA256 hash of the key
     return hashlib.sha256(app_key).digest()
 

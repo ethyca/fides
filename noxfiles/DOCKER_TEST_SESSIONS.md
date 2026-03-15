@@ -29,7 +29,6 @@ These either run `LOGIN` (which hits the API) or run tests that call the running
 | **fides_db_scan** (Misc-Tests) | START_APP then exec `fides scan`; needs app and DB. |
 | **minimal_config_startup** (Misc-Tests) | Explicitly tests that the service starts (compose up --wait). |
 | **check_container_startup**, **check_worker_startup** | Explicitly test service/worker startup. |
-| **performance_tests** | Load test against the running app. |
 
 ## Sessions that don’t use the main app container
 

@@ -26,6 +26,7 @@ from fides.api.service.privacy_request.email_batch_service import (
 from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
 from fides.api.util.lock import redis_lock
 from fides.config import get_config
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
 CONFIG = get_config()
@@ -209,8 +210,11 @@ class TestConsentEmailBatchSend:
         sovrn_email_connection_config,
         system,
     ) -> None:
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
+        )
 
         with pytest.raises(MessageDispatchException):
             # Assert there's no messaging config hooked up so this consent email send should fail
@@ -249,7 +253,7 @@ class TestConsentEmailBatchSend:
         # Sovrn error status and identities added to affected systems and secondary user ids because this preference is relevant
         assert (
             privacy_preference_history.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "error"
         )
@@ -261,7 +265,7 @@ class TestConsentEmailBatchSend:
         # Sovrn error status and identities not added to affected systems and secondary user ids for irrelevant preference
         assert (
             privacy_preference_history_us_ca_provide.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "skipped"
         )
@@ -427,8 +431,11 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
+        )
 
         cache_identity_and_privacy_preferences(
             privacy_request_awaiting_consent_email_send,
@@ -457,7 +464,7 @@ class TestConsentEmailBatchSend:
         # some preferences are propagated and others are not.
         assert (
             privacy_preference_history_us_ca_provide.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "skipped"
         )
@@ -482,8 +489,11 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        sovrn_email_connection_config.system_id = system.id
-        sovrn_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=sovrn_email_connection_config.id,
+            session=db,
+        )
 
         # This preference matches on data use
         cache_identity_and_privacy_preferences(
@@ -572,7 +582,7 @@ class TestConsentEmailBatchSend:
         # Sovrn complete status and identities added to affected systems and secondary user ids because this preference is relevant
         assert (
             privacy_preference_history.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "complete"
         )
@@ -584,7 +594,7 @@ class TestConsentEmailBatchSend:
         db.refresh(privacy_preference_history_us_ca_provide)
         assert (
             privacy_preference_history_us_ca_provide.affected_system_status[
-                sovrn_email_connection_config.system_key
+                sovrn_email_connection_config.consent_tracking_key
             ]
             == "skipped"
         )
@@ -609,8 +619,11 @@ class TestConsentEmailBatchSend:
         privacy_preference_history_us_ca_provide,
         system,
     ) -> None:
-        generic_consent_email_connection_config.system_id = system.id
-        generic_consent_email_connection_config.save(db)
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=generic_consent_email_connection_config.id,
+            session=db,
+        )
 
         # This preference matches on data use
         cache_identity_and_privacy_preferences(
@@ -699,7 +712,7 @@ class TestConsentEmailBatchSend:
         # Sovrn complete status and identities added to affected systems and secondary user ids because this preference is relevant
         assert (
             privacy_preference_history.affected_system_status[
-                generic_consent_email_connection_config.system_key
+                generic_consent_email_connection_config.consent_tracking_key
             ]
             == "complete"
         )
@@ -711,7 +724,7 @@ class TestConsentEmailBatchSend:
         db.refresh(privacy_preference_history_us_ca_provide)
         assert (
             privacy_preference_history_us_ca_provide.affected_system_status[
-                generic_consent_email_connection_config.system_key
+                generic_consent_email_connection_config.consent_tracking_key
             ]
             == "skipped"
         )

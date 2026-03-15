@@ -303,6 +303,7 @@ export type { ParamValue } from "./models/ParamValue";
 export type { PartialPrivacyCenterConfig } from "./models/PartialPrivacyCenterConfig";
 export type { PartialPrivacyRequestOption } from "./models/PartialPrivacyRequestOption";
 export type { PlusApplicationConfig } from "./models/PlusApplicationConfig";
+export type { PrivacyCenterLink } from "./models/PrivacyCenterLink";
 export type { PolicyMaskingSpec } from "./models/PolicyMaskingSpec";
 export type { PolicyMaskingSpecResponse } from "./models/PolicyMaskingSpecResponse";
 export type { PolicyResponse } from "./models/PolicyResponse";

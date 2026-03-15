@@ -221,7 +221,7 @@ export const ChatConfigurations = () => {
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.location.href = `/api/v1/plus/chat/authorize?config_id=${record.id}`;
+                  window.location.href = `/api/v1/plus/chat/slack/authorize?config_id=${record.id}`;
                 }}
                 size="small"
                 type="primary"

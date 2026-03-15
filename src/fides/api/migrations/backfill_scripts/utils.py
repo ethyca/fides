@@ -1,12 +1,14 @@
 import time
 from dataclasses import dataclass, field
+from datetime import datetime
 from functools import wraps
-from typing import Callable, Optional
+from typing import Callable, Dict, Optional, TypedDict
 
 from loguru import logger
 from redis.lock import Lock
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, OperationalError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.util.lock import get_redis_lock
@@ -69,30 +71,94 @@ def is_backfill_completed(db: Session, backfill_name: str) -> bool:
     """
     Check if a backfill has already been completed.
 
-    Returns True if the backfill is recorded in backfill_history, False otherwise.
+    Returns True if a completed record exists (completed_at IS NOT NULL), False otherwise.
+    A row with NULL completed_at means "started but not finished."
     """
     result = db.execute(
-        text("SELECT 1 FROM backfill_history WHERE backfill_name = :name"),
+        text(
+            "SELECT 1 FROM post_upgrade_background_migration_tasks "
+            "WHERE key = :name AND task_type = 'backfill' AND completed_at IS NOT NULL"
+        ),
         {"name": backfill_name},
     )
     return result.scalar() is not None
+
+
+async def is_backfill_completed_async(db: AsyncSession, backfill_name: str) -> bool:
+    """
+    Async version of is_backfill_completed for use with AsyncSession.
+
+    Check if a backfill has already been completed.
+    Returns True if a completed record exists (completed_at IS NOT NULL), False otherwise.
+    A row with NULL completed_at means "started but not finished."
+    """
+    result = await db.execute(
+        text(
+            "SELECT 1 FROM post_upgrade_background_migration_tasks "
+            "WHERE key = :name AND task_type = 'backfill' AND completed_at IS NOT NULL"
+        ),
+        {"name": backfill_name},
+    )
+    return result.scalar() is not None
+
+
+def register_backfill_started(db: Session, backfill_name: str) -> None:
+    """
+    Register that a backfill has started (in-progress).
+
+    Inserts a row with NULL completed_at. Uses ON CONFLICT DO NOTHING for idempotency —
+    if the row already exists (from a prior crashed run or already completed), this is a no-op.
+    """
+    db.execute(
+        text(
+            "INSERT INTO post_upgrade_background_migration_tasks (key, task_type) "
+            "VALUES (:name, 'backfill') ON CONFLICT (task_type, key) DO NOTHING"
+        ),
+        {"name": backfill_name},
+    )
+    db.commit()
+    logger.info(
+        f"Registered backfill '{backfill_name}' as started "
+        "in post_upgrade_background_migration_tasks"
+    )
 
 
 def mark_backfill_completed(db: Session, backfill_name: str) -> None:
     """
     Record that a backfill has completed successfully.
 
-    Uses ON CONFLICT DO NOTHING as a safety net for duplicate calls.
+    Updates the existing row to set completed_at = now(). The WHERE clause includes
+    completed_at IS NULL so a second call is a no-op (idempotent).
     """
     db.execute(
         text(
-            "INSERT INTO backfill_history (backfill_name) VALUES (:name) "
-            "ON CONFLICT (backfill_name) DO NOTHING"
+            "UPDATE post_upgrade_background_migration_tasks "
+            "SET completed_at = now() "
+            "WHERE key = :name AND task_type = 'backfill' AND completed_at IS NULL"
         ),
         {"name": backfill_name},
     )
     db.commit()
-    logger.info(f"Marked backfill '{backfill_name}' as completed in backfill_history")
+    logger.info(
+        f"Marked backfill '{backfill_name}' as completed "
+        "in post_upgrade_background_migration_tasks"
+    )
+
+
+class IndexKeyStatus(TypedDict):
+    key: str
+    completed_at: Optional[datetime]
+
+
+def get_registered_index_keys(db: Session) -> Dict[str, IndexKeyStatus]:
+    """Return all index task keys registered by migrations, with their completion status."""
+    result = db.execute(
+        text(
+            "SELECT key, completed_at FROM post_upgrade_background_migration_tasks "
+            "WHERE task_type = 'index'"
+        )
+    )
+    return {row[0]: IndexKeyStatus(key=row[0], completed_at=row[1]) for row in result}
 
 
 @dataclass
@@ -246,6 +312,9 @@ def batched_backfill(
             if is_backfill_completed(db, name):
                 logger.debug(f"{name} backfill: Already completed, skipping")
                 return result
+
+            # Register this backfill as started (row with NULL completed_at)
+            register_backfill_started(db, name)
 
             consecutive_failures = 0
             start_time = time.time()

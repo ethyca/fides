@@ -15,13 +15,13 @@ from fides.api.schemas.connection_configuration.enums.system_type import SystemT
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     CONNECTOR_TEMPLATE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     CONNECTOR_TEMPLATES,
@@ -390,7 +390,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 21  # Includes test_datastore
+        assert len(data) == 22  # Includes test_datastore
 
     def test_search_system_type_and_connection_type(
         self,
@@ -1642,12 +1642,20 @@ class TestGetConnectionSecretSchema:
                     "description": "Your HubSpot domain",
                     "default": "api.hubapi.com",
                     "sensitive": False,
+                    "options": None,
+                    "multiselect": False,
+                    "param_type": None,
+                    "allowed_values": None,
                     "type": "string",
                 },
                 "private_app_token": {
                     "title": "Private app token",
                     "description": "Your HubSpot Private Apps access token",
                     "sensitive": True,
+                    "options": None,
+                    "multiselect": False,
+                    "param_type": None,
+                    "allowed_values": None,
                     "type": "string",
                 },
             },
@@ -1661,11 +1669,10 @@ class TestGetConnectionSecretSchema:
         resp = api_client.get(
             base_url.format(connection_type="manual_webhook"), headers=auth_header
         )
-        assert resp.status_code == 404
-        assert (
-            resp.json()["detail"]
-            == "No connection type found with name 'manual_webhook'."
-        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["type"] == "object"
+        assert body["properties"] == {}
 
     def test_get_connection_secrets_attentive(
         self, api_client: TestClient, generate_auth_header, base_url
