@@ -1,5 +1,4 @@
-import { Collapse, Flex, List, Space, Text } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
+import { Collapse, Flex, Link, List, Space, Text } from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
 
@@ -18,37 +17,29 @@ const SlackThreadCard = ({ item }: { item: EvidenceItem }) => {
   }
   return (
     <div className={styles.evidenceCard}>
-      <Text
-        strong
-        style={{
-          fontSize: 13,
-          color: palette.FIDESUI_NEUTRAL_900,
-          display: "block",
-          marginBottom: 8,
-        }}
-      >
+      <Text strong className={styles.cardTitle}>
         Stakeholder communication
       </Text>
-      <Text
-        type="secondary"
-        style={{ fontSize: 12, display: "block", marginBottom: 4 }}
-      >
-        {data.channel || "N/A"} &middot;{" "}
-        {data.messages.length} messages &middot; {formatDate(item.created_at)}
+      <Text type="secondary" size="sm" className="block">
+        {data.channel || "N/A"} &middot; {data.messages.length} messages
+        &middot; {formatDate(item.created_at)}
       </Text>
 
       {data.thread_url && (
-        <Text style={{ fontSize: 12, display: "block", marginBottom: 8 }}>
-          <a href={data.thread_url} target="_blank" rel="noopener noreferrer">
-            View thread in Slack
-          </a>
-        </Text>
+        <Link
+          href={data.thread_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.threadLink}
+        >
+          View thread in Slack
+        </Link>
       )}
 
       {data.messages.length > 0 && (
         <Collapse
           ghost
-          style={{ marginTop: 8 }}
+          className={styles.messageCollapse}
           items={[
             {
               key: "thread",
@@ -58,20 +49,15 @@ const SlackThreadCard = ({ item }: { item: EvidenceItem }) => {
                   size="small"
                   dataSource={data.messages}
                   renderItem={(msg: SlackMessage) => (
-                    <List.Item
-                      style={{
-                        padding: "8px 0",
-                        borderBottom: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
-                      }}
-                    >
+                    <List.Item className={styles.messageItem}>
                       <List.Item.Meta
                         title={
                           <Flex align="center" gap="small">
-                            <Text strong style={{ fontSize: 12 }}>
+                            <Text strong size="sm">
                               {msg.sender}
                             </Text>
                             {msg.timestamp && (
-                              <Text type="secondary" style={{ fontSize: 11 }}>
+                              <Text type="secondary" size="sm">
                                 {new Date(msg.timestamp).toLocaleString(
                                   "en-US",
                                   {
@@ -85,11 +71,7 @@ const SlackThreadCard = ({ item }: { item: EvidenceItem }) => {
                             )}
                           </Flex>
                         }
-                        description={
-                          <Text style={{ fontSize: 13, marginTop: 4 }}>
-                            {msg.text}
-                          </Text>
-                        }
+                        description={<Text size="sm">{msg.text}</Text>}
                       />
                     </List.Item>
                   )}

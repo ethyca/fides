@@ -9,6 +9,25 @@
   border: 1px solid var(--ant-color-border);
 }
 
+.cardTitle {
+  display: block;
+  margin-bottom: 8px;
+}
+
 .cardValue {
   line-height: 1.5;
+}
+
+.threadLink {
+  display: block;
+  margin: 4px 0 8px;
+}
+
+.messageCollapse {
+  margin-top: 8px;
+}
+
+.messageItem {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ant-color-border);
 }
