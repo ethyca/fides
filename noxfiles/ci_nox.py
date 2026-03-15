@@ -374,12 +374,54 @@ def pytest_redis_cluster(session: nox.Session) -> None:
     session.run(*run_command, env=env)
 
 
+def _run_cache_backend_tests(
+    session: nox.Session,
+    backend_name: str,
+    cluster_enabled: str,
+    host: str,
+    port: str = "6379",
+) -> None:
+    """Run REDIS_CLUSTER_TEST_PATHS in the fides container with given Redis/Valkey env."""
+    session.log(
+        "Running cache/Celery tests against %s (cluster=%s)...",
+        backend_name,
+        cluster_enabled,
+    )
+    session.run(
+        "docker",
+        "exec",
+        *ANALYTICS_OPT_OUT,
+        *ANALYTICS_ID_OVERRIDE,
+        "-e",
+        f"FIDES__REDIS__CLUSTER_ENABLED={cluster_enabled}",
+        "-e",
+        f"FIDES__REDIS__HOST={host}",
+        "-e",
+        f"FIDES__REDIS__PORT={port}",
+        "-e",
+        "FIDES__REDIS__PASSWORD=redispassword",
+        CI_ARGS_EXEC,
+        CONTAINER_NAME,
+        "uv",
+        "run",
+        "--python",
+        "/opt/fides/bin/python",
+        "pytest",
+        "-v",
+        *REDIS_CLUSTER_TEST_PATHS,
+        external=True,
+    )
+
+
 @nox.session()
 def pytest_redis_cluster_docker(session: nox.Session) -> None:
     """
-    Run Redis cluster and Celery cluster tests like other Docker tests: full stack
-    (START_APP) with the Redis cluster also running; pytest runs in the fides
-    container via exec with cluster env vars.
+    Run cache/Celery tests against Redis cluster, Valkey cluster, and Valkey standalone.
+
+    Starts Redis cluster, Valkey cluster, and Valkey (standalone), then runs
+    REDIS_CLUSTER_TEST_PATHS three times in the fides container with different
+    backend env. No need to re-run the full test suite; coverage comes from
+    main pytest (Redis standalone) plus these backend variants.
     """
     session.notify("teardown")
     session.log("Starting Redis cluster nodes...")
@@ -407,32 +449,49 @@ def pytest_redis_cluster_docker(session: nox.Session) -> None:
         "redis-cluster-init",
         external=True,
     )
+    session.log("Starting Valkey cluster nodes...")
+    session.run(
+        "docker",
+        "compose",
+        "-f",
+        COMPOSE_FILE,
+        "up",
+        "-d",
+        "--wait",
+        "valkey-cluster-node-1",
+        "valkey-cluster-node-2",
+        "valkey-cluster-node-3",
+        external=True,
+    )
+    session.log("Forming Valkey cluster (one-shot init)...")
+    session.run(
+        "docker",
+        "compose",
+        "-f",
+        COMPOSE_FILE,
+        "run",
+        "--rm",
+        "valkey-cluster-init",
+        external=True,
+    )
+    session.log("Starting Valkey standalone...")
+    session.run(
+        "docker",
+        "compose",
+        "-f",
+        COMPOSE_FILE,
+        "up",
+        "-d",
+        "--wait",
+        "valkey",
+        external=True,
+    )
     session.log("Starting full stack (fides, fides-db, redis)...")
     session.run(*START_APP, external=True)
-    run_command = (
-        "docker",
-        "exec",
-        *ANALYTICS_OPT_OUT,
-        *ANALYTICS_ID_OVERRIDE,
-        "-e",
-        "FIDES__REDIS__CLUSTER_ENABLED=true",
-        "-e",
-        "FIDES__REDIS__HOST=redis-cluster-node-1",
-        "-e",
-        "FIDES__REDIS__PORT=6379",
-        "-e",
-        "FIDES__REDIS__PASSWORD=redispassword",
-        CI_ARGS_EXEC,
-        CONTAINER_NAME,
-        "uv",
-        "run",
-        "--python",
-        "/opt/fides/bin/python",
-        "pytest",
-        "-v",
-        *REDIS_CLUSTER_TEST_PATHS,
-    )
-    session.run(*run_command, external=True)
+
+    _run_cache_backend_tests(session, "Redis cluster", "true", "redis-cluster-node-1")
+    _run_cache_backend_tests(session, "Valkey cluster", "true", "valkey-cluster-node-1")
+    _run_cache_backend_tests(session, "Valkey standalone", "false", "valkey")
 
 
 ############

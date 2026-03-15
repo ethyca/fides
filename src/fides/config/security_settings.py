@@ -1,6 +1,7 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
+from enum import Enum
 from typing import List, Literal, Optional, Pattern, Tuple, Union
 
 from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
@@ -13,11 +14,19 @@ from fides.api.cryptography.cryptographic_util import (
 )
 from fides.api.custom_types import URLOriginString
 from fides.api.oauth.roles import OWNER
-from fides.common.api.scope_registry import SCOPE_REGISTRY
+from fides.common.scope_registry import SCOPE_REGISTRY
 
 from .fides_settings import FidesSettings
 
 ENV_PREFIX = "FIDES__SECURITY__"
+
+
+class DomainValidationMode(str, Enum):
+    """Controls how domain validation behaves for SaaS connector params."""
+
+    enabled = "enabled"
+    disabled = "disabled"
+    monitor = "monitor"
 
 
 class SecuritySettings(FidesSettings):
@@ -138,6 +147,14 @@ class SecuritySettings(FidesSettings):
         default=432000,
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",
     )
+    domain_validation_mode: DomainValidationMode = Field(
+        default=DomainValidationMode.monitor,
+        description="Controls domain validation for SaaS connector params globally. "
+        "'enabled' enforces validation and blocks disallowed domains. "
+        "'monitor' validates but only logs warnings instead of blocking. "
+        "'disabled' skips validation entirely. "
+        "Set via FIDES__SECURITY__DOMAIN_VALIDATION_MODE.",
+    )
     enable_audit_log_resource_middleware: Optional[bool] = Field(
         default=False,
         description="Either enables the collection of audit log resource data or bypasses the middleware",
@@ -162,6 +179,13 @@ class SecuritySettings(FidesSettings):
         default=10,
         description="The timeout in seconds for tunnel connection (open_channel timeout)",
     )
+
+    @field_validator("domain_validation_mode", mode="before")
+    @classmethod
+    def lowercase_domain_validation_mode(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
     @field_validator("app_encryption_key", mode="before")
     @classmethod

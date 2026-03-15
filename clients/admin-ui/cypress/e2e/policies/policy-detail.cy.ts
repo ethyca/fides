@@ -19,6 +19,12 @@ describe("Policy detail page", () => {
     });
   });
 
+  it("disables delete button for default policy", () => {
+    cy.getByTestId("delete-policy-btn").should("be.disabled");
+    cy.getByTestId("delete-policy-btn").focus();
+    cy.contains("Default policies cannot be deleted").should("be.visible");
+  });
+
   it("shows the tabs with rule count", () => {
     cy.findByRole("tablist").should("be.visible");
     cy.findByRole("tab", { name: /Rules \(1\)/ }).should("be.visible");

@@ -69,6 +69,14 @@ class RedisSettings(FidesSettings):
         default="",
         description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate.",
     )
+    socket_connect_timeout: float = Field(
+        default=10.0,
+        description="Timeout in seconds for establishing a connection to Redis.",
+    )
+    socket_timeout: float = Field(
+        default=10.0,
+        description="Timeout in seconds for reading/writing to an established Redis connection.",
+    )
     user: str = Field(
         default="", description="The user with which to login to the Redis cache."
     )

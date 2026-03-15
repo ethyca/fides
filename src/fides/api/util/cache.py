@@ -255,9 +255,8 @@ def _build_redis_client(
             "ssl": CONFIG.redis.ssl,
             "ssl_ca_certs": CONFIG.redis.ssl_ca_certs or None,
             "ssl_cert_reqs": CONFIG.redis.ssl_cert_reqs,
-            # Avoid blocking indefinitely on connect or topology discovery
-            "socket_connect_timeout": 10.0,
-            "socket_timeout": 10.0,
+            "socket_connect_timeout": CONFIG.redis.socket_connect_timeout,
+            "socket_timeout": CONFIG.redis.socket_timeout,
         }
         # Only send password when set; in test mode skip default "testpassword" so
         # no AUTH is sent to a cluster with no password (avoids "AUTH without password" error).
@@ -279,8 +278,10 @@ def _build_redis_client(
         username=CONFIG.redis.user,
         password=CONFIG.redis.password,
         ssl=CONFIG.redis.ssl,
-        ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
+        ssl_ca_certs=CONFIG.redis.ssl_ca_certs or None,
         ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
+        socket_connect_timeout=CONFIG.redis.socket_connect_timeout,
+        socket_timeout=CONFIG.redis.socket_timeout,
     )
 
 
@@ -305,12 +306,13 @@ def get_cache() -> FidesopsRedis:
 
     try:
         connected = _connection.ping()
-    except ConnectionErrorFromRedis:
+    except ConnectionErrorFromRedis as e:
+        logger.exception("Unable to establish Redis connection. Exception: {}", e)
         connected = False
 
     if not connected:
         raise common_exceptions.RedisConnectionError(
-            "Unable to establish Redis connection. Fides is unable to accept PrivacyRequests."
+            "Unable to establish Redis connection. Fides Redis cache is not available."
         )
 
     return _connection
@@ -347,7 +349,7 @@ def get_read_only_cache() -> FidesopsRedis:
                 username=CONFIG.redis.read_only_user,
                 password=CONFIG.redis.read_only_password,
                 ssl=CONFIG.redis.read_only_ssl,
-                ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs,
+                ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs or None,
                 ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
             )
             _read_only_connection = FidesopsRedis(client)

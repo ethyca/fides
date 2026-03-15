@@ -1,10 +1,10 @@
 from typing import Literal, Set, Tuple
 
 from fides.api.schemas.connection_configuration import secrets_schemas
-from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
+from fides.api.schemas.namespace_meta.sql_namespace_meta import SQLNamespaceMeta
 
 
-class SnowflakeNamespaceMeta(NamespaceMeta):
+class SnowflakeNamespaceMeta(SQLNamespaceMeta):
     """
     Represents the namespace structure for Snowflake queries.
 
@@ -14,11 +14,12 @@ class SnowflakeNamespaceMeta(NamespaceMeta):
     """
 
     connection_type: Literal["snowflake"] = "snowflake"
-    database_name: str
-    schema: str  # type: ignore[assignment]
+    database_name: (
+        str  # required for Snowflake (overrides Optional on SQLNamespaceMeta)
+    )
 
     @classmethod
-    def get_fallback_secret_fields(cls) -> Set[Tuple]:
+    def get_fallback_secret_fields(cls) -> Set[Tuple[str, str]]:
         """
         The required connection config secrets when namespace metadata is missing.
         For Snowflake, database_name and schema_name are required.

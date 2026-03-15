@@ -13,7 +13,7 @@ from starlette.status import (
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
+    HTTP_422_UNPROCESSABLE_CONTENT,
 )
 from starlette.testclient import TestClient
 
@@ -32,7 +32,7 @@ from fides.api.models.sql_models import PrivacyDeclaration, System
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER
 from fides.api.oauth.utils import extract_payload
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     PRIVACY_REQUEST_READ,
     SCOPE_REGISTRY,
     STORAGE_READ,
@@ -46,7 +46,7 @@ from fides.common.api.scope_registry import (
     USER_READ_OWN,
     USER_UPDATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     LOGIN,
     LOGOUT,
     USER_ACCEPT_INVITE,
@@ -91,7 +91,7 @@ class TestCreateUser:
         }
 
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
 
     def test_username_exists(
         self,
@@ -129,7 +129,7 @@ class TestCreateUser:
             "email_address": "test.user@ethyca.com",
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
             == "Value error, Password must have at least eight characters."
@@ -141,7 +141,7 @@ class TestCreateUser:
             "email_address": "test.user@ethyca.com",
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
             == "Value error, Password must have at least one number."
@@ -153,7 +153,7 @@ class TestCreateUser:
             "email_address": "test.user@ethyca.com",
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
             == "Value error, Password must have at least one capital letter."
@@ -166,7 +166,7 @@ class TestCreateUser:
         }
 
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
         assert (
             response.json()["detail"][0]["msg"]
             == "Value error, Password must have at least one symbol."
@@ -192,7 +192,7 @@ class TestCreateUser:
             "password": str_to_b64_str("TestP@ssword9"),
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
 
     def test_create_user_bad_email(
         self,
@@ -208,7 +208,7 @@ class TestCreateUser:
             "email_address": "not.an.email",
         }
         response = api_client.post(url, headers=auth_header, json=body)
-        assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
+        assert HTTP_422_UNPROCESSABLE_CONTENT == response.status_code
 
     def test_create_user(
         self,
@@ -1577,7 +1577,7 @@ class TestUpdateUserPassword:
             },
         )
 
-        assert resp.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert resp.status_code == HTTP_422_UNPROCESSABLE_CONTENT
         assert expected_error in resp.json()["detail"][0]["msg"]
         db.expunge(user)
 
@@ -2643,7 +2643,7 @@ class TestAcceptUserInvite:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "Invite code is invalid."
 
-    @mock.patch("fides.api.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
+    @mock.patch("fides.api.v1.endpoints.user_endpoints.FidesUserInvite.get_by")
     def test_accept_invite_expired_code(self, mock_get_by, api_client: TestClient, url):
         # the expiration is based on the updated_at timestamp so we need to mock an expired FidesUserInvite to test this scenario
         mock_instance = mock.Mock(

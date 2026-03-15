@@ -71,7 +71,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     run_webhooks_and_report_status,
     save_access_results,
 )
-from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
+from fides.common.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
 from fides.system_integration_link.repository import SystemIntegrationLinkRepository
@@ -2022,7 +2022,9 @@ class TestConsentEmailStep:
 
         assert privacy_request_with_consent_policy.privacy_preferences[
             0
-        ].affected_system_status == {system.fides_key: "skipped"}
+        ].affected_system_status == {
+            sovrn_email_connection_config.consent_tracking_key: "skipped"
+        }
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
     def test_needs_batch_email_send_new_workflow(

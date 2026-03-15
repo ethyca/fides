@@ -15,8 +15,11 @@ class NamespaceMeta(BaseModel, ABC):
     def __init_subclass__(cls) -> None:
         """Register subclasses automatically when they're defined"""
         super().__init_subclass__()
-        if hasattr(cls, "connection_type") and cls.connection_type:
-            NamespaceMeta._implementations[cls.connection_type] = cls
+        # model_fields isn't populated yet (Pydantic metaclass hasn't finished),
+        # so read the raw class attribute instead with an explicit type guard.
+        ct = getattr(cls, "connection_type", None)
+        if isinstance(ct, str) and ct:
+            NamespaceMeta._implementations[ct] = cls
 
     @classmethod
     def get_implementation(
@@ -27,7 +30,7 @@ class NamespaceMeta(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def get_fallback_secret_fields(cls) -> Set[Tuple]:
+    def get_fallback_secret_fields(cls) -> Set[Tuple[str, str]]:
         """
         The required connection config secrets when namespace metadata is missing.
         Each implementation specifies which fields are required from connection secrets

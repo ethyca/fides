@@ -3,7 +3,7 @@ import {
   Collapse,
   CUSTOM_TAG_COLOR,
   Flex,
-  Icons,
+  notification,
   Space,
   Tag,
   TagList,
@@ -11,76 +11,186 @@ import {
   Tooltip,
   Typography,
   useMessage,
-  useModal,
 } from "fidesui";
-import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
+import { useRelativeTime } from "~/features/common/hooks/useRelativeTime";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { PRIVACY_ASSESSMENTS_ROUTE } from "~/features/common/nav/routes";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import styles from "./AssessmentDetail.module.scss";
-import { useDeletePrivacyAssessmentMutation } from "./privacy-assessments.slice";
+import { EvidenceDrawer } from "./EvidenceDrawer";
+import {
+  useCreateQuestionnaireMutation,
+  useCreateQuestionnaireReminderMutation,
+  useGetAssessmentConfigQuery,
+  useGetPrivacyAssessmentQuery,
+} from "./privacy-assessments.slice";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionGroupPanel } from "./QuestionGroupPanel";
+import { QuestionnaireStatusBar } from "./QuestionnaireStatusBar";
 import { SlackIcon } from "./SlackIcon";
-import { PrivacyAssessmentDetailResponse } from "./types";
+import {
+  AnswerSource,
+  AnswerStatus,
+  EvidenceItem,
+  PrivacyAssessmentDetailResponse,
+  QuestionGroup,
+} from "./types";
+import { deduplicateEvidence, filterEvidence } from "./utils";
 
 interface AssessmentDetailProps {
   assessment: PrivacyAssessmentDetailResponse;
 }
 
+const POLL_INTERVAL = 15_000;
+
 export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
-  const router = useRouter();
   const message = useMessage();
-  const modalApi = useModal();
+  const [notificationApi, notificationHolder] = notification.useNotification();
   const { getDataCategoryDisplayName } = useTaxonomies();
 
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [focusedGroupId, setFocusedGroupId] = useState<string | null>(null);
+  const [evidenceSearchQuery, setEvidenceSearchQuery] = useState("");
 
-  const [deleteAssessment, { isLoading: isDeleting }] =
-    useDeletePrivacyAssessmentMutation();
-
-  const isComplete = useMemo(
+  const focusedGroup = useMemo<QuestionGroup | undefined>(
     () =>
-      (assessment.question_groups ?? [])
-        .flatMap((g) => g.questions)
-        .every((q) => q.answer_text.trim().length > 0),
+      focusedGroupId
+        ? (assessment.question_groups ?? []).find(
+            (g) => g.id === focusedGroupId,
+          )
+        : undefined,
+    [focusedGroupId, assessment.question_groups],
+  );
+
+  const focusedGroupEvidence = useMemo<EvidenceItem[]>(
+    () =>
+      focusedGroup
+        ? deduplicateEvidence(focusedGroup.questions.flatMap((q) => q.evidence))
+        : [],
+    [focusedGroup],
+  );
+
+  const filteredEvidence = useMemo(
+    () => filterEvidence(focusedGroupEvidence, evidenceSearchQuery),
+    [focusedGroupEvidence, evidenceSearchQuery],
+  );
+
+  const handleViewEvidence = useCallback((groupId: string) => {
+    setFocusedGroupId(groupId);
+    setDrawerOpen(true);
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    setEvidenceSearchQuery("");
+  }, []);
+
+  const { data: config } = useGetAssessmentConfigQuery();
+  const [createQuestionnaire, { isLoading: isSending }] =
+    useCreateQuestionnaireMutation();
+  const [createReminder, { isLoading: isSendingReminder }] =
+    useCreateQuestionnaireReminderMutation();
+
+  const slackChannelName = config?.slack_channel_name
+    ? `#${config.slack_channel_name}`
+    : null;
+
+  const allQuestions = useMemo(
+    () => (assessment.question_groups ?? []).flatMap((g) => g.questions),
     [assessment.question_groups],
   );
 
-  const handleDelete = () => {
-    modalApi.confirm({
-      title: "Delete assessment",
-      content: (
-        <Space direction="vertical" size="middle" className="w-full">
-          <Text>Are you sure you want to delete this assessment?</Text>
-          <Text type="secondary">
-            This action cannot be undone. All assessment data, including any
-            responses and documentation, will be permanently removed.
-          </Text>
-        </Space>
-      ),
-      okText: "Delete",
-      okButtonProps: { danger: true },
-      centered: true,
-      onOk: async () => {
-        try {
-          await deleteAssessment(assessment.id).unwrap();
-          message.success("Assessment deleted.");
-          router.push(PRIVACY_ASSESSMENTS_ROUTE);
-        } catch (error) {
-          message.error(
-            getErrorMessage(
-              error as RTKErrorResult["error"],
-              "Failed to delete assessment. Please try again.",
-            ),
-          );
-        }
-      },
-    });
+  const isComplete = useMemo(
+    () => allQuestions.every((q) => q.answer_text.trim().length > 0),
+    [allQuestions],
+  );
+
+  const shouldPoll = !!assessment.questionnaire?.sent_at && !isComplete;
+  useGetPrivacyAssessmentQuery(assessment.id, {
+    pollingInterval: POLL_INTERVAL,
+    skip: !shouldPoll,
+  });
+
+  const teamInputIdsRef = useRef<Set<string> | null>(null);
+  if (teamInputIdsRef.current === null) {
+    teamInputIdsRef.current = new Set(
+      allQuestions
+        .filter((q) => q.answer_source === AnswerSource.TEAM_INPUT)
+        .map((q) => q.question_id),
+    );
+  }
+
+  useEffect(() => {
+    const currentIds = new Set(
+      allQuestions
+        .filter((q) => q.answer_source === AnswerSource.TEAM_INPUT)
+        .map((q) => q.question_id),
+    );
+    const prevIds = teamInputIdsRef.current!;
+    const hasNewAnswers = [...currentIds].some((id) => !prevIds.has(id));
+
+    if (hasNewAnswers) {
+      notificationApi.success({
+        message: "New answer from Slack",
+      });
+    }
+    teamInputIdsRef.current = currentIds;
+  }, [allQuestions, notificationApi]);
+
+  const questionnaireSentAt = useMemo(
+    () =>
+      assessment.questionnaire?.sent_at
+        ? new Date(assessment.questionnaire.sent_at)
+        : null,
+    [assessment.questionnaire?.sent_at],
+  );
+
+  const timeSinceSent = useRelativeTime(questionnaireSentAt);
+
+  const handleRequestInput = async () => {
+    if (!slackChannelName) {
+      return;
+    }
+
+    const needsInputIds = allQuestions
+      .filter((q) => q.answer_status === AnswerStatus.NEEDS_INPUT)
+      .map((q) => q.question_id);
+
+    try {
+      await createQuestionnaire({
+        id: assessment.id,
+        body: {
+          channel: slackChannelName,
+          include_question_ids: needsInputIds,
+        },
+      }).unwrap();
+      message.success(`Questions sent to ${slackChannelName} on Slack.`);
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Failed to send questionnaire. Please try again.",
+        ),
+      );
+    }
+  };
+
+  const handleSendReminder = async () => {
+    try {
+      await createReminder({ id: assessment.id }).unwrap();
+      message.success(`Reminder sent to ${slackChannelName}.`);
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Failed to send reminder. Please try again.",
+        ),
+      );
+    }
   };
 
   const collapseItems = useMemo(
@@ -91,6 +201,7 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           <QuestionGroupPanel
             group={group}
             isExpanded={expandedKeys.includes(group.id)}
+            onViewEvidence={() => handleViewEvidence(group.id)}
           />
         ),
         children: (
@@ -105,82 +216,86 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
           </Space>
         ),
       })),
-    [assessment.question_groups, assessment.id, expandedKeys],
+    [
+      assessment.question_groups,
+      assessment.id,
+      expandedKeys,
+      handleViewEvidence,
+    ],
   );
 
   return (
     <Space direction="vertical" size="small" className="w-full">
-      <Flex justify="space-between" align="flex-start">
-        <div>
-          <Flex align="center" gap="small" className="mb-1">
-            <Typography.Title level={4} className="m-0">
-              {assessment.name}
-            </Typography.Title>
-            <Tag
-              color={
-                isComplete ? CUSTOM_TAG_COLOR.SUCCESS : CUSTOM_TAG_COLOR.DEFAULT
-              }
-            >
-              {isComplete ? "Completed" : "In progress"}
-            </Tag>
-          </Flex>
-          <Text type="secondary" size="sm" className="mb-2 block">
-            System: {assessment.system_name}
-          </Text>
-          <Text type="secondary" className="block leading-loose">
-            Processing{" "}
-            {(assessment.data_categories ?? []).length > 0 ? (
-              <TagList
-                tags={(assessment.data_categories ?? []).map((key) => ({
-                  value: key,
-                  label: getDataCategoryDisplayName(key),
-                }))}
-                maxTags={1}
-                expandable
-              />
-            ) : (
-              <Tag>0 data categories</Tag>
-            )}{" "}
-            for{" "}
-            <TagList
-              tags={assessment.data_use_name ? [assessment.data_use_name] : []}
-              maxTags={1}
-            />
-          </Text>
-        </div>
+      {notificationHolder}
+      <div>
+        <Flex align="center" gap="small" className="mb-1">
+          <Typography.Title level={4} className="m-0">
+            {assessment.name}
+          </Typography.Title>
+          <Tag
+            color={
+              isComplete ? CUSTOM_TAG_COLOR.SUCCESS : CUSTOM_TAG_COLOR.DEFAULT
+            }
+          >
+            {isComplete ? "Completed" : "In progress"}
+          </Tag>
+        </Flex>
+        <Text type="secondary" size="sm" className="block">
+          System: {assessment.system_name}
+        </Text>
+      </div>
 
-        <Space>
-          <Tooltip title="Delete assessment">
-            <Button
-              type="text"
-              danger
-              onClick={handleDelete}
-              aria-label="Delete assessment"
-              loading={isDeleting}
-              icon={<Icons.TrashCan size={16} />}
+      <Flex justify="space-between" align="center" className="mb-2 w-full">
+        <Text type="secondary" className="leading-loose">
+          Processing{" "}
+          {(assessment.data_categories ?? []).length > 0 ? (
+            <TagList
+              tags={(assessment.data_categories ?? []).map((key) => ({
+                value: key,
+                label: getDataCategoryDisplayName(key),
+              }))}
+              maxTags={1}
+              expandable
             />
-          </Tooltip>
+          ) : (
+            <Tag>0 data categories</Tag>
+          )}{" "}
+          for{" "}
+          <TagList
+            tags={assessment.data_use_name ? [assessment.data_use_name] : []}
+            maxTags={1}
+          />
+        </Text>
+        {!isComplete && (
           <Tooltip
             title={
-              !isComplete
-                ? "Assessment must be complete before generating a report"
+              !slackChannelName
+                ? "Configure a Slack channel in assessment settings to enable this feature"
                 : undefined
             }
           >
-            <Button type="primary" disabled={!isComplete}>
-              Generate report
+            <Button
+              icon={<SlackIcon size={14} />}
+              size="small"
+              onClick={handleRequestInput}
+              disabled={!slackChannelName}
+              loading={isSending}
+            >
+              Request input from team
             </Button>
           </Tooltip>
-        </Space>
+        )}
       </Flex>
 
-      {!isComplete && (
-        <Flex justify="flex-end">
-          {/* TODO: implement request input from team */}
-          <Button icon={<SlackIcon size={14} />} size="small">
-            Request input from team
-          </Button>
-        </Flex>
+      {!isComplete && questionnaireSentAt && (
+        <QuestionnaireStatusBar
+          channel={slackChannelName ?? ""}
+          timeSinceSent={timeSinceSent}
+          answeredCount={assessment.questionnaire!.answered_questions}
+          totalCount={assessment.questionnaire!.total_questions}
+          isSendingReminder={isSendingReminder}
+          onSendReminder={handleSendReminder}
+        />
       )}
 
       <Collapse
@@ -189,6 +304,16 @@ export const AssessmentDetail = ({ assessment }: AssessmentDetailProps) => {
         onChange={(keys) => setExpandedKeys(keys as string[])}
         items={collapseItems}
         size="large"
+      />
+
+      <EvidenceDrawer
+        open={drawerOpen}
+        onClose={handleCloseDrawer}
+        focusedGroupId={focusedGroupId}
+        group={focusedGroup}
+        evidence={filteredEvidence}
+        searchQuery={evidenceSearchQuery}
+        onSearchChange={setEvidenceSearchQuery}
       />
     </Space>
   );
