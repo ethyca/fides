@@ -16,6 +16,7 @@ export enum PrivacyRequestStatus {
   PAUSED = "paused",
   AWAITING_EMAIL_SEND = "awaiting_email_send",
   REQUIRES_MANUAL_FINALIZATION = "requires_manual_finalization",
+  PENDING_EXTERNAL = "pending_external",
   CANCELED = "canceled",
   ERROR = "error",
   DUPLICATE = "duplicate",

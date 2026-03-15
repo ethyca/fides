@@ -193,38 +193,27 @@ const EventLog = ({
     return "-";
   };
 
-  const tableItems = eventLogs?.map((detail) => (
+  const tableItems = eventLogs?.map((detail) => {
+    const hasExpandableDetails =
+      detail.status === ExecutionLogStatus.ERROR ||
+      (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
+      detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
+      detail.status === ExecutionLogStatus.POLLING ||
+      (isAuditStatusWithDetails(detail.status) && detail.message);
+
+    return (
     <Tr
       key={detail.updated_at}
       backgroundColor={
-        detail.status === ExecutionLogStatus.ERROR ||
-        (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-        detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
-        detail.status === ExecutionLogStatus.POLLING ||
-        (isAuditStatusWithDetails(detail.status) && detail.message)
-          ? palette.FIDESUI_NEUTRAL_50
-          : "unset"
+        hasExpandableDetails ? palette.FIDESUI_NEUTRAL_50 : "unset"
       }
       onClick={() => {
-        if (
-          detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-          detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
-          detail.status === ExecutionLogStatus.POLLING ||
-          (isAuditStatusWithDetails(detail.status) && detail.message)
-        ) {
+        if (hasExpandableDetails) {
           onDetailPanel(detail.message, detail.status);
         }
       }}
       style={{
-        cursor:
-          detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-          detail.status === ExecutionLogStatus.AWAITING_PROCESSING ||
-          detail.status === ExecutionLogStatus.POLLING ||
-          (isAuditStatusWithDetails(detail.status) && detail.message)
-            ? "pointer"
-            : "unset",
+        cursor: hasExpandableDetails ? "pointer" : "unset",
       }}
       _hover={{ backgroundColor: palette.FIDESUI_NEUTRAL_50 }}
     >
@@ -285,7 +274,8 @@ const EventLog = ({
         </Td>
       )}
     </Tr>
-  ));
+    );
+  });
 
   return (
     <Box width="100%" paddingTop="0px" height="100%">

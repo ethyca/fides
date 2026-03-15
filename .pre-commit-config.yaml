@@ -24,6 +24,16 @@ repos:
         additional_dependencies: [ github.com/zricethezav/gitleaks@latest ]
         stages: [push]
 
+      - id: fix-migrations-on-checkout
+        # To use this post-checkout hook, run
+        # pre-commit install --hook-type post-checkout
+        name: fix-migrations-on-checkout
+        description: Auto-fix Alembic migration conflicts when switching branches
+        entry: scripts/post_checkout_migration_fix.sh
+        language: script
+        stages: [post-checkout]
+        always_run: true
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.14.11

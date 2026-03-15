@@ -9,21 +9,23 @@ import {
   Table,
   Tooltip,
   Typography,
+  useMessage,
 } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import {
+  useGetDatastoreConnectionByKeyQuery,
+  usePatchDatastoreConnectionMutation,
+  usePatchDatastoreConnectionSecretsMutation,
+} from "~/features/datastore-connections/datastore-connection.slice";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { PreApprovalWebhookResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import {
-  useCreateConnectionConfigForWebhookMutation,
   useCreateOrUpdatePreApprovalWebhooksMutation,
   useDeletePreApprovalWebhookMutation,
   useGetPreApprovalWebhooksQuery,
-  useLazyGetConnectionConfigByKeyQuery,
-  usePatchConnectionSecretsForWebhookMutation,
 } from "./pre-approval-webhooks.slice";
 
 const { Text } = Typography;
@@ -34,58 +36,36 @@ interface WebhookFormValues {
   authorization: string;
 }
 
+const WebhookUrlCell = ({
+  connectionKey,
+}: {
+  connectionKey: string | undefined;
+}) => {
+  const { data } = useGetDatastoreConnectionByKeyQuery(connectionKey!, {
+    skip: !connectionKey,
+  });
+  const url = (data as Record<string, unknown>)?.secrets
+    ? ((data as Record<string, unknown>).secrets as Record<string, string>)?.url
+    : undefined;
+
+  return url ? <Text>{url}</Text> : <Text type="secondary">&mdash;</Text>;
+};
+
 const PreApprovalWebhooksPage = () => {
   const { data, isLoading } = useGetPreApprovalWebhooksQuery();
-  const [createOrUpdateWebhooks] =
+  const [createOrUpdateWebhooks, { isLoading: isCreating }] =
     useCreateOrUpdatePreApprovalWebhooksMutation();
   const [deleteWebhook] = useDeletePreApprovalWebhookMutation();
-  const [createConnectionConfig] =
-    useCreateConnectionConfigForWebhookMutation();
-  const [patchConnectionSecrets] = usePatchConnectionSecretsForWebhookMutation();
-  const [getConnectionConfig] = useLazyGetConnectionConfigByKeyQuery();
+  const [patchConnection] = usePatchDatastoreConnectionMutation();
+  const [patchSecrets] = usePatchDatastoreConnectionSecretsMutation();
+  const message = useMessage();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWebhook, setEditingWebhook] =
     useState<PreApprovalWebhookResponse | null>(null);
   const [form] = Form.useForm<WebhookFormValues>();
-  const [submitting, setSubmitting] = useState(false);
-  const { errorAlert, successAlert } = useAlert();
 
   const webhooks = data?.items ?? [];
-
-  // Fetch the URL for each webhook's connection config via the dedicated endpoint
-  // which returns secrets with sensitive fields redacted.
-  const [urlMap, setUrlMap] = useState<Record<string, string>>({});
-  const connectionKeys = useMemo(
-    () =>
-      webhooks
-        .map((w) => w.connection_config?.key)
-        .filter((k): k is string => !!k),
-    [webhooks],
-  );
-
-  const fetchUrls = useCallback(async () => {
-    const newMap: Record<string, string> = {};
-    await Promise.all(
-      connectionKeys.map(async (key) => {
-        try {
-          const result = await getConnectionConfig(key).unwrap();
-          if (result.secrets?.url) {
-            newMap[key] = result.secrets.url;
-          }
-        } catch {
-          // silently skip — URL will show as em dash
-        }
-      }),
-    );
-    setUrlMap(newMap);
-  }, [connectionKeys, getConnectionConfig]);
-
-  useEffect(() => {
-    if (connectionKeys.length > 0) {
-      fetchUrls();
-    }
-  }, [connectionKeys, fetchUrls]);
 
   const openCreateModal = () => {
     setEditingWebhook(null);
@@ -93,24 +73,11 @@ const PreApprovalWebhooksPage = () => {
     setIsModalOpen(true);
   };
 
-  const openEditModal = async (webhook: PreApprovalWebhookResponse) => {
+  const openEditModal = (webhook: PreApprovalWebhookResponse) => {
     setEditingWebhook(webhook);
-    let url = "";
-    // Fetch the URL from the connection config endpoint (returns secrets with
-    // sensitive fields redacted).
-    if (webhook.connection_config?.key) {
-      try {
-        const config = await getConnectionConfig(
-          webhook.connection_config.key,
-        ).unwrap();
-        url = config.secrets?.url ?? "";
-      } catch {
-        // fall back to empty
-      }
-    }
     form.setFieldsValue({
       name: webhook.name,
-      url,
+      url: "",
       authorization: "",
     });
     setIsModalOpen(true);
@@ -123,40 +90,35 @@ const PreApprovalWebhooksPage = () => {
   };
 
   const handleSubmit = async (values: WebhookFormValues) => {
-    setSubmitting(true);
     try {
       const connectionKey = editingWebhook?.connection_config?.key
         ? editingWebhook.connection_config.key
-        : `pre_approval_${values.name.toLowerCase().replace(/\s+/g, "_")}`;
+        : `pre_approval_${values.name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`;
 
-      // Step 1: Create or update the HTTPS connection config
-      const connectionResult = await createConnectionConfig({
+      const connectionResult = await patchConnection({
         key: connectionKey,
         name: `Pre-Approval: ${values.name}`,
         connection_type: "https",
         access: "read",
-      });
+      } as any);
       if (isErrorResult(connectionResult)) {
-        errorAlert(getErrorMessage(connectionResult.error));
+        message.error(getErrorMessage(connectionResult.error));
         return;
       }
 
-      // Step 2: Set the connection secrets (URL and authorization header).
-      // Use PATCH so that omitting authorization preserves the existing value.
       const secrets: Record<string, string> = { url: values.url };
       if (values.authorization) {
         secrets.authorization = values.authorization;
       }
-      const secretsResult = await patchConnectionSecrets({
-        connectionKey,
+      const secretsResult = await patchSecrets({
+        connection_key: connectionKey,
         secrets,
       });
       if (isErrorResult(secretsResult)) {
-        errorAlert(getErrorMessage(secretsResult.error));
+        message.error(getErrorMessage(secretsResult.error));
         return;
       }
 
-      // Step 3: Create or update the pre-approval webhook
       const webhookPayload = {
         name: values.name,
         connection_config_key: connectionKey,
@@ -164,36 +126,29 @@ const PreApprovalWebhooksPage = () => {
       };
       const webhookResult = await createOrUpdateWebhooks([webhookPayload]);
       if (isErrorResult(webhookResult)) {
-        errorAlert(getErrorMessage(webhookResult.error));
+        message.error(getErrorMessage(webhookResult.error));
         return;
       }
 
-      successAlert(
+      message.success(
         editingWebhook
           ? "Pre-approval webhook updated"
           : "Pre-approval webhook created",
       );
       handleCancel();
     } catch {
-      errorAlert("An unexpected error occurred");
-    } finally {
-      setSubmitting(false);
+      message.error("An unexpected error occurred");
     }
   };
 
   const handleDelete = async (webhookKey: string) => {
     const result = await deleteWebhook(webhookKey);
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      message.error(getErrorMessage(result.error));
     } else {
-      successAlert("Pre-approval webhook deleted");
+      message.success("Pre-approval webhook deleted");
     }
   };
-
-  const getWebhookUrl = (record: PreApprovalWebhookResponse): string =>
-    (record.connection_config?.key &&
-      urlMap[record.connection_config.key]) ||
-    "—";
 
   const columns = [
     {
@@ -204,14 +159,9 @@ const PreApprovalWebhooksPage = () => {
     {
       title: "URL",
       key: "url",
-      render: (_: unknown, record: PreApprovalWebhookResponse) => {
-        const url = getWebhookUrl(record);
-        return url === "—" ? (
-          <Text type="secondary">{url}</Text>
-        ) : (
-          <Text>{url}</Text>
-        );
-      },
+      render: (_: unknown, record: PreApprovalWebhookResponse) => (
+        <WebhookUrlCell connectionKey={record.connection_config?.key} />
+      ),
     },
     {
       title: "Actions",
@@ -330,7 +280,7 @@ const PreApprovalWebhooksPage = () => {
 
           <Flex justify="flex-end" gap="small">
             <Button onClick={handleCancel}>Cancel</Button>
-            <Button type="primary" htmlType="submit" loading={submitting}>
+            <Button type="primary" htmlType="submit" loading={isCreating}>
               {editingWebhook ? "Update" : "Create"}
             </Button>
           </Flex>
