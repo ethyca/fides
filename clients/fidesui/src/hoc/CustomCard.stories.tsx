@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Avatar, Button, Flex, Space, Tag, Typography } from "antd/lib";
+import { Button, Flex, Typography } from "antd/lib";
 import { useState } from "react";
 
 import type { CardProps } from "../index";
@@ -97,31 +97,6 @@ export const WithExtra: Story = {
         <Text type="secondary">Execution timeframe: 45 days</Text>
       </Flex>
     ),
-  },
-};
-
-/** Mimics ConfidenceCard: JSX title, small size, hidden body, actions */
-export const JsxTitle: Story = {
-  args: {
-    size: "small",
-    title: (
-      <Space>
-        <Avatar size={24}>AI</Avatar>
-        <Text type="secondary" className="font-normal">
-          1,204 fields
-        </Text>
-        <Text>High confidence</Text>
-        <Tag color="green">High</Tag>
-      </Space>
-    ),
-    actions: [
-      <Button key="review" type="text" size="small">
-        Review
-      </Button>,
-      <Button key="approve" type="text" size="small">
-        Approve
-      </Button>,
-    ],
   },
 };
 
