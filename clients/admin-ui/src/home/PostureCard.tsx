@@ -47,7 +47,6 @@ const PostureCard = ({ posture }: PostureCardProps) => {
       title="Posture"
       variant="borderless"
       className={classNames("h-full", cardStyles.dashboardCard)}
-      showTitleDivider={false}
     >
       <Statistic valueVariant="display" value={postureScore} />
       <Statistic

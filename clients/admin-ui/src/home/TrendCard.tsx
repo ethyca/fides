@@ -38,7 +38,6 @@ const TrendCard = ({ title, metric, format = "number" }: TrendCardProps) => {
       variant="borderless"
       title={title}
       className={classNames("overflow-clip h-full", cardStyles.dashboardCard)}
-      showTitleDivider={false}
       cover={
         metric?.history ? (
           <div className="h-16">

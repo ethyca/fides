@@ -14,7 +14,6 @@ const AstralisCard = ({ astralis }: AstralisCardProps) => (
   <Card
     variant="borderless"
     className={classNames("overflow-clip h-full", cardStyles.dashboardCard)}
-    showTitleDivider={false}
     title="Astralis"
   >
     {astralis ? (

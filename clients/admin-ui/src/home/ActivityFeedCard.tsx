@@ -31,7 +31,6 @@ const ActivityFeedCard = ({ activityFeed }: ActivityFeedCardProps) => (
     variant="borderless"
     title="Activity"
     className={classNames("overflow-clip h-full", cardStyles.dashboardCard)}
-    showTitleDivider={false}
   >
     {activityFeed?.items ? (
       <Flex vertical gap={0} className={styles.activityList}>
