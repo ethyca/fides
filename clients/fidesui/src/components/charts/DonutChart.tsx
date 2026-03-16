@@ -36,7 +36,7 @@ export const DonutChart = ({
 
   const thickness = DONUT_THICKNESS[variant];
   const outerRadius = size / 2;
-  const innerRadius = outerRadius - thickness;
+  const innerRadius = Math.max(0, outerRadius - thickness);
 
   const data = segments.map((segment) => ({
     name: segment.name,
