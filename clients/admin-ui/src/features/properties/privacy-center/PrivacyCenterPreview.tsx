@@ -4,7 +4,6 @@ import {
   ChakraFlex as Flex,
   ChakraHeading as Heading,
   ChakraImage as Image,
-  ChakraStack as Stack,
   ChakraText as Text,
 } from "fidesui";
 import { useFormikContext } from "formik";
@@ -25,8 +24,12 @@ const ActionCard = ({
     borderColor="gray.200"
     borderRadius="lg"
     p={5}
-    gap={4}
-    alignItems="flex-start"
+    gap={3}
+    flex="1"
+    minWidth="120px"
+    flexDirection="column"
+    alignItems="center"
+    textAlign="center"
     backgroundColor="white"
     _hover={{ borderColor: "gray.400", boxShadow: "sm" }}
     cursor="default"
@@ -133,7 +136,7 @@ const PrivacyCenterPreview = () => {
         <Divider my={5} />
 
         {/* Action cards */}
-        <Stack spacing={3}>
+        <Flex gap={3} flexWrap="wrap">
           {(config?.actions ?? []).length === 0 && (
             <Text
               fontSize="sm"
@@ -153,7 +156,7 @@ const PrivacyCenterPreview = () => {
               iconPath={action.icon_path}
             />
           ))}
-        </Stack>
+        </Flex>
 
         {/* Privacy policy link */}
         {config?.privacy_policy_url && (
