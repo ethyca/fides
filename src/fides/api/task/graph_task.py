@@ -260,8 +260,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         self.key: CollectionAddress = self.execution_node.address
 
-        saas_config = self.connector.configuration.get_saas_config()
-        self._saas_version: Optional[str] = saas_config.version if saas_config else None
+        saas_config_dict = self.connector.configuration.saas_config
+        self._saas_version: Optional[str] = saas_config_dict.get("version") if saas_config_dict else None
 
         self.execution_log_id = None
         # a local copy of the execution log record written to. If we write multiple status
@@ -442,14 +442,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        if self._saas_version:
-            logger.info(
-                "Starting node {} (integration version {})",
-                self.key,
-                self._saas_version,
-            )
-        else:
-            logger.info("Starting node {}", self.key)
+        logger.info(
+            "Starting node {}{}",
+            self.key,
+            f" (integration version {self._saas_version})" if self._saas_version else "",
+        )
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -457,14 +454,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        if self._saas_version:
-            logger.info(
-                "Retrying node {} (integration version {})",
-                self.key,
-                self._saas_version,
-            )
-        else:
-            logger.info("Retrying node {}", self.key)
+        logger.info(
+            "Retrying node {}{}",
+            self.key,
+            f" (integration version {self._saas_version})" if self._saas_version else "",
+        )
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
