@@ -52,10 +52,8 @@ export const dashboardHandlers = () => {
       );
     }),
 
-    rest.get(
-      `${apiBase}/plus/dashboard/system-coverage`,
-      (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(mockSystemCoverage)),
+    rest.get(`${apiBase}/plus/dashboard/system-coverage`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockSystemCoverage)),
     ),
 
     rest.patch(
