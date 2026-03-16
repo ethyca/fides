@@ -191,7 +191,10 @@ const setupRbacMocks = () => {
 
   // Stub update role permissions
   cy.intercept("PUT", "/api/v1/plus/rbac/roles/*/permissions", (req) => {
-    req.reply({ statusCode: 200, body: { permission_codes: req.body.permission_codes } });
+    req.reply({
+      statusCode: 200,
+      body: { permission_codes: req.body.permission_codes },
+    });
   }).as("updateRolePermissions");
 
   // Stub delete role

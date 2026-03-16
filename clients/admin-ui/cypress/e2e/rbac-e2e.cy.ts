@@ -83,9 +83,7 @@ const PERMISSION_SETS = {
 /**
  * Setup mocked auth state and visit a URL
  */
-const loginWithPermissions = (
-  permissionSet: keyof typeof PERMISSION_SETS,
-) => {
+const loginWithPermissions = (permissionSet: keyof typeof PERMISSION_SETS) => {
   const permissions = PERMISSION_SETS[permissionSet];
 
   // Set up auth state
