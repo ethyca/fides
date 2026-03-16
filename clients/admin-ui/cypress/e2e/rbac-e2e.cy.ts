@@ -21,9 +21,8 @@ const TEST_PASSWORD = "TestPassword1!";
 const OAUTH_CLIENT_ID = "fidesadmin";
 const OAUTH_CLIENT_SECRET = "fidesadminsecret";
 
-// API base URL
-const API_BASE = "/api/v1";
-const PLUS_API_BASE = "/api/v1/plus";
+// Backend API URL (bypassing Next.js proxy for OAuth and API calls)
+const API_URL = Cypress.env("API_URL") || "http://localhost:8080";
 
 // Helper to generate unique names
 const uniqueId = () => Math.random().toString(36).substring(2, 10);
@@ -55,7 +54,7 @@ const rbacApi = {
     return cy
       .request({
         method: "POST",
-        url: `${API_BASE}/oauth/token`,
+        url: `${API_URL}/api/v1/oauth/token`,
         form: true,
         body: {
           grant_type: "client_credentials",
@@ -86,7 +85,7 @@ const rbacApi = {
     return cy
       .request({
         method: "POST",
-        url: `${PLUS_API_BASE}/rbac/roles`,
+        url: `${API_URL}/api/v1/plus/rbac/roles`,
         headers: { Authorization: `Bearer ${token}` },
         body: {
           name,
@@ -116,7 +115,7 @@ const rbacApi = {
     return cy
       .request({
         method: "PUT",
-        url: `${PLUS_API_BASE}/rbac/roles/${roleId}/permissions`,
+        url: `${API_URL}/api/v1/plus/rbac/roles/${roleId}/permissions`,
         headers: { Authorization: `Bearer ${token}` },
         body: {
           permission_codes: permissionCodes,
@@ -139,7 +138,7 @@ const rbacApi = {
     return cy
       .request({
         method: "DELETE",
-        url: `${PLUS_API_BASE}/rbac/roles/${roleId}`,
+        url: `${API_URL}/api/v1/plus/rbac/roles/${roleId}`,
         headers: { Authorization: `Bearer ${token}` },
         failOnStatusCode: false,
       })
@@ -166,7 +165,7 @@ const rbacApi = {
     return cy
       .request({
         method: "POST",
-        url: `${API_BASE}/user`,
+        url: `${API_URL}/api/v1/user`,
         headers: { Authorization: `Bearer ${token}` },
         body: {
           username,
@@ -194,7 +193,7 @@ const rbacApi = {
     return cy
       .request({
         method: "DELETE",
-        url: `${API_BASE}/user/${userId}`,
+        url: `${API_URL}/api/v1/user/${userId}`,
         headers: { Authorization: `Bearer ${token}` },
         failOnStatusCode: false,
       })
@@ -218,7 +217,7 @@ const rbacApi = {
     return cy
       .request({
         method: "POST",
-        url: `${PLUS_API_BASE}/rbac/users/${userId}/roles`,
+        url: `${API_URL}/api/v1/plus/rbac/users/${userId}/roles`,
         headers: { Authorization: `Bearer ${token}` },
         body: {
           role_id: roleId,
@@ -246,7 +245,7 @@ const rbacApi = {
     return cy
       .request({
         method: "DELETE",
-        url: `${PLUS_API_BASE}/rbac/users/${userId}/roles/${assignmentId}`,
+        url: `${API_URL}/api/v1/plus/rbac/users/${userId}/roles/${assignmentId}`,
         headers: { Authorization: `Bearer ${token}` },
         failOnStatusCode: false,
       })
