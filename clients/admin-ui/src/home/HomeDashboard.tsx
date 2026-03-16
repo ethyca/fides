@@ -1,5 +1,6 @@
 import { Col, Flex, Row } from "fidesui";
 
+import { DashboardDrawer } from "./DashboardDrawer";
 import { PostureCard } from "./PostureCard";
 import { PriorityActionsCard } from "./PriorityActionsCard";
 
@@ -16,6 +17,7 @@ export const HomeDashboard = () => (
         <PriorityActionsCard />
       </Col>
     </Row>
+    <DashboardDrawer />
   </Flex>
 );
 
