@@ -1236,7 +1236,7 @@ class TestGraphTaskLogging:
         assert execution_log.saas_version is None
 
     def test_saas_version_populated_for_saas_connector(
-        self, saas_graph_task, saas_example_connection_config, privacy_request, policy, db
+        self, saas_graph_task, saas_example_connection_config, privacy_request, db
     ):
         """SaaS connectors should stamp saas_version on every execution log entry."""
         expected_version = saas_example_connection_config.saas_config["version"]
