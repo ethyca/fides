@@ -235,8 +235,8 @@ const PropertyForm = ({ property, handleSubmit, rightPanel }: Props) => {
               flex="1"
               minWidth={0}
               position="sticky"
-              top={6}
-              maxHeight="calc(100vh - 96px)"
+              top="88px"
+              maxHeight="calc(100vh - 148px)"
               overflowY="auto"
               style={{ paddingTop: "24px" }}
             >
