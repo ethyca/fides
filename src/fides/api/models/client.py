@@ -169,6 +169,11 @@ class ClientDetail(Base):
         }
         return generate_jwe(json.dumps(payload), encryption_key)
 
+    @property
+    def client_id(self) -> str:
+        """Alias for id, used for API serialization via ClientResponse."""
+        return self.id
+
     def credentials_valid(self, provided_secret: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided secret is correct."""
         provided_secret_hash = hash_credential_with_salt(

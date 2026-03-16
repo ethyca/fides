@@ -224,6 +224,70 @@ class TestCreateClient:
         assert "client_secret" in response.json()
 
 
+class TestListClients:
+    @pytest.fixture(scope="function")
+    def url(self) -> str:
+        return V1_URL_PREFIX + CLIENT
+
+    def test_list_clients_not_authenticated(self, api_client: TestClient, url):
+        response = api_client.get(url)
+        assert response.status_code == 401
+
+    def test_list_clients_wrong_scope(
+        self, api_client: TestClient, url, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_CREATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_list_clients(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        oauth_client: ClientDetail,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        body = response.json()
+        assert "items" in body
+        assert "total" in body
+        ids = [item["client_id"] for item in body["items"]]
+        assert oauth_client.id in ids
+
+    def test_list_clients_response_shape(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        oauth_client: ClientDetail,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        item = next(
+            i for i in response.json()["items"] if i["client_id"] == oauth_client.id
+        )
+        assert set(item.keys()) == {"client_id", "name", "description", "scopes"}
+        assert "client_secret" not in item
+
+    def test_list_clients_excludes_root_client(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        ids = [item["client_id"] for item in response.json()["items"]]
+        assert CONFIG.security.oauth_root_client_id not in ids
+
+
 class TestGetClientScopes:
     @pytest.fixture(scope="function")
     def url(self, oauth_client) -> str:

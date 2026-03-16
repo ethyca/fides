@@ -5,6 +5,9 @@ from urllib.parse import urlparse
 from fastapi import Body, Depends, HTTPException, Request, Response, Security
 from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.security import HTTPBasic
+from fastapi_pagination import Page, Params
+from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import (
@@ -26,7 +29,7 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
-from fides.api.schemas.client import ClientCreateRequest, ClientCreatedResponse
+from fides.api.schemas.client import ClientCreateRequest, ClientCreatedResponse, ClientResponse
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -165,6 +168,26 @@ def create_client(
         description=body.description,
     )
     return ClientCreatedResponse(client_id=client.id, client_secret=secret)
+
+
+@router.get(
+    CLIENT,
+    response_model=Page[ClientResponse],
+    dependencies=[Security(verify_oauth_client, scopes=[CLIENT_READ])],
+)
+def list_clients(
+    *,
+    db: Session = Depends(get_db),
+    params: Params = Depends(),
+) -> AbstractPage[ClientDetail]:
+    """Returns a paginated list of all OAuth clients, excluding the root client."""
+    logger.info("Listing OAuth clients")
+    query = (
+        ClientDetail.query(db=db)
+        .filter(ClientDetail.id != CONFIG.security.oauth_root_client_id)
+        .order_by(ClientDetail.created_at.desc())
+    )
+    return paginate(query, params=params)
 
 
 @router.delete(
