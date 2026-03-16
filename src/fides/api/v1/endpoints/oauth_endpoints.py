@@ -29,7 +29,12 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
-from fides.api.schemas.client import ClientCreateRequest, ClientCreatedResponse, ClientResponse
+from fides.api.schemas.client import (
+    ClientCreateRequest,
+    ClientCreatedResponse,
+    ClientResponse,
+    ClientUpdateRequest,
+)
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
@@ -188,6 +193,58 @@ def list_clients(
         .order_by(ClientDetail.created_at.desc())
     )
     return paginate(query, params=params)
+
+
+@router.get(
+    CLIENT_BY_ID,
+    response_model=ClientResponse,
+    dependencies=[Security(verify_oauth_client, scopes=[CLIENT_READ])],
+)
+def get_client(client_id: str, db: Session = Depends(get_db)) -> ClientDetail:
+    """Returns the OAuth client with the given id."""
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    if not client:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+    return client
+
+
+@router.put(
+    CLIENT_BY_ID,
+    response_model=ClientResponse,
+)
+def update_client(
+    *,
+    client_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    body: ClientUpdateRequest,
+    requesting_client: ClientDetail = Security(
+        verify_oauth_client, scopes=[CLIENT_UPDATE]
+    ),
+) -> ClientDetail:
+    """Updates name, description, and/or scopes of the given client."""
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    if not client:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+
+    update_data: dict = {}
+    if body.name is not None:
+        update_data["name"] = body.name
+    if body.description is not None:
+        update_data["description"] = body.description
+    if body.scopes is not None:
+        if not all(scope in SCOPE_REGISTRY for scope in body.scopes):
+            raise HTTPException(
+                status_code=HTTP_403_FORBIDDEN,
+                detail=f"Invalid Scope. Scopes must be one of {SCOPE_REGISTRY}.",
+            )
+        verify_client_can_assign_scopes(request, requesting_client, body.scopes, db)
+        update_data["scopes"] = body.scopes
+
+    if update_data:
+        client.update(db, data=update_data)
+
+    return client
 
 
 @router.delete(

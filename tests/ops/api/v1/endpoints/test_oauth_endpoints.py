@@ -288,6 +288,140 @@ class TestListClients:
         assert CONFIG.security.oauth_root_client_id not in ids
 
 
+class TestGetClient:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + CLIENT_BY_ID.format(client_id=oauth_client.id)
+
+    def test_get_client_not_authenticated(self, api_client: TestClient, url):
+        response = api_client.get(url)
+        assert response.status_code == 401
+
+    def test_get_client_wrong_scope(
+        self, api_client: TestClient, url, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_CREATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    def test_get_client_not_found(
+        self, api_client: TestClient, generate_auth_header
+    ) -> None:
+        url = V1_URL_PREFIX + CLIENT_BY_ID.format(client_id="nonexistent_client_id")
+        auth_header = generate_auth_header([CLIENT_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_get_client(
+        self,
+        api_client: TestClient,
+        url,
+        oauth_client: ClientDetail,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        body = response.json()
+        assert body["client_id"] == oauth_client.id
+        assert set(body.keys()) == {"client_id", "name", "description", "scopes"}
+        assert "client_secret" not in body
+
+
+class TestUpdateClient:
+    @pytest.fixture(scope="function")
+    def url(self, oauth_client: ClientDetail) -> str:
+        return V1_URL_PREFIX + CLIENT_BY_ID.format(client_id=oauth_client.id)
+
+    def test_update_client_not_authenticated(self, api_client: TestClient, url):
+        response = api_client.put(url, json={"name": "New Name"})
+        assert response.status_code == 401
+
+    def test_update_client_wrong_scope(
+        self, api_client: TestClient, url, generate_auth_header
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_READ])
+        response = api_client.put(url, headers=auth_header, json={"name": "New Name"})
+        assert response.status_code == 403
+
+    def test_update_client_not_found(
+        self, api_client: TestClient, generate_auth_header
+    ) -> None:
+        url = V1_URL_PREFIX + CLIENT_BY_ID.format(client_id="nonexistent_client_id")
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+        response = api_client.put(url, headers=auth_header, json={"name": "New Name"})
+        assert response.status_code == 404
+
+    def test_update_client_name(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        oauth_client: ClientDetail,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+        response = api_client.put(
+            url, headers=auth_header, json={"name": "Updated Integration Name"}
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["client_id"] == oauth_client.id
+        assert body["name"] == "Updated Integration Name"
+
+        db.refresh(oauth_client)
+        assert oauth_client.name == "Updated Integration Name"
+
+    def test_update_client_scopes(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        oauth_client: ClientDetail,
+        generate_auth_header,
+    ) -> None:
+        new_scopes = [CLIENT_READ, CLIENT_UPDATE]
+        auth_header = generate_auth_header(new_scopes)
+        response = api_client.put(
+            url, headers=auth_header, json={"scopes": new_scopes}
+        )
+        assert response.status_code == 200
+        db.refresh(oauth_client)
+        assert oauth_client.scopes == new_scopes
+
+    def test_update_client_partial(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        oauth_client: ClientDetail,
+        generate_auth_header,
+    ) -> None:
+        # Setting name should not affect scopes
+        original_scopes = list(oauth_client.scopes)
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+        response = api_client.put(
+            url,
+            headers=auth_header,
+            json={"name": "Partial Update", "description": "A new description"},
+        )
+        assert response.status_code == 200
+        db.refresh(oauth_client)
+        assert oauth_client.name == "Partial Update"
+        assert oauth_client.description == "A new description"
+        assert oauth_client.scopes == original_scopes
+
+    def test_update_client_empty_name_rejected(
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+        response = api_client.put(url, headers=auth_header, json={"name": ""})
+        assert response.status_code == 422
+
+
 class TestGetClientScopes:
     @pytest.fixture(scope="function")
     def url(self, oauth_client) -> str:

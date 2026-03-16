@@ -34,6 +34,13 @@ class ClientUpdateRequest(FidesSchema):
     description: Optional[str] = None
     scopes: Optional[List[str]] = None
 
+    @field_validator("name")
+    @classmethod
+    def name_must_not_be_empty(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not v.strip():
+            raise ValueError("name must not be empty")
+        return v
+
 
 class ClientResponse(FidesSchema):
     """Response schema for an OAuth client. Never includes the client secret."""
