@@ -5,11 +5,14 @@
  * by creating real roles and users via the API, logging in as those users,
  * and verifying the UI responds appropriately to their permissions.
  *
- * NOTE: This is a WIP file to validate the E2E approach before deciding
- * how to integrate these tests into the main test suite.
+ * IMPORTANT: These are true E2E tests that require a running backend.
+ * They are automatically skipped in CI since CI only runs the Next.js frontend.
+ * Run these tests locally with `npm run cy:open` when the backend is running.
  */
 
-// Note: No stubPlus import - these are true E2E tests with real API calls
+// Skip in CI - these tests require a real backend
+const isCI = Cypress.env("CI") || process.env.CI;
+const describeOrSkip = isCI ? describe.skip : describe;
 
 // Test constants
 const TEST_ROLE_PREFIX = "cypress_test_role";
@@ -282,7 +285,7 @@ const logout = () => {
   cy.url().should("include", "/login");
 };
 
-describe("RBAC E2E Tests", () => {
+describeOrSkip("RBAC E2E Tests", () => {
   // Store created resources for cleanup
   let adminToken: string;
   let testRole: TestRole | null = null;

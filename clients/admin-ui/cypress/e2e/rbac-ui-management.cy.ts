@@ -7,7 +7,15 @@
  *
  * Unlike rbac-e2e.cy.ts which uses API for setup, these tests verify the
  * full UI workflow works correctly.
+ *
+ * IMPORTANT: These are true E2E tests that require a running backend.
+ * They are automatically skipped in CI since CI only runs the Next.js frontend.
+ * Run these tests locally with `npm run cy:open` when the backend is running.
  */
+
+// Skip in CI - these tests require a real backend
+const isCI = Cypress.env("CI") || process.env.CI;
+const describeOrSkip = isCI ? describe.skip : describe;
 
 import { STORAGE_ROOT_KEY } from "~/constants";
 
@@ -139,7 +147,7 @@ const getAdminToken = (): Cypress.Chainable<string> => {
     });
 };
 
-describe("RBAC UI Management", () => {
+describeOrSkip("RBAC UI Management", () => {
   let adminToken: string;
 
   before(() => {
