@@ -26,5 +26,3 @@ export const HomeDashboard = () => (
     <DashboardDrawer />
   </Flex>
 );
-
-export default HomeDashboard;

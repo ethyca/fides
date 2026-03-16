@@ -8,7 +8,6 @@ import {
   useThemeMode,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import dynamic from "next/dynamic";
 import * as React from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -17,10 +16,7 @@ import Layout from "~/features/common/Layout";
 import { CommandBar } from "./CommandBar";
 import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
-
-const HomeDashboard = dynamic(() => import("./HomeDashboard"), {
-  ssr: false,
-});
+import { HomeDashboard } from "./HomeDashboard";
 
 const HomeContainerInner = () => {
   const { resolvedMode } = useThemeMode();

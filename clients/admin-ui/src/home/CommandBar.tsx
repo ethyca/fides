@@ -7,6 +7,7 @@ import { BAND_CONFIG } from "~/features/dashboard/constants";
 import {
   useGetDashboardPostureQuery,
   useGetPriorityActionsQuery,
+  useGetSystemCoverageQuery,
 } from "~/features/dashboard/dashboard.slice";
 import {
   ActionSeverity,
@@ -47,6 +48,7 @@ export const CommandBar = () => {
   } = useFlags();
   const { data: posture } = useGetDashboardPostureQuery();
   const { data: actions } = useGetPriorityActionsQuery();
+  const { data: coverage } = useGetSystemCoverageQuery();
 
   const score = posture?.score ?? 0;
   const band = posture?.band ?? PostureBand.GOOD;
@@ -72,9 +74,6 @@ export const CommandBar = () => {
         a.severity === ActionSeverity.CRITICAL,
     ).length;
 
-    const systemsManaged =
-      posture?.dimensions.find((d) => d.dimension === "coverage")?.score ?? 0;
-
     const violations = items.filter(
       (a) => a.type === ActionType.POLICY_VIOLATION,
     ).length;
@@ -82,19 +81,17 @@ export const CommandBar = () => {
     return [
       { value: pendingDsrs, label: "DSRs pending" },
       { value: overdueDsrs, label: "overdue" },
-      { value: systemsManaged, label: "systems" },
+      { value: coverage?.total_systems ?? 0, label: "systems" },
       { value: violations, label: "violations" },
     ];
-  }, [actions?.items, posture?.dimensions]);
+  }, [actions?.items, coverage?.total_systems]);
 
-  const SCORE_COLOR_MAP: Record<string, string> = {
+  const scoreColor = {
     success: token.colorSuccess,
     info: token.colorInfo,
     caution: token.colorWarning,
     error: token.colorError,
-  };
-
-  const scoreColor = SCORE_COLOR_MAP[bandConfig.color];
+  }[bandConfig.color];
 
   const openPostureDrawer = useCallback(() => {
     openDashboardDrawer({

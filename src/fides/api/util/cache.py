@@ -425,7 +425,7 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
     cache: FidesopsRedis = get_cache()
 
     try:
-        cache.set(
+        cache.set_with_autoexpire(
             get_async_task_tracking_cache_key(request_id),
             celery_task_id,
         )
