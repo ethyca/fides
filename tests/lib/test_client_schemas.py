@@ -65,30 +65,30 @@ class TestClientUpdateRequest:
 class TestClientResponse:
     def test_valid_response(self):
         resp = ClientResponse(
-            client_id="abc123",
+            client_id="mock_client_id",
             name="My Client",
             description="A description",
             scopes=[CLIENT_READ],
         )
-        assert resp.client_id == "abc123"
+        assert resp.client_id == "mock_client_id"
         assert resp.name == "My Client"
         assert resp.scopes == [CLIENT_READ]
 
     def test_name_and_description_can_be_none(self):
-        resp = ClientResponse(client_id="abc123", scopes=[])
+        resp = ClientResponse(client_id="mock_client_id", scopes=[])
         assert resp.name is None
         assert resp.description is None
 
     def test_no_secret_field(self):
         # ClientResponse must never expose a client_secret
-        resp = ClientResponse(client_id="abc123", scopes=[])
+        resp = ClientResponse(client_id="mock_client_id", scopes=[])
         assert not hasattr(resp, "client_secret")
 
 
 class TestClientSecretRotateResponse:
     def test_valid_response(self):
         resp = ClientSecretRotateResponse(
-            client_id="abc123", client_secret="supersecret"
+            client_id="mock_client_id", client_secret="mock_client_secret"
         )
-        assert resp.client_id == "abc123"
-        assert resp.client_secret == "supersecret"
+        assert resp.client_id == "mock_client_id"
+        assert resp.client_secret == "mock_client_secret"
