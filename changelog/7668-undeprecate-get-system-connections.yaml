@@ -1,0 +1,4 @@
+type: Changed
+description: Un-deprecated GET /system/{fides_key}/connection endpoint
+pr: 7668
+labels: []
