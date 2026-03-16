@@ -130,7 +130,13 @@ export const useIntegrationFilters = () => {
       const nameB = b.placeholder.name || "";
       return nameA.localeCompare(nameB);
     });
-  }, [searchTerm, selectedCategory, webMonitor, entraMonitor, allIntegrationTypes]);
+  }, [
+    searchTerm,
+    selectedCategory,
+    webMonitor,
+    entraMonitor,
+    allIntegrationTypes,
+  ]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);
