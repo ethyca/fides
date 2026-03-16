@@ -169,6 +169,19 @@ class ClientDetail(Base):
         }
         return generate_jwe(json.dumps(payload), encryption_key)
 
+    def rotate_secret(
+        self, db: Session, secret_length_bytes: int, encoding: str = "UTF-8"
+    ) -> str:
+        """Generates a new secret, persists its hash, and returns the plaintext secret."""
+        new_secret = generate_secure_random_string(secret_length_bytes)
+        new_salt = generate_salt()
+        new_hashed_secret = hash_credential_with_salt(
+            new_secret.encode(encoding),
+            new_salt.encode(encoding),
+        )
+        self.update(db, data={"hashed_secret": new_hashed_secret, "salt": new_salt})
+        return new_secret
+
     @property
     def client_id(self) -> str:
         """Alias for id, used for API serialization via ClientResponse."""

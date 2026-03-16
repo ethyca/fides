@@ -33,6 +33,7 @@ from fides.api.schemas.client import (
     ClientCreateRequest,
     ClientCreatedResponse,
     ClientResponse,
+    ClientSecretRotateResponse,
     ClientUpdateRequest,
 )
 from fides.api.schemas.oauth import AccessToken, OAuth2ClientCredentialsRequestForm
@@ -61,6 +62,7 @@ from fides.common.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
     CLIENT_SCOPE,
+    CLIENT_SECRET,
     OAUTH_CALLBACK,
     ROLE,
     SCOPE,
@@ -258,6 +260,24 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
         return
     logger.info("Deleting client")
     client.delete(db)
+
+
+@router.post(
+    CLIENT_SECRET,
+    response_model=ClientSecretRotateResponse,
+    dependencies=[Security(verify_oauth_client, scopes=[CLIENT_UPDATE])],
+)
+def rotate_client_secret(
+    client_id: str, db: Session = Depends(get_db)
+) -> ClientSecretRotateResponse:
+    """Rotates the secret for the given client. Returns the new secret exactly once."""
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    if not client:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+
+    logger.info("Rotating secret for client '{}'", client_id)
+    new_secret = client.rotate_secret(db, CONFIG.security.oauth_client_secret_length_bytes)
+    return ClientSecretRotateResponse(client_id=client.id, client_secret=new_secret)
 
 
 @router.get(
