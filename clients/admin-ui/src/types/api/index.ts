@@ -56,7 +56,7 @@ export type { BulkCustomFieldRequest } from "./models/BulkCustomFieldRequest";
 export type { BulkPostPrivacyRequests } from "./models/BulkPostPrivacyRequests";
 export type { BulkPutBasicMessagingTemplateResponse } from "./models/BulkPutBasicMessagingTemplateResponse";
 export type { BulkPutConnectionConfiguration } from "./models/BulkPutConnectionConfiguration";
-export type { BulkPutDataset } from "./models/BulkPutDataset";
+export type { BulkPutDataset, DatasetFieldWarning } from "./models/BulkPutDataset";
 export type { BulkPutPolicyResponse } from "./models/BulkPutPolicyResponse";
 export type { BulkPutRuleResponse } from "./models/BulkPutRuleResponse";
 export type { BulkPutRuleTargetResponse } from "./models/BulkPutRuleTargetResponse";

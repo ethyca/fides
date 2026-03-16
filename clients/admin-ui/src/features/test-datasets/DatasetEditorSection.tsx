@@ -25,7 +25,7 @@ import {
   useGetDatasetReachabilityQuery,
   usePatchConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { ConnectionType, Dataset } from "~/types/api";
+import { ConnectionType, Dataset, DatasetFieldWarning } from "~/types/api";
 
 import {
   selectCurrentDataset,
@@ -67,8 +67,10 @@ const EditorSection = ({
 
   const [editorContent, setEditorContent] = useState<string>("");
   const [editorReady, setEditorReady] = useState(false);
+  const [saveWarnings, setSaveWarnings] = useState<DatasetFieldWarning[]>([]);
   const editorRef = useRef<any>(null);
   const decorationsRef = useRef<any>(null);
+  const warningDecorationsRef = useRef<any>(null);
   const currentDataset = useAppSelector(selectCurrentDataset);
   const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
@@ -190,8 +192,115 @@ const EditorSection = ({
     return ranges;
   }, [isSaas, protectedFields, editorContent]);
 
+  /**
+   * Compute warning decoration ranges from save warnings.
+   * Maps structured warnings (collection + field path) to YAML line numbers
+   * using the same traversal logic as protectedRanges.
+   */
+  const warningRanges = useMemo(() => {
+    if (!saveWarnings.length || !editorContent) {
+      return [];
+    }
+
+    // Build a lookup: collection -> Set of field paths that have warnings
+    const warningsByCollection = new Map<string, Map<string, string>>();
+    // Top-level immutable field warnings keyed by field name (e.g. "description")
+    const topLevelWarnings = new Map<string, string>();
+
+    saveWarnings.forEach((w) => {
+      if (w.collection && w.field) {
+        if (!warningsByCollection.has(w.collection)) {
+          warningsByCollection.set(w.collection, new Map());
+        }
+        warningsByCollection.get(w.collection)!.set(w.field, w.message);
+      } else if (w.collection) {
+        // Collection-level warning (added/removed collection)
+        if (!warningsByCollection.has(w.collection)) {
+          warningsByCollection.set(w.collection, new Map());
+        }
+        warningsByCollection
+          .get(w.collection)!
+          .set("__collection__", w.message);
+      } else if (w.field) {
+        // Top-level field warning (immutable fields like name, description)
+        topLevelWarnings.set(w.field, w.message);
+      }
+    });
+
+    const lines = editorContent.split("\n");
+    const ranges: any[] = [];
+    let currentCollection = "";
+    const fieldStack: [number, string][] = [];
+
+    lines.forEach((line: string, i: number) => {
+      let warningMessage: string | undefined;
+
+      // Check top-level keys (immutable fields like name, description)
+      if (/^\S/.test(line) && line.includes(":") && topLevelWarnings.size) {
+        const key = line.split(":")[0].trim();
+        if (topLevelWarnings.has(key)) {
+          warningMessage = topLevelWarnings.get(key);
+        }
+      }
+
+      const nameMatch = line.match(/^(\s*)-\s+name:\s+(\S+)/);
+      if (nameMatch) {
+        const [, indent, name] = nameMatch;
+        const indentLevel = indent.length;
+
+        if (indentLevel <= 4) {
+          currentCollection = name;
+          fieldStack.length = 0;
+
+          // Check collection-level warnings
+          const collectionWarnings =
+            warningsByCollection.get(currentCollection);
+          if (collectionWarnings?.has("__collection__")) {
+            warningMessage = collectionWarnings.get("__collection__");
+          }
+        } else {
+          while (
+            fieldStack.length > 0 &&
+            fieldStack[fieldStack.length - 1][0] >= indentLevel
+          ) {
+            fieldStack.pop();
+          }
+          fieldStack.push([indentLevel, name]);
+
+          const collectionWarnings =
+            warningsByCollection.get(currentCollection);
+          if (collectionWarnings) {
+            const currentPath = fieldStack.map(([, n]) => n).join(".");
+            if (collectionWarnings.has(currentPath)) {
+              warningMessage = collectionWarnings.get(currentPath);
+            }
+          }
+        }
+      }
+
+      if (warningMessage) {
+        ranges.push({
+          range: {
+            startLineNumber: i + 1,
+            startColumn: 1,
+            endLineNumber: i + 1,
+            endColumn: line.length + 1,
+          },
+          options: {
+            isWholeLine: true,
+            className: "warning-line-bg",
+            linesDecorationsClassName: "warning-line-gutter",
+            hoverMessage: { value: warningMessage },
+          },
+        });
+      }
+    });
+
+    return ranges;
+  }, [saveWarnings, editorContent]);
+
   // Apply precomputed ranges whenever they change or editor becomes available
-  const applyProtectedDecorations = useCallback(() => {
+  const applyDecorations = useCallback(() => {
     const editor = editorRef.current;
     if (!editor) {
       return;
@@ -200,7 +309,11 @@ const EditorSection = ({
       decorationsRef.current || [],
       protectedRanges,
     );
-  }, [protectedRanges]);
+    warningDecorationsRef.current = editor.deltaDecorations(
+      warningDecorationsRef.current || [],
+      warningRanges,
+    );
+  }, [protectedRanges, warningRanges]);
 
   useEffect(() => {
     if (reachability) {
@@ -240,9 +353,9 @@ const EditorSection = ({
   // Apply decorations whenever ranges change or editor becomes ready
   useEffect(() => {
     if (editorReady) {
-      applyProtectedDecorations();
+      applyDecorations();
     }
-  }, [editorReady, applyProtectedDecorations]);
+  }, [editorReady, applyDecorations]);
 
   useEffect(() => {
     if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
@@ -328,6 +441,10 @@ const EditorSection = ({
           }),
         );
       }
+
+      // Store structured warnings for inline decorations
+      const { warnings } = result.data ?? {};
+      setSaveWarnings(warnings ?? []);
     } else {
       const result = await updateDataset(datasetValues);
 
@@ -425,14 +542,23 @@ const EditorSection = ({
           defaultLanguage="yaml"
           value={editorContent}
           height="100%"
-          onChange={(value) => setEditorContent(value || "")}
+          onChange={(value) => {
+            setEditorContent(value || "");
+            if (saveWarnings.length) {
+              setSaveWarnings([]);
+            }
+          }}
           onMount={(editor: any) => {
             editorRef.current = editor;
             decorationsRef.current = [];
             if (!document.getElementById("immutable-line-style")) {
               const style = document.createElement("style");
               style.id = "immutable-line-style";
-              style.textContent = `.immutable-line { opacity: 0.5; }`;
+              style.textContent = [
+                `.immutable-line { opacity: 0.5; }`,
+                `.warning-line-bg { background-color: rgba(250, 173, 20, 0.15); }`,
+                `.warning-line-gutter { background-color: #faad14; width: 3px !important; margin-left: 3px; }`,
+              ].join("\n");
               document.head.appendChild(style);
             }
             setEditorReady(true);
@@ -445,13 +571,15 @@ const EditorSection = ({
             hideCursorInOverviewRuler: true,
             overviewRulerBorder: false,
             scrollBeyondLastLine: false,
+            hover: { delay: 100, sticky: false },
           }}
           theme="light"
         />
       </Card>
       {isSaas && protectedFields && (
         <Typography.Text type="secondary" className="text-xs">
-          Greyed-out lines are protected and cannot be modified or deleted.
+          Greyed-out lines are protected. Changes to these lines will be
+          restored to their original values on save.
         </Typography.Text>
       )}
       {reachability && (

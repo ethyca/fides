@@ -25,6 +25,7 @@ from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
+    DatasetFieldWarning,
     ValidateDatasetResponse,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
@@ -60,8 +61,8 @@ class DatasetConfigService:
         self,
         connection_config: ConnectionConfig,
         dataset: Union[DatasetConfigCtlDataset, FideslangDataset],
-    ) -> Tuple[Optional[FideslangDataset], Optional[BulkUpdateFailed]]:
-        """Create or update a single dataset"""
+    ) -> Tuple[Optional[FideslangDataset], Optional[BulkUpdateFailed], List[DatasetFieldWarning]]:
+        """Create or update a single dataset. Returns (result, error, warnings)."""
         try:
             if isinstance(dataset, DatasetConfigCtlDataset):
                 ctl_dataset = _get_ctl_dataset(self.db, dataset.ctl_dataset_fides_key)
@@ -83,18 +84,25 @@ class DatasetConfigService:
                     "dataset": dataset.model_dump(mode="json"),
                 }
 
-            # Validate dataset
-            DatasetValidator(
+            # Validate dataset — SaaS validation may restore fields and produce warnings
+            validation_response = DatasetValidator(
                 self.db,
                 dataset_to_validate,
                 connection_config,
                 skip_steps=[TraversalValidationStep],
             ).validate()
 
+            warnings = validation_response.warnings
+
+            # If the dataset was mutated by validation (restored fields),
+            # update the data_dict with the corrected dataset
+            if warnings and not isinstance(dataset, DatasetConfigCtlDataset):
+                data_dict["dataset"] = dataset_to_validate.model_dump(mode="json")
+
             # Create or update using unified method
             dataset_config = DatasetConfig.create_or_update(self.db, data=data_dict)
 
-            return dataset_config.ctl_dataset, None
+            return dataset_config.ctl_dataset, None, warnings
 
         except (SaaSConfigNotFoundException, ValidationError) as exception:
             error = BulkUpdateFailed(
@@ -102,7 +110,7 @@ class DatasetConfigService:
                 data=dataset.model_dump(),
             )
             logger.warning(f"Dataset validation failed: {str(exception)}")
-            return None, error
+            return None, error, []
 
         except (PydanticValidationError, DatasetNotFoundException):
             # Raising errors for now to stay consistent with existing behavior.
@@ -116,7 +124,7 @@ class DatasetConfigService:
                 message="Dataset create/update failed.",
                 data=dataset.model_dump(),
             )
-            return None, error
+            return None, error, []
 
     def _validate_property_ids(self, property_ids: List[str]) -> None:
         """Validate that all property IDs reference existing properties."""
@@ -138,11 +146,12 @@ class DatasetConfigService:
         """Create or update multiple datasets"""
         created_or_updated: List[FideslangDataset] = []
         failed: List[BulkUpdateFailed] = []
+        all_warnings: List[DatasetFieldWarning] = []
 
         logger.info("Starting bulk upsert for {} datasets", len(datasets))
 
         for item in datasets:
-            dataset_result, error = self.create_or_update_dataset_config(
+            dataset_result, error, warnings = self.create_or_update_dataset_config(
                 connection_config=connection_config,
                 dataset=item,
             )
@@ -151,10 +160,12 @@ class DatasetConfigService:
                 created_or_updated.append(dataset_result)
             if error:
                 failed.append(error)
+            all_warnings.extend(warnings)
 
         return BulkPutDataset(
             succeeded=created_or_updated,
             failed=failed,
+            warnings=all_warnings,
         )
 
     def validate_dataset_config(

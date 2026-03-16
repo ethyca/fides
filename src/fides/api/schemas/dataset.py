@@ -18,6 +18,14 @@ class DatasetTraversalDetails(FidesSchema):
     msg: Optional[str]
 
 
+class DatasetFieldWarning(FidesSchema):
+    """A structured warning about a restored field on a SaaS dataset."""
+
+    collection: Optional[str] = None
+    field: Optional[str] = None
+    message: str
+
+
 class ValidateDatasetResponse(FidesSchema):
     """
     Response model for validating a dataset, which includes both the dataset
@@ -27,6 +35,7 @@ class ValidateDatasetResponse(FidesSchema):
 
     dataset: Dataset
     traversal_details: Optional[DatasetTraversalDetails]
+    warnings: List[DatasetFieldWarning] = []
 
 
 class DatasetConfigCtlDataset(FidesSchema):
@@ -48,6 +57,7 @@ class BulkPutDataset(BulkResponse):
 
     succeeded: List[Dataset]
     failed: List[BulkUpdateFailed]
+    warnings: List[DatasetFieldWarning] = []
 
 
 class CollectionAddressResponse(FidesSchema):

@@ -1,12 +1,14 @@
-from typing import Optional, Set
+from typing import List, Optional, Set
 
 from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import DatasetField
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import SaaSConfigNotFoundException, ValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import to_graph_field
+from fides.api.schemas.dataset import DatasetFieldWarning
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.service.connection.merge_configs_util import (
     get_saas_config_referenced_fields,
@@ -61,70 +63,164 @@ _IMMUTABLE_DATASET_FIELDS = (
 )
 
 
-def _validate_saas_dataset_immutable_fields(
+def _restore_immutable_fields(
     db: Session, dataset: FideslangDataset
-) -> None:
+) -> List[DatasetFieldWarning]:
     """
-    Validate that top-level dataset metadata fields have not been changed.
-    These fields come from the connector template and should not be user-editable.
+    Restore top-level immutable fields to their original values.
+    Returns structured warnings for each field that was restored.
     """
     existing = (
         db.query(CtlDataset).filter(CtlDataset.fides_key == dataset.fides_key).first()
     )
     if not existing:
-        return
+        return []
 
+    warnings: List[DatasetFieldWarning] = []
     existing_dataset = FideslangDataset.model_validate(existing)
     for field_name in _IMMUTABLE_DATASET_FIELDS:
         existing_value = getattr(existing_dataset, field_name)
         incoming_value = getattr(dataset, field_name)
         if existing_value != incoming_value:
-            raise ValidationError(f"Cannot modify '{field_name}' on a SaaS dataset.")
+            setattr(dataset, field_name, existing_value)
+            warnings.append(
+                DatasetFieldWarning(
+                    field=field_name,
+                    message=f"Restored '{field_name}' to its original value "
+                    f"(cannot be modified on a SaaS dataset).",
+                )
+            )
+            logger.info(
+                "Restored immutable field '{}' on SaaS dataset '{}'",
+                field_name,
+                dataset.fides_key,
+            )
+    return warnings
 
 
-def _validate_saas_dataset_structure(
+def _find_field_by_name(
+    fields: list[DatasetField], name: str
+) -> Optional[DatasetField]:
+    """Find a field by name in a list of dataset fields."""
+    for field in fields:
+        if field.name == name:
+            return field
+    return None
+
+
+def _restore_protected_structure(
     db: Session, connection_config: ConnectionConfig, dataset: FideslangDataset
-) -> None:
+) -> List[DatasetFieldWarning]:
     """
-    Validate that the dataset does not modify immutable fields,
-    add/remove collections, or delete fields referenced by the SaaS config.
+    Restore protected structural elements (collections and protected fields)
+    to their original values. User edits to non-protected parts are kept.
+    Returns structured warnings for each restoration.
     """
-    _validate_saas_dataset_immutable_fields(db, dataset)
-
     saas_config = SaaSConfig(**connection_config.saas_config)
     instance_key = connection_config.saas_config["fides_key"]
+    warnings: List[DatasetFieldWarning] = []
 
-    # Validate collections: cannot add or remove
+    # Load existing dataset for restoring removed items
+    existing_record = (
+        db.query(CtlDataset)
+        .filter(CtlDataset.fides_key == dataset.fides_key)
+        .first()
+    )
+    existing_dataset = (
+        FideslangDataset.model_validate(existing_record)
+        if existing_record
+        else None
+    )
+
+    # Restore collections: cannot add or remove
     expected_collections = {endpoint.name for endpoint in saas_config.endpoints}
     actual_collections = {col.name for col in dataset.collections}
 
+    # Remove added collections (not in template)
     added = actual_collections - expected_collections
     if added:
-        raise ValidationError(
-            f"Cannot add collections to a SaaS dataset. "
-            f"Unexpected collections: {', '.join(sorted(added))}"
-        )
+        dataset.collections = [
+            col for col in dataset.collections if col.name not in added
+        ]
+        for col_name in sorted(added):
+            warnings.append(
+                DatasetFieldWarning(
+                    collection=col_name,
+                    message=f"Removed collection '{col_name}' "
+                    f"(cannot add collections to a SaaS dataset).",
+                )
+            )
+            logger.info(
+                "Removed user-added collection '{}' from SaaS dataset '{}'",
+                col_name,
+                dataset.fides_key,
+            )
 
-    removed = expected_collections - actual_collections
-    if removed:
-        raise ValidationError(
-            f"Cannot remove collections from a SaaS dataset. "
-            f"Missing collections: {', '.join(sorted(removed))}"
-        )
+    # Restore removed collections from the existing dataset
+    removed = expected_collections - {col.name for col in dataset.collections}
+    if removed and existing_dataset:
+        existing_by_name = {
+            col.name: col for col in existing_dataset.collections
+        }
+        for col_name in sorted(removed):
+            if col_name in existing_by_name:
+                dataset.collections.append(existing_by_name[col_name])
+                warnings.append(
+                    DatasetFieldWarning(
+                        collection=col_name,
+                        message=f"Restored collection '{col_name}' "
+                        f"(cannot remove collections from a SaaS dataset).",
+                    )
+                )
+                logger.info(
+                    "Restored removed collection '{}' on SaaS dataset '{}'",
+                    col_name,
+                    dataset.fides_key,
+                )
 
-    # Validate protected fields: cannot delete fields referenced by SaaS config
+    # Restore protected fields: cannot delete fields referenced by SaaS config
     protected_fields = get_saas_config_referenced_fields(saas_config, instance_key)
-    dataset_fields_by_collection = {
-        col.name: _get_field_names(col.fields) for col in dataset.collections
-    }
+    existing_collections_by_name = (
+        {col.name: col for col in existing_dataset.collections}
+        if existing_dataset
+        else {}
+    )
 
     for collection_name, field_name in protected_fields:
-        collection_fields = dataset_fields_by_collection.get(collection_name, set())
+        # Find the collection in the incoming dataset
+        collection = next(
+            (col for col in dataset.collections if col.name == collection_name),
+            None,
+        )
+        if not collection:
+            continue
+
+        collection_fields = _get_field_names(collection.fields)
         if field_name not in collection_fields:
-            raise ValidationError(
-                f"Cannot delete field '{field_name}' from collection "
-                f"'{collection_name}' because it is referenced by the SaaS config."
-            )
+            # Field was deleted — restore from existing dataset
+            existing_collection = existing_collections_by_name.get(collection_name)
+            if existing_collection:
+                existing_field = _find_field_by_name(
+                    existing_collection.fields, field_name
+                )
+                if existing_field:
+                    collection.fields.append(existing_field)
+                    warnings.append(
+                        DatasetFieldWarning(
+                            collection=collection_name,
+                            field=field_name,
+                            message=f"Restored field '{field_name}' in collection "
+                            f"'{collection_name}' (referenced by SaaS config).",
+                        )
+                    )
+                    logger.info(
+                        "Restored deleted protected field '{}.{}' on SaaS dataset '{}'",
+                        collection_name,
+                        field_name,
+                        dataset.fides_key,
+                    )
+
+    return warnings
 
 
 class SaaSValidationStep(DatasetValidationStep):
@@ -136,6 +232,13 @@ class SaaSValidationStep(DatasetValidationStep):
             and context.connection_config.connection_type == ConnectionType.saas
         ):
             _validate_saas_dataset(context.connection_config, context.dataset)
-            _validate_saas_dataset_structure(
-                context.db, context.connection_config, context.dataset
+
+            # Restore immutable fields and protected structure instead of rejecting
+            context.warnings.extend(
+                _restore_immutable_fields(context.db, context.dataset)
+            )
+            context.warnings.extend(
+                _restore_protected_structure(
+                    context.db, context.connection_config, context.dataset
+                )
             )
