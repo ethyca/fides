@@ -1,7 +1,6 @@
 import { formatDate } from "common/utils";
 import {
   ChakraBox as Box,
-  ChakraHStack as HStack,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -255,23 +254,32 @@ const EventLog = ({
       )}
       {hasDatasetEntries && !isRequestFinishedView && (
         <Td>
-          <HStack spacing={2} alignItems="center">
+          <Text
+            color="gray.600"
+            fontSize="xs"
+            lineHeight="4"
+            fontWeight="medium"
+          >
+            {(detail.status as string) === "finished"
+              ? "Request completed"
+              : detail.collection_name}
+          </Text>
+        </Td>
+      )}
+      {hasDatasetEntries && !isRequestFinishedView && (
+        <Td>
+          {detail.saas_version ? (
+            <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
+          ) : (
             <Text
               color="gray.600"
               fontSize="xs"
               lineHeight="4"
               fontWeight="medium"
             >
-              {(detail.status as string) === "finished"
-                ? "Request completed"
-                : detail.collection_name}
+              -
             </Text>
-            {detail.saas_version && (
-              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>
-                v{detail.saas_version}
-              </Tag>
-            )}
-          </HStack>
+          )}
         </Td>
       )}
     </Tr>
@@ -346,6 +354,18 @@ const EventLog = ({
                     fontWeight="medium"
                   >
                     Collection
+                  </Text>
+                </Th>
+              )}
+              {hasDatasetEntries && !isRequestFinishedView && (
+                <Th>
+                  <Text
+                    color="black"
+                    fontSize="xs"
+                    lineHeight="4"
+                    fontWeight="medium"
+                  >
+                    Version
                   </Text>
                 </Th>
               )}
