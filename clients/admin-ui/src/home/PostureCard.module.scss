@@ -1,6 +1,13 @@
+.spinWrapper {
+  height: 100%;
+
+  :global(.ant-spin-container) {
+    height: 100%;
+  }
+}
+
 .cardContainer {
   height: 100%;
-  max-height: inherit;
   display: flex;
   flex-direction: column;
 
@@ -19,9 +26,8 @@
 .radarChartWrapper {
   margin-left: -12px;
   margin-right: -12px;
-  aspect-ratio: 1;
+  flex: 1;
   min-height: 0;
-  flex-shrink: 1;
   position: relative;
 }
 

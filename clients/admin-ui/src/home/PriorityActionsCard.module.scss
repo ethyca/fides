@@ -16,16 +16,7 @@
 }
 
 .cardContainer {
-  :global(.ant-list-item) {
-    align-items: flex-start;
-    padding-block: var(--ant-padding);
-  }
-
-  :global(.ant-list-item-meta) {
-    align-items: flex-start;
-  }
   height: 100%;
-  max-height: inherit;
   display: flex;
   flex-direction: column;
 
@@ -37,5 +28,14 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+  }
+
+  :global(.ant-list-item) {
+    align-items: flex-start;
+    padding-block: var(--ant-padding);
+  }
+
+  :global(.ant-list-item-meta) {
+    align-items: flex-start;
   }
 }

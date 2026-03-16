@@ -90,7 +90,7 @@ export const PostureCard = () => {
   );
 
   return (
-    <Spin spinning={isLoading}>
+    <Spin spinning={isLoading} wrapperClassName={styles.spinWrapper}>
       <Card
         title="Posture"
         variant="borderless"
