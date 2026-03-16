@@ -340,6 +340,12 @@ export {
 export type { ChartTextProps } from "./components/charts/ChartText";
 export { ChartText } from "./components/charts/ChartText";
 export type {
+  DonutChartProps,
+  DonutChartSegment,
+  DonutChartVariant,
+} from "./components/charts/DonutChart";
+export { DonutChart } from "./components/charts/DonutChart";
+export type {
   RadarChartDataPoint,
   RadarChartProps,
   RadarPointStatus,
