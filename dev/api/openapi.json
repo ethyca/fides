@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.0"
+    "version": "2.79.1a3.dev134+g9f2b22f37"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2854,7 +2854,8 @@
                       }
                     },
                     "title": "JiraTicketDocsSchema",
-                    "description": "Jira Ticket Secrets Schema for API Docs"
+                    "description": "Jira Ticket Secrets Schema for API Docs",
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -5663,7 +5664,8 @@
                       }
                     },
                     "title": "JiraTicketDocsSchema",
-                    "description": "Jira Ticket Secrets Schema for API Docs"
+                    "description": "Jira Ticket Secrets Schema for API Docs",
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -7077,7 +7079,8 @@
                       }
                     },
                     "title": "JiraTicketDocsSchema",
-                    "description": "Jira Ticket Secrets Schema for API Docs"
+                    "description": "Jira Ticket Secrets Schema for API Docs",
+                    "additionalProperties": true
                   },
                   {
                     "type": "object",
@@ -22895,6 +22898,7 @@
                     "title": "Site Url"
                   }
                 },
+                "additionalProperties": true,
                 "type": "object",
                 "title": "JiraTicketDocsSchema",
                 "description": "Jira Ticket Secrets Schema for API Docs"
@@ -27127,6 +27131,7 @@
             "title": "Site Url"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "title": "JiraTicketDocsSchema",
         "description": "Jira Ticket Secrets Schema for API Docs"
@@ -33949,6 +33954,7 @@
                     "title": "Site Url"
                   }
                 },
+                "additionalProperties": true,
                 "type": "object",
                 "title": "JiraTicketDocsSchema",
                 "description": "Jira Ticket Secrets Schema for API Docs"
