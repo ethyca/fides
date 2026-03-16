@@ -1,4 +1,4 @@
-import { ChakraBox as Box, useChakraToast as useToast } from "fidesui";
+import { useChakraToast as useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -8,11 +8,14 @@ import Layout from "~/features/common/Layout";
 import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import PrivacyCenterPreview from "~/features/properties/privacy-center/PrivacyCenterPreview";
 import {
   useGetPropertyByIdQuery,
   useUpdatePropertyMutation,
 } from "~/features/properties/property.slice";
-import PropertyForm, { FormValues } from "~/features/properties/PropertyForm";
+import PropertyForm, {
+  PropertyFormValues,
+} from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
 
 const EditPropertyPage: NextPage = () => {
@@ -22,7 +25,7 @@ const EditPropertyPage: NextPage = () => {
   const { data, error } = useGetPropertyByIdQuery(propertyId as string);
   const [updateProperty] = useUpdatePropertyMutation();
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: PropertyFormValues) => {
     // We do not support adding messaging templates through the property form. This ensures we do not overwrite
     // previously-configured messaging templates.
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -61,9 +64,11 @@ const EditPropertyPage: NextPage = () => {
           },
         ]}
       />
-      <Box maxWidth="720px">
-        <PropertyForm property={data} handleSubmit={handleSubmit} />
-      </Box>
+      <PropertyForm
+        property={data}
+        handleSubmit={handleSubmit}
+        rightPanel={<PrivacyCenterPreview />}
+      />
     </Layout>
   );
 };
