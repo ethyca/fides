@@ -35,7 +35,7 @@ def upgrade():
             "created_at",
             sa.DateTime(timezone=True),
             server_default=sa.text("now()"),
-            nullable=False,
+            nullable=True,
         ),
         sa.PrimaryKeyConstraint("id"),
     )

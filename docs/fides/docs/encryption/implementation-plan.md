@@ -179,6 +179,8 @@ At every point during the migration, the old columns remain intact. The running 
 - The `PGEncryptedString` class and the `pgcrypto` extension dependency can be removed after this migration (or left as dead code and cleaned up separately).
 - After this PR, `CONFIG.user.encryption_key` is no longer used by any model. It can be deprecated in a follow-up.
 
+**Note:** `UserRegistration` (which uses `AesEngine` / AES-CBC) does not need a separate migration — the model will be removed entirely once fideslog is removed.
+
 ---
 
 ### PR 2: `encrypted_type()` factory + callable key (pure refactor) — 🔧 In progress
@@ -222,20 +224,13 @@ In addition to the `StringEncryptedType` columns, several non-column code paths 
 CREATE TABLE encryption_keys (
     id          VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
     wrapped_dek TEXT NOT NULL,                 -- base64-encoded ciphertext
-    kek_id      VARCHAR NOT NULL,             -- identifies the KEK used to wrap (see below)
+    kek_id_hash      VARCHAR NOT NULL,             -- identifies the KEK used to wrap (see below)
     provider    VARCHAR NOT NULL DEFAULT 'local',
-    is_active   BOOLEAN NOT NULL DEFAULT true,
-    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    rotated_at  TIMESTAMP WITH TIME ZONE
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
-
-CREATE UNIQUE INDEX ix_encryption_keys_active
-    ON encryption_keys (is_active) WHERE is_active = true;
 ```
 
-The partial unique index on `is_active WHERE is_active = true` ensures at most one active key at any time.
-
-The `kek_id` column identifies which KEK was used to wrap the DEK, allowing the startup logic to determine whether re-wrapping is needed without trial decryption:
+The `kek_id_hash` column identifies which KEK was used to wrap the DEK, allowing the startup logic to determine whether re-wrapping is needed without trial decryption:
 
 - **Local provider:** `HMAC-SHA256(key=b"fides-kek-id", msg=kek)[:16]` — a truncated HMAC that uniquely identifies the KEK without leaking key material. The fixed salt `"fides-kek-id"` provides domain separation.
 - **AWS KMS provider:** The KMS key ARN (e.g., `arn:aws:kms:us-east-1:123456789:key/abcd-...`), which is already a public identifier.
@@ -326,10 +321,10 @@ startup_envelope_encryption():
       # and insert the first row. After this deploy succeeds,
       # app_encryption_key can be removed from the environment.
       wrapped_blob = provider.wrap(config.security.app_encryption_key)
-      insert row: wrapped_dek=wrapped_blob, kek_id=provider.kek_id(), provider=...
+      insert row: wrapped_dek=wrapped_blob, kek_id_hash=provider.kek_id_hash(), provider=...
       return
 
-  if row.kek_id == provider.kek_id():
+  if row.kek_id_hash == provider.kek_id_hash():
       # --- Normal operation ---
       # KEK hasn't changed, nothing to do.
       return
@@ -344,7 +339,7 @@ startup_envelope_encryption():
 
   # Re-wrap with the current KEK and update the row.
   new_blob = provider.wrap(dek)
-  update row: wrapped_dek=new_blob, kek_id=provider.kek_id(), rotated_at=now()
+  update row: wrapped_dek=new_blob, kek_id_hash=provider.kek_id_hash()
 ```
 
 For the AWS KMS provider, KEK rotation is handled transparently by KMS (see KEK Rotation below), so the rotation branch only applies to the local provider.
@@ -401,7 +396,7 @@ The TTL-based cache ensures that after a DEK rotation (Phase 3), all pods conver
 - Unit test: local provider mode reads from DB, unwraps, caches
 - Unit test: TTL expiry triggers re-fetch
 - Unit test: bootstrap creates row when `encryption_keys` is empty
-- Unit test: KEK rotation detects `kek_id` mismatch, re-wraps, and updates row
+- Unit test: KEK rotation detects `kek_id_hash` mismatch, re-wraps, and updates row
 - Integration test: write and read an encrypted column with envelope mode enabled
 - Integration test: verify backward compat — existing config with only `app_encryption_key` works identically
 
@@ -444,8 +439,8 @@ With envelope encryption in place, the KEK can be rotated without re-encrypting 
 KEK rotation is config-driven and handled automatically by the startup task:
 
 1. The operator sets `key_encryption_key` to the new KEK and `key_encryption_key_previous` to the old KEK.
-2. On startup, the startup task compares `kek_id` in the DB row against `HMAC(current KEK)`. If they don't match, it unwraps the DEK using `key_encryption_key_previous`, caches the plaintext DEK immediately, re-wraps with the new KEK, and updates the row.
-3. On subsequent deploys, the operator removes `key_encryption_key_previous`. The startup task sees `kek_id` matches and skips rotation.
+2. On startup, the startup task compares `kek_id_hash` in the DB row against `HMAC(current KEK)`. If they don't match, it unwraps the DEK using `key_encryption_key_previous`, caches the plaintext DEK immediately, re-wraps with the new KEK, and updates the row.
+3. On subsequent deploys, the operator removes `key_encryption_key_previous`. The startup task sees `kek_id_hash` matches and skips rotation.
 
 Zero downtime. The DEK is cached before re-wrapping, so no request can fail during the transition. In a multi-pod deployment, each pod performs the same re-wrap idempotently — the result is deterministic since the same DEK is wrapped with the same new KEK.
 
