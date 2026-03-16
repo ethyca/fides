@@ -153,21 +153,33 @@ const cleanupTestRoles = (token: string) => {
  * Set up mocks for RBAC endpoints (CI mode)
  */
 const setupRbacMocks = () => {
-  // Stub roles list
-  cy.intercept("GET", "/api/v1/plus/rbac/roles", {
-    fixture: "rbac/roles.json",
-  }).as("getRoles");
+  // Stub single role - must be defined BEFORE the list intercept
+  // so it takes precedence for paths like /roles/abc123
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: /^\/api\/v1\/plus\/rbac\/roles\/[^/]+$/,
+    },
+    { fixture: "rbac/roles.json" },
+  ).as("getRole");
 
-  // Stub single role
-  cy.intercept("GET", "/api/v1/plus/rbac/roles/*", {
-    fixture: "rbac/roles.json",
-    transform: (body: unknown[]) => body[0], // Return first role as single
-  }).as("getRole");
+  // Stub roles list - uses pathname to match regardless of query params
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/plus/rbac/roles",
+    },
+    { fixture: "rbac/roles.json" },
+  ).as("getRoles");
 
-  // Stub permissions list
-  cy.intercept("GET", "/api/v1/plus/rbac/permissions", {
-    fixture: "rbac/permissions.json",
-  }).as("getPermissions");
+  // Stub permissions list - uses pathname to match regardless of query params
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/plus/rbac/permissions",
+    },
+    { fixture: "rbac/permissions.json" },
+  ).as("getPermissions");
 
   // Stub create role
   cy.intercept("POST", "/api/v1/plus/rbac/roles", (req) => {
