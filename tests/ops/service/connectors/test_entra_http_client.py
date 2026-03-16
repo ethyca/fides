@@ -318,3 +318,42 @@ class TestListServicePrincipals:
 
         result, _ = client.list_service_principals()
         assert result == []
+
+    def test_401_triggers_token_refresh_and_retry(self, client, mock_session):
+        """A 401 response should clear the token, re-authenticate, and retry."""
+        mock_session.post.return_value = _token_response("fresh-token")
+
+        unauthorized_resp = MagicMock()
+        unauthorized_resp.status_code = 401
+        unauthorized_resp.ok = False
+
+        success_resp = _graph_response([{"id": "sp1"}])
+
+        mock_session.get.side_effect = [unauthorized_resp, success_resp]
+
+        result, next_link = client.list_service_principals()
+
+        assert result == [{"id": "sp1"}]
+        assert next_link is None
+        # Token should have been fetched twice (initial + refresh)
+        assert mock_session.post.call_count == 2
+        # GET should have been called twice (initial 401 + retry)
+        assert mock_session.get.call_count == 2
+
+    def test_401_on_retry_still_raises(self, client, mock_session):
+        """If the retry after 401 also fails, it should raise ConnectionException."""
+        mock_session.post.return_value = _token_response("fresh-token")
+
+        unauthorized_resp = MagicMock()
+        unauthorized_resp.status_code = 401
+        unauthorized_resp.ok = False
+        unauthorized_resp.json.return_value = {
+            "error": {"code": "Unauthorized", "message": "Still unauthorized"}
+        }
+
+        mock_session.get.return_value = unauthorized_resp
+
+        with pytest.raises(
+            ConnectionException, match="Microsoft Graph request failed: 401"
+        ):
+            client.list_service_principals()

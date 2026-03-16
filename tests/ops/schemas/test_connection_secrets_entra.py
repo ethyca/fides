@@ -38,3 +38,62 @@ class TestEntraSchema:
                 client_id="",
                 client_secret="",
             )
+
+    def test_whitespace_only_tenant_id_fails(self):
+        with pytest.raises(ValidationError, match="Tenant ID cannot be empty"):
+            EntraSchema(
+                tenant_id="   ",
+                client_id=VALID_CLIENT_ID,
+                client_secret=VALID_CLIENT_SECRET,
+            )
+
+    def test_whitespace_only_client_id_fails(self):
+        with pytest.raises(ValidationError, match="Client ID cannot be empty"):
+            EntraSchema(
+                tenant_id=VALID_TENANT_ID,
+                client_id="   ",
+                client_secret=VALID_CLIENT_SECRET,
+            )
+
+    def test_whitespace_only_client_secret_fails(self):
+        with pytest.raises(ValidationError, match="Client secret cannot be empty"):
+            EntraSchema(
+                tenant_id=VALID_TENANT_ID,
+                client_id=VALID_CLIENT_ID,
+                client_secret="   ",
+            )
+
+    def test_invalid_uuid_tenant_id_fails(self):
+        with pytest.raises(ValidationError, match="Invalid tenant ID"):
+            EntraSchema(
+                tenant_id="not-a-uuid",
+                client_id=VALID_CLIENT_ID,
+                client_secret=VALID_CLIENT_SECRET,
+            )
+
+    def test_invalid_uuid_client_id_fails(self):
+        with pytest.raises(ValidationError, match="Invalid client ID"):
+            EntraSchema(
+                tenant_id=VALID_TENANT_ID,
+                client_id="not-a-uuid",
+                client_secret=VALID_CLIENT_SECRET,
+            )
+
+    def test_client_secret_uuid_rejected(self):
+        """Pasting the secret ID (a UUID) instead of the secret value is rejected."""
+        with pytest.raises(ValidationError, match="Client secret appears to be a UUID"):
+            EntraSchema(
+                tenant_id=VALID_TENANT_ID,
+                client_id=VALID_CLIENT_ID,
+                client_secret="aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            )
+
+    def test_whitespace_stripped_from_all_fields(self):
+        schema = EntraSchema(
+            tenant_id=f"  {VALID_TENANT_ID}  ",
+            client_id=f"\t{VALID_CLIENT_ID}\t",
+            client_secret=f"  {VALID_CLIENT_SECRET}  ",
+        )
+        assert schema.tenant_id == VALID_TENANT_ID
+        assert schema.client_id == VALID_CLIENT_ID
+        assert schema.client_secret == VALID_CLIENT_SECRET

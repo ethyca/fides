@@ -131,11 +131,20 @@ class EntraHttpClient:
                 f"?$top={min(top, SERVICE_PRINCIPALS_PAGE_SIZE)}"
                 f"&$select={select}"
             )
+        headers = {"Authorization": f"Bearer {token}"}
         response = self._session.get(
             url,
-            headers={"Authorization": f"Bearer {token}"},
+            headers=headers,
             timeout=DEFAULT_REQUEST_TIMEOUT,
         )
+        if response.status_code == 401:
+            # Token may have expired; refresh and retry once
+            self._token = None
+            token = self._get_token()
+            headers["Authorization"] = f"Bearer {token}"
+            response = self._session.get(
+                url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT
+            )
         if not response.ok:
             msg = f"Microsoft Graph request failed: {response.status_code}"
             try:
