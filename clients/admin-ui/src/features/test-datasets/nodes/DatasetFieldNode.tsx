@@ -2,6 +2,7 @@ import { NodeProps } from "@xyflow/react";
 import { Button, Typography } from "fidesui";
 import { useContext } from "react";
 
+import DatasetEditorActionsContext from "../context/DatasetEditorActionsContext";
 import {
   DatasetNodeHoverStatus,
   DatasetTreeHoverContext,
@@ -16,6 +17,7 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
   const { onMouseEnter, onMouseLeave, getNodeHoverStatus } = useContext(
     DatasetTreeHoverContext,
   );
+  const actions = useContext(DatasetEditorActionsContext);
   const hoverStatus = getNodeHoverStatus(id);
 
   const getHoverClass = () => {
@@ -59,6 +61,17 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
           </span>
         )}
       </Button>
+      <button
+        type="button"
+        className={styles["add-button"]}
+        onClick={(e) => {
+          e.stopPropagation();
+          actions.addField(nodeData.collectionName, nodeData.fieldPath);
+        }}
+        title="Add nested field"
+      >
+        +
+      </button>
       {nodeData.hasChildren && (
         <DatasetNodeHandle
           type="source"

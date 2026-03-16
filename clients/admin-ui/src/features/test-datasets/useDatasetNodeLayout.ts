@@ -10,9 +10,9 @@ interface UseDatasetNodeLayoutProps {
   };
 }
 
-// Larger width to avoid overlap for longer field names + tags
-const NODE_WIDTH = 260;
-const NODE_HEIGHT = 40;
+// Horizontal gap between parent→child ranks; vertical gap between siblings
+const NODE_WIDTH = 300;
+const NODE_HEIGHT = 44;
 
 const layoutTree = tree<Node>();
 
@@ -41,7 +41,7 @@ const useDatasetNodeLayout = ({
 
     const layout = layoutTree
       .nodeSize(nodeSizes)
-      .separation((a, b) => (a.parent === b.parent ? 1 : 1.3))(root);
+      .separation((a, b) => (a.parent === b.parent ? 1 : 1.6))(root);
 
     return {
       nodes: layout.descendants().map((node) => {

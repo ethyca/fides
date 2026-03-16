@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 export const DATASET_ROOT_ID = "dataset-root";
+export const COLLECTION_ROOT_PREFIX = "collection-";
 
 export type CollectionNodeData = {
   label: string;
@@ -89,10 +90,14 @@ const buildFieldNodes = (
 
 /**
  * Convert a Dataset into React Flow nodes and edges for visualization.
+ *
+ * When `focusedCollection` is null, shows the overview: root → collection nodes.
+ * When `focusedCollection` is set, shows drill-down: collection root → field nodes.
  */
 const useDatasetGraph = (
   dataset: Dataset | undefined,
   protectedFields?: ProtectedFieldsInfo,
+  focusedCollection?: string | null,
 ) => {
   return useMemo(() => {
     if (!dataset) {
@@ -110,7 +115,6 @@ const useDatasetGraph = (
           protectedByCollection.set(pf.collection, new Set());
         }
         const pathSet = protectedByCollection.get(pf.collection)!;
-        // Add the full path and every ancestor prefix
         const segments = pf.field.split(".");
         segments.forEach((_, idx) => {
           pathSet.add(segments.slice(0, idx + 1).join("."));
@@ -118,22 +122,20 @@ const useDatasetGraph = (
       });
     }
 
-    // Root node representing the dataset
-    nodes.push({
-      id: DATASET_ROOT_ID,
-      position: { x: 0, y: 0 },
-      type: "datasetRootNode",
-      data: {
-        label: dataset.name || dataset.fides_key,
-      },
-    });
+    if (focusedCollection) {
+      // --- Drill-down view: single collection → its fields ---
+      const collection = dataset.collections.find(
+        (c) => c.name === focusedCollection,
+      );
+      if (!collection) {
+        return { nodes: [], edges: [] };
+      }
 
-    // Collection and field nodes
-    dataset.collections.forEach((collection) => {
-      const collectionId = `collection-${collection.name}`;
+      const collectionId = `${COLLECTION_ROOT_PREFIX}${collection.name}`;
       const protectedPaths =
         protectedByCollection.get(collection.name) ?? new Set<string>();
 
+      // Collection as root of this view
       nodes.push({
         id: collectionId,
         position: { x: 0, y: 0 },
@@ -146,13 +148,6 @@ const useDatasetGraph = (
         } satisfies CollectionNodeData,
       });
 
-      edges.push({
-        id: `${DATASET_ROOT_ID}->${collectionId}`,
-        source: DATASET_ROOT_ID,
-        target: collectionId,
-        type: "datasetTreeEdge",
-      });
-
       buildFieldNodes(
         collection.fields,
         collectionId,
@@ -162,10 +157,43 @@ const useDatasetGraph = (
         nodes,
         edges,
       );
-    });
+    } else {
+      // --- Overview: root → collections only ---
+      nodes.push({
+        id: DATASET_ROOT_ID,
+        position: { x: 0, y: 0 },
+        type: "datasetRootNode",
+        data: {
+          label: dataset.name || dataset.fides_key,
+        },
+      });
+
+      dataset.collections.forEach((collection) => {
+        const collectionId = `${COLLECTION_ROOT_PREFIX}${collection.name}`;
+
+        nodes.push({
+          id: collectionId,
+          position: { x: 0, y: 0 },
+          type: "datasetCollectionNode",
+          data: {
+            label: collection.name,
+            collection,
+            nodeType: "collection",
+            isProtected: false,
+          } satisfies CollectionNodeData,
+        });
+
+        edges.push({
+          id: `${DATASET_ROOT_ID}->${collectionId}`,
+          source: DATASET_ROOT_ID,
+          target: collectionId,
+          type: "datasetTreeEdge",
+        });
+      });
+    }
 
     return { nodes, edges };
-  }, [dataset, protectedFields]);
+  }, [dataset, protectedFields, focusedCollection]);
 };
 
 export default useDatasetGraph;

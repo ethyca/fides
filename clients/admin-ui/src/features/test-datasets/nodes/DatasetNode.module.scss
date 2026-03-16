@@ -1,5 +1,6 @@
 .container {
   position: relative;
+  max-width: 240px;
 }
 
 .button {
@@ -72,4 +73,35 @@
 .badge--muted {
   background-color: var(--fidesui-neutral-400);
   color: white;
+}
+
+.add-button {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--fidesui-neutral-300);
+  background-color: white;
+  color: var(--fidesui-neutral-600);
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  z-index: 10;
+
+  &:hover {
+    background-color: var(--fidesui-minos);
+    color: white;
+    border-color: var(--fidesui-minos);
+  }
+}
+
+.container:hover .add-button {
+  opacity: 1;
 }
