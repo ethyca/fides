@@ -8,31 +8,27 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/development/postman/using_postman/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/encryption/implementation-plan/">
       
       
-        <link rel="prev" href="../../releases/">
-      
-      
-        <link rel="next" href="../../update_erd_diagram/">
       
       
         
       
       
-      <link rel="icon" href="../../../img/favicon.ico">
+      <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>Using Postman - Fides</title>
+        <title>Envelope Encryption: Implementation Plan - Fides</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,15 +49,15 @@
     
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
     
-      <link rel="stylesheet" href="../../../css/fides.css">
+      <link rel="stylesheet" href="../../css/fides.css">
     
-      <link rel="stylesheet" href="../../../css/api.css">
+      <link rel="stylesheet" href="../../css/api.css">
     
-      <link rel="stylesheet" href="../../../css/cli.css">
+      <link rel="stylesheet" href="../../css/cli.css">
     
-      <link rel="stylesheet" href="../../../css/taxonomy.css">
+      <link rel="stylesheet" href="../../css/taxonomy.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -86,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#using-the-fides-postman-collection" class="md-skip">
+        <a href="#envelope-encryption-implementation-plan" class="md-skip">
           Skip to content
         </a>
       
@@ -101,12 +97,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
 You're not viewing the latest version.
-<a href="../../../..">
+<a href="../../..">
     <strong>Click here to go to the latest stable version.</strong>
 </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -116,9 +112,9 @@ You're not viewing the latest version.
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="Fides" class="md-header__button md-logo" aria-label="Fides" data-md-component="logo">
+    <a href="../.." title="Fides" class="md-header__button md-logo" aria-label="Fides" data-md-component="logo">
       
-  <img src="../../../img/fides-logo.svg" alt="logo">
+  <img src="../../img/fides-logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -135,7 +131,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Using Postman
+              Envelope Encryption: Implementation Plan
             
           </span>
         </div>
@@ -244,13 +240,11 @@ You're not viewing the latest version.
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../.." class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
           
   
   
@@ -270,7 +264,7 @@ You're not viewing the latest version.
     
     
       <li class="md-tabs__item">
-        <a href="../../../ethyca/" class="md-tabs__link">
+        <a href="../../ethyca/" class="md-tabs__link">
           
   
   
@@ -304,9 +298,9 @@ You're not viewing the latest version.
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Fides" class="md-nav__button md-logo" aria-label="Fides" data-md-component="logo">
+    <a href="../.." title="Fides" class="md-nav__button md-logo" aria-label="Fides" data-md-component="logo">
       
-  <img src="../../../img/fides-logo.svg" alt="logo">
+  <img src="../../img/fides-logo.svg" alt="logo">
 
     </a>
     Fides
@@ -330,29 +324,24 @@ You're not viewing the latest version.
       
   
   
-    
   
   
-  
     
     
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
         
           
-          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
             
   
   
@@ -370,7 +359,7 @@ You're not viewing the latest version.
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -388,7 +377,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -416,7 +405,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../api/" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   
@@ -444,7 +433,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../cli/" class="md-nav__link">
+      <a href="../../cli/" class="md-nav__link">
         
   
   
@@ -472,7 +461,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../config/" class="md-nav__link">
+      <a href="../../config/" class="md-nav__link">
         
   
   
@@ -497,8 +486,6 @@ You're not viewing the latest version.
                 
   
   
-    
-  
   
   
     
@@ -509,11 +496,11 @@ You're not viewing the latest version.
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
         
           
           <label class="md-nav__link" for="__nav_1_5" id="__nav_1_5_label" tabindex="0">
@@ -534,7 +521,7 @@ You're not viewing the latest version.
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -552,7 +539,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../overview/" class="md-nav__link">
+      <a href="../../development/overview/" class="md-nav__link">
         
   
   
@@ -580,7 +567,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../developing_fides/" class="md-nav__link">
+      <a href="../../development/developing_fides/" class="md-nav__link">
         
   
   
@@ -608,7 +595,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../development_tips/" class="md-nav__link">
+      <a href="../../development/development_tips/" class="md-nav__link">
         
   
   
@@ -636,7 +623,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../testing/" class="md-nav__link">
+      <a href="../../development/testing/" class="md-nav__link">
         
   
   
@@ -664,7 +651,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../code_style/" class="md-nav__link">
+      <a href="../../development/code_style/" class="md-nav__link">
         
   
   
@@ -742,7 +729,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../ui/overview/" class="md-nav__link">
+      <a href="../../development/ui/overview/" class="md-nav__link">
         
   
   
@@ -770,7 +757,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../ui/privacy_center/" class="md-nav__link">
+      <a href="../../development/ui/privacy_center/" class="md-nav__link">
         
   
   
@@ -798,7 +785,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../ui/admin_ui/" class="md-nav__link">
+      <a href="../../development/ui/admin_ui/" class="md-nav__link">
         
   
   
@@ -834,7 +821,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../documentation/" class="md-nav__link">
+      <a href="../../development/documentation/" class="md-nav__link">
         
   
   
@@ -862,7 +849,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../pull_requests/" class="md-nav__link">
+      <a href="../../development/pull_requests/" class="md-nav__link">
         
   
   
@@ -890,7 +877,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../releases/" class="md-nav__link">
+      <a href="../../development/releases/" class="md-nav__link">
         
   
   
@@ -915,37 +902,10 @@ You're not viewing the latest version.
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Using Postman
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../development/postman/using_postman/" class="md-nav__link">
         
   
   
@@ -961,92 +921,6 @@ You're not viewing the latest version.
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#loading-the-collection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Loading the collection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#bring-up-local-servers-and-mock-databases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Bring up local servers and mock databases
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#saving-authentication-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Saving Authentication variables
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#building-out-remaining-privacy-request-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Building out remaining privacy request configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-a-privacy-request" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run a privacy request
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1059,7 +933,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../update_erd_diagram/" class="md-nav__link">
+      <a href="../../development/update_erd_diagram/" class="md-nav__link">
         
   
   
@@ -1087,7 +961,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../fideslog/" class="md-nav__link">
+      <a href="../../development/fideslog/" class="md-nav__link">
         
   
   
@@ -1173,7 +1047,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../community/overview/" class="md-nav__link">
+      <a href="../../community/overview/" class="md-nav__link">
         
   
   
@@ -1201,7 +1075,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../community/hints_tips/" class="md-nav__link">
+      <a href="../../community/hints_tips/" class="md-nav__link">
         
   
   
@@ -1229,7 +1103,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../community/code_of_conduct/" class="md-nav__link">
+      <a href="../../community/code_of_conduct/" class="md-nav__link">
         
   
   
@@ -1322,7 +1196,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../ethyca/" class="md-nav__link">
+      <a href="../../ethyca/" class="md-nav__link">
         
   
   
@@ -1350,7 +1224,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../license/" class="md-nav__link">
+      <a href="../../license/" class="md-nav__link">
         
   
   
@@ -1405,10 +1279,10 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#loading-the-collection" class="md-nav__link">
+  <a href="#problem-statement" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Loading the collection
+        Problem Statement
       
     </span>
   </a>
@@ -1416,10 +1290,10 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#bring-up-local-servers-and-mock-databases" class="md-nav__link">
+  <a href="#design-constraints" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bring up local servers and mock databases
+        Design Constraints
       
     </span>
   </a>
@@ -1427,10 +1301,176 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#saving-authentication-variables" class="md-nav__link">
+  <a href="#architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Saving Authentication variables
+        Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Diagram
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-provider-abstraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Provider Abstraction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-the-dek-reaches-sqlalchemy-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the DEK Reaches SQLAlchemy Columns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pr-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR Breakdown
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PR Breakdown">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pr-0a-migrate-organization-to-standard-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 0a: Migrate Organization to standard encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-0b-migrate-userregistration-to-standard-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 0b: Migrate UserRegistration to standard encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-1-encrypted_type-factory-callable-key-pure-refactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 1: encrypted_type() factory + callable key (pure refactor)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-2-keyprovider-abc-localkeyprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 2: KeyProvider ABC + LocalKeyProvider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-3-awskmskeyprovider-optional-can-be-deferred" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 3: AwsKmsKeyProvider (optional, can be deferred)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-4-encryption_keys-database-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 4: encryption_keys database table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-5-new-config-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 5: New config fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pr-6-wire-get_encryption_key-to-envelope-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 6: Wire get_encryption_key() to envelope mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pr-dependency-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR Dependency Graph
       
     </span>
   </a>
@@ -1438,35 +1478,52 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#building-out-remaining-privacy-request-configuration" class="md-nav__link">
+  <a href="#what-this-enables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Building out remaining privacy request configuration
+        What This Enables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What This Enables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kek-rotation-immediate-benefit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KEK Rotation (immediate benefit)
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#run-a-privacy-request" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#per-domain-deks-phase-2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run a privacy request
+        Per-domain DEKs (Phase 2)
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#dek-rotation-phase-3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next steps
+        DEK Rotation (Phase 3)
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1490,137 +1547,508 @@ You're not viewing the latest version.
   
 
 
-<h1 id="using-the-fides-postman-collection">Using the Fides postman collection</h1>
-<p>A minimal Postman collection is included to assist in setting up your privacy request configurations, and in executing example <code>access</code> and <code>erasure</code> requests against mock external databases.</p>
-<h2 id="loading-the-collection">Loading the collection</h2>
+<h1 id="envelope-encryption-implementation-plan">Envelope Encryption: Implementation Plan</h1>
+<h2 id="problem-statement">Problem Statement</h2>
+<p>Fides currently uses a single <code>app_encryption_key</code> as both the data encryption key (DEK) and the only secret protecting all encrypted data. This key is:</p>
+<ul>
+<li>Bound at module import time into 35 <code>StringEncryptedType</code> column definitions across 16 model files</li>
+<li>Stored as a plaintext environment variable</li>
+<li>Impossible to rotate without re-encrypting every encrypted value in the database</li>
+<li>The same key for all data domains (secrets, PII, tokens, etc.)</li>
+</ul>
+<p>We want to introduce <strong>envelope encryption</strong> — separating a Key Encryption Key (KEK) from the DEK — without re-encrypting any existing data and without any breaking changes to existing deployments.</p>
+<h2 id="design-constraints">Design Constraints</h2>
 <ol>
-<li>Get <a href="https://www.postman.com/">Postman</a></li>
-<li>
-<p>Postman &gt; File &gt; Import</p>
-<p><img alt="File_Import" src="../../../img/postman_images/import_collection.png" /></p>
-</li>
-<li>
-<p>Upload the Fides collection found in <code>docs/fides/docs/postman/Fides.postman_collection.json</code></p>
-<p><img alt="Upload Fides Collection" src="../../../img/postman_images/upload_files.png" /></p>
-</li>
-<li>
-<p>Click on the imported <code>fidesops</code> collection in the left pane, and then find <code>Variables</code> to edit the <code>fidesops</code> collection variables.</p>
-<ul>
-<li>Some variables are populated for you, and some will be added in this guide's next steps.</li>
-</ul>
-<p><img alt="Open Fides Variables" src="../../../img/postman_images/open_fidesops_variables.png" /></p>
-</li>
-<li>
-<p>Add your <code>oauth_root_client_id</code> and <code>oauth_root_client_secret</code> under <code>CURRENT VALUE</code>.  </p>
-<ul>
-<li><code>fidesadmin</code> and <code>fidesadminsecret</code> are default configurations for testing, found in your <code>fides.toml</code>. Add the appropriate values for your instance if they differ.</li>
-<li><strong>Important:</strong> Click <code>Save</code>!</li>
-</ul>
-<p><img alt="Add root client id and secret" src="../../../img/postman_images/add_root_client_id_and_secret.png" /></p>
-</li>
+<li><strong>No data re-encryption.</strong> The current <code>app_encryption_key</code> value becomes the DEK. All existing ciphertext in the database remains valid.</li>
+<li><strong>No breaking changes.</strong> Existing deployments with only <code>FIDES__SECURITY__APP_ENCRYPTION_KEY</code> set continue to work identically. Envelope encryption is opt-in.</li>
+<li><strong>Incremental delivery.</strong> Each PR is independently mergeable and safe to deploy.</li>
+<li><strong>Pluggable key providers.</strong> Support local (in-process AES-GCM) and external KMS (AWS KMS, etc.) from the start.</li>
 </ol>
-<h2 id="bring-up-local-servers-and-mock-databases">Bring up local servers and mock databases</h2>
+<h2 id="architecture">Architecture</h2>
+<h3 id="key-hierarchy">Key Hierarchy</h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code>┌──────────────────────────────────────────────────────────────┐
+│  KEK (Key Encryption Key)                                    │
+│  ─────────────────────────                                   │
+│  Owned by the operator. Lives in an env var (local provider) │
+│  or never leaves the KMS (AWS KMS provider).                 │
+│                                                              │
+│  Wraps / unwraps the DEK.                                    │
+└──────────────────────┬───────────────────────────────────────┘
+                       │ wraps
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  DEK (Data Encryption Key)                                   │
+│  ─────────────────────────                                   │
+│  = the current app_encryption_key value                      │
+│  Stored encrypted (wrapped) by the provider.                 │
+│  Unwrapped at runtime, cached in memory.                     │
+│                                                              │
+│  Used by all StringEncryptedType columns, AES-GCM utils,     │
+│  JWE tokens, etc. — the entire existing encryption surface.  │
+└──────────────────────────────────────────────────────────────┘
+</code></pre></div></td></tr></table></div>
+<h3 id="component-diagram">Component Diagram</h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span></pre></div></td><td class="code"><div><pre><span></span><code>                     ┌──────────────────┐
+                     │  get_encryption   │
+                     │  _key()           │◄── called by StringEncryptedType
+                     │  (callable, lazy, │    (on every encrypt/decrypt)
+                     │   cached)         │
+                     └────────┬─────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              │                               │
+              ▼                               ▼
+     ┌─────────────────┐           ┌──────────────────────┐
+     │  Legacy mode     │           │  Envelope mode        │
+     │  (no KEK set)    │           │  (KEK configured)     │
+     │                  │           │                       │
+     │  Return          │           │  provider = build()   │
+     │  CONFIG.security │           │  dek = provider       │
+     │  .app_encryption │           │    .get_dek()         │
+     │  _key            │           │                       │
+     └─────────────────┘           └──────────┬────────────┘
+                                              │
+                          ┌───────────────────┼──────────────────┐
+                          │                   │                  │
+                          ▼                   ▼                  ▼
+                   ┌──────────────┐  ┌───────────────┐  ┌──────────────┐
+                   │ Local        │  │ AWS KMS       │  │ Future       │
+                   │ KeyProvider  │  │ KeyProvider   │  │ providers    │
+                   │              │  │               │  │ (Vault, GCP, │
+                   │ Storage: DB  │  │ Storage: AWS  │  │  Azure, ...) │
+                   │ Crypto: local│  │ Crypto: KMS   │  │              │
+                   │ AES-GCM      │  │ API calls     │  │              │
+                   └──────────────┘  └───────────────┘  └──────────────┘
+</code></pre></div></td></tr></table></div>
+<h3 id="key-provider-abstraction">Key Provider Abstraction</h3>
+<p>Each provider owns both the <strong>crypto</strong> (wrap/unwrap) and the <strong>storage</strong> (where the wrapped DEK persists):</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Wrapped DEK storage</th>
+<th>Wrap/unwrap mechanism</th>
+<th>KEK location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LocalKeyProvider</code></td>
+<td><code>encryption_keys</code> DB table</td>
+<td>In-process AES-256-GCM</td>
+<td>Env var (<code>FIDES__SECURITY__KEY_ENCRYPTION_KEY</code>)</td>
+</tr>
+<tr>
+<td><code>AwsKmsKeyProvider</code></td>
+<td>AWS Secrets Manager (or Parameter Store)</td>
+<td>AWS KMS API (<code>kms:Encrypt</code> / <code>kms:Decrypt</code>)</td>
+<td>Inside AWS KMS (never leaves)</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>KeyProvider</code> ABC:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KeyProvider</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dek</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve and unwrap the DEK.&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+</code></pre></div></td></tr></table></div>
+<h3 id="how-the-dek-reaches-sqlalchemy-columns">How the DEK Reaches SQLAlchemy Columns</h3>
+<p>Today, every encrypted column captures the key at import time:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Current — key is a string, bound at class definition</span>
+<span class="n">Column</span><span class="p">(</span><span class="n">StringEncryptedType</span><span class="p">(</span><span class="n">JSONTypeOverride</span><span class="p">,</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">security</span><span class="o">.</span><span class="n">app_encryption_key</span><span class="p">,</span> <span class="n">AesGcmEngine</span><span class="p">,</span> <span class="s2">&quot;pkcs5&quot;</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+<p><code>sqlalchemy-utils</code> supports <strong>callable keys</strong> — if <code>key</code> is a callable, it is invoked on each encrypt/decrypt operation. We introduce a factory function and a lazy resolver:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># New — key is a callable, resolved on first use</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">encrypted_type</span><span class="p">(</span><span class="n">type_in</span><span class="p">:</span> <span class="n">TypeEngine</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StringEncryptedType</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">StringEncryptedType</span><span class="p">(</span>
+        <span class="n">type_in</span><span class="o">=</span><span class="n">type_in</span> <span class="ow">or</span> <span class="n">Text</span><span class="p">(),</span>
+        <span class="n">key</span><span class="o">=</span><span class="n">get_encryption_key</span><span class="p">,</span>  <span class="c1"># callable</span>
+        <span class="n">engine</span><span class="o">=</span><span class="n">AesGcmEngine</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;pkcs5&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="c1"># Model usage becomes:</span>
+<span class="n">Column</span><span class="p">(</span><span class="n">MutableDict</span><span class="o">.</span><span class="n">as_mutable</span><span class="p">(</span><span class="n">encrypted_type</span><span class="p">(</span><span class="n">JSONTypeOverride</span><span class="p">)))</span>
+</code></pre></div></td></tr></table></div>
+<p><code>get_encryption_key()</code> is lazy and cached:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">_cached_dek</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_encryption_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">global</span> <span class="n">_cached_dek</span>
+    <span class="k">if</span> <span class="n">_cached_dek</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_cached_dek</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="o">.</span><span class="n">key_provider</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="o">.</span><span class="n">key_provider</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+        <span class="n">_cached_dek</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="o">.</span><span class="n">app_encryption_key</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">provider</span> <span class="o">=</span> <span class="n">_build_key_provider</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="p">)</span>
+        <span class="n">_cached_dek</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">get_dek</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">_cached_dek</span>
+</code></pre></div></td></tr></table></div>
+<p>This eliminates the import-time binding problem. The DEK is resolved on the first encrypt/decrypt operation — long after the app is fully started and the database is reachable.</p>
+<hr />
+<h2 id="pr-breakdown">PR Breakdown</h2>
+<h3 id="pr-0a-migrate-organization-to-standard-encryption">PR 0a: Migrate <code>Organization</code> to standard encryption</h3>
+<p><strong>Goal:</strong> Replace the <code>PGEncryptedString</code> mechanism (PostgreSQL <code>pgcrypto</code>) with <code>StringEncryptedType(AesGcmEngine)</code> on the <code>Organization</code> model, unifying it with the rest of the codebase.</p>
+<p><strong>Context:</strong></p>
+<p><code>Organization</code> (<code>ctl_organizations</code> table) has 3 columns (<code>controller</code>, <code>data_protection_officer</code>, <code>representative</code>) using <code>PGEncryptedString</code> — a custom <code>TypeDecorator</code> that delegates to PostgreSQL's <code>pgp_sym_encrypt</code>/<code>pgp_sym_decrypt</code> via the <code>pgcrypto</code> extension. These columns use a different key (<code>CONFIG.user.encryption_key</code>) and a different algorithm (PGP symmetric) than everything else.</p>
+<p><strong>Migration strategy:</strong></p>
+<p>Uses the expand-contract pattern so the old columns remain readable throughout the migration. No maintenance window required.</p>
 <ol>
-<li>Run <code>nox -s dev -- &lt;datastore&gt;</code> in your terminal. <ul>
-<li>This brings up the Fides server and the list of datastores specified, i.e. <code>nox -s dev -- postgres mongodb</code>. These mock datastores are pre-populated with test data to represent your datastores.</li>
-</ul>
-</li>
+<li><strong>Expand:</strong> Add new <code>Text</code> columns alongside the existing <code>BYTEA</code> ones (<code>controller_new</code>, <code>data_protection_officer_new</code>, <code>representative_new</code>)</li>
+<li><strong>Migrate:</strong> For each row, decrypt old columns using <code>pgp_sym_decrypt(column, user_encryption_key)</code> via raw SQL, re-encrypt plaintext using <code>AesGcmEngine</code> with <code>app_encryption_key</code>, write to the new columns. Skip <code>NULL</code> values.</li>
+<li><strong>Contract:</strong> Drop the old <code>BYTEA</code> columns, rename the new columns to the original names (<code>controller_new</code> → <code>controller</code>, etc.)</li>
 </ol>
-<div class="admonition note">
-<p>The following list of requests is kept in the <code>Minimum API calls to create an Access Privacy Request</code> folder. Some of the returned data will need to be saved as additional variables for use in other steps.</p>
-</div>
-<p><img alt="Fides container" src="../../../img/postman_images/fidesops_container.png" /></p>
-<h2 id="saving-authentication-variables">Saving Authentication variables</h2>
+<p>At every point during the migration, the old columns remain intact. The running application reads from the old columns until the rename, which is instantaneous. If anything fails mid-migration, the new columns can be dropped and the migration retried.</p>
+<p><strong>Risk considerations:</strong></p>
+<ul>
+<li>The <code>ctl_organizations</code> table is small (typically single-digit rows), so the data migration is fast.</li>
+<li>The <code>PGEncryptedString</code> class and the <code>pgcrypto</code> extension dependency can be removed after this migration (or left as dead code and cleaned up separately).</li>
+<li>After this PR, <code>CONFIG.user.encryption_key</code> is no longer used by any model. It can be deprecated in a follow-up.</li>
+</ul>
+<hr />
+<h3 id="pr-0b-migrate-userregistration-to-standard-encryption">PR 0b: Migrate <code>UserRegistration</code> to standard encryption</h3>
+<p><strong>Goal:</strong> Replace the <code>AesEngine</code> (AES-CBC) mechanism with <code>AesGcmEngine</code> (AES-GCM) on the <code>UserRegistration</code> model, eliminating the last non-standard encryption engine.</p>
+<p><strong>Context:</strong></p>
+<p><code>UserRegistration</code> has 1 column (<code>user_email</code>) using <code>StringEncryptedType(AesEngine)</code> — AES-CBC instead of the AES-GCM used everywhere else.</p>
+<p><strong>Migration strategy (expand-contract):</strong></p>
+<p>Both <code>AesEngine</code> and <code>AesGcmEngine</code> use <code>app_encryption_key</code>, so no key change — only the cipher mode changes (CBC to GCM).</p>
 <ol>
-<li>
-<p>Click on the <code>Get Root Client Token</code> request, and click <code>Send</code> to send a <code>POST</code> request to Fides to create a root token.</p>
-<p><img alt="Create root token" src="../../../img/postman_images/create_root_client_token.png" /></p>
-</li>
-<li>
-<p>Copy the <code>access_token</code> returned in the response body, and paste it as the <code>Current Value</code> of <code>root_client_token</code> in Fides' variables.</p>
+<li><strong>Expand:</strong> Add a new column <code>user_email_new</code> alongside the existing <code>user_email</code></li>
+<li><strong>Migrate:</strong> For each row, decrypt <code>user_email</code> using <code>AesEngine</code>, re-encrypt using <code>AesGcmEngine</code>, write to <code>user_email_new</code>. Skip <code>NULL</code> values.</li>
+<li><strong>Contract:</strong> Drop <code>user_email</code>, rename <code>user_email_new</code> to <code>user_email</code></li>
+</ol>
+<p><strong>Risk considerations:</strong></p>
 <ul>
-<li><strong>Important:</strong> Click <code>Save</code>!</li>
+<li>The <code>userregistration</code> table typically contains a single row, so the migration is trivial.</li>
+<li><code>AesEngine</code> import can be removed from <code>registration.py</code> after this PR.</li>
 </ul>
-<p><img alt="Get root token" src="../../../img/postman_images/root_token_response.png" />
-  <img alt="Save root token" src="../../../img/postman_images/save_root_client_token.png" /></p>
-</li>
-<li>
-<p>Similarly, click on <code>Create Client</code>, and click <code>Send</code> to send a <code>POST</code> request to Fides to create a new client.</p>
+<p><strong>Independent of PR 0a.</strong> Can land before or after.</p>
+<hr />
+<h3 id="pr-1-encrypted_type-factory-callable-key-pure-refactor">PR 1: <code>encrypted_type()</code> factory + callable key (pure refactor)</h3>
+<p><strong>Goal:</strong> Centralize all <code>StringEncryptedType</code> construction and switch from import-time key binding to a callable key. Zero behavior change.</p>
+<p>Create a new <code>get_encryption_key()</code> function (initially just returns <code>CONFIG.security.app_encryption_key</code>) and an <code>encrypted_type()</code> factory that passes it as a callable to <code>StringEncryptedType</code>. Replace all 39 inline <code>StringEncryptedType(...)</code> calls across 18 model files with <code>encrypted_type(...)</code>. Update <code>optionally_encrypted_type()</code>, <code>_get_sqlalchemy_compatible_key()</code>, and <code>_make_encryptor()</code> to use <code>get_encryption_key()</code>.</p>
+<p>Alembic migration files are frozen historical snapshots and are not modified.</p>
+<p><strong>Testing:</strong> All existing tests pass with zero config changes. Add unit test verifying <code>get_encryption_key()</code> returns <code>CONFIG.security.app_encryption_key</code> in legacy mode.</p>
+<hr />
+<h3 id="pr-2-keyprovider-abc-localkeyprovider">PR 2: <code>KeyProvider</code> ABC + <code>LocalKeyProvider</code></h3>
+<p><strong>Goal:</strong> Introduce the provider abstraction and the local (in-process) implementation. New code only — nothing wired up yet.</p>
+<p>Create a <code>KeyProvider</code> ABC with a <code>get_dek()</code> method, and a <code>LocalKeyProvider</code> implementation that reads the wrapped DEK from the <code>encryption_keys</code> DB table via raw SQL (not ORM) and decrypts it with AES-256-GCM using a KEK from config.</p>
+<p><strong>No behavioral change.</strong> Nothing calls these classes yet.</p>
+<hr />
+<h3 id="pr-3-awskmskeyprovider-optional-can-be-deferred">PR 3: <code>AwsKmsKeyProvider</code> (optional, can be deferred)</h3>
+<p><strong>Goal:</strong> Add the AWS KMS provider implementation.</p>
+<p>Create an <code>AwsKmsKeyProvider</code> that fetches the wrapped DEK from Secrets Manager and calls <code>kms:Decrypt</code> to unwrap it. The KEK never leaves AWS. No new dependencies — <code>boto3</code> is already in Fides's dependency tree.</p>
+<p><strong>Independent of PR 2.</strong> Can land before or after. Can also be deferred to a later phase.</p>
+<hr />
+<h3 id="pr-4-encryption_keys-database-table">PR 4: <code>encryption_keys</code> database table</h3>
+<p><strong>Goal:</strong> Create the database table used by <code>LocalKeyProvider</code> for wrapped DEK storage.</p>
+<p><strong>Table schema:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">encryption_keys</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id</span><span class="w">          </span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">gen_random_uuid</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">key_id</span><span class="w">      </span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">UNIQUE</span><span class="p">,</span><span class="w">      </span><span class="c1">-- version identifier (e.g. &quot;v1&quot;)</span>
+<span class="w">    </span><span class="n">wrapped_dek</span><span class="w"> </span><span class="nb">TEXT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">                 </span><span class="c1">-- base64-encoded ciphertext</span>
+<span class="w">    </span><span class="n">provider</span><span class="w">    </span><span class="nb">VARCHAR</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="s1">&#39;local&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">is_active</span><span class="w">   </span><span class="nb">BOOLEAN</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">true</span><span class="p">,</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w">  </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="k">TIME</span><span class="w"> </span><span class="k">ZONE</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">rotated_at</span><span class="w">  </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="k">TIME</span><span class="w"> </span><span class="k">ZONE</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">ix_encryption_keys_active</span>
+<span class="w">    </span><span class="k">ON</span><span class="w"> </span><span class="n">encryption_keys</span><span class="w"> </span><span class="p">(</span><span class="n">is_active</span><span class="p">)</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">is_active</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span><span class="p">;</span>
+</code></pre></div></td></tr></table></div>
+<p>The partial unique index on <code>is_active WHERE is_active = true</code> ensures at most one active key at any time.</p>
+<p><strong>No behavioral change.</strong> The table exists but nothing reads from or writes to it yet.</p>
+<p><strong>Independent of PRs 2 and 3.</strong></p>
+<hr />
+<h3 id="pr-5-new-config-fields">PR 5: New config fields</h3>
+<p><strong>Goal:</strong> Add envelope encryption configuration to <code>SecuritySettings</code>. All fields are optional with backward-compatible defaults.</p>
+<p><strong>New fields in <code>SecuritySettings</code>:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>key_provider</code></td>
+<td><code>str</code></td>
+<td><code>"none"</code></td>
+<td>Provider type: <code>"none"</code> (legacy), <code>"local"</code>, <code>"aws_kms"</code></td>
+</tr>
+<tr>
+<td><code>key_encryption_key</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>KEK for local provider (32 chars)</td>
+</tr>
+<tr>
+<td><code>aws_kms_key_arn</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>KMS key ARN for AWS KMS provider</td>
+</tr>
+<tr>
+<td><code>aws_kms_region</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>AWS region</td>
+</tr>
+<tr>
+<td><code>aws_secrets_manager_secret_arn</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>Secrets Manager ARN for wrapped DEK storage</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Validation logic:</strong></p>
 <ul>
-<li>Copy the <code>client_id</code> and <code>client_secret</code> and paste into <code>Current Value</code> slots in Fides variables and click "Save".</li>
+<li><code>key_provider = "none"</code>: require <code>app_encryption_key</code> (existing behavior)</li>
+<li><code>key_provider = "local"</code>: require <code>key_encryption_key</code> (32 chars)</li>
+<li><code>key_provider = "aws_kms"</code>: require <code>aws_kms_key_arn</code> and <code>aws_kms_region</code></li>
 </ul>
-</li>
-<li>
-<p>Finally, click on the <code>Get Client Token</code> request, and click <code>Send</code> to send another <code>POST</code> request to Fides. This will create a token for the client made in the previous step.</p>
-<p><img alt="client variables" src="../../../img/postman_images/client_form_data.png" /></p>
+<p><strong>Update to <code>check_required_webserver_config_values</code>:</strong> <code>app_encryption_key</code> is no longer unconditionally required — it is only required when <code>key_provider = "none"</code>.</p>
+<p><strong>No behavioral change.</strong> The new settings exist but nothing reads them yet. Existing deployments have <code>key_provider = "none"</code> by default.</p>
+<hr />
+<h3 id="pr-6-wire-get_encryption_key-to-envelope-mode">PR 6: Wire <code>get_encryption_key()</code> to envelope mode</h3>
+<p><strong>Goal:</strong> Connect the callable key resolver to the provider system. This is the PR that activates envelope encryption.</p>
+<p>Add the envelope resolution path to <code>get_encryption_key()</code> and a <code>_build_key_provider()</code> factory:</p>
+<p><strong>Updated <code>get_encryption_key()</code>:</strong></p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">_cached_dek</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_encryption_key</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">global</span> <span class="n">_cached_dek</span>
+    <span class="k">if</span> <span class="n">_cached_dek</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_cached_dek</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="o">.</span><span class="n">key_provider</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+        <span class="c1"># Legacy mode — direct key, no envelope</span>
+        <span class="n">_cached_dek</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="o">.</span><span class="n">app_encryption_key</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Envelope mode — delegate to provider</span>
+        <span class="n">provider</span> <span class="o">=</span> <span class="n">_build_key_provider</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">security</span><span class="p">)</span>
+        <span class="n">_cached_dek</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">get_dek</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">_cached_dek</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_key_provider</span><span class="p">(</span><span class="n">security</span><span class="p">:</span> <span class="n">SecuritySettings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyProvider</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">security</span><span class="o">.</span><span class="n">key_provider</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">LocalKeyProvider</span><span class="p">(</span>
+            <span class="n">kek</span><span class="o">=</span><span class="n">security</span><span class="o">.</span><span class="n">key_encryption_key</span><span class="p">,</span>
+            <span class="n">db_url</span><span class="o">=</span><span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">sync_database_uri</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">security</span><span class="o">.</span><span class="n">key_provider</span> <span class="o">==</span> <span class="s2">&quot;aws_kms&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">AwsKmsKeyProvider</span><span class="p">(</span>
+            <span class="n">kms_key_arn</span><span class="o">=</span><span class="n">security</span><span class="o">.</span><span class="n">aws_kms_key_arn</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">security</span><span class="o">.</span><span class="n">aws_kms_region</span><span class="p">,</span>
+            <span class="n">secret_arn</span><span class="o">=</span><span class="n">security</span><span class="o">.</span><span class="n">aws_secrets_manager_secret_arn</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown key_provider: </span><span class="si">{</span><span class="n">security</span><span class="o">.</span><span class="n">key_provider</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p><strong>Why this isn't breaking:</strong> The branch is determined by <code>key_provider</code>. Existing deployments have <code>key_provider = "none"</code> (the default), so they always hit the legacy path. The envelope path only activates when an operator explicitly configures a provider <em>and</em> has bootstrapped a wrapped DEK.</p>
+<p><strong>Testing:</strong></p>
 <ul>
-<li>If you click on <strong>Body</strong>, you can see that the <code>client_id</code> and <code>client_secret</code> have been added as form data for you.</li>
+<li>Unit test: legacy mode returns <code>app_encryption_key</code> directly</li>
+<li>Unit test: local provider mode reads from DB, unwraps, caches</li>
+<li>Integration test: write and read an encrypted column with envelope mode enabled</li>
+<li>Integration test: verify backward compat — existing config with only <code>app_encryption_key</code> works identically</li>
 </ul>
-</li>
-<li>
-<p>Save the returned token under <code>client_token</code> in the Fides variables.  The <code>client_token</code> will be automatically passed into the rest of your requests as the Bearer Token.</p>
-<p><img alt="final token" src="../../../img/postman_images/final_token.png" /></p>
-</li>
-</ol>
-<h2 id="building-out-remaining-privacy-request-configuration">Building out remaining privacy request configuration</h2>
-<p>Run through the remaining requests in the <code>Minimum API calls to create an Access Privacy Request</code> folder. Because variables are automatically being populated for you, you should be able to click on each request, clicking <code>Send</code> for each one.</p>
-<p>Inspect the <code>Body</code> of each request to see what is sent to Fides:</p>
-<ol>
-<li>Specify where your data is going:<ol>
-<li>SEND <code>Create/Update Storage</code> - Local Storage Config - Sets up a local folder for uploading your privacy request results (local testing only)</li>
-</ol>
-</li>
-<li>Configure what data you care about, and what to do with it:<ol>
-<li>SEND <code>Create/Update Policies</code> - Creates a Policy to handle Privacy Requests</li>
-<li>SEND <code>Create/Update Access Rule</code> - Defines an <code>access</code> Rule on the previous Policy, which specifies results will be uploaded to the configured local storage</li>
-<li>SEND <code>Create/Update Rule Targets</code> - Specify a RuleTarget that says to will return data that has been marked as having a <code>user</code> data category</li>
-</ol>
-</li>
-<li>Create ConnectionConfigs, and add connection secrets for the <code>postgres_example</code> and <code>mongodb_example</code> mock databases:<ol>
-<li>SEND <code>Create/Update Connection Configs: Postgres</code></li>
-<li>SEND <code>Create/Update Connection Configs: Mongo</code></li>
-<li>SEND <code>Update Connection Secrets: Postgres</code></li>
-<li>SEND <code>Update Connection Secrets: Mongo</code></li>
-</ol>
-</li>
-<li>Add annotations of the Postgres and Mongo datastores:<ol>
-<li>SEND <code>Create/Update Postgres Dataset</code></li>
-<li>SEND <code>Create/Update Dataset Mongo</code></li>
-</ol>
-</li>
-</ol>
-<div class="admonition note">
-<p>API calls to additional supported datastores (MsSQL, MySQL) are in separate folders within the collection. </p>
-</div>
-<h2 id="run-a-privacy-request">Run a privacy request</h2>
-<p>You have now completed the basic configuration required to create an Access Request.</p>
-<ol>
-<li>
-<p>SEND <code>Create Access Privacy Requests</code></p>
+<p><strong>Depends on:</strong> PR 1 (callable key), PR 2 or 3 (at least one provider), PR 4 (DB table, if testing local provider), PR 5 (config fields).</p>
+<hr />
+<h2 id="pr-dependency-graph">PR Dependency Graph</h2>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code>PR 0a (migrate Organization)    PR 0b (migrate UserRegistration)
+  │                                │
+  └────────────┬───────────────────┘
+               │
+          PR 1 (factory refactor)
+               │
+               │       PR 2 (LocalKeyProvider)      PR 3 (AwsKmsKeyProvider)
+               │           │                             │
+               │       PR 4 (DB table)             (no DB needed)
+               │           │                             │
+               │       PR 5 (config fields)              │
+               │           │                             │
+               └───────────┴─────────────────────────────┘
+                            │
+                       PR 6 (wire it together)
+</code></pre></div></td></tr></table></div>
 <ul>
-<li>If "succeeded", note the "id" that is returned. Succeeded means the privacy request has been created and is <em>pending,</em> not that its execution is complete.</li>
+<li>PRs 0a and 0b are independent of each other and can land in any order or in parallel.</li>
+<li>Both PRs 0a and 0b must land before PR 1 (PR 1 converts the migrated columns to use the factory).</li>
+<li>PRs 2, 3, 4, and 5 are independent of each other and can land in any order or in parallel.</li>
+<li>PR 1 must land before PR 6.</li>
+<li>All of PRs 2 (or 3), 4 (if using local), and 5 must land before PR 6.</li>
 </ul>
-<p><img alt="Succeeded Request" src="../../../img/postman_images/succeeded_privacy_request.png" /></p>
-</li>
-<li>
-<p>Check your local <code>fides_uploads</code> folder, configured earlier, to see access request results.</p>
+<hr />
+<h2 id="what-this-enables">What This Enables</h2>
+<h3 id="kek-rotation-immediate-benefit">KEK Rotation (immediate benefit)</h3>
+<p>With envelope encryption in place, the KEK can be rotated without touching any data:</p>
 <ul>
-<li>This is run asynchronously, so it may take a few moments to complete.  This particular request should have retrieved data from both the <code>postgres_example</code> and <code>mongodb_example</code> databases with the <code>user</code> data_category</li>
+<li><strong>Local provider:</strong> Generate new KEK, re-wrap the DEK with the new KEK, update the <code>encryption_keys</code> row. Zero data re-encryption.</li>
+<li><strong>AWS KMS:</strong> Use KMS automatic key rotation (built-in). No Fides changes needed.</li>
 </ul>
-<p><img alt="Local Results" src="../../../img/postman_images/local_results.png" /></p>
-</li>
-</ol>
-<h2 id="next-steps">Next steps</h2>
-<ol>
-<li>Check out other requests in the collection!<ul>
-<li>The <code>Calls to create an Erasure Request</code> folder walks you through configuring a separate erasure policy, and executing an erasure request.</li>
+<h3 id="per-domain-deks-phase-2">Per-domain DEKs (Phase 2)</h3>
+<p>The <code>get_encryption_key()</code> callable could accept a context parameter (table name, data domain) and return different DEKs for different data:</p>
+<ul>
+<li>Consent / user PII uses one DEK</li>
+<li>Secrets like API keys, passwords, etc. use a different DEK</li>
 </ul>
-</li>
-</ol>
-<div class="admonition note">
-<p>Note that these erasure requests will mask data in your connected datastores (<code>postgres_example</code> and <code>mongo_example</code> here. <strong>If you connect your own live databases, data may be deleted.</strong></p>
-</div>
-<p>Happy experimenting!</p>
+<p>Each DEK is independently wrapped and stored. Compromising one doesn't expose the others.</p>
+<h3 id="dek-rotation-phase-3">DEK Rotation (Phase 3)</h3>
+<p>With key versioning in the <code>encryption_keys</code> table (or Secrets Manager versions):</p>
+<ul>
+<li>New writes use the new DEK</li>
+<li>Reads try the active DEK first, fall back to previous versions</li>
+<li>A background task lazily re-encrypts old rows on read (read-old/write-new pattern)</li>
+</ul>
 
 
 
@@ -1677,59 +2105,6 @@ You're not viewing the latest version.
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
-  
-    <nav
-      class="md-footer__inner md-grid"
-      aria-label="footer.title"
-    >
-      <div class="nav-wrap">
-      <!-- Link to previous page -->
-      
-        
-        <a
-          href="../../releases/"
-          class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Releases"
-          rel="prev"
-        >
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Releases
-            </div>
-          </div>
-        </a>
-      
-
-      <!-- Link to next page -->
-      
-        
-        <a
-          href="../../update_erd_diagram/"
-          class="md-footer__link md-footer__link--next"
-          aria-label="Next: Updating the Database Diagram"
-          rel="next"
-        >
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Updating the Database Diagram
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-          </div>
-        </a>
-      
-    </div>
-    </nav>
   
 
   </div>
@@ -1796,14 +2171,14 @@ You're not viewing the latest version.
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.top", "navigation.instant", "navigation.tabs"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.top", "navigation.instant", "navigation.tabs"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
       
-        <script src="../../../js/matomo.js"></script>
+        <script src="../../js/matomo.js"></script>
       
     
   </body>

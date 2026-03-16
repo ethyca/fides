@@ -8,31 +8,27 @@
       
       
       
-        <link rel="canonical" href="https://ethyca.github.io/fides/development/postman/using_postman/">
+        <link rel="canonical" href="https://ethyca.github.io/fides/encryption/overview/">
       
       
-        <link rel="prev" href="../../releases/">
-      
-      
-        <link rel="next" href="../../update_erd_diagram/">
       
       
         
       
       
-      <link rel="icon" href="../../../img/favicon.ico">
+      <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>Using Postman - Fides</title>
+        <title>Encryption in Fides: Current State Overview - Fides</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,15 +49,15 @@
     
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
     
-      <link rel="stylesheet" href="../../../css/fides.css">
+      <link rel="stylesheet" href="../../css/fides.css">
     
-      <link rel="stylesheet" href="../../../css/api.css">
+      <link rel="stylesheet" href="../../css/api.css">
     
-      <link rel="stylesheet" href="../../../css/cli.css">
+      <link rel="stylesheet" href="../../css/cli.css">
     
-      <link rel="stylesheet" href="../../../css/taxonomy.css">
+      <link rel="stylesheet" href="../../css/taxonomy.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -86,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#using-the-fides-postman-collection" class="md-skip">
+        <a href="#encryption-in-fides-current-state-overview" class="md-skip">
           Skip to content
         </a>
       
@@ -101,12 +97,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
 You're not viewing the latest version.
-<a href="../../../..">
+<a href="../../..">
     <strong>Click here to go to the latest stable version.</strong>
 </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -116,9 +112,9 @@ You're not viewing the latest version.
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="Fides" class="md-header__button md-logo" aria-label="Fides" data-md-component="logo">
+    <a href="../.." title="Fides" class="md-header__button md-logo" aria-label="Fides" data-md-component="logo">
       
-  <img src="../../../img/fides-logo.svg" alt="logo">
+  <img src="../../img/fides-logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -135,7 +131,7 @@ You're not viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Using Postman
+              Encryption in Fides: Current State Overview
             
           </span>
         </div>
@@ -244,13 +240,11 @@ You're not viewing the latest version.
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../.." class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
           
   
   
@@ -270,7 +264,7 @@ You're not viewing the latest version.
     
     
       <li class="md-tabs__item">
-        <a href="../../../ethyca/" class="md-tabs__link">
+        <a href="../../ethyca/" class="md-tabs__link">
           
   
   
@@ -304,9 +298,9 @@ You're not viewing the latest version.
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Fides" class="md-nav__button md-logo" aria-label="Fides" data-md-component="logo">
+    <a href="../.." title="Fides" class="md-nav__button md-logo" aria-label="Fides" data-md-component="logo">
       
-  <img src="../../../img/fides-logo.svg" alt="logo">
+  <img src="../../img/fides-logo.svg" alt="logo">
 
     </a>
     Fides
@@ -330,29 +324,24 @@ You're not viewing the latest version.
       
   
   
-    
   
   
-  
     
     
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
         
           
-          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
             
   
   
@@ -370,7 +359,7 @@ You're not viewing the latest version.
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -388,7 +377,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -416,7 +405,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../api/" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   
@@ -444,7 +433,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../cli/" class="md-nav__link">
+      <a href="../../cli/" class="md-nav__link">
         
   
   
@@ -472,7 +461,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../config/" class="md-nav__link">
+      <a href="../../config/" class="md-nav__link">
         
   
   
@@ -497,8 +486,6 @@ You're not viewing the latest version.
                 
   
   
-    
-  
   
   
     
@@ -509,11 +496,11 @@ You're not viewing the latest version.
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
         
           
           <label class="md-nav__link" for="__nav_1_5" id="__nav_1_5_label" tabindex="0">
@@ -534,7 +521,7 @@ You're not viewing the latest version.
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -552,7 +539,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../overview/" class="md-nav__link">
+      <a href="../../development/overview/" class="md-nav__link">
         
   
   
@@ -580,7 +567,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../developing_fides/" class="md-nav__link">
+      <a href="../../development/developing_fides/" class="md-nav__link">
         
   
   
@@ -608,7 +595,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../development_tips/" class="md-nav__link">
+      <a href="../../development/development_tips/" class="md-nav__link">
         
   
   
@@ -636,7 +623,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../testing/" class="md-nav__link">
+      <a href="../../development/testing/" class="md-nav__link">
         
   
   
@@ -664,7 +651,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../code_style/" class="md-nav__link">
+      <a href="../../development/code_style/" class="md-nav__link">
         
   
   
@@ -742,7 +729,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../ui/overview/" class="md-nav__link">
+      <a href="../../development/ui/overview/" class="md-nav__link">
         
   
   
@@ -770,7 +757,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../ui/privacy_center/" class="md-nav__link">
+      <a href="../../development/ui/privacy_center/" class="md-nav__link">
         
   
   
@@ -798,7 +785,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../ui/admin_ui/" class="md-nav__link">
+      <a href="../../development/ui/admin_ui/" class="md-nav__link">
         
   
   
@@ -834,7 +821,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../documentation/" class="md-nav__link">
+      <a href="../../development/documentation/" class="md-nav__link">
         
   
   
@@ -862,7 +849,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../pull_requests/" class="md-nav__link">
+      <a href="../../development/pull_requests/" class="md-nav__link">
         
   
   
@@ -890,7 +877,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../releases/" class="md-nav__link">
+      <a href="../../development/releases/" class="md-nav__link">
         
   
   
@@ -915,37 +902,10 @@ You're not viewing the latest version.
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Using Postman
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../development/postman/using_postman/" class="md-nav__link">
         
   
   
@@ -961,92 +921,6 @@ You're not viewing the latest version.
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#loading-the-collection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Loading the collection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#bring-up-local-servers-and-mock-databases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Bring up local servers and mock databases
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#saving-authentication-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Saving Authentication variables
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#building-out-remaining-privacy-request-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Building out remaining privacy request configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-a-privacy-request" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run a privacy request
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1059,7 +933,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../update_erd_diagram/" class="md-nav__link">
+      <a href="../../development/update_erd_diagram/" class="md-nav__link">
         
   
   
@@ -1087,7 +961,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../fideslog/" class="md-nav__link">
+      <a href="../../development/fideslog/" class="md-nav__link">
         
   
   
@@ -1173,7 +1047,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../community/overview/" class="md-nav__link">
+      <a href="../../community/overview/" class="md-nav__link">
         
   
   
@@ -1201,7 +1075,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../community/hints_tips/" class="md-nav__link">
+      <a href="../../community/hints_tips/" class="md-nav__link">
         
   
   
@@ -1229,7 +1103,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../community/code_of_conduct/" class="md-nav__link">
+      <a href="../../community/code_of_conduct/" class="md-nav__link">
         
   
   
@@ -1322,7 +1196,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../ethyca/" class="md-nav__link">
+      <a href="../../ethyca/" class="md-nav__link">
         
   
   
@@ -1350,7 +1224,7 @@ You're not viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../../license/" class="md-nav__link">
+      <a href="../../license/" class="md-nav__link">
         
   
   
@@ -1405,10 +1279,10 @@ You're not viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#loading-the-collection" class="md-nav__link">
+  <a href="#encryption-algorithms" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Loading the collection
+        Encryption Algorithms
       
     </span>
   </a>
@@ -1416,10 +1290,143 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#bring-up-local-servers-and-mock-databases" class="md-nav__link">
+  <a href="#key-management" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bring up local servers and mock databases
+        Key Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#app_encryption_key-primary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        app_encryption_key (Primary)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#userencryption_key-postgresql-pgcrypto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        user.encryption_key (PostgreSQL pgcrypto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-request-encryption-keys-privacy-request-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-request encryption keys (Privacy request results)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#encrypted-data-inventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Encrypted Data Inventory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Encrypted Data Inventory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#column-level-encryption-via-stringencryptedtypeaesgcmengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Column-Level Encryption via StringEncryptedType(AesGcmEngine)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#column-level-encryption-via-stringencryptedtypeaesengine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Column-Level Encryption via StringEncryptedType(AesEngine)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conditional-encryption-via-optionally_encrypted_type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional Encryption via optionally_encrypted_type()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-pgcrypto-encryption-via-pgencryptedstring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL pgcrypto Encryption via PGEncryptedString
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-layer-encryption-non-column" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application-Layer Encryption (Non-Column)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#descriptor-based-external-storage-with-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Descriptor-Based External Storage with Encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-stringencryptedtype-works-under-the-hood" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How StringEncryptedType Works Under the Hood
       
     </span>
   </a>
@@ -1427,10 +1434,10 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#saving-authentication-variables" class="md-nav__link">
+  <a href="#configuration-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Saving Authentication variables
+        Configuration Reference
       
     </span>
   </a>
@@ -1438,35 +1445,96 @@ You're not viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#building-out-remaining-privacy-request-configuration" class="md-nav__link">
+  <a href="#key-observations-and-limitations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Building out remaining privacy request configuration
+        Key Observations and Limitations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Observations and Limitations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#single-key-for-all-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single key for all data
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#run-a-privacy-request" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#key-is-bound-at-import-time" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run a privacy request
+        Key is bound at import time
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#no-key-versioning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next steps
+        No key versioning
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#two-distinct-key-derivation-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two distinct key derivation paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mixed-encryption-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mixed encryption engines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-envelope-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No envelope encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#large-data-threshold" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Large data threshold
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1490,137 +1558,373 @@ You're not viewing the latest version.
   
 
 
-<h1 id="using-the-fides-postman-collection">Using the Fides postman collection</h1>
-<p>A minimal Postman collection is included to assist in setting up your privacy request configurations, and in executing example <code>access</code> and <code>erasure</code> requests against mock external databases.</p>
-<h2 id="loading-the-collection">Loading the collection</h2>
+<h1 id="encryption-in-fides-current-state-overview">Encryption in Fides: Current State Overview</h1>
+<p>This document describes the encryption mechanisms currently used across the Fides codebase, including the algorithms, key management, encrypted data inventory, and known limitations.</p>
+<hr />
+<h2 id="encryption-algorithms">Encryption Algorithms</h2>
+<p>Fides uses several encryption approaches depending on the context:</p>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Algorithm</th>
+<th>Library</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>StringEncryptedType</strong></td>
+<td>AES-256-GCM</td>
+<td><code>sqlalchemy-utils</code></td>
+<td>Column-level database encryption (primary)</td>
+</tr>
+<tr>
+<td><strong>AES-GCM scheme</strong></td>
+<td>AES-256-GCM</td>
+<td><code>cryptography</code></td>
+<td>Privacy request result encryption, large data encryption</td>
+</tr>
+<tr>
+<td><strong>JWE</strong></td>
+<td>AES-256-GCM</td>
+<td><code>python-jose</code></td>
+<td>OAuth tokens, authentication tokens</td>
+</tr>
+<tr>
+<td><strong>PGEncryptedString</strong></td>
+<td>PGP symmetric</td>
+<td>PostgreSQL <code>pgcrypto</code></td>
+<td>Organization model fields</td>
+</tr>
+<tr>
+<td><strong>AesEngine</strong></td>
+<td>AES-CBC</td>
+<td><code>sqlalchemy-utils</code></td>
+<td>Legacy (UserRegistration only)</td>
+</tr>
+<tr>
+<td><strong>HMAC</strong></td>
+<td>SHA-256 / SHA-512</td>
+<td><code>cryptography</code></td>
+<td>Data masking (one-way, not encryption)</td>
+</tr>
+<tr>
+<td><strong>Bcrypt</strong></td>
+<td>Bcrypt</td>
+<td><code>bcrypt</code></td>
+<td>Password hashing (one-way)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="key-management">Key Management</h2>
+<h3 id="app_encryption_key-primary"><code>app_encryption_key</code> (Primary)</h3>
+<ul>
+<li><strong>Config path:</strong> <code>CONFIG.security.app_encryption_key</code></li>
+<li><strong>Environment variable:</strong> <code>FIDES__SECURITY__APP_ENCRYPTION_KEY</code></li>
+<li><strong>Constraints:</strong> Must be exactly 32 characters (validated at startup)</li>
+<li><strong>Used by:</strong> Nearly all encryption — <code>StringEncryptedType</code> columns, AES-GCM scheme, JWE tokens</li>
+</ul>
+<p>When used with <code>sqlalchemy-utils</code>, the raw key string is passed directly to the <code>AesGcmEngine</code>, which internally derives a 32-byte key via <code>SHA256(key)</code>. The <code>aes_gcm_encryption_util.py</code> module replicates this derivation in <code>_get_sqlalchemy_compatible_key()</code> to maintain compatibility when encrypting/decrypting outside of SQLAlchemy.</p>
+<p>When used with the <code>aes_gcm_encryption_scheme.py</code> module (privacy request results), the key is encoded directly to bytes — <strong>no SHA256 derivation</strong> — meaning the same <code>app_encryption_key</code> value produces different ciphertext depending on the code path.</p>
+<h3 id="userencryption_key-postgresql-pgcrypto"><code>user.encryption_key</code> (PostgreSQL pgcrypto)</h3>
+<ul>
+<li><strong>Config path:</strong> <code>CONFIG.user.encryption_key</code></li>
+<li><strong>Used by:</strong> <code>PGEncryptedString</code> TypeDecorator (Organization model only)</li>
+<li><strong>Mechanism:</strong> Passed as the passphrase to PostgreSQL's <code>pgp_sym_encrypt</code> / <code>pgp_sym_decrypt</code> functions</li>
+</ul>
+<h3 id="per-request-encryption-keys-privacy-request-results">Per-request encryption keys (Privacy request results)</h3>
+<ul>
+<li><strong>Storage:</strong> Redis cache, keyed by <code>privacy_request_id</code></li>
+<li><strong>Lifecycle:</strong> Cached when a privacy request begins; used to encrypt access request results returned to the data subject</li>
+<li><strong>Key length:</strong> 16 bytes (validated by <code>aes_encryption_key_length</code> config)</li>
+<li><strong>Nonce:</strong> Random 12 bytes generated per encryption, prepended to the ciphertext</li>
+</ul>
+<hr />
+<h2 id="encrypted-data-inventory">Encrypted Data Inventory</h2>
+<h3 id="column-level-encryption-via-stringencryptedtypeaesgcmengine">Column-Level Encryption via <code>StringEncryptedType(AesGcmEngine)</code></h3>
+<p>This is the most widely used mechanism. SQLAlchemy-Utils transparently encrypts/decrypts column values at the ORM layer. The ciphertext is stored as the column value in PostgreSQL (typically <code>Text</code> or <code>BYTEA</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Columns</th>
+<th>Underlying Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ConnectionConfig</code></td>
+<td><code>secrets</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>StorageConfig</code></td>
+<td><code>secrets</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>MessagingConfig</code></td>
+<td><code>secrets</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>ApplicationConfig</code></td>
+<td><code>api_set</code>, <code>config_set</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>PrivacyRequest</code></td>
+<td><code>_filtered_final_upload</code>, <code>access_result_urls</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>CustomPrivacyRequestField</code></td>
+<td><code>encrypted_value</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>ProvidedIdentity</code></td>
+<td><code>encrypted_value</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>RequestTask</code></td>
+<td><code>_access_data</code>, <code>_data_for_erasures</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>SubRequest</code></td>
+<td><code>param_values</code>, <code>_access_data</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>PrivacyPreferenceHistory</code></td>
+<td><code>secondary_user_ids</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>ConsentIdentitiesMixin</code></td>
+<td><code>email</code>, <code>fides_user_device</code>, <code>phone_number</code>, <code>external_id</code></td>
+<td><code>String</code></td>
+</tr>
+<tr>
+<td><code>LastServedNotice</code></td>
+<td><code>email</code>, <code>fides_user_device</code>, <code>phone_number</code></td>
+<td><code>String</code></td>
+</tr>
+<tr>
+<td><code>ConsentReportingMixinV2</code></td>
+<td><code>anonymized_ip_address</code>, <code>user_agent</code></td>
+<td><code>String</code></td>
+</tr>
+<tr>
+<td><code>FidesUser</code></td>
+<td><code>totp_secret</code></td>
+<td><code>String</code></td>
+</tr>
+<tr>
+<td><code>OpenIDProvider</code></td>
+<td><code>client_id</code>, <code>client_secret</code></td>
+<td><code>String</code></td>
+</tr>
+<tr>
+<td><code>OAuthConfig</code></td>
+<td><code>client_secret</code></td>
+<td><code>String</code></td>
+</tr>
+<tr>
+<td><code>ChatConfig</code></td>
+<td><code>client_secret</code>, <code>access_token</code>, <code>signing_secret</code></td>
+<td><code>String</code></td>
+</tr>
+<tr>
+<td><code>MaskingSecret</code></td>
+<td><code>secret</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>IdentitySalt</code></td>
+<td><code>encrypted_value</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+<tr>
+<td><code>Rule</code></td>
+<td><code>masking_strategy</code></td>
+<td><code>JSONTypeOverride</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="column-level-encryption-via-stringencryptedtypeaesengine">Column-Level Encryption via <code>StringEncryptedType(AesEngine)</code></h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Columns</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UserRegistration</code></td>
+<td><code>user_email</code></td>
+<td>Legacy — uses AES-CBC instead of AES-GCM</td>
+</tr>
+</tbody>
+</table>
+<h3 id="conditional-encryption-via-optionally_encrypted_type">Conditional Encryption via <code>optionally_encrypted_type()</code></h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Columns</th>
+<th>Config Flag</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PrivacyPreferences</code> (v3)</td>
+<td><code>record_data</code></td>
+<td><code>CONFIG.consent.consent_v3_encryption_enabled</code></td>
+</tr>
+</tbody>
+</table>
+<p>When the flag is <code>False</code>, the column stores plaintext. An <code>is_encrypted</code> boolean column on the model tracks whether the value was encrypted. Defined in <code>src/fides/api/db/util.py</code>.</p>
+<h3 id="postgresql-pgcrypto-encryption-via-pgencryptedstring">PostgreSQL pgcrypto Encryption via <code>PGEncryptedString</code></h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Columns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Organization</code></td>
+<td><code>controller</code>, <code>data_protection_officer</code>, <code>representative</code></td>
+</tr>
+</tbody>
+</table>
+<p>Encryption/decryption happens at the database layer using <code>pgp_sym_encrypt</code> / <code>pgp_sym_decrypt</code> SQL functions, not at the application layer.</p>
+<h3 id="application-layer-encryption-non-column">Application-Layer Encryption (Non-Column)</h3>
+<table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Module</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Privacy request results</td>
+<td><code>api/tasks/encryption_utils.py</code></td>
+<td>Per-request key from Redis; AES-GCM via <code>aes_gcm_encryption_scheme</code>; nonce prepended to ciphertext</td>
+</tr>
+<tr>
+<td>Large data external storage</td>
+<td><code>api/util/encryption/aes_gcm_encryption_util.py</code></td>
+<td>Chunked AES-GCM encryption for data stored in S3; uses SHA256-derived key for SQLAlchemy-Utils compatibility</td>
+</tr>
+<tr>
+<td>OAuth / auth tokens</td>
+<td><code>api/oauth/jwt.py</code></td>
+<td>JWE with AES-256-GCM via <code>python-jose</code>; uses <code>app_encryption_key</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="descriptor-based-external-storage-with-encryption">Descriptor-Based External Storage with Encryption</h3>
+<p>The <code>EncryptedLargeDataDescriptor</code> (<code>api/models/field_types/encrypted_large_data.py</code>) provides a transparent fallback for columns whose data exceeds a size threshold. When data is too large for the database column, it is encrypted and stored externally (e.g., S3), and the column stores a JSON metadata pointer instead. Used by:</p>
+<ul>
+<li><code>PrivacyRequest.filtered_final_upload</code></li>
+<li><code>RequestTask.access_data</code></li>
+<li><code>RequestTask.data_for_erasures</code></li>
+</ul>
+<hr />
+<h2 id="how-stringencryptedtype-works-under-the-hood">How <code>StringEncryptedType</code> Works Under the Hood</h2>
 <ol>
-<li>Get <a href="https://www.postman.com/">Postman</a></li>
+<li><strong>Encrypt (on write):</strong> <code>AesGcmEngine.encrypt(plaintext)</code> is called by SQLAlchemy-Utils before the value is persisted. Internally:</li>
+<li>The engine derives a 32-byte key via <code>SHA256(app_encryption_key)</code></li>
+<li>Generates a random 12-byte nonce (IV)</li>
+<li>Encrypts with AES-256-GCM, producing ciphertext + 16-byte authentication tag</li>
+<li>Packs as: <code>base64(nonce + tag + ciphertext)</code></li>
 <li>
-<p>Postman &gt; File &gt; Import</p>
-<p><img alt="File_Import" src="../../../img/postman_images/import_collection.png" /></p>
+<p>The base64 string is stored in the database column</p>
 </li>
 <li>
-<p>Upload the Fides collection found in <code>docs/fides/docs/postman/Fides.postman_collection.json</code></p>
-<p><img alt="Upload Fides Collection" src="../../../img/postman_images/upload_files.png" /></p>
+<p><strong>Decrypt (on read):</strong> <code>AesGcmEngine.decrypt(stored_value)</code> is called transparently when accessing the ORM attribute. It reverses the process.</p>
 </li>
 <li>
-<p>Click on the imported <code>fidesops</code> collection in the left pane, and then find <code>Variables</code> to edit the <code>fidesops</code> collection variables.</p>
-<ul>
-<li>Some variables are populated for you, and some will be added in this guide's next steps.</li>
-</ul>
-<p><img alt="Open Fides Variables" src="../../../img/postman_images/open_fidesops_variables.png" /></p>
-</li>
-<li>
-<p>Add your <code>oauth_root_client_id</code> and <code>oauth_root_client_secret</code> under <code>CURRENT VALUE</code>.  </p>
-<ul>
-<li><code>fidesadmin</code> and <code>fidesadminsecret</code> are default configurations for testing, found in your <code>fides.toml</code>. Add the appropriate values for your instance if they differ.</li>
-<li><strong>Important:</strong> Click <code>Save</code>!</li>
-</ul>
-<p><img alt="Add root client id and secret" src="../../../img/postman_images/add_root_client_id_and_secret.png" /></p>
+<p><strong>Key binding:</strong> The key is captured at <strong>model class definition time</strong> (module import), not at query time. If <code>app_encryption_key</code> changes, existing encrypted data becomes unreadable.</p>
 </li>
 </ol>
-<h2 id="bring-up-local-servers-and-mock-databases">Bring up local servers and mock databases</h2>
+<hr />
+<h2 id="configuration-reference">Configuration Reference</h2>
+<p>All encryption-relevant settings live in <code>SecuritySettings</code> (<code>src/fides/config/security_settings.py</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_encryption_key</code></td>
+<td><code>""</code> (empty)</td>
+<td>Primary 32-character encryption key</td>
+</tr>
+<tr>
+<td><code>aes_encryption_key_length</code></td>
+<td><code>16</code></td>
+<td>Expected byte-length for per-request encryption keys</td>
+</tr>
+<tr>
+<td><code>aes_gcm_nonce_length</code></td>
+<td><code>12</code></td>
+<td>Nonce length in bytes for AES-GCM</td>
+</tr>
+<tr>
+<td><code>encoding</code></td>
+<td><code>UTF-8</code></td>
+<td>Text encoding used throughout encryption</td>
+</tr>
+</tbody>
+</table>
+<p>Additionally, <code>CONFIG.user.encryption_key</code> (from <code>UserSettings</code>) is used exclusively for <code>PGEncryptedString</code>.</p>
+<hr />
+<h2 id="key-observations-and-limitations">Key Observations and Limitations</h2>
+<h3 id="single-key-for-all-data">Single key for all data</h3>
+<p>All <code>StringEncryptedType</code> columns and most application-layer encryption share the same <code>app_encryption_key</code>. Rotating this key requires re-encrypting every encrypted column across all tables simultaneously — there is no built-in key rotation mechanism.</p>
+<h3 id="key-is-bound-at-import-time">Key is bound at import time</h3>
+<p><code>StringEncryptedType</code> columns capture the encryption key when the Python module defining the model is first imported. The key is effectively a module-level constant. This means:</p>
+<ul>
+<li>No runtime key switching</li>
+<li>No per-tenant or per-record key differentiation</li>
+<li>Key changes require application restart <strong>and</strong> full data re-encryption</li>
+</ul>
+<h3 id="no-key-versioning">No key versioning</h3>
+<p>There is no metadata stored alongside ciphertext to indicate which key (or key version) was used to encrypt a value. If the key changes, there is no way to distinguish old-key ciphertext from new-key ciphertext without attempting decryption.</p>
+<h3 id="two-distinct-key-derivation-paths">Two distinct key derivation paths</h3>
+<p>The same <code>app_encryption_key</code> is used in two incompatible ways:</p>
 <ol>
-<li>Run <code>nox -s dev -- &lt;datastore&gt;</code> in your terminal. <ul>
-<li>This brings up the Fides server and the list of datastores specified, i.e. <code>nox -s dev -- postgres mongodb</code>. These mock datastores are pre-populated with test data to represent your datastores.</li>
-</ul>
-</li>
+<li><strong>SQLAlchemy-Utils path:</strong> <code>SHA256(app_encryption_key)</code> → 32-byte derived key</li>
+<li><strong>Direct <code>cryptography</code> path</strong> (in <code>aes_gcm_encryption_scheme.py</code>): <code>app_encryption_key.encode("UTF-8")</code> → raw bytes (must be exactly 16 bytes for the scheme's validation, used for per-request encryption)</li>
 </ol>
-<div class="admonition note">
-<p>The following list of requests is kept in the <code>Minimum API calls to create an Access Privacy Request</code> folder. Some of the returned data will need to be saved as additional variables for use in other steps.</p>
-</div>
-<p><img alt="Fides container" src="../../../img/postman_images/fidesops_container.png" /></p>
-<h2 id="saving-authentication-variables">Saving Authentication variables</h2>
-<ol>
-<li>
-<p>Click on the <code>Get Root Client Token</code> request, and click <code>Send</code> to send a <code>POST</code> request to Fides to create a root token.</p>
-<p><img alt="Create root token" src="../../../img/postman_images/create_root_client_token.png" /></p>
-</li>
-<li>
-<p>Copy the <code>access_token</code> returned in the response body, and paste it as the <code>Current Value</code> of <code>root_client_token</code> in Fides' variables.</p>
+<p>This means encryption keys for the two paths are not interchangeable despite originating from the same configuration value.</p>
+<h3 id="mixed-encryption-engines">Mixed encryption engines</h3>
+<p>The <code>UserRegistration</code> model uses <code>AesEngine</code> (AES-CBC) while everything else uses <code>AesGcmEngine</code> (AES-GCM). The <code>Organization</code> model uses an entirely different mechanism (<code>PGEncryptedString</code> via PostgreSQL <code>pgcrypto</code>). This adds operational complexity.</p>
+<h3 id="no-envelope-encryption">No envelope encryption</h3>
+<p>The data encryption key (DEK) <strong>is</strong> the master key. There is no separation between key-encrypting keys (KEKs) and data-encrypting keys. This means:</p>
 <ul>
-<li><strong>Important:</strong> Click <code>Save</code>!</li>
+<li>Key rotation requires touching every encrypted value in the database</li>
+<li>The master key must be available in plaintext in the application's memory at all times</li>
+<li>There is no ability to scope encryption keys to specific data domains or tenants</li>
 </ul>
-<p><img alt="Get root token" src="../../../img/postman_images/root_token_response.png" />
-  <img alt="Save root token" src="../../../img/postman_images/save_root_client_token.png" /></p>
-</li>
-<li>
-<p>Similarly, click on <code>Create Client</code>, and click <code>Send</code> to send a <code>POST</code> request to Fides to create a new client.</p>
-<ul>
-<li>Copy the <code>client_id</code> and <code>client_secret</code> and paste into <code>Current Value</code> slots in Fides variables and click "Save".</li>
-</ul>
-</li>
-<li>
-<p>Finally, click on the <code>Get Client Token</code> request, and click <code>Send</code> to send another <code>POST</code> request to Fides. This will create a token for the client made in the previous step.</p>
-<p><img alt="client variables" src="../../../img/postman_images/client_form_data.png" /></p>
-<ul>
-<li>If you click on <strong>Body</strong>, you can see that the <code>client_id</code> and <code>client_secret</code> have been added as form data for you.</li>
-</ul>
-</li>
-<li>
-<p>Save the returned token under <code>client_token</code> in the Fides variables.  The <code>client_token</code> will be automatically passed into the rest of your requests as the Bearer Token.</p>
-<p><img alt="final token" src="../../../img/postman_images/final_token.png" /></p>
-</li>
-</ol>
-<h2 id="building-out-remaining-privacy-request-configuration">Building out remaining privacy request configuration</h2>
-<p>Run through the remaining requests in the <code>Minimum API calls to create an Access Privacy Request</code> folder. Because variables are automatically being populated for you, you should be able to click on each request, clicking <code>Send</code> for each one.</p>
-<p>Inspect the <code>Body</code> of each request to see what is sent to Fides:</p>
-<ol>
-<li>Specify where your data is going:<ol>
-<li>SEND <code>Create/Update Storage</code> - Local Storage Config - Sets up a local folder for uploading your privacy request results (local testing only)</li>
-</ol>
-</li>
-<li>Configure what data you care about, and what to do with it:<ol>
-<li>SEND <code>Create/Update Policies</code> - Creates a Policy to handle Privacy Requests</li>
-<li>SEND <code>Create/Update Access Rule</code> - Defines an <code>access</code> Rule on the previous Policy, which specifies results will be uploaded to the configured local storage</li>
-<li>SEND <code>Create/Update Rule Targets</code> - Specify a RuleTarget that says to will return data that has been marked as having a <code>user</code> data category</li>
-</ol>
-</li>
-<li>Create ConnectionConfigs, and add connection secrets for the <code>postgres_example</code> and <code>mongodb_example</code> mock databases:<ol>
-<li>SEND <code>Create/Update Connection Configs: Postgres</code></li>
-<li>SEND <code>Create/Update Connection Configs: Mongo</code></li>
-<li>SEND <code>Update Connection Secrets: Postgres</code></li>
-<li>SEND <code>Update Connection Secrets: Mongo</code></li>
-</ol>
-</li>
-<li>Add annotations of the Postgres and Mongo datastores:<ol>
-<li>SEND <code>Create/Update Postgres Dataset</code></li>
-<li>SEND <code>Create/Update Dataset Mongo</code></li>
-</ol>
-</li>
-</ol>
-<div class="admonition note">
-<p>API calls to additional supported datastores (MsSQL, MySQL) are in separate folders within the collection. </p>
-</div>
-<h2 id="run-a-privacy-request">Run a privacy request</h2>
-<p>You have now completed the basic configuration required to create an Access Request.</p>
-<ol>
-<li>
-<p>SEND <code>Create Access Privacy Requests</code></p>
-<ul>
-<li>If "succeeded", note the "id" that is returned. Succeeded means the privacy request has been created and is <em>pending,</em> not that its execution is complete.</li>
-</ul>
-<p><img alt="Succeeded Request" src="../../../img/postman_images/succeeded_privacy_request.png" /></p>
-</li>
-<li>
-<p>Check your local <code>fides_uploads</code> folder, configured earlier, to see access request results.</p>
-<ul>
-<li>This is run asynchronously, so it may take a few moments to complete.  This particular request should have retrieved data from both the <code>postgres_example</code> and <code>mongodb_example</code> databases with the <code>user</code> data_category</li>
-</ul>
-<p><img alt="Local Results" src="../../../img/postman_images/local_results.png" /></p>
-</li>
-</ol>
-<h2 id="next-steps">Next steps</h2>
-<ol>
-<li>Check out other requests in the collection!<ul>
-<li>The <code>Calls to create an Erasure Request</code> folder walks you through configuring a separate erasure policy, and executing an erasure request.</li>
-</ul>
-</li>
-</ol>
-<div class="admonition note">
-<p>Note that these erasure requests will mask data in your connected datastores (<code>postgres_example</code> and <code>mongo_example</code> here. <strong>If you connect your own live databases, data may be deleted.</strong></p>
-</div>
-<p>Happy experimenting!</p>
+<h3 id="large-data-threshold">Large data threshold</h3>
+<p>The <code>EncryptedLargeDataDescriptor</code> introduces a dual storage path (database vs. external) based on data size. This adds complexity to data lifecycle management, backup strategies, and encryption key dependencies.</p>
 
 
 
@@ -1677,59 +1981,6 @@ You're not viewing the latest version.
 <footer class="md-footer">
 
   <!-- Link to previous and/or next page -->
-  
-    <nav
-      class="md-footer__inner md-grid"
-      aria-label="footer.title"
-    >
-      <div class="nav-wrap">
-      <!-- Link to previous page -->
-      
-        
-        <a
-          href="../../releases/"
-          class="md-footer__link md-footer__link--prev"
-          aria-label="Previous: Releases"
-          rel="prev"
-        >
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Releases
-            </div>
-          </div>
-        </a>
-      
-
-      <!-- Link to next page -->
-      
-        
-        <a
-          href="../../update_erd_diagram/"
-          class="md-footer__link md-footer__link--next"
-          aria-label="Next: Updating the Database Diagram"
-          rel="next"
-        >
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Updating the Database Diagram
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-          </div>
-        </a>
-      
-    </div>
-    </nav>
   
 
   </div>
@@ -1796,14 +2047,14 @@ You're not viewing the latest version.
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.top", "navigation.instant", "navigation.tabs"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.top", "navigation.instant", "navigation.tabs"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
       
-        <script src="../../../js/matomo.js"></script>
+        <script src="../../js/matomo.js"></script>
       
     
   </body>
