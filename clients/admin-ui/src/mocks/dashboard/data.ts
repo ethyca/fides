@@ -1,6 +1,7 @@
 import type {
   PostureResponse,
   PriorityAction,
+  SystemCoverageResponse,
 } from "~/features/dashboard/types";
 import {
   ActionSeverity,
@@ -47,6 +48,15 @@ export const mockPosture: PostureResponse = {
       band: PostureBand.CRITICAL,
     },
   ],
+};
+
+export const mockSystemCoverage: SystemCoverageResponse = {
+  total_systems: 47,
+  fully_classified: 34,
+  partially_classified: 7,
+  unclassified: 6,
+  without_steward: 4,
+  coverage_percentage: 72,
 };
 
 export const mockPriorityActions: PriorityAction[] = [

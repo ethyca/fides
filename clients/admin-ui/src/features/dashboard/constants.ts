@@ -64,16 +64,6 @@ export const URGENCY_TABS = [
 
 export type UrgencyGroup = (typeof URGENCY_TABS)[number]["key"];
 
-export const ACTION_TYPE_ICON_NAME: Record<ActionType, string> = {
-  [ActionType.CLASSIFICATION_REVIEW]: "Tag",
-  [ActionType.DSR_ACTION]: "Time",
-  [ActionType.SYSTEM_REVIEW]: "DataBase",
-  [ActionType.STEWARD_ASSIGNMENT]: "UserAvatar",
-  [ActionType.CONSENT_ANOMALY]: "WarningAlt",
-  [ActionType.POLICY_VIOLATION]: "Policy",
-  [ActionType.PIA_UPDATE]: "Document",
-};
-
 export const ACTION_CTA: Record<
   ActionType,
   { label: string; route: (data: Record<string, unknown>) => string }
@@ -84,7 +74,8 @@ export const ACTION_CTA: Record<
   },
   [ActionType.DSR_ACTION]: {
     label: "View request",
-    route: (d) => `/privacy-requests/${d.request_id}`,
+    route: (d) =>
+      d.request_id ? `/privacy-requests/${d.request_id}` : "/privacy-requests",
   },
   [ActionType.SYSTEM_REVIEW]: {
     label: "Review system",
@@ -101,11 +92,13 @@ export const ACTION_CTA: Record<
   },
   [ActionType.POLICY_VIOLATION]: {
     label: "Review violation",
-    route: (d) => `/systems/configure/${d.system_id}`,
+    route: (d) =>
+      d.system_id ? `/systems/configure/${d.system_id}` : "/systems",
   },
   [ActionType.PIA_UPDATE]: {
     label: "View assessment",
-    route: (d) => `/systems/configure/${d.system_id}`,
+    route: (d) =>
+      d.system_id ? `/systems/configure/${d.system_id}` : "/systems",
   },
 };
 
