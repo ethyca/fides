@@ -1,4 +1,0 @@
-type: Fixed
-description: Allow OAuth clients without an associated user to create comments on privacy requests
-pr: 7626
-labels: ["db-migration"] # Optional: ["high-risk", "db-migration"]

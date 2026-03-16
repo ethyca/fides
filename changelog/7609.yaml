@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed MSSQL discovery monitor SIGSEGV by upgrading pymssql from 2.3.7 to 2.3.13 (bundles FreeTDS 1.4.27)
-pr: 7609
-labels: []

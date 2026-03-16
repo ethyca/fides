@@ -1,0 +1,4 @@
+type: Added
+description: Added IAB TCF CMP stub served as /fides-stub.js from Privacy Center
+pr: 7642
+labels: []

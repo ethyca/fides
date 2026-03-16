@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed web monitor config form being interactive before system data loads
-pr: 7591
-labels: []
