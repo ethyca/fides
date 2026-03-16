@@ -1,6 +1,7 @@
 import { formatDate } from "common/utils";
 import {
   ChakraBox as Box,
+  ChakraHStack as HStack,
   ChakraTable as Table,
   ChakraTableContainer as TableContainer,
   ChakraTbody as Tbody,
@@ -9,6 +10,7 @@ import {
   ChakraTh as Th,
   ChakraThead as Thead,
   ChakraTr as Tr,
+  CUSTOM_TAG_COLOR,
   Tag,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -253,16 +255,23 @@ const EventLog = ({
       )}
       {hasDatasetEntries && !isRequestFinishedView && (
         <Td>
-          <Text
-            color="gray.600"
-            fontSize="xs"
-            lineHeight="4"
-            fontWeight="medium"
-          >
-            {(detail.status as string) === "finished"
-              ? "Request completed"
-              : detail.collection_name}
-          </Text>
+          <HStack spacing={2} alignItems="center">
+            <Text
+              color="gray.600"
+              fontSize="xs"
+              lineHeight="4"
+              fontWeight="medium"
+            >
+              {(detail.status as string) === "finished"
+                ? "Request completed"
+                : detail.collection_name}
+            </Text>
+            {detail.saas_version && (
+              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>
+                v{detail.saas_version}
+              </Tag>
+            )}
+          </HStack>
         </Td>
       )}
     </Tr>
