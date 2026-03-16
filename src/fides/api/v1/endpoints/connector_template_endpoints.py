@@ -14,16 +14,19 @@ from starlette.status import (
 )
 
 from fides.api import deps
+from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.saas.connector_template import (
     ConnectorTemplate,
     ConnectorTemplateListResponse,
 )
+from fides.api.schemas.saas.saas_config_version import SaaSConfigVersionResponse
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
 )
 from fides.api.util.api_router import APIRouter
+from fides.api.util.saas_util import load_config_from_string, load_dataset_from_string
 from fides.common.scope_registry import (
     CONNECTOR_TEMPLATE_READ,
     CONNECTOR_TEMPLATE_REGISTER,
@@ -34,6 +37,9 @@ from fides.common.urn_registry import (
     CONNECTOR_TEMPLATES_CONFIG,
     CONNECTOR_TEMPLATES_DATASET,
     CONNECTOR_TEMPLATES_REGISTER,
+    CONNECTOR_TEMPLATES_VERSION_CONFIG,
+    CONNECTOR_TEMPLATES_VERSION_DATASET,
+    CONNECTOR_TEMPLATES_VERSIONS,
     DELETE_CUSTOM_TEMPLATE,
     REGISTER_CONNECTOR_TEMPLATE,
     V1_URL_PREFIX,
@@ -251,4 +257,109 @@ def delete_custom_connector_template(
 
     return JSONResponse(
         content={"message": "Custom connector template successfully deleted."}
+    )
+
+
+@router.get(
+    CONNECTOR_TEMPLATES_VERSIONS,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
+    response_model=List[SaaSConfigVersionResponse],
+)
+def list_connector_template_versions(
+    connector_template_type: str,
+    db: Session = Depends(deps.get_db),
+) -> List[SaaSConfigVersionResponse]:
+    """
+    Returns all stored versions for a connector template type, newest first.
+
+    Each entry includes the version string, whether it is a custom template,
+    and when it was first recorded. Use the version string with the
+    `/versions/{version}/config` and `/versions/{version}/dataset` endpoints
+    to inspect the full config or dataset for that version.
+    """
+    rows = (
+        db.query(SaaSConfigVersion)
+        .filter(SaaSConfigVersion.connector_type == connector_template_type)
+        .order_by(SaaSConfigVersion.created_at.desc())
+        .all()
+    )
+    return rows
+
+
+@router.get(
+    CONNECTOR_TEMPLATES_VERSION_CONFIG,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
+)
+def get_connector_template_version_config(
+    connector_template_type: str,
+    version: str,
+    db: Session = Depends(deps.get_db),
+) -> Response:
+    """
+    Retrieves the SaaS config for a specific version of a connector template.
+
+    Returns the config as raw YAML, in the same format as
+    `GET /connector-templates/{type}/config`.
+    """
+    import yaml  # pylint: disable=import-outside-toplevel
+
+    row = (
+        db.query(SaaSConfigVersion)
+        .filter(
+            SaaSConfigVersion.connector_type == connector_template_type,
+            SaaSConfigVersion.version == version,
+        )
+        .order_by(SaaSConfigVersion.created_at.desc())
+        .first()
+    )
+    if not row:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No stored version '{version}' found for connector type '{connector_template_type}'",
+        )
+    return Response(
+        content=yaml.dump({"saas_config": row.config}, default_flow_style=False),
+        media_type="text/yaml",
+    )
+
+
+@router.get(
+    CONNECTOR_TEMPLATES_VERSION_DATASET,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
+)
+def get_connector_template_version_dataset(
+    connector_template_type: str,
+    version: str,
+    db: Session = Depends(deps.get_db),
+) -> Response:
+    """
+    Retrieves the dataset for a specific version of a connector template.
+
+    Returns the dataset as raw YAML, in the same format as
+    `GET /connector-templates/{type}/dataset`.
+    """
+    import yaml  # pylint: disable=import-outside-toplevel
+
+    row = (
+        db.query(SaaSConfigVersion)
+        .filter(
+            SaaSConfigVersion.connector_type == connector_template_type,
+            SaaSConfigVersion.version == version,
+        )
+        .order_by(SaaSConfigVersion.created_at.desc())
+        .first()
+    )
+    if not row:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No stored version '{version}' found for connector type '{connector_template_type}'",
+        )
+    if not row.dataset:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset stored for version '{version}' of connector type '{connector_template_type}'",
+        )
+    return Response(
+        content=yaml.dump({"dataset": [row.dataset]}, default_flow_style=False),
+        media_type="text/yaml",
     )
