@@ -1,22 +1,23 @@
 import type { RadarChartDataPoint } from "fidesui";
-import { Alert, Card, Flex, RadarChart, Statistic, Tag } from "fidesui";
+import { Alert, Card, Flex, RadarChart, Spin, Statistic, Tag } from "fidesui";
 import { useCallback, useMemo } from "react";
 
+import { BAND_CONFIG, BAND_STATUS } from "~/features/dashboard/constants";
 import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
+import { DiffDirection } from "~/features/dashboard/types";
 
 import cardStyles from "./dashboard-card.module.scss";
-import { BAND_CONFIG, BAND_STATUS } from "./posture-constants";
 import { PostureBreakdownContent } from "./PostureBreakdownContent";
 import styles from "./PostureCard.module.scss";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 import { setDimensionFilter } from "./useDimensionFilter";
 
-function getDiffPrefix(direction: string): string | undefined {
-  if (direction === "unchanged") {
+function getDiffPrefix(direction: DiffDirection): string | undefined {
+  if (direction === DiffDirection.UNCHANGED) {
     return undefined;
   }
-  if (direction === "down") {
+  if (direction === DiffDirection.DOWN) {
     return "↓";
   }
   return "↑";
@@ -33,10 +34,10 @@ function getPostureAlertType(score: number): "error" | "warning" | "success" {
 }
 
 export const PostureCard = () => {
-  const { data: posture } = useGetDashboardPostureQuery();
+  const { data: posture, isLoading } = useGetDashboardPostureQuery();
   const postureScore = posture?.score ?? 0;
   const postureDiff = posture?.diff_percent ?? 0;
-  const diffDirection = posture?.diff_direction ?? "unchanged";
+  const diffDirection = posture?.diff_direction ?? DiffDirection.UNCHANGED;
 
   const animatedScore = useCountUp(postureScore);
 
@@ -72,15 +73,7 @@ export const PostureCard = () => {
       const dim = posture?.dimensions.find((d) => d.label === point.subject);
       const band = dim ? BAND_CONFIG[dim.band] : undefined;
       return (
-        <Flex
-          vertical
-          gap={2}
-          className="rounded px-3 py-2 text-xs"
-          style={{
-            backgroundColor: "var(--ant-color-bg-elevated)",
-            boxShadow: "var(--ant-box-shadow)",
-          }}
-        >
+        <Flex vertical gap={2} className={styles.radarTooltip}>
           <span className="font-semibold">{point.subject}</span>
           <Flex align="center" gap={6}>
             <span>{point.value} / 100</span>
@@ -97,50 +90,56 @@ export const PostureCard = () => {
   );
 
   return (
-    <Card title="Posture" variant="borderless" className={styles.cardContainer}>
-      <Flex align="baseline" gap="middle">
-        <div
-          role="button"
-          tabIndex={0}
-          className={styles.clickableScore}
-          onClick={openPostureDrawer}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              openPostureDrawer();
+    <Spin spinning={isLoading}>
+      <Card
+        title="Posture"
+        variant="borderless"
+        className={styles.cardContainer}
+      >
+        <Flex align="baseline" gap="middle">
+          <div
+            role="button"
+            tabIndex={0}
+            className={styles.clickableScore}
+            onClick={openPostureDrawer}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openPostureDrawer();
+              }
+            }}
+          >
+            <Statistic value={animatedScore} />
+          </div>
+          <Statistic
+            trend={
+              diffDirection === DiffDirection.UNCHANGED
+                ? "neutral"
+                : (diffDirection as "up" | "down")
             }
-          }}
-        >
-          <Statistic value={animatedScore} />
-        </div>
-        <Statistic
-          trend={
-            diffDirection === "unchanged"
-              ? "neutral"
-              : (diffDirection as "up" | "down")
-          }
-          value={postureDiff}
-          prefix={getDiffPrefix(diffDirection)}
-          className={cardStyles.smallStatistic}
-        />
-      </Flex>
-      <div className={styles.radarChartWrapper}>
-        <div className={styles.radarChartInner}>
-          <RadarChart
-            data={radarData}
-            outerRadius="80%"
-            onDimensionClick={handleDimensionClick}
-            tooltipContent={renderTooltip}
+            value={postureDiff}
+            prefix={getDiffPrefix(diffDirection)}
+            className={cardStyles.smallStatistic}
           />
+        </Flex>
+        <div className={styles.radarChartWrapper}>
+          <div className={styles.radarChartInner}>
+            <RadarChart
+              data={radarData}
+              outerRadius="80%"
+              onDimensionClick={handleDimensionClick}
+              tooltipContent={renderTooltip}
+            />
+          </div>
         </div>
-      </div>
-      {posture?.agent_annotation && (
-        <Alert
-          type={getPostureAlertType(postureScore)}
-          message={posture.agent_annotation}
-          className={styles.alertSm}
-        />
-      )}
-    </Card>
+        {posture?.agent_annotation && (
+          <Alert
+            type={getPostureAlertType(postureScore)}
+            message={posture.agent_annotation}
+            className={styles.alertSm}
+          />
+        )}
+      </Card>
+    </Spin>
   );
 };

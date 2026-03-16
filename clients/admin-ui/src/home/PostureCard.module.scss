@@ -77,3 +77,11 @@
 .radarChartInner :global(.radar-status-error) {
   animation: radar-pulse 2s ease-in-out infinite;
 }
+
+.radarTooltip {
+  border-radius: var(--ant-border-radius);
+  padding: var(--ant-padding-xs) var(--ant-padding-sm);
+  font-size: var(--ant-font-size-sm);
+  background-color: var(--ant-color-bg-elevated);
+  box-shadow: var(--ant-box-shadow);
+}

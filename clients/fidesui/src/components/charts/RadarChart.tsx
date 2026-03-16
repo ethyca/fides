@@ -1,4 +1,5 @@
 import { theme } from "antd/lib";
+import classNames from "classnames";
 import type { ReactNode } from "react";
 import { useId, useMemo } from "react";
 import {
@@ -16,6 +17,8 @@ import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
 import { useChartAnimation } from "./chart-utils";
 import { ChartGradient } from "./ChartGradient";
 import { ChartText } from "./ChartText";
+import styles from "./RadarChart.module.scss";
+import { RadarTooltipContent } from "./RadarTooltipContent";
 
 export type RadarPointStatus = "success" | "warning" | "error";
 
@@ -33,6 +36,10 @@ const EMPTY_PLACEHOLDER_DATA: RadarChartDataPoint[] = [
   { subject: "", value: 10 },
   { subject: "", value: 10 },
 ];
+
+const TICK_HIT_WIDTH = 80;
+const TICK_HIT_HEIGHT = 20;
+const DOT_HIT_RADIUS = 20;
 
 export interface RadarChartProps {
   data?: RadarChartDataPoint[] | null;
@@ -72,14 +79,22 @@ const RadarTick = ({
 
   return (
     <g
-      className={point?.status === "error" ? "radar-status-error" : undefined}
+      className={classNames({
+        "radar-status-error": point?.status === "error",
+        [styles.interactive]: interactive,
+      })}
       onClick={
         interactive ? () => onDimensionClick(payload.index, point) : undefined
       }
-      style={interactive ? { cursor: "pointer" } : undefined}
     >
       {interactive && (
-        <rect x={x - 40} y={y - 10} width={80} height={20} fill="transparent" />
+        <rect
+          x={x - TICK_HIT_WIDTH / 2}
+          y={y - TICK_HIT_HEIGHT / 2}
+          width={TICK_HIT_WIDTH}
+          height={TICK_HIT_HEIGHT}
+          fill="transparent"
+        />
       )}
       <ChartText
         x={x}
@@ -117,11 +132,12 @@ const RadarDot = ({
 }: RadarDotProps) => {
   const point = data[index];
   const interactive = !!onDimensionClick;
-  const hitRadius = 20;
   return (
     <g
-      className={point?.status === "error" ? "radar-status-error" : undefined}
-      style={interactive ? { cursor: "pointer" } : undefined}
+      className={classNames({
+        "radar-status-error": point?.status === "error",
+        [styles.interactive]: interactive,
+      })}
     >
       <circle
         cx={dotCx}
@@ -136,7 +152,7 @@ const RadarDot = ({
         <circle
           cx={dotCx}
           cy={dotCy}
-          r={hitRadius}
+          r={DOT_HIT_RADIUS}
           fill="transparent"
           stroke="none"
           pointerEvents="all"
@@ -144,27 +160,6 @@ const RadarDot = ({
         />
       )}
     </g>
-  );
-};
-
-const RadarTooltipContent = ({
-  payload: tooltipPayload,
-  tooltipContent,
-}: {
-  payload?: Array<{ payload: RadarChartDataPoint }>;
-  tooltipContent?: (point: RadarChartDataPoint) => ReactNode;
-}) => {
-  if (!tooltipPayload?.length) {
-    return null;
-  }
-  const point = tooltipPayload[0].payload;
-  if (tooltipContent) {
-    return <>{tooltipContent(point)}</>;
-  }
-  return (
-    <div className="rounded bg-white px-2 py-1 shadow text-xs">
-      {point.subject}: {point.value}
-    </div>
   );
 };
 
@@ -198,13 +193,9 @@ export const RadarChart = ({
 
   return (
     <div
-      className={[
-        "w-full h-full",
-        !interactive && "pointer-events-none",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      className={classNames("w-full h-full", className, {
+        "pointer-events-none": !interactive,
+      })}
     >
       <ResponsiveContainer width="100%" height="100%">
         <RechartsRadarChart

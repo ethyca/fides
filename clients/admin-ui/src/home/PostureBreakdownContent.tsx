@@ -1,13 +1,14 @@
 import { Button, Flex, Tag, Text, Title } from "fidesui";
 import NextLink from "next/link";
 
-import type { PostureResponse } from "~/features/dashboard/dashboard.slice";
-
 import {
   BAND_CONFIG,
   DIMENSION_DESCRIPTIONS,
   DIMENSION_ROUTES,
-} from "./posture-constants";
+} from "~/features/dashboard/constants";
+import type { PostureResponse } from "~/features/dashboard/types";
+
+import styles from "./PostureBreakdownContent.module.scss";
 
 interface PostureBreakdownContentProps {
   posture: PostureResponse | undefined;
@@ -39,11 +40,7 @@ export const PostureBreakdownContent = ({
         const description = DIMENSION_DESCRIPTIONS[dim.dimension];
 
         return (
-          <div
-            key={dim.dimension}
-            className="rounded-lg p-4"
-            style={{ backgroundColor: "var(--ant-color-fill-quaternary)" }}
-          >
+          <div key={dim.dimension} className={styles.dimensionCard}>
             <Flex vertical gap="small">
               <Text strong>{dim.label}</Text>
               <Flex justify="space-between" align="flex-start" gap={12}>
