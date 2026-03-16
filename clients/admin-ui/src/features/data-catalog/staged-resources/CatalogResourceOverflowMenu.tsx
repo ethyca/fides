@@ -1,11 +1,5 @@
-import {
-  Button,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuItem as MenuItem,
-  ChakraMenuList as MenuList,
-  MoreIcon,
-} from "fidesui";
+import { Button, Dropdown, Icons, MenuProps } from "fidesui";
+import { useMemo } from "react";
 
 const CatalogResourceOverflowMenu = ({
   onHideClick,
@@ -13,30 +7,38 @@ const CatalogResourceOverflowMenu = ({
 }: {
   onHideClick?: () => void;
   onDetailClick?: () => void;
-}) => (
-  <Menu>
-    <MenuButton
-      as={Button}
-      size="small"
-      // @ts-expect-error - Ant type, not Chakra type because of `as` prop
-      type="text"
-      icon={<MoreIcon transform="rotate(90deg)" />}
-      className="w-6 gap-0"
-      data-testid="actions-menu"
-    />
-    <MenuList>
-      {onDetailClick && (
-        <MenuItem onClick={onDetailClick} data-testid="view-resource-details">
-          View details
-        </MenuItem>
-      )}
-      {onHideClick && (
-        <MenuItem onClick={onHideClick} data-testid="hide-resource">
-          Hide
-        </MenuItem>
-      )}
-    </MenuList>
-  </Menu>
-);
+}) => {
+  const items: MenuProps["items"] = useMemo(() => {
+    const menuItems: MenuProps["items"] = [];
+    if (onDetailClick) {
+      menuItems.push({
+        key: "view-details",
+        label: <span data-testid="view-resource-details">View details</span>,
+        onClick: onDetailClick,
+      });
+    }
+    if (onHideClick) {
+      menuItems.push({
+        key: "hide",
+        label: <span data-testid="hide-resource">Hide</span>,
+        onClick: onHideClick,
+      });
+    }
+    return menuItems;
+  }, [onDetailClick, onHideClick]);
+
+  return (
+    <Dropdown menu={{ items }}>
+      <Button
+        size="small"
+        type="text"
+        icon={<Icons.OverflowMenuVertical />}
+        className="w-6 gap-0"
+        data-testid="actions-menu"
+        aria-label="more"
+      />
+    </Dropdown>
+  );
+};
 
 export default CatalogResourceOverflowMenu;
