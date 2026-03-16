@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -59,7 +60,6 @@ from fides.api.service.privacy_request.request_service import (
     cache_data,
 )
 from fides.api.tasks import DSR_QUEUE_NAME
-from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.enums import ColumnSort
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.session_management import get_autoclose_db_session
@@ -981,30 +981,43 @@ def queue_privacy_request(
 ) -> Optional[str]:
     """Queue a privacy request for processing.
 
+    Pre-generates a celery_id, persists it to the DB, then dispatches the Celery
+    task with that ID.  This makes tracking durable (survives Redis restarts).
+
     Returns the task ID if successful, or None if scheduling fails.
     On failure, the privacy request is marked as errored with the error message.
     """
-    logger.info("Queueing privacy request from step {}", from_step)
-
     from fides.api.service.privacy_request.request_runner_service import (
         run_privacy_request,
     )
+    from fides.common.session_management import (  # pylint: disable=cyclic-import
+        get_autoclose_db_session as get_db,
+    )
+
+    logger.info("Queueing privacy request from step {}", from_step)
+
+    celery_id = str(uuid.uuid4())
 
     try:
-        task = run_privacy_request.apply_async(
+        with get_db() as db:
+            privacy_request = PrivacyRequest.get(db=db, object_id=privacy_request_id)
+            if privacy_request:
+                privacy_request.celery_id = celery_id
+                db.commit()
+
+        run_privacy_request.apply_async(
             queue=DSR_QUEUE_NAME,
+            task_id=celery_id,
             kwargs={
                 "privacy_request_id": privacy_request_id,
                 "from_webhook_id": from_webhook_id,
                 "from_step": from_step,
             },
         )
-        cache_task_tracking_key(privacy_request_id, task.task_id)
 
-        # Clear any previous scheduling failure in the activity timeline
         _clear_scheduling_failure_if_exists(privacy_request_id)
 
-        return task.task_id
+        return celery_id
     except Exception as exc:
         _handle_scheduling_failure(privacy_request_id, str(exc))
         raise

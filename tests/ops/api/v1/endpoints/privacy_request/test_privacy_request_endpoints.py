@@ -849,7 +849,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        assert pr.get_cached_task_id() is not None
+        assert pr.celery_id is not None
         assert pr.get_async_execution_task() is not None
         pr.delete(db=db)
 
@@ -8099,7 +8099,7 @@ class TestCreatePrivacyRequestAuthenticated:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        assert pr.get_cached_task_id() is not None
+        assert pr.celery_id is not None
         assert pr.get_async_execution_task() is not None
 
     @mock.patch(

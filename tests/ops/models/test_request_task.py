@@ -14,7 +14,6 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.external_data_storage import ExternalDataStorageError
 from fides.api.service.storage.util import get_local_filename
-from fides.api.util.cache import cache_task_tracking_key
 
 
 class TestRequestTask:
@@ -127,7 +126,8 @@ class TestRequestTask:
     def test_request_task_running(self, query_task_mock, db, request_task):
         assert request_task.request_task_running() is False
 
-        cache_task_tracking_key(request_task.id, "test_5678")
+        request_task.celery_id = "test_5678"
+        db.commit()
 
         assert request_task.request_task_running() is False
 

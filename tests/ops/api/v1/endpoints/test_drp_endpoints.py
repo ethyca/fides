@@ -669,10 +669,9 @@ class TestDrpRevoke:
         privacy_request.save(db)
         canceled_reason = "Accidentally submitted"
 
-        cache_task_tracking_key(
-            privacy_request.id, "mock_celery_task_id_for_privacy_request"
-        )
-        cache_task_tracking_key(request_task.id, "mock_celery_task_id_for_request_task")
+        privacy_request.celery_id = "mock_celery_task_id_for_privacy_request"
+        request_task.celery_id = "mock_celery_task_id_for_request_task"
+        db.commit()
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
         response = api_client.post(

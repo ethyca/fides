@@ -14,9 +14,9 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors.fides.fides_client import poll_server_for_completion
 from fides.api.service.privacy_request.request_service import (
+    _cancel_interrupted_tasks_and_error_privacy_request,
     _handle_privacy_request_requeue,
     build_required_privacy_request_kwargs,
-    get_cached_task_id,
     poll_for_exited_privacy_request_tasks,
     remove_saved_dsr_data,
     requeue_interrupted_tasks,
@@ -24,6 +24,7 @@ from fides.api.service.privacy_request.request_service import (
 from fides.api.util.cache import cache_task_tracking_key
 from fides.common.urn_registry import LOGIN, V1_URL_PREFIX
 from fides.config import CONFIG
+from fides.service.privacy_request.privacy_request_service import PrivacyRequestError
 
 
 @pytest.fixture
@@ -467,11 +468,6 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
     @pytest.fixture
     def privacy_request_with_tasks(self, db, policy):
         """Create a privacy request with associated request tasks."""
-        from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-        from fides.api.models.worker_task import ExecutionLogStatus
-        from fides.api.schemas.policy import ActionType
-        from fides.api.util.cache import cache_task_tracking_key
-
         # Create the privacy request
         privacy_request = PrivacyRequest.create(
             db=db,
@@ -501,9 +497,10 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
             },
         )
 
-        # Cache task IDs
-        cache_task_tracking_key(privacy_request.id, "main_task_123")
-        cache_task_tracking_key(request_task.id, "sub_task_456")
+        # Set celery IDs on models
+        privacy_request.celery_id = "main_task_123"
+        request_task.celery_id = "sub_task_456"
+        db.commit()
 
         yield privacy_request
 
@@ -516,10 +513,6 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
         self, mock_logger, db, privacy_request_with_tasks
     ):
         """Test successful cancellation and error state setting."""
-        from fides.api.service.privacy_request.request_service import (
-            _cancel_interrupted_tasks_and_error_privacy_request,
-        )
-
         privacy_request = privacy_request_with_tasks
 
         # Mock the cancel_celery_tasks method
@@ -542,10 +535,6 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
         self, mock_logger, db, privacy_request_with_tasks
     ):
         """Test handling when error_processing fails."""
-        from fides.api.service.privacy_request.request_service import (
-            _cancel_interrupted_tasks_and_error_privacy_request,
-        )
-
         privacy_request = privacy_request_with_tasks
 
         # Mock the cancel_celery_tasks method and error_processing to raise exception
@@ -571,45 +560,6 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
                 second_call = mock_logger.error.call_args_list[1][0][0]
                 assert "Failed to mark privacy request" in second_call
                 assert "DB Error" in second_call
-
-
-class TestGetCachedTaskId:
-    """Test the standalone get_cached_task_id function."""
-
-    def test_get_cached_task_id_success(self, privacy_request):
-        """Test successful retrieval of cached task ID."""
-        # Cache a task ID
-        cache_task_tracking_key(privacy_request.id, "test_task_id_123")
-
-        # Function should return the cached ID
-        result = get_cached_task_id(privacy_request.id)
-        assert result == "test_task_id_123"
-
-    def test_get_cached_task_id_none_when_not_cached(self, privacy_request):
-        """Test that function returns None when no task ID is cached."""
-        result = get_cached_task_id(privacy_request.id)
-        assert result is None
-
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cache")
-    @mock.patch("fides.api.service.privacy_request.request_service.logger")
-    def test_get_cached_task_id_cache_exception(
-        self, mock_logger, mock_get_cache, privacy_request
-    ):
-        """Test that function logs error and re-raises exceptions from cache operations."""
-        # Mock cache to raise exception
-        mock_cache = mock.Mock()
-        mock_cache.get.side_effect = Exception("Redis connection failed")
-        mock_get_cache.return_value = mock_cache
-
-        # Function should log error and re-raise exception
-        with pytest.raises(Exception, match="Redis connection failed"):
-            get_cached_task_id(privacy_request.id)
-
-        # Verify error was logged
-        mock_logger.error.assert_called_once()
-        log_message = mock_logger.error.call_args[0][0]
-        assert "Failed to get cached task ID" in log_message
-        assert privacy_request.id in log_message
 
 
 class TestHandlePrivacyRequestRequeue:
@@ -673,10 +623,6 @@ class TestHandlePrivacyRequestRequeue:
         privacy_request,
     ):
         """Test that requeue failure causes task cancellation."""
-        from fides.service.privacy_request.privacy_request_service import (
-            PrivacyRequestError,
-        )
-
         # Mock retry count under limit but requeue fails
         mock_get_count.return_value = 2
         mock_increment.return_value = 3
@@ -811,50 +757,6 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
     @mock.patch(
         "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    def test_cache_exception_when_getting_main_task_id(
-        self,
-        mock_cancel,
-        mock_get_cached_task_id,
-        mock_get_queue_tasks,
-        mock_redis_lock,
-        db,
-        privacy_request,
-    ):
-        """Test cache exception when getting main privacy request task ID."""
-        # Set up privacy request as in-progress
-        privacy_request.status = PrivacyRequestStatus.in_processing
-        privacy_request.save(db)
-
-        # Mock successful setup
-        mock_redis_lock.return_value.__enter__.return_value = True
-        mock_get_queue_tasks.return_value = []
-
-        # Mock cache exception when getting task ID
-        mock_get_cached_task_id.side_effect = Exception("Cache failure")
-
-        with mock.patch.object(
-            requeue_interrupted_tasks, "get_new_session"
-        ) as mock_session:
-            mock_session.return_value.__enter__.return_value = db
-
-            requeue_interrupted_tasks.apply().get()
-
-        # Should cancel the privacy request due to cache failure
-        mock_cancel.assert_called_once()
-        cancel_call_args = mock_cancel.call_args[0]
-        assert cancel_call_args[0] == db
-        assert cancel_call_args[1] == privacy_request
-        assert "Cache failure when getting task ID" in cancel_call_args[2]
-
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
-    )
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
     @mock.patch(
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
     )
@@ -863,22 +765,19 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
         self,
         mock_logger,
         mock_tasks_in_flight,
-        mock_get_cached_task_id,
         mock_get_queue_tasks,
         mock_redis_lock,
         db,
         privacy_request,
     ):
         """Test that privacy request with no request tasks and inactive main task gets requeued."""
-        # Set up privacy request as in-progress
         privacy_request.status = PrivacyRequestStatus.in_processing
+        privacy_request.celery_id = "main_task_id"
         privacy_request.save(db)
 
-        # Mock successful setup
         mock_redis_lock.return_value.__enter__.return_value = True
-        mock_get_queue_tasks.return_value = []  # Task not in queue
-        mock_get_cached_task_id.return_value = "main_task_id"
-        mock_tasks_in_flight.return_value = False  # Task not running
+        mock_get_queue_tasks.return_value = []
+        mock_tasks_in_flight.return_value = False
 
         with mock.patch.object(
             requeue_interrupted_tasks, "get_new_session"
@@ -889,7 +788,6 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
             ) as mock_handle_requeue:
                 requeue_interrupted_tasks.apply().get()
 
-                # Should log warning and requeue
                 warning_calls = [
                     call.args[0] for call in mock_logger.warning.call_args_list
                 ]
@@ -903,94 +801,34 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
     @mock.patch(
         "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
     @mock.patch(
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_request_task_ids_in_progress"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    def test_request_task_cache_exception_causes_cancellation(
-        self,
-        mock_cancel,
-        mock_get_request_task_ids,
-        mock_tasks_in_flight,
-        mock_get_cached_task_id,
-        mock_get_queue_tasks,
-        mock_redis_lock,
-        db,
-        privacy_request,
-    ):
-        """Test cache exception when getting request task ID causes cancellation."""
-        # Set up privacy request as in-progress
-        privacy_request.status = PrivacyRequestStatus.in_processing
-        privacy_request.save(db)
-
-        # Mock successful setup
-        mock_redis_lock.return_value.__enter__.return_value = True
-        mock_get_queue_tasks.return_value = []
-        mock_tasks_in_flight.return_value = False
-        mock_get_request_task_ids.return_value = [
-            ("request_task_id_1", ExecutionLogStatus.in_processing, False)
-        ]
-
-        # Mock main task ID success, then cache exception for request task
-        mock_get_cached_task_id.side_effect = [
-            "main_task_id",
-            Exception("Cache failure"),
-        ]
-
-        with mock.patch.object(
-            requeue_interrupted_tasks, "get_new_session"
-        ) as mock_session:
-            mock_session.return_value.__enter__.return_value = db
-
-            requeue_interrupted_tasks.apply().get()
-
-        # Should cancel due to cache failure when getting subtask ID
-        mock_cancel.assert_called_once()
-        cancel_call_args = mock_cancel.call_args[0]
-        assert "Cache failure when getting subtask ID" in cancel_call_args[2]
-
-    @mock.patch("fides.api.service.privacy_request.request_service.redis_lock")
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
-    )
-    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_request_task_ids_in_progress"
+        "fides.api.service.privacy_request.request_service._get_request_tasks_in_progress"
     )
     @mock.patch("fides.api.service.privacy_request.request_service.logger")
     def test_interrupted_request_task_triggers_requeue(
         self,
         mock_logger,
-        mock_get_request_task_ids,
+        mock_get_request_tasks,
         mock_tasks_in_flight,
-        mock_get_cached_task_id,
         mock_get_queue_tasks,
         mock_redis_lock,
         db,
         privacy_request,
     ):
         """Test that interrupted request task triggers requeue."""
-        # Set up privacy request as in-progress
         privacy_request.status = PrivacyRequestStatus.in_processing
+        privacy_request.celery_id = "main_task_id"
         privacy_request.save(db)
 
-        # Mock successful setup
         mock_redis_lock.return_value.__enter__.return_value = True
-        mock_get_queue_tasks.return_value = []  # Tasks not in queue
-        mock_tasks_in_flight.return_value = False  # Tasks not running
-        mock_get_request_task_ids.return_value = [
-            ("request_task_id_1", ExecutionLogStatus.in_processing, False)
+        mock_get_queue_tasks.return_value = []
+        mock_tasks_in_flight.return_value = False
+        mock_get_request_tasks.return_value = [
+            ("request_task_id_1", "subtask_id", ExecutionLogStatus.in_processing, False)
         ]
-        mock_get_cached_task_id.side_effect = ["main_task_id", "subtask_id"]
 
         with mock.patch.object(
             requeue_interrupted_tasks, "get_new_session"
@@ -1001,7 +839,6 @@ class TestRequeueInterruptedTasksAdditionalCoverage:
             ) as mock_handle_requeue:
                 requeue_interrupted_tasks.apply().get()
 
-                # Should log warning and requeue
                 warning_calls = [
                     call.args[0] for call in mock_logger.warning.call_args_list
                 ]
