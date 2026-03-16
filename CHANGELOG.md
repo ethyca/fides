@@ -83,6 +83,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated Organization encrypted columns from pgcrypto to AES-GCM [#7554](https://github.com/ethyca/fides/pull/7554) https://github.com/ethyca/fides/labels/db-migration
 - Refined chart components with animation state management and dark theme card config [#7537](https://github.com/ethyca/fides/pull/7537)
 - Changed span to div in ExperienceDescription to expand the set of supported HTML tags in experience descriptions [#7502](https://github.com/ethyca/fides/pull/7502)
+- Un-deprecated GET /system/{fides_key}/connection endpoint [#7668](https://github.com/ethyca/fides/pull/7668)
+- Okta ux refactor [#7596](https://github.com/ethyca/fides/pull/7596)
 
 ### Developer Experience
 - Added Carbon icon defaults for Ant Modal imperative API methods [#7569](https://github.com/ethyca/fides/pull/7569)
