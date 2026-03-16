@@ -18,5 +18,3 @@ export const HomeDashboard = () => (
     </Row>
   </Flex>
 );
-
-export default HomeDashboard;

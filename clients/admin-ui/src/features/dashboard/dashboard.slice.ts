@@ -12,6 +12,7 @@ import type {
   PrivacyRequestsParams,
   PrivacyRequestsResponse,
   ResetResponse,
+  SystemCoverageResponse,
   TrendsResponse,
 } from "./types";
 import { TrendPeriod } from "./types";
@@ -90,6 +91,10 @@ const dashboardApi = baseApi.injectEndpoints({
       }),
       providesTags: [{ type: "Fides Dashboard", id: "privacy-requests" }],
     }),
+    getSystemCoverage: build.query<SystemCoverageResponse, void>({
+      query: () => ({ url: "plus/dashboard/system-coverage" }),
+      providesTags: [{ type: "Fides Dashboard", id: "system-coverage" }],
+    }),
   }),
 });
 
@@ -103,4 +108,5 @@ export const {
   useGetAstralisQuery,
   useGetActivityFeedQuery,
   useGetPrivacyRequestsQuery,
+  useGetSystemCoverageQuery,
 } = dashboardApi;
