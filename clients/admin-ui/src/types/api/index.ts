@@ -90,6 +90,9 @@ export type { ClassifyStatusUpdatePayload } from "./models/ClassifyStatusUpdateP
 export type { ClassifySystem } from "./models/ClassifySystem";
 export type { ClientConfig } from "./models/ClientConfig";
 export type { ClientCreatedResponse } from "./models/ClientCreatedResponse";
+export type { ClientResponse } from "./models/ClientResponse";
+export type { ClientSecretRotateResponse } from "./models/ClientSecretRotateResponse";
+export type { Page_ClientResponse_ } from "./models/Page_ClientResponse_";
 export type { CloudConfig } from "./models/CloudConfig";
 export type { CollectionAddressResponse } from "./models/CollectionAddressResponse";
 export type { CollectionMeta } from "./models/CollectionMeta";
