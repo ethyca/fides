@@ -101,7 +101,7 @@ const cleanupTestRoles = (token: string) => {
       response.body
         .filter(
           (role: { name: string; is_system_role: boolean }) =>
-            role.name.startsWith(TEST_ROLE_PREFIX) && !role.is_system_role
+            role.name.startsWith(TEST_ROLE_PREFIX) && !role.is_system_role,
         )
         .forEach((role: { id: string }) => {
           cy.request({
@@ -214,7 +214,7 @@ describe("RBAC UI Management", () => {
 
       // Add description
       cy.get('textarea[id="description"]').type(
-        "Test role created via Cypress UI test"
+        "Test role created via Cypress UI test",
       );
 
       // Submit the form
@@ -273,7 +273,6 @@ describe("RBAC UI Management", () => {
         expect(response.status).to.eq(201);
         testRoleId = response.body.id;
       });
-
     });
 
     it("can view and edit role permissions", () => {
@@ -302,7 +301,9 @@ describe("RBAC UI Management", () => {
       visitWithAuth(`/settings/rbac/roles/${testRoleId}`, true);
 
       // Update the description
-      cy.get('textarea[id="description"]').clear().type("Updated description via UI test");
+      cy.get('textarea[id="description"]')
+        .clear()
+        .type("Updated description via UI test");
 
       // Save changes
       cy.contains("button", "Save Changes").click();
@@ -420,7 +421,7 @@ describe("RBAC UI Management", () => {
 
       // Confirmation modal should appear
       cy.get('[data-testid="delete-role-confirmation-modal"]').should(
-        "be.visible"
+        "be.visible",
       );
 
       // Click Delete in the confirmation modal

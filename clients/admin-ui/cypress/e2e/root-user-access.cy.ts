@@ -38,7 +38,7 @@ const getRootUserToken = (): Cypress.Chainable<string> => {
     .then((response) => {
       if (response.status !== 200) {
         throw new Error(
-          `Failed to get OAuth token: ${response.status} - ${JSON.stringify(response.body)}`
+          `Failed to get OAuth token: ${response.status} - ${JSON.stringify(response.body)}`,
         );
       }
       return response.body.access_token as string;
@@ -63,7 +63,7 @@ const authenticateAsRootUser = () => {
         STORAGE_ROOT_KEY,
         JSON.stringify({
           auth: JSON.stringify(authState),
-        })
+        }),
       );
     });
   });
@@ -155,7 +155,9 @@ describe("Root User Access", () => {
     });
 
     it("can see Core configuration nav group", () => {
-      cy.getByTestId("Core configuration-nav-group").should("be.visible").click();
+      cy.getByTestId("Core configuration-nav-group")
+        .should("be.visible")
+        .click();
       cy.getByTestId("Taxonomy-nav-link").should("be.visible");
     });
   });
@@ -209,5 +211,4 @@ describe("Root User Access", () => {
       cy.url().should("not.include", "/login");
     });
   });
-
 });

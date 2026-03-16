@@ -67,7 +67,7 @@ const rbacApi = {
       .then((response) => {
         if (response.status !== 200) {
           throw new Error(
-            `Failed to get OAuth token: ${response.status} - ${JSON.stringify(response.body)}`
+            `Failed to get OAuth token: ${response.status} - ${JSON.stringify(response.body)}`,
           );
         }
         return response.body.access_token as string;
@@ -80,7 +80,7 @@ const rbacApi = {
   createRole(
     token: string,
     name: string,
-    description: string
+    description: string,
   ): Cypress.Chainable<TestRole> {
     const key = name.toLowerCase().replace(/\s+/g, "_");
     return cy
@@ -98,7 +98,7 @@ const rbacApi = {
       .then((response) => {
         if (response.status !== 201) {
           throw new Error(
-            `Failed to create role: ${response.status} - ${JSON.stringify(response.body)}`
+            `Failed to create role: ${response.status} - ${JSON.stringify(response.body)}`,
           );
         }
         return response.body as TestRole;
@@ -111,7 +111,7 @@ const rbacApi = {
   updateRolePermissions(
     token: string,
     roleId: string,
-    permissionCodes: string[]
+    permissionCodes: string[],
   ): Cypress.Chainable<void> {
     return cy
       .request({
@@ -126,7 +126,7 @@ const rbacApi = {
       .then((response) => {
         if (response.status !== 200) {
           throw new Error(
-            `Failed to update role permissions: ${response.status} - ${JSON.stringify(response.body)}`
+            `Failed to update role permissions: ${response.status} - ${JSON.stringify(response.body)}`,
           );
         }
       });
@@ -146,7 +146,9 @@ const rbacApi = {
       .then((response) => {
         // 204 = success, 404 = already deleted (ok for cleanup)
         if (response.status !== 204 && response.status !== 404) {
-          cy.log(`Warning: Failed to delete role ${roleId}: ${response.status}`);
+          cy.log(
+            `Warning: Failed to delete role ${roleId}: ${response.status}`,
+          );
         }
       });
   },
@@ -157,7 +159,7 @@ const rbacApi = {
   createUser(
     token: string,
     username: string,
-    password: string
+    password: string,
   ): Cypress.Chainable<TestUser> {
     // Generate a unique email address for the test user
     const email = `${username}@test.example.com`;
@@ -178,7 +180,7 @@ const rbacApi = {
       .then((response) => {
         if (response.status !== 201 && response.status !== 200) {
           throw new Error(
-            `Failed to create user: ${response.status} - ${JSON.stringify(response.body)}`
+            `Failed to create user: ${response.status} - ${JSON.stringify(response.body)}`,
           );
         }
         return response.body as TestUser;
@@ -198,7 +200,9 @@ const rbacApi = {
       })
       .then((response) => {
         if (response.status !== 200 && response.status !== 404) {
-          cy.log(`Warning: Failed to delete user ${userId}: ${response.status}`);
+          cy.log(
+            `Warning: Failed to delete user ${userId}: ${response.status}`,
+          );
         }
       });
   },
@@ -209,7 +213,7 @@ const rbacApi = {
   assignRoleToUser(
     token: string,
     userId: string,
-    roleId: string
+    roleId: string,
   ): Cypress.Chainable<TestUserRole> {
     return cy
       .request({
@@ -224,7 +228,7 @@ const rbacApi = {
       .then((response) => {
         if (response.status !== 201) {
           throw new Error(
-            `Failed to assign role: ${response.status} - ${JSON.stringify(response.body)}`
+            `Failed to assign role: ${response.status} - ${JSON.stringify(response.body)}`,
           );
         }
         return response.body as TestUserRole;
@@ -237,7 +241,7 @@ const rbacApi = {
   removeUserRole(
     token: string,
     userId: string,
-    assignmentId: string
+    assignmentId: string,
   ): Cypress.Chainable<void> {
     return cy
       .request({
@@ -249,7 +253,7 @@ const rbacApi = {
       .then((response) => {
         if (response.status !== 204 && response.status !== 404) {
           cy.log(
-            `Warning: Failed to remove role assignment ${assignmentId}: ${response.status}`
+            `Warning: Failed to remove role assignment ${assignmentId}: ${response.status}`,
           );
         }
       });
@@ -328,8 +332,9 @@ describe("RBAC E2E Tests", () => {
       const username = `${TEST_USER_PREFIX}_${testId}`;
 
       // 1. Create a role with only system:read permission
-      rbacApi.createRole(adminToken, roleName, "Test role for systems viewer").then(
-        (role) => {
+      rbacApi
+        .createRole(adminToken, roleName, "Test role for systems viewer")
+        .then((role) => {
           testRole = role;
           cy.log(`Created role: ${role.id}`);
 
@@ -339,17 +344,16 @@ describe("RBAC E2E Tests", () => {
             "connection:read", // needed to view system integrations
             "connection_type:read",
           ]);
-        }
-      );
+        });
 
       // 3. Create a test user
       cy.then(() => {
-        return rbacApi.createUser(adminToken, username, TEST_PASSWORD).then(
-          (user) => {
+        return rbacApi
+          .createUser(adminToken, username, TEST_PASSWORD)
+          .then((user) => {
             testUser = user;
             cy.log(`Created user: ${user.id}`);
-          }
-        );
+          });
       });
 
       // 4. Assign the role to the user
@@ -407,11 +411,11 @@ describe("RBAC E2E Tests", () => {
 
       // 2. Create test user
       cy.then(() => {
-        return rbacApi.createUser(adminToken, username, TEST_PASSWORD).then(
-          (user) => {
+        return rbacApi
+          .createUser(adminToken, username, TEST_PASSWORD)
+          .then((user) => {
             testUser = user;
-          }
-        );
+          });
       });
 
       // 3. Assign role
@@ -468,11 +472,11 @@ describe("RBAC E2E Tests", () => {
 
       // 2. Create test user
       cy.then(() => {
-        return rbacApi.createUser(adminToken, username, TEST_PASSWORD).then(
-          (user) => {
+        return rbacApi
+          .createUser(adminToken, username, TEST_PASSWORD)
+          .then((user) => {
             testUser = user;
-          }
-        );
+          });
       });
 
       // 3. Assign role
@@ -504,7 +508,9 @@ describe("RBAC E2E Tests", () => {
         }
       });
 
-      cy.log("User with minimal permissions has limited navigation as expected");
+      cy.log(
+        "User with minimal permissions has limited navigation as expected",
+      );
     });
   });
 
@@ -536,11 +542,11 @@ describe("RBAC E2E Tests", () => {
 
       // 2. Create test user
       cy.then(() => {
-        return rbacApi.createUser(adminToken, username, TEST_PASSWORD).then(
-          (user) => {
+        return rbacApi
+          .createUser(adminToken, username, TEST_PASSWORD)
+          .then((user) => {
             testUser = user;
-          }
-        );
+          });
       });
 
       // 3. Assign role
