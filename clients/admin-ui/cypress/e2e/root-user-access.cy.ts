@@ -8,15 +8,7 @@
  *
  * Note: The root user (fidesadmin) is an OAuth client, not a FidesUser, so it
  * authenticates via client_credentials OAuth flow rather than username/password.
- *
- * IMPORTANT: These are true E2E tests that require a running backend.
- * They are automatically skipped in CI since CI only runs the Next.js frontend.
- * Run these tests locally with `npm run cy:open` when the backend is running.
  */
-
-// Skip in CI - these tests require a real backend
-const isCI = Cypress.env("CI") || process.env.CI;
-const describeOrSkip = isCI ? describe.skip : describe;
 
 import { STORAGE_ROOT_KEY } from "~/constants";
 
@@ -87,7 +79,7 @@ const loginAsRootUser = () => {
   cy.url().should("not.include", "/login", { timeout: 10000 });
 };
 
-describeOrSkip("Root User Access", () => {
+describe("Root User Access", () => {
   beforeEach(() => {
     // Override the global stub to allow real API calls
     cy.intercept("/api/v1/**", (req) => {
