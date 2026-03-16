@@ -1091,7 +1091,9 @@ class TestGraphTaskLogging:
         return GraphTask(resources)
 
     @pytest.fixture(scope="function")
-    def saas_graph_task(self, privacy_request, policy, db, saas_example_connection_config):
+    def saas_graph_task(
+        self, privacy_request, policy, db, saas_example_connection_config
+    ):
         resources = TaskResources(
             privacy_request,
             policy,
