@@ -236,7 +236,7 @@ const PropertyForm = ({ property, handleSubmit, rightPanel }: Props) => {
               minWidth={0}
               position="sticky"
               top={4}
-              style={{ paddingTop: "12px" }}
+              style={{ paddingTop: "24px" }}
             >
               {rightPanel}
             </Box>
