@@ -68,10 +68,7 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
                               {msg.sender}
                             </Text>
                             {msg.timestamp && (
-                              <Text
-                                type="secondary"
-                                style={{ fontSize: 11 }}
-                              >
+                              <Text type="secondary" style={{ fontSize: 11 }}>
                                 {new Date(msg.timestamp).toLocaleString(
                                   "en-US",
                                   {
