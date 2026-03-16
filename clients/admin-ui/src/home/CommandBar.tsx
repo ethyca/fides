@@ -56,7 +56,7 @@ export const CommandBar = () => {
   const animatedScore = useCountUp(score);
 
   const bandConfig = BAND_CONFIG[band];
-  const valueColor = token[BAND_VALUE_TOKEN[band] ?? "colorText"];
+  const valueColor = token[BAND_VALUE_TOKEN[band]];
 
   const stats = useMemo(() => {
     const items = actions?.items ?? [];
@@ -94,7 +94,7 @@ export const CommandBar = () => {
     error: token.colorError,
   };
 
-  const scoreColor = SCORE_COLOR_MAP[bandConfig?.color ?? "info"];
+  const scoreColor = SCORE_COLOR_MAP[bandConfig.color];
 
   const openPostureDrawer = useCallback(() => {
     openDashboardDrawer({
@@ -109,7 +109,6 @@ export const CommandBar = () => {
       style={{ backgroundColor: token.colorBgLayout }}
     >
       <Flex align="center" gap={16} className="flex-1">
-        {/* GPS Badge */}
         <Flex
           align="center"
           gap={6}
@@ -132,10 +131,8 @@ export const CommandBar = () => {
           </span>
         </Flex>
 
-        {/* Divider */}
         <span style={{ color: token.colorBorder }}>·</span>
 
-        {/* Stat Pills */}
         {stats.map((stat, i) => (
           <Flex key={stat.label} align="center" gap={4}>
             {i > 0 && (
