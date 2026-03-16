@@ -15,6 +15,7 @@ import { useGetPoliciesQuery } from "~/features/policies/policy.slice";
 
 import type { PropertyFormValues } from "../PropertyForm";
 import CustomPrivacyFieldsArray from "./CustomPrivacyFieldsArray";
+import { POLICY_KEY_DEFAULT_ICONS } from "./helpers";
 
 interface Props {
   index: number;
@@ -42,6 +43,18 @@ const ActionEntryForm = ({ index }: Props) => {
     string
   >;
 
+  const currentPolicyKey = action?.policy_key ?? "";
+  const defaultIconForKey = POLICY_KEY_DEFAULT_ICONS[currentPolicyKey];
+
+  const handlePolicyKeyChange = (newKey: string) => {
+    const defaultIcon = POLICY_KEY_DEFAULT_ICONS[newKey];
+    // Auto-fill icon_path with the default for this policy key, but only
+    // when the user hasn't already set a custom value.
+    if (defaultIcon && !action?.icon_path) {
+      setFieldValue(`${basePath}.icon_path`, defaultIcon);
+    }
+  };
+
   const handleIdentityToggle = (key: string, checked: boolean) => {
     const updated = { ...identityInputs };
     if (checked) {
@@ -66,11 +79,18 @@ const ActionEntryForm = ({ index }: Props) => {
         name={`${basePath}.policy_key`}
         options={policyOptions}
         layout="stacked"
+        onChange={handlePolicyKeyChange}
       />
       <CustomTextInput
         label="Icon path"
         name={`${basePath}.icon_path`}
         variant="stacked"
+        placeholder={defaultIconForKey ?? "https://example.com/icon.svg"}
+        tooltip={
+          defaultIconForKey
+            ? `Default icon for this policy type: ${defaultIconForKey}`
+            : undefined
+        }
       />
       <CustomTextInput
         isRequired

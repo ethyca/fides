@@ -1,5 +1,16 @@
 import { PrivacyCenterConfig, PrivacyRequestOption } from "~/types/api";
 
+/**
+ * Default icon URLs for the three standard policy keys.
+ * When a user selects one of these policy keys and hasn't set a custom icon,
+ * the matching URL is auto-populated into the icon_path field.
+ */
+export const POLICY_KEY_DEFAULT_ICONS: Record<string, string> = {
+  default_access_policy: "https://privacy.ethyca.com/download.svg",
+  default_erasure_policy: "https://privacy.ethyca.com/delete.svg",
+  default_consent_policy: "https://privacy.ethyca.com/consent.svg",
+};
+
 export const DEFAULT_ACTION: PrivacyRequestOption = {
   policy_key: "",
   icon_path: "",
