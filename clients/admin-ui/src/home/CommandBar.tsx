@@ -3,34 +3,41 @@ import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
+import { BAND_CONFIG } from "~/features/dashboard/constants";
 import {
   useGetDashboardPostureQuery,
   useGetPriorityActionsQuery,
 } from "~/features/dashboard/dashboard.slice";
+import {
+  ActionSeverity,
+  ActionStatus,
+  ActionType,
+  DiffDirection,
+  PostureBand,
+} from "~/features/dashboard/types";
 
-import { BAND_CONFIG } from "./posture-constants";
 import { PostureBreakdownContent } from "./PostureBreakdownContent";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 
-function getDiffArrow(direction: string): string {
-  if (direction === "down") {
+function getDiffArrow(direction: DiffDirection): string {
+  if (direction === DiffDirection.DOWN) {
     return "↓";
   }
-  if (direction === "up") {
+  if (direction === DiffDirection.UP) {
     return "↑";
   }
   return "→";
 }
 
 const BAND_VALUE_TOKEN: Record<
-  string,
+  PostureBand,
   "colorText" | "colorWarning" | "colorError"
 > = {
-  excellent: "colorText",
-  good: "colorText",
-  at_risk: "colorWarning",
-  critical: "colorError",
+  [PostureBand.EXCELLENT]: "colorText",
+  [PostureBand.GOOD]: "colorText",
+  [PostureBand.AT_RISK]: "colorWarning",
+  [PostureBand.CRITICAL]: "colorError",
 };
 
 export const CommandBar = () => {
@@ -42,9 +49,9 @@ export const CommandBar = () => {
   const { data: actions } = useGetPriorityActionsQuery();
 
   const score = posture?.score ?? 0;
-  const band = posture?.band ?? "good";
+  const band = posture?.band ?? PostureBand.GOOD;
   const diffPercent = posture?.diff_percent ?? 0;
-  const diffDirection = posture?.diff_direction ?? "unchanged";
+  const diffDirection = posture?.diff_direction ?? DiffDirection.UNCHANGED;
 
   const animatedScore = useCountUp(score);
 
@@ -55,18 +62,21 @@ export const CommandBar = () => {
     const items = actions?.items ?? [];
 
     const pendingDsrs = items.filter(
-      (a) => a.type === "dsr_action" && a.status === "pending",
+      (a) =>
+        a.type === ActionType.DSR_ACTION && a.status === ActionStatus.PENDING,
     ).length;
 
     const overdueDsrs = items.filter(
-      (a) => a.type === "dsr_action" && a.severity === "critical",
+      (a) =>
+        a.type === ActionType.DSR_ACTION &&
+        a.severity === ActionSeverity.CRITICAL,
     ).length;
 
     const systemsManaged =
       posture?.dimensions.find((d) => d.dimension === "coverage")?.score ?? 0;
 
     const violations = items.filter(
-      (a) => a.type === "policy_violation",
+      (a) => a.type === ActionType.POLICY_VIOLATION,
     ).length;
 
     return [
@@ -117,10 +127,7 @@ export const CommandBar = () => {
           <span className="text-lg font-bold" style={{ color: scoreColor }}>
             {animatedScore}
           </span>
-          <span
-            className="text-xs"
-            style={{ color: token.colorTextSecondary }}
-          >
+          <span className="text-xs" style={{ color: token.colorTextSecondary }}>
             {getDiffArrow(diffDirection)} {diffPercent}
           </span>
         </Flex>
@@ -132,10 +139,7 @@ export const CommandBar = () => {
         {stats.map((stat, i) => (
           <Flex key={stat.label} align="center" gap={4}>
             {i > 0 && (
-              <span
-                className="mr-2"
-                style={{ color: token.colorBorder }}
-              >
+              <span className="mr-2" style={{ color: token.colorBorder }}>
                 ·
               </span>
             )}
