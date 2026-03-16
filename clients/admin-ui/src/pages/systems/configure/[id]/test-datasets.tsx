@@ -25,7 +25,9 @@ const TestDatasetPage: NextPage = () => {
     skip: !systemId,
   });
 
-  const connectionKey = system?.connection_configs?.[0]?.key || "";
+  const connectionConfig = system?.connection_configs?.[0];
+  const connectionKey = connectionConfig?.key || "";
+  const connectionType = connectionConfig?.connection_type;
 
   if (isLoading) {
     return (
@@ -53,7 +55,10 @@ const TestDatasetPage: NextPage = () => {
           { title: "Edit dataset" },
         ]}
       />
-      <EditorSection connectionKey={connectionKey} />
+      <EditorSection
+        connectionKey={connectionKey}
+        connectionType={connectionType}
+      />
     </Layout>
   );
 };
