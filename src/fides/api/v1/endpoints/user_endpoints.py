@@ -655,34 +655,31 @@ def reinvite_user(
 
 def populate_invite_status(
     db: Session, user: FidesUser, user_invite: Optional[FidesUserInvite] = None
-) -> dict:
-    """Helper function to populate invite status fields for a user."""
-    user_dict = {
-        "id": user.id,
-        "username": user.username,
-        "created_at": user.created_at,
-        "email_address": user.email_address,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "disabled": user.disabled,
-        "disabled_reason": user.disabled_reason,
-    }
+) -> UserResponse:
+    """Helper function to populate invite status fields on a user."""
+    has_invite = False
+    invite_expired = None
 
     if user.username:
         user_invite_record = user_invite or FidesUserInvite.get_by(
             db, field="username", value=user.username
         )
         if user_invite_record:
-            user_dict["has_invite"] = True
-            user_dict["invite_expired"] = user_invite_record.is_expired()
-        else:
-            user_dict["has_invite"] = False
-            user_dict["invite_expired"] = None
-    else:
-        user_dict["has_invite"] = False
-        user_dict["invite_expired"] = None
+            has_invite = True
+            invite_expired = user_invite_record.is_expired()
 
-    return user_dict
+    return UserResponse(
+        id=user.id,
+        username=user.username,
+        created_at=user.created_at,
+        email_address=user.email_address,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        disabled=user.disabled,
+        disabled_reason=user.disabled_reason,
+        has_invite=has_invite,
+        invite_expired=invite_expired,
+    )
 
 
 @router.get(
@@ -697,7 +694,7 @@ def get_user(
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
-) -> FidesUser:
+) -> UserResponse:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
     # Resolve Depends if called directly (not via FastAPI DI)
     permission_checker = _resolve_depends(permission_checker, get_permission_checker)
