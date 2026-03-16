@@ -203,7 +203,6 @@ export const WithInlineTabs: Story = {
   args: {
     variant: "borderless",
     title: "Overview",
-
   },
   render: (args) => {
     const [activeTab, setActiveTab] = useState("a");
