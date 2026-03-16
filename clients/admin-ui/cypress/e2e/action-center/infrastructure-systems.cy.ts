@@ -502,19 +502,19 @@ describe("Action center infrastructure systems", () => {
         cy.contains("button", "Actions").should("not.be.disabled");
       });
 
-      it("should show Add and Ignore actions on non-ignored tab", () => {
+      it("should show Approve and Ignore actions on non-ignored tab", () => {
         cy.visit(`${ACTION_CENTER_ROUTE}/infrastructure/${monitorId}`);
         cy.wait("@getInfrastructureSystems");
 
         cy.get('input[type="checkbox"]').eq(1).check();
         cy.contains("button", "Actions").click();
 
-        cy.contains("Add").should("exist");
+        cy.contains("Approve").should("exist");
         cy.contains("Ignore").should("exist");
         cy.contains("Restore").should("not.exist");
       });
 
-      it("should show Add and Restore actions when filtering for ignored systems", () => {
+      it("should show Approve and Restore actions when filtering for ignored systems", () => {
         stubInfrastructureSystems({
           fixture:
             "detection-discovery/results/infrastructure-systems-ignored-tab.json",
@@ -530,20 +530,20 @@ describe("Action center infrastructure systems", () => {
         cy.get('input[type="checkbox"]').eq(1).check();
         cy.contains("button", "Actions").click();
 
-        cy.get(".ant-dropdown-menu-item").contains("Add").should("exist");
+        cy.get(".ant-dropdown-menu-item").contains("Approve").should("exist");
         cy.get(".ant-dropdown-menu-item").contains("Restore").should("exist");
         cy.get(".ant-dropdown-menu-item")
           .contains("Ignore")
           .should("not.exist");
       });
 
-      it("should perform bulk Add action with explicit selection", () => {
+      it("should perform bulk Approve action with explicit selection", () => {
         cy.visit(`${ACTION_CENTER_ROUTE}/infrastructure/${monitorId}`);
         cy.wait("@getInfrastructureSystems");
 
         cy.get('input[type="checkbox"]').eq(1).check();
         cy.contains("button", "Actions").click();
-        cy.contains("Add").click();
+        cy.contains("Approve").click();
 
         cy.wait("@bulkPromoteInfrastructureSystems").then((interception) => {
           expect(interception.request.body).to.be.an("array");
@@ -596,7 +596,7 @@ describe("Action center infrastructure systems", () => {
         cy.contains("selected").should("not.exist");
       });
 
-      it("should perform bulk Add action with select all mode", () => {
+      it("should perform bulk Approve action with select all mode", () => {
         stubInfrastructureSystems({
           fixture:
             "detection-discovery/results/infrastructure-systems-large-dataset.json",
@@ -607,7 +607,7 @@ describe("Action center infrastructure systems", () => {
 
         cy.contains("Select all").click();
         cy.contains("button", "Actions").click();
-        cy.contains("Add").click();
+        cy.contains("Approve").click();
 
         cy.wait("@bulkPromoteInfrastructureSystems").then((interception) => {
           expect(interception.request.body).to.have.property("filters");
@@ -621,7 +621,7 @@ describe("Action center infrastructure systems", () => {
 
         cy.get('input[type="checkbox"]').eq(1).check();
         cy.contains("button", "Actions").click();
-        cy.contains("Add").click();
+        cy.contains("Approve").click();
 
         cy.contains("button", "Actions").should("be.disabled");
       });
@@ -639,7 +639,7 @@ describe("Action center infrastructure systems", () => {
         cy.get('input[type="checkbox"]').eq(1).uncheck();
 
         cy.contains("button", "Actions").click();
-        cy.contains("Add").click();
+        cy.contains("Approve").click();
 
         cy.wait("@bulkPromoteInfrastructureSystems").then((interception) => {
           expect(interception.request.body).to.have.property("exclude_urns");

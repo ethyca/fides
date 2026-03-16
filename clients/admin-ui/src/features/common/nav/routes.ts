@@ -112,6 +112,17 @@ export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
 
 // Privacy Assessments routes
 export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
-export const PRIVACY_ASSESSMENTS_EVALUATE_ROUTE =
-  "/privacy-assessments/evaluate";
 export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";
+
+// Access Policies (Core Configuration)
+export const ACCESS_POLICIES_ROUTE = "/access-policies";
+export const ACCESS_POLICIES_ONBOARDING_ROUTE = "/access-policies/onboarding";
+export const ACCESS_POLICIES_NEW_ROUTE = "/access-policies/new";
+export const ACCESS_POLICY_EDIT_ROUTE = "/access-policies/edit/[id]";
+
+// Access Control (Detection & Discovery)
+export const ACCESS_CONTROL_ROUTE = "/data-discovery/access-control";
+export const ACCESS_CONTROL_SUMMARY_ROUTE =
+  "/data-discovery/access-control/summary";
+export const ACCESS_CONTROL_REQUEST_LOG_ROUTE =
+  "/data-discovery/access-control/request-log";

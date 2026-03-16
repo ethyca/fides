@@ -170,6 +170,21 @@ class TestConnectionConfigModel:
 
         assert connection_config.system_key == system.fides_key
 
+    def test_consent_tracking_key(self, db, connection_config, system):
+        # Always returns the connection config's own key, not the system key
+        assert connection_config.consent_tracking_key == connection_config.key
+
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=connection_config.id,
+            session=db,
+        )
+        db.refresh(connection_config)
+
+        # Still returns connection key, not system fides_key
+        assert connection_config.consent_tracking_key == connection_config.key
+        assert connection_config.consent_tracking_key != system.fides_key
+
     def test_enabled_actions(self, db, connection_config):
         connection_config.enabled_actions = [
             ActionType.access,

@@ -90,7 +90,7 @@ dependencies = [
     "pygtrie==2.5.0",
     "pyinstrument==4.5.1",
     "pymongo[srv]==4.7.3",
-    "python-jose[cryptography]==3.5.0",
+    "joserfc~=1.6.3",
     "redis==7.2.0",
     "requests-oauth2client>=1.5.0",
     "requests-oauthlib==2.0.0",
@@ -136,8 +136,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mssql = ["pymssql==2.3.7"]
-all = ["pymssql==2.3.7"]
+mssql = ["pymssql==2.3.13"]
+all = ["pymssql==2.3.13"]
 
 [dependency-groups]
 dev = [
@@ -200,7 +200,7 @@ artifacts = ["src/fides/ui-build"]
 build-constraint-dependencies = ["setuptools==80.10.2"]
 # If a dependency fails in CI with ModuleNotFoundError: pkg_resources or setuptools, add it here.
 # CI and Dockerfile pre-install setuptools/wheel before uv sync so these packages can build.
-no-build-isolation-package = ["pyahocorasick", "pymssql", "scylla-driver"]
+no-build-isolation-package = ["pyahocorasick", "scylla-driver"]
 
 # Packages whose setup uses pkg_resources at build time but don't declare setuptools
 # as a build dependency; required when building via uv (e.g. docs container).
@@ -252,7 +252,7 @@ module = [
   "firebase_admin.*",
   "google.api_core.*",
   "joblib.*",
-  "jose.*",
+  "joserfc.*",
   "jwt.*",
   "multidimensional_urlencode.*",
   "networkx.*",

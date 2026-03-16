@@ -13,6 +13,7 @@ from fides.api.schemas.saas.saas_config import (
     ExternalDatasetReference,
     SaaSConfig,
 )
+from fides.config.security_settings import DomainValidationMode
 
 
 @pytest.mark.unit_saas
@@ -146,23 +147,19 @@ class TestSaaSConnectionSecretsDomainValidation:
         return SaaSConfig(**saas_example_config)
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
-    def test_allowed_domain_passes(
-        self, mock_disabled, saas_config_with_allowed_values
-    ):
+    def test_allowed_domain_passes(self, mock_mode, saas_config_with_allowed_values):
         """Setting a domain that matches allowed_values should succeed."""
         schema = SaaSSchemaFactory(saas_config_with_allowed_values).get_saas_schema()
         schema.model_validate({"domain": "api.stripe.com", "api_key": "sk_test_123"})
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
-    def test_disallowed_domain_fails(
-        self, mock_disabled, saas_config_with_allowed_values
-    ):
+    def test_disallowed_domain_fails(self, mock_mode, saas_config_with_allowed_values):
         """Setting a domain not in allowed_values should fail."""
         schema = SaaSSchemaFactory(saas_config_with_allowed_values).get_saas_schema()
         with pytest.raises(ValidationError, match="not in the list of allowed values"):
@@ -171,22 +168,34 @@ class TestSaaSConnectionSecretsDomainValidation:
             )
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
-        return_value=True,
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.get_domain_validation_mode",
+        return_value=DomainValidationMode.disabled,
     )
     def test_disallowed_domain_passes_when_validation_disabled(
-        self, mock_disabled, saas_config_with_allowed_values
+        self, mock_mode, saas_config_with_allowed_values
     ):
         """Domain validation should be skipped when disabled."""
         schema = SaaSSchemaFactory(saas_config_with_allowed_values).get_saas_schema()
         schema.model_validate({"domain": "evil.example.com", "api_key": "sk_test_123"})
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.get_domain_validation_mode",
+        return_value=DomainValidationMode.monitor,
+    )
+    def test_disallowed_domain_warns_in_monitor_mode(
+        self, mock_mode, saas_config_with_allowed_values
+    ):
+        """In monitor mode a disallowed domain should not raise but should log a warning."""
+        schema = SaaSSchemaFactory(saas_config_with_allowed_values).get_saas_schema()
+        # Should not raise in monitor mode — the warning is emitted via loguru
+        schema.model_validate({"domain": "evil.example.com", "api_key": "sk_test_123"})
+
+    @patch(
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
     def test_empty_allowed_values_permits_any_value(
-        self, mock_disabled, saas_example_config: Dict[str, Any]
+        self, mock_mode, saas_example_config: Dict[str, Any]
     ):
         """Empty allowed_values list should permit any domain value."""
         saas_example_config["connector_params"] = [
@@ -206,11 +215,11 @@ class TestSaaSConnectionSecretsDomainValidation:
         )
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
     def test_none_allowed_values_no_validation(
-        self, mock_disabled, saas_example_config: Dict[str, Any]
+        self, mock_mode, saas_example_config: Dict[str, Any]
     ):
         """None allowed_values (omitted) should skip validation entirely."""
         saas_example_config["connector_params"] = [
@@ -225,11 +234,11 @@ class TestSaaSConnectionSecretsDomainValidation:
         )
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
     def test_wildcard_allowed_values(
-        self, mock_disabled, saas_example_config: Dict[str, Any]
+        self, mock_mode, saas_example_config: Dict[str, Any]
     ):
         """Wildcard patterns in allowed_values should be validated."""
         saas_example_config["connector_params"] = [
@@ -248,11 +257,11 @@ class TestSaaSConnectionSecretsDomainValidation:
         )
 
     @patch(
-        "fides.api.schemas.connection_configuration.connection_secrets_saas.is_domain_validation_disabled",
-        return_value=False,
+        "fides.api.schemas.connection_configuration.connection_secrets_saas.get_domain_validation_mode",
+        return_value=DomainValidationMode.enabled,
     )
     def test_wildcard_disallowed_domain(
-        self, mock_disabled, saas_example_config: Dict[str, Any]
+        self, mock_mode, saas_example_config: Dict[str, Any]
     ):
         """Domain not matching wildcard pattern should fail."""
         saas_example_config["connector_params"] = [
