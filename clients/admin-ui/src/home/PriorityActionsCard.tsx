@@ -70,7 +70,6 @@ export const PriorityActionsCard = () => {
       title="Priority actions"
       variant="borderless"
       className={styles.cardContainer}
-      headerLayout="inline"
       tabList={URGENCY_TABS.map((tab) => ({
         key: tab.key,
         label: (
