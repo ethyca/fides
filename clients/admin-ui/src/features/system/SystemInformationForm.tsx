@@ -1,13 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import {
-  Alert,
-  Button,
-  ChakraBox as Box,
-  ChakraStack as Stack,
-  ChakraText as Text,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Alert, Button, Flex, Typography, useMessage } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -30,7 +23,6 @@ import {
 } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useHasPermission } from "~/features/common/Restrict";
-import { errorToastParams } from "~/features/common/toast";
 import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import {
   selectAllDictEntries,
@@ -219,7 +211,8 @@ const SystemInformationForm = ({
     [dataProps.allDatasets],
   );
 
-  const toast = useToast();
+  const message = useMessage();
+  const { Text } = Typography;
 
   const handleSubmit = async (
     values: FormValues,
@@ -239,7 +232,7 @@ const SystemInformationForm = ({
             dataUseQueryResult.error,
             `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`,
           );
-          toast(errorToastParams(dataUseErrorMsg));
+          message.error(dataUseErrorMsg);
         }
       } else if (
         dataUseQueryResult.data &&
@@ -271,12 +264,9 @@ const SystemInformationForm = ({
           result.error,
           `An unexpected error occurred while ${attemptedAction} the system. Please try again.`,
         );
-        toast({
-          status: "error",
-          description: errorMsg,
-        });
+        message.error(errorMsg);
       } else {
-        toast.closeAll();
+        message.destroy();
         // Reset state such that isDirty will be checked again before next save
         formikHelpers.resetForm({ values });
         onSuccess(result.data);
@@ -305,10 +295,8 @@ const SystemInformationForm = ({
         systemKey: result.data.fides_key,
       });
       if (isErrorResult(assetResult)) {
-        toast(
-          errorToastParams(
-            "An unexpected error occurred while populating the system assets from Compass. Please try again.",
-          ),
+        message.error(
+          "An unexpected error occurred while populating the system assets from Compass. Please try again.",
         );
       }
     }
@@ -343,13 +331,12 @@ const SystemInformationForm = ({
             system_keys: [systemData.fides_key],
           });
           if (isErrorResult(assignResult)) {
-            toast({
-              status: "warning",
-              description: `Failed to assign ${steward} as data steward. ${getErrorMessage(
+            message.warning(
+              `Failed to assign ${steward} as data steward. ${getErrorMessage(
                 assignResult.error,
                 "Please try again.",
               )}`,
-            });
+            );
           }
         }),
       );
@@ -361,10 +348,9 @@ const SystemInformationForm = ({
           .map((steward) => {
             const stewardId = currentStewardsMap.get(steward);
             if (!stewardId) {
-              toast({
-                status: "warning",
-                description: `Could not find user ID for ${steward}. Skipping removal.`,
-              });
+              message.warning(
+                `Could not find user ID for ${steward}. Skipping removal.`,
+              );
               return null;
             }
             return { steward, stewardId };
@@ -379,13 +365,12 @@ const SystemInformationForm = ({
               systemKey: systemData.fides_key,
             });
             if (isErrorResult(removeResult)) {
-              toast({
-                status: "warning",
-                description: `Failed to remove ${steward} as data steward. ${getErrorMessage(
+              message.warning(
+                `Failed to remove ${steward} as data steward. ${getErrorMessage(
                   removeResult.error,
                   "Please try again.",
                 )}`,
-              });
+              );
             }
           }),
       );
@@ -458,8 +443,8 @@ const SystemInformationForm = ({
             disabled={isReadOnly}
             style={{ border: "none", padding: 0 }}
           >
-            <Stack spacing={0} maxWidth={{ base: "100%", lg: "70%" }}>
-              <Text fontSize="sm" fontWeight="medium">
+            <Flex vertical className="w-full lg:max-w-[70%]">
+              <Text className="text-sm font-medium">
                 By providing a small amount of additional context for each
                 system we can make reporting and understanding our tech stack
                 much easier for everyone from engineering to legal teams. So
@@ -540,17 +525,17 @@ const SystemInformationForm = ({
                 />
               </SystemFormInputGroup>
               <SystemFormInputGroup heading="Data processing properties">
-                <Stack spacing={0}>
-                  <Box mb={4}>
+                <Flex vertical>
+                  <div className="mb-4">
                     <DictSuggestionSwitch
                       name="processes_personal_data"
                       label="This system processes personal data"
                       tooltip="Does this system process personal data?"
                       disabled={lockedForGVL}
                     />
-                  </Box>
-                  <Box padding={4} borderRadius={4} backgroundColor="gray.50">
-                    <Stack spacing={0}>
+                  </div>
+                  <div className="rounded bg-gray-50 p-4">
+                    <Flex vertical>
                       <DictSuggestionSwitch
                         name="exempt_from_privacy_regulations"
                         label="This system is exempt from privacy regulations"
@@ -560,7 +545,7 @@ const SystemInformationForm = ({
                         }
                       />
                       {values.exempt_from_privacy_regulations && (
-                        <Box mt={4}>
+                        <div className="mt-4">
                           <CustomTextInput
                             name="reason_for_exemption"
                             label="Reason for exemption"
@@ -569,14 +554,14 @@ const SystemInformationForm = ({
                             isRequired={values.exempt_from_privacy_regulations}
                             disabled={lockedForGVL}
                           />
-                        </Box>
+                        </div>
                       )}
-                    </Stack>
-                  </Box>
+                    </Flex>
+                  </div>
                   {values.processes_personal_data &&
                     !values.exempt_from_privacy_regulations && (
-                      <Stack spacing={4} mt={4}>
-                        <Stack spacing={0}>
+                      <Flex vertical className="mt-4 gap-4">
+                        <Flex vertical>
                           <DictSuggestionSwitch
                             name="uses_profiling"
                             label="This system performs profiling"
@@ -584,7 +569,7 @@ const SystemInformationForm = ({
                             disabled={lockedForGVL}
                           />
                           {values.uses_profiling && (
-                            <Box mt={4}>
+                            <div className="mt-4">
                               <ControlledSelect
                                 mode="multiple"
                                 layout="stacked"
@@ -595,10 +580,10 @@ const SystemInformationForm = ({
                                 disabled={lockedForGVL}
                                 isRequired={values.uses_profiling}
                               />
-                            </Box>
+                            </div>
                           )}
-                        </Stack>
-                        <Stack spacing={0}>
+                        </Flex>
+                        <Flex vertical>
                           <DictSuggestionSwitch
                             name="does_international_transfers"
                             label="This system transfers data"
@@ -606,7 +591,7 @@ const SystemInformationForm = ({
                             disabled={lockedForGVL}
                           />
                           {values.does_international_transfers && (
-                            <Box mt={4}>
+                            <div className="mt-4">
                               <ControlledSelect
                                 mode="multiple"
                                 layout="stacked"
@@ -617,10 +602,10 @@ const SystemInformationForm = ({
                                 isRequired={values.does_international_transfers}
                                 disabled={lockedForGVL}
                               />
-                            </Box>
+                            </div>
                           )}
-                        </Stack>
-                        <Stack spacing={0}>
+                        </Flex>
+                        <Flex vertical>
                           <CustomSwitch
                             name="requires_data_protection_assessments"
                             label="This system requires Data Privacy Assessments"
@@ -629,7 +614,7 @@ const SystemInformationForm = ({
                             isDisabled={lockedForGVL}
                           />
                           {values.requires_data_protection_assessments && (
-                            <Box mt={4}>
+                            <div className="mt-4">
                               <CustomTextInput
                                 label="DPIA/DPA location"
                                 name="dpa_location"
@@ -640,12 +625,12 @@ const SystemInformationForm = ({
                                   values.requires_data_protection_assessments
                                 }
                               />
-                            </Box>
+                            </div>
                           )}
-                        </Stack>
-                      </Stack>
+                        </Flex>
+                      </Flex>
                     )}
-                </Stack>
+                </Flex>
               </SystemFormInputGroup>
               {values.processes_personal_data &&
                 !values.exempt_from_privacy_regulations && (
@@ -780,10 +765,10 @@ const SystemInformationForm = ({
                     ) : null}
                   </>
                 )}
-            </Stack>
+            </Flex>
           </fieldset>
           {!isReadOnly && (
-            <Box mt={6}>
+            <div className="mt-6">
               <Button
                 htmlType="submit"
                 type="primary"
@@ -793,7 +778,7 @@ const SystemInformationForm = ({
               >
                 Save
               </Button>
-            </Box>
+            </div>
           )}
           {children}
         </Form>
