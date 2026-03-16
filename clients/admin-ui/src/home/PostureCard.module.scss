@@ -35,7 +35,6 @@
   position: absolute;
   inset: 0;
 
-  // Suppress focus/active outlines on the Recharts SVG and its wrapper
   *,
   *:focus,
   *:active,
@@ -43,12 +42,10 @@
     outline: none !important;
   }
 
-  // Let the radar polygon (filled area) pass through clicks to dots/labels
   :global(.recharts-radar-polygon) {
     pointer-events: none;
   }
 
-  // Prevent axis ticks from changing style on hover/active
   :global(.recharts-polar-angle-axis-tick) {
     opacity: 1 !important;
     font-weight: inherit !important;
