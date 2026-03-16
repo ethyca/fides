@@ -675,7 +675,7 @@ class PrivacyRequestService:
                             "webhook_id": webhook_id,  # the last webhook reply received is what approves the entire request
                             "message": "Request auto-approved by pre-approval webhooks"
                             if webhook_id
-                            else "",
+                            else None,
                         },
                     )
 
