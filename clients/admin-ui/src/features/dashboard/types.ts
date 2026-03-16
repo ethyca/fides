@@ -166,3 +166,12 @@ interface ResetResponse {
 }
 
 export type { ResetResponse };
+
+export interface SystemCoverageResponse {
+  total_systems: number;
+  fully_classified: number;
+  partially_classified: number;
+  unclassified: number;
+  without_steward: number;
+  coverage_percentage: number;
+}

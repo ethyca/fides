@@ -1,6 +1,7 @@
 import type {
   PostureResponse,
   PriorityAction,
+  SystemCoverageResponse,
 } from "~/features/dashboard/types";
 import {
   ActionSeverity,
@@ -49,12 +50,20 @@ export const mockPosture: PostureResponse = {
   ],
 };
 
+export const mockSystemCoverage: SystemCoverageResponse = {
+  total_systems: 47,
+  fully_classified: 34,
+  partially_classified: 7,
+  unclassified: 6,
+  without_steward: 4,
+  coverage_percentage: 72,
+};
+
 export const mockPriorityActions: PriorityAction[] = [
   {
     id: "act-001",
     type: ActionType.DSR_ACTION,
     severity: ActionSeverity.CRITICAL,
-
     title: "Overdue erasure request",
     message: "DSR-4521 is 34 days overdue. SLA breach since Feb 9, 2026.",
     agent_summary:
@@ -70,7 +79,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-002",
     type: ActionType.POLICY_VIOLATION,
     severity: ActionSeverity.CRITICAL,
-
     title: "CCPA retention policy violation",
     message:
       "HubSpot CRM retaining contact data beyond 24-month policy limit. 12,400 records affected.",
@@ -88,7 +96,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-003",
     type: ActionType.CONSENT_ANOMALY,
     severity: ActionSeverity.HIGH,
-
     title: "Consent opt-in rate drop",
     message:
       "Marketing consent opt-in rate dropped from 78% to 34% on mobile web in the last 48 hours.",
@@ -106,7 +113,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-004",
     type: ActionType.CLASSIFICATION_REVIEW,
     severity: ActionSeverity.MEDIUM,
-
     title: "12 new classifications pending review",
     message:
       "Helios detected 12 new data classifications across Snowflake, BigQuery, and Redshift. 8 are high-confidence (>95%).",
@@ -124,7 +130,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-005",
     type: ActionType.STEWARD_ASSIGNMENT,
     severity: ActionSeverity.MEDIUM,
-
     title: "3 HR systems need data stewards",
     message:
       "Workday, BambooHR, and ADP have no assigned data steward. These systems process employee PII.",
@@ -141,7 +146,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-006",
     type: ActionType.DSR_ACTION,
     severity: ActionSeverity.MEDIUM,
-
     title: "DSR approaching SLA deadline",
     message:
       "Access request DSR-4587 has 5 days remaining. Pending manual step in Stripe.",
@@ -159,7 +163,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-007",
     type: ActionType.SYSTEM_REVIEW,
     severity: ActionSeverity.LOW,
-
     title: "New system detected: Amplitude",
     message:
       "Helios discovered an unregistered system 'Amplitude' receiving user event data from your web application.",
@@ -176,7 +179,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-008",
     type: ActionType.PIA_UPDATE,
     severity: ActionSeverity.LOW,
-
     title: "Privacy impact assessment needs update",
     message:
       "PIA for the Segment CDP integration was last completed 11 months ago. Annual review recommended.",
@@ -193,7 +195,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-009",
     type: ActionType.DSR_ACTION,
     severity: ActionSeverity.CRITICAL,
-
     title: "Overdue access request from EU resident",
     message:
       "DSR-4602 exceeded the 30-day GDPR deadline on Mar 2. Blocked on identity verification in Zendesk.",
@@ -210,7 +211,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-010",
     type: ActionType.CONSENT_ANOMALY,
     severity: ActionSeverity.CRITICAL,
-
     title: "Analytics tracking without consent",
     message:
       "Google Analytics firing on EU pages before consent is granted. Detected on 3 properties.",
@@ -227,7 +227,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-011",
     type: ActionType.CLASSIFICATION_REVIEW,
     severity: ActionSeverity.HIGH,
-
     title: "Sensitive health data detected in Postgres",
     message:
       "Helios classified 4 fields in the users table as health-related. Confidence: 87–92%.",
@@ -245,7 +244,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-012",
     type: ActionType.POLICY_VIOLATION,
     severity: ActionSeverity.HIGH,
-
     title: "Salesforce storing SSNs without encryption",
     message:
       "5,200 records in Salesforce contain unencrypted SSN fields. Policy requires encryption at rest.",
@@ -263,7 +261,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-013",
     type: ActionType.STEWARD_ASSIGNMENT,
     severity: ActionSeverity.MEDIUM,
-
     title: "Marketing systems missing steward",
     message: "Marketo, Mailchimp, and Iterable have no assigned data steward.",
     agent_summary:
@@ -279,7 +276,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-014",
     type: ActionType.DSR_ACTION,
     severity: ActionSeverity.MEDIUM,
-
     title: "Bulk erasure batch stalled",
     message:
       "Batch erasure job for 48 records paused after Snowflake connector timeout.",
@@ -296,7 +292,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-015",
     type: ActionType.SYSTEM_REVIEW,
     severity: ActionSeverity.LOW,
-
     title: "New system detected: Mixpanel",
     message:
       "Helios found data flowing to Mixpanel from the iOS app. Not registered in your inventory.",
@@ -313,7 +308,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-016",
     type: ActionType.SYSTEM_REVIEW,
     severity: ActionSeverity.LOW,
-
     title: "New system detected: Intercom",
     message:
       "Intercom chat widget detected on support.example.com collecting user identifiers.",
@@ -330,7 +324,6 @@ export const mockPriorityActions: PriorityAction[] = [
     id: "act-017",
     type: ActionType.PIA_UPDATE,
     severity: ActionSeverity.LOW,
-
     title: "Stripe PIA due for annual refresh",
     message:
       "PIA for the Stripe payment integration was last completed 13 months ago.",
