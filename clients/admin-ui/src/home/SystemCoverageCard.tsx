@@ -21,7 +21,7 @@ export const SystemCoverageCard = () => {
       <Card title="System Coverage" variant="borderless">
         <Flex vertical gap={16} className="h-full">
           <Flex gap={16} align="start">
-            <div className="h-[100px] w-[100px] shrink-0">
+            <div className="size-[100px] shrink-0">
               <DonutChart
                 variant="thick"
                 segments={[
@@ -49,9 +49,7 @@ export const SystemCoverageCard = () => {
               />
             </div>
             <Flex vertical gap={4}>
-              <Text strong>
-                {coverage?.total_systems ?? 0} systems known
-              </Text>
+              <Text strong>{coverage?.total_systems ?? 0} systems known</Text>
               {BREAKDOWN_ITEMS.map(({ key, label }) => (
                 <Text key={key} type="secondary">
                   {coverage?.[key] ?? 0} {label}

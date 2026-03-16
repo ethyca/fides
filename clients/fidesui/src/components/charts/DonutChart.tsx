@@ -40,7 +40,9 @@ export const DonutChart = ({
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return undefined;
+    if (!el) {
+      return undefined;
+    }
     const observer = new ResizeObserver(([entry]) => {
       const rect = entry.contentRect;
       setSize(Math.min(rect.width, rect.height));
