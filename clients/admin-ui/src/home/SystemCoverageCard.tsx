@@ -1,4 +1,4 @@
-import { Button, Card, Flex, Spin, Text } from "fidesui";
+import { Button, Card, DonutChart, Flex, Spin, Text } from "fidesui";
 import NextLink from "next/link";
 
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
@@ -21,15 +21,33 @@ export const SystemCoverageCard = () => {
       <Card title="System Coverage" variant="borderless">
         <Flex vertical gap={16} className="h-full">
           <Flex gap={16} align="start">
-            <Flex
-              align="center"
-              justify="center"
-              className="size-[100px] shrink-0 rounded-full bg-gray-100"
-            >
-              <Text strong className="text-base">
-                {percentage}%
-              </Text>
-            </Flex>
+            <div className="size-[100px] shrink-0">
+              <DonutChart
+                variant="thick"
+                segments={[
+                  {
+                    value: coverage?.fully_classified ?? 0,
+                    color: "colorSuccess",
+                    name: "Fully classified",
+                  },
+                  {
+                    value: coverage?.partially_classified ?? 0,
+                    color: "colorWarning",
+                    name: "Partially classified",
+                  },
+                  {
+                    value: coverage?.unclassified ?? 0,
+                    color: "colorBorder",
+                    name: "Unclassified",
+                  },
+                ]}
+                centerLabel={
+                  <Text strong className="text-base">
+                    {percentage}%
+                  </Text>
+                }
+              />
+            </div>
             <Flex vertical gap={4}>
               <Text strong>{coverage?.total_systems ?? 0} systems known</Text>
               {BREAKDOWN_ITEMS.map(({ key, label }) => (
