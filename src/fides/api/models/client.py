@@ -35,6 +35,24 @@ DEFAULT_CONNECTIONS: list[str] = []
 DEFAULT_MONITORS: list[str] = []
 
 
+def _generate_and_hash_secret(
+    length_bytes: int, encoding: str = "UTF-8"
+) -> tuple[str, str, str]:
+    """Generate a random secret and return (plaintext, salt, hashed_secret).
+
+    This is the single canonical path for producing a storable client credential.
+    Both initial creation and rotation go through here so the hashing approach
+    stays consistent across the codebase.
+    """
+    secret = generate_secure_random_string(length_bytes)
+    salt = generate_salt()
+    hashed_secret = hash_credential_with_salt(
+        secret.encode(encoding),
+        salt.encode(encoding),
+    )
+    return secret, salt, hashed_secret
+
+
 class ClientDetail(Base):
     """The persisted details about a client in the system"""
 
@@ -83,7 +101,9 @@ class ClientDetail(Base):
         """
 
         client_id = generate_secure_random_string(client_id_byte_length)
-        secret = generate_secure_random_string(client_secret_byte_length)
+        secret, salt, hashed_secret = _generate_and_hash_secret(
+            client_secret_byte_length, encoding
+        )
 
         if not scopes:
             scopes = DEFAULT_SCOPES
@@ -99,12 +119,6 @@ class ClientDetail(Base):
 
         if not monitors:
             monitors = DEFAULT_MONITORS
-
-        salt = generate_salt()
-        hashed_secret = hash_credential_with_salt(
-            secret.encode(encoding),
-            salt.encode(encoding),
-        )
 
         data = {
             "id": client_id,
@@ -173,11 +187,8 @@ class ClientDetail(Base):
         self, db: Session, secret_length_bytes: int, encoding: str = "UTF-8"
     ) -> str:
         """Generates a new secret, persists its hash, and returns the plaintext secret."""
-        new_secret = generate_secure_random_string(secret_length_bytes)
-        new_salt = generate_salt()
-        new_hashed_secret = hash_credential_with_salt(
-            new_secret.encode(encoding),
-            new_salt.encode(encoding),
+        new_secret, new_salt, new_hashed_secret = _generate_and_hash_secret(
+            secret_length_bytes, encoding
         )
         self.update(db, data={"hashed_secret": new_hashed_secret, "salt": new_salt})
         return new_secret
