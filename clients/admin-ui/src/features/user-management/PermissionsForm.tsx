@@ -1,14 +1,5 @@
 import { useHasPermission } from "common/Restrict";
-import {
-  Button,
-  ChakraFlex as Flex,
-  ChakraStack as Stack,
-  ChakraText as Text,
-  Spin,
-  Tooltip,
-  useChakraDisclosure as useDisclosure,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Button, Flex, Spin, Tooltip, Typography, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -18,7 +9,6 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
@@ -44,19 +34,17 @@ export type FormValues = typeof defaultInitialValues;
  * When RBAC is enabled (alphaRbac flag), UserManagementTabs renders RolesForm
  * instead of this component. This component only handles legacy permissions.
  */
+const { Text } = Typography;
+
 const PermissionsForm = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
 
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
-  const {
-    isOpen: chooseApproverIsOpen,
-    onOpen: chooseApproverOpen,
-    onClose: chooseApproverClose,
-  } = useDisclosure();
+  const [isChooseApproverOpen, setIsChooseApproverOpen] = useState(false);
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
     initialManagedSystems,
@@ -115,7 +103,7 @@ const PermissionsForm = () => {
     });
 
     if (isErrorResult(userPermissionsResult)) {
-      toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
+      message.error(getErrorMessage(userPermissionsResult.error));
       return;
     }
     if (!skipAssigningSystems) {
@@ -125,16 +113,16 @@ const PermissionsForm = () => {
         fidesKeys,
       });
       if (isErrorResult(userSystemsResult)) {
-        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        message.error(getErrorMessage(userSystemsResult.error));
         return;
       }
     }
-    toast(successToastParams("Permissions updated"));
+    message.success("Permissions updated");
   };
 
   const updatePermissions = async (values: FormValues) => {
-    if (chooseApproverIsOpen) {
-      chooseApproverClose();
+    if (isChooseApproverOpen) {
+      setIsChooseApproverOpen(false);
     }
     if (!activeUserId) {
       return;
@@ -152,7 +140,7 @@ const PermissionsForm = () => {
       values.roles.includes(RoleRegistryEnum.APPROVER)
     ) {
       // approvers cannot be system managers on back-end
-      chooseApproverOpen();
+      setIsChooseApproverOpen(true);
     } else {
       await updatePermissions(values);
     }
@@ -205,12 +193,10 @@ const PermissionsForm = () => {
     >
       {({ values, isSubmitting, dirty }) => (
         <Form>
-          <Stack spacing={7}>
-            <Stack spacing={3} data-testid="role-options">
-              <Flex alignItems="center">
-                <Text fontSize="sm" fontWeight="semibold" mr={1}>
-                  User role
-                </Text>
+          <Flex vertical gap={28}>
+            <Flex vertical gap={12} data-testid="role-options">
+              <Flex align="center">
+                <Text className="mr-1 text-sm font-semibold">User role</Text>
                 <InfoTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
               {availableRoles.map((role) => {
@@ -242,7 +228,7 @@ const PermissionsForm = () => {
                   </Button>
                 </Tooltip>
               )}
-            </Stack>
+            </Flex>
             <div>
               <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
                 Cancel
@@ -263,10 +249,10 @@ const PermissionsForm = () => {
                 </Button>
               </Tooltip>
             </div>
-          </Stack>
+          </Flex>
           <ConfirmationModal
-            isOpen={chooseApproverIsOpen}
-            onClose={chooseApproverClose}
+            isOpen={isChooseApproverOpen}
+            onClose={() => setIsChooseApproverOpen(false)}
             onConfirm={() => updatePermissions(values)}
             title="Change role to Approver"
             testId="downgrade-to-approver-confirmation-modal"
