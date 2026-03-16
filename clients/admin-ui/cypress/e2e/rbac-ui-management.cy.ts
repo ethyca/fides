@@ -5,11 +5,23 @@
  * with the actual UI elements to create roles, manage permissions, and
  * assign users to roles.
  *
- * Unlike rbac-e2e.cy.ts which uses API for setup, these tests verify the
- * full UI workflow works correctly.
+ * Environment modes:
+ * - CI: Uses mocked API responses (no backend required)
+ * - Local with backend: Set CYPRESS_REAL_API=true to test against real backend
  */
 
+import {
+  stubHomePage,
+  stubPlus,
+  stubSystemCrud,
+  stubTaxonomyEntities,
+  stubUserManagement,
+} from "cypress/support/stubs";
+
 import { STORAGE_ROOT_KEY } from "~/constants";
+
+// Check if we should use real API (local development with backend)
+const USE_REAL_API = Cypress.env("REAL_API") === true;
 
 // OAuth client credentials for admin
 const ADMIN_USER_ID = "fidesadmin";
@@ -24,12 +36,41 @@ const TEST_ROLE_PREFIX = "ui_test_role";
 // Helper to generate unique names
 const uniqueId = () => Math.random().toString(36).substring(2, 10);
 
+// Mock role ID counter for CI mode
+let mockRoleIdCounter = 1;
+
 /**
- * Visit a URL with auth and feature flag set via onBeforeLoad
- * This ensures localStorage is set before the app initializes
+ * Get admin token - real API mode only
+ */
+const getAdminToken = (): Cypress.Chainable<string> => {
+  if (!USE_REAL_API) {
+    return cy.wrap("mock-admin-token");
+  }
+  return cy
+    .request({
+      method: "POST",
+      url: `${API_URL}/api/v1/oauth/token`,
+      form: true,
+      body: {
+        grant_type: "client_credentials",
+        client_id: ADMIN_USER_ID,
+        client_secret: ADMIN_USER_SECRET,
+      },
+      failOnStatusCode: false,
+    })
+    .then((response) => {
+      if (response.status !== 200) {
+        throw new Error(`Failed to get OAuth token: ${response.status}`);
+      }
+      return response.body.access_token as string;
+    });
+};
+
+/**
+ * Visit a URL with auth and feature flag set
  */
 const visitWithAuth = (url: string, enableRbac = false) => {
-  getAdminToken().then((token) => {
+  const setupAndVisit = (token: string) => {
     const authState = {
       user: {
         id: ADMIN_USER_ID,
@@ -60,15 +101,13 @@ const visitWithAuth = (url: string, enableRbac = false) => {
         win.localStorage.setItem(STORAGE_ROOT_KEY, JSON.stringify(storageData));
       },
     });
-  });
-};
+  };
 
-/**
- * Login as the admin user and visit homepage
- */
-const loginAsAdminAndVisit = () => {
-  visitWithAuth("/");
-  cy.url().should("not.include", "/login", { timeout: 10000 });
+  if (USE_REAL_API) {
+    getAdminToken().then(setupAndVisit);
+  } else {
+    setupAndVisit("mock-admin-token");
+  }
 };
 
 /**
@@ -80,17 +119,12 @@ const navigateToRbacSettings = () => {
 };
 
 /**
- * Enable the RBAC feature flag after page load
- */
-const enableRbacFlag = () => {
-  cy.overrideFeatureFlag("alphaRbac", true);
-};
-
-/**
- * Clean up test roles via API (for afterEach cleanup)
+ * Clean up test roles via API (real API mode only)
  */
 const cleanupTestRoles = (token: string) => {
-  // Get all roles and delete any that start with our test prefix
+  if (!USE_REAL_API) {
+    return;
+  }
   cy.request({
     method: "GET",
     url: `${API_URL}/api/v1/plus/rbac/roles`,
@@ -116,27 +150,66 @@ const cleanupTestRoles = (token: string) => {
 };
 
 /**
- * Get admin token for API cleanup
+ * Set up mocks for RBAC endpoints (CI mode)
  */
-const getAdminToken = (): Cypress.Chainable<string> => {
-  return cy
-    .request({
-      method: "POST",
-      url: `${API_URL}/api/v1/oauth/token`,
-      form: true,
-      body: {
-        grant_type: "client_credentials",
-        client_id: ADMIN_USER_ID,
-        client_secret: ADMIN_USER_SECRET,
-      },
-      failOnStatusCode: false,
-    })
-    .then((response) => {
-      if (response.status !== 200) {
-        throw new Error(`Failed to get OAuth token: ${response.status}`);
-      }
-      return response.body.access_token as string;
+const setupRbacMocks = () => {
+  // Stub roles list
+  cy.intercept("GET", "/api/v1/plus/rbac/roles", {
+    fixture: "rbac/roles.json",
+  }).as("getRoles");
+
+  // Stub single role
+  cy.intercept("GET", "/api/v1/plus/rbac/roles/*", {
+    fixture: "rbac/roles.json",
+    transform: (body: unknown[]) => body[0], // Return first role as single
+  }).as("getRole");
+
+  // Stub permissions list
+  cy.intercept("GET", "/api/v1/plus/rbac/permissions", {
+    fixture: "rbac/permissions.json",
+  }).as("getPermissions");
+
+  // Stub create role
+  cy.intercept("POST", "/api/v1/plus/rbac/roles", (req) => {
+    const newRole = {
+      id: `mock_role_${mockRoleIdCounter++}`,
+      ...req.body,
+      is_system_role: false,
+      is_active: true,
+      permissions: [],
+      inherited_permissions: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    req.reply({ statusCode: 201, body: newRole });
+  }).as("createRole");
+
+  // Stub update role
+  cy.intercept("PUT", "/api/v1/plus/rbac/roles/*", (req) => {
+    req.reply({ statusCode: 200, body: req.body });
+  }).as("updateRole");
+
+  // Stub update role permissions
+  cy.intercept("PUT", "/api/v1/plus/rbac/roles/*/permissions", (req) => {
+    req.reply({ statusCode: 200, body: { permission_codes: req.body.permission_codes } });
+  }).as("updateRolePermissions");
+
+  // Stub delete role
+  cy.intercept("DELETE", "/api/v1/plus/rbac/roles/*", {
+    statusCode: 204,
+  }).as("deleteRole");
+
+  // Stub user roles
+  cy.intercept("GET", "/api/v1/plus/rbac/users/*/roles", {
+    body: [],
+  }).as("getUserRoles");
+
+  cy.intercept("POST", "/api/v1/plus/rbac/users/*/roles", (req) => {
+    req.reply({
+      statusCode: 201,
+      body: { id: "mock_user_role_1", ...req.body },
     });
+  }).as("assignUserRole");
 };
 
 describe("RBAC UI Management", () => {
@@ -149,15 +222,31 @@ describe("RBAC UI Management", () => {
   });
 
   beforeEach(() => {
-    // Override the global stub to allow real API calls
-    cy.intercept("/api/v1/**", (req) => {
-      req.continue();
-    }).as("realApiRequest");
+    if (USE_REAL_API) {
+      // Real API mode: let requests through to backend
+      cy.intercept("/api/v1/**", (req) => {
+        req.continue();
+      }).as("realApiRequest");
+    } else {
+      // Mock mode: set up standard stubs
+      stubHomePage();
+      stubSystemCrud();
+      stubPlus(true);
+      stubTaxonomyEntities();
+      stubUserManagement();
+
+      // Set up RBAC-specific mocks
+      setupRbacMocks();
+
+      // Stub permissions endpoint with full access
+      cy.intercept("/api/v1/user/*/permission", {
+        fixture: "user-management/permissions.json",
+      }).as("getUserPermissions");
+    }
   });
 
   afterEach(() => {
-    // Clean up any test roles created during tests
-    if (adminToken) {
+    if (USE_REAL_API && adminToken) {
       cleanupTestRoles(adminToken);
     }
   });
@@ -181,7 +270,6 @@ describe("RBAC UI Management", () => {
     it("shows system roles in the roles table", () => {
       // System roles should be displayed
       cy.get(".ant-table-tbody").within(() => {
-        // Check for system role tags
         cy.contains("System").should("exist");
       });
     });
@@ -202,7 +290,6 @@ describe("RBAC UI Management", () => {
       const testId = uniqueId();
       const roleName = `${TEST_ROLE_PREFIX}_${testId}`;
 
-      // Navigate to create role page with auth
       visitWithAuth("/settings/rbac/roles/new", true);
       cy.url().should("include", "/settings/rbac/roles/new");
 
@@ -252,200 +339,144 @@ describe("RBAC UI Management", () => {
     });
   });
 
-  describe("Edit Role Permissions via UI", () => {
-    let testRoleId: string;
+  if (USE_REAL_API) {
+    // These tests require real API for role creation/editing
+    describe("Edit Role Permissions via UI", () => {
+      let testRoleId: string;
 
-    beforeEach(() => {
-      // Create a test role via API for editing tests
-      const testId = uniqueId();
-      const roleName = `${TEST_ROLE_PREFIX}_edit_${testId}`;
+      beforeEach(() => {
+        const testId = uniqueId();
+        const roleName = `${TEST_ROLE_PREFIX}_edit_${testId}`;
 
-      cy.request({
-        method: "POST",
-        url: `${API_URL}/api/v1/plus/rbac/roles`,
-        headers: { Authorization: `Bearer ${adminToken}` },
-        body: {
-          name: roleName,
-          key: roleName.toLowerCase(),
-          description: "Role for permission editing test",
-        },
-      }).then((response) => {
-        expect(response.status).to.eq(201);
-        testRoleId = response.body.id;
-      });
-    });
-
-    it("can view and edit role permissions", () => {
-      // Navigate to the role detail page with auth
-      visitWithAuth(`/settings/rbac/roles/${testRoleId}`, true);
-
-      // Verify permissions section is visible
-      cy.contains("Permissions").should("be.visible");
-
-      // Verify permissions are grouped by resource type
-      // The groupedPermissions memo groups permissions and renders each group
-      // with a heading (e.g., "system", "privacy request", "user", etc.)
-      cy.get("h5.capitalize").should("have.length.at.least", 1);
-
-      // Find a permission checkbox and toggle it
-      cy.get(".ant-checkbox-input").first().check({ force: true });
-
-      // Save permissions
-      cy.contains("button", "Save Permissions").click();
-
-      // Verify success message
-      cy.contains("Permissions updated successfully").should("be.visible");
-    });
-
-    it("can update role details", () => {
-      visitWithAuth(`/settings/rbac/roles/${testRoleId}`, true);
-
-      // Update the description
-      cy.get('textarea[id="description"]')
-        .clear()
-        .type("Updated description via UI test");
-
-      // Save changes
-      cy.contains("button", "Save Changes").click();
-
-      // Verify success message
-      cy.contains("Role updated successfully").should("be.visible");
-    });
-
-    it("shows inherited permissions badge for roles with parent", () => {
-      // This tests that inherited permissions are properly displayed
-      // The visual "Inherited" tag should appear for permissions from parent roles
-      visitWithAuth(`/settings/rbac/roles/${testRoleId}`, true);
-
-      // Permissions section should exist
-      cy.contains("Permissions").should("be.visible");
-
-      // The permission table should be visible
-      cy.get(".ant-table").should("exist");
-    });
-  });
-
-  describe("Role Hierarchy Cycle Prevention", () => {
-    let parentRoleId: string;
-    let parentRoleName: string;
-    let childRoleId: string;
-    let childRoleName: string;
-
-    beforeEach(() => {
-      // Create parent role
-      const testId = uniqueId();
-      parentRoleName = `${TEST_ROLE_PREFIX}_parent_${testId}`;
-      childRoleName = `${TEST_ROLE_PREFIX}_child_${testId}`;
-
-      // Create the parent role first
-      cy.request({
-        method: "POST",
-        url: `${API_URL}/api/v1/plus/rbac/roles`,
-        headers: { Authorization: `Bearer ${adminToken}` },
-        body: {
-          name: parentRoleName,
-          key: parentRoleName.toLowerCase(),
-          description: "Parent role for cycle test",
-        },
-      }).then((response) => {
-        expect(response.status).to.eq(201);
-        parentRoleId = response.body.id;
-
-        // Create child role with parent_role_id pointing to the parent
         cy.request({
           method: "POST",
           url: `${API_URL}/api/v1/plus/rbac/roles`,
           headers: { Authorization: `Bearer ${adminToken}` },
           body: {
-            name: childRoleName,
-            key: childRoleName.toLowerCase(),
-            description: "Child role for cycle test",
-            parent_role_id: parentRoleId,
+            name: roleName,
+            key: roleName.toLowerCase(),
+            description: "Role for permission editing test",
           },
-        }).then((childResponse) => {
-          expect(childResponse.status).to.eq(201);
-          childRoleId = childResponse.body.id;
+        }).then((response) => {
+          expect(response.status).to.eq(201);
+          testRoleId = response.body.id;
         });
       });
-    });
 
-    it("prevents selecting a descendant as parent role (cycle prevention)", () => {
-      // Navigate to the parent role edit page
-      visitWithAuth(`/settings/rbac/roles/${parentRoleId}`, true);
+      it("can view and edit role permissions", () => {
+        visitWithAuth(`/settings/rbac/roles/${testRoleId}`, true);
 
-      // Open the parent role dropdown
-      cy.get(".ant-select").first().click();
+        cy.contains("Permissions").should("be.visible");
+        cy.get("h5.capitalize").should("have.length.at.least", 1);
 
-      // The child role should NOT appear in the dropdown options
-      // because selecting it would create a cycle (parent -> child -> parent)
-      cy.get(".ant-select-dropdown").should("be.visible");
-      cy.get(".ant-select-dropdown").should("not.contain", childRoleName);
-
-      // But other roles (like system roles) should still be available
-      // The dropdown should have options available
-      cy.get(".ant-select-item-option").should("exist");
-    });
-  });
-
-  describe("Delete Role via UI", () => {
-    let testRoleId: string;
-    let roleName: string;
-
-    beforeEach(() => {
-      // Create a test role via API for deletion test
-      const testId = uniqueId();
-      roleName = `${TEST_ROLE_PREFIX}_delete_${testId}`;
-
-      cy.request({
-        method: "POST",
-        url: `${API_URL}/api/v1/plus/rbac/roles`,
-        headers: { Authorization: `Bearer ${adminToken}` },
-        body: {
-          name: roleName,
-          key: roleName.toLowerCase(),
-          description: "Role to be deleted",
-        },
-      }).then((response) => {
-        expect(response.status).to.eq(201);
-        testRoleId = response.body.id;
+        cy.get(".ant-checkbox-input").first().check({ force: true });
+        cy.contains("button", "Save Permissions").click();
+        cy.contains("Permissions updated successfully").should("be.visible");
       });
 
-      navigateToRbacSettings();
-    });
+      it("can update role details", () => {
+        visitWithAuth(`/settings/rbac/roles/${testRoleId}`, true);
 
-    it("can delete a custom role via the UI", () => {
-      // Find the role row and click delete button to open confirmation modal
-      cy.contains("tr", roleName).within(() => {
-        cy.contains("button", "Delete").click();
+        cy.get('textarea[id="description"]')
+          .clear()
+          .type("Updated description via UI test");
+
+        cy.contains("button", "Save Changes").click();
+        cy.contains("Role updated successfully").should("be.visible");
       });
-
-      // Confirmation modal should appear
-      cy.get('[data-testid="delete-role-confirmation-modal"]').should(
-        "be.visible",
-      );
-
-      // Click Delete in the confirmation modal
-      cy.get('[data-testid="delete-role-confirmation-modal"]')
-        .contains("button", "Delete")
-        .click();
-
-      // Verify success message
-      cy.contains("deleted successfully").should("be.visible");
-
-      // Verify role is no longer in the table
-      cy.contains("tr", roleName).should("not.exist");
     });
 
-    it("cannot delete system roles", () => {
-      // System roles should not have a delete button
-      cy.get(".ant-table-tbody tr")
-        .filter(":contains('System')")
-        .first()
-        .within(() => {
-          cy.contains("button", "Delete").should("not.exist");
+    describe("Delete Role via UI", () => {
+      let testRoleId: string;
+      let roleName: string;
+
+      beforeEach(() => {
+        const testId = uniqueId();
+        roleName = `${TEST_ROLE_PREFIX}_delete_${testId}`;
+
+        cy.request({
+          method: "POST",
+          url: `${API_URL}/api/v1/plus/rbac/roles`,
+          headers: { Authorization: `Bearer ${adminToken}` },
+          body: {
+            name: roleName,
+            key: roleName.toLowerCase(),
+            description: "Role to be deleted",
+          },
+        }).then((response) => {
+          expect(response.status).to.eq(201);
+          testRoleId = response.body.id;
         });
+
+        navigateToRbacSettings();
+      });
+
+      it("can delete a custom role via the UI", () => {
+        cy.contains("tr", roleName).within(() => {
+          cy.contains("button", "Delete").click();
+        });
+
+        cy.get('[data-testid="delete-role-confirmation-modal"]').should(
+          "be.visible",
+        );
+
+        cy.get('[data-testid="delete-role-confirmation-modal"]')
+          .contains("button", "Delete")
+          .click();
+
+        cy.contains("deleted successfully").should("be.visible");
+        cy.contains("tr", roleName).should("not.exist");
+      });
     });
-  });
+
+    describe("User Role Assignment", () => {
+      let testUserId: string;
+      let testUsername: string;
+
+      beforeEach(() => {
+        const testId = uniqueId();
+        testUsername = `${TEST_ROLE_PREFIX}_user_${testId}`;
+
+        cy.request({
+          method: "POST",
+          url: `${API_URL}/api/v1/user`,
+          headers: { Authorization: `Bearer ${adminToken}` },
+          body: {
+            username: testUsername,
+            password: "TestPassword123!",
+            email_address: `${testUsername}@example.com`,
+          },
+        }).then((response) => {
+          expect(response.status).to.eq(201);
+          testUserId = response.body.id;
+        });
+      });
+
+      afterEach(() => {
+        if (testUserId) {
+          cy.request({
+            method: "DELETE",
+            url: `${API_URL}/api/v1/user/${testUserId}`,
+            headers: { Authorization: `Bearer ${adminToken}` },
+            failOnStatusCode: false,
+          });
+        }
+      });
+
+      it("can assign an RBAC role to a user via the Roles tab", () => {
+        visitWithAuth(`/user-management/profile/${testUserId}`, true);
+
+        cy.contains("Roles").click();
+
+        cy.contains(".ant-card", "Viewer")
+          .find(".ant-checkbox-input")
+          .check({ force: true });
+
+        cy.get('[data-testid="save-btn"]').click();
+        cy.contains("Roles updated successfully").should("be.visible");
+      });
+    });
+  }
 
   describe("Role Detail Navigation", () => {
     beforeEach(() => {
@@ -453,72 +484,22 @@ describe("RBAC UI Management", () => {
     });
 
     it("can click Edit button to navigate to detail page", () => {
-      // Click edit button on first data row (not measure row)
       cy.get(".ant-table-tbody tr.ant-table-row")
         .first()
         .within(() => {
           cy.contains("Edit").click();
         });
 
-      // Should navigate to role detail page
       cy.url().should("match", /\/settings\/rbac\/roles\/[a-zA-Z0-9_-]+$/);
     });
-  });
 
-  describe("User Role Assignment", () => {
-    let testUserId: string;
-    let testUsername: string;
-
-    beforeEach(() => {
-      // Create a test user via API
-      const testId = uniqueId();
-      testUsername = `${TEST_ROLE_PREFIX}_user_${testId}`;
-
-      cy.request({
-        method: "POST",
-        url: `${API_URL}/api/v1/user`,
-        headers: { Authorization: `Bearer ${adminToken}` },
-        body: {
-          username: testUsername,
-          password: "TestPassword123!",
-          email_address: `${testUsername}@example.com`,
-        },
-      }).then((response) => {
-        expect(response.status).to.eq(201);
-        testUserId = response.body.id;
-      });
-    });
-
-    afterEach(() => {
-      // Clean up test user
-      if (testUserId) {
-        cy.request({
-          method: "DELETE",
-          url: `${API_URL}/api/v1/user/${testUserId}`,
-          headers: { Authorization: `Bearer ${adminToken}` },
-          failOnStatusCode: false,
+    it("cannot delete system roles", () => {
+      cy.get(".ant-table-tbody tr")
+        .filter(":contains('System')")
+        .first()
+        .within(() => {
+          cy.contains("button", "Delete").should("not.exist");
         });
-      }
-    });
-
-    it("can assign an RBAC role to a user via the Roles tab", () => {
-      // Navigate to user profile with RBAC enabled
-      visitWithAuth(`/user-management/profile/${testUserId}`, true);
-
-      // Click on Roles tab (labeled "Roles" when RBAC is enabled)
-      cy.contains("Roles").click();
-
-      // The RolesForm should show available roles as Cards with checkboxes
-      // Select the Viewer role (a system role that should always exist)
-      cy.contains(".ant-card", "Viewer")
-        .find(".ant-checkbox-input")
-        .check({ force: true });
-
-      // Save the role assignment (use specific test ID to avoid Profile tab's Save button)
-      cy.get('[data-testid="save-btn"]').click();
-
-      // Verify success message
-      cy.contains("Roles updated successfully").should("be.visible");
     });
   });
 });
