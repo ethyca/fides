@@ -25,6 +25,7 @@ from fides.api.common_exceptions import (
 from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.oauth.utils import verify_oauth_client
@@ -209,6 +210,16 @@ def patch_saas_config(
         )
 
     connection_config.update_saas_config(db, saas_config=saas_config)
+
+    patched_template = ConnectorRegistry.get_connector_template(saas_config.type)
+    SaaSConfigVersion.upsert(
+        db=db,
+        connector_type=saas_config.type,
+        version=saas_config.version,
+        config=saas_config.model_dump(mode="json"),
+        dataset=None,  # PATCH only updates the config; dataset is managed separately
+        is_custom=patched_template.custom if patched_template else True,
+    )
 
     # Create audit event for SaaS config update
     event_audit_service = EventAuditService(db)
