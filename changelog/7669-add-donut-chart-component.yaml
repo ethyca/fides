@@ -1,0 +1,4 @@
+type: Added
+description: Added DonutChart component to fidesui with Storybook stories
+pr: 7669
+labels: []
