@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import FidesBase
+from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.db.ctl_session import sync_session
 from fides.api.db.system import upsert_system
 from fides.api.models.application_config import ApplicationConfig
@@ -322,6 +323,45 @@ def load_default_dsr_policies(session: Session) -> None:
     log.info("All default policies & rules created")
 
 
+def sync_oob_saas_config_versions(session: Session) -> None:
+    """
+    Upserts a SaaSConfigVersion row for every bundled (OOB) SaaS connector
+    template currently loaded in memory.
+
+    Called on startup so the table is bootstrapped on first deploy and
+    picks up new template versions automatically on each upgrade.
+    Rows are immutable once written, so this is safe to call repeatedly.
+    """
+    # Import here to avoid circular imports at module load time
+    from fides.api.service.connectors.saas.connector_registry_service import (  # pylint: disable=import-outside-toplevel
+        FileConnectorTemplateLoader,
+    )
+    from fides.api.util.saas_util import (  # pylint: disable=import-outside-toplevel
+        load_config_from_string,
+        load_dataset_from_string,
+    )
+    from fides.api.schemas.saas.saas_config import SaaSConfig  # pylint: disable=import-outside-toplevel
+
+    templates = FileConnectorTemplateLoader.get_connector_templates()
+    for connector_type, template in templates.items():
+        try:
+            saas_config = SaaSConfig(**load_config_from_string(template.config))
+            dataset = load_dataset_from_string(template.dataset)
+            SaaSConfigVersion.upsert(
+                db=session,
+                connector_type=connector_type,
+                version=saas_config.version,
+                config=saas_config.model_dump(mode="json"),
+                dataset=dataset,
+                is_custom=False,
+            )
+        except Exception:  # pylint: disable=broad-except
+            log.exception(
+                "Failed to sync SaaSConfigVersion for OOB connector '{}'",
+                connector_type,
+            )
+
+
 def load_default_resources(session: Session) -> None:
     """
     Seed the database with default resources that the application
@@ -330,6 +370,7 @@ def load_default_resources(session: Session) -> None:
     load_default_organization(session)
     load_default_taxonomy(session)
     load_default_dsr_policies(session)
+    sync_oob_saas_config_versions(session)
 
 
 async def load_samples(async_session: AsyncSession) -> None:
