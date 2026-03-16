@@ -297,5 +297,5 @@ class TestApproveAndDenyFromPreApprovalStatuses:
             ),
         ).first()
         assert audit_log is not None
-        assert audit_log.message == ""
+        assert audit_log.message is None
         audit_log.delete(db)

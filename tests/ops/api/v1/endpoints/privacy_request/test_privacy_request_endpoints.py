@@ -4735,7 +4735,10 @@ class TestMarkPrivacyRequestPreApproveEligible:
         ).first()
 
         assert approval_audit_log is not None
-        assert approval_audit_log.message == None
+        assert (
+            approval_audit_log.message
+            == "Request auto-approved by pre-approval webhooks"
+        )
         assert approval_audit_log.webhook_id == pre_approval_webhooks[1].id
 
         approval_audit_log.delete(db)
