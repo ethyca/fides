@@ -1,0 +1,4 @@
+type: Added
+description: Add EU AI Act Fundamental Rights Impact Assessment (FRIA) template
+pr: 7656
+labels: ["db-migration"]

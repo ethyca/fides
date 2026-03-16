@@ -8,6 +8,8 @@ the OAuth initiation step will store the tokens once the user authorizes.
 from datetime import datetime
 from typing import Optional
 
+from pydantic import ConfigDict
+
 from fides.api.schemas.base_class import FidesSchema, NoValidationSchema
 
 
@@ -17,7 +19,13 @@ class JiraTicketSchema(FidesSchema):
     All fields are optional because secrets are populated progressively:
     the connection is created first, then the OAuth flow fills in the
     token fields via the callback.
+
+    Extra fields are allowed so that Fidesplus can store additional
+    configuration (project_key, issue_type, templates, etc.) in the
+    same secrets dict without requiring schema changes here.
     """
+
+    model_config = ConfigDict(extra="allow")
 
     # OAuth tokens — populated by the Atlassian OAuth 2.0 callback
     access_token: Optional[str] = None

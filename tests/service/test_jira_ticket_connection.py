@@ -83,14 +83,16 @@ class TestJiraTicketSecretsSchema:
         schema_cls = get_connection_secrets_schema("jira_ticket", None)
         assert schema_cls is JiraTicketSchema
 
-    def test_extra_fields_ignored(self):
-        """Extra fields are silently ignored (from_attributes / extra=ignore)."""
+    def test_extra_fields_preserved(self):
+        """Extra fields are preserved so Fidesplus can store template config."""
         schema = JiraTicketSchema(
             access_token="token",
-            unexpected_field="should_be_ignored",  # type: ignore[call-arg]
+            project_key="PLAY",
+            summary_template="DSR: {{ request_type }}",
         )
         assert schema.access_token == "token"
-        assert not hasattr(schema, "unexpected_field")
+        assert schema.project_key == "PLAY"
+        assert schema.summary_template == "DSR: {{ request_type }}"
 
 
 class TestJiraTicketSingletonEnforcement:

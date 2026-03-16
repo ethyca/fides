@@ -254,6 +254,10 @@ div#fides-banner-heading {
   font-weight: 600;
 }
 
+.fides-experience-description-part {
+  display: contents;
+}
+
 div#fides-banner-notices {
   margin-top: 16px;
 }
