@@ -185,7 +185,7 @@ const RoleDetailPage: NextPage = () => {
   if (error || rolesError || permissionsError) {
     return (
       <ErrorPage
-        error={error ?? rolesError ?? permissionsError}
+        error={(error ?? rolesError ?? permissionsError)!}
         defaultMessage="A problem occurred while fetching RBAC data"
       />
     );

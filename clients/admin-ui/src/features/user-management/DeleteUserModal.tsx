@@ -12,7 +12,6 @@ import {
   ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
   ChakraText as Text,
-  ChakraUseDisclosureReturn as UseDisclosureReturn,
   useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -69,11 +68,13 @@ const useDeleteUserModal = ({
   };
 };
 
-const DeleteUserModal = ({
-  user,
-  ...modal
-}: { user: User } & UseDisclosureReturn) => {
-  const { isOpen, onClose } = modal;
+interface DeleteUserModalProps {
+  user: User;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const DeleteUserModal = ({ user, isOpen, onClose }: DeleteUserModalProps) => {
   const { handleDeleteUser, validationSchema } = useDeleteUserModal({
     id: user.id,
     username: user.username,
