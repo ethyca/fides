@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.79.1a3.dev132+g105d32489"
+    "version": "2.79.1a3.dev133+g7b54e7436"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2206,9 +2206,8 @@
           "System"
         ],
         "summary": "Get System Connections",
-        "description": "Return all the connection configs related to a system.\n\nDeprecated: Use GET /connection with `linked_systems` in the response,\nor GET /connection/{connection_key}/system-links to manage links directly.",
+        "description": "Return all the connection configs related to a system.",
         "operationId": "get_system_connections_api_v1_system__fides_key__connection_get",
-        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
