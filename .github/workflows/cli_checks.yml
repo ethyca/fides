@@ -6,8 +6,6 @@ name: CLI Command Checks
 
 on:
   pull_request:
-  merge_group:
-    types: [checks_requested]
   push:
     branches:
       - "main"
