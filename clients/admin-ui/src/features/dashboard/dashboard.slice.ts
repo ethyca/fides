@@ -1,137 +1,20 @@
 import { baseApi } from "~/features/common/api.slice";
 
-type PostureBand = "critical" | "at_risk" | "good" | "excellent";
-type DiffDirection = "up" | "down" | "unchanged";
-
-export interface PostureDimension {
-  dimension: string;
-  label: string;
-  weight: number;
-  score: number;
-  band: PostureBand;
-}
-
-export interface PostureResponse {
-  score: number;
-  band: PostureBand;
-  diff_percent: number;
-  diff_direction: DiffDirection;
-  agent_annotation: string;
-  dimensions: PostureDimension[];
-}
-
-interface QuickAction {
-  id: string;
-  title: string;
-  action: string;
-  action_url: string;
-}
-
-interface AgentBriefingResponse {
-  briefing: string;
-  quick_actions: QuickAction[];
-}
-
-export type ActionType =
-  | "classification_review"
-  | "dsr_action"
-  | "system_review"
-  | "steward_assignment"
-  | "consent_anomaly"
-  | "policy_violation"
-  | "pia_update";
-
-export type ActionSeverity = "critical" | "high" | "medium" | "low";
-
-type ActionStatus = "pending" | "in_progress" | "completed";
-
-export interface PriorityAction {
-  id: string;
-  type: ActionType;
-  severity: ActionSeverity;
-  title: string;
-  message: string;
-  agent_summary: string;
-  due_date: string | null;
-  action_data: Record<string, unknown>;
-  status: ActionStatus;
-}
-
-interface PriorityActionsResponse {
-  items: PriorityAction[];
-  total: number;
-  page: number;
-  size: number;
-  pages: number;
-}
-
-interface PriorityActionsParams {
-  page?: number;
-  size?: number;
-  dimension?: string | null;
-}
-
-type TrendPeriod = "30d" | "60d" | "90d";
-
-export interface TrendMetric {
-  name: string;
-  value: number;
-  history: number[];
-  metadata: Record<string, unknown>;
-  diff: number;
-}
-
-interface TrendsResponse {
-  metrics: Record<string, TrendMetric>;
-}
-
-export interface AstralisResponse {
-  active_conversations: number;
-  completed_assessments: number;
-  awaiting_response: number;
-  risks_identified: number;
-}
-
-export interface ActivityFeedItem {
-  actor_type: "user" | "agent";
-  message: string;
-  timestamp: string;
-}
-
-interface ActivityFeedResponse {
-  items: ActivityFeedItem[];
-  total: number;
-  page: number;
-  size: number;
-  pages: number;
-}
-
-interface ActivityFeedParams {
-  page?: number;
-  size?: number;
-  start_date?: string;
-  end_date?: string;
-}
-
-interface PrivacyRequestRegion {
-  name: string;
-  level: "global" | "country" | "state";
-  access_count: number;
-  erasure_count: number;
-}
-
-interface PrivacyRequestsResponse {
-  diff_month_over_month: number;
-  regions: PrivacyRequestRegion[];
-}
-
-interface PrivacyRequestsParams {
-  country?: string;
-}
-
-interface ResetResponse {
-  message: string;
-}
+import type {
+  ActivityFeedParams,
+  ActivityFeedResponse,
+  AgentBriefingResponse,
+  AstralisResponse,
+  PostureResponse,
+  PriorityAction,
+  PriorityActionsParams,
+  PriorityActionsResponse,
+  PrivacyRequestsParams,
+  PrivacyRequestsResponse,
+  ResetResponse,
+  TrendsResponse,
+} from "./types";
+import { TrendPeriod } from "./types";
 
 const dashboardApi = baseApi.injectEndpoints({
   endpoints: (build) => ({

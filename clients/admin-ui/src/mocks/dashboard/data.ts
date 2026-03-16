@@ -1,13 +1,20 @@
 import type {
   PostureResponse,
   PriorityAction,
-} from "~/features/dashboard/dashboard.slice";
+} from "~/features/dashboard/types";
+import {
+  ActionSeverity,
+  ActionStatus,
+  ActionType,
+  DiffDirection,
+  PostureBand,
+} from "~/features/dashboard/types";
 
 export const mockPosture: PostureResponse = {
   score: 64,
-  band: "good",
+  band: PostureBand.GOOD,
   diff_percent: 3.8,
-  diff_direction: "up",
+  diff_direction: DiffDirection.UP,
   agent_annotation:
     "Up 3.8 points this week, driven by Casey completing 34 classification reviews across Snowflake and BigQuery.",
   dimensions: [
@@ -16,28 +23,28 @@ export const mockPosture: PostureResponse = {
       label: "Coverage",
       weight: 0.3,
       score: 71,
-      band: "good",
+      band: PostureBand.GOOD,
     },
     {
       dimension: "classification_health",
       label: "Classification Health",
       weight: 0.23,
       score: 58,
-      band: "at_risk",
+      band: PostureBand.AT_RISK,
     },
     {
       dimension: "dsr_compliance",
       label: "DSR Compliance",
       weight: 0.23,
       score: 74,
-      band: "good",
+      band: PostureBand.GOOD,
     },
     {
       dimension: "consent_alignment",
       label: "Consent Alignment",
       weight: 0.24,
       score: 28,
-      band: "critical",
+      band: PostureBand.CRITICAL,
     },
   ],
 };
@@ -45,8 +52,8 @@ export const mockPosture: PostureResponse = {
 export const mockPriorityActions: PriorityAction[] = [
   {
     id: "act-001",
-    type: "dsr_action",
-    severity: "critical",
+    type: ActionType.DSR_ACTION,
+    severity: ActionSeverity.CRITICAL,
 
     title: "Overdue erasure request",
     message: "DSR-4521 is 34 days overdue. SLA breach since Feb 9, 2026.",
@@ -57,12 +64,12 @@ export const mockPriorityActions: PriorityAction[] = [
       request_id: "pri-4521",
       regulation: "ccpa",
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-002",
-    type: "policy_violation",
-    severity: "critical",
+    type: ActionType.POLICY_VIOLATION,
+    severity: ActionSeverity.CRITICAL,
 
     title: "CCPA retention policy violation",
     message:
@@ -75,12 +82,12 @@ export const mockPriorityActions: PriorityAction[] = [
       violation_type: "retention",
       records_affected: 12400,
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-003",
-    type: "consent_anomaly",
-    severity: "high",
+    type: ActionType.CONSENT_ANOMALY,
+    severity: ActionSeverity.HIGH,
 
     title: "Consent opt-in rate drop",
     message:
@@ -93,12 +100,12 @@ export const mockPriorityActions: PriorityAction[] = [
       previous_rate: 0.78,
       current_rate: 0.34,
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-004",
-    type: "classification_review",
-    severity: "medium",
+    type: ActionType.CLASSIFICATION_REVIEW,
+    severity: ActionSeverity.MEDIUM,
 
     title: "12 new classifications pending review",
     message:
@@ -111,12 +118,12 @@ export const mockPriorityActions: PriorityAction[] = [
       high_confidence_count: 8,
       systems: ["snowflake-prod", "bigquery-analytics", "redshift-warehouse"],
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-005",
-    type: "steward_assignment",
-    severity: "medium",
+    type: ActionType.STEWARD_ASSIGNMENT,
+    severity: ActionSeverity.MEDIUM,
 
     title: "3 HR systems need data stewards",
     message:
@@ -128,12 +135,12 @@ export const mockPriorityActions: PriorityAction[] = [
       system_ids: ["sys-workday", "sys-bamboohr", "sys-adp"],
       system_names: ["Workday", "BambooHR", "ADP"],
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-006",
-    type: "dsr_action",
-    severity: "medium",
+    type: ActionType.DSR_ACTION,
+    severity: ActionSeverity.MEDIUM,
 
     title: "DSR approaching SLA deadline",
     message:
@@ -146,12 +153,12 @@ export const mockPriorityActions: PriorityAction[] = [
       regulation: "gdpr",
       pending_system: "Stripe",
     },
-    status: "in_progress",
+    status: ActionStatus.IN_PROGRESS,
   },
   {
     id: "act-007",
-    type: "system_review",
-    severity: "low",
+    type: ActionType.SYSTEM_REVIEW,
+    severity: ActionSeverity.LOW,
 
     title: "New system detected: Amplitude",
     message:
@@ -163,12 +170,12 @@ export const mockPriorityActions: PriorityAction[] = [
       system_name: "Amplitude",
       detected_data_categories: ["user.behavior", "user.device"],
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-008",
-    type: "pia_update",
-    severity: "low",
+    type: ActionType.PIA_UPDATE,
+    severity: ActionSeverity.LOW,
 
     title: "Privacy impact assessment needs update",
     message:
@@ -180,12 +187,12 @@ export const mockPriorityActions: PriorityAction[] = [
       system_id: "sys-segment",
       last_assessment_date: "2025-04-12",
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-009",
-    type: "dsr_action",
-    severity: "critical",
+    type: ActionType.DSR_ACTION,
+    severity: ActionSeverity.CRITICAL,
 
     title: "Overdue access request from EU resident",
     message:
@@ -197,12 +204,12 @@ export const mockPriorityActions: PriorityAction[] = [
       request_id: "pri-4602",
       regulation: "gdpr",
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-010",
-    type: "consent_anomaly",
-    severity: "critical",
+    type: ActionType.CONSENT_ANOMALY,
+    severity: ActionSeverity.CRITICAL,
 
     title: "Analytics tracking without consent",
     message:
@@ -214,12 +221,12 @@ export const mockPriorityActions: PriorityAction[] = [
       properties: ["eu-main", "eu-shop", "eu-blog"],
       vendor: "Google Analytics",
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-011",
-    type: "classification_review",
-    severity: "high",
+    type: ActionType.CLASSIFICATION_REVIEW,
+    severity: ActionSeverity.HIGH,
 
     title: "Sensitive health data detected in Postgres",
     message:
@@ -232,12 +239,12 @@ export const mockPriorityActions: PriorityAction[] = [
       high_confidence_count: 0,
       systems: ["postgres-prod"],
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-012",
-    type: "policy_violation",
-    severity: "high",
+    type: ActionType.POLICY_VIOLATION,
+    severity: ActionSeverity.HIGH,
 
     title: "Salesforce storing SSNs without encryption",
     message:
@@ -250,12 +257,12 @@ export const mockPriorityActions: PriorityAction[] = [
       violation_type: "encryption",
       records_affected: 5200,
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-013",
-    type: "steward_assignment",
-    severity: "medium",
+    type: ActionType.STEWARD_ASSIGNMENT,
+    severity: ActionSeverity.MEDIUM,
 
     title: "Marketing systems missing steward",
     message: "Marketo, Mailchimp, and Iterable have no assigned data steward.",
@@ -266,12 +273,12 @@ export const mockPriorityActions: PriorityAction[] = [
       system_ids: ["sys-marketo", "sys-mailchimp", "sys-iterable"],
       system_names: ["Marketo", "Mailchimp", "Iterable"],
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-014",
-    type: "dsr_action",
-    severity: "medium",
+    type: ActionType.DSR_ACTION,
+    severity: ActionSeverity.MEDIUM,
 
     title: "Bulk erasure batch stalled",
     message:
@@ -283,12 +290,12 @@ export const mockPriorityActions: PriorityAction[] = [
       request_id: "pri-batch-12",
       pending_system: "Snowflake",
     },
-    status: "in_progress",
+    status: ActionStatus.IN_PROGRESS,
   },
   {
     id: "act-015",
-    type: "system_review",
-    severity: "low",
+    type: ActionType.SYSTEM_REVIEW,
+    severity: ActionSeverity.LOW,
 
     title: "New system detected: Mixpanel",
     message:
@@ -300,12 +307,12 @@ export const mockPriorityActions: PriorityAction[] = [
       system_name: "Mixpanel",
       detected_data_categories: ["user.behavior", "user.device"],
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-016",
-    type: "system_review",
-    severity: "low",
+    type: ActionType.SYSTEM_REVIEW,
+    severity: ActionSeverity.LOW,
 
     title: "New system detected: Intercom",
     message:
@@ -317,12 +324,12 @@ export const mockPriorityActions: PriorityAction[] = [
       system_name: "Intercom",
       detected_data_categories: ["user.contact.email", "user.device"],
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
   {
     id: "act-017",
-    type: "pia_update",
-    severity: "low",
+    type: ActionType.PIA_UPDATE,
+    severity: ActionSeverity.LOW,
 
     title: "Stripe PIA due for annual refresh",
     message:
@@ -334,6 +341,6 @@ export const mockPriorityActions: PriorityAction[] = [
       system_id: "sys-stripe",
       last_assessment_date: "2025-02-18",
     },
-    status: "pending",
+    status: ActionStatus.PENDING,
   },
 ];

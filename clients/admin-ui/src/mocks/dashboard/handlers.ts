@@ -1,15 +1,15 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { rest } from "msw";
 
-import type { ActionType } from "~/features/dashboard/dashboard.slice";
+import { ActionType } from "~/features/dashboard/types";
 
 import { mockPosture, mockPriorityActions } from "./data";
 
 const DIMENSION_ACTION_TYPES: Record<string, ActionType[]> = {
-  coverage: ["system_review", "steward_assignment"],
-  classification_health: ["classification_review"],
-  dsr_compliance: ["dsr_action"],
-  consent_alignment: ["consent_anomaly", "policy_violation"],
+  coverage: [ActionType.SYSTEM_REVIEW, ActionType.STEWARD_ASSIGNMENT],
+  classification_health: [ActionType.CLASSIFICATION_REVIEW],
+  dsr_compliance: [ActionType.DSR_ACTION],
+  consent_alignment: [ActionType.CONSENT_ANOMALY, ActionType.POLICY_VIOLATION],
 };
 
 export const dashboardHandlers = () => {
