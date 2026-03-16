@@ -257,6 +257,48 @@ const previewScript = {
 rollupOptions.push(previewScript);
 
 /**
+ * Copy the official IAB TCF CMP stub to privacy-center as a static file.
+ * Publishers load this before fides.js so that window.__tcfapi is available
+ * immediately for downstream ad scripts.
+ *
+ * Uses a virtual module as input since there is no source to compile — we
+ * only need rollup to run the copy plugin.
+ */
+const copyStub = {
+  input: "\0virtual-stub",
+  plugins: [
+    {
+      name: "virtual-stub",
+      resolveId(id) {
+        if (id === "\0virtual-stub") return id;
+      },
+      load(id) {
+        if (id === "\0virtual-stub") return "// IAB TCF stub copy-only entry";
+      },
+    },
+    copy({
+      targets: [
+        {
+          src: "../node_modules/@iabtechlabtcf/stub/lib/stub.js",
+          dest: "../privacy-center/public/lib/",
+          rename: "fides-stub.js",
+        },
+      ],
+      verbose: true,
+      hook: "buildStart",
+    }),
+  ],
+  output: [
+    {
+      file: "dist/fides-stub.js",
+      format: "es",
+    },
+  ],
+};
+
+rollupOptions.push(copyStub);
+
+/**
  * In addition to our regular built outputs (like fides.js!) also generate a
  * fides-types.d.ts file from  our documented types for external use.
  */
