@@ -17,6 +17,18 @@ from fides.api.schemas.base_class import FidesSchema
 RequiredType = Literal["optional", "required"]
 
 
+class PrivacyCenterLink(FidesSchema):
+    label: str
+    url: str
+
+    @field_validator("url")
+    @classmethod
+    def validate_url_scheme(cls, v: str) -> str:
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("url must use the http or https scheme")
+        return v
+
+
 class CustomIdentity(FidesSchema):
     label: str
 
@@ -218,8 +230,11 @@ class PrivacyCenterConfig(FidesSchema):
     actions: List[PrivacyRequestOption]
     include_consent: Optional[bool] = Field(alias="includeConsent", default=None)
     consent: ConsentConfig
+    # Deprecated: prefer `links`. Kept for backwards compatibility.
     privacy_policy_url: Optional[str] = None
+    # Deprecated: prefer `links`. Kept for backwards compatibility.
     privacy_policy_url_text: Optional[str] = None
+    links: List[PrivacyCenterLink] = []
     policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
 
 

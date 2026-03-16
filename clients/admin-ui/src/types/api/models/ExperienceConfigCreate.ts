@@ -8,6 +8,7 @@ import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { RejectAllMechanism } from "./RejectAllMechanism";
+import type { ResurfaceBehavior } from "./ResurfaceBehavior";
 
 /**
  * Schema for creating Experience Configs via the API
@@ -35,6 +36,7 @@ export type ExperienceConfigCreate = {
    * Determines the behavior of the reject all button
    */
   reject_all_mechanism?: RejectAllMechanism | null;
+  resurface_behavior?: Array<ResurfaceBehavior> | null;
   privacy_notice_ids?: Array<string>;
   translations?: Array<ExperienceTranslationCreate>;
   properties?: Array<MinimalProperty>;

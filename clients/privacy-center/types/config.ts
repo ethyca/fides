@@ -89,8 +89,16 @@ export type Config = {
   actions: PrivacyRequestOption[];
   includeConsent?: boolean;
   consent?: ConsentConfig;
+  /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url?: string;
+  /** @deprecated Prefer `links`. Kept for backwards compatibility. */
   privacy_policy_url_text?: string;
+  links?: PrivacyCenterLink[];
+};
+
+export type PrivacyCenterLink = {
+  label: string;
+  url: string;
 };
 
 export type LegacyConsentConfig = {
