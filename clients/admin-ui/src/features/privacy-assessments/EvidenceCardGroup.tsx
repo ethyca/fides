@@ -1,8 +1,8 @@
 import { Space, Text } from "fidesui";
 
-import { formatDate } from "~/features/common/utils";
+import { formatDate, formatFieldName } from "~/features/common/utils";
 
-import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
+import { SOURCE_TYPE_LABELS } from "./constants";
 import styles from "./EvidenceCardGroup.module.scss";
 import { EvidenceItem } from "./types";
 
@@ -18,11 +18,7 @@ export const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => (
           {SOURCE_TYPE_LABELS[item.source_type] ?? item.source_type}
         </Text>
         <Text className={`mb-2 block ${styles.cardValue}`}>
-          <Text type="secondary">
-            {FIELD_NAME_LABELS[item.field_name] ??
-              item.field_name.replace(/_/g, " ")}
-            :{" "}
-          </Text>
+          <Text type="secondary">{formatFieldName(item.field_name)}: </Text>
           {item.value}
         </Text>
         <Text type="secondary" size="sm" className="block">

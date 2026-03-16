@@ -315,3 +315,18 @@ export const nFormatter = (num: number = 0, digits: number = 0) =>
     notation: "compact",
     maximumFractionDigits: digits,
   }).format(num);
+
+/**
+ * Humanizes a field_name value from evidence items.
+ *
+ * The backend emits two formats depending on how the evidence was generated:
+ * - AI path (bare key):   "legal_basis"                     → "Legal basis"
+ * - Non-AI path (dotted): "privacy_declaration.legal_basis" → "Legal basis"
+ *
+ * The source_type label already identifies where the data came from, so the
+ * prefix segment of a dotted path is redundant and is stripped.
+ */
+export const formatFieldName = (raw: string): string => {
+  const leaf = raw.includes(".") ? raw.split(".").pop()! : raw;
+  return sentenceCase(leaf.replace(/_/g, " "));
+};

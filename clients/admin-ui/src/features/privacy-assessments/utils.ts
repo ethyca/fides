@@ -1,4 +1,6 @@
-import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
+import { formatFieldName } from "~/features/common/utils";
+
+import { SOURCE_TYPE_LABELS } from "./constants";
 import type { AssessmentTaskResponse, EvidenceItem } from "./types";
 
 export const formatSystems = (task: AssessmentTaskResponse | null): string => {
@@ -57,8 +59,6 @@ export const filterEvidence = (
       (SOURCE_TYPE_LABELS[item.source_type] ?? item.source_type)
         .toLowerCase()
         .includes(lower) ||
-      (FIELD_NAME_LABELS[item.field_name] ?? item.field_name.replace(/_/g, " "))
-        .toLowerCase()
-        .includes(lower),
+      formatFieldName(item.field_name).toLowerCase().includes(lower),
   );
 };
