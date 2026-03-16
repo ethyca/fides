@@ -1,12 +1,5 @@
-import {
-  Button,
-  ColumnsType,
-  Flex,
-  Icons,
-  Tag,
-  useChakraDisclosure as useDisclosure,
-} from "fidesui";
-import { useMemo } from "react";
+import { Button, ColumnsType, Flex, Icons, Tag } from "fidesui";
+import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
@@ -99,7 +92,12 @@ export const UserSystemsCell = ({ userId }: { userId: string }) => {
 };
 
 export const UserActionsCell = ({ user }: { user: User }) => {
-  const deleteModal = useDisclosure();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const deleteModal = {
+    isOpen: isDeleteModalOpen,
+    onOpen: () => setIsDeleteModalOpen(true),
+    onClose: () => setIsDeleteModalOpen(false),
+  };
   return (
     <>
       <Button
@@ -108,7 +106,7 @@ export const UserActionsCell = ({ user }: { user: User }) => {
         icon={<Icons.TrashCan />}
         onClick={(e) => {
           e.stopPropagation();
-          deleteModal.onOpen();
+          setIsDeleteModalOpen(true);
         }}
         data-testid="delete-user-btn"
       />
