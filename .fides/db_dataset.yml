@@ -1371,6 +1371,8 @@ dataset:
       data_categories: [system.operations]
     - name: privacy_request_id
       data_categories: [system.operations]
+    - name: saas_version
+      data_categories: [system.operations]
     - name: status
       data_categories: [system.operations]
     - name: updated_at

@@ -2057,6 +2057,7 @@ class TestGetPrivacyRequests:
                                 "status": "approved",
                                 "updated_at": stringify_date(audit_log.updated_at),
                                 "user_id": "system",
+                                "saas_version": None,
                             }
                         ],
                         "my-mongo-db": [
@@ -2077,6 +2078,7 @@ class TestGetPrivacyRequests:
                                     mongo_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             }
                         ],
                         "my-postgres-db": [
@@ -2097,6 +2099,7 @@ class TestGetPrivacyRequests:
                                     postgres_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             },
                             {
                                 "connection_key": None,
@@ -2124,6 +2127,7 @@ class TestGetPrivacyRequests:
                                     second_postgres_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             },
                         ],
                         "my-async-connector": [
@@ -2153,6 +2157,7 @@ class TestGetPrivacyRequests:
                                     async_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             }
                         ],
                     },
@@ -3223,6 +3228,7 @@ class TestPrivacyRequestSearch:
                                 "status": "approved",
                                 "updated_at": stringify_date(audit_log.updated_at),
                                 "user_id": "system",
+                                "saas_version": None,
                             }
                         ],
                         "my-mongo-db": [
@@ -3243,6 +3249,7 @@ class TestPrivacyRequestSearch:
                                     mongo_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             }
                         ],
                         "my-postgres-db": [
@@ -3263,6 +3270,7 @@ class TestPrivacyRequestSearch:
                                     postgres_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             },
                             {
                                 "connection_key": None,
@@ -3290,6 +3298,7 @@ class TestPrivacyRequestSearch:
                                     second_postgres_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             },
                         ],
                         "my-async-connector": [
@@ -3319,6 +3328,7 @@ class TestPrivacyRequestSearch:
                                     async_execution_log.updated_at
                                 ),
                                 "user_id": None,
+                                "saas_version": None,
                             }
                         ],
                     },
