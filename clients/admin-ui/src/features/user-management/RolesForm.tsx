@@ -14,7 +14,6 @@ import {
   Flex,
   Spin,
   Typography,
-  useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -61,7 +60,8 @@ const RolesForm = () => {
   const message = useMessage();
   const router = useRouter();
   const activeUserId = useAppSelector(selectActiveUserId);
-  const assignSystemsModal = useDisclosure();
+  const [isAssignSystemsModalOpen, setIsAssignSystemsModalOpen] =
+    useState(false);
 
   // RBAC data fetching
   const { data: rbacRoles, isLoading: isLoadingRoles } = useGetRolesQuery({});
@@ -410,7 +410,7 @@ const RolesForm = () => {
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
-                        assignSystemsModal.onOpen();
+                        setIsAssignSystemsModalOpen(true);
                       }}
                       data-testid="assign-systems-btn"
                     >
@@ -429,10 +429,10 @@ const RolesForm = () => {
       </Flex>
 
       {/* System assignment modal */}
-      {assignSystemsModal.isOpen && (
+      {isAssignSystemsModalOpen && (
         <AssignSystemsModal
-          isOpen={assignSystemsModal.isOpen}
-          onClose={assignSystemsModal.onClose}
+          isOpen={isAssignSystemsModalOpen}
+          onClose={() => setIsAssignSystemsModalOpen(false)}
           assignedSystems={assignedSystems}
           onAssignedSystemChange={setAssignedSystems}
         />
