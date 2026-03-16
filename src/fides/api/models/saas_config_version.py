@@ -24,7 +24,11 @@ class SaaSConfigVersion(Base):
         return "saas_config_version"
 
     __table_args__ = (
-        UniqueConstraint("connector_type", "version", name="uq_saas_config_version"),
+        # is_custom is part of the key: the same version string can exist once
+        # as an OOB template and once as a custom override without conflict.
+        UniqueConstraint(
+            "connector_type", "version", "is_custom", name="uq_saas_config_version"
+        ),
     )
 
     connector_type = Column(String, nullable=False, index=True)
@@ -34,7 +38,7 @@ class SaaSConfigVersion(Base):
     is_custom = Column(Boolean, nullable=False, default=False)
 
     def __repr__(self) -> str:
-        return f"<SaaSConfigVersion(connector_type='{self.connector_type}', version='{self.version}')>"
+        return f"<SaaSConfigVersion(connector_type='{self.connector_type}', version='{self.version}', is_custom={self.is_custom})>"
 
     @classmethod
     def upsert(
@@ -47,17 +51,31 @@ class SaaSConfigVersion(Base):
         is_custom: bool = False,
     ) -> "SaaSConfigVersion":
         """
-        Insert a new version snapshot or return the existing one if already stored.
+        Insert or update a version snapshot.
 
-        If the row already exists the stored config/dataset are left unchanged —
-        a version string is treated as immutable once written.
+        - OOB rows (is_custom=False): treated as immutable once written — the
+          version string is controlled by Ethyca and the content never changes
+          for a given version.
+        - Custom rows (is_custom=True): config/dataset are updated in place so
+          that users can iterate on a custom template without bumping the version.
         """
         existing = (
             db.query(cls)
-            .filter(cls.connector_type == connector_type, cls.version == version)
+            .filter(
+                cls.connector_type == connector_type,
+                cls.version == version,
+                cls.is_custom == is_custom,
+            )
             .first()
         )
+
         if existing:
+            if is_custom:
+                existing.config = config
+                existing.dataset = dataset
+                db.add(existing)
+                db.commit()
+                db.refresh(existing)
             return existing
 
         return cls.create(
