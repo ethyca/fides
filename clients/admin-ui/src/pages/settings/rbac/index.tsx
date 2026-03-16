@@ -6,7 +6,6 @@ import {
   Table,
   Tag,
   Typography,
-  useChakraDisclosure as useDisclosure,
   useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
@@ -34,11 +33,7 @@ const RBACPage: NextPage = () => {
   } = useGetRolesQuery({ include_inactive: true });
   const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
   const [roleToDelete, setRoleToDelete] = useState<RBACRole | null>(null);
-  const {
-    isOpen: isDeleteModalOpen,
-    onOpen: openDeleteModal,
-    onClose: closeDeleteModal,
-  } = useDisclosure();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleDeleteRole = async () => {
     if (!roleToDelete) {
@@ -46,7 +41,7 @@ const RBACPage: NextPage = () => {
     }
     if (roleToDelete.is_system_role) {
       message.error("System roles cannot be deleted");
-      closeDeleteModal();
+      setIsDeleteModalOpen(false);
       return;
     }
     try {
@@ -55,13 +50,13 @@ const RBACPage: NextPage = () => {
     } catch (err) {
       message.error("Failed to delete role");
     }
-    closeDeleteModal();
+    setIsDeleteModalOpen(false);
     setRoleToDelete(null);
   };
 
   const confirmDelete = (role: RBACRole) => {
     setRoleToDelete(role);
-    openDeleteModal();
+    setIsDeleteModalOpen(true);
   };
 
   if (error) {
@@ -181,7 +176,7 @@ const RBACPage: NextPage = () => {
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
-          closeDeleteModal();
+          setIsDeleteModalOpen(false);
           setRoleToDelete(null);
         }}
         onConfirm={handleDeleteRole}
