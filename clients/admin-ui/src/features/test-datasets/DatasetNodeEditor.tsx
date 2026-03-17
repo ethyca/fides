@@ -12,10 +12,12 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
-import { Breadcrumb, Button, Flex, Icons } from "fidesui";
+import { Breadcrumb, Button, Flex, Icons, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
+import yaml, { YAMLException } from "js-yaml";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Editor } from "~/features/common/yaml/helpers";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 import AddNodeModal from "./AddNodeModal";
@@ -25,6 +27,7 @@ import DatasetEditorActionsContext, {
 import { DatasetTreeHoverProvider } from "./context/DatasetTreeHoverContext";
 import DatasetNodeDetailPanel from "./DatasetNodeDetailPanel";
 import DatasetTreeEdge from "./edges/DatasetTreeEdge";
+import { removeNulls } from "./helpers";
 import DatasetCollectionNode from "./nodes/DatasetCollectionNode";
 import DatasetFieldNode from "./nodes/DatasetFieldNode";
 import DatasetRootNode from "./nodes/DatasetRootNode";
@@ -169,6 +172,14 @@ const DatasetNodeEditorInner = ({
   );
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // --- YAML editor state ---
+  const [yamlPanelOpen, setYamlPanelOpen] = useState(false);
+  const [yamlContent, setYamlContent] = useState("");
+  const [yamlError, setYamlError] = useState<string | null>(null);
+  // Tracks who initiated the last change to prevent sync loops
+  const changeSourceRef = useRef<"graph" | "yaml" | null>(null);
+  const yamlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const highlightNode = useCallback((nodeId: string) => {
     if (highlightTimerRef.current) {
       clearTimeout(highlightTimerRef.current);
@@ -179,6 +190,70 @@ const DatasetNodeEditorInner = ({
       highlightTimerRef.current = null;
     }, 1500);
   }, []);
+
+  // Sync dataset → YAML when the graph side changes
+  useEffect(() => {
+    if (!yamlPanelOpen) {
+      return;
+    }
+    if (changeSourceRef.current === "yaml") {
+      changeSourceRef.current = null;
+      return;
+    }
+    const cleaned = removeNulls(dataset);
+    setYamlContent(yaml.dump(cleaned));
+    setYamlError(null);
+  }, [dataset, yamlPanelOpen]);
+
+  // Initialize YAML content when panel opens
+  const handleToggleYamlPanel = useCallback(() => {
+    setYamlPanelOpen((prev) => {
+      if (!prev) {
+        const cleaned = removeNulls(dataset);
+        setYamlContent(yaml.dump(cleaned));
+        setYamlError(null);
+      }
+      return !prev;
+    });
+  }, [dataset]);
+
+  // Handle YAML editor changes with debounce
+  const handleYamlChange = useCallback(
+    (value: string | undefined) => {
+      const newValue = value || "";
+      setYamlContent(newValue);
+
+      if (yamlDebounceRef.current) {
+        clearTimeout(yamlDebounceRef.current);
+      }
+
+      yamlDebounceRef.current = setTimeout(() => {
+        try {
+          const parsed = yaml.load(newValue) as Dataset;
+          if (
+            parsed &&
+            typeof parsed === "object" &&
+            Array.isArray(parsed.collections)
+          ) {
+            setYamlError(null);
+            changeSourceRef.current = "yaml";
+            onDatasetChange(parsed);
+          } else {
+            setYamlError("Invalid dataset structure");
+          }
+        } catch (e) {
+          if (e instanceof YAMLException) {
+            setYamlError(
+              `${e.reason}${e.mark ? ` at line ${e.mark.line + 1}` : ""}`,
+            );
+          } else {
+            setYamlError("Invalid YAML");
+          }
+        }
+      }, 500);
+    },
+    [onDatasetChange],
+  );
 
   const { nodes: rawNodes, edges } = useDatasetGraph(
     dataset,
@@ -435,44 +510,57 @@ const DatasetNodeEditorInner = ({
         className="size-full"
         style={{ display: "flex", flexDirection: "column" }}
       >
-        {/* Breadcrumb navigation */}
-        {focusedCollection && (
-          <Flex
-            align="center"
-            gap="small"
-            style={{
-              padding: "6px 12px",
-              borderBottom: "1px solid #E2E8F0",
-              backgroundColor: "white",
-              flexShrink: 0,
-            }}
+        {/* Toolbar / Breadcrumb navigation */}
+        <Flex
+          align="center"
+          justify="space-between"
+          style={{
+            padding: "6px 12px",
+            borderBottom: "1px solid #E2E8F0",
+            backgroundColor: "white",
+            flexShrink: 0,
+          }}
+        >
+          {focusedCollection ? (
+            <Flex align="center" gap="small">
+              <Button
+                type="text"
+                size="small"
+                icon={<Icons.ChevronLeft />}
+                onClick={handleBack}
+                aria-label="Back to collections"
+              />
+              <Breadcrumb
+                items={[
+                  {
+                    title: (
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={handleBack}
+                        style={{ padding: 0, height: "auto" }}
+                      >
+                        {datasetLabel}
+                      </Button>
+                    ),
+                  },
+                  { title: focusedCollection },
+                ]}
+              />
+            </Flex>
+          ) : (
+            <div />
+          )}
+          <Button
+            type="text"
+            size="small"
+            icon={<Icons.Code />}
+            onClick={handleToggleYamlPanel}
+            aria-label="Toggle YAML editor"
           >
-            <Button
-              type="text"
-              size="small"
-              icon={<Icons.ChevronLeft />}
-              onClick={handleBack}
-              aria-label="Back to collections"
-            />
-            <Breadcrumb
-              items={[
-                {
-                  title: (
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={handleBack}
-                      style={{ padding: 0, height: "auto" }}
-                    >
-                      {datasetLabel}
-                    </Button>
-                  ),
-                },
-                { title: focusedCollection },
-              ]}
-            />
-          </Flex>
-        )}
+            YAML
+          </Button>
+        </Flex>
         <div
           style={{
             flex: "1 1 auto",
@@ -508,6 +596,69 @@ const DatasetNodeEditorInner = ({
             </ReactFlow>
           </DatasetTreeHoverProvider>
         </div>
+        {/* Collapsible YAML editor panel */}
+        {yamlPanelOpen && (
+          <div
+            style={{
+              flexShrink: 0,
+              height: 300,
+              borderTop: "1px solid #E2E8F0",
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "white",
+            }}
+          >
+            <Flex
+              align="center"
+              justify="space-between"
+              style={{
+                padding: "4px 12px",
+                borderBottom: "1px solid #E2E8F0",
+                flexShrink: 0,
+              }}
+            >
+              <Flex align="center" gap="small">
+                <Typography.Text
+                  strong
+                  style={{ fontSize: 12, userSelect: "none" }}
+                >
+                  YAML Editor
+                </Typography.Text>
+                {yamlError && (
+                  <Typography.Text type="danger" style={{ fontSize: 11 }}>
+                    {yamlError}
+                  </Typography.Text>
+                )}
+              </Flex>
+              <Button
+                type="text"
+                size="small"
+                icon={<Icons.Close />}
+                onClick={() => setYamlPanelOpen(false)}
+                aria-label="Close YAML editor"
+              />
+            </Flex>
+            <div style={{ flex: "1 1 auto", minHeight: 0 }}>
+              <Editor
+                defaultLanguage="yaml"
+                value={yamlContent}
+                height="100%"
+                onChange={handleYamlChange}
+                options={{
+                  fontFamily: "Menlo",
+                  fontSize: 13,
+                  minimap: { enabled: false },
+                  readOnly: false,
+                  hideCursorInOverviewRuler: true,
+                  overviewRulerBorder: false,
+                  scrollBeyondLastLine: false,
+                  lineNumbers: "on",
+                }}
+                theme="light"
+              />
+            </div>
+          </div>
+        )}
         <DatasetNodeDetailPanel
           open={!!selectedNodeData}
           onClose={() => {
