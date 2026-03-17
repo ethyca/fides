@@ -52,6 +52,15 @@
   }
 }
 
+.clickableScore {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
 .alertSm {
   :global(.ant-alert-message) {
     font-size: var(--ant-font-size-sm);

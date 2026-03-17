@@ -9,6 +9,7 @@ import { DiffDirection } from "~/features/dashboard/types";
 import cardStyles from "./dashboard-card.module.scss";
 import styles from "./PostureCard.module.scss";
 import { useCountUp } from "./useCountUp";
+import { openDashboardDrawer } from "./useDashboardDrawer";
 import { setDimensionFilter } from "./useDimensionFilter";
 
 function getDiffPrefix(direction: DiffDirection): string | undefined {
@@ -38,6 +39,10 @@ export const PostureCard = () => {
   const diffDirection = posture?.diff_direction ?? DiffDirection.UNCHANGED;
 
   const animatedScore = useCountUp(postureScore);
+
+  const openPostureDrawer = useCallback(() => {
+    openDashboardDrawer({ type: "posture" });
+  }, []);
 
   const radarData = useMemo(
     () =>
@@ -88,7 +93,21 @@ export const PostureCard = () => {
         className={styles.cardContainer}
       >
         <Flex align="baseline" gap="middle">
-          <Statistic value={animatedScore} />
+          <div
+            role="button"
+            tabIndex={0}
+            aria-label="View posture breakdown"
+            className={styles.clickableScore}
+            onClick={openPostureDrawer}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openPostureDrawer();
+              }
+            }}
+          >
+            <Statistic value={animatedScore} />
+          </div>
           <Statistic
             trend={
               diffDirection === DiffDirection.UNCHANGED
