@@ -1,19 +1,12 @@
-import {
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraUseDisclosureReturn as UseDisclosureReturn,
-} from "fidesui";
+import { Modal } from "fidesui";
 
 import { ClientResponse } from "~/types/api";
 
 import OAuthClientForm from "./OAuthClientForm";
 
-interface EditOAuthClientModalProps
-  extends Pick<UseDisclosureReturn, "isOpen" | "onClose"> {
+interface EditOAuthClientModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   client: ClientResponse;
 }
 
@@ -23,20 +16,15 @@ const EditOAuthClientModal = ({
   client,
 }: EditOAuthClientModalProps) => (
   <Modal
-    isOpen={isOpen}
-    onClose={onClose}
-    isCentered
-    scrollBehavior="inside"
-    size="xl"
+    open={isOpen}
+    onCancel={onClose}
+    title="Edit API client"
+    centered
+    width={672}
+    footer={null}
+    data-testid="edit-oauth-client-modal"
   >
-    <ModalOverlay />
-    <ModalContent data-testid="edit-oauth-client-modal">
-      <ModalHeader>Edit API client</ModalHeader>
-      <ModalCloseButton />
-      <ModalBody pb={6}>
-        <OAuthClientForm client={client} onClose={onClose} />
-      </ModalBody>
-    </ModalContent>
+    <OAuthClientForm client={client} onClose={onClose} />
   </Modal>
 );
 

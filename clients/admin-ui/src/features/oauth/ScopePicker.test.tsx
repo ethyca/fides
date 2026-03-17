@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+import { ScopeRegistryEnum } from "~/types/api";
+
 import ScopePicker from "./ScopePicker";
 
 // Render Checkbox as a native checkbox so we can assert on .checked and .indeterminate
@@ -18,6 +20,7 @@ const MockCheckbox = ({
       checked={checked ?? false}
       ref={(el) => {
         if (el) {
+          // eslint-disable-next-line no-param-reassign
           el.indeterminate = !!indeterminate;
         }
       }}
@@ -226,9 +229,7 @@ describe("ScopePicker", () => {
     it("calls onChange with empty array when select-all is unchecked", async () => {
       const onChange = jest.fn();
       const user = userEvent.setup();
-      const allScopes = Object.values(
-        require("~/types/api").ScopeRegistryEnum,
-      ) as string[];
+      const allScopes = Object.values(ScopeRegistryEnum) as string[];
 
       // Start with everything selected so the checkbox is in checked (not indeterminate) state
       render(<ScopePicker value={allScopes} onChange={onChange} />);
@@ -239,9 +240,7 @@ describe("ScopePicker", () => {
     });
 
     it("select-all is checked when all scopes are selected", () => {
-      const allScopes = Object.values(
-        require("~/types/api").ScopeRegistryEnum,
-      ) as string[];
+      const allScopes = Object.values(ScopeRegistryEnum) as string[];
       renderPicker(allScopes);
       expect(screen.getByTestId("scope-select-all")).toBeChecked();
     });
