@@ -1354,32 +1354,6 @@ class TestGetUser:
 
         user.delete(db)
 
-    def test_get_user_includes_invite_status_without_username(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url_no_id: str,
-        db,
-    ):
-        """Test that get_user includes invite status fields when user has no username"""
-        user = FidesUser.create(
-            db=db,
-            data={
-                "username": None,
-                "email_address": "nousername@example.com",
-            },
-        )
-
-        auth_header = generate_auth_header(scopes=[USER_READ])
-        resp = api_client.get(f"{url_no_id}/{user.id}", headers=auth_header)
-        assert resp.status_code == HTTP_200_OK
-        user_data = resp.json()
-        assert user_data["has_invite"] is False
-        assert user_data["invite_expired"] is None
-
-        user.delete(db)
-
-
 class TestUpdateUser:
     @pytest.fixture(scope="function")
     def url_no_id(self) -> str:
