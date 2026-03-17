@@ -1,9 +1,5 @@
 import {
   Button,
-  ChakraBox as Box,
-  ChakraStack as Stack,
-  ChakraDivider as Divider,
-  ChakraText as Text,
   useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -69,7 +65,7 @@ const OAuthClientForm = ({
         toast(errorToastParams(getErrorMessage(result.error)));
       } else {
         toast(successToastParams("API client updated."));
-        onClose();
+        // Stay on the page — no navigation after save
       }
     } else {
       const result = await createClient({
@@ -102,7 +98,7 @@ const OAuthClientForm = ({
     >
       {({ dirty, isValid, isSubmitting }) => (
         <Form data-testid="oauth-client-form">
-          <Stack spacing={4}>
+          <div className="flex flex-col gap-4">
             <CustomTextInput
               name="name"
               label="Name"
@@ -116,17 +112,14 @@ const OAuthClientForm = ({
               variant="stacked"
               data-testid="client-description-input"
             />
-            <Box>
-              <Text fontWeight="medium" mb={2} fontSize="sm">
-                Scopes
-              </Text>
-              <Divider mb={3} />
+            <div>
+              <p className="text-sm font-medium mb-2">Scopes</p>
+              <hr className="mb-3" />
               <ScopePicker name="scopes" />
-            </Box>
-            <Box textAlign="right">
+            </div>
+            <div className="flex justify-end gap-3">
               <Button
                 htmlType="button"
-                className="mr-3"
                 onClick={onClose}
                 data-testid="cancel-btn"
               >
@@ -141,8 +134,8 @@ const OAuthClientForm = ({
               >
                 {isEditing ? "Save changes" : "Create client"}
               </Button>
-            </Box>
-          </Stack>
+            </div>
+          </div>
         </Form>
       )}
     </Formik>

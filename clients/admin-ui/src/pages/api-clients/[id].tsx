@@ -1,12 +1,9 @@
 import {
   Alert,
   Button,
-  ChakraDivider as Divider,
-  ChakraSpinner as Spinner,
-  ChakraStack as Stack,
-  ChakraText as Text,
   Flex,
-  useChakraDisclosure as useDisclosure,
+  Modal,
+  Tabs,
   useChakraToast as useToast,
 } from "fidesui";
 import type { NextPage } from "next";
@@ -28,9 +25,9 @@ import {
 } from "~/features/oauth/oauth-clients.slice";
 import { ScopeRegistryEnum } from "~/types/api";
 
-const RotateSecretSection = ({ clientId }: { clientId: string }) => {
+const SecretManagementTab = ({ clientId }: { clientId: string }) => {
   const toast = useToast();
-  const secretModal = useDisclosure();
+  const [secretModalOpen, setSecretModalOpen] = useState(false);
   const [rotatedSecret, setRotatedSecret] = useState("");
   const [rotateSecret, { isLoading }] = useRotateOAuthClientSecretMutation();
 
@@ -40,33 +37,47 @@ const RotateSecretSection = ({ clientId }: { clientId: string }) => {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else if (result.data) {
       setRotatedSecret(result.data.client_secret);
-      secretModal.onOpen();
+      setSecretModalOpen(true);
     }
+  };
+
+  const confirmRotate = () => {
+    Modal.confirm({
+      title: "Rotate client secret?",
+      content:
+        "The current secret will be immediately invalidated. Any integrations using this client will need to be updated with the new secret.",
+      okText: "Rotate secret",
+      okButtonProps: { danger: true },
+      onOk: handleRotate,
+    });
   };
 
   return (
     <>
-      <Stack spacing={2}>
-        <Text fontWeight="medium">Client secret</Text>
-        <Text fontSize="sm" color="gray.600">
+      <div className="max-w-lg flex flex-col gap-3" data-testid="secret-management-tab">
+        <p className="font-medium">Rotate secret</p>
+        <p className="text-sm text-gray-600">
           Rotating the secret immediately invalidates the current one. Any
-          integrations using this client will need to be updated.
-        </Text>
+          integrations using this client will need to be updated with the new
+          secret.
+        </p>
         <div>
           <Button
-            onClick={handleRotate}
+            danger
+            onClick={confirmRotate}
             loading={isLoading}
             data-testid="rotate-secret-btn"
           >
             Rotate secret
           </Button>
         </div>
-      </Stack>
+      </div>
       <ClientSecretModal
         clientId={clientId}
         secret={rotatedSecret}
         context="rotated"
-        {...secretModal}
+        isOpen={secretModalOpen}
+        onClose={() => setSecretModalOpen(false)}
       />
     </>
   );
@@ -97,6 +108,32 @@ const ApiClientDetailPage: NextPage = () => {
     );
   }
 
+  const tabItems = client
+    ? [
+        {
+          key: "details",
+          label: "Details",
+          children: (
+            <Restrict scopes={[ScopeRegistryEnum.CLIENT_UPDATE]}>
+              <OAuthClientForm
+                client={client}
+                onClose={() => router.push(API_CLIENTS_ROUTE)}
+              />
+            </Restrict>
+          ),
+        },
+        {
+          key: "secret",
+          label: "Secret management",
+          children: (
+            <Restrict scopes={[ScopeRegistryEnum.CLIENT_UPDATE]}>
+              <SecretManagementTab clientId={client.client_id} />
+            </Restrict>
+          ),
+        },
+      ]
+    : [];
+
   return (
     <FixedLayout title="API Clients - Edit">
       <PageHeader
@@ -109,29 +146,14 @@ const ApiClientDetailPage: NextPage = () => {
       />
       {isLoading && (
         <Flex justify="center" align="center" className="h-32">
-          <Spinner color="primary.900" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-900" />
         </Flex>
       )}
       {!isLoading && !client && (
-        <Alert
-          message="API client not found."
-          type="warning"
-          showIcon
-        />
+        <Alert message="API client not found." type="warning" showIcon />
       )}
       {client && (
-        <Stack spacing={8} maxW="2xl">
-          <Restrict scopes={[ScopeRegistryEnum.CLIENT_UPDATE]}>
-            <OAuthClientForm
-              client={client}
-              onClose={() => router.push(API_CLIENTS_ROUTE)}
-            />
-          </Restrict>
-          <Divider />
-          <Restrict scopes={[ScopeRegistryEnum.CLIENT_UPDATE]}>
-            <RotateSecretSection clientId={client.client_id} />
-          </Restrict>
-        </Stack>
+        <Tabs items={tabItems} className="w-full" />
       )}
     </FixedLayout>
   );
