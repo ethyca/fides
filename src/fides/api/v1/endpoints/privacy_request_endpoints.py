@@ -539,9 +539,7 @@ def _shared_privacy_request_search(
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(
             execution_and_audit_logs_by_dataset_name
         )
-        PrivacyRequest.task_status_by_dataset = property(
-            task_status_by_dataset_name
-        )
+        PrivacyRequest.task_status_by_dataset = property(task_status_by_dataset_name)
     else:
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
         PrivacyRequest.task_status_by_dataset = property(lambda self: None)
