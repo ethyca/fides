@@ -33,7 +33,7 @@ const CatalogResourceDetailDrawer = ({
       onClose={onClose}
       title={resource?.name || resource?.urn}
     >
-      <div data-testid="resource-details">
+      <section data-testid="resource-details">
         <InfoHeading text="Title" mt={0} />
         <InfoText>{resource?.name ?? resource?.urn}</InfoText>
         {resource?.description && (
@@ -48,7 +48,7 @@ const CatalogResourceDetailDrawer = ({
             <EditCategoryCell resource={resource!} />
           </>
         )}
-      </div>
+      </section>
     </Drawer>
   );
 };

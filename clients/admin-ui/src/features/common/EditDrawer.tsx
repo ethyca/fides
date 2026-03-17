@@ -82,12 +82,12 @@ const EditDrawer = ({
     maskClosable={false}
     destroyOnHidden
   >
-    <div data-testid="edit-drawer-content">
+    <section data-testid="edit-drawer-content">
       {description ? (
         <p className="mb-4 text-sm text-gray-600">{description}</p>
       ) : null}
       {children}
-    </div>
+    </section>
   </Drawer>
 );
 

@@ -63,7 +63,7 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
           onClose={() => setIsOpen(false)}
           title="Failure log"
         >
-          <div data-testid="error-log-drawer">
+          <section data-testid="error-log-drawer">
             {executionRecord.completed && (
               <Typography.Paragraph type="secondary">
                 {formatDate(new Date(executionRecord.completed))}
@@ -80,7 +80,7 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
                 )}
               </Fragment>
             ))}
-          </div>
+          </section>
         </Drawer>
       </>
     );

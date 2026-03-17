@@ -57,7 +57,7 @@ const LogDrawer = ({
         </Flex>
       }
     >
-      <div
+      <section
         data-testid="log-drawer"
         id="drawerBody"
         style={{ overflow: "hidden", height: "100%" }}
@@ -73,7 +73,7 @@ const LogDrawer = ({
         {isViewingError ? (
           <EventDetail errorMessage={errorMessage} status={currentStatus} />
         ) : null}
-      </div>
+      </section>
     </Drawer>
   );
 };

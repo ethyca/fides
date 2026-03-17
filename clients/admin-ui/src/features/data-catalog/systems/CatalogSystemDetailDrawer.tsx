@@ -24,7 +24,7 @@ const CatalogSystemDetailDrawer = ({
         </Button>
       }
     >
-      <div data-testid="system-details">
+      <section data-testid="system-details">
         <InfoHeading text="Title" mt={0} />
         <InfoText>{system?.name ?? system?.fides_key}</InfoText>
         {system?.description && (
@@ -35,7 +35,7 @@ const CatalogSystemDetailDrawer = ({
         )}
         <InfoHeading text="Data uses" />
         <EditDataUseCell system={system as SystemResponse} />
-      </div>
+      </section>
     </Drawer>
   );
 };

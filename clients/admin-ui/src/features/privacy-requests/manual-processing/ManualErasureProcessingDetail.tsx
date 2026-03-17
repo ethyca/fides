@@ -62,7 +62,6 @@ const ManualErasureProcessingDetail = ({
             open={isOpen}
             onClose={() => setIsOpen(false)}
             size="large"
-            autoFocus
             title={
               <>
                 <Text fontSize="xl" mb={8}>
