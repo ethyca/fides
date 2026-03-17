@@ -3,7 +3,7 @@ import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
-import { BAND_CONFIG } from "~/features/dashboard/constants";
+import { BAND_COLOR_TOKEN, BAND_CONFIG } from "~/features/dashboard/constants";
 import {
   useGetDashboardPostureQuery,
   useGetPriorityActionsQuery,
@@ -17,7 +17,6 @@ import {
   PostureBand,
 } from "~/features/dashboard/types";
 
-import { PostureBreakdownContent } from "./PostureBreakdownContent";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 
@@ -86,29 +85,24 @@ export const CommandBar = () => {
     ];
   }, [actions?.items, coverage?.total_systems]);
 
-  const scoreColor = {
-    success: token.colorSuccess,
-    info: token.colorInfo,
-    caution: token.colorWarning,
-    error: token.colorError,
-  }[bandConfig.color];
+  const scoreColor = token[BAND_COLOR_TOKEN[bandConfig.color]];
 
   const openPostureDrawer = useCallback(() => {
     openDashboardDrawer({
+      type: "posture",
       title: "Posture breakdown",
-      content: <PostureBreakdownContent posture={posture} />,
     });
-  }, [posture]);
+  }, []);
 
   return (
     <AntLayout.Header
       className="flex h-12 select-none items-center px-10"
       style={{ backgroundColor: token.colorBgLayout }}
     >
-      <Flex align="center" gap={16} className="flex-1">
+      <Flex align="center" gap="large" className="flex-1">
         <Flex
           align="center"
-          gap={6}
+          gap="small"
           role="button"
           tabIndex={0}
           className="cursor-pointer rounded-md px-2 py-1 transition-opacity hover:opacity-70"
