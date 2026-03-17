@@ -4,7 +4,6 @@ import {
   Drawer,
   Form,
   Input,
-  InputNumber,
   Select,
   Switch,
   Tag,
@@ -16,6 +15,9 @@ import { useContext, useEffect } from "react";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
 import DatasetEditorActionsContext from "./context/DatasetEditorActionsContext";
+import FieldMetadataFormItems, {
+  buildFieldMeta,
+} from "./FieldMetadataFormItems";
 import { CollectionNodeData, FieldNodeData } from "./useDatasetGraph";
 
 interface DatasetNodeDetailPanelProps {
@@ -32,20 +34,6 @@ interface DatasetNodeDetailPanelProps {
     updates: Partial<DatasetField>,
   ) => void;
 }
-
-const DATA_TYPE_OPTIONS = [
-  "string",
-  "integer",
-  "float",
-  "boolean",
-  "object_id",
-  "object",
-].map((v) => ({ label: v, value: v }));
-
-const REDACT_OPTIONS = [
-  { label: "None", value: "" },
-  { label: "name", value: "name" },
-];
 
 const DatasetNodeDetailPanel = ({
   open,
@@ -127,29 +115,9 @@ const DatasetNodeDetailPanel = ({
         fides_meta: hasAnyMeta ? collectionMeta : undefined,
       } as Partial<DatasetCollection>);
     } else {
-      const redactVal = allValues.redact as string;
-      const fieldMeta = {
-        data_type: (allValues.data_type as string) || undefined,
-        identity: (allValues.identity as string) || undefined,
-        primary_key: (allValues.primary_key as boolean) || undefined,
-        read_only: (allValues.read_only as boolean) || undefined,
-        return_all_elements:
-          (allValues.return_all_elements as boolean) || undefined,
-        length:
-          allValues.length !== null &&
-          allValues.length !== undefined &&
-          allValues.length !== ""
-            ? (allValues.length as number)
-            : undefined,
-        custom_request_field:
-          (allValues.custom_request_field as string) || undefined,
-        redact: redactVal === "name" ? ("name" as const) : undefined,
-      };
-      const hasAnyMeta = Object.values(fieldMeta).some((v) => v !== undefined);
-
       onUpdateField(nodeData.collectionName, nodeData.fieldPath, {
         ...baseUpdates,
-        fides_meta: hasAnyMeta ? fieldMeta : undefined,
+        fides_meta: buildFieldMeta(allValues),
       } as Partial<DatasetField>);
     }
   };
@@ -268,58 +236,7 @@ const DatasetNodeDetailPanel = ({
                 {
                   key: "field-meta",
                   label: "Field Metadata (fides_meta)",
-                  children: (
-                    <>
-                      <Form.Item label="Data Type" name="data_type">
-                        <Select
-                          allowClear
-                          placeholder="Select data type..."
-                          aria-label="Data Type"
-                          options={DATA_TYPE_OPTIONS}
-                        />
-                      </Form.Item>
-                      <Form.Item label="Identity" name="identity">
-                        <Input placeholder="e.g. email, phone_number" />
-                      </Form.Item>
-                      <Form.Item
-                        label="Primary Key"
-                        name="primary_key"
-                        valuePropName="checked"
-                      >
-                        <Switch aria-label="Primary Key" />
-                      </Form.Item>
-                      <Form.Item
-                        label="Read Only"
-                        name="read_only"
-                        valuePropName="checked"
-                      >
-                        <Switch aria-label="Read Only" />
-                      </Form.Item>
-                      <Form.Item
-                        label="Return All Elements"
-                        name="return_all_elements"
-                        valuePropName="checked"
-                      >
-                        <Switch aria-label="Return All Elements" />
-                      </Form.Item>
-                      <Form.Item label="Length" name="length">
-                        <InputNumber
-                          min={0}
-                          placeholder="Max length"
-                          style={{ width: "100%" }}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="Custom Request Field"
-                        name="custom_request_field"
-                      >
-                        <Input placeholder="Custom field name" />
-                      </Form.Item>
-                      <Form.Item label="Redact" name="redact">
-                        <Select aria-label="Redact" options={REDACT_OPTIONS} />
-                      </Form.Item>
-                    </>
-                  ),
+                  children: <FieldMetadataFormItems />,
                 },
               ]}
             />
