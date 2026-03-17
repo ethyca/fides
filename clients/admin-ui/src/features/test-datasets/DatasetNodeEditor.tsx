@@ -158,9 +158,6 @@ const DatasetNodeEditorInner = ({
     null,
   );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [selectedNodeData, setSelectedNodeData] = useState<
-    CollectionNodeData | FieldNodeData | null
-  >(null);
   const [addModal, setAddModal] = useState<AddModalState>(CLOSED_MODAL);
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(
     null,
@@ -230,9 +227,11 @@ const DatasetNodeEditorInner = ({
             typeof parsed === "object" &&
             Array.isArray(parsed.collections)
           ) {
-            setYamlError(null);
+            // Validate that the parsed structure won't crash the graph —
+            // e.g. a bare "-" in YAML produces null array entries.
             changeSourceRef.current = "yaml";
             onDatasetChange(parsed);
+            setYamlError(null);
           } else {
             setYamlError("Invalid dataset structure");
           }
@@ -260,6 +259,15 @@ const DatasetNodeEditorInner = ({
     edges,
     options: LAYOUT_OPTIONS,
   });
+
+  // Derive selected node data from the current graph instead of stale state
+  const selectedNodeData = useMemo(() => {
+    if (!selectedNodeId) {
+      return null;
+    }
+    const node = rawNodes.find((n) => n.id === selectedNodeId);
+    return (node?.data as CollectionNodeData | FieldNodeData) ?? null;
+  }, [rawNodes, selectedNodeId]);
 
   // Merge selection + highlight state into nodes
   const nodes = useMemo(
@@ -289,7 +297,6 @@ const DatasetNodeEditorInner = ({
   // Clear selection when drilling in/out
   useEffect(() => {
     setSelectedNodeId(null);
-    setSelectedNodeData(null);
   }, [focusedCollection]);
 
   const handleNodeClick = useCallback(
@@ -309,18 +316,15 @@ const DatasetNodeEditorInner = ({
         node.id === `${COLLECTION_ROOT_PREFIX}${focusedCollection}`
       ) {
         setSelectedNodeId(node.id);
-        setSelectedNodeData(node.data as CollectionNodeData);
         return;
       }
       setSelectedNodeId(node.id);
-      setSelectedNodeData(node.data as CollectionNodeData | FieldNodeData);
     },
     [focusedCollection],
   );
 
   const handlePaneClick = useCallback(() => {
     setSelectedNodeId(null);
-    setSelectedNodeData(null);
   }, []);
 
   const handleBack = useCallback(() => {
@@ -423,7 +427,6 @@ const DatasetNodeEditorInner = ({
         setFocusedCollection(null);
       }
       setSelectedNodeId(null);
-      setSelectedNodeData(null);
     },
     [dataset, onDatasetChange, focusedCollection],
   );
@@ -441,7 +444,6 @@ const DatasetNodeEditorInner = ({
         }),
       });
       setSelectedNodeId(null);
-      setSelectedNodeData(null);
     },
     [dataset, onDatasetChange],
   );
@@ -658,7 +660,6 @@ const DatasetNodeEditorInner = ({
           open={!!selectedNodeData}
           onClose={() => {
             setSelectedNodeId(null);
-            setSelectedNodeData(null);
           }}
           nodeData={selectedNodeData}
           onUpdateCollection={handleUpdateCollection}

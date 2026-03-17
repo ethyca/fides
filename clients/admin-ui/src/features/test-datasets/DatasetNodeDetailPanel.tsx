@@ -10,7 +10,7 @@ import {
   Typography,
   useModal,
 } from "fidesui";
-import { useContext, useEffect } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 
 import { DatasetCollection, DatasetField } from "~/types/api";
 
@@ -82,46 +82,69 @@ const DatasetNodeDetailPanel = ({
     }
   }, [nodeData, open, form]);
 
-  const handleValuesChange = (
-    _: Record<string, unknown>,
-    allValues: Record<string, unknown>,
-  ) => {
-    if (!nodeData) {
-      return;
-    }
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const categories = allValues.data_categories as string[] | undefined;
-    const baseUpdates = {
-      description: (allValues.description as string) || undefined,
-      data_categories:
-        categories && categories.length > 0 ? categories : undefined,
-    };
+  const flushUpdate = useCallback(
+    (allValues: Record<string, unknown>) => {
+      if (!nodeData) {
+        return;
+      }
 
-    if (nodeData.nodeType === "collection") {
-      const after = allValues.after as string[] | undefined;
-      const eraseAfter = allValues.erase_after as string[] | undefined;
-      const skipProcessing = allValues.skip_processing as boolean;
-      const collectionMeta = {
-        after: after && after.length > 0 ? after : undefined,
-        erase_after:
-          eraseAfter && eraseAfter.length > 0 ? eraseAfter : undefined,
-        skip_processing: skipProcessing || undefined,
+      const categories = allValues.data_categories as string[] | undefined;
+      const baseUpdates = {
+        description: (allValues.description as string) || undefined,
+        data_categories:
+          categories && categories.length > 0 ? categories : undefined,
       };
-      const hasAnyMeta = Object.values(collectionMeta).some(
-        (v) => v !== undefined,
-      );
 
-      onUpdateCollection(nodeData.collection.name, {
-        ...baseUpdates,
-        fides_meta: hasAnyMeta ? collectionMeta : undefined,
-      } as Partial<DatasetCollection>);
-    } else {
-      onUpdateField(nodeData.collectionName, nodeData.fieldPath, {
-        ...baseUpdates,
-        fides_meta: buildFieldMeta(allValues),
-      } as Partial<DatasetField>);
+      if (nodeData.nodeType === "collection") {
+        const after = allValues.after as string[] | undefined;
+        const eraseAfter = allValues.erase_after as string[] | undefined;
+        const skipProcessing = allValues.skip_processing as boolean;
+        const collectionMeta = {
+          after: after && after.length > 0 ? after : undefined,
+          erase_after:
+            eraseAfter && eraseAfter.length > 0 ? eraseAfter : undefined,
+          skip_processing: skipProcessing || undefined,
+        };
+        const hasAnyMeta = Object.values(collectionMeta).some(
+          (v) => v !== undefined,
+        );
+
+        onUpdateCollection(nodeData.collection.name, {
+          ...baseUpdates,
+          fides_meta: hasAnyMeta ? collectionMeta : undefined,
+        } as Partial<DatasetCollection>);
+      } else {
+        onUpdateField(nodeData.collectionName, nodeData.fieldPath, {
+          ...baseUpdates,
+          fides_meta: buildFieldMeta(allValues),
+        } as Partial<DatasetField>);
+      }
+    },
+    [nodeData, onUpdateCollection, onUpdateField],
+  );
+
+  // Flush pending debounced update when the panel closes
+  useEffect(() => {
+    if (!open && debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
     }
-  };
+  }, [open]);
+
+  const handleValuesChange = useCallback(
+    (_: Record<string, unknown>, allValues: Record<string, unknown>) => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        flushUpdate(allValues);
+        debounceRef.current = null;
+      }, 300);
+    },
+    [flushUpdate],
+  );
 
   const handleDelete = () => {
     if (!nodeData) {

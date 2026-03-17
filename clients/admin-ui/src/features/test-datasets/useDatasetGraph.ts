@@ -46,7 +46,7 @@ const buildFieldNodes = (
   nodes: Node[],
   edges: Edge[],
 ) => {
-  fields.forEach((field) => {
+  (Array.isArray(fields) ? fields : []).filter(Boolean).forEach((field) => {
     const fieldPath = pathPrefix ? `${pathPrefix}.${field.name}` : field.name;
     const nodeId = `field-${collectionName}-${fieldPath}`;
     const hasChildren = !!(field.fields && field.fields.length > 0);
@@ -168,28 +168,30 @@ const useDatasetGraph = (
         },
       });
 
-      dataset.collections.forEach((collection) => {
-        const collectionId = `${COLLECTION_ROOT_PREFIX}${collection.name}`;
+      (Array.isArray(dataset.collections) ? dataset.collections : [])
+        .filter(Boolean)
+        .forEach((collection) => {
+          const collectionId = `${COLLECTION_ROOT_PREFIX}${collection.name}`;
 
-        nodes.push({
-          id: collectionId,
-          position: { x: 0, y: 0 },
-          type: "datasetCollectionNode",
-          data: {
-            label: collection.name,
-            collection,
-            nodeType: "collection",
-            isProtected: false,
-          } satisfies CollectionNodeData,
-        });
+          nodes.push({
+            id: collectionId,
+            position: { x: 0, y: 0 },
+            type: "datasetCollectionNode",
+            data: {
+              label: collection.name,
+              collection,
+              nodeType: "collection",
+              isProtected: false,
+            } satisfies CollectionNodeData,
+          });
 
-        edges.push({
-          id: `${DATASET_ROOT_ID}->${collectionId}`,
-          source: DATASET_ROOT_ID,
-          target: collectionId,
-          type: "datasetTreeEdge",
+          edges.push({
+            id: `${DATASET_ROOT_ID}->${collectionId}`,
+            source: DATASET_ROOT_ID,
+            target: collectionId,
+            type: "datasetTreeEdge",
+          });
         });
-      });
     }
 
     return { nodes, edges };
