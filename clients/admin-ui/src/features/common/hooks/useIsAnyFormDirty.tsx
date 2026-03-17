@@ -53,6 +53,7 @@ export const useIsAnyFormDirty = () => {
           content: "You have unsaved changes",
           centered: true,
           icon: null,
+          okText: "Continue anyway",
           onOk: () => {
             if (modalResolvePromise.current) {
               modalResolvePromise.current(true);
