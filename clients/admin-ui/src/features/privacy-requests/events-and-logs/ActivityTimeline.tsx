@@ -41,7 +41,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const { commentItems, isLoading: isCommentsLoading } =
     usePrivacyRequestComments(privacyRequestId);
   const { eventItems, isLoading: isResultsLoading } =
-    usePrivacyRequestEventLogs(results);
+    usePrivacyRequestEventLogs(results, subjectRequest.task_status_by_dataset);
   const {
     manualTaskItems,
     taskCommentIds,

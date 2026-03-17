@@ -385,6 +385,7 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     execution_and_audit_logs_by_dataset: Dict[
         str, List[ExecutionAndAuditLogResponse]
     ] = Field(alias="results")
+    task_status_by_dataset: Optional[Dict[str, str]] = None
     model_config = ConfigDict(populate_by_name=True)
 
 

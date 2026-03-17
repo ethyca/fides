@@ -7,13 +7,22 @@ import {
 import {
   ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
+  ExecutionLogStatus,
   PrivacyRequestResults,
 } from "~/features/privacy-requests/types";
 
 /**
- * Hook for processing privacy request event logs
+ * Hook for processing privacy request event logs.
+ *
+ * When taskStatusByDataset is provided, task statuses are read directly from
+ * the RequestTask.status field (via the backend) instead of being inferred
+ * from execution log history. This avoids incorrect status display when logs
+ * are truncated by the embedded log limit.
  */
-export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
+export const usePrivacyRequestEventLogs = (
+  results?: PrivacyRequestResults,
+  taskStatusByDataset?: Record<string, string>,
+) => {
   // Determine if results are loading
   const isLoading = !results;
 
@@ -21,11 +30,27 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
   const eventItems: ActivityTimelineItem[] = !results
     ? []
     : Object.entries(results).map(([key, logs]) => {
-        // Use the proper helper functions that handle collection-level grouping
-        const hasUnresolvedErrorStatus = hasUnresolvedError(logs);
-        const hasSkippedEntryStatus = hasSkippedEntry(logs);
-        const hasAwaitingProcessingStatus = hasAwaitingProcessing(logs);
-        const hasPollingStatus = hasPolling(logs);
+        const taskStatus = taskStatusByDataset?.[key];
+
+        // When we have an authoritative task status from the backend, use it
+        // directly. Otherwise fall back to scanning execution logs (needed for
+        // audit-log entries like "Request approved" which have no RequestTask).
+        const hasUnresolvedErrorStatus =
+          taskStatus !== undefined
+            ? taskStatus === ExecutionLogStatus.ERROR
+            : hasUnresolvedError(logs);
+        const hasSkippedEntryStatus =
+          taskStatus !== undefined
+            ? taskStatus === ExecutionLogStatus.SKIPPED
+            : hasSkippedEntry(logs);
+        const hasAwaitingProcessingStatus =
+          taskStatus !== undefined
+            ? taskStatus === ExecutionLogStatus.AWAITING_PROCESSING
+            : hasAwaitingProcessing(logs);
+        const hasPollingStatus =
+          taskStatus !== undefined
+            ? taskStatus === ExecutionLogStatus.POLLING
+            : hasPolling(logs);
 
         return {
           author: "Fides",

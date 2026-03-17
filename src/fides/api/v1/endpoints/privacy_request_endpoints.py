@@ -49,7 +49,11 @@ from fides.api.common_exceptions import (
     ValidationError,
 )
 from fides.api.deps import get_messaging_service, get_privacy_request_service
-from fides.api.graph.config import CollectionAddress
+from fides.api.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
+    TERMINATOR_ADDRESS,
+    CollectionAddress,
+)
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.audit_log import AuditLog
@@ -358,6 +362,59 @@ def execution_and_audit_logs_by_dataset_name(
     return all_logs
 
 
+# Priority order for "worst" status per dataset — lower number = higher priority.
+_STATUS_PRIORITY: Dict[ExecutionLogStatus, int] = {
+    ExecutionLogStatus.error: 0,
+    ExecutionLogStatus.awaiting_processing: 1,
+    ExecutionLogStatus.polling: 2,
+    ExecutionLogStatus.retrying: 3,
+    ExecutionLogStatus.skipped: 4,
+}
+
+
+def task_status_by_dataset_name(
+    self: PrivacyRequest,
+) -> Dict[str, str]:
+    """
+    Returns a mapping of dataset name → "worst" RequestTask status for that dataset.
+
+    Only datasets that have a noteworthy status (error, awaiting_processing, polling,
+    retrying, skipped) are included. Datasets where all tasks are complete, pending,
+    or in_processing are omitted.
+
+    Added as a conditional property to the PrivacyRequest class at runtime alongside
+    execution_and_audit_logs_by_dataset when verbose=True.
+    """
+    db: Session = Session.object_session(self)
+    tasks = (
+        db.query(RequestTask.dataset_name, RequestTask.status)
+        .filter(
+            RequestTask.privacy_request_id == self.id,
+            RequestTask.collection_address.notin_(
+                [
+                    ROOT_COLLECTION_ADDRESS.value,
+                    TERMINATOR_ADDRESS.value,
+                ]
+            ),
+        )
+        .all()
+    )
+
+    worst_by_dataset: Dict[str, str] = {}
+    worst_priority: Dict[str, int] = {}
+
+    for dataset_name, status in tasks:
+        priority = _STATUS_PRIORITY.get(status)
+        if priority is None:
+            continue
+        current_priority = worst_priority.get(dataset_name)
+        if current_priority is None or priority < current_priority:
+            worst_priority[dataset_name] = priority
+            worst_by_dataset[dataset_name] = status.name
+
+    return worst_by_dataset
+
+
 def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     """
     Temporarily update a paused/errored/requires_input privacy request object with instructions from the Redis cache
@@ -482,8 +539,12 @@ def _shared_privacy_request_search(
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(
             execution_and_audit_logs_by_dataset_name
         )
+        PrivacyRequest.task_status_by_dataset = property(
+            task_status_by_dataset_name
+        )
     else:
         PrivacyRequest.execution_and_audit_logs_by_dataset = property(lambda self: None)
+        PrivacyRequest.task_status_by_dataset = property(lambda self: None)
 
     paginated = paginate(query, params)
 
