@@ -1,9 +1,13 @@
 import { Flex, List, Pagination, Tag, Typography } from "fidesui";
 import { useState } from "react";
 
+import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
-import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
+import {
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE_SIZES,
+} from "~/features/common/table/constants";
 import { ClientResponse, ScopeRegistryEnum } from "~/types/api";
 
 import { useListOAuthClientsQuery } from "./oauth-clients.slice";
@@ -47,7 +51,7 @@ const ClientListItem = ({ client }: { client: ClientResponse }) => {
 
 const useOAuthClientsList = () => {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const { data, isLoading, error } = useListOAuthClientsQuery({
     page,
@@ -89,23 +93,24 @@ const OAuthClientsList = () => {
         }}
         renderItem={(client) => <ClientListItem client={client} />}
       />
-      {total > pageSize && (
-        <Flex justify="end" className="mt-4">
-          <Pagination
-            current={page}
-            total={total}
-            pageSize={pageSize}
-            onChange={(newPage, newPageSize) => {
+      <Flex justify="end" className="mt-4">
+        <Pagination
+          current={page}
+          total={total}
+          pageSize={pageSize}
+          onChange={(newPage, newPageSize) => {
+            if (newPageSize !== pageSize) {
+              setPageSize(newPageSize);
+              setPage(1);
+            } else {
               setPage(newPage);
-              if (newPageSize !== pageSize) {
-                setPageSize(newPageSize);
-              }
-            }}
-            showSizeChanger
-            showTotal={(totalItems) => `Total ${totalItems} items`}
-          />
-        </Flex>
-      )}
+            }
+          }}
+          showSizeChanger
+          pageSizeOptions={DEFAULT_PAGE_SIZES}
+          showTotal={(totalItems) => `Total ${totalItems} items`}
+        />
+      </Flex>
     </div>
   );
 };

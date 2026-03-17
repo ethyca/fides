@@ -34,7 +34,9 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
   const [search, setSearch] = useState("");
 
   const visibleResources = useMemo(() => {
-    if (!search) return SORTED_RESOURCES;
+    if (!search) {
+      return SORTED_RESOURCES;
+    }
     const q = search.toLowerCase();
     return SORTED_RESOURCES.filter(
       (resource) =>
@@ -44,7 +46,9 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
   }, [search]);
 
   const visibleScopesForResource = (resource: string): string[] => {
-    if (!search) return GROUPED[resource];
+    if (!search) {
+      return GROUPED[resource];
+    }
     const q = search.toLowerCase();
     // If the group label matches, show all scopes in the group
     if (formatResourceLabel(resource).toLowerCase().includes(q)) {
@@ -103,7 +107,7 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
         </Checkbox>
       </div>
       <div
-        className="max-h-[400px] overflow-y-auto border rounded-md p-3"
+        className="max-h-[400px] overflow-y-auto rounded-md border p-3"
         data-testid="scope-picker-list"
       >
         {visibleResources.length === 0 ? (
