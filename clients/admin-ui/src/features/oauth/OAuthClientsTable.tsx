@@ -1,4 +1,4 @@
-import { Flex, List, Pagination, Tag, Typography } from "fidesui";
+import { Flex, List, Pagination, Tag, Tooltip, Typography } from "fidesui";
 import { useState } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -23,15 +23,25 @@ const ClientListItem = ({ client }: { client: ClientResponse }) => {
       <List.Item.Meta
         title={
           <Flex align="center" gap={8}>
-            <LinkCell
-              href={
-                canUpdate
-                  ? `${API_CLIENTS_ROUTE}/${client.client_id}`
+            <Tooltip
+              title={
+                !canUpdate
+                  ? "You don't have permission to edit API clients."
                   : undefined
               }
             >
-              {client.name ?? "Unnamed"}
-            </LinkCell>
+              <span>
+                <LinkCell
+                  href={
+                    canUpdate
+                      ? `${API_CLIENTS_ROUTE}/${client.client_id}`
+                      : undefined
+                  }
+                >
+                  {client.name ?? "Unnamed"}
+                </LinkCell>
+              </span>
+            </Tooltip>
             <Tag>{client.scopes.length} scopes</Tag>
           </Flex>
         }
