@@ -37,16 +37,17 @@ const oauthClientsApi = baseApi.injectEndpoints({
         { type: "OAuth Client", id: clientId },
       ],
     }),
-    createOAuthClient: build.mutation<ClientCreatedResponse, ClientCreateParams>(
-      {
-        query: (body) => ({
-          url: `oauth/client`,
-          method: "POST",
-          body,
-        }),
-        invalidatesTags: ["OAuth Client"],
-      }
-    ),
+    createOAuthClient: build.mutation<
+      ClientCreatedResponse,
+      ClientCreateParams
+    >({
+      query: (body) => ({
+        url: `oauth/client`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["OAuth Client"],
+    }),
     updateOAuthClient: build.mutation<ClientResponse, ClientUpdateParams>({
       query: ({ client_id, ...body }) => ({
         url: `oauth/client/${client_id}`,
@@ -65,15 +66,14 @@ const oauthClientsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["OAuth Client"],
     }),
-    rotateOAuthClientSecret: build.mutation<
-      ClientSecretRotateResponse,
-      string
-    >({
-      query: (clientId) => ({
-        url: `oauth/client/${clientId}/secret`,
-        method: "POST",
-      }),
-    }),
+    rotateOAuthClientSecret: build.mutation<ClientSecretRotateResponse, string>(
+      {
+        query: (clientId) => ({
+          url: `oauth/client/${clientId}/secret`,
+          method: "POST",
+        }),
+      },
+    ),
   }),
 });
 
