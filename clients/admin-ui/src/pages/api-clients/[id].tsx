@@ -11,19 +11,19 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
-import ClipboardButton from "~/features/common/ClipboardButton";
-import PageHeader from "~/features/common/PageHeader";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
 import ClientSecretModal from "~/features/oauth/ClientSecretModal";
-import OAuthClientForm from "~/features/oauth/OAuthClientForm";
 import {
   useGetOAuthClientQuery,
   useRotateOAuthClientSecretMutation,
 } from "~/features/oauth/oauth-clients.slice";
+import OAuthClientForm from "~/features/oauth/OAuthClientForm";
 import { ScopeRegistryEnum } from "~/types/api";
 
 const SecretManagementTab = ({ clientId }: { clientId: string }) => {
@@ -55,7 +55,10 @@ const SecretManagementTab = ({ clientId }: { clientId: string }) => {
 
   return (
     <>
-      <div className="max-w-lg flex flex-col gap-3" data-testid="secret-management-tab">
+      <div
+        className="flex max-w-lg flex-col gap-3"
+        data-testid="secret-management-tab"
+      >
         <p className="font-medium">Rotate secret</p>
         <p className="text-sm text-gray-600">
           Rotating the secret immediately invalidates the current one. Any
@@ -88,9 +91,13 @@ const ApiClientDetailPage: NextPage = () => {
   const router = useRouter();
   const clientId = Array.isArray(router.query.id)
     ? router.query.id[0]
-    : router.query.id ?? "";
+    : (router.query.id ?? "");
 
-  const { data: client, isLoading, error } = useGetOAuthClientQuery(clientId, {
+  const {
+    data: client,
+    isLoading,
+    error,
+  } = useGetOAuthClientQuery(clientId, {
     skip: !clientId,
   });
 
@@ -146,7 +153,7 @@ const ApiClientDetailPage: NextPage = () => {
         isSticky={false}
       />
       {client && (
-        <Flex align="center" gap={4} className="mb-4 -mt-2">
+        <Flex align="center" gap={4} className="-mt-2 mb-4">
           <Typography.Text type="secondary" className="font-mono text-xs">
             {client.client_id}
           </Typography.Text>
@@ -159,15 +166,13 @@ const ApiClientDetailPage: NextPage = () => {
       )}
       {isLoading && (
         <Flex justify="center" align="center" className="h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-900" />
+          <div className="size-8 animate-spin rounded-full border-b-2 border-gray-900" />
         </Flex>
       )}
       {!isLoading && !client && (
         <Alert message="API client not found." type="warning" showIcon />
       )}
-      {client && (
-        <Tabs items={tabItems} className="w-full" />
-      )}
+      {client && <Tabs items={tabItems} className="w-full" />}
     </FixedLayout>
   );
 };
