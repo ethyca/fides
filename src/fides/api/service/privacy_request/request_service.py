@@ -705,7 +705,8 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 break
 
                             # All remaining no-subtask_id cases route through the retry
-                            # mechanism. Covers two scenarios:
+                            # mechanism. Covers three scenarios:
+                            #   - pending + no upstream (root task): never dispatched
                             #   - pending + upstream_complete: parent died before dispatch
                             #   - in_processing + no_cache: cache evicted / worker crashed
                             # _handle_privacy_request_requeue applies the retry limit;

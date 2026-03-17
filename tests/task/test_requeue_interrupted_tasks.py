@@ -122,6 +122,89 @@ class TestRequeueInterruptedTasks:
         requeue_interrupted_tasks.apply().get()
         mock_requeue_privacy_request.assert_called_once()
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        return_value=[],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
+    )
+    def test_in_processing_task_with_no_cache_key_and_async_task_is_not_canceled(
+        self,
+        mock_celery_tasks_in_flight,
+        mock_get_task_ids_from_dsr_queue,
+        mock_requeue_privacy_request,
+        mock_cancel_interrupted_tasks,
+        db,
+        policy,
+    ):
+        """An in_processing task with no cache key is skipped when async tasks are awaiting.
+
+        If the privacy request also has async tasks awaiting external completion
+        (e.g., a webhook callback), the async guard fires before the requeue decision
+        and the request is left alone — it is intentionally waiting for that event.
+        """
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        # in_processing task with no subtask ID (stuck-looking)
+        stuck_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.in_processing,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:stuck",
+                "dataset_name": "test_dataset",
+                "collection_name": "stuck",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+        # Do NOT cache a subtask ID
+
+        # Async task awaiting a callback — this should prevent requeue/cancel
+        async_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "gateway_api:results",
+                "dataset_name": "gateway_api",
+                "collection_name": "results",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+                "async_type": AsyncTaskType.callback,
+            },
+        )
+        try:
+            requeue_interrupted_tasks.apply().get()
+            mock_requeue_privacy_request.assert_not_called()
+            mock_cancel_interrupted_tasks.assert_not_called()
+        finally:
+            stuck_task.delete(db)
+            async_task.delete(db)
+            privacy_request.delete(db)
+
     @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
