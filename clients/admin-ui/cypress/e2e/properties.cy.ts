@@ -96,8 +96,8 @@ describe("Properties page", () => {
       cy.getAntTableRow("FDS-CEA9EV").within(() => {
         cy.getByTestId("delete-property-button").click();
       });
-      cy.getByTestId("confirmation-modal").should("be.visible");
-      cy.getByTestId("continue-btn").click();
+      cy.get(".ant-modal-confirm").should("be.visible");
+      cy.getAntModalConfirmButtons().contains("Ok").click();
       cy.wait("@deleteProperty");
     });
   });

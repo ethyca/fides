@@ -12,14 +12,9 @@ import {
   Button,
   ChakraBox as Box,
   ChakraCenter as Center,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraSpinner as Spinner,
   ChakraVStack as VStack,
+  Modal,
   Tooltip,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
@@ -108,34 +103,34 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
       ) : (
         DSRButton
       )}
-      <Modal isCentered isOpen={isOpen} size="lg" onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent minWidth="775px">
-          <ModalHeader>Customize DSR</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <VStack align="stretch" gap="16px">
-              <Box color="gray.700" fontSize="14px">
-                Customize your PII fields to create a friendly label name for
-                your privacy request packages. This &quot;Package Label&quot; is
-                the label your user will see in their downloaded package.
-              </Box>
-              {(isFetching || isLoading) && (
-                <Center>
-                  <Spinner />
-                </Center>
-              )}
-              {mounted.current && !isLoading ? (
-                <DSRCustomizationForm
-                  data={fields}
-                  isSubmitting={isSubmitting}
-                  onSaveClick={handleSubmit}
-                  onCancel={onClose}
-                />
-              ) : null}
-            </VStack>
-          </ModalBody>
-        </ModalContent>
+      <Modal
+        open={isOpen}
+        onCancel={onClose}
+        centered
+        destroyOnHidden
+        title="Customize DSR"
+        footer={null}
+      >
+        <VStack align="stretch" gap="16px">
+          <Box color="gray.700" fontSize="14px">
+            Customize your PII fields to create a friendly label name for your
+            privacy request packages. This &quot;Package Label&quot; is the
+            label your user will see in their downloaded package.
+          </Box>
+          {(isFetching || isLoading) && (
+            <Center>
+              <Spinner />
+            </Center>
+          )}
+          {mounted.current && !isLoading ? (
+            <DSRCustomizationForm
+              data={fields}
+              isSubmitting={isSubmitting}
+              onSaveClick={handleSubmit}
+              onCancel={onClose}
+            />
+          ) : null}
+        </VStack>
       </Modal>
     </>
   );

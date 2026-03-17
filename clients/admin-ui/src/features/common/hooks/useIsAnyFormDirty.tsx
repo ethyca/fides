@@ -1,22 +1,14 @@
+import { useModal } from "fidesui";
 import { useFormikContext } from "formik";
-import React, {
-  createRef,
-  MutableRefObject,
-  useCallback,
-  useEffect,
-} from "react";
+import { createRef, MutableRefObject, useCallback, useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import {
-  closeModal,
-  openModal,
   registerForm,
   selectAnyDirtyForms,
-  selectIsModalOpen,
   unregisterForm,
   updateDirtyFormState,
 } from "~/features/common/hooks/dirty-forms.slice";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 
 /*
  * There needs to be a global promise reference so ensure that
@@ -35,32 +27,16 @@ const modalResolvePromise = createRef() as MutableRefObject<
 >;
 
 export const useIsAnyFormDirty = () => {
-  const dispatch = useAppDispatch();
-
   const anyDirtyForms = useAppSelector(selectAnyDirtyForms);
+  const modal = useModal();
+
   const resetReferences = useCallback(() => {
     modalResolvePromise.current = undefined;
     modalResponsePromise.current = undefined;
   }, []);
-  const onConfirm = useCallback(() => {
-    dispatch(closeModal());
-    if (modalResolvePromise.current) {
-      modalResolvePromise.current(true);
-      resetReferences();
-    }
-  }, [dispatch, resetReferences]);
-
-  const onClose = useCallback(() => {
-    dispatch(closeModal());
-    if (modalResolvePromise.current) {
-      modalResolvePromise.current(false);
-      resetReferences();
-    }
-  }, [dispatch, resetReferences]);
 
   const attemptAction = useCallback(() => {
     if (anyDirtyForms) {
-      dispatch(openModal());
       /*
        * A new promise is only made when one isn't already in flight.
        * This is so that in the rare and unlikely event that two
@@ -72,16 +48,33 @@ export const useIsAnyFormDirty = () => {
         modalResponsePromise.current = new Promise((resolve) => {
           modalResolvePromise.current = resolve;
         });
+        modal.confirm({
+          title: "Unsaved Changes",
+          content: "You have unsaved changes",
+          centered: true,
+          icon: null,
+          okText: "Continue anyway",
+          onOk: () => {
+            if (modalResolvePromise.current) {
+              modalResolvePromise.current(true);
+              resetReferences();
+            }
+          },
+          onCancel: () => {
+            if (modalResolvePromise.current) {
+              modalResolvePromise.current(false);
+              resetReferences();
+            }
+          },
+        });
       }
       return modalResponsePromise.current as Promise<boolean>;
     }
     return Promise.resolve(true);
-  }, [anyDirtyForms, dispatch]);
+  }, [anyDirtyForms, modal, resetReferences]);
 
   return {
     attemptAction,
-    onConfirm,
-    onClose,
   };
 };
 
@@ -109,19 +102,4 @@ export const FormGuard = ({ id, name }: FormGuardProps) => {
   }, [dirty, dispatch, id]);
 
   return null;
-};
-
-export const DirtyFormConfirmationModal = () => {
-  const { onConfirm, onClose } = useIsAnyFormDirty();
-  const isModalOpen = useAppSelector(selectIsModalOpen);
-  return (
-    <ConfirmationModal
-      isOpen={isModalOpen}
-      onClose={onClose}
-      onConfirm={onConfirm}
-      isCentered
-      title="Unsaved Changes"
-      message="You have unsaved changes"
-    />
-  );
 };
