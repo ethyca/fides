@@ -1,6 +1,5 @@
 import { Checkbox } from "fidesui";
-import { useFormikContext } from "formik";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 import SearchInput from "~/features/common/SearchInput";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -15,8 +14,8 @@ const GROUPED = groupScopesByResource(ALL_SCOPES);
 const SORTED_RESOURCES = Object.keys(GROUPED).sort();
 
 interface ScopePickerProps {
-  /** Formik field name that holds the selected scopes array */
-  name: string;
+  value: string[];
+  onChange: (value: string[]) => void;
 }
 
 /**
@@ -25,12 +24,11 @@ interface ScopePickerProps {
  * Scopes are grouped by resource (e.g. all `client:*` under "Client").
  * A search input filters both group labels and individual scope actions.
  * Checking a group header toggles all scopes in that group at once.
+ *
+ * Wrapped in React.memo so it only re-renders when `value` or `onChange`
+ * change — not on every keystroke in sibling form fields.
  */
-const ScopePicker = ({ name }: ScopePickerProps) => {
-  const { values, setFieldValue } =
-    useFormikContext<Record<string, string[]>>();
-
-  const selected: string[] = values[name] ?? [];
+const ScopePicker = memo(({ value: selected, onChange }: ScopePickerProps) => {
   const [search, setSearch] = useState("");
 
   const visibleResources = useMemo(() => {
@@ -50,7 +48,6 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
       return GROUPED[resource];
     }
     const q = search.toLowerCase();
-    // If the group label matches, show all scopes in the group
     if (formatResourceLabel(resource).toLowerCase().includes(q)) {
       return GROUPED[resource];
     }
@@ -60,23 +57,17 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
   const handleGroupToggle = (resource: string, checked: boolean) => {
     const groupScopes = GROUPED[resource];
     if (checked) {
-      setFieldValue(name, Array.from(new Set([...selected, ...groupScopes])));
+      onChange(Array.from(new Set([...selected, ...groupScopes])));
     } else {
-      setFieldValue(
-        name,
-        selected.filter((s) => !groupScopes.includes(s)),
-      );
+      onChange(selected.filter((s) => !groupScopes.includes(s)));
     }
   };
 
   const handleScopeToggle = (scope: string, checked: boolean) => {
     if (checked) {
-      setFieldValue(name, [...selected, scope]);
+      onChange([...selected, scope]);
     } else {
-      setFieldValue(
-        name,
-        selected.filter((s) => s !== scope),
-      );
+      onChange(selected.filter((s) => s !== scope));
     }
   };
 
@@ -84,7 +75,7 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
   const someSelected = selected.length > 0 && !allSelected;
 
   const handleSelectAll = (checked: boolean) => {
-    setFieldValue(name, checked ? ALL_SCOPES : []);
+    onChange(checked ? ALL_SCOPES : []);
   };
 
   return (
@@ -171,6 +162,8 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
       </span>
     </div>
   );
-};
+});
+
+ScopePicker.displayName = "ScopePicker";
 
 export default ScopePicker;
