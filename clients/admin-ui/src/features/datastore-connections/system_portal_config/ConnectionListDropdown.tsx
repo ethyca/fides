@@ -226,7 +226,6 @@ const ConnectionListDropdown = ({
             data-testid="input-search-integrations"
             ref={inputRef}
             autoComplete="off"
-            autoFocus
             borderRadius="md"
             name="search"
             onChange={debounceHandleSearchChange}
@@ -301,6 +300,11 @@ const ConnectionListDropdown = ({
       trigger="click"
       open={isOpen}
       onOpenChange={setIsOpen}
+      afterOpenChange={(visible) => {
+        if (visible) {
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }
+      }}
       styles={{ body: { padding: 0 } }}
     >
       <Button
@@ -308,7 +312,6 @@ const ConnectionListDropdown = ({
         disabled={disabled}
         icon={<ArrowDownLineIcon />}
         iconPosition="end"
-        className={`!bg-transparent text-left hover:bg-transparent active:bg-transparent ${selectedText ? "!text-[#2b2e35]" : ""}`}
         data-testid="select-dropdown-btn"
         style={{ width: 272 }}
       >
