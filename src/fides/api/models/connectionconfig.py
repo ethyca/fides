@@ -348,6 +348,11 @@ class ConnectionConfig(Base):
         Updates the SaaS config and initializes any empty secrets with
         connector param default values if available (will not override any existing secrets)
         """
+        from fides.api.models.connection_config_saas_history import (
+            ConnectionConfigSaaSHistory,
+        )
+        from fides.api.models.datasetconfig import DatasetConfig
+
         default_secrets = {
             connector_param.name: connector_param.default_value
             for connector_param in saas_config.connector_params
@@ -356,6 +361,23 @@ class ConnectionConfig(Base):
         updated_secrets = {**default_secrets, **(self.secrets or {})}
         self.secrets = updated_secrets
         self.saas_config = saas_config.model_dump(mode="json")
+
+        datasets = [
+            dc.ctl_dataset.dict()
+            for dc in db.query(DatasetConfig)
+            .filter(DatasetConfig.connection_config_id == self.id)
+            .all()
+            if dc.ctl_dataset
+        ]
+        ConnectionConfigSaaSHistory.create_snapshot(
+            db=db,
+            connection_config_id=self.id,
+            connection_key=self.key,
+            version=saas_config.version,
+            config=self.saas_config,
+            datasets=datasets or None,
+        )
+
         self.save(db)
 
     def update_test_status(
