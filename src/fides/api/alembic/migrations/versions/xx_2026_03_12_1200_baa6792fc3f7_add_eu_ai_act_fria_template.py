@@ -4,7 +4,7 @@ Seeds the assessment_template and assessment_question tables with the
 EU AI Act Fundamental Rights Impact Assessment (Article 27) template.
 
 Revision ID: baa6792fc3f7
-Revises: ea20059aee77
+Revises: ecd49f8108e0
 Create Date: 2026-03-12 12:00:00.000000
 
 """
@@ -17,7 +17,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "baa6792fc3f7"
-down_revision = "ea20059aee77"
+down_revision = "ecd49f8108e0"
 branch_labels = None
 depends_on = None
 
@@ -46,6 +46,15 @@ TEMPLATE_QUESTIONS = [
         "group_order": 1,
         "questions": [
             {
+                "question_key": "fria_1_0",
+                "question_text": "Under which EU AI Act classification is this AI system considered high-risk?",
+                "guidance": "Identify whether the system is high-risk under Article 6(1) (safety component of regulated product) or Article 6(2) (Annex III category). If Annex III, specify which of the 8 categories applies: Biometrics, Critical Infrastructure, Education, Employment, Essential Services, Law Enforcement, Migration/Asylum, or Justice/Democratic Processes.",
+                "question_order": 0,
+                "required": True,
+                "fides_sources": [],
+                "expected_coverage": "none",
+            },
+            {
                 "question_key": "fria_1_1",
                 "question_text": "What is the name and description of the high-risk AI system being deployed?",
                 "guidance": "Identify the AI system by its commercial name, version, and the AI provider. Include the intended purpose as stated in the provider's instructions for use.",
@@ -57,7 +66,7 @@ TEMPLATE_QUESTIONS = [
             {
                 "question_key": "fria_1_2",
                 "question_text": "What are the specific business or operational processes in which this AI system will be used?",
-                "guidance": "Describe the exact workflows where the AI is integrated and what decisions it informs. Reference the intended purpose defined by the AI provider.",
+                "guidance": "Describe the exact workflows where the AI is integrated and what decisions it informs. Reference the intended purpose defined by the AI provider. Confirm that your intended use aligns with the intended purpose defined in the provider's instructions for use. Deployment outside the intended purpose may not be covered by the provider's conformity assessment.",
                 "question_order": 2,
                 "required": True,
                 "fides_sources": [
@@ -77,6 +86,15 @@ TEMPLATE_QUESTIONS = [
                     "data_category.name",
                 ],
                 "expected_coverage": "full",
+            },
+            {
+                "question_key": "fria_1_4",
+                "question_text": "Has a Data Protection Impact Assessment (DPIA) been conducted for this AI system?",
+                "guidance": "Article 27(4) allows DPIA findings to complement the FRIA. If a DPIA exists, identify which FRIA requirements it addresses and which require additional assessment.",
+                "question_order": 4,
+                "required": True,
+                "fides_sources": [],
+                "expected_coverage": "none",
             },
         ],
     },
@@ -131,7 +149,7 @@ TEMPLATE_QUESTIONS = [
             {
                 "question_key": "fria_3_3",
                 "question_text": "What is the estimated scale of affected individuals?",
-                "guidance": "Provide an estimate of how many people will be subject to the AI system's outputs, broken down by affected group where possible.",
+                "guidance": "Provide an estimate of how many people will be subject to the AI system's outputs, broken down by affected group where possible. Consider both individuals directly subject to AI decisions and those indirectly affected (e.g., family members, communities).",
                 "question_order": 3,
                 "required": True,
                 "fides_sources": [],
@@ -235,6 +253,24 @@ TEMPLATE_QUESTIONS = [
                 "question_text": "What complaint mechanisms are available to individuals affected by the AI system?",
                 "guidance": "Describe how affected individuals can challenge the AI's decisions, submit complaints, and seek redress. Include both internal complaint processes and external reporting channels.",
                 "question_order": 3,
+                "required": True,
+                "fides_sources": [],
+                "expected_coverage": "none",
+            },
+            {
+                "question_key": "fria_6_4",
+                "question_text": "What process is in place to review and update this FRIA when circumstances change?",
+                "guidance": "Article 27(2) requires updating the FRIA when any element changes. Describe the triggers for review (e.g., system updates, changes in affected populations, new risks identified) and the review frequency.",
+                "question_order": 4,
+                "required": True,
+                "fides_sources": [],
+                "expected_coverage": "none",
+            },
+            {
+                "question_key": "fria_6_5",
+                "question_text": "Has the completed FRIA been notified to the relevant market surveillance authority?",
+                "guidance": "Article 27(3) requires deployers to notify the market surveillance authority of the FRIA results using the template provided. Document the notification date and authority contacted.",
+                "question_order": 5,
                 "required": True,
                 "fides_sources": [],
                 "expected_coverage": "none",
