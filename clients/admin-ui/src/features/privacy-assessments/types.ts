@@ -115,11 +115,11 @@ export interface SlackEvidenceData {
 export interface EvidenceItem {
   id: string;
   type: EvidenceType;
-  value: string;
+  value?: string;
   created_at: string;
-  field_name: string;
-  source_key: string;
-  source_type: string;
+  field_name?: string;
+  source_key?: string;
+  source_type?: string;
   citation_number: number | null;
   data?: SlackEvidenceData;
 }

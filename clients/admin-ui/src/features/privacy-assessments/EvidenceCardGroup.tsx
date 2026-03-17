@@ -20,12 +20,12 @@ export const EvidenceCardGroup = ({ items }: EvidenceCardGroupProps) => (
       ) : (
         <div key={item.id} className={styles.evidenceCard}>
           <Text strong size="sm" className="mb-2 block">
-            {SOURCE_TYPE_LABELS[item.source_type] ?? item.source_type}
+            {SOURCE_TYPE_LABELS[item.source_type!] ?? item.source_type}
           </Text>
           <Text className={classNames("mb-2 block", styles.cardValue)}>
             <Text type="secondary">
-              {FIELD_NAME_LABELS[item.field_name] ??
-                item.field_name.replace(/_/g, " ")}
+              {FIELD_NAME_LABELS[item.field_name!] ??
+                item.field_name!.replace(/_/g, " ")}
               :{" "}
             </Text>
             {item.value}
