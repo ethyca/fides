@@ -1,10 +1,12 @@
 import { format } from "date-fns-tz";
-import { Collapse, Flex, List, Text } from "fidesui";
+import { Avatar, Collapse, List, Text } from "fidesui";
 
+import Image from "~/features/common/Image";
 import { formatDate, pluralize } from "~/features/common/utils";
 
 import styles from "./SlackThreadCard.module.scss";
 import { EvidenceItem, SlackMessage } from "./types";
+import { getInitials } from "./utils";
 
 interface SlackThreadCardProps {
   item: EvidenceItem;
@@ -46,20 +48,42 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
                   renderItem={(msg: SlackMessage) => (
                     <List.Item className={styles.messageItem}>
                       <List.Item.Meta
+                        avatar={
+                          msg.is_bot ? (
+                            <Avatar
+                              shape="square"
+                              className={styles.messageAvatarBot}
+                              icon={
+                                <Image
+                                  src="/images/logomark-astralis-white.svg"
+                                  alt="Fides"
+                                  width={12}
+                                  height={12}
+                                  className={styles.messageAvatarImage}
+                                />
+                              }
+                            />
+                          ) : (
+                            <Avatar
+                              shape="square"
+                              className={styles.messageAvatarUser}
+                            >
+                              {getInitials(msg.sender)}
+                            </Avatar>
+                          )
+                        }
                         title={
-                          <Flex align="center" gap="small">
-                            <Text strong size="sm">
-                              {msg.sender}
-                            </Text>
+                          <Text strong size="sm">
+                            {msg.sender}
                             {msg.timestamp && (
-                              <Text type="secondary" size="sm">
+                              <Text type="secondary" size="sm" className="ml-2">
                                 {format(
                                   new Date(msg.timestamp),
                                   "MMM d, hh:mm aa",
                                 )}
                               </Text>
                             )}
-                          </Flex>
+                          </Text>
                         }
                         description={
                           <Text size="sm" className="mt-1 block">

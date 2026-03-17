@@ -2,6 +2,14 @@ import { FIELD_NAME_LABELS, SOURCE_TYPE_LABELS } from "./constants";
 import type { AssessmentTaskResponse, EvidenceItem } from "./types";
 import { EvidenceType } from "./types";
 
+export const getInitials = (name: string) =>
+  name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+
 export const formatSystems = (task: AssessmentTaskResponse | null): string => {
   if (!task) {
     return "—";

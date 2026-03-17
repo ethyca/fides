@@ -11,7 +11,21 @@
   }
 }
 
+.messageAvatarBot {
+  background-color: var(--fidesui-minos) !important;
+}
+
+.messageAvatarUser {
+  background-color: var(--fidesui-neutral-100) !important;
+  color: var(--fidesui-minos) !important;
+}
+
+.messageAvatarImage {
+  width: 85% !important;
+  height: auto !important;
+}
+
 .messageItem {
-  padding: 8px 0;
+  --ant-list-item-padding-sm: 8px 0;
   border-bottom: 1px solid var(--ant-color-border-secondary);
 }
