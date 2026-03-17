@@ -1,4 +1,4 @@
-import { Collapse, Form, Input, Modal } from "fidesui";
+import { Button, Collapse, Drawer, Form, Input } from "fidesui";
 import { useEffect } from "react";
 
 import { DatasetField } from "~/types/api";
@@ -69,12 +69,18 @@ const AddNodeModal = ({
   };
 
   return (
-    <Modal
+    <Drawer
       title={title}
+      placement="right"
+      width={400}
       open={open}
-      onOk={handleOk}
-      onCancel={onCancel}
-      width={mode === "field" ? 520 : undefined}
+      onClose={onCancel}
+      mask={false}
+      extra={
+        <Button type="primary" size="small" onClick={handleOk}>
+          Create
+        </Button>
+      }
     >
       <Form form={form} layout="vertical" size="small">
         <Form.Item
@@ -125,7 +131,7 @@ const AddNodeModal = ({
           </>
         )}
       </Form>
-    </Modal>
+    </Drawer>
   );
 };
 
