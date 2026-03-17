@@ -2912,7 +2912,7 @@ class TestReinviteUser:
         original_updated_at = original_invite.updated_at
 
         with mock.patch(
-            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message"
+            "fides.api.v1.endpoints.user_endpoints.dispatch_message"
         ) as mock_dispatch:
             response = api_client.post(url, headers=auth_header)
 
@@ -3002,7 +3002,7 @@ class TestReinviteUser:
         invite.save(db)
 
         with mock.patch(
-            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message"
+            "fides.api.v1.endpoints.user_endpoints.dispatch_message"
         ) as mock_dispatch:
             response = api_client.post(url, headers=auth_header)
 
@@ -3021,7 +3021,7 @@ class TestReinviteUser:
         )
         assert invite.invite_code_valid("original_code")
 
-        with mock.patch("fides.api.api.v1.endpoints.user_endpoints.dispatch_message"):
+        with mock.patch("fides.api.v1.endpoints.user_endpoints.dispatch_message"):
             response = api_client.post(url, headers=auth_header)
             assert response.status_code == HTTP_204_NO_CONTENT
 
@@ -3042,7 +3042,7 @@ class TestReinviteUser:
         original_hashed_code = invite.hashed_invite_code
 
         with mock.patch(
-            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message",
+            "fides.api.v1.endpoints.user_endpoints.dispatch_message",
             side_effect=Exception("send failed"),
         ):
             response = api_client.post(url, headers=auth_header)
@@ -3065,7 +3065,7 @@ class TestReinviteUser:
         auth_header = generate_auth_header(scopes=[USER_CREATE])
 
         with mock.patch(
-            "fides.api.api.v1.endpoints.user_endpoints.dispatch_message"
+            "fides.api.v1.endpoints.user_endpoints.dispatch_message"
         ) as mock_dispatch:
             response = api_client.post(url, headers=auth_header)
 
