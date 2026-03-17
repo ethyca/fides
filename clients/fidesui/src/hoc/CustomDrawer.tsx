@@ -1,4 +1,5 @@
-import { Drawer, DrawerProps } from "antd/lib";
+import { Drawer, type DrawerProps } from "antd/lib";
+export type { DrawerProps } from "antd/lib";
 
 const DEFAULT_WIDTH = 480;
 
