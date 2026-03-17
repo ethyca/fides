@@ -136,13 +136,15 @@ interface AddModalState {
   open: boolean;
   title: string;
   existingNames: string[];
-  onConfirm: (name: string) => void;
+  mode: "collection" | "field";
+  onConfirm: (name: string, fieldData?: Partial<DatasetField>) => void;
 }
 
 const CLOSED_MODAL: AddModalState = {
   open: false,
   title: "",
   existingNames: [],
+  mode: "collection",
   onConfirm: () => {},
 };
 
@@ -289,8 +291,13 @@ const DatasetNodeEditorInner = ({
   );
 
   const handleAddField = useCallback(
-    (collectionName: string, name: string, parentFieldPath?: string) => {
-      const newField: DatasetField = { name };
+    (
+      collectionName: string,
+      name: string,
+      parentFieldPath?: string,
+      fieldData?: Partial<DatasetField>,
+    ) => {
+      const newField: DatasetField = { name, ...fieldData };
       onDatasetChange({
         ...dataset,
         collections: dataset.collections.map((c) => {
@@ -355,6 +362,7 @@ const DatasetNodeEditorInner = ({
           open: true,
           title: "Add Collection",
           existingNames: dataset.collections.map((c) => c.name),
+          mode: "collection",
           onConfirm: (name: string) => {
             handleAddCollection(name);
             setAddModal(CLOSED_MODAL);
@@ -378,8 +386,9 @@ const DatasetNodeEditorInner = ({
           open: true,
           title: label,
           existingNames: siblingFields.map((f) => f.name),
-          onConfirm: (name: string) => {
-            handleAddField(collectionName, name, parentFieldPath);
+          mode: "field",
+          onConfirm: (name: string, fieldData?: Partial<DatasetField>) => {
+            handleAddField(collectionName, name, parentFieldPath, fieldData);
             setAddModal(CLOSED_MODAL);
           },
         });
@@ -492,6 +501,7 @@ const DatasetNodeEditorInner = ({
           open={addModal.open}
           title={addModal.title}
           existingNames={addModal.existingNames}
+          mode={addModal.mode}
           onConfirm={addModal.onConfirm}
           onCancel={() => setAddModal(CLOSED_MODAL)}
         />

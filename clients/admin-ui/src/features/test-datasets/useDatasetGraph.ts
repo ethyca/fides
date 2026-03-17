@@ -11,6 +11,7 @@ export type CollectionNodeData = {
   collection: DatasetCollection;
   nodeType: "collection";
   isProtected?: boolean;
+  isRoot?: boolean;
   [key: string]: unknown;
 };
 
@@ -145,6 +146,7 @@ const useDatasetGraph = (
           collection,
           nodeType: "collection",
           isProtected: false,
+          isRoot: true,
         } satisfies CollectionNodeData,
       });
 
