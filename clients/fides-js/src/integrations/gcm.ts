@@ -163,20 +163,18 @@ const pushConsentToGtag = (
 
   fidesDebugger("[Fides GCM] Pushing consent to gtag:", consent);
 
-  // Check if gtag is available
-  if (typeof window.gtag !== "function") {
-    // define dataLayer if it doesn't exist yet so that we can push to it in the gtag function fallback
-    window.dataLayer ??= [];
-    const { dataLayer } = window;
-    // define gtag if it doesn't exist and push to dataLayer
-    window.gtag = function gtag() {
-      dataLayer.push(arguments);
-    };
-
-    fidesDebugger(
-      "[Fides GCM] gtag() not found. Adding fallback gtag function that pushes to dataLayer.",
-    );
+  // define dataLayer if it doesn't exist yet so that we can push to it in the gtag function fallback
+  const dataLayer = window.dataLayer ?? [];
+  window.dataLayer = dataLayer;
+  // define gtag if it doesn't exist and push to dataLayer
+  function gtag() {
+    dataLayer.push(arguments);
   }
+  window.gtag = window.gtag ?? gtag;
+
+  fidesDebugger(
+    "[Fides GCM] gtag() not found. Adding fallback gtag function that pushes to dataLayer.",
+  );
 
   // Build Google consent object
   const googleConsent = buildGoogleConsent(consent, purposeMapping);
