@@ -4,7 +4,8 @@ import {
   Flex,
   Modal,
   Tabs,
-  useChakraToast as useToast,
+  Typography,
+  useMessage,
 } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
@@ -12,11 +13,11 @@ import { useState } from "react";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import FixedLayout from "~/features/common/FixedLayout";
+import ClipboardButton from "~/features/common/ClipboardButton";
 import PageHeader from "~/features/common/PageHeader";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
-import { errorToastParams } from "~/features/common/toast";
 import ClientSecretModal from "~/features/oauth/ClientSecretModal";
 import OAuthClientForm from "~/features/oauth/OAuthClientForm";
 import {
@@ -26,7 +27,7 @@ import {
 import { ScopeRegistryEnum } from "~/types/api";
 
 const SecretManagementTab = ({ clientId }: { clientId: string }) => {
-  const toast = useToast();
+  const message = useMessage();
   const [secretModalOpen, setSecretModalOpen] = useState(false);
   const [rotatedSecret, setRotatedSecret] = useState("");
   const [rotateSecret, { isLoading }] = useRotateOAuthClientSecretMutation();
@@ -34,7 +35,7 @@ const SecretManagementTab = ({ clientId }: { clientId: string }) => {
   const handleRotate = async () => {
     const result = await rotateSecret(clientId);
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else if (result.data) {
       setRotatedSecret(result.data.client_secret);
       setSecretModalOpen(true);
@@ -144,6 +145,18 @@ const ApiClientDetailPage: NextPage = () => {
         ]}
         isSticky={false}
       />
+      {client && (
+        <Flex align="center" gap={4} className="mb-4 -mt-2">
+          <Typography.Text type="secondary" className="font-mono text-xs">
+            {client.client_id}
+          </Typography.Text>
+          <ClipboardButton
+            copyText={client.client_id}
+            size="small"
+            data-testid="copy-client-id-btn"
+          />
+        </Flex>
+      )}
       {isLoading && (
         <Flex justify="center" align="center" className="h-32">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-900" />

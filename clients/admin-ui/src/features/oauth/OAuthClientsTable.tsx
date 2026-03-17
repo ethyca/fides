@@ -1,6 +1,7 @@
 import { Flex, List, Pagination, Tag, Typography } from "fidesui";
 import { useState } from "react";
 
+import ClipboardButton from "~/features/common/ClipboardButton";
 import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { LinkCell } from "~/features/common/table/cells/LinkCell";
@@ -35,12 +36,17 @@ const ClientListItem = ({ client }: { client: ClientResponse }) => {
           </Flex>
         }
         description={
-          <Flex vertical gap={2}>
-            <Text type="secondary" className="font-mono text-xs">
-              {client.client_id}
-            </Text>
+          <Flex vertical gap={4}>
+            <Flex align="center" gap={4}>
+              <Text className="font-mono text-xs text-gray-400">
+                {client.client_id}
+              </Text>
+              <ClipboardButton copyText={client.client_id} size="small" />
+            </Flex>
             {client.description && (
-              <Text type="secondary">{client.description}</Text>
+              <Text className="text-sm text-gray-700">
+                {client.description}
+              </Text>
             )}
           </Flex>
         }
