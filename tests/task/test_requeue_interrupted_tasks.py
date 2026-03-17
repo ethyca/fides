@@ -276,7 +276,7 @@ class TestRequeueInterruptedTasks:
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
-    def test_request_task_with_no_cached_subtask_id_is_skipped(
+    def test_in_processing_request_task_with_no_cached_subtask_id_is_requeued(
         self,
         mock_celery_tasks_in_flight,
         mock_requeue_privacy_request,
@@ -284,11 +284,14 @@ class TestRequeueInterruptedTasks:
         db,
         policy,
     ):
-        """Test that request tasks without cached subtask IDs cause cancellation.
+        """An in_processing request task with no cached subtask ID is requeued, not cancelled.
 
-        When a request task doesn't have a cached subtask ID, the privacy request should be canceled.
+        Even though the task is in_processing, without a subtask ID we can't confirm it
+        is genuinely stuck (the cache may have been evicted). The self-healing design
+        routes all no-subtask_id cases through _handle_privacy_request_requeue, which
+        applies the retry limit. At retry_count=0 (first encounter), it requeues.
+        Cancellation only happens when the retry limit is exhausted.
         """
-        # Create a privacy request and request task without caching subtask IDs
         privacy_request = PrivacyRequest.create(
             db=db,
             data={
@@ -322,12 +325,11 @@ class TestRequeueInterruptedTasks:
 
         try:
             requeue_interrupted_tasks.apply().get()
-            # Should not requeue since there's no cached subtask ID
-            mock_requeue_privacy_request.assert_not_called()
-            # Should cancel the privacy request instead
-            mock_cancel_interrupted_tasks.assert_called_once()
+            # Should requeue since retry_count=0 is under the limit
+            mock_requeue_privacy_request.assert_called_once()
+            # Should NOT hard-cancel — retry mechanism handles cancellation
+            mock_cancel_interrupted_tasks.assert_not_called()
         finally:
-            # Clean up
             request_task.delete(db)
             privacy_request.delete(db)
 
@@ -748,7 +750,7 @@ class TestRequeueInterruptedTasks:
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
-    def test_in_processing_task_with_no_cache_key_is_canceled(
+    def test_in_processing_task_with_no_cache_key_is_requeued(
         self,
         mock_celery_tasks_in_flight,
         mock_get_task_ids_from_dsr_queue,
@@ -757,12 +759,13 @@ class TestRequeueInterruptedTasks:
         db,
         policy,
     ):
-        """An in_processing task with no cache key is genuinely stuck and cancelled.
+        """An in_processing task with no cache key is requeued, not immediately cancelled.
 
-        A task in in_processing status has already been dispatched to Celery and
-        updated its DB status, but the cache key is missing (e.g. Redis eviction or
-        the Celery task died between status update and cache write). This is a true
-        stuck state — cancellation is correct.
+        A task in in_processing status has already been dispatched to Celery and updated
+        its DB status, but the cache key is missing (e.g. Redis eviction or Celery task
+        died between status update and cache write). Under the self-healing design, this
+        goes through _handle_privacy_request_requeue rather than hard-cancelling. At
+        retry_count=0, it requeues. Cancellation only happens when retries are exhausted.
         """
         privacy_request = PrivacyRequest.create(
             db=db,
@@ -794,6 +797,76 @@ class TestRequeueInterruptedTasks:
         # Do NOT cache a subtask ID — simulates cache eviction / missing key
 
         requeue_interrupted_tasks.apply().get()
+        # retry_count=0 is under the limit → requeue
+        mock_requeue_privacy_request.assert_called_once()
+        mock_cancel_interrupted_tasks.assert_not_called()
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        return_value=[],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
+    )
+    def test_in_processing_task_with_no_cache_key_over_retry_limit_is_canceled(
+        self,
+        mock_celery_tasks_in_flight,
+        mock_get_task_ids_from_dsr_queue,
+        mock_requeue_privacy_request,
+        mock_cancel_interrupted_tasks,
+        db,
+        policy,
+    ):
+        """An in_processing task with no cache key is cancelled when retries are exhausted.
+
+        After retry_count has reached privacy_request_requeue_retry_count (default 3),
+        _handle_privacy_request_requeue cancels instead of requeueing. This ensures the
+        request eventually terminates rather than looping forever.
+        """
+        from fides.api.util.cache import increment_privacy_request_retry_count
+
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        # Exhaust the retry limit (default is 3)
+        for _ in range(4):
+            increment_privacy_request_retry_count(privacy_request.id)
+
+        RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.in_processing,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:stuck",
+                "dataset_name": "test_dataset",
+                "collection_name": "stuck",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+        # Do NOT cache a subtask ID — simulates cache eviction / missing key
+
+        requeue_interrupted_tasks.apply().get()
+        # retry_count=4 > limit=3 → cancel
         mock_cancel_interrupted_tasks.assert_called_once()
         mock_requeue_privacy_request.assert_not_called()
 

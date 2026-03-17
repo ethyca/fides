@@ -17,26 +17,28 @@
 (*   Upstream[1] = {}, Upstream[2] = {1}                              *)
 (*                                                                     *)
 (* BUG BEING MODELED:                                                  *)
-(*   ENG-2756 fixed the case where a pending task with                 *)
-(*   awaiting_upstream=TRUE was incorrectly cancelled.                 *)
-(*   Remaining gap: a pending task with awaiting_upstream=FALSE        *)
-(*   (upstream tasks are complete but this task hasn't been dispatched *)
-(*   yet because the parent died) is STILL incorrectly cancelled.      *)
+(*   The watchdog has two related bugs:                                *)
+(*   BUG 1 (ENG-2756 gap): a pending task with upstream complete       *)
+(*     but no subtask_id is incorrectly cancelled. The ENG-2756 guard  *)
+(*     only protected pending+awaiting_upstream=TRUE.                  *)
+(*   BUG 2: in_processing+no_subtask_id is hard-cancelled, bypassing   *)
+(*     the _handle_privacy_request_requeue retry mechanism entirely.   *)
+(*                                                                     *)
+(* DESIGN:                                                             *)
+(*   ALL no-subtask_id cases (both pending and in_processing) should   *)
+(*   go through _handle_privacy_request_requeue, which applies a       *)
+(*   retry limit (privacy_request_requeue_retry_count config).         *)
+(*   Cancellation only happens when the retry limit is exhausted.      *)
 (*                                                                     *)
 (* TWO WATCHDOG VARIANTS:                                              *)
-(*   Spec      - Buggy watchdog. Violates NoPendingCancel.             *)
-(*   SpecFixed - Corrected watchdog. All invariants pass.              *)
+(*   Spec      - Buggy watchdog (hard-cancels, bypasses retry).        *)
+(*   SpecFixed - Corrected watchdog (retry logic, all invariants pass) *)
 (*                                                                     *)
 (* KEY CORRECTNESS INVARIANT:                                          *)
-(*   NoPendingCancel - A task in "pending" status must never cause     *)
-(*     pr_status to become "error" (cancellation).                     *)
-(*     A pending task has no subtask_id by definition (it was never    *)
-(*     dispatched). This is never a "stuck" state — it means the       *)
-(*     parent died before dispatching it. Correct response: requeue.   *)
-(*                                                                     *)
-(*   VIOLATED under Spec (buggy): watchdog cancels pending tasks       *)
-(*     where upstream is complete (not covered by ENG-2756 guard).     *)
-(*   PASSES under SpecFixed: all pending tasks are protected.          *)
+(*   CancelImpliesRetriesExhausted - pr_status = "error" is only       *)
+(*     reachable when retry_count >= MaxRetries. Cancellation is never *)
+(*     a first-resort response; it only happens after the configured   *)
+(*     number of requeue attempts have all failed.                     *)
 (*                                                                     *)
 (* LIVENESS:                                                           *)
 (*   EventualResolution: after the parent dies, the privacy request    *)
@@ -49,6 +51,8 @@
 (*   - requires_input branch (modeled as abstract skip)                *)
 (*   - has_async_tasks_awaiting_external_completion branch (skip)      *)
 (*   - Celery broker queue inspection (subtask_alive abstracts this)   *)
+(*   - Re-execution after requeue (requeued is treated as terminal     *)
+(*     for spec tractability; the invariant is about the cancel path)  *)
 (***********************************************************************)
 
 EXTENDS Integers, FiniteSets, TLC
@@ -65,6 +69,11 @@ Tasks == {1, 2}
 \* Mirrors RequestTask.upstream_tasks (list of collection address strings).
 \* Here simplified to task IDs for a linear 2-task chain.
 Upstream == (1 :> {} @@ 2 :> {1})
+
+\* Maximum number of requeue attempts before a privacy request is cancelled.
+\* Mirrors: privacy_request_requeue_retry_count config option.
+\* Set via .cfg: MaxRetries = 2
+CONSTANT MaxRetries
 
 \* ================================================================== *
 \* TYPE DEFINITIONS                                                   *
@@ -103,10 +112,15 @@ VARIABLES
                     \* TRUE while the parent Celery task (run_privacy_request) is alive.
                     \* Parent death models: OOM kill, pod restart, Celery worker crash.
 
-    pr_status       \* PrStatuses
+    pr_status,      \* PrStatuses
                     \* Mirrors PrivacyRequest.status outcome after watchdog runs.
 
-vars == <<task_status, subtask_cached, subtask_alive, parent_alive, pr_status>>
+    retry_count     \* 0..MaxRetries
+                    \* Number of times the privacy request has been requeued.
+                    \* Mirrors: the retry counter checked by _handle_privacy_request_requeue
+                    \*   against privacy_request_requeue_retry_count config.
+
+vars == <<task_status, subtask_cached, subtask_alive, parent_alive, pr_status, retry_count>>
 
 \* ================================================================== *
 \* HELPERS                                                            *
@@ -134,6 +148,7 @@ Init ==
     /\ subtask_alive  = [t \in Tasks |-> FALSE]
     /\ parent_alive   = TRUE
     /\ pr_status      = "running"
+    /\ retry_count    = 0
 
 \* ================================================================== *
 \* SYSTEM ACTIONS                                                     *
@@ -153,7 +168,7 @@ DispatchTask(t) ==
     /\ ~subtask_cached[t]
     /\ subtask_cached' = [subtask_cached EXCEPT ![t] = TRUE]
     /\ subtask_alive'  = [subtask_alive  EXCEPT ![t] = TRUE]
-    /\ UNCHANGED <<task_status, parent_alive, pr_status>>
+    /\ UNCHANGED <<task_status, parent_alive, pr_status, retry_count>>
 
 \* Celery worker picks up the dispatched task and starts executing it.
 \* This transitions task_status from "pending" to "in_processing".
@@ -161,7 +176,7 @@ StartExecution(t) ==
     /\ task_status[t] = "pending"
     /\ subtask_cached[t] = TRUE
     /\ task_status' = [task_status EXCEPT ![t] = "in_processing"]
-    /\ UNCHANGED <<subtask_cached, subtask_alive, parent_alive, pr_status>>
+    /\ UNCHANGED <<subtask_cached, subtask_alive, parent_alive, pr_status, retry_count>>
 
 \* Task completes successfully.
 \* Guarded on pr_status = "running": once a privacy request has been
@@ -177,7 +192,7 @@ CompleteTask(t) ==
     /\ IF \A tt \in Tasks : task_status'[tt] \in CompletedStatuses
        THEN pr_status' = "complete"
        ELSE UNCHANGED pr_status
-    /\ UNCHANGED <<subtask_cached, parent_alive>>
+    /\ UNCHANGED <<subtask_cached, parent_alive, retry_count>>
 
 \* Parent Celery task dies. Can happen between any two dispatches.
 \* This is the failure mode that causes tasks to be left pending
@@ -185,7 +200,7 @@ CompleteTask(t) ==
 ParentDies ==
     /\ parent_alive = TRUE
     /\ parent_alive' = FALSE
-    /\ UNCHANGED <<task_status, subtask_cached, subtask_alive, pr_status>>
+    /\ UNCHANGED <<task_status, subtask_cached, subtask_alive, pr_status, retry_count>>
 
 \* A cached subtask's Celery task stops running (exits the queue/worker).
 \* Models: Celery worker crash, OOM kill, or task completion of parent.
@@ -195,18 +210,26 @@ SubtaskExits(t) ==
     /\ subtask_cached[t] = TRUE
     /\ subtask_alive[t] = TRUE
     /\ subtask_alive' = [subtask_alive EXCEPT ![t] = FALSE]
-    /\ UNCHANGED <<task_status, subtask_cached, parent_alive, pr_status>>
+    /\ UNCHANGED <<task_status, subtask_cached, parent_alive, pr_status, retry_count>>
 
 \* Redis cache eviction: task ID is lost from cache while task may
 \* still be running. Models the in_processing+no_subtask_id "stuck" case.
 CacheEvicted(t) ==
     /\ subtask_cached[t] = TRUE
     /\ subtask_cached' = [subtask_cached EXCEPT ![t] = FALSE]
-    /\ UNCHANGED <<task_status, subtask_alive, parent_alive, pr_status>>
+    /\ UNCHANGED <<task_status, subtask_alive, parent_alive, pr_status, retry_count>>
 
 \* ================================================================== *
 \* WATCHDOG — BUGGY LOGIC                                             *
-\* Mirrors the current code before the fix:                           *
+\* Hard-cancels without going through the retry mechanism.           *
+\*                                                                    *
+\* BUG 1: pending+no_cache+upstream_complete → cancel directly        *
+\*   (ENG-2756 guard only protected pending+awaiting_upstream=TRUE)   *
+\* BUG 2: in_processing+no_cache → cancel directly                    *
+\*   (bypasses _handle_privacy_request_requeue retry logic entirely)  *
+\*                                                                    *
+\* Both bugs violate CancelImpliesRetriesExhausted because retry_count *
+\* is not consulted at all — the watchdog cancels on first encounter. *
 \*                                                                    *
 \*   for (request_task_id, task_status, awaiting_upstream)            *
 \*       in request_tasks_in_progress:                                *
@@ -214,8 +237,9 @@ CacheEvicted(t) ==
 \*     if not subtask_id:                                             *
 \*       if task_status == pending and awaiting_upstream:              *
 \*         continue   <-- ENG-2756 fix                                *
-\*       # BUG: pending+NOT awaiting_upstream falls through here      *
-\*       cancel_privacy_request()                                     *
+\*       # BUG 1: pending+NOT awaiting_upstream falls through here    *
+\*       # BUG 2: in_processing also falls through here               *
+\*       cancel_privacy_request()    <-- bypasses retry logic         *
 \*       break                                                        *
 \*     elif subtask_id not in queue and not in_flight:                *
 \*       should_requeue = True                                        *
@@ -253,59 +277,65 @@ WatchdogRunBuggy ==
        IN CASE decision = "cancel"  -> pr_status' = "error"
             [] decision = "requeue" -> pr_status' = "requeued"
             [] OTHER                -> UNCHANGED pr_status
-    /\ UNCHANGED <<task_status, subtask_cached, subtask_alive, parent_alive>>
+    /\ UNCHANGED <<task_status, subtask_cached, subtask_alive, parent_alive, retry_count>>
 
 \* ================================================================== *
 \* WATCHDOG — FIXED LOGIC                                             *
-\* The fix: ALL pending tasks with no subtask_id are protected.       *
-\*   - pending+awaiting_upstream=TRUE  → continue (skip, ENG-2756)    *
-\*   - pending+awaiting_upstream=FALSE → requeue (NEW FIX)            *
-\* Only in_processing+no_subtask_id is a genuine stuck state.         *
+\* ALL no-subtask_id cases route through the retry mechanism.        *
 \*                                                                    *
-\* Fixed code:                                                         *
+\* Both pending and in_processing tasks with no subtask_id → requeue. *
+\* _handle_privacy_request_requeue applies the retry limit:          *
+\*   - retry_count < MaxRetries: requeue (pr_status := "requeued")   *
+\*   - retry_count >= MaxRetries: cancel (pr_status := "error")      *
+\*                                                                    *
+\* Fixed code:                                                        *
 \*   if not subtask_id:                                               *
-\*     if task_status == pending:     # ALL pending → never stuck     *
-\*       if not awaiting_upstream:                                    *
-\*         should_requeue = True                                      *
-\*         break                                                      *
-\*       continue                                                     *
-\*     # Only in_processing reaches here                              *
-\*     cancel_privacy_request()                                       *
+\*     if task_status == requires_input: skip                         *
+\*     if task_status == pending and awaiting_upstream: continue      *
+\*     if has_async_tasks: skip                                       *
+\*     # ALL other cases (pending+upstream_complete AND in_processing) *
+\*     should_requeue = True                                          *
 \*     break                                                          *
+\*   # Then _handle_privacy_request_requeue applies retry logic       *
 \* ================================================================== *
 
 WatchdogDecisionFixed ==
     LET in_progress == {t \in Tasks :
             task_status[t] \in {"pending", "in_processing"}}
     IN
+    \* ALL tasks with no subtask_id that aren't protected by the skip guards
+    \* (requires_input, pending+awaiting_upstream, has_async_tasks) → requeue.
+    \* Also: tasks with subtask_id but not running → requeue.
+    \* The buggy distinction between pending and in_processing is gone.
     IF \E t \in in_progress :
-        \* Genuinely stuck: in_processing with no cache key (e.g. evicted).
-        \* This is the ONLY case that warrants cancellation.
-        /\ task_status[t] = "in_processing"
-        /\ ~subtask_cached[t]
-    THEN "cancel"
-    ELSE IF \E t \in in_progress :
-        \* Ready to run but never dispatched: upstream complete, pending,
-        \* no subtask_id. Parent died between upstream completing and this
-        \* task being dispatched. Correct action: requeue the privacy request.
-        /\ task_status[t] = "pending"
-        /\ ~subtask_cached[t]
-        /\ UpstreamComplete(t)
-    THEN "requeue"
-    ELSE IF \E t \in in_progress :
-        \* Has subtask_id but subtask is not running → requeue.
-        /\ subtask_cached[t]
-        /\ ~subtask_alive[t]
+        \/ \* No subtask_id and not waiting for upstream (actionable).
+           \* Covers both:
+           \*   pending+upstream_complete (parent died before dispatch)
+           \*   in_processing+no_cache (cache evicted / parent died mid-write)
+           (/\ ~subtask_cached[t]
+            /\ ~(task_status[t] = "pending" /\ ~UpstreamComplete(t)))
+        \/ \* Has subtask_id but subtask is not running.
+           (/\ subtask_cached[t]
+            /\ ~subtask_alive[t])
     THEN "requeue"
     ELSE "skip"
 
+\* Applies the retry mechanism: requeue up to MaxRetries times, then cancel.
+\* Mirrors _handle_privacy_request_requeue in request_service.py.
 WatchdogRunFixed ==
     /\ parent_alive = FALSE
     /\ pr_status = "running"
     /\ LET decision == WatchdogDecisionFixed
-       IN CASE decision = "cancel"  -> pr_status' = "error"
-            [] decision = "requeue" -> pr_status' = "requeued"
-            [] OTHER                -> UNCHANGED pr_status
+       IN IF decision = "requeue"
+          THEN IF retry_count < MaxRetries
+               THEN \* Under the limit: requeue and increment counter.
+                    /\ pr_status' = "requeued"
+                    /\ retry_count' = retry_count + 1
+               ELSE \* Retry limit exhausted: cancel.
+                    /\ pr_status' = "error"
+                    /\ UNCHANGED retry_count
+          ELSE \* "skip": nothing actionable found.
+               /\ UNCHANGED <<pr_status, retry_count>>
     /\ UNCHANGED <<task_status, subtask_cached, subtask_alive, parent_alive>>
 
 \* ================================================================== *
@@ -365,50 +395,37 @@ TypeOK ==
     /\ subtask_alive  \in [Tasks -> BOOLEAN]
     /\ parent_alive   \in BOOLEAN
     /\ pr_status      \in PrStatuses
+    /\ retry_count    \in 0..MaxRetries
 
 \* ================================================================== *
 \* SAFETY INVARIANTS                                                  *
 \* ================================================================== *
 
-\* The core safety invariant: cancellation (pr_status = "error") is
-\* only correct when a task is GENUINELY STUCK — meaning it is in
-\* "in_processing" status (Celery task started, changed DB status)
-\* but its cache key is gone (evicted, or parent died mid-write).
+\* Primary safety invariant: cancellation is only a last resort.
 \*
-\* A pending task with no cache key is NOT genuinely stuck — it was
-\* simply never dispatched. The correct response is to REQUEUE, not
-\* cancel. The bug (pre-fix) was that the watchdog cancelled in this
-\* case because the ENG-2756 guard only protected pending tasks that
-\* were still awaiting_upstream (= upstream not yet complete).
+\* pr_status = "error" (cancellation) may only be reached after
+\* retry_count has reached MaxRetries. The watchdog never cancels
+\* on first encounter — it always attempts to requeue first and
+\* only cancels once the configured retry limit is exhausted.
+\*
+\* This is the formal statement of: "_handle_privacy_request_requeue
+\* is the single code path that cancels, and it only does so when
+\* privacy_request_requeue_retry_count is exceeded."
 \*
 \* VIOLATED under Spec (buggy):
-\*   Minimal counterexample (3 states):
-\*     1. Init: both tasks pending, parent alive
-\*     2. ParentDies: parent dead, both tasks still pending
-\*     3. WatchdogRunBuggy: pr_status -> "error"
-\*   Task 1 is pending+upstream_complete+no_cache → bypasses ENG-2756
-\*   guard → falls through to cancel. No in_processing task exists.
+\*   WatchdogRunBuggy hard-cancels (pr_status := "error") without
+\*   consulting retry_count. Minimal counterexample (3 states):
+\*     1. Init: both tasks pending, retry_count=0
+\*     2. ParentDies: parent dead
+\*     3. WatchdogRunBuggy: pr_status -> "error", retry_count=0
+\*   Fails because retry_count=0 < MaxRetries=2 but pr_status="error".
 \*
-\* PASSES under SpecFixed: cancellation only fires when an
-\*   in_processing+no_cache task exists (genuinely stuck).
-CancelImpliesGenuinelyStuck ==
-    pr_status = "error" =>
-        \E t \in Tasks :
-            /\ task_status[t] = "in_processing"
-            /\ ~subtask_cached[t]
-
-\* Stronger claim: a pending task with no cache key and upstream
-\* complete must NEVER be the SOLE reason for cancellation.
-\* Equivalent to: if all tasks with no cache key are pending,
-\* then pr_status must not be "error".
-\*
-\* VIOLATED under Spec (buggy): same counterexample as above.
-\* PASSES under SpecFixed: the fixed watchdog routes this case to
-\*   "requeue" instead of "cancel".
-NoPendingOnlyCancelCause ==
-    (pr_status = "error" /\
-     ~\E t \in Tasks :
-         task_status[t] = "in_processing" /\ ~subtask_cached[t]) => FALSE
+\* PASSES under SpecFixed:
+\*   WatchdogRunFixed only sets pr_status="error" in the ELSE branch
+\*   of "retry_count < MaxRetries", so retry_count >= MaxRetries
+\*   is guaranteed whenever pr_status = "error".
+CancelImpliesRetriesExhausted ==
+    pr_status = "error" => retry_count >= MaxRetries
 
 \* ================================================================== *
 \* LIVENESS                                                           *
@@ -419,7 +436,7 @@ TerminalPrStatuses == {"requeued", "error", "complete"}
 \* After the parent task dies, the privacy request eventually reaches
 \* a terminal state. Under the buggy spec this holds (it terminates
 \* via incorrect cancellation). Under the fixed spec it also holds,
-\* but via requeue or genuine error instead.
+\* but via requeue (or genuine retry-exhausted error) instead.
 EventualResolution ==
     (~parent_alive) ~> (pr_status \in TerminalPrStatuses)
 
