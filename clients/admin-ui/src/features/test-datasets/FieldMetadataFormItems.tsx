@@ -3,13 +3,18 @@ import { useMemo } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-export const DATA_TYPE_OPTIONS = [
+const BASE_DATA_TYPES = [
   "string",
   "integer",
   "float",
   "boolean",
   "object_id",
   "object",
+];
+
+export const DATA_TYPE_OPTIONS = [
+  ...BASE_DATA_TYPES,
+  ...BASE_DATA_TYPES.map((t) => `${t}[]`),
 ].map((v) => ({ label: v, value: v }));
 
 export const REDACT_OPTIONS = [
