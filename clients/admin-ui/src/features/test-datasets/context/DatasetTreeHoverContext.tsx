@@ -90,18 +90,23 @@ export const DatasetTreeHoverProvider = ({
     [edges],
   );
 
-  const onMouseEnter = useCallback(
-    (nodeId: string) => {
-      if (nodeId !== activeNodeId) {
-        setActiveNodeId(nodeId);
-      }
-    },
-    [activeNodeId],
-  );
+  const onMouseEnter = useCallback((nodeId: string) => {
+    setActiveNodeId((prev) => (prev === nodeId ? prev : nodeId));
+  }, []);
 
   const onMouseLeave = useCallback(() => {
     setActiveNodeId(null);
   }, []);
+
+  // Precompute ancestor/descendant sets once per hover change
+  const ancestorSet = useMemo(
+    () => (activeNodeId ? getAncestors(activeNodeId) : new Set<string>()),
+    [activeNodeId, getAncestors],
+  );
+  const descendantSet = useMemo(
+    () => (activeNodeId ? getDescendants(activeNodeId) : new Set<string>()),
+    [activeNodeId, getDescendants],
+  );
 
   const getNodeHoverStatus = useCallback(
     (nodeId: string): DatasetNodeHoverStatus => {
@@ -113,21 +118,17 @@ export const DatasetTreeHoverProvider = ({
         return DatasetNodeHoverStatus.ACTIVE_HOVER;
       }
 
-      // Is this node an ancestor of the hovered node?
-      const ancestors = getAncestors(activeNodeId);
-      if (ancestors.has(nodeId)) {
+      if (ancestorSet.has(nodeId)) {
         return DatasetNodeHoverStatus.PARENT_OF_HOVER;
       }
 
-      // Is this node a descendant of the hovered node?
-      const descendants = getDescendants(activeNodeId);
-      if (descendants.has(nodeId)) {
+      if (descendantSet.has(nodeId)) {
         return DatasetNodeHoverStatus.CHILD_OF_HOVER;
       }
 
       return DatasetNodeHoverStatus.INACTIVE;
     },
-    [activeNodeId, getAncestors, getDescendants],
+    [activeNodeId, ancestorSet, descendantSet],
   );
 
   const value = useMemo(

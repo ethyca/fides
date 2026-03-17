@@ -36,16 +36,11 @@ import useDatasetGraph, {
   CollectionNodeData,
   DATASET_ROOT_ID,
   FieldNodeData,
+  ProtectedFieldsInfo,
 } from "./useDatasetGraph";
 import useDatasetNodeLayout from "./useDatasetNodeLayout";
 
-interface ProtectedFieldsInfo {
-  immutable_fields: string[];
-  protected_collection_fields: Array<{
-    collection: string;
-    field: string;
-  }>;
-}
+const LAYOUT_OPTIONS = { direction: "LR" } as const;
 
 interface DatasetNodeEditorProps {
   dataset: Dataset;
@@ -263,7 +258,7 @@ const DatasetNodeEditorInner = ({
   const { nodes: layoutedNodes, edges: layoutedEdges } = useDatasetNodeLayout({
     nodes: rawNodes,
     edges,
-    options: { direction: "LR" },
+    options: LAYOUT_OPTIONS,
   });
 
   // Merge selection + highlight state into nodes

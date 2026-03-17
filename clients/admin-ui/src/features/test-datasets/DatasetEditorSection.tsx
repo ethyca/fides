@@ -314,7 +314,6 @@ const EditorSection = ({
               value={editorContent}
               height="100%"
               onChange={(value) => setEditorContent(value || "")}
-              onMount={() => {}}
               options={{
                 fontFamily: "Menlo",
                 fontSize: 13,

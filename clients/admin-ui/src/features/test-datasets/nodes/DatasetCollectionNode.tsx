@@ -62,6 +62,7 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
             actions.addField(nodeData.collection.name);
           }}
           title="Add field"
+          aria-label="Add field"
         >
           +
         </button>

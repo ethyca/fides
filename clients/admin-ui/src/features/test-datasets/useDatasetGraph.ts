@@ -26,9 +26,7 @@ export type FieldNodeData = {
   [key: string]: unknown;
 };
 
-export type DatasetNodeData = CollectionNodeData | FieldNodeData;
-
-interface ProtectedFieldsInfo {
+export interface ProtectedFieldsInfo {
   immutable_fields: string[];
   protected_collection_fields: Array<{
     collection: string;

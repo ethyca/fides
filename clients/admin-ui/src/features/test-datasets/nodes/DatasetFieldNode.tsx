@@ -72,6 +72,7 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
           actions.addField(nodeData.collectionName, nodeData.fieldPath);
         }}
         title="Add nested field"
+        aria-label="Add nested field"
       >
         +
       </button>
