@@ -186,6 +186,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         onOpenErrorPanel={openErrorPanel}
         onCloseErrorPanel={closeErrorPanel}
         privacyRequest={subjectRequest}
+        connectionKey={currentKey || undefined}
       />
     </Box>
   );

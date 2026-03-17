@@ -20,6 +20,7 @@ type LogDrawerProps = {
   onCloseErrorPanel: () => void;
   onOpenErrorPanel: (message: string, status?: ExecutionLogStatus) => void;
   privacyRequest?: PrivacyRequestEntity;
+  connectionKey?: string;
 };
 
 const LogDrawer = ({
@@ -33,6 +34,7 @@ const LogDrawer = ({
   onCloseErrorPanel,
   onOpenErrorPanel,
   privacyRequest,
+  connectionKey,
 }: LogDrawerProps) => {
   const headerText = isViewingError ? "Event detail" : "Event log";
 
@@ -68,6 +70,7 @@ const LogDrawer = ({
             allEventLogs={allEventLogs}
             onDetailPanel={onOpenErrorPanel}
             privacyRequest={privacyRequest}
+            connectionKey={connectionKey}
           />
         ) : null}
         {isViewingError ? (

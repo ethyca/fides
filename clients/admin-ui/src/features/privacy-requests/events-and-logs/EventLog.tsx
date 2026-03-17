@@ -22,6 +22,7 @@ import {
 } from "privacy-requests/types";
 import React from "react";
 
+import { useSaaSVersionModal } from "~/features/connector-templates/SaaSVersionModal";
 import { ActionType } from "~/types/api";
 
 type EventDetailsProps = {
@@ -29,6 +30,7 @@ type EventDetailsProps = {
   allEventLogs?: ExecutionLog[]; // All event logs from all groups for total calculation
   onDetailPanel: (message: string, status?: ExecutionLogStatus) => void;
   privacyRequest?: PrivacyRequestEntity;
+  connectionKey?: string;
 };
 
 const actionTypeToLabel = (actionType: string) => {
@@ -153,7 +155,9 @@ const EventLog = ({
   allEventLogs,
   onDetailPanel,
   privacyRequest,
+  connectionKey,
 }: EventDetailsProps) => {
+  const { openVersionModal, modal: versionModal } = useSaaSVersionModal();
   // Check if any logs have collection_name OR if there's a finished entry to determine if we should show Records and Collection columns
   const hasDatasetEntries =
     eventLogs?.some((log) => log.collection_name) ||
@@ -269,7 +273,24 @@ const EventLog = ({
       {hasDatasetEntries && !isRequestFinishedView && (
         <Td>
           {detail.saas_version ? (
-            <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+            <span
+              style={connectionKey ? { cursor: "pointer" } : undefined}
+              onClick={
+                connectionKey
+                  ? (e) => {
+                      e.stopPropagation();
+                      openVersionModal(connectionKey, detail.saas_version!);
+                    }
+                  : undefined
+              }
+              title={connectionKey ? "View version config" : undefined}
+              data-testid="version-badge-wrapper"
+            >
+              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>
+                v{detail.saas_version}
+              </Tag>
+            </span>
           ) : (
             <Text
               color="gray.600"
@@ -303,6 +324,7 @@ const EventLog = ({
 
   return (
     <Box width="100%" paddingTop="0px" height="100%">
+      {versionModal}
       <TableContainer
         id="tableContainer"
         height="100%"
