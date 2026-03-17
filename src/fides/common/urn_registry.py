@@ -192,6 +192,8 @@ YAML_DATASETS = YAML + CONNECTION_DATASETS
 # SaaS Config URLs
 SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
+SAAS_CONFIG_HISTORY = CONNECTION_BY_KEY + "/saas-history"
+SAAS_CONFIG_HISTORY_BY_VERSION = CONNECTION_BY_KEY + "/saas-history/{version}"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{connector_template_type}"
 
 # Connector Template URLs
