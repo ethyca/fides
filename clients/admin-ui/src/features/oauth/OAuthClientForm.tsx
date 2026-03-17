@@ -1,13 +1,9 @@
-import {
-  Button,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Button, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ClientResponse } from "~/types/api";
 
 import {
@@ -41,7 +37,7 @@ const OAuthClientForm = ({
   onClose,
   onCreated,
 }: OAuthClientFormProps) => {
-  const toast = useToast();
+  const message = useMessage();
   const [createClient] = useCreateOAuthClientMutation();
   const [updateClient] = useUpdateOAuthClientMutation();
 
@@ -62,9 +58,9 @@ const OAuthClientForm = ({
         scopes: values.scopes,
       });
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
       } else {
-        toast(successToastParams("API client updated."));
+        message.success("API client updated.");
         // Stay on the page — no navigation after save
       }
     } else {
@@ -74,12 +70,10 @@ const OAuthClientForm = ({
         scopes: values.scopes,
       });
       if (isErrorResult(result)) {
-        toast(errorToastParams(getErrorMessage(result.error)));
+        message.error(getErrorMessage(result.error));
       } else {
-        toast(
-          successToastParams(
-            "API client created. Copy the secret — it won't be shown again.",
-          ),
+        message.success(
+          "API client created. Copy the secret — it won't be shown again.",
         );
         onClose();
         if (onCreated && result.data) {

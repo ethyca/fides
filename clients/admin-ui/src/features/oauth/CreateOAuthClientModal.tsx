@@ -1,17 +1,10 @@
-import {
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraUseDisclosureReturn as UseDisclosureReturn,
-} from "fidesui";
+import { Modal } from "fidesui";
 
 import OAuthClientForm from "./OAuthClientForm";
 
-interface CreateOAuthClientModalProps
-  extends Pick<UseDisclosureReturn, "isOpen" | "onClose"> {
+interface CreateOAuthClientModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   onCreated?: (clientId: string, secret: string) => void;
 }
 
@@ -21,20 +14,15 @@ const CreateOAuthClientModal = ({
   onCreated,
 }: CreateOAuthClientModalProps) => (
   <Modal
-    isOpen={isOpen}
-    onClose={onClose}
-    isCentered
-    scrollBehavior="inside"
-    size="xl"
+    open={isOpen}
+    onCancel={onClose}
+    title="Create API client"
+    centered
+    footer={null}
+    width={720}
+    data-testid="create-oauth-client-modal"
   >
-    <ModalOverlay />
-    <ModalContent data-testid="create-oauth-client-modal">
-      <ModalHeader>Create API client</ModalHeader>
-      <ModalCloseButton />
-      <ModalBody pb={6}>
-        <OAuthClientForm onClose={onClose} onCreated={onCreated} />
-      </ModalBody>
-    </ModalContent>
+    <OAuthClientForm onClose={onClose} onCreated={onCreated} />
   </Modal>
 );
 
