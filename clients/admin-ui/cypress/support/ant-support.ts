@@ -336,10 +336,8 @@ Cypress.Commands.add("antPaginatePrevious", () =>
 Cypress.Commands.add("antPaginateNext", () =>
   cy.getAntPagination().find("li.ant-pagination-next button").click(),
 );
-Cypress.Commands.add(
-  "getAntDropdownOverlay",
-  (overlayClassName: string) =>
-    cy.get(`.${overlayClassName}`, { withinSubject: null }),
+Cypress.Commands.add("getAntDropdownOverlay", (overlayClassName: string) =>
+  cy.get(`.${overlayClassName}`, { withinSubject: null }),
 );
 Cypress.Commands.add("getAntDropdownOption", (option: string | number) =>
   typeof option === "string"
