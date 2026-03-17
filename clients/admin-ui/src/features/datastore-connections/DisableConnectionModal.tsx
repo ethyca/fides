@@ -1,7 +1,6 @@
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraMenuItem as MenuItem,
   ChakraStack as Stack,
   ChakraText as Text,
   Modal,
@@ -21,7 +20,6 @@ type DataConnectionProps = {
   name: string;
   access_type: AccessLevel;
   connection_type: ConnectionType;
-  isSwitch: boolean;
 };
 
 const DisableConnectionModal = ({
@@ -30,7 +28,6 @@ const DisableConnectionModal = ({
   name,
   access_type,
   connection_type,
-  isSwitch,
 }: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [patchConnection, patchConnectionResult] =
@@ -56,23 +53,14 @@ const DisableConnectionModal = ({
 
   return (
     <>
-      {isSwitch ? (
-        <Flex justifyContent="space-between" alignItems="center">
-          <Text fontSize="sm">Enable integration</Text>
-          <Switch
-            className="ml-2"
-            checked={!disabled}
-            onChange={() => onOpen()}
-          />
-        </Flex>
-      ) : (
-        <MenuItem
-          _focus={{ color: "complimentary.500", bg: "gray.100" }}
-          onClick={onOpen}
-        >
-          <Text fontSize="sm">{disabled ? "Enable" : "Disable"}</Text>
-        </MenuItem>
-      )}
+      <Flex justifyContent="space-between" alignItems="center">
+        <Text fontSize="sm">Enable integration</Text>
+        <Switch
+          className="ml-2"
+          checked={!disabled}
+          onChange={() => onOpen()}
+        />
+      </Flex>
       <Modal
         centered
         destroyOnHidden
