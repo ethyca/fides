@@ -18,6 +18,7 @@ import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
+import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 import { ConnectionSystemTypeMap, IntegrationFeature } from "~/types/api";
 
 interface UseFeatureBasedTabsProps {
@@ -178,6 +179,15 @@ export const useFeatureBasedTabs = ({
         label: "Conditions",
         key: "conditions",
         children: <TaskConditionsTab connectionKey={connection!.key} />,
+      });
+    }
+
+    const connectorType = connection?.saas_config?.type;
+    if (connectorType) {
+      tabItems.push({
+        label: "Version history",
+        key: "version-history",
+        children: <VersionHistoryTab connectorType={connectorType} />,
       });
     }
 
