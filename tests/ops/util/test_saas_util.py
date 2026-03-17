@@ -933,6 +933,50 @@ class TestValidateValueAgainstAllowedList:
 
 
 @pytest.mark.unit_saas
+class TestGetDomainValidationMode:
+    """Tests for get_domain_validation_mode dev_mode behaviour."""
+
+    @pytest.fixture(autouse=True)
+    def _clean_env(self, monkeypatch):
+        monkeypatch.delenv("FIDES__SECURITY__DOMAIN_VALIDATION_MODE", raising=False)
+
+    def test_dev_mode_defaults_to_enabled(self, monkeypatch):
+        """In dev mode, domain validation should default to enabled."""
+        from fides.api.util.domain_util import get_domain_validation_mode
+        from fides.config import CONFIG
+
+        monkeypatch.setattr(CONFIG, "dev_mode", True)
+        assert get_domain_validation_mode() == DomainValidationMode.enabled
+
+    def test_dev_mode_respects_explicit_env_override(self, monkeypatch):
+        """Explicit env var should override the dev_mode default."""
+        from fides.api.util.domain_util import get_domain_validation_mode
+        from fides.config import CONFIG
+
+        monkeypatch.setattr(CONFIG, "dev_mode", True)
+        monkeypatch.setenv("FIDES__SECURITY__DOMAIN_VALIDATION_MODE", "monitor")
+        monkeypatch.setattr(
+            CONFIG.security,
+            "domain_validation_mode",
+            DomainValidationMode.monitor,
+        )
+        assert get_domain_validation_mode() == DomainValidationMode.monitor
+
+    def test_non_dev_mode_uses_configured_value(self, monkeypatch):
+        """Outside dev mode, the configured value is used as-is."""
+        from fides.api.util.domain_util import get_domain_validation_mode
+        from fides.config import CONFIG
+
+        monkeypatch.setattr(CONFIG, "dev_mode", False)
+        monkeypatch.setattr(
+            CONFIG.security,
+            "domain_validation_mode",
+            DomainValidationMode.monitor,
+        )
+        assert get_domain_validation_mode() == DomainValidationMode.monitor
+
+
+@pytest.mark.unit_saas
 class TestValidateConnectorParamConstraintsNotModified:
     """Tests for validate_connector_param_constraints_not_modified (Rule A)."""
 
