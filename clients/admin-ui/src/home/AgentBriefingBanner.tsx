@@ -46,7 +46,9 @@ export const AgentBriefingBanner = ({
           <Flex gap={16} className="mt-3">
             {quickActions.map((action) => {
               const cta = ACTION_CTA[action.action_type];
-              // TODO: add guard for missing CTA once real API is integrated
+              if (!cta) {
+                return null;
+              }
               return (
                 <NextLink
                   key={`${action.action_type}-${action.label}`}

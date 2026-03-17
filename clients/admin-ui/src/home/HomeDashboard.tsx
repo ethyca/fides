@@ -1,5 +1,5 @@
 import { Col, Flex, Row } from "fidesui";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
 
@@ -11,9 +11,13 @@ import { PriorityActionsCard } from "./PriorityActionsCard";
 const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
 
 export const HomeDashboard = () => {
-  const [showBriefing, setShowBriefing] = useState(
-    () => sessionStorage.getItem(BRIEFING_DISMISSED_KEY) !== "true",
-  );
+  const [showBriefing, setShowBriefing] = useState(true);
+
+  useEffect(() => {
+    if (sessionStorage.getItem(BRIEFING_DISMISSED_KEY) === "true") {
+      setShowBriefing(false);
+    }
+  }, []);
 
   const { data: briefing } = useGetAgentBriefingQuery();
 
