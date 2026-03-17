@@ -1,5 +1,5 @@
 import { Col, Flex, Row } from "fidesui";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
 
@@ -8,10 +8,19 @@ import { DashboardDrawer } from "./DashboardDrawer";
 import { PostureCard } from "./PostureCard";
 import { PriorityActionsCard } from "./PriorityActionsCard";
 
+const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
+
 export const HomeDashboard = () => {
-  const [showBriefing, setShowBriefing] = useState(true);
+  const [showBriefing, setShowBriefing] = useState(
+    () => sessionStorage.getItem(BRIEFING_DISMISSED_KEY) !== "true",
+  );
 
   const { data: briefing } = useGetAgentBriefingQuery();
+
+  const dismissBriefing = useCallback(() => {
+    setShowBriefing(false);
+    sessionStorage.setItem(BRIEFING_DISMISSED_KEY, "true");
+  }, []);
 
   return (
     <Flex vertical gap={24} className="px-10 py-6">
@@ -19,7 +28,7 @@ export const HomeDashboard = () => {
         <AgentBriefingBanner
           briefing={briefing.briefing}
           quickActions={briefing.quick_actions}
-          onClose={() => setShowBriefing(false)}
+          onClose={dismissBriefing}
         />
       )}
       <Row

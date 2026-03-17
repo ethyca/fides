@@ -14,7 +14,6 @@ interface AgentBriefingBannerProps {
   onClose: () => void;
 }
 
-// TODO Refactor this
 function getAlertType(
   quickActions: QuickAction[],
 ): "error" | "warning" | "info" {
@@ -47,9 +46,10 @@ export const AgentBriefingBanner = ({
           <Flex gap={16} className="mt-3">
             {quickActions.map((action) => {
               const cta = ACTION_CTA[action.action_type];
+              // TODO: add guard for missing CTA once real API is integrated
               return (
                 <NextLink
-                  key={action.label}
+                  key={`${action.action_type}-${action.label}`}
                   href={cta.route(action.action_data)}
                   className={classNames(
                     styles.quickActionLink,
