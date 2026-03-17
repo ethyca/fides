@@ -1,4 +1,4 @@
-import { antTheme, Flex, Layout as AntLayout } from "fidesui";
+import { antTheme, Flex } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -88,15 +88,13 @@ export const CommandBar = () => {
   const scoreColor = token[BAND_COLOR_TOKEN[bandConfig.color]];
 
   const openPostureDrawer = useCallback(() => {
-    openDashboardDrawer({
-      type: "posture",
-      title: "Posture breakdown",
-    });
+    openDashboardDrawer({ type: "posture" });
   }, []);
 
   return (
-    <AntLayout.Header
-      className="flex h-12 select-none items-center px-10"
+    <Flex
+      align="center"
+      className="h-12 select-none px-10"
       style={{ backgroundColor: token.colorBgLayout }}
     >
       <Flex align="center" gap="large" className="flex-1">
@@ -147,6 +145,6 @@ export const CommandBar = () => {
         ))}
       </Flex>
       {alphaDarkMode && <ThemeModeSegmented />}
-    </AntLayout.Header>
+    </Flex>
   );
 };

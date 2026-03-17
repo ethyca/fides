@@ -2,8 +2,6 @@ import { useSyncExternalStore } from "react";
 
 export type DashboardDrawerState = {
   type: "posture";
-  title: string;
-  width?: number;
 };
 
 let drawerState: DashboardDrawerState | null = null;

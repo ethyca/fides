@@ -3,28 +3,24 @@ import { Drawer } from "fidesui";
 import { PostureBreakdownContent } from "./PostureBreakdownContent";
 import { closeDashboardDrawer, useDashboardDrawer } from "./useDashboardDrawer";
 
-const DrawerContent = ({ type }: { type: string }) => {
-  switch (type) {
-    case "posture":
-      return <PostureBreakdownContent />;
-    default:
-      return null;
-  }
-};
+const DRAWER_CONFIG = {
+  posture: { title: "Posture breakdown", content: PostureBreakdownContent },
+} as const;
 
 export const DashboardDrawer = () => {
   const drawer = useDashboardDrawer();
+  const config = drawer ? DRAWER_CONFIG[drawer.type] : null;
 
   return (
     <Drawer
       open={drawer !== null}
       onClose={closeDashboardDrawer}
       placement="right"
-      width={drawer?.width ?? 480}
-      title={drawer?.title}
+      width={480}
+      title={config?.title}
       destroyOnClose
     >
-      {drawer && <DrawerContent type={drawer.type} />}
+      {config && <config.content />}
     </Drawer>
   );
 };

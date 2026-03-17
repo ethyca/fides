@@ -41,10 +41,7 @@ export const PostureCard = () => {
   const animatedScore = useCountUp(postureScore);
 
   const openPostureDrawer = useCallback(() => {
-    openDashboardDrawer({
-      type: "posture",
-      title: "Posture breakdown",
-    });
+    openDashboardDrawer({ type: "posture" });
   }, []);
 
   const radarData = useMemo(
