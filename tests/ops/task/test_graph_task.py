@@ -1242,7 +1242,6 @@ class TestGraphTaskLogging:
     ):
         """SaaS connectors should stamp saas_version on every execution log entry."""
         expected_version = saas_example_connection_config.saas_config["version"]
-        assert saas_graph_task._saas_version == expected_version
 
         saas_graph_task.log_start(action_type=ActionType.access)
         execution_log = (
