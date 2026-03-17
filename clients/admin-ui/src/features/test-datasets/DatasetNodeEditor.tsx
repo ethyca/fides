@@ -186,15 +186,16 @@ const DatasetNodeEditorInner = ({
     [layoutedNodes, selectedNodeId],
   );
 
-  // Fit view when layout changes
+  // Fit view only when the graph structure changes (drill-down or node count),
+  // not on metadata edits which don't affect layout.
+  const nodeCount = rawNodes.length;
   useEffect(() => {
-    if (rawNodes.length > 0) {
+    if (nodeCount > 0) {
       setTimeout(() => {
         reactFlowInstance.fitView({ padding: 0.2 });
       }, 150);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rawNodes, reactFlowInstance]);
+  }, [nodeCount, focusedCollection, reactFlowInstance]);
 
   // Clear selection when drilling in/out
   useEffect(() => {
