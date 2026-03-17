@@ -51,16 +51,6 @@ export const BAND_CONFIG: Record<
   [PostureBand.CRITICAL]: { label: "Critical", color: "error" },
 };
 
-export const BAND_COLOR_TOKEN: Record<
-  string,
-  "colorSuccess" | "colorInfo" | "colorWarning" | "colorError"
-> = {
-  success: "colorSuccess",
-  info: "colorInfo",
-  caution: "colorWarning",
-  error: "colorError",
-};
-
 export const BAND_STATUS: Record<string, "warning" | "error" | undefined> = {
   [PostureBand.AT_RISK]: "warning",
   [PostureBand.CRITICAL]: "error",

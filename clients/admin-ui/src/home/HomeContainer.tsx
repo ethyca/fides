@@ -3,6 +3,7 @@ import {
   darkAntTheme,
   defaultAntTheme,
   Flex,
+  Layout as AntLayout,
   ThemeModeProvider,
   useThemeMode,
 } from "fidesui";
@@ -32,12 +33,12 @@ const HomeContainerInner = () => {
   if (alphaDashboard) {
     return (
       <ConfigProvider theme={activeTheme}>
-        <div className="flex h-screen flex-col">
+        <AntLayout className="h-screen">
           <CommandBar />
-          <div className="flex-1 overflow-auto">
+          <AntLayout.Content className="overflow-auto">
             <HomeDashboard />
-          </div>
-        </div>
+          </AntLayout.Content>
+        </AntLayout>
       </ConfigProvider>
     );
   }
