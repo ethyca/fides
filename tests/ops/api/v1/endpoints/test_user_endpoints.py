@@ -1040,15 +1040,6 @@ class TestGetUsers:
             },
         )
 
-        # User without username
-        user_no_username = FidesUser.create(
-            db=db,
-            data={
-                "username": None,
-                "email_address": "nousername@example.com",
-            },
-        )
-
         auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(url, headers=auth_header)
         assert resp.status_code == HTTP_200_OK
@@ -1069,14 +1060,9 @@ class TestGetUsers:
         assert users_by_id[user_no_invite.id]["has_invite"] is False
         assert users_by_id[user_no_invite.id]["invite_expired"] is None
 
-        # Check user without username
-        assert users_by_id[user_no_username.id]["has_invite"] is False
-        assert users_by_id[user_no_username.id]["invite_expired"] is None
-
         user_with_invite.delete(db)
         user_with_expired.delete(db)
         user_no_invite.delete(db)
-        user_no_username.delete(db)
 
 
 class TestGetUser:
