@@ -48,8 +48,33 @@ def upgrade():
     sa.Column("description", sa.Text(), nullable=True),
     sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True),
     sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True),
-    sa
-    sa.PrimaryKeyConstraint("id", "fides_key")
+    sa.Column("data_use", sa.String(), nullable=False),
+    sa.Column("data_subject", sa.String(), nullable=True),
+    sa.Column("data_categories", postgresql.ARRAY(sa.String()), server_default="{}", nullable=True),
+    sa.Column("legal_basis_for_processing", sa.String(), nullable=True),
+    sa.Column("flexible_legal_basis_for_processing", sa.Boolean(), server_default="t", nullable=False),
+    sa.Column("special_category_legal_basis", sa.String(), nullable=True),
+    sa.Column("impact_assessment_location", sa.String(), nullable=True),
+    sa.Column("retention_period", sa.String(), nullable=True),
+    sa.Column("features", postgresql.ARRAY(sa.String()), server_default="{}", nullable=True),
+    sa.PrimaryKeyConstraint("id"),
+    sa.UniqueConstraint("fides_key", name="uq_data_purpose_fides_key")
+    )
+    op.create_index(op.f("ix_data_purpose_id"), "data_purpose", ["id"], unique=False)
+    op.create_index(op.f("ix_data_purpose_fides_key"), "data_purpose", ["fides_key"], unique=True)
+    op.create_index(op.f("ix_data_purpose_data_use"), "data_purpose", ["data_use"], unique=False)
+    op.create_table("data_consumer_purpose",
+    sa.Column("id", sa.String(length=255), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True),
+    sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True),
+    sa.Column("data_consumer_id", sa.String(), nullable=False),
+    sa.Column("data_purpose_id", sa.String(), nullable=False),
+    sa.Column("assigned_by", sa.String(), nullable=True),
+    sa.ForeignKeyConstraint(["assigned_by"], ["fidesuser.id"], ondelete="SET NULL"),
+    sa.ForeignKeyConstraint(["data_consumer_id"], ["data_consumer.id"], ondelete="CASCADE"),
+    sa.ForeignKeyConstraint(["data_purpose_id"], ["data_purpose.id"], ondelete="RESTRICT"),
+    sa.PrimaryKeyConstraint("id"),
+    sa.UniqueConstraint("data_consumer_id", "data_purpose_id", name="uq_consumer_purpose")
     )
     op.create_index(op.f("ix_data_consumer_purpose_data_consumer_id"), "data_consumer_purpose", ["data_consumer_id"], unique=False)
     op.create_index(op.f("ix_data_consumer_purpose_data_purpose_id"), "data_consumer_purpose", ["data_purpose_id"], unique=False)
