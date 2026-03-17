@@ -11,7 +11,7 @@ const SystemActionsCell = ({ onDetailClick }: SystemActionsCellProps) => {
     if (onDetailClick) {
       menuItems.push({
         key: "view-details",
-        label: <span data-testid="view-system-details">View details</span>,
+        label: "View details",
         onClick: onDetailClick,
       });
     }

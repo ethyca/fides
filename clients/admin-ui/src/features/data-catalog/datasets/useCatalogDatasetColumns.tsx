@@ -22,9 +22,7 @@ const CatalogDatasetActionsCell = ({
     () => [
       {
         key: "view-details",
-        label: (
-          <span data-testid="view-dataset-details">View details</span>
-        ),
+        label: "View details",
         onClick: onDetailClick,
       },
     ],
@@ -39,6 +37,7 @@ const CatalogDatasetActionsCell = ({
         icon={<MoreIcon transform="rotate(90deg)" />}
         className="w-6 gap-0"
         data-testid="dataset-actions"
+        aria-label="Dataset actions"
       />
     </Dropdown>
   );

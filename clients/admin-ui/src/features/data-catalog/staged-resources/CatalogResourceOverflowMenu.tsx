@@ -13,14 +13,14 @@ const CatalogResourceOverflowMenu = ({
     if (onDetailClick) {
       menuItems.push({
         key: "view-details",
-        label: <span data-testid="view-resource-details">View details</span>,
+        label: "View details",
         onClick: onDetailClick,
       });
     }
     if (onHideClick) {
       menuItems.push({
         key: "hide",
-        label: <span data-testid="hide-resource">Hide</span>,
+        label: "Hide",
         onClick: onHideClick,
       });
     }

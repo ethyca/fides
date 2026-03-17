@@ -96,6 +96,14 @@ declare global {
       antPaginateNext: () => void;
 
       /**
+       * Get the overlay container of an Ant Design Dropdown by its overlayClassName.
+       * Useful for `.within()` calls on portal-rendered dropdowns.
+       * @param overlayClassName The overlayClassName prop passed to the Dropdown
+       * @example cy.getAntDropdownOverlay("group-by-menu-list").within(() => { ... });
+       */
+      getAntDropdownOverlay: (overlayClassName: string) => Chainable;
+
+      /**
        * Get an option from an Ant Design Dropdown component by label
        * @param option The label of the option to get
        * @example cy.getAntDropdownOption("Delete").should("be.visible");
@@ -327,6 +335,11 @@ Cypress.Commands.add("antPaginatePrevious", () =>
 );
 Cypress.Commands.add("antPaginateNext", () =>
   cy.getAntPagination().find("li.ant-pagination-next button").click(),
+);
+Cypress.Commands.add(
+  "getAntDropdownOverlay",
+  (overlayClassName: string) =>
+    cy.get(`.${overlayClassName}`, { withinSubject: null }),
 );
 Cypress.Commands.add("getAntDropdownOption", (option: string | number) =>
   typeof option === "string"
