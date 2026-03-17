@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed performance regression in connection config list endpoint caused by cascading eager-loads
-pr: 7501
-labels: []

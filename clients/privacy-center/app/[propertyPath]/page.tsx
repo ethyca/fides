@@ -7,6 +7,8 @@
  *          If no property matched the path, it renders the 404 page.
  */
 
+import { buildAttributionOptions } from "~/app/server-environment";
+import { AttributionLink } from "~/components/AttributionLink";
 import HomePage from "~/components/HomePage";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
@@ -37,13 +39,17 @@ const PropertyPathHomePage = async ({
     searchParams,
   });
   const isPropertyFoundForPath = !!serverEnvironment.property;
+  const attribution = buildAttributionOptions(serverEnvironment.settings);
 
   return (
-    <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <PageLayout>
-        {isPropertyFoundForPath ? <HomePage /> : <Custom404 />}
-      </PageLayout>
-    </LoadServerEnvironmentIntoStores>
+    <>
+      <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
+        <PageLayout>
+          {isPropertyFoundForPath ? <HomePage /> : <Custom404 />}
+        </PageLayout>
+      </LoadServerEnvironmentIntoStores>
+      {attribution && <AttributionLink attribution={attribution} />}
+    </>
   );
 };
 

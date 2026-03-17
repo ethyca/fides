@@ -74,7 +74,7 @@ export const useInfrastructureSystemsBulkActions = ({
 
         count = urns.length;
 
-        if (action === InfrastructureSystemBulkActionType.ADD) {
+        if (action === InfrastructureSystemBulkActionType.APPROVE) {
           result = await bulkPromoteIdentityProviderMonitorResultsMutation({
             monitor_config_key: monitorId,
             urns,
@@ -129,7 +129,7 @@ export const useInfrastructureSystemsBulkActions = ({
         // Use a placeholder that will be updated from the response
         count = 0;
 
-        if (action === InfrastructureSystemBulkActionType.ADD) {
+        if (action === InfrastructureSystemBulkActionType.APPROVE) {
           result = await bulkPromoteIdentityProviderMonitorResultsMutation({
             monitor_config_key: monitorId,
             bulkSelection: bulkSelectionPayload,
@@ -172,7 +172,7 @@ export const useInfrastructureSystemsBulkActions = ({
           finalCount = 0;
         }
 
-        if (action === InfrastructureSystemBulkActionType.ADD) {
+        if (action === InfrastructureSystemBulkActionType.APPROVE) {
           successMessage = `${finalCount} system${finalCount > 1 ? "s" : ""} ${finalCount > 1 ? "have" : "has"} been promoted to the system inventory.`;
         } else if (action === InfrastructureSystemBulkActionType.IGNORE) {
           successMessage = `${finalCount} system${finalCount > 1 ? "s" : ""} ${finalCount > 1 ? "have" : "has"} been ignored.`;

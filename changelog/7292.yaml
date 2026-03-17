@@ -1,0 +1,4 @@
+type: Added
+description: Added resurface_behavior configuration to privacy experience configs to control when consent banners are reshown after user interaction
+pr: 7292
+labels: ["db-migration"]

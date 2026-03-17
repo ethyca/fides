@@ -1,9 +1,11 @@
 "use server";
 
+import { buildAttributionOptions } from "~/app/server-environment";
 import {
   getPageMetadata,
   getPrivacyCenterEnvironmentCached,
 } from "~/app/server-utils";
+import { AttributionLink } from "~/components/AttributionLink";
 import HomePage from "~/components/HomePage";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
@@ -22,13 +24,17 @@ const Home = async ({ searchParams }: { searchParams: NextSearchParams }) => {
   const serverEnvironment = await getPrivacyCenterEnvironmentCached({
     searchParams,
   });
+  const attribution = buildAttributionOptions(serverEnvironment.settings);
 
   return (
-    <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
-      <PageLayout>
-        <HomePage />
-      </PageLayout>
-    </LoadServerEnvironmentIntoStores>
+    <>
+      <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
+        <PageLayout>
+          <HomePage />
+        </PageLayout>
+      </LoadServerEnvironmentIntoStores>
+      {attribution && <AttributionLink attribution={attribution} />}
+    </>
   );
 };
 export default Home;
