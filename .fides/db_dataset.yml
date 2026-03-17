@@ -3948,3 +3948,18 @@ dataset:
         data_categories: [system.operations]
       - name: question_index
         data_categories: [system.operations]
+  - name: encryption_keys
+    description: 'Store encrypted Data Encryption Keys'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: wrapped_dek
+      data_categories: [system.operations]
+    - name: kek_id_hash
+      data_categories: [system.operations]
+    - name: provider
+      data_categories: [system.operations]
