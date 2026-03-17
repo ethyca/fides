@@ -62,7 +62,7 @@ describe("System integrations", () => {
       cy.getByTestId("select-dropdown-btn").click();
 
       cy.getByTestId("input-search-integrations").type("PostgreSQL");
-      cy.getByTestId("select-dropdown-list").contains("PostgreSQL").click();
+      cy.getByTestId("dropdown-item-postgres").click({ force: true });
     });
 
     // Verify Postgres shows access and erasure by default

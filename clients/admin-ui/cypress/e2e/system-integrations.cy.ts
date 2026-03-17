@@ -59,7 +59,7 @@ describe("System integrations", () => {
       cy.getByTestId("select-dropdown-btn").click();
 
       cy.getByTestId("input-search-integrations").type("PostgreSQL");
-      cy.getByTestId("select-dropdown-list").contains("PostgreSQL").click();
+      cy.getByTestId("dropdown-item-postgres").click({ force: true });
     });
 
     it("should not Request types (enabled-actions) field", () => {

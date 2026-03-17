@@ -268,6 +268,7 @@ const ConnectionListDropdown = ({
               color={
                 selectedValue === option.value ? "complimentary.500" : undefined
               }
+              data-testid={`dropdown-item-${option.value.identifier}`}
             >
               <ConnectionTypeLogo
                 data={connectionLogoFromSystemType(option.value)}
