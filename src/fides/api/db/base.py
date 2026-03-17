@@ -26,6 +26,7 @@ from fides.api.models.detection_discovery.monitor_task import (
 )
 from fides.api.models.detection_discovery.web_monitor import WebMonitorGroupJob
 from fides.api.models.digest import DigestCondition, DigestConfig
+from fides.api.models.encryption_key import EncryptionKey
 from fides.api.models.event_audit import EventAudit
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
