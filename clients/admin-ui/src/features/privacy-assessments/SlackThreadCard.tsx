@@ -55,7 +55,7 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
                               className={styles.messageAvatarBot}
                               icon={
                                 <Image
-                                  src="/images/logomark-astralis-white.svg"
+                                  src="/images/logomark-ethyca-white.svg"
                                   alt="Fides"
                                   width={12}
                                   height={12}
