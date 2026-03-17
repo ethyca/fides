@@ -1,3 +1,4 @@
+import { format } from "date-fns-tz";
 import { Collapse, Flex, List, Text } from "fidesui";
 
 import { formatDate, pluralize } from "~/features/common/utils";
@@ -52,14 +53,9 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
                             </Text>
                             {msg.timestamp && (
                               <Text type="secondary" size="sm">
-                                {new Date(msg.timestamp).toLocaleString(
-                                  "en-US",
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  },
+                                {format(
+                                  new Date(msg.timestamp),
+                                  "MMM d, hh:mm aa",
                                 )}
                               </Text>
                             )}
