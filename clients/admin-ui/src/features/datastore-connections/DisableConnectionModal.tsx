@@ -89,7 +89,7 @@ const DisableConnectionModal = ({
               loading={patchConnectionResult.isLoading}
               className="w-1/2"
             >
-              {disabled ? "Enable" : "Disable"} Connection
+              {disabled ? "Enable" : "Disable"} connection
             </Button>
           </div>
         }
