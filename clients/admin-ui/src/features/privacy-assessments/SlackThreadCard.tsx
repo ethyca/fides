@@ -33,7 +33,7 @@ export const SlackThreadCard = ({ item }: SlackThreadCardProps) => {
       {data.messages.length > 0 && (
         <Collapse
           ghost
-          className={styles.messageCollapse}
+          className="mt-2"
           items={[
             {
               key: "thread",
