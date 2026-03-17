@@ -3050,7 +3050,7 @@ class TestReinviteUser:
         assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
         assert (
             response.json()["detail"]
-            == "Failed to send invitation email. Previous invitation remains valid. Please try again."
+            == "Failed to send invitation email. Please try again."
         )
 
         db.refresh(invite)
