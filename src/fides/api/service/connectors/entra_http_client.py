@@ -1,6 +1,6 @@
 """HTTP client for Microsoft Graph API using OAuth 2.0 client credentials.
 
-Used by the Entra connector for IDP discovery (list service principals).
+Used by the Entra connector for IDP discovery (list app registrations).
 """
 
 import time
@@ -16,13 +16,10 @@ from fides.api.common_exceptions import ConnectionException
 GRAPH_BASE_URL = "https://graph.microsoft.com"
 GRAPH_DEFAULT_SCOPE = "https://graph.microsoft.com/.default"
 DEFAULT_REQUEST_TIMEOUT = 30
-# Max page size for servicePrincipals list (Microsoft Graph limit)
-SERVICE_PRINCIPALS_PAGE_SIZE = 100
+# Max page size for applications list (Microsoft Graph limit)
+APPLICATIONS_PAGE_SIZE = 100
 # Minimal $select for connection test and list
-SERVICE_PRINCIPALS_SELECT = (
-    "id,displayName,appDisplayName,accountEnabled,createdDateTime,"
-    "preferredSingleSignOnMode,servicePrincipalType,appId,description"
-)
+APPLICATIONS_SELECT = "id,appId,displayName,createdDateTime,description,signInAudience"
 
 
 class EntraHttpClient:
@@ -30,7 +27,7 @@ class EntraHttpClient:
     HTTP client for Microsoft Graph with client credentials flow.
 
     - Obtains access token from login.microsoftonline.com
-    - Calls Graph API (e.g. list service principals) with Bearer token
+    - Calls Graph API (e.g. list app registrations) with Bearer token
     - Supports pagination via @odata.nextLink
     """
 
@@ -98,14 +95,14 @@ class EntraHttpClient:
         )
         return self._token
 
-    def list_service_principals(
+    def list_applications(
         self,
-        top: int = SERVICE_PRINCIPALS_PAGE_SIZE,
+        top: int = APPLICATIONS_PAGE_SIZE,
         next_link: Optional[str] = None,
         select: Optional[str] = None,
     ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
         """
-        List service principals (enterprise applications) from Microsoft Graph.
+        List app registrations from Microsoft Graph.
 
         Args:
             top: Page size (max 100 for this endpoint).
@@ -113,10 +110,10 @@ class EntraHttpClient:
             select: OData $select string; default is minimal fields for IDP monitor.
 
         Returns:
-            Tuple of (list of service principal dicts, next_link or None).
+            Tuple of (list of application dicts, next_link or None).
         """
         token = self._get_token()
-        select = select or SERVICE_PRINCIPALS_SELECT
+        select = select or APPLICATIONS_SELECT
         if next_link:
             parsed = urlparse(next_link)
             expected = urlparse(GRAPH_BASE_URL)
@@ -127,8 +124,8 @@ class EntraHttpClient:
             url = next_link
         else:
             url = (
-                f"{GRAPH_BASE_URL}/v1.0/servicePrincipals"
-                f"?$top={min(top, SERVICE_PRINCIPALS_PAGE_SIZE)}"
+                f"{GRAPH_BASE_URL}/v1.0/applications"
+                f"?$top={min(top, APPLICATIONS_PAGE_SIZE)}"
                 f"&$select={select}"
             )
         headers = {"Authorization": f"Bearer {token}"}

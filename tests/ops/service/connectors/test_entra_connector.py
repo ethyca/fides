@@ -37,7 +37,7 @@ class TestEntraConnector:
         connector = EntraConnector(entra_connection_config)
         with patch.object(
             connector,
-            "_list_service_principals",
+            "_list_applications",
             return_value=([], None),
         ):
             result = connector.test_connection()
@@ -48,7 +48,7 @@ class TestEntraConnector:
         connector = EntraConnector(entra_connection_config)
         with patch.object(
             connector,
-            "_list_service_principals",
+            "_list_applications",
             side_effect=ConnectionException("Invalid credentials"),
         ):
             with pytest.raises(ConnectionException, match="Invalid credentials"):

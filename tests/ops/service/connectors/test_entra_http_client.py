@@ -8,11 +8,11 @@ from requests.adapters import HTTPAdapter
 
 from fides.api.common_exceptions import ConnectionException
 from fides.api.service.connectors.entra_http_client import (
+    APPLICATIONS_PAGE_SIZE,
+    APPLICATIONS_SELECT,
     DEFAULT_REQUEST_TIMEOUT,
     GRAPH_BASE_URL,
     GRAPH_DEFAULT_SCOPE,
-    SERVICE_PRINCIPALS_PAGE_SIZE,
-    SERVICE_PRINCIPALS_SELECT,
     EntraHttpClient,
 )
 
@@ -184,40 +184,40 @@ class TestTokenAcquisition:
             client._get_token()
 
 
-class TestListServicePrincipals:
+class TestListApplications:
     def test_single_page(self, client, mock_session):
         mock_session.post.return_value = _token_response()
         apps = [{"id": "sp1"}, {"id": "sp2"}]
         mock_session.get.return_value = _graph_response(apps)
 
-        result, next_link = client.list_service_principals()
+        result, next_link = client.list_applications()
 
         assert result == apps
         assert next_link is None
         mock_session.get.assert_called_once()
         call_url = mock_session.get.call_args[0][0]
-        assert "/v1.0/servicePrincipals" in call_url
-        assert f"$top={SERVICE_PRINCIPALS_PAGE_SIZE}" in call_url
-        assert f"$select={SERVICE_PRINCIPALS_SELECT}" in call_url
+        assert "/v1.0/applications" in call_url
+        assert f"$top={APPLICATIONS_PAGE_SIZE}" in call_url
+        assert f"$select={APPLICATIONS_SELECT}" in call_url
 
     def test_with_pagination(self, client, mock_session):
         mock_session.post.return_value = _token_response()
-        next_url = f"{GRAPH_BASE_URL}/v1.0/servicePrincipals?$skiptoken=abc123"
+        next_url = f"{GRAPH_BASE_URL}/v1.0/applications?$skiptoken=abc123"
         mock_session.get.return_value = _graph_response(
             [{"id": "sp1"}], next_link=next_url
         )
 
-        result, next_link = client.list_service_principals()
+        result, next_link = client.list_applications()
 
         assert result == [{"id": "sp1"}]
         assert next_link == next_url
 
     def test_follows_next_link(self, client, mock_session):
         mock_session.post.return_value = _token_response()
-        pagination_url = f"{GRAPH_BASE_URL}/v1.0/servicePrincipals?$skiptoken=page2"
+        pagination_url = f"{GRAPH_BASE_URL}/v1.0/applications?$skiptoken=page2"
         mock_session.get.return_value = _graph_response([{"id": "sp3"}])
 
-        result, next_link = client.list_service_principals(next_link=pagination_url)
+        result, next_link = client.list_applications(next_link=pagination_url)
 
         assert result == [{"id": "sp3"}]
         # Should use the next_link URL directly
@@ -231,32 +231,30 @@ class TestListServicePrincipals:
         mock_session.post.return_value = _token_response()
 
         with pytest.raises(ConnectionException, match="Invalid pagination URL"):
-            client.list_service_principals(
-                next_link="https://evil.example.com/steal-token"
-            )
+            client.list_applications(next_link="https://evil.example.com/steal-token")
 
     def test_next_link_http_scheme_rejected(self, client, mock_session):
         mock_session.post.return_value = _token_response()
 
         with pytest.raises(ConnectionException, match="Invalid pagination URL"):
-            client.list_service_principals(
-                next_link="http://graph.microsoft.com/v1.0/servicePrincipals"
+            client.list_applications(
+                next_link="http://graph.microsoft.com/v1.0/applications"
             )
 
     def test_top_clamped_to_max(self, client, mock_session):
         mock_session.post.return_value = _token_response()
         mock_session.get.return_value = _graph_response([])
 
-        client.list_service_principals(top=500)
+        client.list_applications(top=500)
 
         call_url = mock_session.get.call_args[0][0]
-        assert f"$top={SERVICE_PRINCIPALS_PAGE_SIZE}" in call_url
+        assert f"$top={APPLICATIONS_PAGE_SIZE}" in call_url
 
     def test_custom_select(self, client, mock_session):
         mock_session.post.return_value = _token_response()
         mock_session.get.return_value = _graph_response([])
 
-        client.list_service_principals(select="id,displayName")
+        client.list_applications(select="id,displayName")
 
         call_url = mock_session.get.call_args[0][0]
         assert "$select=id,displayName" in call_url
@@ -275,7 +273,7 @@ class TestListServicePrincipals:
             ConnectionException,
             match="Microsoft Graph request failed: 500. Something broke",
         ):
-            client.list_service_principals()
+            client.list_applications()
 
     def test_graph_403_permission_hint(self, client, mock_session):
         mock_session.post.return_value = _token_response()
@@ -293,7 +291,7 @@ class TestListServicePrincipals:
         with pytest.raises(
             ConnectionException, match="Insufficient Microsoft Graph permissions"
         ):
-            client.list_service_principals()
+            client.list_applications()
 
     def test_graph_error_non_json(self, client, mock_session):
         mock_session.post.return_value = _token_response()
@@ -306,7 +304,7 @@ class TestListServicePrincipals:
         with pytest.raises(
             ConnectionException, match="Microsoft Graph request failed: 502"
         ):
-            client.list_service_principals()
+            client.list_applications()
 
     def test_non_list_value_returns_empty(self, client, mock_session):
         """If Graph returns non-list 'value', treat as empty."""
@@ -316,7 +314,7 @@ class TestListServicePrincipals:
         resp.json.return_value = {"value": "not-a-list"}
         mock_session.get.return_value = resp
 
-        result, _ = client.list_service_principals()
+        result, _ = client.list_applications()
         assert result == []
 
     def test_401_triggers_token_refresh_and_retry(self, client, mock_session):
@@ -331,7 +329,7 @@ class TestListServicePrincipals:
 
         mock_session.get.side_effect = [unauthorized_resp, success_resp]
 
-        result, next_link = client.list_service_principals()
+        result, next_link = client.list_applications()
 
         assert result == [{"id": "sp1"}]
         assert next_link is None
@@ -356,4 +354,4 @@ class TestListServicePrincipals:
         with pytest.raises(
             ConnectionException, match="Microsoft Graph request failed: 401"
         ):
-            client.list_service_principals()
+            client.list_applications()

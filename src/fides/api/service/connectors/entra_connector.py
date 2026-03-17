@@ -1,7 +1,6 @@
 """Microsoft Entra ID (Azure AD) connector for Microsoft Graph API.
 
-Used for IDP discovery: list enterprise applications (service principals)
-via OAuth 2.0 client credentials.
+Used for IDP discovery: list app registrations via OAuth 2.0 client credentials.
 """
 
 from typing import Any, Dict, List, NoReturn, Optional, Tuple
@@ -13,7 +12,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.entra_http_client import (
-    SERVICE_PRINCIPALS_PAGE_SIZE,
+    APPLICATIONS_PAGE_SIZE,
     EntraHttpClient,
 )
 from fides.api.util.collection_util import Row
@@ -52,13 +51,13 @@ class EntraConnector(BaseConnector):
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """
-        Validate the Entra connection by listing one service principal.
+        Validate the Entra connection by listing one application.
 
         Returns:
             ConnectionTestStatus.succeeded if the connection is valid.
         """
         try:
-            self._list_service_principals(top=1)
+            self._list_applications(top=1)
             return ConnectionTestStatus.succeeded
         except ConnectionException:
             raise
@@ -67,23 +66,23 @@ class EntraConnector(BaseConnector):
                 f"Unexpected error testing Entra connection: {str(e)}"
             ) from e
 
-    def _list_service_principals(
+    def _list_applications(
         self,
-        top: int = SERVICE_PRINCIPALS_PAGE_SIZE,
+        top: int = APPLICATIONS_PAGE_SIZE,
         next_link: Optional[str] = None,
     ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
         """
-        List service principals (enterprise applications) from Microsoft Graph.
+        List app registrations from Microsoft Graph.
 
         Args:
             top: Page size (max 100).
             next_link: Optional next page URL for pagination.
 
         Returns:
-            Tuple of (list of service principal dicts, next_link or None).
+            Tuple of (list of application dicts, next_link or None).
         """
         client = self.client()
-        return client.list_service_principals(top=top, next_link=next_link)
+        return client.list_applications(top=top, next_link=next_link)
 
     def retrieve_data(
         self,
