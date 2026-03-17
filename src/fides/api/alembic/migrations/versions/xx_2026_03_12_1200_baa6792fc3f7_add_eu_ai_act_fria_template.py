@@ -4,7 +4,7 @@ Seeds the assessment_template and assessment_question tables with the
 EU AI Act Fundamental Rights Impact Assessment (Article 27) template.
 
 Revision ID: baa6792fc3f7
-Revises: ea20059aee77
+Revises: ecd49f8108e0
 Create Date: 2026-03-12 12:00:00.000000
 
 """
@@ -17,7 +17,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "baa6792fc3f7"
-down_revision = "ea20059aee77"
+down_revision = "ecd49f8108e0"
 branch_labels = None
 depends_on = None
 
