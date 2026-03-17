@@ -288,7 +288,6 @@ export type {
   CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
   CustomCardProps as CardProps,
-  CustomDrawerProps as DrawerProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
@@ -311,7 +310,6 @@ export {
   CustomTooltip as Tooltip,
   CustomTypography as Typography,
 } from "./hoc";
-export { DRAWER_SIZE_MAP } from "./hoc/CustomDrawer";
 export type {
   CustomListProps as ListProps,
   RowSelection,

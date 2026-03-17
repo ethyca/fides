@@ -61,7 +61,7 @@ const ManualAccessProcessingDetail = ({
           <Drawer
             open={isOpen}
             onClose={() => setIsOpen(false)}
-            width="lg"
+            size="large"
             autoFocus
             title={
               <>
