@@ -17,14 +17,14 @@ from pydantic import ConfigDict, model_validator
 
 from fides.api.schemas.base_class import FidesSchema, NoValidationSchema
 
-_OAUTH_FIELDS = (
+OAUTH_FIELDS = (
     "access_token",
     "cloud_id",
     "site_url",
     "refresh_token",
     "token_expiry",
 )
-_API_KEY_FIELDS = ("domain", "username", "api_key")
+API_KEY_FIELDS = ("domain", "username", "api_key")
 
 
 class JiraTicketSchema(FidesSchema):
@@ -58,8 +58,8 @@ class JiraTicketSchema(FidesSchema):
     @model_validator(mode="after")
     def _check_mutual_exclusivity(self) -> "JiraTicketSchema":
         """Reject schemas that mix OAuth and API key fields."""
-        has_oauth = any(getattr(self, f) is not None for f in _OAUTH_FIELDS)
-        has_api_key = any(getattr(self, f) is not None for f in _API_KEY_FIELDS)
+        has_oauth = any(getattr(self, f) is not None for f in OAUTH_FIELDS)
+        has_api_key = any(getattr(self, f) is not None for f in API_KEY_FIELDS)
         if has_oauth and has_api_key:
             raise ValueError(
                 "Cannot mix OAuth and API key credentials. "
