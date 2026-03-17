@@ -19,8 +19,8 @@ export const SystemCoverageCard = () => {
   return (
     <Spin spinning={isLoading}>
       <Card title="System Coverage" variant="borderless">
-        <Flex vertical gap={16} className="h-full">
-          <Flex gap={16} align="start">
+        <Flex vertical gap="large" className="h-full">
+          <Flex gap="large" align="start">
             <div className="size-[100px] shrink-0">
               <DonutChart
                 variant="thick"
