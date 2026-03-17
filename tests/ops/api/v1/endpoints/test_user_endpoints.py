@@ -1354,6 +1354,7 @@ class TestGetUser:
 
         user.delete(db)
 
+
 class TestUpdateUser:
     @pytest.fixture(scope="function")
     def url_no_id(self) -> str:
