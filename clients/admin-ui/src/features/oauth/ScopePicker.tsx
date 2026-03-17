@@ -1,10 +1,4 @@
-import {
-  ChakraBox as Box,
-  ChakraCheckbox as Checkbox,
-  ChakraFlex as Flex,
-  ChakraStack as Stack,
-  ChakraText as Text,
-} from "fidesui";
+import { Checkbox } from "fidesui";
 import { useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 
@@ -90,8 +84,8 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
   };
 
   return (
-    <Stack spacing={3} data-testid="scope-picker">
-      <Flex align="center" justify="space-between" gap={3}>
+    <div className="flex flex-col gap-3" data-testid="scope-picker">
+      <div className="flex items-center justify-between gap-3">
         <SearchInput
           value={search}
           onChange={setSearch}
@@ -99,58 +93,56 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
           data-testid="scope-search"
         />
         <Checkbox
-          isChecked={allSelected}
-          isIndeterminate={someSelected}
+          checked={allSelected}
+          indeterminate={someSelected}
           onChange={(e) => handleSelectAll(e.target.checked)}
-          flexShrink={0}
+          className="shrink-0"
           data-testid="scope-select-all"
         >
           Select all
         </Checkbox>
-      </Flex>
-      <Box
-        maxH="400px"
-        overflowY="auto"
-        borderWidth="1px"
-        borderRadius="md"
-        p={3}
+      </div>
+      <div
+        className="max-h-[400px] overflow-y-auto border rounded-md p-3"
+        data-testid="scope-picker-list"
       >
         {visibleResources.length === 0 ? (
-          <Text fontSize="sm" color="gray.500">
+          <span className="text-sm text-gray-500">
             No scopes match &ldquo;{search}&rdquo;.
-          </Text>
+          </span>
         ) : (
-          <Stack spacing={3}>
+          <div className="flex flex-col gap-3">
             {visibleResources.map((resource) => {
               const scopesInGroup = visibleScopesForResource(resource);
               const allGroupScopes = GROUPED[resource];
               const selectedInGroup = allGroupScopes.filter((s) =>
                 selected.includes(s),
               );
-              const allSelected =
+              const allGroupSelected =
                 selectedInGroup.length === allGroupScopes.length;
-              const someSelected = selectedInGroup.length > 0 && !allSelected;
+              const someGroupSelected =
+                selectedInGroup.length > 0 && !allGroupSelected;
 
               return (
-                <Stack key={resource} spacing={1}>
+                <div key={resource} className="flex flex-col gap-1">
                   <Checkbox
-                    isChecked={allSelected}
-                    isIndeterminate={someSelected}
+                    checked={allGroupSelected}
+                    indeterminate={someGroupSelected}
                     onChange={(e) =>
                       handleGroupToggle(resource, e.target.checked)
                     }
-                    fontWeight="semibold"
+                    className="font-semibold"
                     data-testid={`scope-group-${resource}`}
                   >
                     {formatResourceLabel(resource)}
                   </Checkbox>
-                  <Stack pl={6} spacing={1} direction="row" flexWrap="wrap">
+                  <div className="flex flex-row flex-wrap gap-1 pl-6">
                     {scopesInGroup.map((scope) => {
                       const action = scope.split(":")[1];
                       return (
                         <Checkbox
                           key={scope}
-                          isChecked={selected.includes(scope)}
+                          checked={selected.includes(scope)}
                           onChange={(e) =>
                             handleScopeToggle(scope, e.target.checked)
                           }
@@ -160,17 +152,20 @@ const ScopePicker = ({ name }: ScopePickerProps) => {
                         </Checkbox>
                       );
                     })}
-                  </Stack>
-                </Stack>
+                  </div>
+                </div>
               );
             })}
-          </Stack>
+          </div>
         )}
-      </Box>
-      <Text fontSize="sm" color="gray.500" data-testid="scope-selected-count">
+      </div>
+      <span
+        className="text-sm text-gray-500"
+        data-testid="scope-selected-count"
+      >
         {selected.length} scope{selected.length !== 1 ? "s" : ""} selected
-      </Text>
-    </Stack>
+      </span>
+    </div>
   );
 };
 
