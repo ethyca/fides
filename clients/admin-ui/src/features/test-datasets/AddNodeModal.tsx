@@ -76,11 +76,6 @@ const AddNodeModal = ({
       open={open}
       onClose={onCancel}
       mask={false}
-      extra={
-        <Button type="primary" size="small" onClick={handleOk}>
-          Create
-        </Button>
-      }
     >
       <Form form={form} layout="vertical" size="small">
         <Form.Item
@@ -130,6 +125,12 @@ const AddNodeModal = ({
             />
           </>
         )}
+
+        <div style={{ marginTop: 24 }}>
+          <Button type="primary" size="small" block onClick={handleOk}>
+            Create
+          </Button>
+        </div>
       </Form>
     </Drawer>
   );
