@@ -630,7 +630,7 @@ def reinvite_user(
     user_invite.hashed_invite_code = hashed_invite_code
     user_invite.salt = salt
 
-    user_invite.save(db)
+    db.flush()
 
     try:
         dispatch_message(
@@ -650,6 +650,7 @@ def reinvite_user(
             detail="Failed to send invitation email. Please try again.",
         ) from exc
 
+    db.commit()
     logger.info("Reinvite email dispatched for pending user")
 
 
