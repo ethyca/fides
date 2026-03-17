@@ -6,6 +6,13 @@ import { baseApi } from "~/features/common/api.slice";
 export interface State {}
 const initialState: State = {};
 
+export interface SaaSConfigVersionResponse {
+  connector_type: string;
+  version: string;
+  is_custom: boolean;
+  created_at: string;
+}
+
 export const connectorTemplateSlice = createSlice({
   name: "connectorTemplate",
   initialState,
@@ -36,10 +43,38 @@ export const connectorTemplateApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Connection Type"],
     }),
+    getConnectorTemplateVersions: build.query<
+      SaaSConfigVersionResponse[],
+      string
+    >({
+      query: (connectorType) =>
+        `${CONNECTOR_TEMPLATE}/${connectorType}/versions`,
+    }),
+    getConnectorTemplateVersionConfig: build.query<
+      string,
+      { connectorType: string; version: string }
+    >({
+      query: ({ connectorType, version }) => ({
+        url: `${CONNECTOR_TEMPLATE}/${connectorType}/versions/${version}/config`,
+        responseHandler: "text",
+      }),
+    }),
+    getConnectorTemplateVersionDataset: build.query<
+      string,
+      { connectorType: string; version: string }
+    >({
+      query: ({ connectorType, version }) => ({
+        url: `${CONNECTOR_TEMPLATE}/${connectorType}/versions/${version}/dataset`,
+        responseHandler: "text",
+      }),
+    }),
   }),
 });
 
 export const {
   useRegisterConnectorTemplateMutation,
   useDeleteConnectorTemplateMutation,
+  useGetConnectorTemplateVersionsQuery,
+  useGetConnectorTemplateVersionConfigQuery,
+  useGetConnectorTemplateVersionDatasetQuery,
 } = connectorTemplateApi;
