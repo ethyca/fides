@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from citext import CIText
 from sqlalchemy import Boolean, Column, DateTime, String
@@ -34,6 +34,10 @@ if TYPE_CHECKING:
 
 class FidesUser(Base):
     """The DB ORM model for FidesUser."""
+
+    # Non-DB fields optionally populated for API responses
+    has_invite: Optional[bool] = None
+    invite_expired: Optional[bool] = None
 
     username = Column(CIText, unique=True, index=True)
     email_address = Column(CIText, unique=True, nullable=True)

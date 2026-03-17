@@ -653,33 +653,21 @@ def reinvite_user(
     logger.info("Reinvite email dispatched for pending user")
 
 
-def populate_invite_status(
+def attach_invite_status(
     db: Session, user: FidesUser, user_invite: Optional[FidesUserInvite] = None
-) -> UserResponse:
-    """Helper function to populate invite status fields on a user."""
-    has_invite = False
-    invite_expired = None
-
+) -> None:
+    """Attach invite status fields to a user."""
     if user.username:
         user_invite_record = user_invite or FidesUserInvite.get_by(
             db, field="username", value=user.username
         )
         if user_invite_record:
-            has_invite = True
-            invite_expired = user_invite_record.is_expired()
+            user.has_invite = True
+            user.invite_expired = user_invite_record.is_expired()
+            return
 
-    return UserResponse(
-        id=user.id,
-        username=user.username,
-        created_at=user.created_at,
-        email_address=user.email_address,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        disabled=user.disabled,
-        disabled_reason=user.disabled_reason,
-        has_invite=has_invite,
-        invite_expired=invite_expired,
-    )
+    user.has_invite = False
+    user.invite_expired = None
 
 
 @router.get(
@@ -694,7 +682,7 @@ def get_user(
     client: ClientDetail = Security(verify_user_read_scopes),
     authorization: str = Security(oauth2_scheme),
     permission_checker: PermissionCheckerCallback = Depends(get_permission_checker),
-) -> UserResponse:
+) -> FidesUser:
     """Returns a User based on an Id. Users with user:read-own scope can only access their own data. Users with user:read can access other's data."""
     # Resolve Depends if called directly (not via FastAPI DI)
     permission_checker = _resolve_depends(permission_checker, get_permission_checker)
@@ -713,7 +701,8 @@ def get_user(
         permission_checker=permission_checker,
     ):
         logger.debug("Returning user with id: '{}'.", user_id)
-        return populate_invite_status(db, user)
+        attach_invite_status(db, user)
+        return user
 
     # User has USER_READ_OWN scope, check if they're accessing their own data
     if user.id != client.user_id:
@@ -723,7 +712,8 @@ def get_user(
         )
 
     logger.debug("Returning user with id: '{}'.", user_id)
-    return populate_invite_status(db, user)
+    attach_invite_status(db, user)
+    return user
 
 
 @router.get(
@@ -802,15 +792,13 @@ def get_users(
             invite.username: invite for invite in invite_records
         }
 
-    # Transform each user to include invite status without per-user invite queries.
-    paginated_result.items = [
-        populate_invite_status(
+    # Attach invite status to each user without per-user invite queries.
+    for user in user_records:
+        attach_invite_status(
             db,
             user,
             invite_records_by_username.get(user.username) if user.username else None,
         )
-        for user in user_records
-    ]
 
     return paginated_result
 
