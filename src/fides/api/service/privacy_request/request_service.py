@@ -677,14 +677,23 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 break
 
                             # A pending task that hasn't been dispatched to Celery yet will
-                            # never have a cache key — this is not a stuck state. Only pending
-                            # tasks can legitimately lack a cache key; in_processing tasks
-                            # without one are genuinely stuck and should be canceled below.
-                            # Checked before the async query to avoid an unnecessary DB hit.
-                            if (
-                                task_status == ExecutionLogStatus.pending
-                                and awaiting_upstream
-                            ):
+                            # never have a cache key — this is not a stuck state. The parent
+                            # Celery task died before dispatching it. Correct response depends
+                            # on whether upstream tasks are complete:
+                            #   - awaiting_upstream=True:  upstream not done yet, skip (ENG-2756)
+                            #   - awaiting_upstream=False: upstream complete, parent died before
+                            #     this task was dispatched → requeue so it can be retried
+                            # Only in_processing tasks without a cache key are genuinely stuck.
+                            if task_status == ExecutionLogStatus.pending:
+                                if not awaiting_upstream:
+                                    logger.warning(
+                                        f"No task ID found for request task {request_task_id} "
+                                        f"(privacy request {privacy_request.id}) is pending with "
+                                        f"upstream complete but was never dispatched - "
+                                        f"parent task died before dispatch, requeueing"
+                                    )
+                                    should_requeue = True
+                                    break
                                 logger.debug(
                                     f"Request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) is pending and "
@@ -704,7 +713,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 should_requeue = False
                                 break
 
-                            # For other statuses, cancel the entire privacy request
+                            # Only in_processing tasks with no cache key reach here.
+                            # The Celery task started (status was updated) but the cache key
+                            # is missing — this is genuinely stuck.
                             _cancel_interrupted_tasks_and_error_privacy_request(
                                 db,
                                 privacy_request,
