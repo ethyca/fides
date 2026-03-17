@@ -1,17 +1,13 @@
-import {
-  Button,
-  ChakraModalProps as ModalProps,
-  Flex,
-  Typography,
-} from "fidesui";
+import { Button, Flex, Modal, Typography } from "fidesui";
 import { useState } from "react";
 
-import FormModal from "~/features/common/modals/FormModal";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
 
 const { Text } = Typography;
 
-interface AddDataUsesModalProps extends Omit<ModalProps, "children"> {
+interface AddDataUsesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   onSave: (dataUses: string[]) => void;
   isSaving?: boolean;
 }
@@ -19,8 +15,8 @@ interface AddDataUsesModalProps extends Omit<ModalProps, "children"> {
 const AddDataUsesModal = ({
   onSave,
   isSaving,
+  isOpen,
   onClose,
-  ...props
 }: AddDataUsesModalProps) => {
   const [selectedDataUses, setSelectedDataUses] = useState<string[]>([]);
 
@@ -35,7 +31,14 @@ const AddDataUsesModal = ({
   };
 
   return (
-    <FormModal title="Add consent category" {...props} onClose={handleReset}>
+    <Modal
+      title="Add consent category"
+      open={isOpen}
+      onCancel={handleReset}
+      centered
+      destroyOnClose
+      footer={null}
+    >
       <Flex vertical gap={20} className="pb-6 pt-4">
         <Text>
           Assign consent categories to selected assets. This configures the
@@ -65,7 +68,7 @@ const AddDataUsesModal = ({
           Save
         </Button>
       </Flex>
-    </FormModal>
+    </Modal>
   );
 };
 
