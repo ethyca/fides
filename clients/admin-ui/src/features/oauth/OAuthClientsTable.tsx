@@ -1,43 +1,45 @@
-import { Button, Flex, List, Pagination, Typography } from "fidesui";
-import NextLink from "next/link";
+import { Flex, List, Pagination, Tag, Typography } from "fidesui";
 import { useState } from "react";
 
 import { useHasPermission } from "~/features/common/Restrict";
+import { LinkCell } from "~/features/common/table/cells/LinkCell";
 import { API_CLIENTS_ROUTE } from "~/features/common/nav/routes";
 import { ClientResponse, ScopeRegistryEnum } from "~/types/api";
 
 import { useListOAuthClientsQuery } from "./oauth-clients.slice";
 
+const { Text } = Typography;
+
 const ClientListItem = ({ client }: { client: ClientResponse }) => {
   const canUpdate = useHasPermission([ScopeRegistryEnum.CLIENT_UPDATE]);
 
   return (
-    <List.Item
-      data-testid={`client-list-item-${client.client_id}`}
-      actions={
-        canUpdate
-          ? [
-              <NextLink
-                key="edit"
-                href={`${API_CLIENTS_ROUTE}/${client.client_id}`}
-                passHref
-                legacyBehavior
-              >
-                <Button
-                  type="link"
-                  data-testid={`edit-client-btn-${client.client_id}`}
-                  className="px-1"
-                >
-                  Edit
-                </Button>
-              </NextLink>,
-            ]
-          : []
-      }
-    >
+    <List.Item data-testid={`client-list-item-${client.client_id}`}>
       <List.Item.Meta
-        title={client.name ?? <em>Unnamed</em>}
-        description={client.description ?? undefined}
+        title={
+          <Flex align="center" gap={8}>
+            <LinkCell
+              href={
+                canUpdate
+                  ? `${API_CLIENTS_ROUTE}/${client.client_id}`
+                  : undefined
+              }
+            >
+              {client.name ?? "Unnamed"}
+            </LinkCell>
+            <Tag>{client.scopes.length} scopes</Tag>
+          </Flex>
+        }
+        description={
+          <Flex vertical gap={2}>
+            <Text type="secondary" className="font-mono text-xs">
+              {client.client_id}
+            </Text>
+            {client.description && (
+              <Text type="secondary">{client.description}</Text>
+            )}
+          </Flex>
+        }
       />
     </List.Item>
   );
