@@ -63,7 +63,7 @@ class JiraTicketSchema(FidesSchema):
         if has_oauth and has_api_key:
             raise ValueError(
                 "Cannot mix OAuth and API key credentials. "
-                "Provide either OAuth fields (access_token, cloud_id, site_url) "
+                "Provide either OAuth fields (access_token, refresh_token, token_expiry, cloud_id, site_url) "
                 "or API key fields (domain, username, api_key), not both."
             )
         return self
