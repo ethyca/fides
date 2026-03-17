@@ -33,7 +33,7 @@ export const AddEditPolicyConditionModal = ({
       onCancel={onClose}
       title={isEditing ? "Edit condition" : "Add condition"}
       footer={null}
-      destroyOnClose
+      destroyOnHidden
       width={MODAL_SIZE.md}
       data-testid="add-edit-condition-modal"
     >

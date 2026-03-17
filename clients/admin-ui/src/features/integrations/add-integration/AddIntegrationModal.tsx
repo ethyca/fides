@@ -161,7 +161,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
           minHeight: 0,
         },
       }}
-      data-testid="add-modal-content"
+      wrapProps={{ "data-testid": "add-modal-content" }}
     >
       {step === IntegrationModalStep.LIST_VIEW && (
         <>
