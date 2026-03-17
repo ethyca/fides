@@ -11,7 +11,10 @@ from fides.api.graph.config import (
 )
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.util.collection_util import unflatten_dict
-from fides.api.util.domain_util import validate_value_against_allowed_list
+from fides.api.util.domain_util import (
+    get_domain_validation_mode,
+    validate_value_against_allowed_list,
+)
 from fides.api.util.saas_util import (
     assign_placeholders,
     check_dataset_missing_reference_values,
@@ -23,6 +26,7 @@ from fides.api.util.saas_util import (
     validate_connector_param_constraints_not_modified,
     validate_host_references_domain_restricted_params,
 )
+from fides.config import CONFIG
 from fides.config.security_settings import DomainValidationMode
 
 
@@ -942,17 +946,11 @@ class TestGetDomainValidationMode:
 
     def test_dev_mode_defaults_to_enabled(self, monkeypatch):
         """In dev mode, domain validation should default to enabled."""
-        from fides.api.util.domain_util import get_domain_validation_mode
-        from fides.config import CONFIG
-
         monkeypatch.setattr(CONFIG, "dev_mode", True)
         assert get_domain_validation_mode() == DomainValidationMode.enabled
 
     def test_dev_mode_respects_explicit_env_override(self, monkeypatch):
         """Explicit env var should override the dev_mode default."""
-        from fides.api.util.domain_util import get_domain_validation_mode
-        from fides.config import CONFIG
-
         monkeypatch.setattr(CONFIG, "dev_mode", True)
         monkeypatch.setenv("FIDES__SECURITY__DOMAIN_VALIDATION_MODE", "monitor")
         monkeypatch.setattr(
@@ -964,9 +962,6 @@ class TestGetDomainValidationMode:
 
     def test_non_dev_mode_uses_configured_value(self, monkeypatch):
         """Outside dev mode, the configured value is used as-is."""
-        from fides.api.util.domain_util import get_domain_validation_mode
-        from fides.config import CONFIG
-
         monkeypatch.setattr(CONFIG, "dev_mode", False)
         monkeypatch.setattr(
             CONFIG.security,
