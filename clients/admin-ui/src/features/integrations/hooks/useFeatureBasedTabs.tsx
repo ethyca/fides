@@ -25,6 +25,7 @@ import {
   ConnectionType,
   IntegrationFeature,
 } from "~/types/api";
+import VersionHistoryTab from "~/features/integrations/VersionHistoryTab";
 
 interface UseFeatureBasedTabsProps {
   connection: any;
@@ -204,6 +205,15 @@ export const useFeatureBasedTabs = ({
         label: "Ticket setup",
         key: "configuration",
         children: <JiraConfigTab connection={connection!} />,
+      });
+    }
+
+    const connectorType = connection?.saas_config?.type;
+    if (connectorType) {
+      tabItems.push({
+        label: "Version history",
+        key: "version-history",
+        children: <VersionHistoryTab connectorType={connectorType} />,
       });
     }
 
