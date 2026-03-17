@@ -84,6 +84,10 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   pages: 1,
 };
 
+const checkIcon = (isSelected: boolean) => (
+  <CheckOutlined style={{ visibility: isSelected ? "visible" : "hidden" }} />
+);
+
 export const DatamapReportTable = ({
   onError,
 }: {
@@ -572,15 +576,8 @@ export const DatamapReportTable = ({
                     {
                       key: DATAMAP_GROUPING.SYSTEM_DATA_USE,
                       label: "System",
-                      icon: (
-                        <CheckOutlined
-                          style={{
-                            visibility:
-                              DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy
-                                ? "visible"
-                                : "hidden",
-                          }}
-                        />
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy,
                       ),
                       onClick: () =>
                         onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE),
@@ -588,15 +585,8 @@ export const DatamapReportTable = ({
                     {
                       key: DATAMAP_GROUPING.DATA_USE_SYSTEM,
                       label: "Data use",
-                      icon: (
-                        <CheckOutlined
-                          style={{
-                            visibility:
-                              DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy
-                                ? "visible"
-                                : "hidden",
-                          }}
-                        />
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy,
                       ),
                       onClick: () =>
                         onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM),
@@ -604,15 +594,8 @@ export const DatamapReportTable = ({
                     {
                       key: DATAMAP_GROUPING.SYSTEM_GROUP,
                       label: getSystemGroupOptionName(),
-                      icon: (
-                        <CheckOutlined
-                          style={{
-                            visibility:
-                              DATAMAP_GROUPING.SYSTEM_GROUP === groupBy
-                                ? "visible"
-                                : "hidden",
-                          }}
-                        />
+                      icon: checkIcon(
+                        DATAMAP_GROUPING.SYSTEM_GROUP === groupBy,
                       ),
                       onClick: () =>
                         onGroupChange(DATAMAP_GROUPING.SYSTEM_GROUP),
@@ -654,11 +637,7 @@ export const DatamapReportTable = ({
                     },
                     {
                       key: "rename-columns",
-                      label: (
-                        <span data-testid="rename-columns-btn">
-                          Rename columns
-                        </span>
-                      ),
+                      label: "Rename columns",
                       onClick: () => setIsRenamingColumns(true),
                     },
                   ],

@@ -74,7 +74,7 @@ const DataCategoryDropdown = ({
       trigger="click"
       open={open}
       onOpenChange={setOpen}
-      overlayStyle={{ padding: 0 }}
+      styles={{ body: { padding: 0 } }}
     >
       <Button
         icon={<ArrowDownLineIcon />}

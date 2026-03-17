@@ -300,7 +300,6 @@ const ConnectionListDropdown = ({
       trigger="click"
       open={isOpen}
       onOpenChange={setIsOpen}
-      overlayStyle={{ padding: 0 }}
       styles={{ body: { padding: 0 } }}
     >
       <Button
