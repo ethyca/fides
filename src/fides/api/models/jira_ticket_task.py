@@ -5,7 +5,9 @@ stores Jira-specific fields (ticket key, URL, external status) that the
 polling service uses to track ticket lifecycle.
 """
 
-from typing import TYPE_CHECKING, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, NamedTuple
 
 from sqlalchemy import Column, DateTime, ForeignKey, Index, String, text
 from sqlalchemy.ext.declarative import declared_attr
@@ -18,6 +20,16 @@ if TYPE_CHECKING:
     from fides.api.models.manual_task import ManualTaskInstance
 
 DONE_STATUS_CATEGORY = "done"
+
+
+class DeletedStatus(NamedTuple):
+    """Synthetic status for tickets that have been removed from Jira."""
+
+    category: str = "deleted"
+    display: str = "Deleted"
+
+
+DELETED_STATUS = DeletedStatus()
 
 
 class JiraTicketTask(Base):
@@ -94,6 +106,6 @@ class JiraTicketTask(Base):
     @classmethod
     def get_by_instance_id(
         cls, db: Session, instance_id: str
-    ) -> Optional["JiraTicketTask"]:
+    ) -> "JiraTicketTask | None":
         """Look up a JiraTicketTask by its ManualTaskInstance ID."""
         return db.query(cls).filter(cls.manual_task_instance_id == instance_id).first()
