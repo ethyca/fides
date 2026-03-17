@@ -1,7 +1,7 @@
 import { Button, Card, DonutChart, Flex, Spin, Text } from "fidesui";
 import NextLink from "next/link";
 
-import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
+import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
 import { useGetSystemCoverageQuery } from "~/features/dashboard/dashboard.slice";
 
 const BREAKDOWN_ITEMS = [
@@ -57,7 +57,7 @@ export const SystemCoverageCard = () => {
               ))}
             </Flex>
           </Flex>
-          <NextLink href={ADD_SYSTEMS_ROUTE} passHref>
+          <NextLink href={ADD_SYSTEMS_MANUAL_ROUTE} passHref>
             <Button type="default" block>
               + Connect More Systems
             </Button>
