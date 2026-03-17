@@ -168,6 +168,7 @@ describe("Data map report table", () => {
     it("should reorder columns", () => {
       cy.getByTestId("more-menu").click();
       cy.selectAntDropdownOption("Edit columns");
+      cy.get(".more-menu-list").should("not.be.visible");
       cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
       cy.getByTestId("column-dragger-data_categories").trigger("dragenter");
       cy.getByTestId("column-dragger-data_categories").trigger("dragover");
