@@ -2,6 +2,8 @@ name: Admin UI Cypress Tests
 
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
@@ -39,7 +41,8 @@ jobs:
 
   prepare-matrix:
     needs: Check-Admin-UI-Changes
-    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true'
+    # Skip on merge_group — these checks already passed on the PR
+    if: needs.Check-Admin-UI-Changes.outputs.has_admin_ui_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     outputs:
       spec_groups: ${{ steps.set-matrix.outputs.spec_groups }}

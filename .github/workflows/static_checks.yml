@@ -2,6 +2,8 @@ name: Backend Static Code Checks
 
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - "main"
@@ -49,7 +51,8 @@ jobs:
   ###################
   Static-Checks:
     needs: Check-Backend-Changes
-    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true'
+    # Skip on merge_group — these checks already passed on the PR
+    if: needs.Check-Backend-Changes.outputs.has_backend_changes == 'true' && github.event_name != 'merge_group'
     strategy:
       # We want to run all static checks even if some fail, so we set fail-fast to false
       fail-fast: false
