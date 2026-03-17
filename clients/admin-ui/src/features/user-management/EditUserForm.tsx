@@ -1,10 +1,4 @@
-import {
-  Alert,
-  Button,
-  Modal,
-  ChakraBox as Box,
-  Text,
-} from "fidesui";
+import { Alert, Button, ChakraBox as Box, Modal, Text } from "fidesui";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import UserManagementTabs from "user-management/UserManagementTabs";

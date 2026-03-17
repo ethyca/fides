@@ -33,8 +33,8 @@ import {
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage } from "~/features/common/helpers";
-import { RTKErrorResult } from "~/types/errors/api";
 import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
+import { RTKErrorResult } from "~/types/errors/api";
 
 const parseQueryParam = (query: ParsedUrlQuery) => {
   const validPathRegex = /^\/[\w/-]*$/;
