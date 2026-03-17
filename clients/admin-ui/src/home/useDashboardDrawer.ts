@@ -1,11 +1,8 @@
-import type { ReactNode } from "react";
 import { useSyncExternalStore } from "react";
 
-export interface DashboardDrawerState {
-  title: string;
-  width?: number;
-  content: ReactNode;
-}
+export type DashboardDrawerState = {
+  type: "posture";
+};
 
 let drawerState: DashboardDrawerState | null = null;
 const listeners = new Set<() => void>();

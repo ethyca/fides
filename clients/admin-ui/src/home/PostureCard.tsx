@@ -7,7 +7,6 @@ import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slic
 import { DiffDirection } from "~/features/dashboard/types";
 
 import cardStyles from "./dashboard-card.module.scss";
-import { PostureBreakdownContent } from "./PostureBreakdownContent";
 import styles from "./PostureCard.module.scss";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
@@ -42,11 +41,8 @@ export const PostureCard = () => {
   const animatedScore = useCountUp(postureScore);
 
   const openPostureDrawer = useCallback(() => {
-    openDashboardDrawer({
-      title: "Posture breakdown",
-      content: <PostureBreakdownContent posture={posture} />,
-    });
-  }, [posture]);
+    openDashboardDrawer({ type: "posture" });
+  }, []);
 
   const radarData = useMemo(
     () =>
@@ -100,6 +96,7 @@ export const PostureCard = () => {
           <div
             role="button"
             tabIndex={0}
+            aria-label="View posture breakdown"
             className={styles.clickableScore}
             onClick={openPostureDrawer}
             onKeyDown={(e) => {

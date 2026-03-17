@@ -6,17 +6,13 @@ import {
   DIMENSION_DESCRIPTIONS,
   DIMENSION_ROUTES,
 } from "~/features/dashboard/constants";
-import type { PostureResponse } from "~/features/dashboard/types";
+import { useGetDashboardPostureQuery } from "~/features/dashboard/dashboard.slice";
 
 import styles from "./PostureBreakdownContent.module.scss";
 
-interface PostureBreakdownContentProps {
-  posture: PostureResponse | undefined;
-}
+export const PostureBreakdownContent = () => {
+  const { data: posture } = useGetDashboardPostureQuery();
 
-export const PostureBreakdownContent = ({
-  posture,
-}: PostureBreakdownContentProps) => {
   if (!posture) {
     return null;
   }
