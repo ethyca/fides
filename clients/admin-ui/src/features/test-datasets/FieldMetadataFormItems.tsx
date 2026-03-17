@@ -1,4 +1,7 @@
 import { Form, Input, InputNumber, Select, Switch } from "fidesui";
+import { useMemo } from "react";
+
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
 export const DATA_TYPE_OPTIONS = [
   "string",
@@ -37,6 +40,44 @@ export const buildFieldMeta = (values: Record<string, unknown>) => {
   };
   const hasAny = Object.values(meta).some((v) => v !== undefined);
   return hasAny ? meta : undefined;
+};
+
+/**
+ * A Select with mode="tags" that suggests known data categories from the
+ * taxonomy while still allowing free-form input.
+ */
+export const DataCategoryTagSelect = ({
+  value,
+  onChange,
+}: {
+  value?: string[];
+  onChange?: (value: string[]) => void;
+}) => {
+  const { getDataCategories } = useTaxonomies();
+  const options = useMemo(
+    () =>
+      getDataCategories()
+        .filter((c) => c.active)
+        .map((c) => ({ label: c.fides_key, value: c.fides_key })),
+    [getDataCategories],
+  );
+
+  return (
+    <Select
+      mode="tags"
+      placeholder="Add data categories..."
+      aria-label="Data Categories"
+      style={{ width: "100%" }}
+      options={options}
+      value={value}
+      onChange={onChange}
+      filterOption={(input, option) =>
+        (option?.value as string)
+          ?.toLowerCase()
+          .includes(input.toLowerCase()) ?? false
+      }
+    />
+  );
 };
 
 /**

@@ -1,10 +1,11 @@
-import { Collapse, Form, Input, Modal, Select } from "fidesui";
+import { Collapse, Form, Input, Modal } from "fidesui";
 import { useEffect } from "react";
 
 import { DatasetField } from "~/types/api";
 
 import FieldMetadataFormItems, {
   buildFieldMeta,
+  DataCategoryTagSelect,
 } from "./FieldMetadataFormItems";
 
 interface AddNodeModalProps {
@@ -108,12 +109,7 @@ const AddNodeModal = ({
             </Form.Item>
 
             <Form.Item label="Data Categories" name="data_categories">
-              <Select
-                mode="tags"
-                placeholder="Add data categories..."
-                aria-label="Data Categories"
-                style={{ width: "100%" }}
-              />
+              <DataCategoryTagSelect />
             </Form.Item>
 
             <Collapse

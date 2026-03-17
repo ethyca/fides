@@ -17,6 +17,7 @@ import { DatasetCollection, DatasetField } from "~/types/api";
 import DatasetEditorActionsContext from "./context/DatasetEditorActionsContext";
 import FieldMetadataFormItems, {
   buildFieldMeta,
+  DataCategoryTagSelect,
 } from "./FieldMetadataFormItems";
 import { CollectionNodeData, FieldNodeData } from "./useDatasetGraph";
 
@@ -182,12 +183,7 @@ const DatasetNodeDetailPanel = ({
           </Form.Item>
 
           <Form.Item label="Data Categories" name="data_categories">
-            <Select
-              mode="tags"
-              placeholder="Add data categories..."
-              aria-label="Data Categories"
-              style={{ width: "100%" }}
-            />
+            <DataCategoryTagSelect />
           </Form.Item>
 
           {nodeData.nodeType === "collection" && (
