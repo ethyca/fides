@@ -42,7 +42,10 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
         type="target"
         inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}
       />
-      <Button className={`${styles.button} ${getHoverClass()}`} type="text">
+      <Button
+        className={`${styles.button} ${getHoverClass()} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
+        type="text"
+      >
         <Typography.Text ellipsis style={{ color: "inherit" }}>
           {nodeData.label}
         </Typography.Text>

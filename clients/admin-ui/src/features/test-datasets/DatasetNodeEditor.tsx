@@ -164,6 +164,21 @@ const DatasetNodeEditorInner = ({
     CollectionNodeData | FieldNodeData | null
   >(null);
   const [addModal, setAddModal] = useState<AddModalState>(CLOSED_MODAL);
+  const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(
+    null,
+  );
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const highlightNode = useCallback((nodeId: string) => {
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+    }
+    setHighlightedNodeId(nodeId);
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightedNodeId(null);
+      highlightTimerRef.current = null;
+    }, 1500);
+  }, []);
 
   const { nodes: rawNodes, edges } = useDatasetGraph(
     dataset,
@@ -176,14 +191,18 @@ const DatasetNodeEditorInner = ({
     options: { direction: "LR" },
   });
 
-  // Merge selection state into nodes
+  // Merge selection + highlight state into nodes
   const nodes = useMemo(
     () =>
       layoutedNodes.map((node) => ({
         ...node,
         selected: node.id === selectedNodeId,
+        data: {
+          ...node.data,
+          isHighlighted: node.id === highlightedNodeId,
+        },
       })),
-    [layoutedNodes, selectedNodeId],
+    [layoutedNodes, selectedNodeId, highlightedNodeId],
   );
 
   // Fit view only when the graph structure changes (drill-down or node count),
@@ -287,8 +306,9 @@ const DatasetNodeEditorInner = ({
         ...dataset,
         collections: [...dataset.collections, newCollection],
       });
+      highlightNode(`${COLLECTION_ROOT_PREFIX}${name}`);
     },
-    [dataset, onDatasetChange],
+    [dataset, onDatasetChange, highlightNode],
   );
 
   const handleAddField = useCallback(
@@ -306,10 +326,8 @@ const DatasetNodeEditorInner = ({
             return c;
           }
           if (!parentFieldPath) {
-            // Top-level field on the collection
             return { ...c, fields: [...c.fields, newField] };
           }
-          // Nested field: append to the parent's fields array
           const segments = parentFieldPath.split(".");
           return {
             ...c,
@@ -317,8 +335,10 @@ const DatasetNodeEditorInner = ({
           };
         }),
       });
+      const fieldPath = parentFieldPath ? `${parentFieldPath}.${name}` : name;
+      highlightNode(`field-${collectionName}-${fieldPath}`);
     },
-    [dataset, onDatasetChange],
+    [dataset, onDatasetChange, highlightNode],
   );
 
   const handleDeleteCollection = useCallback(

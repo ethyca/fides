@@ -105,3 +105,18 @@
 .container:hover .add-button {
   opacity: 1;
 }
+
+@keyframes highlight-fade {
+  0% {
+    background-color: #fefcbf;
+    border-color: #d69e2e;
+  }
+  100% {
+    background-color: transparent;
+    border-color: var(--ant-button-default-border-color);
+  }
+}
+
+.button--highlighted {
+  animation: highlight-fade 1.5s ease-out forwards;
+}
