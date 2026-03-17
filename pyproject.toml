@@ -180,6 +180,9 @@ dev = [
 fides = "fides.cli:cli"
 webserver = "fides.api.main:start_webserver"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.version]
 source = "vcs"
 fallback-version = "0.0.0+dev"
