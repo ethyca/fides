@@ -1,4 +1,7 @@
-import { useAlert, useAPIHelper } from "common/hooks";
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import ConnectionTypeLogo, {
   connectionLogoFromConfiguration,
 } from "datastore-connections/ConnectionTypeLogo";
@@ -11,6 +14,7 @@ import {
   ChakraText as Text,
   Modal,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
@@ -41,7 +45,7 @@ const OrphanedConnectionModal = ({
   const [selectedConnectionConfig, setSelectedConnectionConfig] =
     useState<ConnectionConfigurationResponse | null>(null);
 
-  const { successAlert } = useAlert();
+  const message = useMessage();
 
   const [patchDatastoreConnection, { isLoading }] =
     usePatchSystemConnectionConfigsMutation();
@@ -50,7 +54,6 @@ const OrphanedConnectionModal = ({
   const { data } = useGetAllConnectionTypesQuery(filters);
 
   const connectionOptions = useMemo(() => data?.items || [], [data]);
-  const { handleError } = useAPIHelper();
   const closeIfComplete = () => {
     if (isLoading) {
       return;
@@ -91,14 +94,20 @@ const OrphanedConnectionModal = ({
         );
 
         if (response.succeeded[0]) {
-          successAlert(`Integration successfully linked!`);
+          message.success(`Integration successfully linked!`);
         }
 
         setSelectedConnectionConfig(null);
         onClose();
       }
     } catch (e) {
-      handleError(e);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(e)) {
+        errorMsg = e.data.detail;
+      } else if (isErrorWithDetailArray(e)) {
+        errorMsg = e.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     }
   };
 

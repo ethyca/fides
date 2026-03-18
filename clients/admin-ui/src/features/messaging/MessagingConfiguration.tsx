@@ -5,10 +5,14 @@ import {
   ChakraText as Text,
   Form,
   Select,
+  useMessage,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
-import { useAPIHelper } from "~/features/common/hooks";
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 
 import { messagingProviderLabels, messagingProviders } from "./constants";
 import AwsSesMessagingForm from "./forms/AwsSesMessagingForm";
@@ -34,7 +38,7 @@ const MessagingConfiguration = ({
   );
 
   const isEditMode = !!configKey;
-  const { handleError } = useAPIHelper();
+  const message = useMessage();
 
   // For editing: fetch existing config by key
   const {
@@ -58,9 +62,15 @@ const MessagingConfiguration = ({
 
   useEffect(() => {
     if (error) {
-      handleError(error);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(error)) {
+        errorMsg = error.data.detail;
+      } else if (isErrorWithDetailArray(error)) {
+        errorMsg = error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     }
-  }, [error, handleError]);
+  }, [error, message]);
 
   // Provider options for the dropdown
   const providerOptions = useMemo(() => {

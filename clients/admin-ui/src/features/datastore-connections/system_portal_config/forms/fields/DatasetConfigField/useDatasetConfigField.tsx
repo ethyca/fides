@@ -1,5 +1,5 @@
 import { Option } from "common/form/inputs";
-import { useAlert } from "common/hooks";
+import { useMessage } from "fidesui";
 import {
   useGetConnectionConfigDatasetConfigsQuery,
   usePutDatasetConfigsMutation,
@@ -47,7 +47,7 @@ export const useDatasetConfigField = ({
     [unlinkedDatasets],
   );
 
-  const { errorAlert, successAlert } = useAlert();
+  const message = useMessage();
 
   const patchConnectionDatasetConfig = async (
     values: ConnectionConfigFormValues,
@@ -67,9 +67,9 @@ export const useDatasetConfigField = ({
 
     const payload = await putDatasetConfig(params).unwrap();
     if (payload.failed?.length > 0) {
-      errorAlert(payload.failed[0].message);
+      message.error(payload.failed[0].message);
     } else if (showSuccessAlert) {
-      successAlert("Dataset successfully updated!");
+      message.success("Dataset successfully updated!");
     }
   };
 

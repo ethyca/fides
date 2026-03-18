@@ -5,6 +5,7 @@ import {
   ChakraFlex as Flex,
   ChakraText as Text,
   Typography,
+  useMessage,
 } from "fidesui";
 import { FieldArray, Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -12,7 +13,6 @@ import * as Yup from "yup";
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import {
   useGetPrivacyRequestRedactionPatternsQuery,
   useUpdatePrivacyRequestRedactionPatternsMutation,
@@ -51,7 +51,7 @@ const ValidationSchema = Yup.object().shape({
 });
 
 const PrivacyRequestRedactionPatternsPage = () => {
-  const { errorAlert, successAlert } = useAlert();
+  const message = useMessage();
 
   const { data: currentPatterns } =
     useGetPrivacyRequestRedactionPatternsQuery(undefined);
@@ -69,12 +69,9 @@ const PrivacyRequestRedactionPatternsPage = () => {
     const payload = await updatePatterns({ patterns: cleanedPatterns });
 
     if (isErrorResult(payload)) {
-      errorAlert(
-        getErrorMessage(payload.error),
-        "Failed to update privacy request redaction patterns",
-      );
+      message.error(getErrorMessage(payload.error));
     } else {
-      successAlert("Privacy request redaction patterns updated successfully.");
+      message.success("Privacy request redaction patterns updated successfully.");
     }
   };
 

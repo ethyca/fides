@@ -4,14 +4,18 @@ import {
   ChakraDivider as Divider,
   ChakraHeading as Heading,
   ChakraStack as Stack,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { isErrorResult } from "~/features/common/helpers";
-import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import {
+  isErrorResult,
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
@@ -43,8 +47,7 @@ const GoogleCloudStorageConfiguration = ({
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
 
-  const { handleError } = useAPIHelper();
-  const { successAlert } = useAlert();
+  const message = useMessage();
 
   const initialValues = {
     type: storageTypes.gcs,
@@ -80,10 +83,16 @@ const GoogleCloudStorageConfiguration = ({
     });
 
     if (isErrorResult(result)) {
-      handleError(result.error);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(result.error)) {
+        errorMsg = result.error.data.detail;
+      } else if (isErrorWithDetailArray(result.error)) {
+        errorMsg = result.error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } else {
       setAuthMethod(newValues.auth_method);
-      successAlert(`Google Cloud Storage credentials successfully updated.`);
+      message.success(`Google Cloud Storage credentials successfully updated.`);
     }
   };
 
@@ -112,9 +121,15 @@ const GoogleCloudStorageConfiguration = ({
     });
 
     if (isErrorResult(result)) {
-      handleError(result.error);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(result.error)) {
+        errorMsg = result.error.data.detail;
+      } else if (isErrorWithDetailArray(result.error)) {
+        errorMsg = result.error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } else {
-      successAlert(`Google Cloud Storage secrets successfully updated.`);
+      message.success(`Google Cloud Storage secrets successfully updated.`);
     }
   };
 

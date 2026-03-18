@@ -1,7 +1,15 @@
-import { useAlert, useAPIHelper } from "common/hooks";
-import { ChakraBox as Box, ChakraVStack as VStack, Modal } from "fidesui";
+import {
+  ChakraBox as Box,
+  ChakraVStack as VStack,
+  Modal,
+  useMessage,
+} from "fidesui";
 import React, { useState } from "react";
 
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import {
   useCreateManualFieldMutation,
   useUpdateManualFieldMutation,
@@ -30,8 +38,7 @@ const AddManualTaskModal = ({
   onTaskAdded,
   editingTask,
 }: Props) => {
-  const { successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
+  const message = useMessage();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [createManualField] = useCreateManualFieldMutation();
@@ -58,7 +65,7 @@ const AddManualTaskModal = ({
           body: updatedField,
         }).unwrap();
 
-        successAlert("Manual task updated successfully!");
+        message.success("Manual task updated successfully!");
       } else {
         // Create new field
         const newField: ManualFieldCreate = {
@@ -74,13 +81,19 @@ const AddManualTaskModal = ({
           body: newField,
         }).unwrap();
 
-        successAlert("Manual task added successfully!");
+        message.success("Manual task added successfully!");
       }
 
       onTaskAdded();
       onClose();
-    } catch (error) {
-      handleError(error);
+    } catch (error: any) {
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(error)) {
+        errorMsg = error.data.detail;
+      } else if (isErrorWithDetailArray(error)) {
+        errorMsg = error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

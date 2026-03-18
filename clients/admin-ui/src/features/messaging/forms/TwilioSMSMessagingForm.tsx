@@ -169,7 +169,6 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
       isUndefined,
     );
 
-  // Helper function to extract error message using the same logic as useAPIHelper
   const getErrorMessage = (error: any) => {
     let errorMsg = "An unexpected error occurred. Please try again.";
     if (isErrorWithDetail(error)) {

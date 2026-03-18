@@ -4,11 +4,15 @@ import {
   ChakraText as Text,
   Flex,
   Radio,
+  useMessage,
 } from "fidesui";
 import { useEffect, useState } from "react";
 
-import { isErrorResult } from "~/features/common/helpers";
-import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import {
+  isErrorResult,
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import {
   PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
@@ -28,8 +32,7 @@ import GoogleCloudStorageConfiguration from "./GoogleCloudStorageConfiguration";
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
-  const { successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
+  const message = useMessage();
   const [storageValue, setStorageValue] = useState("");
 
   const { data: activeStorage } = useGetActiveStorageQuery();
@@ -53,9 +56,15 @@ const StorageConfiguration = () => {
         format: "json",
       });
       if (isErrorResult(storageDetailsResult)) {
-        handleError(storageDetailsResult.error);
+        let errorMsg = "An unexpected error occurred. Please try again.";
+        if (isErrorWithDetail(storageDetailsResult.error)) {
+          errorMsg = storageDetailsResult.error.data.detail;
+        } else if (isErrorWithDetailArray(storageDetailsResult.error)) {
+          errorMsg = storageDetailsResult.error.data.detail[0].msg;
+        }
+        message.error(errorMsg);
       } else {
-        successAlert(`Configured storage details successfully.`);
+        message.success(`Configured storage details successfully.`);
       }
     }
 
@@ -66,7 +75,13 @@ const StorageConfiguration = () => {
     });
 
     if (isErrorResult(activeStorageResults)) {
-      handleError(activeStorageResults.error);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(activeStorageResults.error)) {
+        errorMsg = activeStorageResults.error.data.detail;
+      } else if (isErrorWithDetailArray(activeStorageResults.error)) {
+        errorMsg = activeStorageResults.error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } else {
       setStorageValue(value);
     }

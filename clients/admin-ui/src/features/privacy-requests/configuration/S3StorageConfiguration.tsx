@@ -4,14 +4,18 @@ import {
   ChakraDivider as Divider,
   ChakraHeading as Heading,
   ChakraStack as Stack,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { isErrorResult } from "~/features/common/helpers";
-import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import {
+  isErrorResult,
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
@@ -41,8 +45,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
 
-  const { handleError } = useAPIHelper();
-  const { successAlert } = useAlert();
+  const message = useMessage();
 
   const initialValues = {
     type: storageTypes.s3,
@@ -69,10 +72,16 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
     });
 
     if (isErrorResult(result)) {
-      handleError(result.error);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(result.error)) {
+        errorMsg = result.error.data.detail;
+      } else if (isErrorWithDetailArray(result.error)) {
+        errorMsg = result.error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } else {
       setAuthMethod(newValues.auth_method);
-      successAlert(`S3 storage credentials successfully updated.`);
+      message.success(`S3 storage credentials successfully updated.`);
     }
   };
 
@@ -86,9 +95,15 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
     });
 
     if (isErrorResult(result)) {
-      handleError(result.error);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(result.error)) {
+        errorMsg = result.error.data.detail;
+      } else if (isErrorWithDetailArray(result.error)) {
+        errorMsg = result.error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } else {
-      successAlert(`S3 storage secrets successfully updated.`);
+      message.success(`S3 storage secrets successfully updated.`);
     }
   };
 

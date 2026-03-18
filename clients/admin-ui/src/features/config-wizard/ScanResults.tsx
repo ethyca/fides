@@ -4,6 +4,7 @@ import {
   ChakraHStack as HStack,
   ChakraStack as Stack,
   ChakraText as Text,
+  useMessage,
   useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -13,8 +14,11 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import ColumnDropdown, {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
-import { isErrorResult } from "~/features/common/helpers";
-import { useAPIHelper } from "~/features/common/hooks";
+import {
+  isErrorResult,
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import { useUpsertSystemsMutation } from "~/features/system";
@@ -44,7 +48,7 @@ const ScanResults = () => {
   const [selectedSystems, setSelectedSystems] = useState<System[]>(systems);
   const [selectedColumns, setSelectedColumns] =
     useState<ColumnMetadata[]>(ALL_COLUMNS);
-  const { handleError } = useAPIHelper();
+  const message = useMessage();
 
   /**
    * Wrapper around router.push which also cleans up the config wizard state
@@ -62,7 +66,13 @@ const ScanResults = () => {
     const response = await upsertSystems(selectedSystems);
 
     if (isErrorResult(response)) {
-      return handleError(response.error);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(response.error)) {
+        errorMsg = response.error.data.detail;
+      } else if (isErrorWithDetailArray(response.error)) {
+        errorMsg = response.error.data.detail[0].msg;
+      }
+      return message.error(errorMsg);
     }
 
     return navigateAndReset(systemOrDatamapRoute);

@@ -1,7 +1,10 @@
-import { useAPIHelper } from "common/hooks";
-import { Modal, Typography } from "fidesui";
+import { Modal, Typography, useMessage } from "fidesui";
 import React, { useState } from "react";
 
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import { ConditionLeaf } from "~/types/api";
 
 import AddConditionForm from "./AddConditionForm";
@@ -40,7 +43,7 @@ const AddEditConditionModal = ({
   connectionKey,
   isConsentOnly = false,
 }: Props) => {
-  const { handleError } = useAPIHelper();
+  const message = useMessage();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditing = !!editingCondition;
@@ -51,7 +54,13 @@ const AddEditConditionModal = ({
       await onConditionSaved(condition);
       onClose(); // Only close if save was successful
     } catch (error) {
-      handleError(error);
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(error)) {
+        errorMsg = error.data.detail;
+      } else if (isErrorWithDetailArray(error)) {
+        errorMsg = error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
       // Don't close modal on error - let user fix the issue
     } finally {
       setIsSubmitting(false);

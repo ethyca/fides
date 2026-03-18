@@ -1,4 +1,7 @@
-import { useAlert, useAPIHelper } from "common/hooks";
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
   Button,
@@ -15,6 +18,7 @@ import {
   ChakraThead as Thead,
   ChakraTr as Tr,
   ChakraVStack as VStack,
+  useMessage,
 } from "fidesui";
 import {
   privacyRequestApi,
@@ -82,8 +86,7 @@ const ManualProcessingList = ({
   onComplete,
 }: ManualProcessingListProps) => {
   const dispatch = useAppDispatch();
-  const { errorAlert, successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
+  const message = useMessage();
   const [dataList, setDataList] = useState([] as unknown as ManualInputData[]);
   const [isCompleteDSRLoading, setIsCompleteDSRLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -114,10 +117,16 @@ const ManualProcessingList = ({
     try {
       setIsCompleteDSRLoading(true);
       await resumePrivacyRequestFromRequiresInput(subjectRequest.id).unwrap();
-      successAlert(`Manual request has been received. Request now processing.`);
+      message.success(`Manual request has been received. Request now processing.`);
       onComplete();
-    } catch (error) {
-      handleError(error);
+    } catch (error: any) {
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(error)) {
+        errorMsg = error.data.detail;
+      } else if (isErrorWithDetailArray(error)) {
+        errorMsg = error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } finally {
       setIsCompleteDSRLoading(false);
     }
@@ -142,9 +151,15 @@ const ManualProcessingList = ({
         return item;
       });
       setDataList(newState);
-      successAlert(`Manual input successfully saved!`);
-    } catch (error) {
-      handleError(error);
+      message.success(`Manual input successfully saved!`);
+    } catch (error: any) {
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(error)) {
+        errorMsg = error.data.detail;
+      } else if (isErrorWithDetailArray(error)) {
+        errorMsg = error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -186,7 +201,7 @@ const ManualProcessingList = ({
             });
             list.push(item);
           } else {
-            errorAlert(
+            message.error(
               `An error occurred while loading manual input data for ${
                 data![index].connection_config.name
               }`,
@@ -206,7 +221,7 @@ const ManualProcessingList = ({
     data,
     dataList.length,
     dispatch,
-    errorAlert,
+    message,
     isSuccess,
     subjectRequest.id,
     getUploadedWebhookDataEndpoint,

@@ -2,10 +2,9 @@ import {
   ChakraBox as Box,
   ChakraText as Text,
   useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { useEffect, useState } from "react";
-
-import { useAlert } from "~/features/common/hooks";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import {
@@ -25,7 +24,7 @@ type Requests = {
 };
 
 export const useDSRErrorAlert = () => {
-  const { errorAlert } = useAlert();
+  const message = useMessage();
   const toast = useToast();
   const [hasAlert, setHasAlert] = useState(false);
   const [requests, setRequests] = useState<Requests>({
@@ -70,21 +69,19 @@ export const useDSRErrorAlert = () => {
     if (!hasAlert) {
       return;
     }
-    errorAlert(
-      <Box>
-        DSR automation has failed for{" "}
-        <Text as="span" fontWeight="semibold">
-          {requests.count}
-        </Text>{" "}
-        privacy request(s). Please review the event log for further details.
-      </Box>,
-      undefined,
-      {
-        containerStyle: { maxWidth: "max-content" },
-        duration: null,
-        id: TOAST_ID,
-      },
-    );
+    message.error({
+      content: (
+        <Box>
+          DSR automation has failed for{" "}
+          <Text as="span" fontWeight="semibold">
+            {requests.count}
+          </Text>{" "}
+          privacy request(s). Please review the event log for further details.
+        </Box>
+      ),
+      duration: 0,
+      key: TOAST_ID,
+    });
   };
 
   useEffect(

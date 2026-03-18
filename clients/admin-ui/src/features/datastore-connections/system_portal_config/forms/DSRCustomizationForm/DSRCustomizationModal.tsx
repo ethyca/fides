@@ -1,4 +1,7 @@
-import { useAlert, useAPIHelper } from "common/hooks";
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import {
   useCreateAccessManualWebhookMutation,
   useGetAccessManualHookQuery,
@@ -17,6 +20,7 @@ import {
   Modal,
   Tooltip,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -31,8 +35,7 @@ type Props = {
 
 const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   const mounted = useRef(false);
-  const { successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
+  const message = useMessage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fields, setFields] = useState([] as Field[]);
 
@@ -61,11 +64,17 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
       } else {
         await createAccessManualWebhook(params).unwrap();
       }
-      successAlert(
+      message.success(
         `DSR customization ${fields.length > 0 ? "updated" : "added"}!`,
       );
-    } catch (error) {
-      handleError(error);
+    } catch (error: any) {
+      let errorMsg = "An unexpected error occurred. Please try again.";
+      if (isErrorWithDetail(error)) {
+        errorMsg = error.data.detail;
+      } else if (isErrorWithDetailArray(error)) {
+        errorMsg = error.data.detail[0].msg;
+      }
+      message.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

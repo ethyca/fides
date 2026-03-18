@@ -3,10 +3,10 @@ import {
   Modal,
   PageSpinner,
   useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
   useGetAvailableDatabasesByConnectionQuery,
@@ -64,7 +64,7 @@ const ConfigureMonitorModal = ({
 
   const toast = useToast();
 
-  const { successAlert, errorAlert } = useAlert();
+  const message = useMessage();
 
   const handleSubmit = async (values: EditableMonitorConfig) => {
     let result: RTKResult | undefined;
@@ -84,16 +84,16 @@ const ConfigureMonitorModal = ({
     if (result) {
       clearTimeout(timeout);
       if (isErrorResult(result)) {
-        errorAlert(getErrorMessage(result.error), "Error creating monitor");
+        message.error(getErrorMessage(result.error));
         return;
       }
       if (isEditing) {
-        successAlert("Monitor updated successfully");
+        message.success("Monitor updated successfully");
         onClose();
         return;
       }
       if (isWebsiteMonitor) {
-        successAlert(
+        message.success(
           values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
             ? WEBSITE_MONITOR_NOT_SCHEDULED_MESSAGE
             : WEBSITE_MONITOR_NOW_SCANNING_MESSAGE,
@@ -101,7 +101,7 @@ const ConfigureMonitorModal = ({
         onClose();
         return;
       }
-      successAlert("Monitor created successfully");
+      message.success("Monitor created successfully");
       onClose();
     }
   };

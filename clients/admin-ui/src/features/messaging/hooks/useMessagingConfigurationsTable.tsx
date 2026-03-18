@@ -1,6 +1,9 @@
 import type { ColumnsType } from "antd/es/table";
-import { isErrorResult } from "common/helpers";
-import { useAPIHelper } from "common/hooks";
+import {
+  isErrorResult,
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "common/helpers";
 import {
   Button,
   ChakraHStack as HStack,
@@ -45,7 +48,15 @@ enum MessagingConfigurationColumnKeys {
 
 export const useMessagingConfigurationsTable = () => {
   const router = useRouter();
-  const { handleError } = useAPIHelper();
+  const handleError = (error: any) => {
+    let errorMsg = "An unexpected error occurred. Please try again.";
+    if (isErrorWithDetail(error)) {
+      errorMsg = error.data.detail;
+    } else if (isErrorWithDetailArray(error)) {
+      errorMsg = error.data.detail[0].msg;
+    }
+    message.error(errorMsg);
+  };
   const [messagingValue, setMessagingValue] = useState<string | null>(null);
   const [saveActiveConfiguration] = usePatchConfigurationSettingsMutation();
   const [deleteMessagingConfiguration] =

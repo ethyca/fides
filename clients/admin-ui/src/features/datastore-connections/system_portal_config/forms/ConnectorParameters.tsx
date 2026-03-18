@@ -1,5 +1,7 @@
-import { useAPIHelper } from "common/hooks";
-import { useAlert } from "common/hooks/useAlert";
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
@@ -17,6 +19,7 @@ import {
   ChakraSpacer as Spacer,
   ChakraUseToastOptions as UseToastOptions,
   useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import router from "next/router";
 import { useMemo, useState } from "react";
@@ -193,8 +196,17 @@ export const useConnectorForm = ({
 > & {
   secretsSchema?: ConnectionTypeSecretSchemaResponse;
 }) => {
-  const { successAlert } = useAlert();
-  const { handleError } = useAPIHelper();
+  const message = useMessage();
+
+  const handleError = (error: any) => {
+    let errorMsg = "An unexpected error occurred. Please try again.";
+    if (isErrorWithDetail(error)) {
+      errorMsg = error.data.detail;
+    } else if (isErrorWithDetailArray(error)) {
+      errorMsg = error.data.detail[0].msg;
+    }
+    message.error(errorMsg);
+  };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
@@ -229,7 +241,7 @@ export const useConnectorForm = ({
     try {
       await deleteDatastoreConnection(systemFidesKey);
       setSelectedConnectionOption(undefined);
-      successAlert(`Integration successfully deleted!`);
+      message.success(`Integration successfully deleted!`);
     } catch (e) {
       handleError(e);
     }
@@ -298,7 +310,7 @@ export const useConnectorForm = ({
         });
       }
 
-      successAlert(
+      message.success(
         `Integration successfully ${
           isCreatingConnectionConfig ? "added" : "updated"
         }!`,

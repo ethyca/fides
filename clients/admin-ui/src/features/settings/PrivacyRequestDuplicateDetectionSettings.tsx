@@ -5,11 +5,10 @@ import {
   Skeleton,
   Switch,
   Typography,
+  useMessage,
 } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
-import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import {
   selectDuplicateDetectionSettings,
   useGetConfigurationSettingsQuery,
@@ -30,7 +29,7 @@ const DEFAULT_VALUES = {
 
 const PrivacyRequestDuplicateDetectionSettings = () => {
   const [form] = Form.useForm<FormValues>();
-  const { errorAlert, successAlert } = useAlert();
+  const message = useMessage();
 
   // Fetch current configuration
   const { isLoading: isLoadingConfig } = useGetConfigurationSettingsQuery({
@@ -66,12 +65,11 @@ const PrivacyRequestDuplicateDetectionSettings = () => {
 
     const result = await patchConfigurationSettings(payload);
     if (isErrorResult(result)) {
-      errorAlert(
+      message.error(
         "An error occurred while updating duplicate detection settings.",
-        getErrorMessage(result.error),
       );
     } else {
-      successAlert("Duplicate detection settings updated successfully.");
+      message.success("Duplicate detection settings updated successfully.");
     }
   };
 

@@ -1,7 +1,16 @@
-import { Button, Flex, Icons, Spin, Text, Tooltip, useModal } from "fidesui";
+import {
+  Button,
+  Flex,
+  Icons,
+  Spin,
+  Text,
+  Tooltip,
+  useMessage,
+  useModal,
+} from "fidesui";
 import { useCallback } from "react";
 
-import useQueryResultToast from "~/features/common/form/useQueryResultToast";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
   type MonitorDeletionImpact,
@@ -94,14 +103,10 @@ const MonitorConfigActionsCell = ({
   onEditClick: () => void;
 }) => {
   const modal = useModal();
+  const message = useMessage();
 
   const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
   const [fetchDeletionImpact] = useLazyGetMonitorDeletionImpactQuery();
-
-  const { toastResult: toastDeleteResult } = useQueryResultToast({
-    defaultErrorMsg: "A problem occurred deleting this monitor",
-    defaultSuccessMsg: "Monitor deleted successfully",
-  });
 
   // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
   const [executeRegularMonitor, { isLoading: executeRegularIsLoading }] =
@@ -113,13 +118,6 @@ const MonitorConfigActionsCell = ({
   const executeIsLoading = isOktaMonitor
     ? executeOktaIsLoading
     : executeRegularIsLoading;
-
-  const { toastResult: toastExecuteResult } = useQueryResultToast({
-    defaultErrorMsg: "A problem occurred initiating monitor execution",
-    defaultSuccessMsg: isWebsiteMonitor
-      ? WEBSITE_SCAN_SUCCESS_MESSAGE
-      : "Monitor execution successfully started",
-  });
 
   const handleOpenDeleteModal = useCallback(async () => {
     if (!monitorId) {
@@ -140,10 +138,14 @@ const MonitorConfigActionsCell = ({
         const result = await deleteMonitor({
           monitor_config_id: monitorId,
         });
-        toastDeleteResult(result);
+        if (isErrorResult(result)) {
+          message.error(getErrorMessage(result.error, "A problem occurred deleting this monitor"));
+        } else {
+          message.success("Monitor deleted successfully");
+        }
       },
     });
-  }, [monitorId, modal, fetchDeletionImpact, deleteMonitor, toastDeleteResult]);
+  }, [monitorId, modal, fetchDeletionImpact, deleteMonitor, message]);
 
   if (!monitorId) {
     return null;
@@ -153,7 +155,15 @@ const MonitorConfigActionsCell = ({
     const result = isOktaMonitor
       ? await executeOktaMonitor({ monitor_config_key: monitorId })
       : await executeRegularMonitor({ monitor_config_id: monitorId });
-    toastExecuteResult(result);
+    if (isErrorResult(result)) {
+      message.error(getErrorMessage(result.error, "A problem occurred initiating monitor execution"));
+    } else {
+      message.success(
+        isWebsiteMonitor
+          ? WEBSITE_SCAN_SUCCESS_MESSAGE
+          : "Monitor execution successfully started",
+      );
+    }
   };
 
   return (
