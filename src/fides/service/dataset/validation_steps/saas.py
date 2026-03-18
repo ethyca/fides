@@ -1,4 +1,4 @@
-from typing import List, Optional, Set
+from typing import List, Optional
 
 from fideslang.models import Dataset as FideslangDataset
 from fideslang.models import DatasetField
@@ -19,11 +19,6 @@ from fides.service.dataset.dataset_validator import (
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
 )
-
-
-def _get_field_names(fields: list[DatasetField]) -> Set[str]:
-    """Get field names from a list of dataset fields."""
-    return {field.name for field in fields}
 
 
 def _validate_saas_dataset(
