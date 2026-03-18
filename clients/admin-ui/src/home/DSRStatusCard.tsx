@@ -106,7 +106,7 @@ export const DSRStatusCard = () => {
               <Text strong className="mb-3 text-xs">
                 SLA Health
               </Text>
-              <div className="flex-1">
+              <Flex className="flex-1">
                 {sla && (
                   <StackedBarChart
                     data={sla}
@@ -114,7 +114,7 @@ export const DSRStatusCard = () => {
                     onCategoryClick={handleTypeClick}
                   />
                 )}
-              </div>
+              </Flex>
               <Flex gap={10} className="mt-2">
                 {SLA_SEGMENTS.map(({ color, label }) => (
                   <Flex key={label} align="center" gap={4}>
