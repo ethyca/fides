@@ -1,6 +1,5 @@
 import {
   Button,
-  ChakraChevronDownIcon as ChevronDownIcon,
   ConfirmationModal,
   Empty,
   Flex,
@@ -387,7 +386,7 @@ export const CustomReportTemplates = ({
       >
         <Button
           className="max-w-40"
-          icon={<ChevronDownIcon />}
+          icon={<Icons.ChevronDown size={14} />}
           iconPosition="end"
           data-testid="custom-reports-trigger"
         >

@@ -1,6 +1,5 @@
 import {
   Button,
-  ChakraMenuItem as MenuItem,
   ChakraStack as Stack,
   ChakraText as Text,
   Modal,
@@ -15,13 +14,9 @@ import { useDeleteDatastoreConnectionMutation } from "./datastore-connection.sli
 
 type DataConnectionProps = {
   connection_key: string;
-  showMenu: boolean;
 };
 
-const DeleteConnectionModal = ({
-  connection_key,
-  showMenu,
-}: DataConnectionProps) => {
+const DeleteConnectionModal = ({ connection_key }: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteConnection, deleteConnectionResult] =
     useDeleteDatastoreConnectionMutation();
@@ -30,9 +25,7 @@ const DeleteConnectionModal = ({
   const handleDeleteConnection = () => {
     if (connection_key) {
       deleteConnection(connection_key);
-      if (!showMenu) {
-        router.push(INTEGRATION_MANAGEMENT_ROUTE);
-      }
+      router.push(INTEGRATION_MANAGEMENT_ROUTE);
     }
   };
 
@@ -44,15 +37,7 @@ const DeleteConnectionModal = ({
 
   return (
     <>
-      {showMenu && (
-        <MenuItem
-          _focus={{ color: "complimentary.500", bg: "gray.100" }}
-          onClick={onOpen}
-        >
-          <Text fontSize="sm">Delete</Text>
-        </MenuItem>
-      )}
-      {!showMenu && <Button onClick={onOpen}>Delete integration</Button>}
+      <Button onClick={onOpen}>Delete integration</Button>
 
       <Modal
         centered
