@@ -693,9 +693,19 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             # If the privacy request has async tasks awaiting an external
                             # event (webhook callback, polling), don't requeue or cancel —
                             # the request is intentionally waiting for that event.
-                            if _has_async_tasks_awaiting_external_completion(
-                                db, privacy_request.id
-                            ):
+                            try:
+                                has_async = _has_async_tasks_awaiting_external_completion(
+                                    db, privacy_request.id
+                                )
+                            except Exception as async_exc:
+                                # DB error checking async tasks — fail safe: skip this PR.
+                                logger.warning(
+                                    f"Error checking async tasks for privacy request "
+                                    f"{privacy_request.id}, skipping watchdog pass for this request: {async_exc}"
+                                )
+                                should_requeue = False
+                                break
+                            if has_async:
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
                                     f"(privacy request {privacy_request.id}) contains async tasks awaiting "

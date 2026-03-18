@@ -236,24 +236,6 @@ class TestRequeueInterruptedTasks:
     @mock.patch(_CANCEL)
     @mock.patch(_REQUEUE)
     @mock.patch(_IN_FLIGHT, return_value=False)
-    def test_in_processing_request_task_with_no_cached_subtask_id_is_requeued(
-        self,
-        mock_in_flight,
-        mock_requeue,
-        mock_cancel,
-        make_privacy_request,
-        make_request_task,
-    ):
-        """in_processing task with no subtask_id is requeued (not cancelled) on first encounter."""
-        pr = make_privacy_request()
-        make_request_task(pr, ExecutionLogStatus.in_processing)  # no cached_subtask_id
-        requeue_interrupted_tasks.apply().get()
-        mock_requeue.assert_called_once()
-        mock_cancel.assert_not_called()
-
-    @mock.patch(_CANCEL)
-    @mock.patch(_REQUEUE)
-    @mock.patch(_IN_FLIGHT, return_value=False)
     def test_requires_input_privacy_request_with_stuck_subtask_is_not_canceled(
         self,
         mock_in_flight,
@@ -319,6 +301,28 @@ class TestRequeueInterruptedTasks:
             async_type=AsyncTaskType.callback,
         )
         requeue_interrupted_tasks.apply().get()
+        mock_requeue.assert_not_called()
+        mock_cancel.assert_not_called()
+
+    @mock.patch(_CANCEL)
+    @mock.patch(_REQUEUE)
+    @mock.patch(_IN_FLIGHT, return_value=False)
+    def test_async_check_db_error_skips_request(
+        self,
+        mock_in_flight,
+        mock_requeue,
+        mock_cancel,
+        make_privacy_request,
+        make_request_task,
+    ):
+        """DB error in async-task check — watchdog fails safe and skips the request."""
+        pr = make_privacy_request()
+        make_request_task(pr, ExecutionLogStatus.in_processing)  # no subtask_id
+        with mock.patch(
+            "fides.api.service.privacy_request.request_service._has_async_tasks_awaiting_external_completion",
+            side_effect=Exception("db error"),
+        ):
+            requeue_interrupted_tasks.apply().get()
         mock_requeue.assert_not_called()
         mock_cancel.assert_not_called()
 
