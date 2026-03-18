@@ -162,11 +162,14 @@ export const useSaaSVersionModal = () => {
   // Once the connection resolves, promote pending to active so the modal opens.
   // connectorType is captured into active so the modal doesn't depend on the
   // query after pending is cleared (skip: true returns undefined data).
+  // If the connection has no saas_config.type (non-SaaS), bail out silently
+  // so pending doesn't stay set indefinitely.
   React.useEffect(() => {
-    if (pending && connection?.saas_config?.type) {
+    if (!pending || !connection) return;
+    if (connection.saas_config?.type) {
       setActive({ connectorType: connection.saas_config.type, version: pending.version });
-      setPending(null);
     }
+    setPending(null);
   }, [pending, connection]);
 
   const openVersionModal = (connectionKey: string, version: string) => {
