@@ -226,15 +226,17 @@ class TestRequestIdMiddleware:
         capture1 = ResponseCapture()
         capture2 = ResponseCapture()
 
-        await middleware(
-            create_http_scope(method="GET", path="/a"),
-            create_body_receive(b""),
-            capture1,
-        )
-        await middleware(
-            create_http_scope(method="GET", path="/b"),
-            create_body_receive(b""),
-            capture2,
+        await asyncio.gather(
+            middleware(
+                create_http_scope(method="GET", path="/a"),
+                create_body_receive(b""),
+                capture1,
+            ),
+            middleware(
+                create_http_scope(method="GET", path="/b"),
+                create_body_receive(b""),
+                capture2,
+            ),
         )
 
         id1 = next(
