@@ -32,25 +32,20 @@ interface TrendCardProps {
   metric: TrendMetric | undefined;
 }
 
-const formatValue = (value: number, statType: StatType) => {
+const formatMetric = (value: number, statType: StatType) => {
   if (statType === "percent") {
     return `${Math.round(value)}`;
   }
   return nFormatter(value);
 };
 
-const formatDiff = (diff: number, statType: StatType) => {
-  const abs = Math.abs(diff);
-  if (statType === "percent") {
-    return `${Math.round(abs)}`;
-  }
-  return nFormatter(abs);
-};
-
 export const TrendCard = ({ metricKey, metric }: TrendCardProps) => {
   const config = TREND_METRIC_CONFIG[metricKey];
   const statType = config?.statType ?? "number";
   const suffix = statType === "percent" ? "%" : undefined;
+  const formattedDiff = metric
+    ? formatMetric(Math.abs(metric.diff), statType)
+    : undefined;
 
   return (
     <Card
@@ -69,13 +64,13 @@ export const TrendCard = ({ metricKey, metric }: TrendCardProps) => {
       {metric ? (
         <>
           <Statistic
-            value={formatValue(metric.value, statType)}
+            value={formatMetric(metric.value, statType)}
             suffix={suffix}
           />
-          {metric.diff !== 0 && (
+          {metric.diff !== 0 && formattedDiff !== "0" && (
             <Statistic
               trend={metric.diff > 0 ? "up" : "down"}
-              value={formatDiff(metric.diff, statType)}
+              value={formattedDiff}
               suffix={suffix}
               prefix={metric.diff > 0 ? "↑" : "↓"}
               className={cardStyles.smallStatistic}
