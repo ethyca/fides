@@ -71,7 +71,9 @@ const PrivacyRequestRedactionPatternsPage = () => {
     if (isErrorResult(payload)) {
       message.error(getErrorMessage(payload.error));
     } else {
-      message.success("Privacy request redaction patterns updated successfully.");
+      message.success(
+        "Privacy request redaction patterns updated successfully.",
+      );
     }
   };
 

@@ -117,7 +117,9 @@ const ManualProcessingList = ({
     try {
       setIsCompleteDSRLoading(true);
       await resumePrivacyRequestFromRequiresInput(subjectRequest.id).unwrap();
-      message.success(`Manual request has been received. Request now processing.`);
+      message.success(
+        `Manual request has been received. Request now processing.`,
+      );
       onComplete();
     } catch (error: any) {
       let errorMsg = "An unexpected error occurred. Please try again.";

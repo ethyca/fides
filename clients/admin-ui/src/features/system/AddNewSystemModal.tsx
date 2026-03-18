@@ -139,7 +139,9 @@ export const AddNewSystemModal = ({
         const newSystem = data.systems[0];
         onSuccessfulSubmit?.(newSystem.fides_key, newSystem.name);
         if (toastOnSuccess) {
-          message.success(`${data.name} has been added to your system inventory.`);
+          message.success(
+            `${data.name} has been added to your system inventory.`,
+          );
         }
         handleCloseModal();
       }

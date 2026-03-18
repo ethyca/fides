@@ -139,7 +139,12 @@ const MonitorConfigActionsCell = ({
           monitor_config_id: monitorId,
         });
         if (isErrorResult(result)) {
-          message.error(getErrorMessage(result.error, "A problem occurred deleting this monitor"));
+          message.error(
+            getErrorMessage(
+              result.error,
+              "A problem occurred deleting this monitor",
+            ),
+          );
         } else {
           message.success("Monitor deleted successfully");
         }
@@ -156,7 +161,12 @@ const MonitorConfigActionsCell = ({
       ? await executeOktaMonitor({ monitor_config_key: monitorId })
       : await executeRegularMonitor({ monitor_config_id: monitorId });
     if (isErrorResult(result)) {
-      message.error(getErrorMessage(result.error, "A problem occurred initiating monitor execution"));
+      message.error(
+        getErrorMessage(
+          result.error,
+          "A problem occurred initiating monitor execution",
+        ),
+      );
     } else {
       message.success(
         isWebsiteMonitor
