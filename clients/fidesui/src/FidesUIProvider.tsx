@@ -29,7 +29,7 @@ import {
   getDefaultModalIcon,
   getDefaultNotificationIcon,
 } from "./lib/carbon-icon-defaults";
-import { setGlobalMessageApi } from "./lib/globalMessageApi";
+import { getGlobalMessageApi, setGlobalMessageApi } from "./lib/globalMessageApi";
 
 const isMessageArgsProps = (content: unknown): content is MessageArgsProps =>
   typeof content === "object" && content !== null && "content" in content;
@@ -154,7 +154,11 @@ export const FidesUIProvider = ({
   useEffect(() => {
     setGlobalMessageApi(wrappedMessageApi);
     return () => {
-      setGlobalMessageApi(null);
+      // Only clear the global ref if we were the last provider to set it,
+      // to avoid clobbering a ref set by a different FidesUIProvider instance.
+      if (getGlobalMessageApi() === wrappedMessageApi) {
+        setGlobalMessageApi(null);
+      }
     };
   }, [wrappedMessageApi]);
 
