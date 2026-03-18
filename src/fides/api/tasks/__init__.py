@@ -18,7 +18,7 @@ from tenacity import (
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.request_context import (
     get_request_id,
-    reset_request_context,
+    set_request_context,
     set_request_id,
 )
 from fides.api.tasks import celery_healthcheck
@@ -215,14 +215,14 @@ def _restore_request_id(task: Task, **kwargs: Any) -> None:
 
 
 @task_postrun.connect
-def _clear_request_context(**kwargs: Any) -> None:
-    """Clear request context after task completion.
+def _clear_request_id(**kwargs: Any) -> None:
+    """Clear request_id after task completion.
 
     Celery workers reuse processes for multiple tasks. Without this cleanup,
     a request_id from Task A would leak into Task B if Task B was dispatched
     without a request_id header.
     """
-    reset_request_context()
+    set_request_context(request_id=None)
 
 
 def get_worker_ids() -> List[Optional[str]]:

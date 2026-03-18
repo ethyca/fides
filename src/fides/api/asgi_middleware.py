@@ -8,6 +8,7 @@ performance overhead (see https://github.com/fastapi/fastapi/discussions/6985).
 from __future__ import annotations
 
 import asyncio
+import re
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from time import perf_counter
@@ -37,6 +38,9 @@ Message = MutableMapping[str, Any]
 Receive = Callable[[], Awaitable[Message]]
 Send = Callable[[Message], Awaitable[None]]
 ASGIApp = Callable[[Scope, Receive, Send], Awaitable[None]]
+
+# Alphanumeric, hyphens, underscores, dots, max 128 chars.
+_REQUEST_ID_RE = re.compile(r"^[\w\-.]{1,128}$")
 
 
 class BaseASGIMiddleware(ABC):
@@ -187,8 +191,14 @@ class LogRequestMiddleware(BaseASGIMiddleware):
         path = self.get_path(scope)
         fides_client = self.get_header(scope, b"fides-client", "unknown")
 
-        # Read or generate a request ID for log correlation
-        request_id = self.get_header(scope, b"x-request-id") or str(uuid4())
+        # Read or generate a request ID for log correlation.
+        # Validate the client-supplied value to prevent log injection.
+        request_id_header = self.get_header(scope, b"x-request-id")
+        request_id = (
+            request_id_header
+            if request_id_header and _REQUEST_ID_RE.match(request_id_header)
+            else str(uuid4())
+        )
         set_request_id(request_id)
 
         # Inject response headers, then wrap with status capture
