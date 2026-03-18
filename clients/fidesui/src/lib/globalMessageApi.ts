@@ -6,7 +6,7 @@ let globalMessageApi: MessageInstance | null = null;
  * Store the messageApi instance from FidesUIProvider so it can be
  * used outside the React component tree (e.g. Redux middleware).
  */
-export const setGlobalMessageApi = (api: MessageInstance) => {
+export const setGlobalMessageApi = (api: MessageInstance | null) => {
   globalMessageApi = api;
 };
 

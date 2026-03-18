@@ -420,10 +420,7 @@ export {
   useNotification,
 } from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
-export {
-  getGlobalMessageApi,
-  setGlobalMessageApi,
-} from "./lib/globalMessageApi";
+export { getGlobalMessageApi } from "./lib/globalMessageApi";
 
 /**
  * Ant Design Theme System

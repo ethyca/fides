@@ -153,6 +153,9 @@ export const FidesUIProvider = ({
 
   useEffect(() => {
     setGlobalMessageApi(wrappedMessageApi);
+    return () => {
+      setGlobalMessageApi(null);
+    };
   }, [wrappedMessageApi]);
 
   const value = useMemo(
