@@ -3,10 +3,10 @@ import {
   Button,
   Flex,
   Icons,
-  notification,
   Popover,
   Spin,
   Text,
+  useNotification,
 } from "fidesui";
 import { useEffect, useMemo, useRef } from "react";
 
@@ -30,6 +30,8 @@ export const AssessmentTaskStatusIndicator = ({
   onTaskFinish,
   className,
 }: AssessmentTaskStatusIndicatorProps) => {
+  const notificationApi = useNotification();
+
   // Fetch once on mount; derive activeTask first without polling so we can
   // use it to gate the polling interval on the same query subscription.
   const { data: tasksData } = useGetAssessmentTasksQuery({ page: 1, size: 10 });
@@ -100,14 +102,14 @@ export const AssessmentTaskStatusIndicator = ({
       prevCompletedCountRef.current !== null &&
       completedCount > prevCompletedCountRef.current
     ) {
-      notification.success({
+      notificationApi.success({
         message: "New assessment results are available",
         btn: onTaskFinish ? (
           <Button
             size="small"
             onClick={() => {
               onTaskFinish();
-              notification.destroy();
+              notificationApi.destroy();
             }}
           >
             Reload results
@@ -117,7 +119,7 @@ export const AssessmentTaskStatusIndicator = ({
       });
     }
     prevCompletedCountRef.current = completedCount;
-  }, [activeTask, completedCount, onTaskFinish]);
+  }, [activeTask, completedCount, notificationApi, onTaskFinish]);
 
   // Detect active → idle transition for the final completion or error
   const hadActiveTaskRef = useRef(false);
@@ -126,20 +128,20 @@ export const AssessmentTaskStatusIndicator = ({
       const isError = lastCompletedTask?.status === TaskStatus.ERROR;
 
       if (isError) {
-        notification.error({
+        notificationApi.error({
           message: "Assessment evaluation failed",
           description: "An error occurred during evaluation",
           duration: 0,
         });
       } else {
-        notification.success({
+        notificationApi.success({
           message: "New assessment results are available",
           btn: onTaskFinish ? (
             <Button
               size="small"
               onClick={() => {
                 onTaskFinish();
-                notification.destroy();
+                notificationApi.destroy();
               }}
             >
               Reload results
@@ -150,7 +152,7 @@ export const AssessmentTaskStatusIndicator = ({
       }
     }
     hadActiveTaskRef.current = activeTask !== null;
-  }, [activeTask, lastCompletedTask, onTaskFinish]);
+  }, [activeTask, lastCompletedTask, notificationApi, onTaskFinish]);
 
   const hasLastError =
     !activeTask && lastCompletedTask?.status === TaskStatus.ERROR;

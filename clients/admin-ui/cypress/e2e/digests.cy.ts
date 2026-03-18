@@ -204,7 +204,7 @@ describe("Digests", () => {
 
       cy.getByTestId("delete-btn").click();
       cy.contains("Delete digest configuration").should("be.visible");
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().contains("Delete").click();
 
       cy.wait("@deleteDigestConfig").then((interception) => {
         expect(interception.request.url).to.contain(

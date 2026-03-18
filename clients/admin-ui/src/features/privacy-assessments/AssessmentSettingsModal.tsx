@@ -1,7 +1,6 @@
 import {
   Alert,
   Button,
-  Divider,
   Flex,
   Form,
   Input,
@@ -9,7 +8,6 @@ import {
   Select,
   Spin,
   Switch,
-  Typography,
   useMessage,
 } from "fidesui";
 import NextLink from "next/link";
@@ -27,8 +25,6 @@ import {
   useGetAssessmentConfigQuery,
   useUpdateAssessmentConfigMutation,
 } from "./privacy-assessments.slice";
-
-const { Title } = Typography;
 
 interface AssessmentSettingsModalProps {
   open: boolean;
@@ -75,12 +71,21 @@ const AssessmentSettingsModal = ({
     const matchingPreset = FREQUENCY_OPTIONS.find(
       (opt) => opt.cron === config.reassessment_cron,
     );
+    const monthlyPreset = FREQUENCY_OPTIONS.find(
+      (opt) => opt.value === "monthly",
+    );
+    let frequencyPresetValue = "monthly";
+    if (matchingPreset) {
+      frequencyPresetValue = matchingPreset.value;
+    } else if (config.reassessment_cron) {
+      frequencyPresetValue = "custom";
+    }
     return {
       assessment_model_override: config.assessment_model_override || "",
       chat_model_override: config.chat_model_override || "",
       reassessment_enabled: config.reassessment_enabled,
-      frequency_preset: matchingPreset ? matchingPreset.value : "custom",
-      reassessment_cron: config.reassessment_cron,
+      frequency_preset: frequencyPresetValue,
+      reassessment_cron: config.reassessment_cron || monthlyPreset?.cron,
       slack_channel_id: config.slack_channel_id || undefined,
     };
   }, [config]);
@@ -134,8 +139,7 @@ const AssessmentSettingsModal = ({
       title="Assessment settings"
       open={open}
       onCancel={onClose}
-      width={600}
-      destroyOnClose
+      destroyOnHidden
       footer={
         <Flex justify="flex-end" gap={8}>
           <Button onClick={onClose}>Cancel</Button>
@@ -155,156 +159,140 @@ const AssessmentSettingsModal = ({
           <Spin />
         </Flex>
       ) : (
-        <Form form={form} layout="horizontal" initialValues={initialValues}>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={initialValues}
+          className="mt-4"
+        >
           {/* LLM Configuration Section */}
-          <Flex vertical>
-            <div className="mb-3">
-              <Title level={5}>LLM model configuration</Title>
-            </div>
+          <LlmModelSelector
+            showSwitch={false}
+            modelOverrideName="assessment_model_override"
+            modelOverrideLabel="Assessment model"
+            modelOverrideTooltip="Custom LLM model for running privacy assessments. Leave empty to use the default."
+            modelOverridePlaceholder={defaults?.default_assessment_model}
+            modelOverrideTestId="assessment-model"
+          />
 
-            <LlmModelSelector
-              showSwitch={false}
-              modelOverrideName="assessment_model_override"
-              modelOverrideLabel="Assessment model"
-              modelOverrideTooltip="Custom LLM model for running privacy assessments. Leave empty to use the default."
-              modelOverridePlaceholder={defaults?.default_assessment_model}
-              modelOverrideTestId="assessment-model"
-            />
-
-            <LlmModelSelector
-              showSwitch={false}
-              modelOverrideName="chat_model_override"
-              modelOverrideLabel="Chat model"
-              modelOverrideTooltip="Custom LLM model for questionnaire chat conversations. Leave empty to use the default."
-              modelOverridePlaceholder={defaults?.default_chat_model}
-              modelOverrideTestId="chat-model"
-            />
-          </Flex>
-
-          <Divider className="mt-2" />
-
-          {/* Re-assessment Schedule Section */}
-          <Flex vertical>
-            <div className="mb-3">
-              <Title level={5}>Automatic reassessment</Title>
-            </div>
-
-            <Form.Item
-              name="reassessment_enabled"
-              label="Enable automatic reassessment"
-              valuePropName="checked"
-            >
-              <Switch data-testid="switch-reassessment-enabled" />
-            </Form.Item>
-
-            {reassessmentEnabled && (
-              <>
-                <Form.Item name="frequency_preset" label="Schedule frequency">
-                  <Select
-                    aria-label="Schedule frequency"
-                    options={[
-                      ...FREQUENCY_OPTIONS,
-                      { label: "Custom (Advanced)", value: "custom" },
-                    ]}
-                    onChange={handleFrequencyChange}
-                    data-testid="select-frequency"
-                  />
-                </Form.Item>
-
-                {showCustomCron && (
-                  <Form.Item
-                    name="reassessment_cron"
-                    label="Cron expression"
-                    tooltip="Enter a valid cron expression (e.g., '0 9 * * *' for daily at 9am)"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter a cron expression",
-                      },
-                      {
-                        validator: (_, value) => {
-                          if (!value) {
-                            return Promise.resolve();
-                          }
-                          if (parseCronExpression(value)) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(
-                            new Error(
-                              "Invalid cron expression. Use format: minute hour day month weekday (e.g., '0 9 * * *')",
-                            ),
-                          );
-                        },
-                      },
-                    ]}
-                  >
-                    <Input placeholder="0 9 * * *" data-testid="input-cron" />
-                  </Form.Item>
-                )}
-
-                {/* Hidden field to always have cron value */}
-                {!showCustomCron && (
-                  <Form.Item name="reassessment_cron" hidden>
-                    <Input />
-                  </Form.Item>
-                )}
-              </>
-            )}
-          </Flex>
-
-          <Divider className="mt-2" />
+          <LlmModelSelector
+            showSwitch={false}
+            modelOverrideName="chat_model_override"
+            modelOverrideLabel="Chat model"
+            modelOverrideTooltip="Custom LLM model for questionnaire chat conversations. Leave empty to use the default."
+            modelOverridePlaceholder={defaults?.default_chat_model}
+            modelOverrideTestId="chat-model"
+          />
 
           {/* Slack Configuration Section */}
-          <Flex vertical>
-            <div className="mb-3">
-              <Title level={5}>Slack notifications</Title>
-            </div>
-
-            {channelOptions.length === 0 && !isLoadingChannels ? (
-              <Alert
-                type="info"
-                message="Configure Slack to enable channel notifications."
-                action={
-                  <NextLink
-                    href={CHAT_PROVIDERS_ROUTE}
-                    target="_blank"
-                    passHref
-                  >
-                    <Button size="small" type="link">
-                      Configure Slack
-                    </Button>
-                  </NextLink>
+          {channelOptions.length === 0 && !isLoadingChannels ? (
+            <Alert
+              type="info"
+              message="Configure Slack to enable channel notifications."
+              action={
+                <NextLink href={CHAT_PROVIDERS_ROUTE} target="_blank" passHref>
+                  <Button size="small" type="link">
+                    Configure Slack
+                  </Button>
+                </NextLink>
+              }
+              className="mb-4"
+            />
+          ) : (
+            <Form.Item
+              name="slack_channel_id"
+              label="Notifications channel"
+              tooltip="Select the Slack channel where questionnaire notifications will be sent"
+            >
+              <Select
+                aria-label="Notifications channel"
+                options={channelOptions}
+                placeholder="Select a channel"
+                loading={isLoadingChannels}
+                allowClear
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.label ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
                 }
-                className="mb-4"
-              />
-            ) : (
-              <Form.Item
-                name="slack_channel_id"
-                label="Questionnaire notifications channel"
-                tooltip="Select the Slack channel where questionnaire notifications will be sent"
-              >
-                <Select
-                  aria-label="Questionnaire notifications channel"
-                  options={channelOptions}
-                  placeholder="Select a channel"
-                  loading={isLoadingChannels}
-                  allowClear
-                  showSearch
-                  filterOption={(input, option) =>
-                    (option?.label ?? "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
+                onDropdownVisibleChange={(visible) => {
+                  if (visible) {
+                    refetchChannels();
                   }
-                  onDropdownVisibleChange={(visible) => {
-                    if (visible) {
-                      refetchChannels();
-                    }
-                  }}
-                  data-testid="select-slack-channel"
+                }}
+                data-testid="select-slack-channel"
+              />
+            </Form.Item>
+          )}
+
+          {/* Re-assessment Schedule Section */}
+          <Form.Item
+            name="reassessment_enabled"
+            label="Enable automatic reassessment"
+            valuePropName="checked"
+            layout="horizontal"
+            className="mb-3"
+          >
+            <Switch
+              data-testid="switch-reassessment-enabled"
+              className="ml-auto"
+            />
+          </Form.Item>
+
+          {reassessmentEnabled && (
+            <>
+              <Form.Item name="frequency_preset" label="Scan frequency">
+                <Select
+                  aria-label="Scan frequency"
+                  options={[
+                    ...FREQUENCY_OPTIONS,
+                    { label: "Custom (Advanced)", value: "custom" },
+                  ]}
+                  onChange={handleFrequencyChange}
+                  data-testid="select-frequency"
                 />
               </Form.Item>
-            )}
-          </Flex>
+
+              {showCustomCron && (
+                <Form.Item
+                  name="reassessment_cron"
+                  label="Cron expression"
+                  tooltip="Enter a valid cron expression (e.g., '0 9 * * *' for daily at 9am)"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter a cron expression",
+                    },
+                    {
+                      validator: (_, value) => {
+                        if (!value) {
+                          return Promise.resolve();
+                        }
+                        if (parseCronExpression(value)) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error(
+                            "Invalid cron expression. Use format: minute hour day month weekday (e.g., '0 9 * * *')",
+                          ),
+                        );
+                      },
+                    },
+                  ]}
+                >
+                  <Input placeholder="0 9 * * *" data-testid="input-cron" />
+                </Form.Item>
+              )}
+
+              {/* Hidden field to always have cron value */}
+              {!showCustomCron && (
+                <Form.Item name="reassessment_cron" hidden>
+                  <Input />
+                </Form.Item>
+              )}
+            </>
+          )}
         </Form>
       )}
     </Modal>

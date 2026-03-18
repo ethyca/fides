@@ -137,6 +137,25 @@ declare global {
        */
       getAntModalConfirmButtons: () => Chainable;
       /**
+       * Get the close button from a visible Ant Design Modal component
+       */
+      getAntModalClose: () => Chainable;
+      /**
+       * Get the close button from an Ant Design Drawer component
+       * @example cy.getAntDrawerClose().click();
+       */
+      getAntDrawerClose: () => Chainable;
+      /**
+       * Get the header from an Ant Design Drawer component
+       * @example cy.getAntDrawerHeader().should("contain", "Title");
+       */
+      getAntDrawerHeader: () => Chainable;
+      /**
+       * Get the footer from an Ant Design Drawer component
+       * @example cy.getAntDrawerFooter().within(() => { ... });
+       */
+      getAntDrawerFooter: () => Chainable;
+      /**
        * Get the Ant Design tooltip
        */
       getAntTooltip: () => Chainable;
@@ -367,6 +386,12 @@ Cypress.Commands.add("getAntModalFooter", () => cy.get(`.ant-modal-footer`));
 Cypress.Commands.add("getAntModalConfirmButtons", () =>
   cy.get(`.ant-modal-confirm-btns`),
 );
+Cypress.Commands.add("getAntModalClose", () =>
+  cy.get(`.ant-modal-close:visible`),
+);
+Cypress.Commands.add("getAntDrawerClose", () => cy.get(".ant-drawer-close"));
+Cypress.Commands.add("getAntDrawerHeader", () => cy.get(".ant-drawer-header"));
+Cypress.Commands.add("getAntDrawerFooter", () => cy.get(".ant-drawer-footer"));
 Cypress.Commands.add("getAntTooltip", () => cy.findByRole("tooltip"));
 
 export {};

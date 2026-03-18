@@ -9,6 +9,10 @@ on:
       - "main"
       - "release-**"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 env:
   NODE_VERSION: 24.X
 
@@ -39,7 +43,8 @@ jobs:
   chromatic:
     name: Run Chromatic
     needs: check-fidesui-changes
-    if: needs.check-fidesui-changes.outputs.has_fidesui_changes == 'true'
+    # Skip on merge_group — these checks already passed on the PR
+    if: needs.check-fidesui-changes.outputs.has_fidesui_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

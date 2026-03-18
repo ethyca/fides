@@ -275,7 +275,7 @@ describe("Integration Management - Manual Task Conditions", () => {
       cy.getByTestId("delete-condition-0-btn").click();
 
       // Confirm deletion
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().contains("Delete").click();
 
       // Verify API call was made with remaining conditions
       cy.wait("@updateDependencyConditions").then((interception) => {
@@ -294,7 +294,7 @@ describe("Integration Management - Manual Task Conditions", () => {
       });
 
       // Verify modal closes
-      cy.getByTestId("confirmation-modal").should("not.exist");
+      cy.get(".ant-modal-confirm").should("not.exist");
 
       // Verify success message
       cy.contains("Condition deleted successfully!").should("be.visible");
@@ -303,12 +303,12 @@ describe("Integration Management - Manual Task Conditions", () => {
     it("should send empty array when deleting the last condition", () => {
       // Delete first condition
       cy.getByTestId("delete-condition-0-btn").click();
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().contains("Delete").click();
       cy.wait("@updateDependencyConditions");
 
       // Delete second condition (last remaining)
       cy.getByTestId("delete-condition-0-btn").click();
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().contains("Delete").click();
 
       // Verify API call was made with empty array (not empty group)
       cy.wait("@updateDependencyConditions").then((interception) => {

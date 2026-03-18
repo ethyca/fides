@@ -1,10 +1,10 @@
 import {
   Button,
-  ChakraDrawerFooter as DrawerFooter,
   ChakraStack as Stack,
   ChakraText as Text,
   ConfirmationModal,
   EyeIcon,
+  Flex,
   Form,
   Tooltip,
   Typography,
@@ -111,7 +111,7 @@ const TaxonomyItemEditDrawer = ({
         onClose={closeDrawer}
         header={<EditDrawerHeader title={taxonomyItem?.name || ""} />}
         footer={
-          <DrawerFooter justifyContent="space-between">
+          <Flex justify="space-between" align="center">
             {taxonomyItem?.active && canUserDeleteTaxonomy && (
               <Tooltip title="Delete label">
                 <Button
@@ -145,7 +145,7 @@ const TaxonomyItemEditDrawer = ({
                 </Button>
               )}
             </div>
-          </DrawerFooter>
+          </Flex>
         }
       >
         <div className="mb-4">

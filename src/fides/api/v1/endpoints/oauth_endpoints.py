@@ -18,6 +18,7 @@ from fides.api.common_exceptions import (
     FidesopsException,
     OAuth2TokenException,
 )
+from fides.api.db.encryption_utils import get_encryption_key
 from fides.api.deps import get_db
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
@@ -112,7 +113,7 @@ async def acquire_access_token(
 
     expire_minutes = CONFIG.security.oauth_access_token_expire_minutes
     access_code = client_detail.create_access_code_jwe(
-        CONFIG.security.app_encryption_key,
+        get_encryption_key(),
         token_expire_minutes=expire_minutes,
     )
 

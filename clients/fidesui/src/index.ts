@@ -208,7 +208,6 @@ export type {
   CheckboxProps,
   CollapseProps,
   DatePickerProps,
-  DrawerProps,
   DropdownProps,
   FlexProps,
   FormInstance,
@@ -234,7 +233,6 @@ export type {
   UploadProps,
 } from "antd/lib";
 export {
-  Alert,
   AutoComplete,
   Badge,
   Breadcrumb,
@@ -247,7 +245,6 @@ export {
   DatePicker,
   Descriptions,
   Divider,
-  Drawer,
   Dropdown,
   Empty,
   Flex,
@@ -288,8 +285,10 @@ export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
 export type {
+  CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
   CustomCardProps as CardProps,
+  DrawerProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
@@ -297,10 +296,12 @@ export type {
   StatisticTrend,
 } from "./hoc";
 export {
+  CustomAlert as Alert,
   CustomAvatar as Avatar,
   CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
+  CustomDrawer as Drawer,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
@@ -339,11 +340,18 @@ export {
 export type { ChartTextProps } from "./components/charts/ChartText";
 export { ChartText } from "./components/charts/ChartText";
 export type {
+  DonutChartProps,
+  DonutChartSegment,
+  DonutChartVariant,
+} from "./components/charts/DonutChart";
+export { DonutChart } from "./components/charts/DonutChart";
+export type {
   RadarChartDataPoint,
   RadarChartProps,
   RadarPointStatus,
 } from "./components/charts/RadarChart";
 export { RadarChart } from "./components/charts/RadarChart";
+export { RadarTooltipContent } from "./components/charts/RadarTooltipContent";
 export type { SparklineProps } from "./components/charts/Sparkline";
 export { Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";
