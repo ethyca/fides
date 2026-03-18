@@ -94,6 +94,11 @@ class DatasetConfigService:
 
             warnings = validation_response.warnings
 
+            # Mutations can't be persisted through the CtlDataset path,
+            # so clear warnings to avoid misleading the caller.
+            if isinstance(dataset, DatasetConfigCtlDataset):
+                warnings = []
+
             # If the dataset was mutated by validation (restored fields),
             # update the data_dict with the corrected dataset
             if warnings and not isinstance(dataset, DatasetConfigCtlDataset):

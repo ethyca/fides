@@ -24,73 +24,26 @@ def get_saas_config_referenced_fields(
     instance_key: str,
 ) -> set[tuple[str, str]]:
     """
-    Extract all dataset field references from the SaaS config using recursive traversal.
+    Extract all dataset field references from the SaaS config, returning only
+    the top-level field name for each reference.
 
-    This function automatically finds dataset references anywhere in the config by
-    looking for characteristic patterns:
-    - FidesDatasetReference: dicts with 'dataset' and 'field' keys
-    - DatasetRef: dicts with 'dataset_reference' key
-
-    This approach is more maintainable than hardcoding specific paths, as it
-    automatically picks up references in any new locations added to the schema.
+    Delegates to ``get_saas_config_referenced_field_paths`` and extracts just
+    the first segment of each dot-delimited field path so callers that only
+    need the top-level name don't have to do the split themselves.
 
     Args:
         saas_config: The SaaS configuration to extract references from
         instance_key: The instance key to match against (in addition to <instance_fides_key>)
 
     Returns:
-        Set of (collection_name, field_name) tuples representing referenced fields
+        Set of (collection_name, top_level_field_name) tuples representing referenced fields
     """
-    referenced_fields: set[tuple[str, str]] = set()
-    valid_dataset_keys = {"<instance_fides_key>", instance_key}
-
-    def _extract_fides_dataset_reference(data: dict[str, Any]) -> None:
-        """
-        Extract from FidesDatasetReference pattern: {dataset: ..., field: ...}
-        Field format: "collection.field" or "collection.field.nested"
-        """
-        dataset = data.get("dataset", "")
-        field = data.get("field", "")
-        if dataset in valid_dataset_keys and field:
-            parts = field.split(".")
-            if len(parts) >= 2:
-                collection_name, field_name = parts[0], parts[1]
-                referenced_fields.add((collection_name, field_name))
-
-    def _extract_dataset_ref(data: dict[str, Any]) -> None:
-        """
-        Extract from DatasetRef pattern: {dataset_reference: ...}
-        Format: "dataset.collection.field"
-        """
-        ref = data.get("dataset_reference", "")
-        if not ref:
-            return
-        parts = ref.split(".")
-        if len(parts) >= 3 and parts[0] in valid_dataset_keys:
-            collection_name, field_name = parts[1], parts[2]
-            referenced_fields.add((collection_name, field_name))
-
-    def _traverse(obj: Any) -> None:
-        """Recursively traverse and extract dataset references."""
-        if isinstance(obj, dict):
-            # Check for FidesDatasetReference pattern (has both 'dataset' and 'field' keys)
-            if "dataset" in obj and "field" in obj:
-                _extract_fides_dataset_reference(obj)
-            # Check for DatasetRef pattern (has 'dataset_reference' key)
-            elif "dataset_reference" in obj:
-                _extract_dataset_ref(obj)
-            # Recurse into all values regardless of whether we found a pattern
-            for value in obj.values():
-                _traverse(value)
-        elif isinstance(obj, list):
-            for item in obj:
-                _traverse(item)
-
-    # Convert to dict and traverse the entire structure
-    config_dict = saas_config.model_dump()
-    _traverse(config_dict)
-
-    return referenced_fields
+    return {
+        (collection_name, field_path.split(".")[0])
+        for collection_name, field_path in get_saas_config_referenced_field_paths(
+            saas_config, instance_key
+        )
+    }
 
 
 def get_saas_config_referenced_field_paths(
