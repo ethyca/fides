@@ -86,7 +86,6 @@ export enum TrendPeriod {
 }
 
 export interface TrendMetric {
-  name: string;
   value: number;
   history: number[];
   metadata: Record<string, unknown>;
