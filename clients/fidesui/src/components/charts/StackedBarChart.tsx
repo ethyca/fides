@@ -42,12 +42,13 @@ const StackedBarTooltipContent = ({
 }: {
   active?: boolean;
   payload?: Array<{ payload: ChartEntry }>;
-  label?: string;
   segments: readonly StackedBarSegment[];
 }): ReactNode => {
   const { token } = theme.useToken();
 
-  if (!active || !payload?.length) return null;
+  if (!active || !payload?.length) {
+    return null;
+  }
 
   const entry = payload[0].payload;
 
@@ -178,23 +179,27 @@ export const StackedBarChart = ({
     return Object.entries(data)
       .map(([category, row]) => {
         const total = segments.reduce((sum, s) => sum + (row[s.key] ?? 0), 0);
-        if (total === 0) return null;
+        if (total === 0) {
+          return null;
+        }
         const entry: ChartEntry = {
           category: category.charAt(0).toUpperCase() + category.slice(1),
           rawCategory: category,
           total,
         };
-        for (const s of segments) {
+        segments.forEach((s) => {
           const raw = row[s.key] ?? 0;
           entry[s.key] = (raw / total) * 100;
           entry[`raw_${s.key}`] = raw;
-        }
+        });
         return entry;
       })
       .filter((e): e is ChartEntry => e !== null);
   }, [data, segments]);
 
-  if (chartData.length === 0) return null;
+  if (chartData.length === 0) {
+    return null;
+  }
 
   const chartHeight =
     chartData.length * barHeight + (chartData.length - 1) * rowGap + rowGap;

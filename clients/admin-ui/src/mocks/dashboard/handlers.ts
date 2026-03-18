@@ -61,10 +61,8 @@ export const dashboardHandlers = () => {
       res(ctx.status(200), ctx.json(mockSystemCoverage)),
     ),
 
-    rest.get(
-      `${apiBase}/plus/dashboard/privacy-requests`,
-      (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(mockPrivacyRequests)),
+    rest.get(`${apiBase}/plus/dashboard/privacy-requests`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockPrivacyRequests)),
     ),
 
     rest.patch(
