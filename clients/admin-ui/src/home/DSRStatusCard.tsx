@@ -89,7 +89,7 @@ export const DSRStatusCard = () => {
               </div>
               {(data?.overdue_count ?? 0) > 0 && (
                 <NextLink
-                  href={`${PRIVACY_REQUESTS_ROUTE}?status=overdue`}
+                  href={PRIVACY_REQUESTS_ROUTE}
                   className={styles.overdueLink}
                 >
                   <Flex align="center" gap={4}>
