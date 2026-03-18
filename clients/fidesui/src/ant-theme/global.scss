@@ -270,10 +270,7 @@ h6 {
 }
 
 .recharts-wrapper {
-  *,
-  *:focus,
-  *:active,
-  *:focus-visible {
+  *:focus:not(:focus-visible) {
     outline: none !important;
   }
 }

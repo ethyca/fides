@@ -48,7 +48,7 @@ export const DSRStatusCard = () => {
       <Card
         title="DSR Status"
         extra={
-          <NextLink href={PRIVACY_REQUESTS_ROUTE}>
+          <NextLink href={PRIVACY_REQUESTS_ROUTE} className={styles.viewAllLink}>
             <Flex align="center" gap={4} className="text-xs">
               View all requests
               <Icons.ArrowRight size={12} />

@@ -27,6 +27,13 @@
   }
 }
 
+.viewAllLink {
+  &:focus-visible {
+    outline: auto;
+    outline-offset: -2px;
+  }
+}
+
 .overdueLink {
   margin-top: var(--ant-margin-sm);
   color: var(--ant-color-error);
@@ -34,5 +41,9 @@
 
   &:hover {
     opacity: 0.8;
+  }
+
+  &:focus-visible {
+    outline: auto;
   }
 }
