@@ -67,6 +67,7 @@ class ConnectionType(enum.Enum):
     snowflake = "snowflake"
     sovrn = "sovrn"
     timescale = "timescale"
+    aws = "aws"
     website = "website"
     # Test connection types, used for testing purposes only
     test_datastore = "test_datastore"  # used for ConfigurableTestMonitor
@@ -78,6 +79,7 @@ class ConnectionType(enum.Enum):
         Add to this mapping if you add a new ConnectionType
         """
         readable_mapping: dict[str, str] = {
+            ConnectionType.aws.value: "AWS Cloud Infrastructure",
             ConnectionType.attentive_email.value: "Attentive Email",
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.datahub.value: "DataHub",
@@ -127,6 +129,7 @@ class ConnectionType(enum.Enum):
         )
 
         system_type_mapping: dict[str, SystemType] = {
+            ConnectionType.aws.value: SystemType.service,
             ConnectionType.attentive_email.value: SystemType.email,
             ConnectionType.bigquery.value: SystemType.database,
             ConnectionType.datahub.value: SystemType.data_catalog,

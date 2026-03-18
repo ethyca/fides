@@ -9,3 +9,4 @@ class SystemType(Enum):
     saas = "saas"
     system = "system"
     website = "website"
+    service = "service"
