@@ -19,6 +19,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_CONNECTIONS,
     JWE_PAYLOAD_MONITORS,
+    JWE_PAYLOAD_PASSWORD_RESET_AT,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
@@ -148,8 +149,17 @@ class ClientDetail(Base):
 
         Includes iat (issued-at) and exp (expires-at, Unix timestamp) for
         server-side expiration enforcement and client-facing expiry info.
+
+        If the client is associated with a user who has a password_reset_at timestamp,
+        it is included in the payload for stateless token invalidation checks.
         """
         now = datetime.now()
+
+        # Get password_reset_at if user is associated
+        password_reset_at = None
+        if self.user is not None and self.user.password_reset_at is not None:
+            password_reset_at = self.user.password_reset_at.isoformat()
+
         payload = {
             JWE_PAYLOAD_CLIENT_ID: self.id,
             JWE_PAYLOAD_SCOPES: self.scopes,
@@ -160,6 +170,10 @@ class ClientDetail(Base):
             JWE_PAYLOAD_CONNECTIONS: self.connections,
             JWE_PAYLOAD_MONITORS: self.monitors,
         }
+
+        if password_reset_at is not None:
+            payload[JWE_PAYLOAD_PASSWORD_RESET_AT] = password_reset_at
+
         return generate_jwe(json.dumps(payload), encryption_key)
 
     def credentials_valid(self, provided_secret: str, encoding: str = "UTF-8") -> bool:

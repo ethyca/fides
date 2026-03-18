@@ -1,8 +1,14 @@
+from datetime import datetime
+
 import pytest
 
 from fides.api.common_exceptions import AuthorizationError
 from fides.api.oauth.roles import OWNER, VIEWER
-from fides.api.oauth.utils import get_root_client, roles_have_scopes
+from fides.api.oauth.utils import (
+    get_root_client,
+    is_token_invalidated_offline,
+    roles_have_scopes,
+)
 from fides.common.scope_registry import POLICY_READ, USER_CREATE, USER_READ
 
 
@@ -54,3 +60,39 @@ class TestRolesHaveScopes:
     def test_roles_have_scopes(self, roles, required_scopes, expected):
         """Test that roles_have_scopes correctly checks if roles have required scopes."""
         assert roles_have_scopes(roles, required_scopes) == expected
+
+
+class TestIsTokenInvalidatedOffline:
+    """Tests for stateless token invalidation checks using payload data only."""
+
+    def test_is_token_invalidated_offline_no_reset(self):
+        """Token valid when no password_reset_at in payload."""
+        assert is_token_invalidated_offline(datetime.now(), None) is False
+
+    def test_is_token_invalidated_offline_issued_after(self):
+        """Token valid when issued after password reset."""
+        reset_time = datetime(2024, 1, 1, 12, 0, 0)
+        issued_time = datetime(2024, 1, 2, 12, 0, 0)  # After reset
+        assert (
+            is_token_invalidated_offline(issued_time, reset_time.isoformat()) is False
+        )
+
+    def test_is_token_invalidated_offline_issued_before(self):
+        """Token invalid when issued before password reset."""
+        reset_time = datetime(2024, 1, 2, 12, 0, 0)
+        issued_time = datetime(2024, 1, 1, 12, 0, 0)  # Before reset
+        assert is_token_invalidated_offline(issued_time, reset_time.isoformat()) is True
+
+    def test_is_token_invalidated_offline_same_time(self):
+        """Token valid when issued at exact same time as password reset."""
+        same_time = datetime(2024, 1, 1, 12, 0, 0)
+        # Not strictly before, so should be valid
+        assert is_token_invalidated_offline(same_time, same_time.isoformat()) is False
+
+    def test_is_token_invalidated_offline_invalid_format(self):
+        """Graceful handling of invalid ISO format."""
+        assert is_token_invalidated_offline(datetime.now(), "not-a-date") is False
+
+    def test_is_token_invalidated_offline_empty_string(self):
+        """Empty string treated as invalid format."""
+        assert is_token_invalidated_offline(datetime.now(), "") is False

@@ -23,6 +23,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_EXPIRES_AT,
     JWE_ISSUED_AT,
     JWE_PAYLOAD_CLIENT_ID,
+    JWE_PAYLOAD_PASSWORD_RESET_AT,
     JWE_PAYLOAD_ROLES,
     JWE_PAYLOAD_SCOPES,
 )
@@ -241,6 +242,34 @@ def is_token_invalidated(issued_at: datetime, client: ClientDetail) -> bool:
             "Unable to evaluate password reset timestamp for client user: {}", exc
         )
         return False
+
+
+def is_token_invalidated_offline(
+    issued_at: datetime,
+    password_reset_at_str: Optional[str],
+) -> bool:
+    """
+    Check token invalidation using payload data only (no DB lookup).
+
+    This function enables stateless token validation by checking if a token
+    was issued before a password reset, using the password_reset_at value
+    embedded in the token payload itself rather than querying the database.
+
+    Args:
+        issued_at: When the token was issued
+        password_reset_at_str: ISO format string of password reset timestamp from token payload
+
+    Returns:
+        True if the token should be considered invalid (issued before password reset),
+        False otherwise (including when password_reset_at_str is None or invalid).
+    """
+    if password_reset_at_str is None:
+        return False
+    try:
+        password_reset_at = datetime.fromisoformat(password_reset_at_str)
+        return issued_at < password_reset_at
+    except (TypeError, ValueError):
+        return False  # Treat parse errors as non-invalidating
 
 
 def _get_webhook_jwe_or_error(
@@ -592,8 +621,14 @@ def extract_token_and_load_client(
 
     # Invalidate tokens issued prior to the user's most recent password reset.
     # This ensures any existing sessions are expired immediately after a password change.
-    if is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before latest password reset.")
+    # First try stateless check using payload data (for newer tokens with password-reset-at)
+    password_reset_at_str = token_data.get(JWE_PAYLOAD_PASSWORD_RESET_AT)
+    if is_token_invalidated_offline(issued_at_dt, password_reset_at_str):
+        logger.debug("Auth token issued before password reset (offline check).")
+        raise AuthorizationError(detail="Not Authorized for this action")
+    # Fall back to DB check for older tokens without password-reset-at in payload
+    if password_reset_at_str is None and is_token_invalidated(issued_at_dt, client):
+        logger.debug("Auth token issued before password reset (DB fallback).")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Populate request-scoped context with the authenticated user identifier.
@@ -674,8 +709,14 @@ async def extract_token_and_load_client_async(
 
     # Invalidate tokens issued prior to the user's most recent password reset.
     # This ensures any existing sessions are expired immediately after a password change.
-    if is_token_invalidated(issued_at_dt, client):
-        logger.debug("Auth token issued before latest password reset.")
+    # First try stateless check using payload data (for newer tokens with password-reset-at)
+    password_reset_at_str = token_data.get(JWE_PAYLOAD_PASSWORD_RESET_AT)
+    if is_token_invalidated_offline(issued_at_dt, password_reset_at_str):
+        logger.debug("Auth token issued before password reset (offline check).")
+        raise AuthorizationError(detail="Not Authorized for this action")
+    # Fall back to DB check for older tokens without password-reset-at in payload
+    if password_reset_at_str is None and is_token_invalidated(issued_at_dt, client):
+        logger.debug("Auth token issued before password reset (DB fallback).")
         raise AuthorizationError(detail="Not Authorized for this action")
 
     # Populate request-scoped context with the authenticated user identifier.
