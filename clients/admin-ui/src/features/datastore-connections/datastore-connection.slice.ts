@@ -5,6 +5,7 @@ import {
   BulkPutDataset,
   ConnectionConfigurationResponse,
   CreateConnectionConfigurationWithSecrets,
+  Dataset,
   Page_DatasetConfigSchema_,
   SystemType,
 } from "~/types/api";
@@ -397,7 +398,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
     }),
     patchConnectionDatasets: build.mutation<
       BulkPutDataset,
-      { connectionKey: string; datasets: any[] }
+      { connectionKey: string; datasets: Dataset[] }
     >({
       query: ({ connectionKey, datasets }) => ({
         url: `${CONNECTION_ROUTE}/${connectionKey}/dataset`,

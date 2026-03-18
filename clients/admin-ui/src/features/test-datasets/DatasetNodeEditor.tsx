@@ -1,5 +1,6 @@
 import "@xyflow/react/dist/style.css";
 
+import type { OnMount } from "@monaco-editor/react";
 import {
   Background,
   BackgroundVariant,
@@ -33,7 +34,7 @@ import DatasetEditorActionsContext, {
 import { DatasetTreeHoverProvider } from "./context/DatasetTreeHoverContext";
 import DatasetNodeDetailPanel from "./DatasetNodeDetailPanel";
 import DatasetTreeEdge from "./edges/DatasetTreeEdge";
-import { removeNulls } from "./helpers";
+import { buildProtectedPathsByCollection, removeNulls } from "./helpers";
 import DatasetCollectionNode from "./nodes/DatasetCollectionNode";
 import DatasetFieldNode from "./nodes/DatasetFieldNode";
 import DatasetRootNode from "./nodes/DatasetRootNode";
@@ -45,6 +46,14 @@ import useDatasetGraph, {
   ProtectedFieldsInfo,
 } from "./useDatasetGraph";
 import useDatasetNodeLayout from "./useDatasetNodeLayout";
+
+type MonacoEditor = Parameters<OnMount>[0];
+type MonacoDecorationsCollection = ReturnType<
+  MonacoEditor["createDecorationsCollection"]
+>;
+type MonacoDecorationOptions = Parameters<
+  MonacoEditor["createDecorationsCollection"]
+>[0][number];
 
 const LAYOUT_OPTIONS = { direction: "LR" } as const;
 
@@ -160,6 +169,10 @@ const DatasetNodeEditorInner = ({
   const reactFlowInstance = useReactFlow();
   const reactFlowRef = useRef<HTMLDivElement>(null);
 
+  // Keep a ref to the latest dataset so modal callbacks avoid stale closures
+  const datasetRef = useRef(dataset);
+  datasetRef.current = dataset;
+
   const [focusedCollection, setFocusedCollection] = useState<string | null>(
     null,
   );
@@ -177,10 +190,8 @@ const DatasetNodeEditorInner = ({
   // Tracks who initiated the last change to prevent sync loops
   const changeSourceRef = useRef<"graph" | "yaml" | null>(null);
   const yamlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const yamlEditorRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const yamlDecorationsRef = useRef<any>(null);
+  const yamlEditorRef = useRef<MonacoEditor | null>(null);
+  const yamlDecorationsRef = useRef<MonacoDecorationsCollection | null>(null);
 
   const highlightNode = useCallback((nodeId: string) => {
     if (highlightTimerRef.current) {
@@ -260,27 +271,18 @@ const DatasetNodeEditorInner = ({
   );
 
   // Compute protected YAML line ranges for Monaco decorations
-  const protectedRanges = useMemo(() => {
-    if (!protectedFields || !yamlContent) {
+  const protectedRanges = useMemo((): MonacoDecorationOptions[] => {
+    if (!yamlPanelOpen || !protectedFields || !yamlContent) {
       return [];
     }
 
     const lines = yamlContent.split("\n");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ranges: any[] = [];
+    const ranges: MonacoDecorationOptions[] = [];
 
     // Build lookup: collection → Set of field paths (including ancestor paths)
-    const protectedPathsByCollection = new Map<string, Set<string>>();
-    protectedFields.protected_collection_fields.forEach((pf) => {
-      if (!protectedPathsByCollection.has(pf.collection)) {
-        protectedPathsByCollection.set(pf.collection, new Set());
-      }
-      const pathSet = protectedPathsByCollection.get(pf.collection)!;
-      const segments = pf.field.split(".");
-      segments.forEach((_, idx) => {
-        pathSet.add(segments.slice(0, idx + 1).join("."));
-      });
-    });
+    const protectedPathsByCollection = buildProtectedPathsByCollection(
+      protectedFields.protected_collection_fields,
+    );
 
     const immutableSet = new Set(protectedFields.immutable_fields);
     let currentCollection = "";
@@ -345,18 +347,20 @@ const DatasetNodeEditorInner = ({
     });
 
     return ranges;
-  }, [protectedFields, yamlContent]);
+  }, [yamlPanelOpen, protectedFields, yamlContent]);
 
   // Apply decorations when ranges change or editor is available
   const applyYamlDecorations = useCallback(() => {
-    const editor = yamlEditorRef.current;
-    if (!editor) {
+    const monacoEditor = yamlEditorRef.current;
+    if (!monacoEditor) {
       return;
     }
-    yamlDecorationsRef.current = editor.deltaDecorations(
-      yamlDecorationsRef.current || [],
-      protectedRanges,
-    );
+    if (yamlDecorationsRef.current) {
+      yamlDecorationsRef.current.set(protectedRanges);
+    } else {
+      yamlDecorationsRef.current =
+        monacoEditor.createDecorationsCollection(protectedRanges);
+    }
   }, [protectedRanges]);
 
   useEffect(() => {
@@ -564,17 +568,14 @@ const DatasetNodeEditorInner = ({
     [dataset, onDatasetChange],
   );
 
-  const datasetRef = useRef(dataset);
-  datasetRef.current = dataset;
-
   const editorActions: DatasetEditorActions = useMemo(
     () => ({
       addCollection: () => {
-        const currentDataset = datasetRef.current;
+        const { current } = datasetRef;
         setAddModal({
           open: true,
           title: "Add Collection",
-          existingNames: currentDataset.collections.map((c) => c.name),
+          existingNames: current.collections.map((c) => c.name),
           mode: "collection",
           onConfirm: (name: string) => {
             handleAddCollection(name);
@@ -583,8 +584,8 @@ const DatasetNodeEditorInner = ({
         });
       },
       addField: (collectionName: string, parentFieldPath?: string) => {
-        const currentDataset = datasetRef.current;
-        const collection = currentDataset.collections.find(
+        const { current } = datasetRef;
+        const collection = current.collections.find(
           (c) => c.name === collectionName,
         );
         const siblingFields = parentFieldPath

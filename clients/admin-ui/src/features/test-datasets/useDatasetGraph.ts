@@ -3,6 +3,8 @@ import { useMemo } from "react";
 
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
+import { buildProtectedPathsByCollection } from "./helpers";
+
 export const DATASET_ROOT_ID = "dataset-root";
 export const COLLECTION_ROOT_PREFIX = "collection-";
 
@@ -107,19 +109,11 @@ const useDatasetGraph = (
     const edges: Edge[] = [];
 
     // Build protected paths lookup per collection
-    const protectedByCollection = new Map<string, Set<string>>();
-    if (protectedFields) {
-      protectedFields.protected_collection_fields.forEach((pf) => {
-        if (!protectedByCollection.has(pf.collection)) {
-          protectedByCollection.set(pf.collection, new Set());
-        }
-        const pathSet = protectedByCollection.get(pf.collection)!;
-        const segments = pf.field.split(".");
-        segments.forEach((_, idx) => {
-          pathSet.add(segments.slice(0, idx + 1).join("."));
-        });
-      });
-    }
+    const protectedByCollection = protectedFields
+      ? buildProtectedPathsByCollection(
+          protectedFields.protected_collection_fields,
+        )
+      : new Map<string, Set<string>>();
 
     if (focusedCollection) {
       // --- Drill-down view: single collection → its fields ---
