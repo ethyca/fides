@@ -26,6 +26,7 @@ export const CHART_GRADIENT = {
 } as const;
 
 export const DONUT_THICKNESS = {
+  thin: 4,
   default: 8,
   thick: 16,
 } as const;

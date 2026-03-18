@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 /**
- * Updates dictionary for datastore monitors with classification and review counts
+ * Extends DatastoreMonitorUpdates with approved count for cross-monitor views.
  */
-export type DatastoreMonitorUpdates = {
+export type ExtendedDatastoreMonitorUpdates = {
   unlabeled: number;
   in_review: number;
   classifying: number;
@@ -14,5 +14,5 @@ export type DatastoreMonitorUpdates = {
   classified_low_confidence: number | null;
   classified_medium_confidence: number | null;
   classified_high_confidence: number | null;
-  approved: number | null;
+  approved: number;
 };

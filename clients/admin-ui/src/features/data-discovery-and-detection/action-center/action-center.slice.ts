@@ -17,6 +17,7 @@ import {
   StagedResourceAPIResponse,
   WebsiteMonitorResourcesFilters,
 } from "~/types/api";
+import { AggregateStatisticsResponse } from "~/types/api/models/AggregateStatisticsResponse";
 import { BaseStagedResourcesRequest } from "~/types/api/models/BaseStagedResourcesRequest";
 import { ClassifyResourcesResponse } from "~/types/api/models/ClassifyResourcesResponse";
 import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
@@ -130,6 +131,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         staged_resource_urn?: string;
         include_descendant_details?: boolean;
         diff_status?: DiffStatus[];
+        child_staged_resource_urns?: string[];
       }
     >({
       query: ({
@@ -139,8 +141,12 @@ const actionCenterApi = baseApi.injectEndpoints({
         staged_resource_urn,
         include_descendant_details,
         diff_status,
+        child_staged_resource_urns,
       }) => {
-        const urlParams = buildArrayQueryParams({ diff_status });
+        const urlParams = buildArrayQueryParams({
+          diff_status,
+          child_staged_resource_urns,
+        });
 
         return {
           url: `/plus/discovery-monitor/${monitor_config_id}/tree?${urlParams}`,
@@ -524,6 +530,23 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
       providesTags: ["Monitor Tasks"],
     }),
+
+    getAggretateStatistics: build.query<
+      AggregateStatisticsResponse,
+      {
+        monitor_type?: "website" | "datastore" | "infrastructure";
+        monitor_config_id?: string;
+      }
+    >({
+      query: ({ monitor_type, ...params }) => {
+        return {
+          url: `/plus/discovery-monitor/aggregate-results/summary/${monitor_type}`,
+          params,
+        };
+      },
+      providesTags: ["Monitor Tasks"],
+    }),
+
     retryMonitorTask: build.mutation<
       {
         id: string;
@@ -616,4 +639,6 @@ export const {
   useGetStagedResourceDetailsQuery,
   useLazyGetStagedResourceDetailsQuery,
   usePromoteRemovalStagedResourcesMutation,
+  useLazyGetAggretateStatisticsQuery,
+  useGetAggretateStatisticsQuery,
 } = actionCenterApi;
