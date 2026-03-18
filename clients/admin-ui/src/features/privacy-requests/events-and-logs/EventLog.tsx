@@ -273,24 +273,24 @@ const EventLog = ({
       {hasDatasetEntries && !isRequestFinishedView && (
         <Td>
           {detail.saas_version ? (
-            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-            <span
-              style={connectionKey ? { cursor: "pointer" } : undefined}
-              onClick={
-                connectionKey
-                  ? (e) => {
-                      e.stopPropagation();
-                      openVersionModal(connectionKey, detail.saas_version!);
-                    }
-                  : undefined
-              }
-              title={connectionKey ? "View version config" : undefined}
-              data-testid="version-badge-wrapper"
-            >
-              <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>
-                v{detail.saas_version}
-              </Tag>
-            </span>
+            connectionKey ? (
+              <button
+                type="button"
+                style={{ all: "unset", cursor: "pointer" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openVersionModal(connectionKey, detail.saas_version!);
+                }}
+                title="View version config"
+                data-testid="version-badge-wrapper"
+              >
+                <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
+              </button>
+            ) : (
+              <span data-testid="version-badge-wrapper">
+                <Tag color={CUSTOM_TAG_COLOR.DEFAULT}>v{detail.saas_version}</Tag>
+              </span>
+            )
           ) : (
             <Text
               color="gray.600"
