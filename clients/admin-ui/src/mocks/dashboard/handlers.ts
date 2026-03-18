@@ -3,7 +3,12 @@ import { rest } from "msw";
 
 import { ActionType } from "~/features/dashboard/types";
 
-import { mockPosture, mockPriorityActions, mockSystemCoverage } from "./data";
+import {
+  mockAgentBriefing,
+  mockPosture,
+  mockPriorityActions,
+  mockSystemCoverage,
+} from "./data";
 
 const DIMENSION_ACTION_TYPES: Record<string, ActionType[]> = {
   coverage: [ActionType.SYSTEM_REVIEW, ActionType.STEWARD_ASSIGNMENT],
@@ -54,6 +59,11 @@ export const dashboardHandlers = () => {
 
     rest.get(`${apiBase}/plus/dashboard/system-coverage`, (_req, res, ctx) =>
       res(ctx.status(200), ctx.json(mockSystemCoverage)),
+    ),
+
+    // GET /api/v1/plus/dashboard/agent-briefing
+    rest.get(`${apiBase}/plus/dashboard/agent-briefing`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockAgentBriefing)),
     ),
 
     rest.patch(

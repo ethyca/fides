@@ -1,19 +1,6 @@
 import { formatDistance } from "date-fns";
-import {
-  ChakraDivider as Divider,
-  ChakraDrawer as Drawer,
-  ChakraDrawerBody as DrawerBody,
-  ChakraDrawerCloseButton as DrawerCloseButton,
-  ChakraDrawerContent as DrawerContent,
-  ChakraDrawerHeader as DrawerHeader,
-  ChakraDrawerOverlay as DrawerOverlay,
-  Icons,
-  Tag,
-  Tooltip,
-  Typography,
-  useChakraDisclosure as useDisclosure,
-} from "fidesui";
-import { Fragment } from "react";
+import { Divider, Drawer, Icons, Tag, Tooltip, Typography } from "fidesui";
+import { Fragment, useState } from "react";
 
 import { formatDate } from "~/features/common/utils";
 import { MonitorExecutionStatus } from "~/types/api";
@@ -21,7 +8,7 @@ import { MonitorStatusResponse } from "~/types/api/models/MonitorStatusResponse"
 
 const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
   const executionRecord = monitor.execution_records?.[0];
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   const lastCompletedTime = monitor.last_monitored
     ? new Date(monitor.last_monitored)
     : null;
@@ -66,35 +53,34 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
           color="error"
           closeIcon={<Icons.Information />}
           closeButtonLabel="View details"
-          onClose={onOpen}
+          onClose={() => setIsOpen(true)}
           data-testid="tag-error"
         >
           Incomplete
         </Tag>
-        <Drawer isOpen={isOpen} onClose={onClose} size="md">
-          <DrawerOverlay />
-          <DrawerContent data-testid="error-log-drawer">
-            <DrawerHeader>Failure log</DrawerHeader>
-            <DrawerCloseButton />
-            <DrawerBody>
-              {executionRecord.completed && (
-                <Typography.Paragraph type="secondary">
-                  {formatDate(new Date(executionRecord.completed))}
+        <Drawer
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          title="Failure log"
+        >
+          <section data-testid="error-log-drawer">
+            {executionRecord.completed && (
+              <Typography.Paragraph type="secondary">
+                {formatDate(new Date(executionRecord.completed))}
+              </Typography.Paragraph>
+            )}
+            {executionRecord.messages?.map((message, idx) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <Fragment key={idx}>
+                <Typography.Paragraph data-testid="error-log-message">
+                  {message}
                 </Typography.Paragraph>
-              )}
-              {executionRecord.messages?.map((message, idx) => (
-                // eslint-disable-next-line react/no-array-index-key
-                <Fragment key={idx}>
-                  <Typography.Paragraph data-testid="error-log-message">
-                    {message}
-                  </Typography.Paragraph>
-                  {idx < executionRecord.messages!.length - 1 && (
-                    <Divider className="mb-3" />
-                  )}
-                </Fragment>
-              ))}
-            </DrawerBody>
-          </DrawerContent>
+                {idx < executionRecord.messages!.length - 1 && (
+                  <Divider className="mb-3" />
+                )}
+              </Fragment>
+            ))}
+          </section>
         </Drawer>
       </>
     );
