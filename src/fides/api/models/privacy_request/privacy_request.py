@@ -328,6 +328,7 @@ class PrivacyRequest(
     # Non-DB fields that are optionally added throughout the codebase
     action_required_details: Optional[CheckpointActionRequired] = None
     execution_and_audit_logs_by_dataset: Optional[property] = None
+    task_status_by_dataset: Optional[property] = None
     resume_endpoint: Optional[str] = None
 
     request_tasks: RelationshipProperty[AppenderQuery] = relationship(
