@@ -1,9 +1,29 @@
 import { theme } from "antd/lib";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
+import type { RefObject } from "react";
 
 export const HOUR_MS = 3_600_000;
 export const DAY_MS = 86_400_000;
+
+export const useContainerSize = (
+  ref: RefObject<HTMLElement | null>,
+): number => {
+  const [size, setSize] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) {
+      return undefined;
+    }
+    const observer = new ResizeObserver(([entry]) => {
+      const rect = entry.contentRect;
+      setSize(Math.min(rect.width, rect.height));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+  return size;
+};
 
 export const useChartAnimation = (animationDuration: number): boolean => {
   const [animationActive, setAnimationActive] = useState(true);

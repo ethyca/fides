@@ -202,7 +202,6 @@ export const ConnectorParametersForm = ({
                     connection_type={connectionConfig?.connection_type}
                     access_type={connectionConfig?.access}
                     name={connectionConfig?.name ?? connectionConfig.key}
-                    isSwitch
                   />
                 ) : null}
                 {connectionConfig ? (

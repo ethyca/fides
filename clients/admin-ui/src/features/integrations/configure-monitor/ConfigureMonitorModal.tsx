@@ -1,12 +1,12 @@
 import {
   ChakraUseDisclosureReturn as UseDisclosureReturn,
+  Modal,
   PageSpinner,
   useChakraToast as useToast,
 } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import FormModal from "~/features/common/modals/FormModal";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
   useGetAvailableDatabasesByConnectionQuery,
@@ -108,14 +108,18 @@ const ConfigureMonitorModal = ({
 
   if (isWebsiteMonitor) {
     return (
-      <FormModal
+      <Modal
         title={
           monitor?.name
             ? `Configure ${monitor.name}`
             : "Configure website monitor"
         }
-        isOpen={isOpen}
-        onClose={onClose}
+        open={isOpen}
+        onCancel={onClose}
+        centered
+        destroyOnClose
+        footer={null}
+        data-testid="add-modal-content"
       >
         <ConfigureWebsiteMonitorForm
           monitor={monitor}
@@ -124,19 +128,23 @@ const ConfigureMonitorModal = ({
           onClose={onClose}
           onSubmit={handleSubmit}
         />
-      </FormModal>
+      </Modal>
     );
   }
 
   return (
-    <FormModal
+    <Modal
       title={
         monitor?.name
           ? `Configure ${monitor.name}`
           : "Configure discovery monitor"
       }
-      isOpen={isOpen}
-      onClose={onClose}
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      footer={null}
+      data-testid="add-modal-content"
     >
       {formStep === 0 && (
         <ConfigureMonitorForm
@@ -163,7 +171,7 @@ const ConfigureMonitorModal = ({
         ) : (
           <PageSpinner />
         ))}
-    </FormModal>
+    </Modal>
   );
 };
 

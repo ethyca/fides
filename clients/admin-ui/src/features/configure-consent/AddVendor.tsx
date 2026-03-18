@@ -3,6 +3,7 @@ import {
   ButtonProps,
   ChakraBox as Box,
   ChakraVStack as VStack,
+  Modal,
   useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
 } from "fidesui";
@@ -39,7 +40,6 @@ import {
   isErrorResult,
   VendorSources,
 } from "../common/helpers";
-import FormModal from "../common/modals/FormModal";
 import { errorToastParams, successToastParams } from "../common/toast";
 import { EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
@@ -200,10 +200,13 @@ const AddVendor = ({
         innerRef={formRef}
       >
         {({ dirty, isValid, resetForm }) => (
-          <FormModal
-            isOpen={isOpen}
-            onClose={handleCloseModal}
+          <Modal
+            open={isOpen}
+            onCancel={handleCloseModal}
+            centered
+            destroyOnClose
             title="Add a vendor"
+            footer={null}
           >
             <Box data-testid="add-vendor-modal-content" my={4}>
               {lockedForGVL ? <GVLNotice /> : null}
@@ -255,7 +258,7 @@ const AddVendor = ({
                 </VStack>
               </Form>
             </Box>
-          </FormModal>
+          </Modal>
         )}
       </Formik>
     </>

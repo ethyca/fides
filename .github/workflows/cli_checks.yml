@@ -47,7 +47,8 @@ jobs:
   # Basic smoke test of a local install of the fides Python CLI
   Fides-Install:
     needs: Check-CLI-Changes
-    if: needs.Check-CLI-Changes.outputs.has_cli_changes == 'true'
+    # Skip on merge_group — these checks already passed on the PR
+    if: needs.Check-CLI-Changes.outputs.has_cli_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

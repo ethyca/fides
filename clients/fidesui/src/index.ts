@@ -208,7 +208,6 @@ export type {
   CheckboxProps,
   CollapseProps,
   DatePickerProps,
-  DrawerProps,
   DropdownProps,
   FlexProps,
   FormInstance,
@@ -246,8 +245,6 @@ export {
   DatePicker,
   Descriptions,
   Divider,
-  Drawer,
-  Dropdown,
   Empty,
   Flex,
   Form,
@@ -290,6 +287,7 @@ export type {
   CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
   CustomCardProps as CardProps,
+  DrawerProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
@@ -302,6 +300,8 @@ export {
   CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
+  CustomDrawer as Drawer,
+  CustomDropdown as Dropdown,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
@@ -368,6 +368,7 @@ export type {
   RadarPointStatus,
 } from "./components/charts/RadarChart";
 export { RadarChart } from "./components/charts/RadarChart";
+export { RadarTooltipContent } from "./components/charts/RadarTooltipContent";
 export type { SparklineProps } from "./components/charts/Sparkline";
 export { Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";
@@ -452,10 +453,7 @@ export { theme as antTheme } from "antd";
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
 export { CheckboxTree } from "./components/chakra-base/checkbox-tree";
-export type { ColumnMetadata } from "./components/chakra-base/column-dropdown";
-export { ColumnDropdown } from "./components/chakra-base/column-dropdown";
 export { ConfirmationModal } from "./components/chakra-base/confirmation-modal";
-export { DataCategoryDropdown } from "./components/chakra-base/data-category-dropdown";
 export { ExampleComponent } from "./components/chakra-base/example-component";
 export { PrimaryLink, SecondaryLink } from "./components/chakra-base/links";
 export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-table";

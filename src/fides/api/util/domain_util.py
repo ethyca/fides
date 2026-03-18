@@ -1,5 +1,6 @@
 """Shared helpers for domain-validation logic."""
 
+import os
 import re
 from typing import List
 
@@ -9,13 +10,19 @@ from fides.api.common_exceptions import DomainValidationError
 from fides.config import CONFIG
 from fides.config.security_settings import DomainValidationMode
 
+_DOMAIN_MODE_ENV_VAR = "FIDES__SECURITY__DOMAIN_VALIDATION_MODE"
+
 
 def get_domain_validation_mode() -> DomainValidationMode:
-    """Return the effective domain validation mode, accounting for dev_mode."""
-    mode = CONFIG.security.domain_validation_mode
-    if CONFIG.dev_mode and mode == DomainValidationMode.enabled:
-        return DomainValidationMode.monitor
-    return mode
+    """Return the effective domain validation mode, accounting for dev_mode.
+
+    In dev mode, defaults to ``enabled`` so that integration developers catch
+    domain-validation errors early — unless the env var is explicitly set, in
+    which case the explicit value is respected.
+    """
+    if CONFIG.dev_mode and _DOMAIN_MODE_ENV_VAR not in os.environ:
+        return DomainValidationMode.enabled
+    return CONFIG.security.domain_validation_mode
 
 
 def wildcard_to_regex(pattern: str) -> str:

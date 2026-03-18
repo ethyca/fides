@@ -1,12 +1,8 @@
 import {
   Button,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraText as Text,
+  Flex,
+  Modal,
+  Paragraph,
   useChakraToast as useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -104,55 +100,53 @@ export const CustomReportCreationModal = ({
   };
 
   return (
-    <Modal size="lg" isOpen={isOpen} onClose={handleClose} motionPreset="none">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader pb={0}>Create a report</ModalHeader>
-        <Formik
-          initialValues={{
-            reportName: "",
-          }}
-          onSubmit={(values) => handleCreateReport(values.reportName)}
-          onReset={handleClose}
-          validateOnBlur={false}
-          validationSchema={ValidationSchema}
-        >
-          {({ dirty, isValid }) => (
-            <Form data-testid="custom-report-form">
-              <ModalBody>
-                <Text fontSize="sm" color="gray.600" pb={6}>
-                  Customize and save your current filter settings for easy
-                  access in the future. This saved report will include the
-                  column layout and currently applied filter settings.
-                </Text>
-                <CustomTextInput
-                  id="reportName"
-                  name="reportName"
-                  isRequired
-                  label={CUSTOM_REPORT_LABEL}
-                  placeholder="Enter a name for the report..."
-                  variant="stacked"
-                  maxLength={80}
-                />
-              </ModalBody>
-              <ModalFooter gap={2}>
-                <Button size="small" htmlType="reset">
-                  Cancel
-                </Button>
-                <Button
-                  size="small"
-                  disabled={!dirty || !isValid}
-                  type="primary"
-                  data-testid="custom-report-form-submit"
-                  htmlType="submit"
-                >
-                  Save
-                </Button>
-              </ModalFooter>
-            </Form>
-          )}
-        </Formik>
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={handleClose}
+      title="Create a report"
+      footer={null}
+      centered
+      destroyOnHidden
+    >
+      <Formik
+        initialValues={{
+          reportName: "",
+        }}
+        onSubmit={(values) => handleCreateReport(values.reportName)}
+        onReset={handleClose}
+        validateOnBlur={false}
+        validationSchema={ValidationSchema}
+      >
+        {({ dirty, isValid }) => (
+          <Form data-testid="custom-report-form">
+            <Paragraph type="secondary">
+              Customize and save your current filter settings for easy access in
+              the future. This saved report will include the column layout and
+              currently applied filter settings.
+            </Paragraph>
+            <CustomTextInput
+              id="reportName"
+              name="reportName"
+              isRequired
+              label={CUSTOM_REPORT_LABEL}
+              placeholder="Enter a name for the report..."
+              variant="stacked"
+              maxLength={80}
+            />
+            <Flex justify="flex-end" gap="small" className="mt-4">
+              <Button htmlType="reset">Cancel</Button>
+              <Button
+                disabled={!dirty || !isValid}
+                type="primary"
+                data-testid="custom-report-form-submit"
+                htmlType="submit"
+              >
+                Save
+              </Button>
+            </Flex>
+          </Form>
+        )}
+      </Formik>
     </Modal>
   );
 };

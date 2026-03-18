@@ -1,9 +1,4 @@
-import {
-  Button,
-  ChakraModalProps as ModalProps,
-  Flex,
-  Typography,
-} from "fidesui";
+import { Button, Flex, Modal, Typography } from "fidesui";
 import { Form, Formik } from "formik";
 import { useMemo, useRef, useState } from "react";
 import * as Yup from "yup";
@@ -22,7 +17,6 @@ import {
 } from "../common/helpers";
 import { useAlert } from "../common/hooks";
 import { FormGuard } from "../common/hooks/useIsAnyFormDirty";
-import FormModal from "../common/modals/FormModal";
 import { formatKey } from "../datastore-connections/system_portal_config/helpers";
 import {
   selectAllDictEntries,
@@ -56,14 +50,17 @@ const defaultInitialValues: FormValues = {
   tags: [],
 };
 
-interface AddNewSystemModalProps extends Omit<ModalProps, "children"> {
+interface AddNewSystemModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   onSuccessfulSubmit?: (fidesKey: string, newSystemName: string) => void;
   toastOnSuccess?: boolean;
 }
 export const AddNewSystemModal = ({
+  isOpen,
+  onClose,
   onSuccessfulSubmit,
   toastOnSuccess,
-  ...props
 }: AddNewSystemModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useAppDispatch();
@@ -127,7 +124,7 @@ export const AddNewSystemModal = ({
   };
 
   const handleCloseModal = () => {
-    props.onClose();
+    onClose();
     dispatch(setSuggestions("initial"));
     dispatch(setLockedForGVL(false));
   };
@@ -175,7 +172,15 @@ export const AddNewSystemModal = ({
   };
 
   return (
-    <FormModal title="Add New System" {...props} onClose={handleCloseModal}>
+    <Modal
+      title="Add New System"
+      open={isOpen}
+      onCancel={handleCloseModal}
+      centered
+      data-testid="add-modal-content"
+      destroyOnClose
+      footer={null}
+    >
       <Formik
         initialValues={defaultInitialValues}
         onSubmit={handleSubmit}
@@ -252,6 +257,6 @@ export const AddNewSystemModal = ({
           </Form>
         )}
       </Formik>
-    </FormModal>
+    </Modal>
   );
 };
