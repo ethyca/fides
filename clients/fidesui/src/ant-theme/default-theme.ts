@@ -2,9 +2,6 @@ import { ThemeConfig } from "antd/es";
 
 import palette from "../palette/palette.module.scss";
 
-export const FONT_FAMILY_DISPLAY =
-  '"Basier Square", Georgia, "Times New Roman", serif';
-
 /**
  * Order of priority for styling
  * 1. Ant Design default theme

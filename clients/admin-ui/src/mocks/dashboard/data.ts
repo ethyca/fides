@@ -378,33 +378,29 @@ export const mockAgentBriefing: AgentBriefingResponse = {
 
 export const mockTrends: TrendsResponse = {
   metrics: {
-    data_sharing: {
-      name: "Data sharing",
-      value: 0.73,
-      history: [0.65, 0.67, 0.68, 0.7, 0.69, 0.71, 0.72, 0.73],
+    gps_score: {
+      value: 64,
+      history: [58, 59, 61, 60, 63, 62, 64],
       metadata: {},
-      diff: 0.03,
+      diff: 3.2,
     },
-    active_users: {
-      name: "Active users",
-      value: 0.82,
-      history: [0.78, 0.79, 0.8, 0.81, 0.8, 0.82, 0.81, 0.82],
+    dsr_volume: {
+      value: 47,
+      history: [8, 12, 9, 15, 11, 18, 14],
       metadata: {},
-      diff: 0.01,
+      diff: -0.08,
     },
-    total_requests: {
-      name: "Total requests",
-      value: 1247,
-      history: [980, 1020, 1050, 1100, 1130, 1180, 1210, 1247],
+    system_coverage: {
+      value: 64.6,
+      history: [55, 57, 58, 61, 60, 63, 64.6],
       metadata: {},
-      diff: 37,
+      diff: 2.1,
     },
-    consent_rate: {
-      name: "Consent rate",
-      value: 0.68,
-      history: [0.74, 0.73, 0.72, 0.71, 0.7, 0.69, 0.68, 0.68],
+    classification_health: {
+      value: 58,
+      history: [52, 51, 54, 55, 53, 56, 58],
       metadata: {},
-      diff: -0.02,
+      diff: 1.8,
     },
   },
 };

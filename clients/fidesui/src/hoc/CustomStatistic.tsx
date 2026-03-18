@@ -2,13 +2,9 @@ import type { GlobalToken } from "antd";
 import { Statistic, StatisticProps, theme } from "antd/lib";
 import React from "react";
 
-import { FONT_FAMILY_DISPLAY } from "../ant-theme/default-theme";
-
 type AntColorTokenKey = Extract<keyof GlobalToken, `color${string}`>;
 
 export type StatisticTrend = "up" | "down" | "neutral";
-
-export type StatisticValueVariant = "default" | "display";
 
 export interface CustomStatisticProps extends StatisticProps {
   /**
@@ -19,13 +15,6 @@ export interface CustomStatisticProps extends StatisticProps {
    * @default "neutral"
    */
   trend?: StatisticTrend;
-  /**
-   * Visual variant for the statistic value.
-   * - `"default"`: standard semibold value at the Ant Design default size
-   * - `"display"`: 2× larger (48 px) in the brand display font (Basier Square)
-   * @default "default"
-   */
-  valueVariant?: StatisticValueVariant;
 }
 
 /** Maps a trend direction to the corresponding Ant Design color-token key. */
@@ -39,33 +28,21 @@ const withCustomProps = (WrappedComponent: typeof Statistic) => {
   const WrappedStatistic = React.forwardRef<
     React.ComponentRef<typeof Statistic>,
     CustomStatisticProps
-  >(
-    (
-      { trend = "neutral", valueVariant = "default", valueStyle, ...props },
-      ref,
-    ) => {
-      const { token } = theme.useToken();
-      const trendColor = token[TREND_TOKEN_MAP[trend]];
-
-      const displayStyle: React.CSSProperties =
-        valueVariant === "display"
-          ? { fontSize: token.fontSizeHeading2, fontFamily: FONT_FAMILY_DISPLAY }
-          : {};
-
-      return (
-        <WrappedComponent
-          ref={ref}
-          valueStyle={{
-            fontWeight: 600, // semibold
-            color: trendColor,
-            ...displayStyle,
-            ...valueStyle, // allow per-instance overrides
-          }}
-          {...props}
-        />
-      );
-    },
-  );
+  >(({ trend = "neutral", valueStyle, ...props }, ref) => {
+    const { token } = theme.useToken();
+    const trendColor = token[TREND_TOKEN_MAP[trend]];
+    return (
+      <WrappedComponent
+        ref={ref}
+        valueStyle={{
+          fontWeight: 600, // semibold
+          color: trendColor,
+          ...valueStyle, // allow per-instance overrides
+        }}
+        {...props}
+      />
+    );
+  });
 
   WrappedStatistic.displayName = "CustomStatistic";
   return WrappedStatistic;
