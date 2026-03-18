@@ -294,6 +294,9 @@ class ConnectionConfig(Base):
     def authorized(self) -> bool:
         """Returns True if the connection config has an access token, used for OAuth2 connections"""
 
+        if self.connection_type == ConnectionType.jira_ticket:
+            return bool(self.secrets and "access_token" in self.secrets)
+
         saas_config = self.get_saas_config()
         if not saas_config:
             return False

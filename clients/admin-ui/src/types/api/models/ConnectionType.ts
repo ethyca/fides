@@ -17,6 +17,7 @@ export enum ConnectionType {
   GOOGLE_CLOUD_SQL_MYSQL = "google_cloud_sql_mysql",
   GOOGLE_CLOUD_SQL_POSTGRES = "google_cloud_sql_postgres",
   HTTPS = "https",
+  JIRA_TICKET = "jira_ticket",
   MANUAL = "manual",
   MANUAL_WEBHOOK = "manual_webhook",
   MANUAL_TASK = "manual_task",

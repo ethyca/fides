@@ -536,6 +536,17 @@ const plusApi = baseApi.injectEndpoints({
         body: { dataset_ids: datasetIds },
       }),
     }),
+    initiateJiraOAuth: build.mutation<
+      { authorization_url: string },
+      { connection_key: string }
+    >({
+      query: (body) => ({
+        url: `plus/oauth/jira/initiate`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Datastore Connection"],
+    }),
   }),
 });
 
@@ -580,6 +591,7 @@ export const {
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
   useSyncDatahubConnectionMutation,
+  useInitiateJiraOAuthMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

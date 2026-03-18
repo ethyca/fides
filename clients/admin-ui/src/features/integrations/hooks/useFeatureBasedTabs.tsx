@@ -18,7 +18,11 @@ import ConnectionStatusNotice, {
   ConnectionStatusData,
 } from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationLinkedSystems from "~/features/integrations/IntegrationLinkedSystems";
-import { ConnectionSystemTypeMap, IntegrationFeature } from "~/types/api";
+import {
+  ConnectionSystemTypeMap,
+  ConnectionType,
+  IntegrationFeature,
+} from "~/types/api";
 
 interface UseFeatureBasedTabsProps {
   connection: any;
@@ -95,6 +99,7 @@ export const useFeatureBasedTabs = ({
                   <ConnectionStatusNotice
                     testData={testData}
                     connectionOption={integrationOption}
+                    connectionType={connection?.connection_type}
                   />
                   <Spacer />
                   <Flex gap="middle">
@@ -103,7 +108,10 @@ export const useFeatureBasedTabs = ({
                         onClick={handleAuthorize}
                         data-testid="authorize-integration-btn"
                       >
-                        Authorize integration
+                        {connection?.connection_type ===
+                        ConnectionType.JIRA_TICKET
+                          ? "Authorize with Jira"
+                          : "Authorize integration"}
                       </Button>
                     )}
                     {!needsAuthorization && (
