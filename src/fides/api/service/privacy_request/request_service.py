@@ -694,8 +694,10 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             # event (webhook callback, polling), don't requeue or cancel —
                             # the request is intentionally waiting for that event.
                             try:
-                                has_async = _has_async_tasks_awaiting_external_completion(
-                                    db, privacy_request.id
+                                has_async = (
+                                    _has_async_tasks_awaiting_external_completion(
+                                        db, privacy_request.id
+                                    )
                                 )
                             except Exception as async_exc:
                                 # DB error checking async tasks — fail safe: skip this PR.
