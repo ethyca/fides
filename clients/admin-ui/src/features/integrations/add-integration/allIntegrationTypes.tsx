@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 
 import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bigqueryInfo";
 import DATAHUB_TYPE_INFO from "~/features/integrations/integration-type-info/datahubInfo";
-import ENTRA_TYPE_INFO from "~/features/integrations/integration-type-info/entraInfo";
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
+import ENTRA_TYPE_INFO from "~/features/integrations/integration-type-info/entraInfo";
 import GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLMySQLInfo";
 import GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLPostgresInfo";
 import MANUAL_TYPE_INFO from "~/features/integrations/integration-type-info/manualInfo";
