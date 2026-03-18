@@ -25,6 +25,12 @@ if TYPE_CHECKING:
 
 MASKED = "MASKED"
 
+# Keys injected by the Loguru patcher into every log record's extra dict.
+# These are excluded when deciding whether a record has "custom" extra context
+# (e.g. from logger.bind()) so that the log format only appends the extra
+# block when the caller explicitly added context beyond the automatic fields.
+_PATCHER_INJECTED_KEYS = {"request_id"}
+
 
 def _safe_stdout_sink(message: str) -> None:
     """Write to stdout, silently ignoring errors if the stream is already closed.
@@ -183,10 +189,11 @@ def create_handler_dicts(
 
     # Helper function to check if a log record has custom extra context
     # Loguru always includes an 'extra' dict, so we need to check if it has any keys
+    # beyond those automatically injected by the patcher.
     def has_custom_extra(log_record: Dict) -> bool:
         """Check if log record has custom extra context beyond Loguru's defaults."""
         extra = log_record.get("extra", {})
-        return len(extra) > 0
+        return any(k not in _PATCHER_INJECTED_KEYS for k in extra)
 
     # Helper to filter logs without custom extra
     def filter_standard(log_record: Dict) -> bool:
@@ -208,6 +215,22 @@ def create_handler_dicts(
     }
 
     return [standard_dict, extra_dict]
+
+
+def _inject_request_context(record: Dict[str, Any]) -> None:
+    """Loguru patcher that injects request-scoped context into every log record.
+
+    Reads the current ``request_id`` from the ``RequestContext`` ContextVar and
+    adds it to ``record["extra"]``.  Because the patcher runs on *every* log
+    record (including those from stdlib loggers intercepted by
+    ``InterceptHandler``), all logs emitted during a request are automatically
+    tagged without any changes to individual call-sites.
+    """
+    from fides.api.request_context import get_request_context
+
+    ctx = get_request_context()
+    if ctx.request_id is not None:
+        record["extra"]["request_id"] = ctx.request_id
 
 
 def setup(config: FidesConfig) -> None:
@@ -256,7 +279,7 @@ def setup(config: FidesConfig) -> None:
             )
         )
 
-    logger.configure(handlers=handlers)  # type: ignore[arg-type]
+    logger.configure(handlers=handlers, patcher=_inject_request_context)  # type: ignore[arg-type]
 
     # Add InterceptHandler to root logger to capture standard library logs
     # This intercepts logs from SQLAlchemy, Alembic, Celery, etc.

@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from time import perf_counter
 from typing import Any, Awaitable, Callable, MutableMapping, Optional, Set
+from uuid import uuid4
 
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
@@ -24,6 +25,7 @@ from fides.api.analytics import (
     send_analytics_event,
 )
 from fides.api.middleware import handle_audit_log_resource
+from fides.api.request_context import set_request_id
 from fides.api.schemas.analytics import Event, ExtraData
 from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
@@ -127,6 +129,23 @@ class BaseASGIMiddleware(ABC):
         return lambda: captured["status"], wrapper
 
     @staticmethod
+    def header_injecting_send(send: Send, extra_headers: dict[bytes, bytes]) -> Send:
+        """Wrap ``send`` to append headers to the response.
+
+        The headers are added when the ``http.response.start`` message passes
+        through.  Body messages are forwarded unchanged.
+        """
+
+        async def wrapper(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers", []))
+                headers.extend(extra_headers.items())
+                message["headers"] = headers
+            await send(message)
+
+        return wrapper
+
+    @staticmethod
     async def send_response(
         send: Send,
         status: int,
@@ -168,7 +187,16 @@ class LogRequestMiddleware(BaseASGIMiddleware):
         path = self.get_path(scope)
         fides_client = self.get_header(scope, b"fides-client", "unknown")
 
-        get_status, wrapped_send = self.status_capturing_send(send)
+        # Read or generate a request ID for log correlation
+        request_id = self.get_header(scope, b"x-request-id") or str(uuid4())
+        set_request_id(request_id)
+
+        # Inject response headers, then wrap with status capture
+        send_with_headers = self.header_injecting_send(
+            send, {b"x-request-id": request_id.encode("latin-1")}
+        )
+        get_status, wrapped_send = self.status_capturing_send(send_with_headers)
+
         status_code = 500
 
         try:
@@ -176,7 +204,7 @@ class LogRequestMiddleware(BaseASGIMiddleware):
             status_code = get_status()
         except Exception as e:
             logger.exception(f"Unhandled exception processing request: '{e}'")
-            await self.send_response(send, 500, b"Internal Server Error")
+            await self.send_response(send_with_headers, 500, b"Internal Server Error")
             status_code = 500
 
         handler_time = round((perf_counter() - start_time) * 1000, 3)

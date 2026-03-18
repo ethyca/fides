@@ -2,6 +2,7 @@ from typing import Any, ContextManager, Dict, List, Optional
 
 import celery_redis_cluster_backend  # type: ignore[import-untyped]  # noqa: F401 - registers redis+cluster/rediss+cluster backends
 from celery import Celery, Task
+from celery.signals import before_task_publish, task_prerun
 from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
 from sqlalchemy.exc import OperationalError
@@ -15,6 +16,7 @@ from tenacity import (
 )
 
 from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.request_context import get_request_id, set_request_id
 from fides.api.tasks import celery_healthcheck
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
@@ -182,6 +184,30 @@ def configure_celery_logging(**kwargs: Any) -> None:
     from overriding our Loguru logging configuration. Our logging setup in _create_celery
     has already configured logging with InterceptHandler to capture all stdlib logs.
     """
+
+
+@before_task_publish.connect
+def _propagate_request_id(headers: Dict[str, Any], **kwargs: Any) -> None:
+    """Attach the current request_id to outgoing Celery task headers.
+
+    This runs in the *publisher* process (API server) so the ContextVar
+    holds the request_id set by ``LogRequestMiddleware``.
+    """
+    request_id = get_request_id()
+    if request_id is not None:
+        headers["request_id"] = request_id
+
+
+@task_prerun.connect
+def _restore_request_id(task: Task, **kwargs: Any) -> None:
+    """Restore request_id from the task headers into the worker's ContextVar.
+
+    This runs in the *worker* process before the task body executes, so all
+    logs emitted by the task are tagged with the originating request_id.
+    """
+    request_id = getattr(task.request, "request_id", None)
+    if request_id is not None:
+        set_request_id(request_id)
 
 
 def get_worker_ids() -> List[Optional[str]]:

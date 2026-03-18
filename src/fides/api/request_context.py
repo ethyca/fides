@@ -4,9 +4,9 @@ accessible across the entire application stack (endpoints -> services ->
 helpers -> decorators) without having to thread additional parameters through
 all call-sites.
 
-Currently we only capture the authenticated `user_id` but additional fields
-(e.g. correlation_id, locale, feature_flags) can be added in the future by
-expanding the `RequestContext` dataclass.
+Currently we capture the authenticated `user_id` and an optional `request_id`
+for log correlation. Additional fields (e.g. locale, feature_flags) can be
+added in the future by expanding the `RequestContext` dataclass.
 
 A `contextvars.ContextVar` is used instead of a module-level global to ensure
 that values are local to the current execution context (async task, thread or
@@ -16,19 +16,22 @@ Celery worker) and therefore safe for concurrent workloads.
 from __future__ import annotations
 
 import contextvars
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any, Optional
 
 __all__ = [
+    "get_request_id",
     "get_user_id",
-    "set_user_id",
     "reset_request_context",
+    "set_request_id",
+    "set_user_id",
 ]
 
 
 @dataclass
 class RequestContext:
     user_id: Optional[str] = None
+    request_id: Optional[str] = None
 
 
 # A single ContextVar holding the current request context.
@@ -53,11 +56,18 @@ def get_request_context() -> RequestContext:
 
 
 def set_request_context(**kwargs: Any) -> None:
-    """Mutate the current context in place using `key=value` pairs."""
+    """Set fields on the request context for the current execution context.
+
+    Creates a new ``RequestContext`` (copying existing values) and stores it
+    via ``_ctx.set()`` so the update is scoped to this coroutine/thread
+    rather than mutating a shared default object.
+    """
     ctx = _ctx.get()
+    current = asdict(ctx)
     for key, value in kwargs.items():
-        if hasattr(ctx, key):
-            setattr(ctx, key, value)
+        if key in current:
+            current[key] = value
+    _ctx.set(RequestContext(**current))
 
 
 def reset_request_context() -> None:
@@ -74,3 +84,14 @@ def get_user_id() -> Optional[str]:
 def set_user_id(user_id: str) -> None:
     """Set the user_id in the current request context."""
     set_request_context(user_id=user_id)
+
+
+def get_request_id() -> Optional[str]:
+    """Return the request_id from the current request context."""
+    ctx = get_request_context()
+    return ctx.request_id
+
+
+def set_request_id(request_id: str) -> None:
+    """Set the request_id in the current request context."""
+    set_request_context(request_id=request_id)
