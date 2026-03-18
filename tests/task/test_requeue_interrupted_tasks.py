@@ -227,7 +227,7 @@ class TestRequeueInterruptedTasks:
         mock_cancel,
         make_privacy_request,
     ):
-        """No PR-level cached task ID — watchdog skips (neither requeues nor cancels)."""
+        """No PR-level cached task ID — watchdog cancels the privacy request."""
         make_privacy_request(cached=False)
         requeue_interrupted_tasks.apply().get()
         mock_requeue.assert_not_called()

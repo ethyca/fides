@@ -712,12 +712,20 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             # _handle_privacy_request_requeue applies the retry limit;
                             # cancellation only happens when the limit is exhausted.
                             if task_status == ExecutionLogStatus.pending:
-                                logger.warning(
-                                    f"No task ID found for request task {request_task_id} "
-                                    f"(privacy request {privacy_request.id}) is pending with "
-                                    f"upstream complete but was never dispatched - "
-                                    f"parent task died before dispatch, requeueing"
-                                )
+                                if not awaiting_upstream:
+                                    logger.warning(
+                                        f"No task ID found for request task {request_task_id} "
+                                        f"(privacy request {privacy_request.id}) is a root/ready pending "
+                                        f"task that was never dispatched - "
+                                        f"parent task died before dispatch, requeueing"
+                                    )
+                                else:
+                                    logger.warning(
+                                        f"No task ID found for request task {request_task_id} "
+                                        f"(privacy request {privacy_request.id}) is pending with "
+                                        f"upstream complete but was never dispatched - "
+                                        f"parent task died before dispatch, requeueing"
+                                    )
                             else:
                                 logger.warning(
                                     f"No task ID found for request task {request_task_id} "
