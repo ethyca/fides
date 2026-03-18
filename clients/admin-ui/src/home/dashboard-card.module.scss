@@ -1,3 +1,13 @@
+.dashboardCard {
+  :global(.ant-card-head-title) {
+    color: var(--ant-color-text-description);
+  }
+
+  :global(.ant-card-body) {
+    padding-top: 0;
+  }
+}
+
 .smallStatistic {
   :global(.ant-statistic-content) {
     font-size: var(--ant-font-size-sm);

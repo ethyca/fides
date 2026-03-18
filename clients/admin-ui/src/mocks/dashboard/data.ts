@@ -3,6 +3,7 @@ import type {
   PostureResponse,
   PriorityAction,
   SystemCoverageResponse,
+  TrendsResponse,
 } from "~/features/dashboard/types";
 import {
   ActionSeverity,
@@ -373,4 +374,37 @@ export const mockAgentBriefing: AgentBriefingResponse = {
       severity: ActionSeverity.CRITICAL,
     },
   ],
+};
+
+export const mockTrends: TrendsResponse = {
+  metrics: {
+    data_sharing: {
+      name: "Data sharing",
+      value: 0.73,
+      history: [0.65, 0.67, 0.68, 0.7, 0.69, 0.71, 0.72, 0.73],
+      metadata: {},
+      diff: 0.03,
+    },
+    active_users: {
+      name: "Active users",
+      value: 0.82,
+      history: [0.78, 0.79, 0.8, 0.81, 0.8, 0.82, 0.81, 0.82],
+      metadata: {},
+      diff: 0.01,
+    },
+    total_requests: {
+      name: "Total requests",
+      value: 1247,
+      history: [980, 1020, 1050, 1100, 1130, 1180, 1210, 1247],
+      metadata: {},
+      diff: 37,
+    },
+    consent_rate: {
+      name: "Consent rate",
+      value: 0.68,
+      history: [0.74, 0.73, 0.72, 0.71, 0.7, 0.69, 0.68, 0.68],
+      metadata: {},
+      diff: -0.02,
+    },
+  },
 };

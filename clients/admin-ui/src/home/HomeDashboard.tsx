@@ -1,13 +1,18 @@
 import { Col, Flex, Row } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
-import { useGetAgentBriefingQuery } from "~/features/dashboard/dashboard.slice";
+import {
+  useGetAgentBriefingQuery,
+  useGetDashboardTrendsQuery,
+} from "~/features/dashboard/dashboard.slice";
+import { TrendPeriod } from "~/features/dashboard/types";
 
 import { AgentBriefingBanner } from "./AgentBriefingBanner";
 import { DashboardDrawer } from "./DashboardDrawer";
 import { PostureCard } from "./PostureCard";
 import { PriorityActionsCard } from "./PriorityActionsCard";
 import { SystemCoverageCard } from "./SystemCoverageCard";
+import { TrendCard } from "./TrendCard";
 
 const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
 
@@ -21,6 +26,9 @@ export const HomeDashboard = () => {
   }, []);
 
   const { data: briefing } = useGetAgentBriefingQuery();
+  const { data: trends } = useGetDashboardTrendsQuery({ period: TrendPeriod.THIRTY_DAYS });
+
+  const metrics = trends?.metrics;
 
   const dismissBriefing = useCallback(() => {
     setShowBriefing(false);
@@ -45,6 +53,32 @@ export const HomeDashboard = () => {
         </Col>
         <Col xs={24} md={16} lg={16} xxl={16} className="h-full">
           <PriorityActionsCard />
+        </Col>
+      </Row>
+      <Row gutter={24}>
+        <Col xs={24} sm={12} md={6}>
+          <TrendCard
+            title="Data sharing"
+            metric={metrics?.data_sharing}
+            format="percentage"
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <TrendCard
+            title="Active users"
+            metric={metrics?.active_users}
+            format="percentage"
+          />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <TrendCard title="Total requests" metric={metrics?.total_requests} />
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <TrendCard
+            title="Consent rate"
+            metric={metrics?.consent_rate}
+            format="percentage"
+          />
         </Col>
       </Row>
       <Row gutter={24}>
