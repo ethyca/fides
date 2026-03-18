@@ -313,7 +313,7 @@ const ConnectionListDropdown = ({
         icon={<ArrowDownLineIcon />}
         iconPosition="end"
         data-testid="select-dropdown-btn"
-        style={{ width: 272 }}
+        className="w-[272px]"
       >
         <Flex alignItems="center" gap={1}>
           <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
