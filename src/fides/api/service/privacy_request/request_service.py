@@ -1,19 +1,24 @@
 from __future__ import annotations
 
 import json
+from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Any, Dict, Generator, List, Optional, Set
+from typing import Any, DefaultDict, Dict, Generator, List, Optional, Set, Union
 
+import sqlalchemy
 from httpx import AsyncClient
 from loguru import logger
-from sqlalchemy import text
-from sqlalchemy.orm import Session
+from sqlalchemy import cast, null, text
+from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestError
+from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
+from fides.api.models.audit_log import AuditLog
 from fides.api.models.privacy_request import (
     COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
+    ExecutionLog,
     PrivacyRequest,
     RequestTask,
 )
@@ -763,3 +768,125 @@ def requeue_polling_tasks(self: DatabaseTask) -> None:
                         f"Requeuing polling task {async_task.id} for processing"
                     )
                     queue_request_task(async_task, privacy_request_proceed=True)
+
+
+EMBEDDED_EXECUTION_LOG_LIMIT = 1000
+
+
+def execution_and_audit_logs_by_dataset_name(
+    self: PrivacyRequest,
+) -> DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]]:
+    """
+    Returns a combined mapping of execution and audit logs for the given privacy request.
+
+    Audit Logs are for the entire privacy request as a whole, while execution logs are created for specific collections.
+    Logs here are grouped by dataset, but if it is an audit log, it is just given a fake dataset name, here "Request + status"
+    ExecutionLogs for each dataset are truncated.
+
+    Added as a conditional property to the PrivacyRequest class at runtime to
+    show optionally embedded execution and audit logs.
+
+    An example response might include your execution logs from your mongo db in one group, and execution logs from
+    your postgres db in a different group, plus audit logs for when the request was approved and denied.
+    """
+    db: Session = Session.object_session(self)
+    all_logs: DefaultDict[str, List[Union["AuditLog", "ExecutionLog"]]] = defaultdict(
+        list
+    )
+
+    execution_log_query: Query = db.query(
+        ExecutionLog.id,
+        ExecutionLog.created_at,
+        ExecutionLog.updated_at,
+        ExecutionLog.message,
+        cast(ExecutionLog.status, sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
+        ExecutionLog.privacy_request_id,
+        ExecutionLog.dataset_name,
+        ExecutionLog.collection_name,
+        ExecutionLog.connection_key,
+        ExecutionLog.fields_affected,
+        ExecutionLog.action_type,
+        null().label("user_id"),
+    ).filter(ExecutionLog.privacy_request_id == self.id)
+
+    audit_log_query: Query = db.query(
+        AuditLog.id,
+        AuditLog.created_at,
+        AuditLog.updated_at,
+        AuditLog.message,
+        cast(AuditLog.action.label("status"), sqlalchemy.String).label(
+            "status"
+        ),  # Casting to string so we can perform a union of execution log and audit log statuses
+        AuditLog.privacy_request_id,
+        null().label("dataset_name"),
+        null().label("collection_name"),
+        null().label("connection_key"),
+        null().label("fields_affected"),
+        null().label("action_type"),
+        AuditLog.user_id,
+    ).filter(AuditLog.privacy_request_id == self.id)
+
+    combined: Query = execution_log_query.union_all(audit_log_query)
+
+    for log in combined.order_by(ExecutionLog.updated_at.asc()):
+        dataset_name: str = log.dataset_name or f"Request {log.status}"
+
+        if len(all_logs[dataset_name]) > EMBEDDED_EXECUTION_LOG_LIMIT - 1:
+            continue
+        all_logs[dataset_name].append(log)
+    return all_logs
+
+
+# Priority order for "worst" status per dataset — lower number = higher priority.
+_STATUS_PRIORITY: Dict[ExecutionLogStatus, int] = {
+    ExecutionLogStatus.error: 0,
+    ExecutionLogStatus.awaiting_processing: 1,
+    ExecutionLogStatus.polling: 2,
+    ExecutionLogStatus.retrying: 3,
+    ExecutionLogStatus.skipped: 4,
+}
+
+
+def task_status_by_dataset_name(
+    self: PrivacyRequest,
+) -> Dict[str, str]:
+    """
+    Returns a mapping of dataset name → "worst" RequestTask status for that dataset.
+
+    Only datasets that have a noteworthy status (error, awaiting_processing, polling,
+    retrying, skipped) are included. Datasets where all tasks are complete, pending,
+    or in_processing are omitted.
+
+    Added as a conditional property to the PrivacyRequest class at runtime alongside
+    execution_and_audit_logs_by_dataset when verbose=True.
+    """
+    db: Session = Session.object_session(self)
+    tasks = (
+        db.query(RequestTask.dataset_name, RequestTask.status)
+        .filter(
+            RequestTask.privacy_request_id == self.id,
+            RequestTask.collection_address.notin_(
+                [
+                    ROOT_COLLECTION_ADDRESS.value,
+                    TERMINATOR_ADDRESS.value,
+                ]
+            ),
+        )
+        .all()
+    )
+
+    worst_by_dataset: Dict[str, str] = {}
+    worst_priority: Dict[str, int] = {}
+
+    for dataset_name, status in tasks:
+        priority = _STATUS_PRIORITY.get(status)
+        if priority is None:
+            continue
+        current_priority = worst_priority.get(dataset_name)
+        if current_priority is None or priority < current_priority:
+            worst_priority[dataset_name] = priority
+            worst_by_dataset[dataset_name] = status.name
+
+    return worst_by_dataset
