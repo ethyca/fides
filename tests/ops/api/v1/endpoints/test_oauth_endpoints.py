@@ -1046,7 +1046,7 @@ class TestOAuthPrivilegeEscalationSecurity:
         response = api_client.post(
             create_client_url,
             headers=auth_header,
-            json=privileged_scopes,
+            json={"scopes": privileged_scopes},
         )
 
         assert response.status_code == 403
@@ -1076,7 +1076,7 @@ class TestOAuthPrivilegeEscalationSecurity:
         response = api_client.post(
             create_client_url,
             headers=auth_header,
-            json=insecure_scopes,
+            json={"scopes": insecure_scopes},
         )
 
         # Should be rejected with 403 Forbidden
@@ -1137,7 +1137,7 @@ class TestOAuthPrivilegeEscalationSecurity:
         response = api_client.post(
             create_client_url,
             headers=auth_header,
-            json=admin_scopes,
+            json={"scopes": admin_scopes},
         )
 
         # Should be blocked because CONTRIBUTOR role doesn't include these admin scopes
@@ -1195,7 +1195,7 @@ class TestOAuthPrivilegeEscalationSecurity:
         response = api_client.post(
             create_client_url,
             headers=auth_header,
-            json=[allowed_scope],
+            json={"scopes": [allowed_scope]},
         )
 
         # Should succeed because CONTRIBUTOR role includes this scope
@@ -1285,7 +1285,7 @@ class TestOAuthPrivilegeEscalationSecurity:
         response = api_client.post(
             create_client_url,
             headers=auth_header,
-            json=allowed_scopes,
+            json={"scopes": allowed_scopes},
         )
 
         assert response.status_code == 200
@@ -1399,7 +1399,7 @@ class TestOAuthPrivilegeEscalationSecurity:
         response = api_client.post(
             create_client_url,
             headers=auth_header,
-            json=privileged_scopes,
+            json={"scopes": privileged_scopes},
         )
 
         assert response.status_code == 200
@@ -1427,7 +1427,7 @@ class TestOAuthPrivilegeEscalationSecurity:
         response = api_client.post(
             create_client_url,
             headers=auth_header,
-            json=[],  # Empty scopes
+            json={"scopes": []},
         )
 
         assert response.status_code == 200
