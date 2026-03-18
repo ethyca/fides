@@ -12,7 +12,7 @@ import { DashboardDrawer } from "./DashboardDrawer";
 import { PostureCard } from "./PostureCard";
 import { PriorityActionsCard } from "./PriorityActionsCard";
 import { SystemCoverageCard } from "./SystemCoverageCard";
-import { TrendCard, TREND_METRIC_KEYS } from "./TrendCard";
+import { TREND_METRIC_KEYS, TrendCard } from "./TrendCard";
 
 const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
 

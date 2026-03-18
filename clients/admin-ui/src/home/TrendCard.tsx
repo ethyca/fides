@@ -8,24 +8,24 @@ import cardStyles from "./dashboard-card.module.scss";
 
 type StatType = "number" | "percent";
 
-interface MetricConfig {
-  label: string;
-  statType: StatType;
-}
-
-const TREND_METRIC_CONFIG: Record<string, MetricConfig> = {
-  gps_score: { label: "GPS Score", statType: "number" },
-  dsr_volume: { label: "DSR Volume", statType: "number" },
-  system_coverage: { label: "System Coverage", statType: "percent" },
+const TREND_METRIC_CONFIG = {
+  gps_score: { label: "GPS Score", statType: "number" as StatType },
+  dsr_volume: { label: "DSR Volume", statType: "number" as StatType },
+  system_coverage: {
+    label: "System Coverage",
+    statType: "percent" as StatType,
+  },
   classification_health: {
     label: "Classification Health",
-    statType: "percent",
+    statType: "percent" as StatType,
   },
 };
 
 export type TrendMetricKey = keyof typeof TREND_METRIC_CONFIG;
 
-export const TREND_METRIC_KEYS = Object.keys(TREND_METRIC_CONFIG) as TrendMetricKey[];
+export const TREND_METRIC_KEYS = Object.keys(
+  TREND_METRIC_CONFIG,
+) as TrendMetricKey[];
 
 interface TrendCardProps {
   metricKey: TrendMetricKey;
