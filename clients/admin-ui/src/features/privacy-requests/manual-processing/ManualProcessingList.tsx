@@ -1,7 +1,3 @@
-import {
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
 import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
   Button,
@@ -33,6 +29,10 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import { getActionTypes } from "~/features/common/RequestType";
 import { ActionType } from "~/types/api";
 

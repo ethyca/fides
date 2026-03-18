@@ -1,8 +1,4 @@
 import {
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
-import {
   useCreateAccessManualWebhookMutation,
   useGetAccessManualHookQuery,
   usePatchAccessManualWebhookMutation,
@@ -24,6 +20,10 @@ import {
 } from "fidesui";
 import React, { useEffect, useRef, useState } from "react";
 
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import DSRCustomizationForm from "./DSRCustomizationForm";

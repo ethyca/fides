@@ -48,6 +48,7 @@ enum MessagingConfigurationColumnKeys {
 
 export const useMessagingConfigurationsTable = () => {
   const router = useRouter();
+  const message = useMessage();
   const handleError = (error: any) => {
     let errorMsg = "An unexpected error occurred. Please try again.";
     if (isErrorWithDetail(error)) {
@@ -61,8 +62,6 @@ export const useMessagingConfigurationsTable = () => {
   const [saveActiveConfiguration] = usePatchConfigurationSettingsMutation();
   const [deleteMessagingConfiguration] =
     useDeleteMessagingConfigurationByKeyMutation();
-
-  const message = useMessage();
 
   // Permissions
   const userCanUpdate = useHasPermission([

@@ -1,7 +1,3 @@
-import {
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
 import ConnectionTypeLogo, {
   connectionLogoFromConfiguration,
 } from "datastore-connections/ConnectionTypeLogo";
@@ -19,6 +15,10 @@ import {
 import React, { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import {
+  isErrorWithDetail,
+  isErrorWithDetailArray,
+} from "~/features/common/helpers";
 import {
   selectConnectionTypeFilters,
   useGetAllConnectionTypesQuery,
