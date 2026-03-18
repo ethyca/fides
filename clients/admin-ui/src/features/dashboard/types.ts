@@ -128,23 +128,21 @@ interface ActivityFeedParams {
 
 export type { ActivityFeedParams, ActivityFeedResponse };
 
-interface PrivacyRequestRegion {
-  name: string;
-  level: "global" | "country" | "state";
-  access_count: number;
-  erasure_count: number;
-}
-
 interface PrivacyRequestsResponse {
-  diff_month_over_month: number;
-  regions: PrivacyRequestRegion[];
+  active_count: number;
+  statuses: {
+    in_progress: number;
+    pending_action: number;
+    awaiting_approval: number;
+  };
+  overdue_count: number;
+  sla_health: Record<
+    string,
+    { on_track: number; approaching: number; overdue: number }
+  >;
 }
 
-interface PrivacyRequestsParams {
-  country?: string;
-}
-
-export type { PrivacyRequestsParams, PrivacyRequestsResponse };
+export type { PrivacyRequestsResponse };
 
 export interface QuickAction {
   label: string;
