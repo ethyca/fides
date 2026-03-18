@@ -177,6 +177,10 @@ const DatasetNodeEditorInner = ({
   // Tracks who initiated the last change to prevent sync loops
   const changeSourceRef = useRef<"graph" | "yaml" | null>(null);
   const yamlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const yamlEditorRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const yamlDecorationsRef = useRef<any>(null);
 
   const highlightNode = useCallback((nodeId: string) => {
     if (highlightTimerRef.current) {
@@ -254,6 +258,110 @@ const DatasetNodeEditorInner = ({
     },
     [onDatasetChange],
   );
+
+  // Compute protected YAML line ranges for Monaco decorations
+  const protectedRanges = useMemo(() => {
+    if (!protectedFields || !yamlContent) {
+      return [];
+    }
+
+    const lines = yamlContent.split("\n");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ranges: any[] = [];
+
+    // Build lookup: collection → Set of field paths (including ancestor paths)
+    const protectedPathsByCollection = new Map<string, Set<string>>();
+    protectedFields.protected_collection_fields.forEach((pf) => {
+      if (!protectedPathsByCollection.has(pf.collection)) {
+        protectedPathsByCollection.set(pf.collection, new Set());
+      }
+      const pathSet = protectedPathsByCollection.get(pf.collection)!;
+      const segments = pf.field.split(".");
+      segments.forEach((_, idx) => {
+        pathSet.add(segments.slice(0, idx + 1).join("."));
+      });
+    });
+
+    const immutableSet = new Set(protectedFields.immutable_fields);
+    let currentCollection = "";
+    const fieldStack: [number, string][] = [];
+
+    lines.forEach((line: string, i: number) => {
+      let isProtected = false;
+
+      // Top-level immutable keys (fides_key, name, description, etc.)
+      if (/^\S/.test(line) && line.includes(":")) {
+        const key = line.split(":")[0].trim();
+        if (immutableSet.has(key)) {
+          isProtected = true;
+        }
+      }
+
+      // Track collection/field structure
+      const nameMatch = line.match(/^(\s*)-\s+name:\s+(\S+)/);
+      if (nameMatch) {
+        const [, indent, name] = nameMatch;
+        const indentLevel = indent.length;
+
+        if (indentLevel <= 4) {
+          currentCollection = name;
+          fieldStack.length = 0;
+        } else {
+          while (
+            fieldStack.length > 0 &&
+            fieldStack[fieldStack.length - 1][0] >= indentLevel
+          ) {
+            fieldStack.pop();
+          }
+          fieldStack.push([indentLevel, name]);
+
+          if (protectedPathsByCollection.has(currentCollection)) {
+            const currentPath = fieldStack.map(([, n]) => n).join(".");
+            if (
+              protectedPathsByCollection
+                .get(currentCollection)!
+                .has(currentPath)
+            ) {
+              isProtected = true;
+            }
+          }
+        }
+      }
+
+      if (isProtected) {
+        ranges.push({
+          range: {
+            startLineNumber: i + 1,
+            startColumn: 1,
+            endLineNumber: i + 1,
+            endColumn: line.length + 1,
+          },
+          options: {
+            isWholeLine: true,
+            inlineClassName: "immutable-line",
+          },
+        });
+      }
+    });
+
+    return ranges;
+  }, [protectedFields, yamlContent]);
+
+  // Apply decorations when ranges change or editor is available
+  const applyYamlDecorations = useCallback(() => {
+    const editor = yamlEditorRef.current;
+    if (!editor) {
+      return;
+    }
+    yamlDecorationsRef.current = editor.deltaDecorations(
+      yamlDecorationsRef.current || [],
+      protectedRanges,
+    );
+  }, [protectedRanges]);
+
+  useEffect(() => {
+    applyYamlDecorations();
+  }, [applyYamlDecorations]);
 
   const { nodes: rawNodes, edges } = useDatasetGraph(
     dataset,
@@ -652,6 +760,16 @@ const DatasetNodeEditorInner = ({
                 value={yamlContent}
                 height="100%"
                 onChange={handleYamlChange}
+                onMount={(editor) => {
+                  if (!document.getElementById("immutable-line-style")) {
+                    const style = document.createElement("style");
+                    style.id = "immutable-line-style";
+                    style.textContent = ".immutable-line { opacity: 0.5; }";
+                    document.head.appendChild(style);
+                  }
+                  yamlEditorRef.current = editor;
+                  applyYamlDecorations();
+                }}
                 options={{
                   fontFamily: "Menlo",
                   fontSize: 13,
