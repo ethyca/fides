@@ -2240,6 +2240,21 @@ class TestGetPrivacyRequests:
                 "all_descendant_tasks": [],
             },
         )
+        # dataset_c: one task awaiting_processing (DB value is "paused")
+        task_c1 = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": "paused",
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "dataset_c:collection_1",
+                "dataset_name": "dataset_c",
+                "collection_name": "collection_1",
+                "upstream_tasks": ["__ROOT__:__ROOT__"],
+                "downstream_tasks": ["__TERMINATE__:__TERMINATE__"],
+                "all_descendant_tasks": [],
+            },
+        )
         terminator_task = RequestTask.create(
             db,
             data={
@@ -2253,6 +2268,7 @@ class TestGetPrivacyRequests:
                     "dataset_a:collection_1",
                     "dataset_a:collection_2",
                     "dataset_b:collection_1",
+                    "dataset_c:collection_1",
                 ],
                 "downstream_tasks": [],
                 "all_descendant_tasks": [],
@@ -2270,15 +2286,13 @@ class TestGetPrivacyRequests:
         assert task_status["dataset_a"] == "error"
         # polling is the only noteworthy status for dataset_b
         assert task_status["dataset_b"] == "polling"
+        # awaiting_processing returned by name, not DB value "paused"
+        assert task_status["dataset_c"] == "awaiting_processing"
         # ROOT and TERMINATOR should not appear
         assert "__ROOT__" not in task_status
         assert "__TERMINATE__" not in task_status
         # Datasets where all tasks are complete/pending/in_processing are omitted
-        assert len(task_status) == 2
-
-        db.query(RequestTask).filter(
-            RequestTask.privacy_request_id == privacy_request.id
-        ).delete()
+        assert len(task_status) == 3
 
     def test_verbose_privacy_request_embed_limit(
         self,
