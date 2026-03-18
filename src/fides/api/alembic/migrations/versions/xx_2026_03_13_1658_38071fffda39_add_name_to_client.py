@@ -1,7 +1,7 @@
 """add name to client
 
 Revision ID: 38071fffda39
-Revises: 4ac4864180db
+Revises: baa6792fc3f7
 Create Date: 2026-03-13 16:58:07.889894
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '38071fffda39'
-down_revision = '4ac4864180db'
+down_revision = 'baa6792fc3f7'
 branch_labels = None
 depends_on = None
 
