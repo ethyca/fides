@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.1b1.dev17+gabc4d13a7"
+    "version": "2.81.1b1.dev18+gc1232c1ea"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2492,6 +2492,34 @@
                     ],
                     "title": "DatahubDocsSchema",
                     "description": "Datahub Schema for API docs."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tenant_id": {
+                        "type": "string",
+                        "title": "Tenant ID",
+                        "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                      },
+                      "client_id": {
+                        "type": "string",
+                        "title": "Client ID",
+                        "description": "Application (client) ID from your Entra app registration"
+                      },
+                      "client_secret": {
+                        "type": "string",
+                        "title": "Client Secret",
+                        "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                        "sensitive": true
+                      }
+                    },
+                    "required": [
+                      "tenant_id",
+                      "client_id",
+                      "client_secret"
+                    ],
+                    "title": "EntraDocsSchema",
+                    "description": "Entra Secrets Schema for API Docs."
                   },
                   {
                     "type": "object",
@@ -5306,6 +5334,34 @@
                   {
                     "type": "object",
                     "properties": {
+                      "tenant_id": {
+                        "type": "string",
+                        "title": "Tenant ID",
+                        "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                      },
+                      "client_id": {
+                        "type": "string",
+                        "title": "Client ID",
+                        "description": "Application (client) ID from your Entra app registration"
+                      },
+                      "client_secret": {
+                        "type": "string",
+                        "title": "Client Secret",
+                        "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                        "sensitive": true
+                      }
+                    },
+                    "required": [
+                      "tenant_id",
+                      "client_id",
+                      "client_secret"
+                    ],
+                    "title": "EntraDocsSchema",
+                    "description": "Entra Secrets Schema for API Docs."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
                       "test_email_address": {
                         "anyOf": [
                           {
@@ -6717,6 +6773,34 @@
                     ],
                     "title": "DatahubDocsSchema",
                     "description": "Datahub Schema for API docs."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "tenant_id": {
+                        "type": "string",
+                        "title": "Tenant ID",
+                        "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                      },
+                      "client_id": {
+                        "type": "string",
+                        "title": "Client ID",
+                        "description": "Application (client) ID from your Entra app registration"
+                      },
+                      "client_secret": {
+                        "type": "string",
+                        "title": "Client Secret",
+                        "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                        "sensitive": true
+                      }
+                    },
+                    "required": [
+                      "tenant_id",
+                      "client_id",
+                      "client_secret"
+                    ],
+                    "title": "EntraDocsSchema",
+                    "description": "Entra Secrets Schema for API Docs."
                   },
                   {
                     "type": "object",
@@ -21834,6 +21918,7 @@
           "generic_consent_email",
           "generic_erasure_email",
           "dynamic_erasure_email",
+          "entra",
           "google_cloud_sql_mysql",
           "google_cloud_sql_postgres",
           "https",
@@ -22538,6 +22623,34 @@
                 ],
                 "title": "DatahubDocsSchema",
                 "description": "Datahub Schema for API docs."
+              },
+              {
+                "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "title": "Tenant ID",
+                    "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "title": "Client ID",
+                    "description": "Application (client) ID from your Entra app registration"
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "title": "Client Secret",
+                    "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                    "sensitive": true
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "tenant_id",
+                  "client_id",
+                  "client_secret"
+                ],
+                "title": "EntraDocsSchema",
+                "description": "Entra Secrets Schema for API Docs."
               },
               {
                 "properties": {
@@ -25893,6 +26006,34 @@
         ],
         "title": "Endpoint",
         "description": "A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"
+      },
+      "EntraDocsSchema": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant ID",
+            "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client ID",
+            "description": "Application (client) ID from your Entra app registration"
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret",
+            "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+            "sensitive": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "tenant_id",
+          "client_id",
+          "client_secret"
+        ],
+        "title": "EntraDocsSchema",
+        "description": "Entra Secrets Schema for API Docs."
       },
       "ErrorNotificationMode": {
         "type": "string",
@@ -33594,6 +33735,34 @@
                 ],
                 "title": "DatahubDocsSchema",
                 "description": "Datahub Schema for API docs."
+              },
+              {
+                "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "title": "Tenant ID",
+                    "description": "Azure AD tenant ID (directory ID) from the Azure portal"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "title": "Client ID",
+                    "description": "Application (client) ID from your Entra app registration"
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "title": "Client Secret",
+                    "description": "Client secret value from your Entra app registration (Certificates & secrets)",
+                    "sensitive": true
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "tenant_id",
+                  "client_id",
+                  "client_secret"
+                ],
+                "title": "EntraDocsSchema",
+                "description": "Entra Secrets Schema for API Docs."
               },
               {
                 "properties": {
