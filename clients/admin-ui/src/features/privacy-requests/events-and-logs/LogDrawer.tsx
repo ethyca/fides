@@ -1,15 +1,4 @@
-import {
-  Button,
-  ChakraArrowBackIcon as ArrowBackIcon,
-  ChakraDrawer as Drawer,
-  ChakraDrawerBody as DrawerBody,
-  ChakraDrawerContent as DrawerContent,
-  ChakraDrawerHeader as DrawerHeader,
-  ChakraDrawerOverlay as DrawerOverlay,
-  ChakraFlex as Flex,
-  ChakraText as Text,
-  CloseSolidIcon,
-} from "fidesui";
+import { Button, Drawer, Flex, Icons } from "fidesui";
 import {
   ExecutionLog,
   ExecutionLogStatus,
@@ -49,63 +38,42 @@ const LogDrawer = ({
 
   return (
     <Drawer
-      isOpen={isOpen}
-      placement="right"
+      open={isOpen}
       onClose={onClose}
-      size="full"
+      width="50vw"
       autoFocus={false}
-      data-testid="log-drawer"
-    >
-      <DrawerOverlay />
-      <DrawerContent style={{ width: "50%" }} data-testid="log-drawer">
-        <DrawerHeader style={{ paddingBottom: "0px" }}>
-          <Flex
-            justifyContent="space-between"
-            alignItems="center"
-            height="40px"
-          >
-            <Flex alignItems="center">
-              {isViewingError && (
-                <Button
-                  icon={<ArrowBackIcon />}
-                  aria-label="Close error logs"
-                  size="small"
-                  onClick={onCloseErrorPanel}
-                />
-              )}
-              <Text
-                color="gray.900"
-                fontSize="md"
-                lineHeight="6"
-                fontWeight="medium"
-                ml={1}
-              >
-                {headerText}
-              </Text>
-            </Flex>
+      destroyOnHidden
+      title={
+        <Flex align="center" gap="small">
+          {isViewingError && (
             <Button
-              icon={<CloseSolidIcon width="17px" />}
-              aria-label="Stop viewing error message"
+              icon={<Icons.ArrowLeft />}
+              aria-label="Close error logs"
               size="small"
-              onClick={onClose}
-              data-testid="log-drawer-close"
+              onClick={onCloseErrorPanel}
             />
-          </Flex>
-        </DrawerHeader>
-        <DrawerBody id="drawerBody" overflow="hidden">
-          {currentLogs && !isViewingError ? (
-            <EventLog
-              eventLogs={currentLogs}
-              allEventLogs={allEventLogs}
-              onDetailPanel={onOpenErrorPanel}
-              privacyRequest={privacyRequest}
-            />
-          ) : null}
-          {isViewingError ? (
-            <EventDetail errorMessage={errorMessage} status={currentStatus} />
-          ) : null}
-        </DrawerBody>
-      </DrawerContent>
+          )}
+          <span>{headerText}</span>
+        </Flex>
+      }
+    >
+      <section
+        data-testid="log-drawer"
+        id="drawerBody"
+        style={{ overflow: "hidden", height: "100%" }}
+      >
+        {currentLogs && !isViewingError ? (
+          <EventLog
+            eventLogs={currentLogs}
+            allEventLogs={allEventLogs}
+            onDetailPanel={onOpenErrorPanel}
+            privacyRequest={privacyRequest}
+          />
+        ) : null}
+        {isViewingError ? (
+          <EventDetail errorMessage={errorMessage} status={currentStatus} />
+        ) : null}
+      </section>
     </Drawer>
   );
 };
