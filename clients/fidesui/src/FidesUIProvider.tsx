@@ -29,7 +29,10 @@ import {
   getDefaultModalIcon,
   getDefaultNotificationIcon,
 } from "./lib/carbon-icon-defaults";
-import { getGlobalMessageApi, setGlobalMessageApi } from "./lib/globalMessageApi";
+import {
+  getGlobalMessageApi,
+  setGlobalMessageApi,
+} from "./lib/globalMessageApi";
 
 const isMessageArgsProps = (content: unknown): content is MessageArgsProps =>
   typeof content === "object" && content !== null && "content" in content;
