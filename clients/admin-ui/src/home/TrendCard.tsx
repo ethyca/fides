@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { Card, Skeleton, Sparkline, Statistic } from "fidesui";
+import { Card, Flex, Skeleton, Sparkline, Statistic } from "fidesui";
 
 import { nFormatter } from "~/features/common/utils";
 import type { TrendMetric } from "~/features/dashboard/types";
@@ -62,7 +62,7 @@ export const TrendCard = ({ metricKey, metric }: TrendCardProps) => {
       coverPosition="bottom"
     >
       {metric ? (
-        <>
+        <Flex align="baseline" gap="small">
           <Statistic
             value={formatMetric(metric.value, statType)}
             suffix={suffix}
@@ -76,7 +76,7 @@ export const TrendCard = ({ metricKey, metric }: TrendCardProps) => {
               className={cardStyles.smallStatistic}
             />
           )}
-        </>
+        </Flex>
       ) : (
         <Skeleton active paragraph={false} />
       )}
