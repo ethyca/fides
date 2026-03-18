@@ -261,6 +261,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.key: CollectionAddress = self.execution_node.address
 
         saas_config_dict = self.connector.configuration.saas_config
+        # Snapshot version at construction so all log entries reflect the version
+        # that was active when the task started, not a potentially later value.
         self._saas_version: Optional[str] = (
             saas_config_dict.get("version") if saas_config_dict else None
         )
@@ -447,13 +449,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        logger.info(
-            "Starting node {}{}",
-            self.key,
-            f" (integration version {self._saas_version})"
-            if self._saas_version
-            else "",
-        )
+        if self._saas_version:
+            logger.info(
+                "Starting node {} (integration version {})",
+                self.key,
+                self._saas_version,
+            )
+        else:
+            logger.info("Starting node {}", self.key)
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -461,13 +464,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        logger.info(
-            "Retrying node {}{}",
-            self.key,
-            f" (integration version {self._saas_version})"
-            if self._saas_version
-            else "",
-        )
+        if self._saas_version:
+            logger.info(
+                "Retrying node {} (integration version {})",
+                self.key,
+                self._saas_version,
+            )
+        else:
+            logger.info("Retrying node {}", self.key)
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 

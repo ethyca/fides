@@ -117,6 +117,7 @@ def test_execution_log_saas_version_stored(db, execution_log_data):
     assert retrieved is not None
     assert retrieved.saas_version == "2.3.0"
 
+
 def test_execution_log_saas_version_null_for_non_saas(db, execution_log_data):
     # saas_version not provided — should default to None
     ExecutionLog.create(db, data=execution_log_data)
