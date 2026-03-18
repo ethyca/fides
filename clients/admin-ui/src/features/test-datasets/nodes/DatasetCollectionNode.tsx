@@ -38,7 +38,7 @@ const DatasetCollectionNode = ({ data, id }: NodeProps) => {
           {nodeData.label}
         </Typography.Text>
         <span className={styles.badge}>
-          {nodeData.collection.fields.length}
+          {nodeData.collection.fields?.length ?? 0}
         </span>
       </Button>
       {nodeData.isRoot && (
