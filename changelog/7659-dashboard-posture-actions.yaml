@@ -1,0 +1,4 @@
+type: Added
+description: Add PostureCard, PriorityActionsCard, and CommandBar components to the new dashboard with radar chart interaction, per-action routing, and urgency-based grouping
+pr: 7659
+labels: []

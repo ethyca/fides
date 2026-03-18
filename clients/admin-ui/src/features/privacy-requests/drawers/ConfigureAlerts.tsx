@@ -123,8 +123,6 @@ const ConfigureAlerts = () => {
       <Drawer
         open={isOpen}
         onClose={handleClose}
-        placement="right"
-        width={480}
         title="Request notifications"
         footer={
           <Flex gap="small" justify="flex-end">

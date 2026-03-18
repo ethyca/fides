@@ -1,15 +1,8 @@
-import {
-  Switch,
-  SwitchProps,
-  Typography,
-  useChakraDisclosure as useDisclosure,
-  useMessage,
-} from "fidesui";
+import { Switch, SwitchProps, Typography, useMessage, useModal } from "fidesui";
 
 import { isErrorResult, RTKResult } from "~/types/errors";
 
 import { getErrorMessage } from "../../helpers";
-import ConfirmationModal from "../../modals/ConfirmationModal";
 
 const { Text } = Typography;
 
@@ -29,7 +22,7 @@ export const EnableCell = ({
   isDisabled,
   ...props
 }: EnableCellProps) => {
-  const modal = useDisclosure();
+  const modal = useModal();
   const messageApi = useMessage();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
     const result = await onToggle(enable);
@@ -42,31 +35,24 @@ export const EnableCell = ({
     if (checked) {
       await handlePatch({ enable: true });
     } else {
-      modal.onOpen();
+      modal.confirm({
+        title,
+        content: <Text>{messageText}</Text>,
+        okText: "Confirm",
+        centered: true,
+        icon: null,
+        onOk: () => handlePatch({ enable: false }),
+      });
     }
   };
 
   return (
-    <>
-      <Switch
-        checked={enabled}
-        onChange={handleToggle}
-        disabled={isDisabled}
-        data-testid="toggle-switch"
-        {...props}
-      />
-      <ConfirmationModal
-        isOpen={modal.isOpen}
-        onClose={modal.onClose}
-        onConfirm={() => {
-          handlePatch({ enable: false });
-          modal.onClose();
-        }}
-        title={title}
-        message={<Text>{messageText}</Text>}
-        continueButtonText="Confirm"
-        isCentered
-      />
-    </>
+    <Switch
+      checked={enabled}
+      onChange={handleToggle}
+      disabled={isDisabled}
+      data-testid="toggle-switch"
+      {...props}
+    />
   );
 };
