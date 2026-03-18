@@ -87,7 +87,7 @@ export const RequestInputModal = ({
       onCancel={onClose}
       afterOpenChange={handleAfterOpen}
       width={MODAL_SIZE.md}
-      destroyOnClose
+      destroyOnHidden
       okText="Send questions"
       okButtonProps={{
         disabled: selectedIds.length === 0,

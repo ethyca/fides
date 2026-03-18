@@ -171,6 +171,8 @@ describe("Data map report table", () => {
       cy.getByTestId("more-menu").click();
       cy.getByTestId("edit-columns-btn").click();
       cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
+      cy.getByTestId("column-dragger-data_categories").trigger("dragenter");
+      cy.getByTestId("column-dragger-data_categories").trigger("dragover");
       cy.getByTestId("column-dragger-data_categories").trigger("drop");
       cy.getByTestId("save-button").click();
 
@@ -261,7 +263,7 @@ describe("Data map report table", () => {
             "Custom Title",
           );
         });
-        cy.getByTestId("column-settings-close-button").click();
+        cy.getAntModalClose().click();
 
         // check filter modal
         cy.getByTestId("filter-multiple-systems-btn").click();
@@ -421,7 +423,7 @@ describe("Data map report table", () => {
         "aria-checked",
         "false",
       );
-      cy.getByTestId("column-settings-close-button").click();
+      cy.getAntModalClose().click();
       cy.getByTestId("filter-multiple-systems-btn").click();
       cy.getByTestId("datamap-report-filter-modal")
         .should("be.visible")
@@ -473,7 +475,7 @@ describe("Data map report table", () => {
         "aria-checked",
         "true",
       );
-      cy.getByTestId("column-settings-close-button").click();
+      cy.getAntModalClose().click();
       cy.getByTestId("filter-multiple-systems-btn").click();
       cy.getByTestId("datamap-report-filter-modal")
         .should("be.visible")
