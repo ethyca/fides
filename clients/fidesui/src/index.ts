@@ -352,6 +352,11 @@ export type {
 } from "./components/charts/RadarChart";
 export { RadarChart } from "./components/charts/RadarChart";
 export { RadarTooltipContent } from "./components/charts/RadarTooltipContent";
+export type {
+  StackedBarChartProps,
+  StackedBarSegment,
+} from "./components/charts/StackedBarChart";
+export { StackedBarChart } from "./components/charts/StackedBarChart";
 export type { SparklineProps } from "./components/charts/Sparkline";
 export { Sparkline } from "./components/charts/Sparkline";
 export type { FilterProps } from "./components/data-display/Filter";

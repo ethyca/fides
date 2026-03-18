@@ -1,6 +1,7 @@
 import type {
   PostureResponse,
   PriorityAction,
+  PrivacyRequestsResponse,
   SystemCoverageResponse,
 } from "~/features/dashboard/types";
 import {
@@ -354,3 +355,15 @@ export const mockPriorityActions: PriorityAction[] = [
     status: ActionStatus.PENDING,
   },
 ];
+
+export const mockPrivacyRequests: PrivacyRequestsResponse = {
+  active_count: 47,
+  statuses: { in_progress: 22, pending_action: 14, awaiting_approval: 11 },
+  overdue_count: 5,
+  sla_health: {
+    access: { on_track: 8, approaching: 3, overdue: 1 },
+    erasure: { on_track: 12, approaching: 5, overdue: 3 },
+    consent: { on_track: 6, approaching: 2, overdue: 0 },
+    update: { on_track: 5, approaching: 1, overdue: 1 },
+  },
+};
