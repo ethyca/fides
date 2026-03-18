@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional
 from loguru import logger
 from loguru._handler import Message
 
+from fides.api.request_context import get_request_context
 from fides.api.schemas.privacy_request import LogEntry, PrivacyRequestSource
 from fides.api.util.sqlalchemy_filter import SQLAlchemyGeneratedFilter
 from fides.config import CONFIG, FidesConfig
@@ -226,8 +227,6 @@ def _inject_request_context(record: Dict[str, Any]) -> None:
     ``InterceptHandler``), all logs emitted during a request are automatically
     tagged without any changes to individual call-sites.
     """
-    from fides.api.request_context import get_request_context
-
     ctx = get_request_context()
     if ctx.request_id is not None:
         record["extra"]["request_id"] = ctx.request_id

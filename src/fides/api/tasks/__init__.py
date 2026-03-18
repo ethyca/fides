@@ -2,7 +2,7 @@ from typing import Any, ContextManager, Dict, List, Optional
 
 import celery_redis_cluster_backend  # type: ignore[import-untyped]  # noqa: F401 - registers redis+cluster/rediss+cluster backends
 from celery import Celery, Task
-from celery.signals import before_task_publish, task_prerun
+from celery.signals import before_task_publish, task_postrun, task_prerun
 from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
 from sqlalchemy.exc import OperationalError
@@ -16,7 +16,11 @@ from tenacity import (
 )
 
 from fides.api.db.session import get_db_engine, get_db_session
-from fides.api.request_context import get_request_id, set_request_id
+from fides.api.request_context import (
+    get_request_id,
+    reset_request_context,
+    set_request_id,
+)
 from fides.api.tasks import celery_healthcheck
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
@@ -208,6 +212,17 @@ def _restore_request_id(task: Task, **kwargs: Any) -> None:
     request_id = getattr(task.request, "request_id", None)
     if request_id is not None:
         set_request_id(request_id)
+
+
+@task_postrun.connect
+def _clear_request_context(**kwargs: Any) -> None:
+    """Clear request context after task completion.
+
+    Celery workers reuse processes for multiple tasks. Without this cleanup,
+    a request_id from Task A would leak into Task B if Task B was dispatched
+    without a request_id header.
+    """
+    reset_request_context()
 
 
 def get_worker_ids() -> List[Optional[str]]:
