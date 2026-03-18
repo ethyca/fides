@@ -123,9 +123,11 @@ const useDatasetGraph = (
 
     if (focusedCollection) {
       // --- Drill-down view: single collection → its fields ---
-      const collection = dataset.collections.find(
-        (c) => c.name === focusedCollection,
-      );
+      const collection = (
+        Array.isArray(dataset.collections) ? dataset.collections : []
+      )
+        .filter(Boolean)
+        .find((c) => c.name === focusedCollection);
       if (!collection) {
         return { nodes: [], edges: [] };
       }
