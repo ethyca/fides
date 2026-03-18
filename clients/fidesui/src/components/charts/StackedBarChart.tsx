@@ -1,5 +1,5 @@
 import { ArrowRight } from "@carbon/icons-react";
-import { theme } from "antd/lib";
+import { Flex, theme, Typography } from "antd/lib";
 import type { ReactNode } from "react";
 import { useCallback, useMemo } from "react";
 import {
@@ -14,6 +14,7 @@ import {
 import type { AntColorTokenKey } from "./chart-constants";
 import { CHART_ANIMATION } from "./chart-constants";
 import { useChartAnimation } from "./chart-utils";
+import { ChartText } from "./ChartText";
 
 export interface StackedBarSegment {
   key: string;
@@ -35,6 +36,8 @@ interface ChartEntry {
   [key: string]: string | number;
 }
 
+const { Text } = Typography;
+
 const StackedBarTooltipContent = ({
   active,
   payload,
@@ -53,7 +56,9 @@ const StackedBarTooltipContent = ({
   const entry = payload[0].payload;
 
   return (
-    <div
+    <Flex
+      vertical
+      gap={2}
       style={{
         borderRadius: token.borderRadius,
         backgroundColor: token.colorBgElevated,
@@ -62,17 +67,15 @@ const StackedBarTooltipContent = ({
         fontSize: token.fontSizeSM,
       }}
     >
-      <span className="font-semibold">{entry.category}</span>
-      <div className="mt-1 flex flex-col gap-0.5">
-        {segments
-          .filter((s) => (entry[`raw_${s.key}`] as number) > 0)
-          .map((s) => (
-            <span key={s.key}>
-              {s.label}: {entry[`raw_${s.key}`]}
-            </span>
-          ))}
-      </div>
-    </div>
+      <Text strong>{entry.category}</Text>
+      {segments
+        .filter((s) => (entry[`raw_${s.key}`] as number) > 0)
+        .map((s) => (
+          <Text key={s.key} type="secondary">
+            {s.label}: {entry[`raw_${s.key}`]}
+          </Text>
+        ))}
+    </Flex>
   );
 };
 
@@ -131,16 +134,17 @@ const ClickableTick = ({
       aria-label={interactive ? `View ${label} requests` : undefined}
       style={interactive ? { cursor: "pointer" } : undefined}
     >
-      <text
+      <ChartText
         x={x - (interactive ? ICON_SIZE + ICON_GAP + 4 : 4)}
         y={y}
         textAnchor="end"
-        dominantBaseline="central"
+        verticalAnchor="middle"
         fontSize={fontSize}
         fill={color}
+        width={undefined}
       >
         {label}
-      </text>
+      </ChartText>
       {interactive && (
         <foreignObject
           x={x - ICON_SIZE - 2}
