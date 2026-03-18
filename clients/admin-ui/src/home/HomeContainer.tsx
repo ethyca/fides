@@ -3,6 +3,7 @@ import {
   darkAntTheme,
   defaultAntTheme,
   Flex,
+  Layout as AntLayout,
   ThemeModeProvider,
   useThemeMode,
 } from "fidesui";

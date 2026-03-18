@@ -160,8 +160,8 @@ describe("Privacy experiences", () => {
             cy.getByTestId("toggle-switch").click();
           });
 
-        cy.getByTestId("confirmation-modal");
-        cy.getByTestId("continue-btn").click();
+        cy.get(".ant-modal-confirm").should("exist");
+        cy.getAntModalConfirmButtons().contains("Confirm").click();
         cy.wait("@patchExperience").then((interception) => {
           const { body, url } = interception.request;
           expect(url).to.contain(EXPERIENCE_ID);

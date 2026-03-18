@@ -1,36 +1,55 @@
 import {
+  Button,
   ChakraFlex as Flex,
   ChakraFormControl as FormControl,
   ChakraFormLabel as FormLabel,
   ChakraText as Text,
+  Modal,
   Select,
 } from "fidesui";
 import { useState } from "react";
 
-import StandardDialog, {
-  StandardDialogProps,
-} from "~/features/common/modals/StandardDialog";
 import { ExportFormat } from "~/features/datamap/constants";
 
-interface ReportExportModalProps
-  extends Omit<StandardDialogProps, "children" | "onConfirm"> {
+interface ReportExportModalProps {
+  isOpen: boolean;
+  onClose: () => void;
   onConfirm: (downloadType: ExportFormat) => void;
+  isLoading?: boolean;
 }
 
-const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
+const ReportExportModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading,
+}: ReportExportModalProps): JSX.Element => {
   const [downloadType, setDownloadType] = useState<ExportFormat>(
     ExportFormat.csv,
   );
-  const { onConfirm } = props;
 
   return (
-    <StandardDialog
-      heading="Export report"
-      continueButtonText="Download"
-      size="xl"
-      {...props}
-      onConfirm={() => onConfirm(downloadType)}
+    <Modal
+      title="Export report"
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
       data-testid="export-modal"
+      footer={
+        <Flex gap={12} justify="flex-end">
+          <Button onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => onConfirm(downloadType)}
+            loading={isLoading}
+          >
+            Download
+          </Button>
+        </Flex>
+      }
     >
       <Flex direction="column" gap={3} pb={3}>
         <Text textAlign="left">
@@ -53,7 +72,7 @@ const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
           />
         </FormControl>
       </Flex>
-    </StandardDialog>
+    </Modal>
   );
 };
 
