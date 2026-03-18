@@ -26,9 +26,10 @@ export const HomeDashboard = () => {
   }, []);
 
   const { data: briefing } = useGetAgentBriefingQuery();
-  const { data: trends } = useGetDashboardTrendsQuery({
-    period: TrendPeriod.THIRTY_DAYS,
-  });
+  const { data: trends, isLoading: isTrendsLoading } =
+    useGetDashboardTrendsQuery({
+      period: TrendPeriod.THIRTY_DAYS,
+    });
 
   const metrics = trends?.metrics;
 
@@ -60,7 +61,7 @@ export const HomeDashboard = () => {
       <Row gutter={24}>
         {TREND_METRIC_KEYS.map((key) => (
           <Col key={key} xs={24} sm={12} md={6}>
-            <TrendCard metricKey={key} metric={metrics?.[key]} />
+            <TrendCard metricKey={key} metric={metrics?.[key]} isLoading={isTrendsLoading} />
           </Col>
         ))}
       </Row>

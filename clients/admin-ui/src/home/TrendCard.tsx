@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { Card, Flex, Skeleton, Sparkline, Statistic } from "fidesui";
+import { antTheme, Card, Flex, Skeleton, Sparkline, Statistic } from "fidesui";
 
 import { nFormatter } from "~/features/common/utils";
 import type { TrendMetric } from "~/features/dashboard/types";
@@ -9,17 +9,11 @@ import cardStyles from "./dashboard-card.module.scss";
 type StatType = "number" | "percent";
 
 const TREND_METRIC_CONFIG = {
-  gps_score: { label: "GPS Score", statType: "number" as StatType },
-  dsr_volume: { label: "DSR Volume", statType: "number" as StatType },
-  system_coverage: {
-    label: "System Coverage",
-    statType: "percent" as StatType,
-  },
-  classification_health: {
-    label: "Classification Health",
-    statType: "percent" as StatType,
-  },
-};
+  gps_score: { label: "GPS Score", statType: "number" },
+  dsr_volume: { label: "DSR Volume", statType: "number" },
+  system_coverage: { label: "System Coverage", statType: "percent" },
+  classification_health: { label: "Classification Health", statType: "percent" },
+} satisfies Record<string, { label: string; statType: StatType }>;
 
 export type TrendMetricKey = keyof typeof TREND_METRIC_CONFIG;
 
@@ -30,6 +24,7 @@ export const TREND_METRIC_KEYS = Object.keys(
 interface TrendCardProps {
   metricKey: TrendMetricKey;
   metric: TrendMetric | undefined;
+  isLoading: boolean;
 }
 
 const formatMetric = (value: number, statType: StatType) => {
@@ -39,7 +34,8 @@ const formatMetric = (value: number, statType: StatType) => {
   return nFormatter(value);
 };
 
-export const TrendCard = ({ metricKey, metric }: TrendCardProps) => {
+export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
+  const { token } = antTheme.useToken();
   const config = TREND_METRIC_CONFIG[metricKey];
   const statType = config?.statType ?? "number";
   const suffix = statType === "percent" ? "%" : undefined;
@@ -47,39 +43,52 @@ export const TrendCard = ({ metricKey, metric }: TrendCardProps) => {
     ? formatMetric(Math.abs(metric.diff), statType)
     : undefined;
 
+  const renderStats = () => {
+    if (isLoading) {
+      return <Skeleton active paragraph={false} />;
+    }
+    if (!metric) {
+      return (
+        <Statistic
+          value="—"
+          valueStyle={{ color: token.colorTextDisabled }}
+        />
+      );
+    }
+    return (
+      <Flex align="baseline" gap="small">
+        <Statistic
+          value={formatMetric(metric.value, statType)}
+          suffix={suffix}
+        />
+        {metric.diff !== 0 && formattedDiff !== "0" && (
+          <Statistic
+            trend={metric.diff > 0 ? "up" : "down"}
+            value={formattedDiff}
+            suffix={suffix}
+            prefix={metric.diff > 0 ? "↑" : "↓"}
+            className={cardStyles.smallStatistic}
+          />
+        )}
+      </Flex>
+    );
+  };
+
   return (
     <Card
       variant="borderless"
       title={config?.label ?? metricKey}
       className={classNames("overflow-clip h-full", cardStyles.dashboardCard)}
       cover={
-        metric?.history ? (
+        !isLoading ? (
           <div className="h-16">
-            <Sparkline data={metric.history} />
+            <Sparkline data={metric?.history} />
           </div>
         ) : undefined
       }
       coverPosition="bottom"
     >
-      {metric ? (
-        <Flex align="baseline" gap="small">
-          <Statistic
-            value={formatMetric(metric.value, statType)}
-            suffix={suffix}
-          />
-          {metric.diff !== 0 && formattedDiff !== "0" && (
-            <Statistic
-              trend={metric.diff > 0 ? "up" : "down"}
-              value={formattedDiff}
-              suffix={suffix}
-              prefix={metric.diff > 0 ? "↑" : "↓"}
-              className={cardStyles.smallStatistic}
-            />
-          )}
-        </Flex>
-      ) : (
-        <Skeleton active paragraph={false} />
-      )}
+      {renderStats()}
     </Card>
   );
 };
