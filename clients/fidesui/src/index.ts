@@ -337,6 +337,23 @@ export {
   CHART_STROKE,
   CHART_TYPOGRAPHY,
 } from "./components/charts/chart-constants";
+export {
+  DAY_MS,
+  deriveInterval,
+  formatTimestamp,
+  HOUR_MS,
+  pickInterval,
+  tooltipLabelFormatter,
+  useTooltipContentStyle,
+} from "./components/charts/chart-utils";
+export { XAxisTick } from "./components/charts/XAxisTick";
+export type {
+  BarChartDataPoint,
+  BarChartProps,
+} from "./components/charts/BarChart";
+export { BarChart } from "./components/charts/BarChart";
+export type { ChartGradientProps } from "./components/charts/ChartGradient";
+export { ChartGradient } from "./components/charts/ChartGradient";
 export type { ChartTextProps } from "./components/charts/ChartText";
 export { ChartText } from "./components/charts/ChartText";
 export type {
