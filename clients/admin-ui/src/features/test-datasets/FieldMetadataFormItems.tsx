@@ -1,4 +1,4 @@
-import { Form, Input, InputNumber, Select, Switch } from "fidesui";
+import { Form, Input, Select, Switch } from "fidesui";
 import { useMemo } from "react";
 
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -33,14 +33,6 @@ export const buildFieldMeta = (values: Record<string, unknown>) => {
     identity: (values.identity as string) || undefined,
     primary_key: (values.primary_key as boolean) || undefined,
     read_only: (values.read_only as boolean) || undefined,
-    return_all_elements: (values.return_all_elements as boolean) || undefined,
-    length:
-      values.length !== null &&
-      values.length !== undefined &&
-      values.length !== ""
-        ? (values.length as number)
-        : undefined,
-    custom_request_field: (values.custom_request_field as string) || undefined,
     redact: redactVal === "name" ? ("name" as const) : undefined,
   };
   const hasAny = Object.values(meta).some((v) => v !== undefined);
@@ -107,19 +99,6 @@ const FieldMetadataFormItems = () => (
     </Form.Item>
     <Form.Item label="Read Only" name="read_only" valuePropName="checked">
       <Switch aria-label="Read Only" />
-    </Form.Item>
-    <Form.Item
-      label="Return All Elements"
-      name="return_all_elements"
-      valuePropName="checked"
-    >
-      <Switch aria-label="Return All Elements" />
-    </Form.Item>
-    <Form.Item label="Length" name="length">
-      <InputNumber min={0} placeholder="Max length" style={{ width: "100%" }} />
-    </Form.Item>
-    <Form.Item label="Custom Request Field" name="custom_request_field">
-      <Input placeholder="Custom field name" />
     </Form.Item>
     <Form.Item label="Redact" name="redact">
       <Select aria-label="Redact" options={REDACT_OPTIONS} />

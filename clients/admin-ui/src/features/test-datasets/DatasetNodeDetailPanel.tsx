@@ -74,9 +74,6 @@ const DatasetNodeDetailPanel = ({
         identity: field.fides_meta?.identity ?? "",
         primary_key: field.fides_meta?.primary_key ?? false,
         read_only: field.fides_meta?.read_only ?? false,
-        return_all_elements: field.fides_meta?.return_all_elements ?? false,
-        length: field.fides_meta?.length ?? undefined,
-        custom_request_field: field.fides_meta?.custom_request_field ?? "",
         redact: field.fides_meta?.redact ?? "",
       });
     }
