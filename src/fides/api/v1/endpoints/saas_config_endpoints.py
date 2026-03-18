@@ -26,7 +26,6 @@ from fides.api.common_exceptions import ValidationError as FidesValidationError
 from fides.api.models.connection_config_saas_history import ConnectionConfigSaaSHistory
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.models.event_audit import EventAuditStatus, EventAuditType
 from fides.api.models.saas_config_version import SaaSConfigVersion
 from fides.api.models.sql_models import System  # type: ignore

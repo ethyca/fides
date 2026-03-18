@@ -2,6 +2,8 @@ from io import BytesIO
 from typing import List, Optional
 from zipfile import BadZipFile, ZipFile
 
+import yaml
+
 from fastapi import Body, Depends, HTTPException
 from fastapi.params import Security
 from fastapi.responses import JSONResponse, Response
@@ -260,6 +262,30 @@ def delete_custom_connector_template(
     )
 
 
+def _get_version_row(
+    db: Session,
+    connector_template_type: str,
+    version: str,
+) -> Optional[SaaSConfigVersion]:
+    """
+    Returns the most recent stored row for (connector_type, version).
+
+    When both an OOB row (is_custom=False) and a custom row (is_custom=True)
+    exist for the same version string, the one created most recently is returned.
+    Callers that need to distinguish OOB from custom should filter on is_custom
+    before calling this helper.
+    """
+    return (
+        db.query(SaaSConfigVersion)
+        .filter(
+            SaaSConfigVersion.connector_type == connector_template_type,
+            SaaSConfigVersion.version == version,
+        )
+        .order_by(SaaSConfigVersion.created_at.desc())
+        .first()
+    )
+
+
 @router.get(
     CONNECTOR_TEMPLATES_VERSIONS,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_READ])],
@@ -301,17 +327,7 @@ def get_connector_template_version_config(
     Returns the config as raw YAML, in the same format as
     `GET /connector-templates/{type}/config`.
     """
-    import yaml  # pylint: disable=import-outside-toplevel
-
-    row = (
-        db.query(SaaSConfigVersion)
-        .filter(
-            SaaSConfigVersion.connector_type == connector_template_type,
-            SaaSConfigVersion.version == version,
-        )
-        .order_by(SaaSConfigVersion.created_at.desc())
-        .first()
-    )
+    row = _get_version_row(db, connector_template_type, version)
     if not row:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -338,17 +354,7 @@ def get_connector_template_version_dataset(
     Returns the dataset as raw YAML, in the same format as
     `GET /connector-templates/{type}/dataset`.
     """
-    import yaml  # pylint: disable=import-outside-toplevel
-
-    row = (
-        db.query(SaaSConfigVersion)
-        .filter(
-            SaaSConfigVersion.connector_type == connector_template_type,
-            SaaSConfigVersion.version == version,
-        )
-        .order_by(SaaSConfigVersion.created_at.desc())
-        .first()
-    )
+    row = _get_version_row(db, connector_template_type, version)
     if not row:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,

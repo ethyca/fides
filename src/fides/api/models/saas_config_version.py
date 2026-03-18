@@ -73,9 +73,7 @@ class SaaSConfigVersion(Base):
             if is_custom:
                 existing.config = config
                 existing.dataset = dataset
-                db.add(existing)
-                db.commit()
-                db.refresh(existing)
+                existing.save(db)
             return existing
 
         return cls.create(

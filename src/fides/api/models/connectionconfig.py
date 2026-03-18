@@ -375,7 +375,7 @@ class ConnectionConfig(Base):
             connection_key=self.key,
             version=saas_config.version,
             config=self.saas_config,
-            datasets=datasets or None,
+            datasets=datasets if datasets else None,
         )
 
         self.save(db)
