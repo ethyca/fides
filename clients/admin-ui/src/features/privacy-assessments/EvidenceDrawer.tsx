@@ -37,7 +37,6 @@ export const EvidenceDrawer = ({
           </Text>
         </div>
       }
-      placement="right"
       onClose={onClose}
       open={open}
       width={600}
