@@ -59,7 +59,12 @@ class EntraHttpClient:
         return f"https://login.microsoftonline.com/{self.tenant_id}/oauth2/v2.0/token"
 
     def _get_token(self) -> str:
-        """Obtain OAuth2 access token via client credentials grant."""
+        """Obtain OAuth2 access token via client credentials grant.
+
+        Tokens are cached and reused until 10 minutes before expiry
+        (default lifetime is 3600s). After that buffer, the next call
+        automatically fetches a fresh token.
+        """
         if self._token and time.monotonic() < self._token_expiry:
             return self._token
         response = self._session.post(
