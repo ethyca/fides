@@ -147,11 +147,11 @@ interface PrivacyRequestsParams {
 
 export type { PrivacyRequestsParams, PrivacyRequestsResponse };
 
-interface QuickAction {
-  id: string;
-  title: string;
-  action: string;
-  action_url: string;
+export interface QuickAction {
+  label: string;
+  action_type: ActionType;
+  action_data: Record<string, unknown>;
+  severity: ActionSeverity;
 }
 
 interface AgentBriefingResponse {
