@@ -1,5 +1,6 @@
 import { taxonomyHandlers } from "~/features/taxonomy/taxonomy.mocks";
 
+import { accessControlHandlers } from "./access-control/handlers";
 import { discoveryMonitorHandlers } from "./action-center/handlers";
 import { dashboardHandlers } from "./dashboard/handlers";
 import { policyHandlers } from "./policy/handlers";
@@ -9,5 +10,6 @@ export const handlers = [
   ...taxonomyHandlers(),
   ...discoveryMonitorHandlers(),
   ...policyHandlers(),
+  ...accessControlHandlers(),
   ...dashboardHandlers(),
 ];
