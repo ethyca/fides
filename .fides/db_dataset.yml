@@ -2830,6 +2830,8 @@ dataset:
       data_categories: [system.operations]
     - name: is_hash_migrated
       data_categories: [system.operations]
+    - name: received_at
+      data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'
     data_categories: [system.operations]
