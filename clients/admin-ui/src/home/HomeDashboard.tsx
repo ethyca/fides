@@ -61,7 +61,11 @@ export const HomeDashboard = () => {
       <Row gutter={24}>
         {TREND_METRIC_KEYS.map((key) => (
           <Col key={key} xs={24} sm={12} md={6}>
-            <TrendCard metricKey={key} metric={metrics?.[key]} isLoading={isTrendsLoading} />
+            <TrendCard
+              metricKey={key}
+              metric={metrics?.[key]}
+              isLoading={isTrendsLoading}
+            />
           </Col>
         ))}
       </Row>

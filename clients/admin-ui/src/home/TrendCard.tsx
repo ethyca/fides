@@ -12,7 +12,10 @@ const TREND_METRIC_CONFIG = {
   gps_score: { label: "GPS Score", statType: "number" },
   dsr_volume: { label: "DSR Volume", statType: "number" },
   system_coverage: { label: "System Coverage", statType: "percent" },
-  classification_health: { label: "Classification Health", statType: "percent" },
+  classification_health: {
+    label: "Classification Health",
+    statType: "percent",
+  },
 } satisfies Record<string, { label: string; statType: StatType }>;
 
 export type TrendMetricKey = keyof typeof TREND_METRIC_CONFIG;
@@ -49,10 +52,7 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
     }
     if (!metric) {
       return (
-        <Statistic
-          value="—"
-          valueStyle={{ color: token.colorTextDisabled }}
-        />
+        <Statistic value="—" valueStyle={{ color: token.colorTextDisabled }} />
       );
     }
     return (
