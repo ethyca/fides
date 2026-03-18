@@ -136,8 +136,13 @@ const SaaSVersionModal = ({
   </FormModal>
 );
 
-interface VersionModalState {
+interface PendingModalState {
   connectionKey: string;
+  version: string;
+}
+
+interface ActiveModalState {
+  connectorType: string;
   version: string;
 }
 
@@ -146,18 +151,20 @@ interface VersionModalState {
  * Resolves connector_type via the connection config before opening the modal.
  */
 export const useSaaSVersionModal = () => {
-  const [pending, setPending] = useState<VersionModalState | null>(null);
-  const [active, setActive] = useState<VersionModalState | null>(null);
+  const [pending, setPending] = useState<PendingModalState | null>(null);
+  const [active, setActive] = useState<ActiveModalState | null>(null);
 
   const { data: connection } = useGetDatastoreConnectionByKeyQuery(
     pending?.connectionKey ?? "",
     { skip: !pending?.connectionKey },
   );
 
-  // Once the connection resolves, promote pending to active so the modal opens
+  // Once the connection resolves, promote pending to active so the modal opens.
+  // connectorType is captured into active so the modal doesn't depend on the
+  // query after pending is cleared (skip: true returns undefined data).
   React.useEffect(() => {
     if (pending && connection?.saas_config?.type) {
-      setActive(pending);
+      setActive({ connectorType: connection.saas_config.type, version: pending.version });
       setPending(null);
     }
   }, [pending, connection]);
@@ -168,17 +175,14 @@ export const useSaaSVersionModal = () => {
 
   const handleClose = () => setActive(null);
 
-  const connectorType = connection?.saas_config?.type ?? null;
-
-  const modal =
-    active && connectorType ? (
-      <SaaSVersionModal
-        isOpen
-        onClose={handleClose}
-        connectorType={connectorType}
-        version={active.version}
-      />
-    ) : null;
+  const modal = active ? (
+    <SaaSVersionModal
+      isOpen
+      onClose={handleClose}
+      connectorType={active.connectorType}
+      version={active.version}
+    />
+  ) : null;
 
   return { openVersionModal, modal };
 };
