@@ -171,6 +171,8 @@ describe("Data map report table", () => {
       cy.getByTestId("more-menu").click();
       cy.getByTestId("edit-columns-btn").click();
       cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
+      cy.getByTestId("column-dragger-data_categories").trigger("dragenter");
+      cy.getByTestId("column-dragger-data_categories").trigger("dragover");
       cy.getByTestId("column-dragger-data_categories").trigger("drop");
       cy.getByTestId("save-button").click();
 
@@ -261,7 +263,7 @@ describe("Data map report table", () => {
             "Custom Title",
           );
         });
-        cy.getByTestId("column-settings-close-button").click();
+        cy.getAntModalClose().click();
 
         // check filter modal
         cy.getByTestId("filter-multiple-systems-btn").click();
@@ -338,7 +340,9 @@ describe("Data map report table", () => {
         .find("input")
         .first()
         .click({ force: true });
-      cy.getByTestId("datamap-report-filter-modal-continue-btn").click();
+      cy.getByTestId("datamap-report-filter-modal")
+        .contains("button", "Done")
+        .click();
       cy.get("@getDatamapMinimal")
         .its("request.url")
         .should("include", "data_categories=custom");
@@ -346,7 +350,9 @@ describe("Data map report table", () => {
 
       // should clear the filters
       cy.getByTestId("filter-multiple-systems-btn").click();
-      cy.getByTestId("datamap-report-filter-modal-cancel-btn").click();
+      cy.getByTestId("datamap-report-filter-modal")
+        .contains("button", "Reset filters")
+        .click();
       cy.getByTestId("datamap-report-filter-modal").should("not.exist");
       cy.wait("@getDatamapMinimal")
         .its("request.url")
@@ -417,7 +423,7 @@ describe("Data map report table", () => {
         "aria-checked",
         "false",
       );
-      cy.getByTestId("column-settings-close-button").click();
+      cy.getAntModalClose().click();
       cy.getByTestId("filter-multiple-systems-btn").click();
       cy.getByTestId("datamap-report-filter-modal")
         .should("be.visible")
@@ -426,7 +432,7 @@ describe("Data map report table", () => {
           cy.getByTestId("checkbox-Analytics").within(() => {
             cy.get("[data-checked]").should("exist");
           });
-          cy.getByTestId("standard-dialog-close-btn").click();
+          cy.get(".ant-modal-close").click();
         });
       cy.getByTestId("column-data_categories").should(
         "contain.text",
@@ -469,7 +475,7 @@ describe("Data map report table", () => {
         "aria-checked",
         "true",
       );
-      cy.getByTestId("column-settings-close-button").click();
+      cy.getAntModalClose().click();
       cy.getByTestId("filter-multiple-systems-btn").click();
       cy.getByTestId("datamap-report-filter-modal")
         .should("be.visible")
@@ -478,7 +484,7 @@ describe("Data map report table", () => {
           cy.getByTestId("checkbox-Analytics").within(() => {
             cy.get("[data-checked]").should("not.exist");
           });
-          cy.getByTestId("standard-dialog-close-btn").click();
+          cy.get(".ant-modal-close").click();
         });
     });
     it("should allow the user cancel a report selection", () => {
@@ -573,11 +579,10 @@ describe("Data map report table", () => {
       cy.getByTestId("export-btn").click();
       cy.getByTestId("export-modal").should("be.visible");
       cy.getByTestId("export-format-select").should("be.visible");
-      cy.getByTestId("export-modal-continue-btn").should(
-        "contain.text",
-        "Download",
-      );
-      cy.getByTestId("export-modal-cancel-btn").click();
+      cy.getByTestId("export-modal")
+        .contains("button", "Download")
+        .should("be.visible");
+      cy.getByTestId("export-modal").contains("button", "Cancel").click();
       cy.getByTestId("export-modal").should("not.exist");
     });
 
@@ -589,7 +594,7 @@ describe("Data map report table", () => {
     it("should open the system preview drawer", () => {
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
-      cy.get(".ant-drawer-close").click({ force: true });
+      cy.getAntDrawerClose().click({ force: true });
       cy.getByTestId("datamap-drawer").should("not.exist");
     });
     it("should open the system preview drawer when grouped by data use", () => {
@@ -600,7 +605,7 @@ describe("Data map report table", () => {
       cy.wait("@getDatamapMinimal");
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");
-      cy.get(".ant-drawer-close").click({ force: true });
+      cy.getAntDrawerClose().click({ force: true });
       cy.getByTestId("datamap-drawer").should("not.exist");
     });
   });

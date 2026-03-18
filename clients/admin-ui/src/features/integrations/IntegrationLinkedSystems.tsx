@@ -186,7 +186,7 @@ const IntegrationLinkedSystems = ({
           </Button>
         }
         width={520}
-        data-testid="link-system-modal"
+        wrapProps={{ "data-testid": "link-system-modal" }}
       >
         <Flex vertical gap="middle" className="max-h-96">
           <Input.Search

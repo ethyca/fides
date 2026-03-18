@@ -282,6 +282,10 @@ describe("gcm", () => {
   });
 
   describe("gtag not loaded", () => {
+    afterEach(() => {
+      delete (window as any).dataLayer;
+    });
+
     test("does nothing when gtag is not loaded", () => {
       setupFidesWithConsent({ analytics: true });
 
@@ -291,6 +295,32 @@ describe("gcm", () => {
       expect(() => {
         triggerConsentEvent("FidesUpdated", { analytics: true });
       }).not.toThrow();
+    });
+
+    test("creates a fallback gtag that pushes consent to dataLayer", () => {
+      setupFidesWithConsent({ analytics: true });
+
+      gcm();
+      triggerConsentEvent("FidesUpdated", { analytics: true });
+
+      expect(typeof window.gtag).toBe("function");
+      expect(Array.isArray(window.dataLayer)).toBe(true);
+      const lastEntry = window.dataLayer![window.dataLayer!.length - 1];
+      expect(lastEntry[0]).toBe("consent");
+      expect(lastEntry[1]).toBe("update");
+      expect(lastEntry[2]).toEqual({ analytics_storage: "granted" });
+    });
+
+    test("reuses existing dataLayer when already defined", () => {
+      const existingDataLayer: any[] = [{ existing: "item" }];
+      (window as any).dataLayer = existingDataLayer;
+      setupFidesWithConsent({ analytics: true });
+
+      gcm();
+      triggerConsentEvent("FidesUpdated", { analytics: true });
+
+      expect(window.dataLayer).toBe(existingDataLayer);
+      expect(window.dataLayer!.length).toBeGreaterThan(1);
     });
   });
 
