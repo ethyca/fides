@@ -1,24 +1,20 @@
 import { theme } from "antd/lib";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Pie, PieChart } from "recharts";
 
 import type { AntColorTokenKey } from "./chart-constants";
-import { CHART_ANIMATION } from "./chart-constants";
-import { useChartAnimation } from "./chart-utils";
+import { CHART_ANIMATION, DONUT_THICKNESS } from "./chart-constants";
+import { useChartAnimation, useContainerSize } from "./chart-utils";
 
 export interface DonutChartSegment {
+  /** Values don't need to sum to 100 — Recharts sizes each segment relative to the total. */
   value: number;
   color: AntColorTokenKey;
   name?: string;
 }
 
 export type DonutChartVariant = "default" | "thick";
-
-const DONUT_THICKNESS: Record<DonutChartVariant, number> = {
-  default: 8,
-  thick: 16,
-};
 
 export interface DonutChartProps {
   segments: DonutChartSegment[];
@@ -35,19 +31,8 @@ export const DonutChart = ({
 }: DonutChartProps) => {
   const { token } = theme.useToken();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState(0);
+  const size = useContainerSize(containerRef);
   const animationActive = useChartAnimation(animationDuration);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return undefined;
-    const observer = new ResizeObserver(([entry]) => {
-      const rect = entry.contentRect;
-      setSize(Math.min(rect.width, rect.height));
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const thickness = DONUT_THICKNESS[variant];
   const outerRadius = size / 2;
