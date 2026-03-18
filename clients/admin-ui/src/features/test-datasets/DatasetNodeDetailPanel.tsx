@@ -130,6 +130,15 @@ const DatasetNodeDetailPanel = ({
     }
   }, [open]);
 
+  // Clean up debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
+
   const handleValuesChange = useCallback(
     (_: Record<string, unknown>, allValues: Record<string, unknown>) => {
       if (debounceRef.current) {

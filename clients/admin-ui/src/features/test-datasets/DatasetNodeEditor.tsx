@@ -15,7 +15,13 @@ import {
 import { Breadcrumb, Button, Flex, Icons, Typography } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import yaml, { YAMLException } from "js-yaml";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { Editor } from "~/features/common/yaml/helpers";
 import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
@@ -288,10 +294,12 @@ const DatasetNodeEditorInner = ({
   const nodeCount = rawNodes.length;
   useEffect(() => {
     if (nodeCount > 0) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         reactFlowInstance.fitView({ padding: 0.2 });
       }, 150);
+      return () => clearTimeout(timer);
     }
+    return undefined;
   }, [nodeCount, focusedCollection, reactFlowInstance]);
 
   // Clear selection when drilling in/out
@@ -448,13 +456,17 @@ const DatasetNodeEditorInner = ({
     [dataset, onDatasetChange],
   );
 
+  const datasetRef = useRef(dataset);
+  datasetRef.current = dataset;
+
   const editorActions: DatasetEditorActions = useMemo(
     () => ({
       addCollection: () => {
+        const currentDataset = datasetRef.current;
         setAddModal({
           open: true,
           title: "Add Collection",
-          existingNames: dataset.collections.map((c) => c.name),
+          existingNames: currentDataset.collections.map((c) => c.name),
           mode: "collection",
           onConfirm: (name: string) => {
             handleAddCollection(name);
@@ -463,7 +475,8 @@ const DatasetNodeEditorInner = ({
         });
       },
       addField: (collectionName: string, parentFieldPath?: string) => {
-        const collection = dataset.collections.find(
+        const currentDataset = datasetRef.current;
+        const collection = currentDataset.collections.find(
           (c) => c.name === collectionName,
         );
         const siblingFields = parentFieldPath
@@ -490,7 +503,6 @@ const DatasetNodeEditorInner = ({
       deleteField: handleDeleteField,
     }),
     [
-      dataset,
       handleAddCollection,
       handleAddField,
       handleDeleteCollection,
@@ -573,7 +585,6 @@ const DatasetNodeEditorInner = ({
               onPaneClick={handlePaneClick}
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
-              nodesFocusable={false}
               edgesFocusable={false}
               connectOnClick={false}
               nodesConnectable={false}

@@ -11,7 +11,6 @@ export enum DatasetNodeHoverStatus {
   DEFAULT = "DEFAULT",
   ACTIVE_HOVER = "ACTIVE_HOVER",
   PARENT_OF_HOVER = "PARENT_OF_HOVER",
-  CHILD_OF_HOVER = "CHILD_OF_HOVER",
   INACTIVE = "INACTIVE",
 }
 
@@ -51,29 +50,7 @@ const buildAncestryMaps = (edges: Edge[]) => {
     return ancestors;
   };
 
-  const getDescendants = (nodeId: string): Set<string> => {
-    const descendants = new Set<string>();
-    // children: parent → children[]
-    const children = new Map<string, string[]>();
-    edges.forEach((e) => {
-      if (!children.has(e.source)) {
-        children.set(e.source, []);
-      }
-      children.get(e.source)!.push(e.target);
-    });
-    const stack = children.get(nodeId) ?? [];
-    while (stack.length > 0) {
-      const child = stack.pop()!;
-      descendants.add(child);
-      const grandchildren = children.get(child);
-      if (grandchildren) {
-        stack.push(...grandchildren);
-      }
-    }
-    return descendants;
-  };
-
-  return { getAncestors, getDescendants };
+  return { getAncestors };
 };
 
 export const DatasetTreeHoverProvider = ({
@@ -85,7 +62,7 @@ export const DatasetTreeHoverProvider = ({
 }) => {
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
 
-  const { getAncestors, getDescendants } = useMemo(
+  const { getAncestors } = useMemo(
     () => buildAncestryMaps(edges),
     [edges],
   );
@@ -103,11 +80,6 @@ export const DatasetTreeHoverProvider = ({
     () => (activeNodeId ? getAncestors(activeNodeId) : new Set<string>()),
     [activeNodeId, getAncestors],
   );
-  const descendantSet = useMemo(
-    () => (activeNodeId ? getDescendants(activeNodeId) : new Set<string>()),
-    [activeNodeId, getDescendants],
-  );
-
   const getNodeHoverStatus = useCallback(
     (nodeId: string): DatasetNodeHoverStatus => {
       if (!activeNodeId) {
@@ -122,13 +94,9 @@ export const DatasetTreeHoverProvider = ({
         return DatasetNodeHoverStatus.PARENT_OF_HOVER;
       }
 
-      if (descendantSet.has(nodeId)) {
-        return DatasetNodeHoverStatus.CHILD_OF_HOVER;
-      }
-
       return DatasetNodeHoverStatus.INACTIVE;
     },
-    [activeNodeId, ancestorSet, descendantSet],
+    [activeNodeId, ancestorSet],
   );
 
   const value = useMemo(

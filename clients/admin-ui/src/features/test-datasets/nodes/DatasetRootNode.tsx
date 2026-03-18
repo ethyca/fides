@@ -9,6 +9,7 @@ import {
 import { DATASET_ROOT_ID } from "../useDatasetGraph";
 import styles from "./DatasetNode.module.scss";
 import DatasetNodeHandle from "./DatasetNodeHandle";
+import { getNodeHoverClass } from "./getNodeHoverClass";
 
 const DatasetRootNode = ({ data, id }: NodeProps) => {
   const nodeData = data as { label: string };
@@ -17,17 +18,6 @@ const DatasetRootNode = ({ data, id }: NodeProps) => {
   );
   const hoverStatus = getNodeHoverStatus(id);
 
-  const getHoverClass = () => {
-    switch (hoverStatus) {
-      case DatasetNodeHoverStatus.ACTIVE_HOVER:
-        return styles["button--hover"];
-      case DatasetNodeHoverStatus.INACTIVE:
-        return styles["button--inactive"];
-      default:
-        return "";
-    }
-  };
-
   return (
     <div
       className={styles.container}
@@ -35,7 +25,7 @@ const DatasetRootNode = ({ data, id }: NodeProps) => {
       onMouseLeave={() => onMouseLeave()}
     >
       <Button
-        className={`${styles.button} ${styles["button--root"]} ${getHoverClass()}`}
+        className={`${styles.button} ${styles["button--root"]} ${getNodeHoverClass(hoverStatus)}`}
         type="text"
         disabled={id === DATASET_ROOT_ID}
       >

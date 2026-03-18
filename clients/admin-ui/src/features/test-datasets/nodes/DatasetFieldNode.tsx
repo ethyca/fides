@@ -10,6 +10,7 @@ import {
 import { FieldNodeData } from "../useDatasetGraph";
 import styles from "./DatasetNode.module.scss";
 import DatasetNodeHandle from "./DatasetNodeHandle";
+import { getNodeHoverClass } from "./getNodeHoverClass";
 
 const DatasetFieldNode = ({ data, id }: NodeProps) => {
   const nodeData = data as FieldNodeData;
@@ -19,22 +20,6 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
   );
   const actions = useContext(DatasetEditorActionsContext);
   const hoverStatus = getNodeHoverStatus(id);
-
-  const getHoverClass = () => {
-    if (nodeData.isProtected) {
-      return styles["button--protected"];
-    }
-    switch (hoverStatus) {
-      case DatasetNodeHoverStatus.ACTIVE_HOVER:
-        return styles["button--hover"];
-      case DatasetNodeHoverStatus.PARENT_OF_HOVER:
-        return styles["button--parent-hover"];
-      case DatasetNodeHoverStatus.INACTIVE:
-        return styles["button--inactive"];
-      default:
-        return "";
-    }
-  };
 
   return (
     <div
@@ -47,7 +32,7 @@ const DatasetFieldNode = ({ data, id }: NodeProps) => {
         inactive={hoverStatus === DatasetNodeHoverStatus.INACTIVE}
       />
       <Button
-        className={`${styles.button} ${getHoverClass()} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
+        className={`${styles.button} ${getNodeHoverClass(hoverStatus, { isProtected: nodeData.isProtected })} ${(data as Record<string, unknown>).isHighlighted ? styles["button--highlighted"] : ""}`}
         type="text"
       >
         <Typography.Text ellipsis style={{ color: "inherit" }}>
