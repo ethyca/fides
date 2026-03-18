@@ -87,9 +87,7 @@ describe("Data map report table", () => {
   it("can group by data use", () => {
     cy.getByTestId("group-by-menu").should("contain.text", "Group by system");
     cy.getByTestId("group-by-menu").click();
-    cy.getByTestId("group-by-menu-list").within(() => {
-      cy.getByTestId("group-by-data-use-system").click();
-    });
+    cy.selectAntDropdownOption("Data use");
     cy.wait("@getDatamapMinimal");
     cy.getByTestId("group-by-menu").should("contain.text", "Group by data use");
 
@@ -110,7 +108,7 @@ describe("Data map report table", () => {
 
     it("should show undeclared data columns when enabled", () => {
       cy.getByTestId("more-menu").click();
-      cy.getByTestId("edit-columns-btn").click();
+      cy.selectAntDropdownOption("Edit columns");
       cy.contains("div", "System undeclared data categories").click();
       cy.contains("div", "Data use undeclared data categories").click();
       cy.getByTestId("save-button").click();
@@ -134,7 +132,7 @@ describe("Data map report table", () => {
     it("should show/hide columns", () => {
       // hide
       cy.getByTestId("more-menu").click();
-      cy.getByTestId("edit-columns-btn").click();
+      cy.selectAntDropdownOption("Edit columns");
       cy.getByTestId("column-list-item-legal_name").within(() => {
         cy.get("button#legal_name").should("have.attr", "aria-checked", "true");
         cy.get("button#legal_name").click();
@@ -153,7 +151,7 @@ describe("Data map report table", () => {
 
       // show
       cy.getByTestId("more-menu").click();
-      cy.getByTestId("edit-columns-btn").click();
+      cy.selectAntDropdownOption("Edit columns");
       cy.getByTestId("column-list-item-legal_name").within(() => {
         cy.get("button#legal_name").should(
           "have.attr",
@@ -169,7 +167,8 @@ describe("Data map report table", () => {
 
     it("should reorder columns", () => {
       cy.getByTestId("more-menu").click();
-      cy.getByTestId("edit-columns-btn").click();
+      cy.selectAntDropdownOption("Edit columns");
+      cy.get(".more-menu-list").should("not.be.visible");
       cy.getByTestId("column-dragger-legal_name").trigger("dragstart");
       cy.getByTestId("column-dragger-data_categories").trigger("dragenter");
       cy.getByTestId("column-dragger-data_categories").trigger("dragover");
@@ -192,7 +191,7 @@ describe("Data map report table", () => {
 
     it("should expand/collapse columns", () => {
       cy.getByTestId("more-menu").click();
-      cy.getByTestId("edit-columns-btn").click();
+      cy.selectAntDropdownOption("Edit columns");
       cy.contains("div", "System undeclared data categories").click();
       cy.contains("div", "Data use undeclared data categories").click();
       cy.getByTestId("save-button").click();
@@ -236,7 +235,7 @@ describe("Data map report table", () => {
     describe("Column renaming", () => {
       it("should rename columns", () => {
         cy.getByTestId("more-menu").click();
-        cy.getByTestId("rename-columns-btn").click();
+        cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("rename-columns-reset-btn").should("exist");
         cy.getByTestId("rename-columns-cancel-btn").should("exist");
         cy.getByTestId("rename-columns-apply-btn").should("exist");
@@ -256,7 +255,7 @@ describe("Data map report table", () => {
 
         // check edit columns modal
         cy.getByTestId("more-menu").click();
-        cy.getByTestId("edit-columns-btn").click();
+        cy.selectAntDropdownOption("Edit columns");
         cy.getByTestId("column-list-item-data_categories").within(() => {
           cy.get("label[for='data_categories']").should(
             "have.text",
@@ -281,7 +280,7 @@ describe("Data map report table", () => {
       });
       it("should cancel renaming columns", () => {
         cy.getByTestId("more-menu").click();
-        cy.getByTestId("rename-columns-btn").click();
+        cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("column-data_uses-input")
           .clear()
           .then(() => {
@@ -295,7 +294,7 @@ describe("Data map report table", () => {
       });
       it("should reset columns", () => {
         cy.getByTestId("more-menu").click();
-        cy.getByTestId("rename-columns-btn").click();
+        cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("column-data_uses-input")
           .clear()
           .then(() => {
@@ -303,13 +302,13 @@ describe("Data map report table", () => {
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("more-menu").click();
-        cy.getByTestId("rename-columns-btn").click();
+        cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("rename-columns-reset-btn").click({ force: true });
         cy.getByTestId("column-data_uses").should("contain.text", "Data use");
       });
       it("should support pressing the Enter key to apply renamed columns", () => {
         cy.getByTestId("more-menu").click();
-        cy.getByTestId("rename-columns-btn").click();
+        cy.selectAntDropdownOption("Rename columns");
         cy.getByTestId("column-data_uses-input").type("Custom Title{enter}");
         cy.getByTestId("column-data_uses").should(
           "contain.text",
@@ -417,7 +416,7 @@ describe("Data map report table", () => {
         "Group by data use",
       );
       cy.getByTestId("more-menu").click();
-      cy.getByTestId("edit-columns-btn").click();
+      cy.selectAntDropdownOption("Edit columns");
       cy.get("button#data_subjects").should(
         "have.attr",
         "aria-checked",
@@ -469,7 +468,7 @@ describe("Data map report table", () => {
       });
       cy.getByTestId("group-by-menu").should("contain.text", "Group by system");
       cy.getByTestId("more-menu").click();
-      cy.getByTestId("edit-columns-btn").click();
+      cy.selectAntDropdownOption("Edit columns");
       cy.get("button#data_subjects").should(
         "have.attr",
         "aria-checked",
@@ -599,9 +598,7 @@ describe("Data map report table", () => {
     });
     it("should open the system preview drawer when grouped by data use", () => {
       cy.getByTestId("group-by-menu").click();
-      cy.getByTestId("group-by-menu-list").within(() => {
-        cy.getByTestId("group-by-data-use-system").click();
-      });
+      cy.selectAntDropdownOption("Data use");
       cy.wait("@getDatamapMinimal");
       cy.getByTestId("row-0-col-system_name").click();
       cy.getByTestId("datamap-drawer").should("be.visible");

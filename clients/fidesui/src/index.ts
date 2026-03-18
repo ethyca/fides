@@ -245,7 +245,6 @@ export {
   DatePicker,
   Descriptions,
   Divider,
-  Dropdown,
   Empty,
   Flex,
   Form,
@@ -302,6 +301,7 @@ export {
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
   CustomDrawer as Drawer,
+  CustomDropdown as Dropdown,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
@@ -436,10 +436,7 @@ export { theme as antTheme } from "antd";
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
 export { CheckboxTree } from "./components/chakra-base/checkbox-tree";
-export type { ColumnMetadata } from "./components/chakra-base/column-dropdown";
-export { ColumnDropdown } from "./components/chakra-base/column-dropdown";
 export { ConfirmationModal } from "./components/chakra-base/confirmation-modal";
-export { DataCategoryDropdown } from "./components/chakra-base/data-category-dropdown";
 export { ExampleComponent } from "./components/chakra-base/example-component";
 export { PrimaryLink, SecondaryLink } from "./components/chakra-base/links";
 export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-table";
