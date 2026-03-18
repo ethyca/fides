@@ -14,11 +14,8 @@ import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
-import {
-  isErrorResult,
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
@@ -42,18 +39,9 @@ interface AwsSesMessagingFormProps {
 const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
   const router = useRouter();
   const message = useMessage();
+  const { handleError } = useAPIHelper();
   const { verifyConfiguration, isVerifying, getVerificationData } =
     useVerifyConfiguration();
-
-  const handleError = (error: any) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    message.error(errorMsg);
-  };
 
   const isEditMode = !!configKey;
 

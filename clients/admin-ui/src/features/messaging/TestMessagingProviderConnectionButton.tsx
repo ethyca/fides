@@ -5,16 +5,12 @@ import {
   ChakraHeading as Heading,
   ChakraStack as Stack,
   useChakraToast as useToast,
-  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
-import {
-  isErrorResult,
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import { successToastParams } from "~/features/common/toast";
 import { messagingProviders } from "~/features/messaging/constants";
 
@@ -32,7 +28,7 @@ const TestMessagingProviderConnectionButton = ({
   onClose,
 }: TestMessagingProviderConnectionButtonProps) => {
   const toast = useToast();
-  const message = useMessage();
+  const { handleError } = useAPIHelper();
   const [createTestConnectionMessage] =
     useCreateTestConnectionMessageMutation();
 
@@ -66,13 +62,7 @@ const TestMessagingProviderConnectionButton = ({
     });
 
     if (isErrorResult(result)) {
-      let errorMsg = "An unexpected error occurred. Please try again.";
-      if (isErrorWithDetail(result.error)) {
-        errorMsg = result.error.data.detail;
-      } else if (isErrorWithDetailArray(result.error)) {
-        errorMsg = result.error.data.detail[0].msg;
-      }
-      message.error(errorMsg);
+      handleError(result.error);
     } else {
       toast(successToastParams("Test message successfully sent."));
       if (onClose) {

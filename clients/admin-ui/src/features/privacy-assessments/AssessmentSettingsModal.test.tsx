@@ -84,6 +84,10 @@ jest.mock("~/features/chat-provider/chatProvider.slice", () => ({
   useGetChatChannelsQuery: () => mockGetChatChannelsQuery(),
 }));
 
+jest.mock("~/features/common/hooks", () => ({
+  useAPIHelper: () => ({ handleError: jest.fn() }),
+}));
+
 // Mock config settings for LlmModelSelector
 jest.mock("~/features/config-settings/config-settings.slice", () => ({
   useGetConfigurationSettingsQuery: () => ({

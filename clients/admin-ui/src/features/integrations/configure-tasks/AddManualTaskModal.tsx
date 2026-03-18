@@ -6,10 +6,7 @@ import {
 } from "fidesui";
 import React, { useState } from "react";
 
-import {
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import {
   useCreateManualFieldMutation,
   useUpdateManualFieldMutation,
@@ -39,6 +36,7 @@ const AddManualTaskModal = ({
   editingTask,
 }: Props) => {
   const message = useMessage();
+  const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [createManualField] = useCreateManualFieldMutation();
@@ -86,14 +84,8 @@ const AddManualTaskModal = ({
 
       onTaskAdded();
       onClose();
-    } catch (error: any) {
-      let errorMsg = "An unexpected error occurred. Please try again.";
-      if (isErrorWithDetail(error)) {
-        errorMsg = error.data.detail;
-      } else if (isErrorWithDetailArray(error)) {
-        errorMsg = error.data.detail[0].msg;
-      }
-      message.error(errorMsg);
+    } catch (error) {
+      handleError(error);
     } finally {
       setIsSubmitting(false);
     }

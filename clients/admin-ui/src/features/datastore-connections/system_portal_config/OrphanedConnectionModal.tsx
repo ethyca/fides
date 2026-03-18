@@ -15,10 +15,7 @@ import {
 import React, { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import {
   selectConnectionTypeFilters,
   useGetAllConnectionTypesQuery,
@@ -46,6 +43,7 @@ const OrphanedConnectionModal = ({
     useState<ConnectionConfigurationResponse | null>(null);
 
   const message = useMessage();
+  const { handleError } = useAPIHelper();
 
   const [patchDatastoreConnection, { isLoading }] =
     usePatchSystemConnectionConfigsMutation();
@@ -101,13 +99,7 @@ const OrphanedConnectionModal = ({
         onClose();
       }
     } catch (e) {
-      let errorMsg = "An unexpected error occurred. Please try again.";
-      if (isErrorWithDetail(e)) {
-        errorMsg = e.data.detail;
-      } else if (isErrorWithDetailArray(e)) {
-        errorMsg = e.data.detail[0].msg;
-      }
-      message.error(errorMsg);
+      handleError(e);
     }
   };
 

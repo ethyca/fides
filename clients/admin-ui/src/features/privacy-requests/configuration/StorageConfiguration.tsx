@@ -8,11 +8,8 @@ import {
 } from "fidesui";
 import { useEffect, useState } from "react";
 
-import {
-  isErrorResult,
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import {
   PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
@@ -33,6 +30,7 @@ import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
   const message = useMessage();
+  const { handleError } = useAPIHelper();
   const [storageValue, setStorageValue] = useState("");
 
   const { data: activeStorage } = useGetActiveStorageQuery();
@@ -56,13 +54,7 @@ const StorageConfiguration = () => {
         format: "json",
       });
       if (isErrorResult(storageDetailsResult)) {
-        let errorMsg = "An unexpected error occurred. Please try again.";
-        if (isErrorWithDetail(storageDetailsResult.error)) {
-          errorMsg = storageDetailsResult.error.data.detail;
-        } else if (isErrorWithDetailArray(storageDetailsResult.error)) {
-          errorMsg = storageDetailsResult.error.data.detail[0].msg;
-        }
-        message.error(errorMsg);
+        handleError(storageDetailsResult.error);
       } else {
         message.success(`Configured storage details successfully.`);
       }
@@ -75,13 +67,7 @@ const StorageConfiguration = () => {
     });
 
     if (isErrorResult(activeStorageResults)) {
-      let errorMsg = "An unexpected error occurred. Please try again.";
-      if (isErrorWithDetail(activeStorageResults.error)) {
-        errorMsg = activeStorageResults.error.data.detail;
-      } else if (isErrorWithDetailArray(activeStorageResults.error)) {
-        errorMsg = activeStorageResults.error.data.detail[0].msg;
-      }
-      message.error(errorMsg);
+      handleError(activeStorageResults.error);
     } else {
       setStorageValue(value);
     }

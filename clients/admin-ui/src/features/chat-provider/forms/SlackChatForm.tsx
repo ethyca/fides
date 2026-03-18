@@ -2,11 +2,8 @@ import { Button, Flex, Form, Input, Space, useMessage } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import {
-  isErrorResult,
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import { CHAT_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
 import { ChatConfigCreate, ChatConfigUpdate } from "~/types/api";
 
@@ -27,17 +24,8 @@ interface SlackChatFormProps {
 
 const SlackChatForm = ({ configId }: SlackChatFormProps) => {
   const router = useRouter();
+  const { handleError } = useAPIHelper();
   const message = useMessage();
-
-  const handleError = (error: any) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    message.error(errorMsg);
-  };
   const [form] = Form.useForm();
 
   // Watch any form field change to trigger re-render for button state

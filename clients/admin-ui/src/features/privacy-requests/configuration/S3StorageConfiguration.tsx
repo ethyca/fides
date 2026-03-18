@@ -11,11 +11,8 @@ import { useState } from "react";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomTextInput } from "~/features/common/form/inputs";
-import {
-  isErrorResult,
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
@@ -45,6 +42,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
 
+  const { handleError } = useAPIHelper();
   const message = useMessage();
 
   const initialValues = {
@@ -72,13 +70,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
     });
 
     if (isErrorResult(result)) {
-      let errorMsg = "An unexpected error occurred. Please try again.";
-      if (isErrorWithDetail(result.error)) {
-        errorMsg = result.error.data.detail;
-      } else if (isErrorWithDetailArray(result.error)) {
-        errorMsg = result.error.data.detail[0].msg;
-      }
-      message.error(errorMsg);
+      handleError(result.error);
     } else {
       setAuthMethod(newValues.auth_method);
       message.success(`S3 storage credentials successfully updated.`);
@@ -95,13 +87,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
     });
 
     if (isErrorResult(result)) {
-      let errorMsg = "An unexpected error occurred. Please try again.";
-      if (isErrorWithDetail(result.error)) {
-        errorMsg = result.error.data.detail;
-      } else if (isErrorWithDetailArray(result.error)) {
-        errorMsg = result.error.data.detail[0].msg;
-      }
-      message.error(errorMsg);
+      handleError(result.error);
     } else {
       message.success(`S3 storage secrets successfully updated.`);
     }

@@ -13,11 +13,8 @@ import { isEmpty, isEqual, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
-import {
-  isErrorResult,
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
@@ -51,6 +48,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
   const [form] = Form.useForm();
 
   const message = useMessage();
+  const { handleError } = useAPIHelper();
 
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
@@ -169,16 +167,6 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
       isUndefined,
     );
 
-  const getErrorMessage = (error: any) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    return errorMsg;
-  };
-
   // Custom validator to ensure either messaging service SID or phone number is provided
   const validateTwilioConfig = useCallback(() => {
     const formValues = form.getFieldsValue();
@@ -234,7 +222,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         });
 
         if (isErrorResult(result)) {
-          message.error(getErrorMessage(result.error));
+          handleError(result.error);
         } else {
           message.success("Twilio SMS configuration successfully updated.");
           setIsDirty(false);
@@ -258,7 +246,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         const result = await createMessagingConfiguration(config);
 
         if (isErrorResult(result)) {
-          message.error(getErrorMessage(result.error));
+          handleError(result.error);
         } else {
           message.success("Twilio SMS configuration successfully created.");
           setIsDirty(false);
@@ -276,7 +264,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         }
       }
     } catch (error) {
-      message.error("An unexpected error occurred. Please try again.");
+      handleError(error);
     }
   };
 
@@ -290,7 +278,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         }, 500);
       }
     } catch (error) {
-      message.error("An unexpected error occurred during verification.");
+      handleError(error);
     }
   };
 

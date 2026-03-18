@@ -29,10 +29,7 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
-import {
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import { getActionTypes } from "~/features/common/RequestType";
 import { ActionType } from "~/types/api";
 
@@ -87,6 +84,7 @@ const ManualProcessingList = ({
 }: ManualProcessingListProps) => {
   const dispatch = useAppDispatch();
   const message = useMessage();
+  const { handleError } = useAPIHelper();
   const [dataList, setDataList] = useState([] as unknown as ManualInputData[]);
   const [isCompleteDSRLoading, setIsCompleteDSRLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,14 +119,8 @@ const ManualProcessingList = ({
         `Manual request has been received. Request now processing.`,
       );
       onComplete();
-    } catch (error: any) {
-      let errorMsg = "An unexpected error occurred. Please try again.";
-      if (isErrorWithDetail(error)) {
-        errorMsg = error.data.detail;
-      } else if (isErrorWithDetailArray(error)) {
-        errorMsg = error.data.detail[0].msg;
-      }
-      message.error(errorMsg);
+    } catch (error) {
+      handleError(error);
     } finally {
       setIsCompleteDSRLoading(false);
     }
@@ -154,14 +146,8 @@ const ManualProcessingList = ({
       });
       setDataList(newState);
       message.success(`Manual input successfully saved!`);
-    } catch (error: any) {
-      let errorMsg = "An unexpected error occurred. Please try again.";
-      if (isErrorWithDetail(error)) {
-        errorMsg = error.data.detail;
-      } else if (isErrorWithDetailArray(error)) {
-        errorMsg = error.data.detail[0].msg;
-      }
-      message.error(errorMsg);
+    } catch (error) {
+      handleError(error);
     } finally {
       setIsSubmitting(false);
     }
