@@ -7,6 +7,7 @@ import { AgentBriefingBanner } from "./AgentBriefingBanner";
 import { DashboardDrawer } from "./DashboardDrawer";
 import { PostureCard } from "./PostureCard";
 import { PriorityActionsCard } from "./PriorityActionsCard";
+import { SystemCoverageCard } from "./SystemCoverageCard";
 
 const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
 
@@ -44,6 +45,11 @@ export const HomeDashboard = () => {
         </Col>
         <Col xs={24} md={16} lg={16} xxl={16} className="h-full">
           <PriorityActionsCard />
+        </Col>
+      </Row>
+      <Row gutter={24}>
+        <Col xs={24} md={8}>
+          <SystemCoverageCard />
         </Col>
       </Row>
       <DashboardDrawer />

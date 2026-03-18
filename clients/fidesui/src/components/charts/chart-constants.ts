@@ -25,6 +25,11 @@ export const CHART_GRADIENT = {
   endOpacity: 0,
 } as const;
 
+export const DONUT_THICKNESS = {
+  default: 8,
+  thick: 16,
+} as const;
+
 export const COLOR_OPTIONS = [
   "colorPrimary",
   "colorSuccess",

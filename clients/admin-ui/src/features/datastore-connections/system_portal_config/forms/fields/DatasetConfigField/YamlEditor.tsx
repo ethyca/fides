@@ -2,7 +2,6 @@ import { useAlert } from "common/hooks/useAlert";
 import {
   Button,
   ChakraFlex as Flex,
-  ChakraModalFooter as ModalFooter,
   ChakraText as Text,
   ChakraVStack as VStack,
 } from "fidesui";
@@ -140,28 +139,26 @@ const YamlEditor = ({
             })}
           </Text>
         ) : null}
-        <ModalFooter>
-          <div className="flex w-full justify-end gap-4">
-            {onCancel && (
-              <Button
-                onClick={onCancel}
-                data-testid="cancel-btn"
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-            )}
+        <div className="flex w-full justify-end gap-4">
+          {onCancel && (
             <Button
-              type="primary"
-              onClick={handleSubmit}
-              data-testid="continue-btn"
-              disabled={submitDisabled}
-              loading={isSubmitting || isLoading}
+              onClick={onCancel}
+              data-testid="cancel-btn"
+              disabled={isLoading}
             >
-              Confirm
+              Cancel
             </Button>
-          </div>
-        </ModalFooter>
+          )}
+          <Button
+            type="primary"
+            onClick={handleSubmit}
+            data-testid="continue-btn"
+            disabled={submitDisabled}
+            loading={isSubmitting || isLoading}
+          >
+            Confirm
+          </Button>
+        </div>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
         <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />
