@@ -30,8 +30,8 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.oauth.roles import ROLES_TO_SCOPES_MAPPING
 from fides.api.oauth.utils import verify_client_can_assign_scopes, verify_oauth_client
 from fides.api.schemas.client import (
-    ClientCreateRequest,
     ClientCreatedResponse,
+    ClientCreateRequest,
     ClientResponse,
     ClientSecretRotateResponse,
     ClientUpdateRequest,
@@ -276,7 +276,9 @@ def rotate_client_secret(
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
 
     logger.info("Rotating secret for client '{}'", client_id)
-    new_secret = client.rotate_secret(db, CONFIG.security.oauth_client_secret_length_bytes)
+    new_secret = client.rotate_secret(
+        db, CONFIG.security.oauth_client_secret_length_bytes
+    )
     return ClientSecretRotateResponse(client_id=client.id, client_secret=new_secret)
 
 

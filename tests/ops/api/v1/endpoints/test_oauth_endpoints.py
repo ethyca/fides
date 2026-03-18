@@ -19,10 +19,10 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import OWNER
 from fides.api.oauth.utils import extract_payload
+from fides.api.schemas.client import ClientCreateRequest
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
-from fides.api.schemas.client import ClientCreateRequest
 from fides.common.scope_registry import (
     CLIENT_CREATE,
     CLIENT_DELETE,
@@ -383,9 +383,7 @@ class TestUpdateClient:
     ) -> None:
         new_scopes = [CLIENT_READ, CLIENT_UPDATE]
         auth_header = generate_auth_header(new_scopes)
-        response = api_client.put(
-            url, headers=auth_header, json={"scopes": new_scopes}
-        )
+        response = api_client.put(url, headers=auth_header, json={"scopes": new_scopes})
         assert response.status_code == 200
         db.refresh(oauth_client)
         assert oauth_client.scopes == new_scopes
