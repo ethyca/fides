@@ -1,7 +1,6 @@
 import { ArrowRight } from "@carbon/icons-react";
 import { Flex, theme, Typography } from "antd/lib";
-import type { ReactNode } from "react";
-import { useCallback, useMemo } from "react";
+import React, { type ReactNode, useCallback, useMemo } from "react";
 import {
   Bar,
   BarChart,
