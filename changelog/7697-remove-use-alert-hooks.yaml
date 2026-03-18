@@ -1,4 +1,4 @@
 type: Developer Experience
-description: Removed useAlert, useAPIHelper, and useQueryResultToast hooks in favor of Ant Design useMessage
+description: Replaced useAlert and useQueryResultToast hooks with Ant Design useMessage
 pr: 7697
 labels: []
