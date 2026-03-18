@@ -3,6 +3,7 @@ import type {
   PostureResponse,
   PriorityAction,
   SystemCoverageResponse,
+  TrendsResponse,
 } from "~/features/dashboard/types";
 import {
   ActionSeverity,
@@ -373,4 +374,33 @@ export const mockAgentBriefing: AgentBriefingResponse = {
       severity: ActionSeverity.CRITICAL,
     },
   ],
+};
+
+export const mockTrends: TrendsResponse = {
+  metrics: {
+    gps_score: {
+      value: 64,
+      history: [58, 59, 61, 60, 63, 62, 64],
+      metadata: {},
+      diff: 3.2,
+    },
+    dsr_volume: {
+      value: 47,
+      history: [8, 12, 9, 15, 11, 18, 14],
+      metadata: {},
+      diff: -0.08,
+    },
+    system_coverage: {
+      value: 64.6,
+      history: [55, 57, 58, 61, 60, 63, 64.6],
+      metadata: {},
+      diff: 2.1,
+    },
+    classification_health: {
+      value: 58,
+      history: [52, 51, 54, 55, 53, 56, 58],
+      metadata: {},
+      diff: 1.8,
+    },
+  },
 };
