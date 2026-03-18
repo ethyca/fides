@@ -84,6 +84,13 @@
     "test": false,
     "production": false
   },
+  "alphaDashboard": {
+    "label": "Alpha new dashboard",
+    "description": "Enable the new Ant Design-only home dashboard",
+    "development": true,
+    "test": false,
+    "production": false
+  },
   "alphaJiraIntegration": {
     "label": "Alpha Jira integration",
     "description": "Enable Jira DSR integration for creating and managing Jira issues from privacy requests",

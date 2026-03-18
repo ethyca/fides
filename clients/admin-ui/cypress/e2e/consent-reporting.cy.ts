@@ -90,7 +90,7 @@ describe("Consent report", () => {
       cy.getByTestId("subject-search-input").type("test@example.com{enter}");
 
       cy.wait("@lookupConsentPreferences");
-      cy.get("#chakra-modal-consent-lookup-modal").within(() => {
+      cy.getByTestId("consent-lookup-modal").within(() => {
         cy.getByTestId("privacy-notice-preferences-table").should("exist");
         cy.getByTestId("privacy-notice-preferences-table")
           .find("tbody")

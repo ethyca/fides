@@ -6,9 +6,9 @@ import {
   ChakraText as Text,
   Icons,
   useChakraDisclosure as useDisclosure,
+  useModal,
 } from "fidesui";
 
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import Restrict from "~/features/common/Restrict";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetActiveMessagingProviderQuery } from "~/features/messaging/messaging.slice";
@@ -30,8 +30,7 @@ export const RequestTableActions = ({
 }: RequestTableActionsProps): JSX.Element | null => {
   const approvalModal = useDisclosure();
   const denyModal = useDisclosure();
-  const deleteModal = useDisclosure();
-  const finalizeModal = useDisclosure();
+  const modal = useModal();
   const {
     handleApproveRequest,
     handleDenyRequest,
@@ -90,6 +89,28 @@ export const RequestTableActions = ({
     );
   };
 
+  const handleFinalizeConfirm = () => {
+    modal.confirm({
+      title: "Finalize privacy request",
+      content: (
+        <Text>
+          You are about to finalize this privacy request. The status will be
+          updated to &#34;Complete&#34;
+          {sendRequestCompletionNotification &&
+          activeMessagingProvider?.service_type
+            ? " and the requesting user will be notified"
+            : ""}
+          . Would you like to continue?
+        </Text>
+      ),
+      centered: true,
+      icon: null,
+      onOk: () => {
+        handleFinalizeRequest();
+      },
+    });
+  };
+
   const renderFinalizeButton = () => {
     if (!buttonVisibility.finalize) {
       return null;
@@ -100,7 +121,7 @@ export const RequestTableActions = ({
           title="Finalize"
           aria-label="Finalize"
           icon={<Icons.Stamp />}
-          onClick={finalizeModal.onOpen}
+          onClick={handleFinalizeConfirm}
           loading={isLoading}
           disabled={isLoading}
           data-testid="privacy-request-finalize-btn"
@@ -108,6 +129,20 @@ export const RequestTableActions = ({
         />
       </Restrict>
     );
+  };
+
+  const handleDeleteConfirm = () => {
+    modal.confirm({
+      content: (
+        <Text>
+          You are about to permanently delete the privacy request. Are you sure
+          you would like to continue?
+        </Text>
+      ),
+      centered: true,
+      icon: null,
+      onOk: handleDeleteRequest,
+    });
   };
 
   const renderDeleteButton = () => {
@@ -120,7 +155,7 @@ export const RequestTableActions = ({
           title="Delete"
           aria-label="Delete"
           icon={<Icons.TrashCan size={14} />}
-          onClick={deleteModal.onOpen}
+          onClick={handleDeleteConfirm}
           loading={isLoading}
           disabled={isLoading}
           data-testid="privacy-request-delete-btn"
@@ -155,37 +190,6 @@ export const RequestTableActions = ({
           onDenyRequest={handleDenyRequest}
         />
       </Portal>
-      <ConfirmationModal
-        isOpen={deleteModal.isOpen}
-        onClose={deleteModal.onClose}
-        onConfirm={handleDeleteRequest}
-        message={
-          <Text>
-            You are about to permanently delete the privacy request. Are you
-            sure you would like to continue?
-          </Text>
-        }
-      />
-      <ConfirmationModal
-        isOpen={finalizeModal.isOpen}
-        onClose={finalizeModal.onClose}
-        onConfirm={() => {
-          handleFinalizeRequest();
-          finalizeModal.onClose();
-        }}
-        title="Finalize privacy request"
-        message={
-          <Text>
-            You are about to finalize this privacy request. The status will be
-            updated to &#34;Complete&#34;
-            {sendRequestCompletionNotification &&
-            activeMessagingProvider?.service_type
-              ? " and the requesting user will be notified"
-              : ""}
-            . Would you like to continue?
-          </Text>
-        }
-      />
     </>
   );
 };

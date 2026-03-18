@@ -11,10 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import {
-  DirtyFormConfirmationModal,
-  useIsAnyFormDirty,
-} from "~/features/common/hooks/useIsAnyFormDirty";
+import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
 import {
   EDIT_SYSTEM_ROUTE,
@@ -175,7 +172,6 @@ const useSystemFormTabs = ({
       children: (
         <>
           <Box px={6} mb={9}>
-            <DirtyFormConfirmationModal />
             <SystemInformationForm
               onSuccess={handleSuccess}
               system={activeSystem}

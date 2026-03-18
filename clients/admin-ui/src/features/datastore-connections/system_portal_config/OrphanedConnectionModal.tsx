@@ -7,15 +7,9 @@ import {
   Button,
   ChakraBox as Box,
   ChakraFlex as Flex,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
   ChakraText as Text,
+  Modal,
   useChakraDisclosure as useDisclosure,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
@@ -112,60 +106,14 @@ const OrphanedConnectionModal = ({
     <>
       <Button onClick={onOpen}>Link integration</Button>
 
-      <Modal isCentered isOpen={isOpen} size="lg" onClose={closeIfComplete}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Unlinked Integrations</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Stack direction="column" spacing="15px">
-              <Text
-                color="gray.600"
-                fontSize="sm"
-                fontWeight="sm"
-                lineHeight="20px"
-              >
-                These are all the integrations that are not linked to a system.
-                Please select an integration to link to a system.
-              </Text>
-              <Box maxHeight="350px" height="100%" overflowY="auto">
-                {connectionConfigs.map((connectionConfig) => (
-                  <Flex
-                    flexDirection="row"
-                    key={connectionConfig.key}
-                    alignItems="center"
-                    _hover={{
-                      bg: "gray.100",
-                      color: "gray.600",
-                    }}
-                    bg={
-                      selectedConnectionConfig?.key === connectionConfig.key
-                        ? "gray.100"
-                        : "unset"
-                    }
-                    color={
-                      selectedConnectionConfig?.key === connectionConfig.key
-                        ? "gray.600"
-                        : "unset"
-                    }
-                    cursor="pointer"
-                    onClick={() => {
-                      setSelectedConnectionConfig(connectionConfig);
-                    }}
-                    className="mb-2"
-                  >
-                    <ConnectionTypeLogo
-                      data={connectionLogoFromConfiguration(connectionConfig)}
-                      className="mr-2"
-                    />
-                    <Text>{connectionConfig.name}</Text>
-                  </Flex>
-                ))}
-              </Box>
-            </Stack>
-          </ModalBody>
-
-          <ModalFooter className="flex gap-4">
+      <Modal
+        centered
+        destroyOnHidden
+        open={isOpen}
+        onCancel={closeIfComplete}
+        title="Unlinked Integrations"
+        footer={
+          <div className="flex gap-4">
             <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
             </Button>
@@ -177,8 +125,54 @@ const OrphanedConnectionModal = ({
             >
               Link integration
             </Button>
-          </ModalFooter>
-        </ModalContent>
+          </div>
+        }
+      >
+        <Stack direction="column" spacing="15px">
+          <Text
+            color="gray.600"
+            fontSize="sm"
+            fontWeight="sm"
+            lineHeight="20px"
+          >
+            These are all the integrations that are not linked to a system.
+            Please select an integration to link to a system.
+          </Text>
+          <Box maxHeight="350px" height="100%" overflowY="auto">
+            {connectionConfigs.map((connectionConfig) => (
+              <Flex
+                flexDirection="row"
+                key={connectionConfig.key}
+                alignItems="center"
+                _hover={{
+                  bg: "gray.100",
+                  color: "gray.600",
+                }}
+                bg={
+                  selectedConnectionConfig?.key === connectionConfig.key
+                    ? "gray.100"
+                    : "unset"
+                }
+                color={
+                  selectedConnectionConfig?.key === connectionConfig.key
+                    ? "gray.600"
+                    : "unset"
+                }
+                cursor="pointer"
+                onClick={() => {
+                  setSelectedConnectionConfig(connectionConfig);
+                }}
+                className="mb-2"
+              >
+                <ConnectionTypeLogo
+                  data={connectionLogoFromConfiguration(connectionConfig)}
+                  className="mr-2"
+                />
+                <Text>{connectionConfig.name}</Text>
+              </Flex>
+            ))}
+          </Box>
+        </Stack>
       </Modal>
     </>
   );

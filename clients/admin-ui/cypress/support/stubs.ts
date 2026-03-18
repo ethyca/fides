@@ -184,7 +184,7 @@ export const stubDatasetCrud = () => {
   cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
     "getDatasets",
   );
-  cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+  cy.intercept("GET", "/api/v1/dataset?*minimal=true", {
     fixture: "connectors/minimal_datasets.json",
   }).as("getMinimalDatasets");
   cy.intercept("GET", "/api/v1/dataset?page*", {

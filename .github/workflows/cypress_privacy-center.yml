@@ -42,7 +42,8 @@ jobs:
 
   Privacy-Center-Cypress:
     needs: Check-Privacy-Center-Changes
-    if: needs.Check-Privacy-Center-Changes.outputs.has_privacy_center_changes == 'true'
+    # Skip on merge_group — these checks already passed on the PR
+    if: needs.Check-Privacy-Center-Changes.outputs.has_privacy_center_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     defaults:
       run:
