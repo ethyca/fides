@@ -224,13 +224,16 @@ const EditorSection = ({
         );
         // Refresh local state with server response (may have restored fields)
         setLocalDataset(removeNulls(succeededDataset) as Dataset);
+      } else {
+        messageApi.warning("No changes were saved.");
+        return;
       }
 
       // Show warnings if the backend restored any protected fields
       const warnings = result.data?.warnings;
       if (warnings && warnings.length > 0) {
-        warnings.forEach((w) => {
-          messageApi.warning(w.message);
+        warnings.forEach((warning) => {
+          messageApi.warning(warning.message);
         });
       }
     } else {

@@ -367,6 +367,20 @@ const DatasetNodeEditorInner = ({
     applyYamlDecorations();
   }, [applyYamlDecorations]);
 
+  // Inject immutable-line style and clean up on unmount
+  useEffect(() => {
+    const styleId = "immutable-line-style";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = ".immutable-line { opacity: 0.5; }";
+      document.head.appendChild(style);
+    }
+    return () => {
+      document.getElementById(styleId)?.remove();
+    };
+  }, []);
+
   const { nodes: rawNodes, edges } = useDatasetGraph(
     dataset,
     protectedFields,
@@ -762,12 +776,6 @@ const DatasetNodeEditorInner = ({
                 height="100%"
                 onChange={handleYamlChange}
                 onMount={(editor) => {
-                  if (!document.getElementById("immutable-line-style")) {
-                    const style = document.createElement("style");
-                    style.id = "immutable-line-style";
-                    style.textContent = ".immutable-line { opacity: 0.5; }";
-                    document.head.appendChild(style);
-                  }
                   yamlEditorRef.current = editor;
                   applyYamlDecorations();
                 }}
