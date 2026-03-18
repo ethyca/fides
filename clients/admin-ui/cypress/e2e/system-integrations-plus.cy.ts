@@ -39,22 +39,19 @@ describe("System integrations", () => {
 
     it("should display Shopify when searching with upper case letters", () => {
       cy.getByTestId("input-search-integrations").type("Sho");
-      cy.getByTestId("select-dropdown-list")
-        .find('[role="menuitem"] p')
-        .should("contain.text", "Shopify");
+      cy.getByTestId("select-dropdown-list").should("contain.text", "Shopify");
     });
 
     it("should display Shopify when searching with lower case letters", () => {
       cy.getByTestId("input-search-integrations").type("sho");
-      cy.getByTestId("select-dropdown-list")
-        .find('[role="menuitem"] p')
-        .should("contain.text", "Shopify");
+      cy.getByTestId("select-dropdown-list").should("contain.text", "Shopify");
     });
 
     it("should not display Website in the dropdown", () => {
-      cy.getByTestId("select-dropdown-list")
-        .find('[role="menuitem"] p')
-        .should("not.contain.text", "Website");
+      cy.getByTestId("select-dropdown-list").should(
+        "not.contain.text",
+        "Website",
+      );
     });
   });
 
@@ -65,9 +62,7 @@ describe("System integrations", () => {
       cy.getByTestId("select-dropdown-btn").click();
 
       cy.getByTestId("input-search-integrations").type("PostgreSQL");
-      cy.getByTestId("select-dropdown-list")
-        .contains('[role="menuitem"]', /^PostgreSQL$/)
-        .click();
+      cy.getByTestId("dropdown-item-postgres").click({ force: true });
     });
 
     // Verify Postgres shows access and erasure by default
