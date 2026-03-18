@@ -74,7 +74,7 @@ export const DSRStatusCard = () => {
                 </Flex>
                 <Flex vertical gap={4} className="mt-3">
                   {SUB_STATS.map(({ key, title }) => (
-                    <div key={key} className={styles.subStat}>
+                    <Flex key={key} className={styles.subStat}>
                       <Statistic
                         value={data?.statuses[key] ?? 0}
                         title={title}
@@ -83,7 +83,7 @@ export const DSRStatusCard = () => {
                           fontWeight: 600,
                         }}
                       />
-                    </div>
+                    </Flex>
                   ))}
                 </Flex>
               </div>

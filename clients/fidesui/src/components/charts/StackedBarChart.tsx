@@ -69,10 +69,10 @@ const StackedBarTooltipContent = ({
     >
       <Text strong>{entry.category}</Text>
       {segments
-        .filter((s) => (entry[`raw_${s.key}`] as number) > 0)
-        .map((s) => (
-          <Text key={s.key} type="secondary">
-            {s.label}: {entry[`raw_${s.key}`]}
+        .filter((segment) => (entry[`raw_${segment.key}`] as number) > 0)
+        .map((segment) => (
+          <Text key={segment.key} type="secondary">
+            {segment.label}: {entry[`raw_${segment.key}`]}
           </Text>
         ))}
     </Flex>
@@ -104,7 +104,7 @@ const ClickableTick = ({
   chartData,
 }: ClickableTickProps) => {
   const label = payload?.value ?? "";
-  const entry = chartData.find((e) => e.category === label);
+  const entry = chartData.find((item) => item.category === label);
   const rawCategory = entry?.rawCategory ?? label.toLowerCase();
   const interactive = !!onCategoryClick;
   const color = interactive ? linkColor : textColor;
@@ -174,7 +174,7 @@ export const StackedBarChart = ({
   const colorMap = useMemo(
     () =>
       Object.fromEntries(
-        segments.map((s) => [s.key, token[s.color]]),
+        segments.map((segment) => [segment.key, token[segment.color]]),
       ) as Record<string, string>,
     [token, segments],
   );
@@ -182,7 +182,10 @@ export const StackedBarChart = ({
   const chartData = useMemo(() => {
     return Object.entries(data)
       .map(([category, row]) => {
-        const total = segments.reduce((sum, s) => sum + (row[s.key] ?? 0), 0);
+        const total = segments.reduce(
+          (sum, segment) => sum + (row[segment.key] ?? 0),
+          0,
+        );
         if (total === 0) {
           return null;
         }
@@ -191,14 +194,14 @@ export const StackedBarChart = ({
           rawCategory: category,
           total,
         };
-        segments.forEach((s) => {
-          const raw = row[s.key] ?? 0;
-          entry[s.key] = (raw / total) * 100;
-          entry[`raw_${s.key}`] = raw;
+        segments.forEach((segment) => {
+          const raw = row[segment.key] ?? 0;
+          entry[segment.key] = (raw / total) * 100;
+          entry[`raw_${segment.key}`] = raw;
         });
         return entry;
       })
-      .filter((e): e is ChartEntry => e !== null);
+      .filter((entry): entry is ChartEntry => entry !== null);
   }, [data, segments]);
 
   if (chartData.length === 0) {
@@ -238,17 +241,17 @@ export const StackedBarChart = ({
           cursor={false}
           content={<StackedBarTooltipContent segments={segments} />}
         />
-        {segments.map((s) => (
+        {segments.map((segment) => (
           <Bar
-            key={s.key}
-            dataKey={s.key}
+            key={segment.key}
+            dataKey={segment.key}
             stackId="stack"
             barSize={barHeight}
             isAnimationActive={animationDuration > 0 && animationActive}
             animationDuration={animationDuration}
             animationEasing={CHART_ANIMATION.easing}
             radius={0}
-            fill={colorMap[s.key]}
+            fill={colorMap[segment.key]}
           />
         ))}
       </BarChart>
