@@ -4,9 +4,10 @@ import { rest } from "msw";
 import { ActionType } from "~/features/dashboard/types";
 
 import {
+  mockPrivacyRequests,
+  mockAgentBriefing,
   mockPosture,
   mockPriorityActions,
-  mockPrivacyRequests,
   mockSystemCoverage,
 } from "./data";
 
@@ -63,6 +64,10 @@ export const dashboardHandlers = () => {
 
     rest.get(`${apiBase}/plus/dashboard/privacy-requests`, (_req, res, ctx) =>
       res(ctx.status(200), ctx.json(mockPrivacyRequests)),
+    ),
+
+    rest.get(`${apiBase}/plus/dashboard/agent-briefing`, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(mockAgentBriefing)),
     ),
 
     rest.patch(

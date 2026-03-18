@@ -242,7 +242,7 @@ class TestConnectionService:
     ):
         """Test that updating SaaS connector secrets creates an audit event."""
         # Test data
-        new_secrets = {"api_key": "new_api_key", "domain": "new_domain"}
+        new_secrets = {"api_key": "new_api_key", "domain": "api.stripe.com"}
 
         # Execute
         result = connection_service.update_secrets(
@@ -272,7 +272,7 @@ class TestConnectionService:
         )
         # all secrets are masked since custom connection has no secret schema
         assert events[0].event_details["secrets"]["api_key"] == "**********"
-        assert events[0].event_details["secrets"]["domain"] == "new_domain"
+        assert events[0].event_details["secrets"]["domain"] == "api.stripe.com"
 
     def test_update_secrets_saas_no_merge(
         self,
@@ -282,7 +282,7 @@ class TestConnectionService:
     ):
         """Test that updating SaaS connector secrets creates an audit event."""
         # Test data
-        new_secrets = {"api_key": "new_api_key", "domain": "new_domain"}
+        new_secrets = {"api_key": "new_api_key", "domain": "api.stripe.com"}
 
         # Execute
         result = connection_service.update_secrets(
@@ -309,7 +309,7 @@ class TestConnectionService:
         )
         # all secrets are masked since custom connection has no secret schema
         assert events[0].event_details["secrets"]["api_key"] == "**********"
-        assert events[0].event_details["secrets"]["domain"] == "new_domain"
+        assert events[0].event_details["secrets"]["domain"] == "api.stripe.com"
 
     def test_update_secrets_saas_custom(
         self,
@@ -319,7 +319,7 @@ class TestConnectionService:
     ):
         """Test that updating SaaS connector secrets creates an audit event."""
         # Test data
-        new_secrets = {"api_key": "new_api_key", "domain": "new_domain"}
+        new_secrets = {"api_key": "new_api_key", "domain": "api.stripe.com"}
 
         # Execute
         result = connection_service.update_secrets(

@@ -1,4 +1,5 @@
 import type {
+  AgentBriefingResponse,
   PostureResponse,
   PriorityAction,
   PrivacyRequestsResponse,
@@ -366,4 +367,23 @@ export const mockPrivacyRequests: PrivacyRequestsResponse = {
     consent: { on_track: 6, approaching: 2, overdue: 0 },
     update: { on_track: 5, approaching: 1, overdue: 1 },
   },
+};
+
+export const mockAgentBriefing: AgentBriefingResponse = {
+  briefing:
+    "Since you were away: Your GPS improved by 2 points after Casey approved 34 classifications across Snowflake and BigQuery. 3 DSRs completed on time. However, 1 new critical risk was detected — unclassified health data found in BigQuery project analytics-prod. Recommended action: assign a steward and initiate classification.",
+  quick_actions: [
+    {
+      label: "Assign steward for BigQuery",
+      action_type: ActionType.STEWARD_ASSIGNMENT,
+      action_data: { system_id: "sys-bigquery" },
+      severity: ActionSeverity.MEDIUM,
+    },
+    {
+      label: "Review overdue DSR",
+      action_type: ActionType.DSR_ACTION,
+      action_data: { request_id: "pri-4521" },
+      severity: ActionSeverity.CRITICAL,
+    },
+  ],
 };
