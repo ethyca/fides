@@ -45,7 +45,7 @@ export const useMonitorConfigTable = ({
 
   const { pageIndex, pageSize } = tableState;
 
-  const isIdpIntegration =
+  const isIdentityProviderIntegration =
     integration.connection_type === ConnectionType.OKTA ||
     integration.connection_type === ConnectionType.ENTRA;
 
@@ -199,7 +199,7 @@ export const useMonitorConfigTable = ({
             onEditMonitor({ ...data, stewards: stewards?.map(({ id }) => id) })
           }
           isWebsiteMonitor={isWebsiteMonitor}
-          isOktaMonitor={isIdpIntegration}
+          isOktaMonitor={isIdentityProviderIntegration}
           monitorId={data.key}
         />
       ),
@@ -226,7 +226,7 @@ export const useMonitorConfigTable = ({
       statusColumn,
       actionsColumn,
     ];
-  }, [integration.secrets, isWebsiteMonitor, onEditMonitor, isIdpIntegration]);
+  }, [integration.secrets, isWebsiteMonitor, onEditMonitor, isIdentityProviderIntegration]);
 
   return {
     // Table state and data

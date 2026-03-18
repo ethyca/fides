@@ -14,15 +14,15 @@ export const ENTRA_INTEGRATION_PLACEHOLDER = {
 
 export const ENTRA_DESCRIPTION = (
   <>
-    Microsoft Entra ID (formerly Azure Active Directory) manages identity and
-    access for your organization. Adding Entra ID as a data source allows you to
-    discover enterprise applications (service principals), monitor access
-    patterns, and enhance your data map for better visibility and control.
+    Identity providers manage user authentication and can help identify systems
+    within your infrastructure. Microsoft Entra ID (formerly Azure AD) as a
+    data source allows you to detect connected systems, monitor access patterns,
+    and enhance your data map for better visibility and control.
   </>
 );
 
 export const ENTRA_AUTH_DESCRIPTION =
-  "Entra ID integration uses OAuth2 Client Credentials for authentication. You will need to register an application in the Azure Portal and provide the tenant ID, client ID, and client secret.";
+  "Entra integration uses OAuth2 Client Credentials. You will need an App registration in Microsoft Entra with client ID, client secret (use the secret value, not the secret ID), and tenant ID.";
 
 const EntraIntegrationOverview = () => (
   <>
