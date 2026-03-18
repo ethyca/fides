@@ -104,5 +104,12 @@
     "development": true,
     "test": false,
     "production": false
+  },
+  "entraMonitor": {
+    "label": "Entra monitor",
+    "description": "Enable Microsoft Entra ID (Azure AD) identity provider monitoring",
+    "development": true,
+    "test": false,
+    "production": false
   }
 }
