@@ -34,6 +34,15 @@ class InMemoryRedis:
         self._data[key] = value
         return True
 
+    def delete(self, *keys: str) -> int:
+        """Remove keys; returns count removed (redis-py compatible)."""
+        removed = 0
+        for key in keys:
+            if key in self._data:
+                del self._data[key]
+                removed += 1
+        return removed
+
     def keys(self, pattern: str) -> List[str]:
         """Glob-style: * matches any number of chars."""
         return [k for k in self._data if fnmatch.fnmatch(k, pattern)]
