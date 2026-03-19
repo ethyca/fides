@@ -110,10 +110,10 @@ const ConfigureMonitorModal = ({
     if (!monitor?.key) return;
     const result = await updateInfraMonitorRegions({ key: monitor.key, regions });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error), "Error updating regions");
+      message.error(getErrorMessage(result.error));
       return;
     }
-    successAlert("Monitor updated successfully");
+    message.success("Monitor updated successfully");
     onClose();
   };
 
@@ -121,7 +121,7 @@ const ConfigureMonitorModal = ({
   const handleAWSStep0Submit = async (values: EditableMonitorConfig) => {
     const result = await putMonitorMutationTrigger(values);
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error), "Error saving monitor");
+      message.error(getErrorMessage(result.error));
       return;
     }
     onAdvance({ ...values, key: (result.data as { key: string }).key } as EditableMonitorConfig);
@@ -155,14 +155,18 @@ const ConfigureMonitorModal = ({
 
   if (isAWSMonitor) {
     return (
-      <FormModal
+      <Modal
         title={
           monitor?.name
             ? `Configure ${monitor.name}`
             : "Configure AWS monitor"
         }
-        isOpen={isOpen}
-        onClose={onClose}
+        open={isOpen}
+        onCancel={onClose}
+        centered
+        destroyOnClose
+        footer={null}
+        data-testid="add-modal-content"
       >
         {formStep === 0 && (
           <ConfigureAWSMonitorForm
@@ -183,7 +187,7 @@ const ConfigureMonitorModal = ({
           ) : (
             <PageSpinner />
           ))}
-      </FormModal>
+      </Modal>
     );
   }
 

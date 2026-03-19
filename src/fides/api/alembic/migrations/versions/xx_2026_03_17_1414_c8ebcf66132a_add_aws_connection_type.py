@@ -16,7 +16,7 @@ depends_on = None
 # Enum values before this migration
 _VALUES = [
     "attentive_email", "bigquery", "datahub", "dynamic_erasure_email", "dynamodb",
-    "fides", "generic_consent_email", "generic_erasure_email",
+    "entra", "fides", "generic_consent_email", "generic_erasure_email",
     "google_cloud_sql_mysql", "google_cloud_sql_postgres", "https",
     "jira_ticket", "manual", "manual_task", "manual_webhook",
     "mariadb", "mongodb", "mssql", "mysql", "okta", "postgres",

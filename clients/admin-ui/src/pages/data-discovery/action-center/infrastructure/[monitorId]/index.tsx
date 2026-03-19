@@ -1,5 +1,5 @@
 import { NextPage } from "next";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 import ErrorPage from "~/features/common/errors/ErrorPage";
 import {
@@ -10,6 +10,7 @@ import ActionCenterLayout from "~/features/data-discovery-and-detection/action-c
 import { ActionCenterRoute } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterNavigation";
 import { useDiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/hooks/useDiscoveredInfrastructureSystemsTable";
 import { DiscoveredInfrastructureSystemsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredInfrastructureSystemsTable";
+import { ConnectionType } from "~/types/api";
 
 export const MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG = {
   [ActionCenterRoute.ACTIVITY]:
@@ -20,14 +21,20 @@ export const MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG = {
 
 const InfrastructureMonitorResultSystems: NextPage = () => {
   const params = useParams<{ monitorId: string }>();
+  const searchParams = useSearchParams();
 
   const monitorId = params?.monitorId
     ? decodeURIComponent(params.monitorId)
     : undefined;
+
+  const isAWSMonitor =
+    searchParams?.get("connectionType") === ConnectionType.AWS;
   const loading = !monitorId;
+
   const { error: infrastructureSystemsError } =
     useDiscoveredInfrastructureSystemsTable({
       monitorId,
+      isAWSMonitor,
     });
 
   if (infrastructureSystemsError) {
@@ -45,7 +52,10 @@ const InfrastructureMonitorResultSystems: NextPage = () => {
       routeConfig={MONITOR_INFRASTRUCTURE_ACTION_CENTER_CONFIG}
     >
       {loading ? null : (
-        <DiscoveredInfrastructureSystemsTable monitorId={monitorId} />
+        <DiscoveredInfrastructureSystemsTable
+          monitorId={monitorId}
+          isAWSMonitor={isAWSMonitor}
+        />
       )}
     </ActionCenterLayout>
   );

@@ -497,6 +497,15 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Configs"],
     }),
+    getInfraMonitorResults: build.query<
+      Page_StagedResourceAPIResponse_,
+      { key: string; page?: number; size?: number; search?: string; diff_status?: string | string[] }
+    >({
+      query: ({ key, ...params }) => ({
+        url: `/plus/infra-monitors/${key}/results`,
+        params,
+      }),
+    }),
     getInfraMonitorRegions: build.query<
       { regions: string[] },
       { key: string }
@@ -548,6 +557,7 @@ export const {
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,
   useUpdateInfraMonitorRegionsMutation,
+  useGetInfraMonitorResultsQuery,
   useGetInfraMonitorRegionsQuery,
   useExecuteInfraMonitorMutation,
 } = discoveryDetectionApi;

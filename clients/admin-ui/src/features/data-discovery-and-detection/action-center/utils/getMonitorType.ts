@@ -16,7 +16,8 @@ export const getMonitorType = (connectionType: ConnectionType) => {
   }
   if (
     connectionType === ConnectionType.OKTA ||
-    connectionType === ConnectionType.ENTRA
+    connectionType === ConnectionType.ENTRA ||
+    connectionType === ConnectionType.AWS
   ) {
     return MONITOR_TYPES.INFRASTRUCTURE;
   }

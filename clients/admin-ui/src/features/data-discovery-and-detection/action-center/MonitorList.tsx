@@ -110,7 +110,7 @@ const MonitorList = () => {
         renderItem={(summary) => {
           const link =
             summary.key && summary.monitorType
-              ? `${ACTION_CENTER_ROUTE}/${summary.monitorType}/${summary.key}`
+              ? `${ACTION_CENTER_ROUTE}/${summary.monitorType}/${summary.key}?connectionType=${summary.connection_type}`
               : "";
           return (
             !!summary?.key && (

@@ -15,6 +15,7 @@ import { useInfrastructureSystemsFilters } from "../fields/useInfrastructureSyst
 interface InfrastructureSystemsFiltersProps
   extends ReturnType<typeof useInfrastructureSystemsFilters> {
   monitorId: string;
+  isAWSMonitor?: boolean;
 }
 
 const STATUS_FILTER_OPTIONS = [
@@ -38,6 +39,7 @@ const STATUS_FILTER_OPTIONS = [
 
 export const InfrastructureSystemsFilters = ({
   monitorId,
+  isAWSMonitor,
   statusFilters,
   setStatusFilters,
   vendorFilters,
@@ -47,10 +49,10 @@ export const InfrastructureSystemsFilters = ({
 }: InfrastructureSystemsFiltersProps) => {
   const { getDataUseDisplayName } = useTaxonomies();
 
-  // Fetch available filters from API
+  // Fetch available filters from API (Okta only — AWS monitors don't have this endpoint)
   const { data: availableFilters } = useGetIdentityProviderMonitorFiltersQuery(
     { monitor_config_key: monitorId },
-    { skip: !monitorId },
+    { skip: !monitorId || isAWSMonitor },
   );
 
   const statusFilterValue = useMemo(

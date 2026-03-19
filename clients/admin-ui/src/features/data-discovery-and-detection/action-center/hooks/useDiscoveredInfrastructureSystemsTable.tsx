@@ -9,7 +9,10 @@ import { useAntPagination } from "~/features/common/pagination/useAntPagination"
 import { StagedResourceAPIResponse } from "~/types/api";
 import { DiffStatus } from "~/types/api/models/DiffStatus";
 
-import { useGetIdentityProviderMonitorResultsQuery } from "../../discovery-detection.slice";
+import {
+  useGetIdentityProviderMonitorResultsQuery,
+  useGetInfraMonitorResultsQuery,
+} from "../../discovery-detection.slice";
 import { MONITOR_TYPES } from "../utils/getMonitorType";
 import useActionCenterTabs, {
   ActionCenterTabHash,
@@ -17,6 +20,7 @@ import useActionCenterTabs, {
 
 interface UseDiscoveredInfrastructureSystemsTableConfig {
   monitorId?: string;
+  isAWSMonitor?: boolean;
   statusFilters?: string[] | null;
   vendorFilters?: string[] | null;
   dataUsesFilters?: string[] | null;
@@ -24,6 +28,7 @@ interface UseDiscoveredInfrastructureSystemsTableConfig {
 
 export const useDiscoveredInfrastructureSystemsTable = ({
   monitorId,
+  isAWSMonitor,
   statusFilters,
   vendorFilters,
   dataUsesFilters,
@@ -90,33 +95,48 @@ export const useDiscoveredInfrastructureSystemsTable = ({
     },
     {
       refetchOnMountOrArgChange: true,
-      skip: !monitorId,
+      skip: !monitorId || isAWSMonitor,
     },
   );
 
+  const awsDataQuery = useGetInfraMonitorResultsQuery(
+    {
+      key: monitorId!,
+      page: pageIndex,
+      size: pageSize,
+      search: search.searchQuery,
+      diff_status: diffStatusFilters,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+      skip: !monitorId || !isAWSMonitor,
+    },
+  );
+
+  const activeQuery = isAWSMonitor ? awsDataQuery : oktaDataQuery;
+
   const {
-    data: oktaData,
-    isLoading: oktaIsLoading,
-    isFetching: oktaIsFetching,
-    refetch: refetchOktaData,
-  } = oktaDataQuery;
+    data: activeData,
+    isLoading: activeIsLoading,
+    isFetching: activeIsFetching,
+    refetch: refetchActiveData,
+  } = activeQuery;
 
   const data = useMemo(
     () => ({
-      items: oktaData?.items ?? [],
-      total: oktaData?.total ?? 0,
+      items: activeData?.items ?? [],
+      total: activeData?.total ?? 0,
     }),
-    [oktaData],
+    [activeData],
   );
 
   const handleTabChange = useCallback(
     async (tab: string | ActionCenterTabHash) => {
       await onTabChange(tab as ActionCenterTabHash);
       resetPagination();
-      // Force refetch when tab changes to ensure fresh data
-      refetchOktaData();
+      refetchActiveData();
     },
-    [onTabChange, resetPagination, refetchOktaData],
+    [onTabChange, resetPagination, refetchActiveData],
   );
 
   const rowClickUrl = useCallback(
@@ -131,16 +151,16 @@ export const useDiscoveredInfrastructureSystemsTable = ({
   return {
     // Data
     data,
-    isLoading: oktaIsLoading,
-    isFetching: oktaIsFetching,
-    refetch: refetchOktaData,
+    isLoading: activeIsLoading,
+    isFetching: activeIsFetching,
+    refetch: refetchActiveData,
     // Filters
     diffStatusFilters,
     vendorFilters,
     dataUsesFilters,
 
     // Errors
-    error: oktaDataQuery.error,
+    error: activeQuery.error,
 
     // Search
     searchQuery: search.searchQuery,

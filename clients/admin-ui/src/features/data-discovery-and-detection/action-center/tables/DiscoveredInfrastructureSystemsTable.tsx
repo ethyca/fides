@@ -32,10 +32,12 @@ import {
 
 interface DiscoveredInfrastructureSystemsTableProps {
   monitorId: string;
+  isAWSMonitor?: boolean;
 }
 
 export const DiscoveredInfrastructureSystemsTable = ({
   monitorId,
+  isAWSMonitor,
 }: DiscoveredInfrastructureSystemsTableProps) => {
   const infrastructureSystemsFilters = useInfrastructureSystemsFilters();
 
@@ -52,6 +54,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
     refetch,
   } = useDiscoveredInfrastructureSystemsTable({
     monitorId,
+    isAWSMonitor,
     statusFilters: infrastructureSystemsFilters.statusFilters,
     vendorFilters: infrastructureSystemsFilters.vendorFilters,
     dataUsesFilters: infrastructureSystemsFilters.dataUsesFilters,
@@ -164,6 +167,7 @@ export const DiscoveredInfrastructureSystemsTable = ({
         <Flex gap="small">
           <InfrastructureSystemsFilters
             monitorId={monitorId}
+            isAWSMonitor={isAWSMonitor}
             {...infrastructureSystemsFilters}
           />
           <Dropdown

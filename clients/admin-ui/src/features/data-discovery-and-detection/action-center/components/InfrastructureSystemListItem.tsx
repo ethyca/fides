@@ -69,10 +69,10 @@ export const InfrastructureSystemListItem = ({
     }
   };
 
-  const logoUrl = getBrandIconUrl(
-    item.domain ?? getDomain(item.vendor_id ?? systemName),
-    36,
-  );
+  const logoUrl =
+    item.domain || item.vendor_id
+      ? getBrandIconUrl(item.domain ?? getDomain(item.vendor_id!), 36)
+      : undefined;
 
   const handleClick = () => {
     if (url && onNavigate) {
@@ -121,18 +121,20 @@ export const InfrastructureSystemListItem = ({
               onChange={(e) => handleCheckboxChange(e.target.checked)}
               onClick={(e) => e.stopPropagation()}
             />
-            <Avatar
-              src={logoUrl}
-              shape="square"
-              icon={
-                <Icons.TransformInstructions
-                  style={{ color: palette.FIDESUI_MINOS }}
-                  className="m-1 size-full"
-                />
-              }
-              className="bg-transparent"
-              alt={systemName}
-            />
+            {logoUrl && (
+              <Avatar
+                src={logoUrl}
+                shape="square"
+                icon={
+                  <Icons.TransformInstructions
+                    style={{ color: palette.FIDESUI_MINOS }}
+                    className="m-1 size-full"
+                  />
+                }
+                className="bg-transparent"
+                alt={systemName}
+              />
+            )}
           </Flex>
         }
         title={
@@ -145,6 +147,11 @@ export const InfrastructureSystemListItem = ({
             >
               <Text strong>{systemName}</Text>
             </Button>
+            {(item.meta as { service?: string } | null)?.service && (
+              <Tag>
+                {(item.meta as { service: string }).service}
+              </Tag>
+            )}
             {item.diff_status === DiffStatus.MUTED && (
               <Tag color={INFRASTRUCTURE_DIFF_STATUS_COLOR[item.diff_status]}>
                 Ignored
