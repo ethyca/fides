@@ -5,13 +5,13 @@ import {
   ChakraFlex as Flex,
   ChakraVStack as VStack,
   useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
@@ -44,7 +44,7 @@ const DatasetYamlForm = () => {
   const monacoRef = useRef(null);
   const router = useRouter();
   const toast = useToast();
-  const { errorAlert } = useAlert();
+  const message = useMessage();
   const [yamlError, setYamlError] = useState(
     undefined as unknown as YAMLException,
   );
@@ -63,7 +63,7 @@ const DatasetYamlForm = () => {
       if (isYamlException(error)) {
         setYamlError(error);
       } else {
-        errorAlert("Could not parse the supplied YAML");
+        message.error("Could not parse the supplied YAML");
       }
     }
   };
