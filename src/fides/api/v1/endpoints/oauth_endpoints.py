@@ -84,6 +84,13 @@ def _get_client_or_error(db: Session, client_id: str) -> ClientDetail:
     return client
 
 
+def _get_client_or_none(db: Session, client_id: str) -> Optional[ClientDetail]:
+    """Returns the ClientDetail for client_id, or None if not found or if it is the root client."""
+    if client_id == CONFIG.security.oauth_root_client_id:
+        return None
+    return ClientDetail.get(db, object_id=client_id, config=CONFIG)
+
+
 @router.post(
     TOKEN,
     response_model=AccessToken,
@@ -260,7 +267,9 @@ def update_client(
 def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
-    client = _get_client_or_error(db, client_id)
+    client = _get_client_or_none(db, client_id)
+    if not client:
+        return
     logger.info("Deleting client")
     client.delete(db)
 
@@ -292,7 +301,7 @@ def get_client_scopes(client_id: str, db: Session = Depends(get_db)) -> List[str
     """Returns a list of the directly-assigned scopes associated with the client.
     Does not return roles associated with the client.
     Returns an empty list if client does not exist."""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    client = _get_client_or_none(db, client_id)
     if not client:
         return []
 
@@ -316,9 +325,7 @@ def set_client_scopes(
     """Overwrites the client's directly-assigned scopes with those provided.
     Roles cannot be edited via this endpoint.
     Does nothing if the client doesn't exist"""
-    if client_id == CONFIG.security.oauth_root_client_id:
-        return
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    client = _get_client_or_none(db, client_id)
     if not client:
         return
 
