@@ -4,21 +4,16 @@ import {
   ChakraFlex as Flex,
   ChakraFormControl as FormControl,
   ChakraFormLabel as FormLabel,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraModalProps as ModalProps,
   ChakraStack as Stack,
   ChakraText as Text,
+  Modal,
   Switch,
   Tag,
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import SearchInput from "~/features/common/SearchInput";
 import { DataFlow, System } from "~/types/api";
 
@@ -44,7 +39,7 @@ const DataFlowSystemsModal = ({
   dataFlowSystems,
   onDataFlowSystemChange,
   flowType,
-}: Pick<ModalProps, "isOpen" | "onClose"> & Props) => {
+}: { isOpen: boolean; onClose: () => void } & Props) => {
   const { setFieldValue } = useFormikContext();
   const [searchFilter, setSearchFilter] = useState("");
   const [selectedDataFlows, setSelectedDataFlows] =
@@ -87,66 +82,23 @@ const DataFlowSystemsModal = ({
   }, [filteredSystems, selectedDataFlows]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
-      <ModalOverlay />
-      <ModalContent p={8} data-testid="confirmation-modal">
-        <ModalHeader
-          fontWeight="medium"
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Text fontSize="2xl" lineHeight={8} fontWeight="semibold">
-            Configure {flowType.toLocaleLowerCase()} systems
-          </Text>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      width={MODAL_SIZE.md}
+      centered
+      destroyOnHidden
+      data-testid="confirmation-modal"
+      title={
+        <Flex align="center" justify="space-between" className="pr-6">
+          <span>Configure {flowType.toLocaleLowerCase()} systems</span>
           <Tag color="success">
             Assigned to {selectedDataFlows.length} systems
           </Tag>
-        </ModalHeader>
-        <ModalBody data-testid="assign-systems-modal-body">
-          {emptySystems ? (
-            <Text>No systems found</Text>
-          ) : (
-            <Stack spacing={4}>
-              <Flex justifyContent="space-between">
-                <Text fontSize="sm" flexGrow={1} fontWeight="medium">
-                  Add or remove destination systems from your data map
-                </Text>
-                <Box>
-                  <FormControl display="flex" alignItems="center">
-                    <FormLabel
-                      fontSize="sm"
-                      htmlFor="assign-all-systems"
-                      mb="0"
-                    >
-                      Assign all systems
-                    </FormLabel>
-                    <Switch
-                      size="small"
-                      id="assign-all-systems"
-                      checked={allSystemsAssigned}
-                      onChange={handleToggleAllSystems}
-                      data-testid="assign-all-systems-toggle"
-                    />
-                  </FormControl>
-                </Box>
-              </Flex>
-              <SearchInput
-                value={searchFilter}
-                onChange={setSearchFilter}
-                placeholder="Search for systems"
-                data-testid="system-search"
-              />
-              <DataFlowSystemsTable
-                flowType={flowType}
-                allSystems={filteredSystems}
-                dataFlowSystems={selectedDataFlows}
-                onChange={setSelectedDataFlows}
-              />
-            </Stack>
-          )}
-        </ModalBody>
-        <ModalFooter justifyContent="flex-start">
+        </Flex>
+      }
+      footer={
+        <Flex justify="flex-start" gap="small">
           <Button onClick={onClose} className="mr-2" data-testid="cancel-btn">
             Cancel
           </Button>
@@ -159,8 +111,48 @@ const DataFlowSystemsModal = ({
               Confirm
             </Button>
           )}
-        </ModalFooter>
-      </ModalContent>
+        </Flex>
+      }
+    >
+      <div data-testid="assign-systems-modal-body">
+        {emptySystems ? (
+          <Text>No systems found</Text>
+        ) : (
+          <Stack spacing={4}>
+            <Flex justifyContent="space-between">
+              <Text fontSize="sm" flexGrow={1} fontWeight="medium">
+                Add or remove destination systems from your data map
+              </Text>
+              <Box>
+                <FormControl display="flex" alignItems="center">
+                  <FormLabel fontSize="sm" htmlFor="assign-all-systems" mb="0">
+                    Assign all systems
+                  </FormLabel>
+                  <Switch
+                    size="small"
+                    id="assign-all-systems"
+                    checked={allSystemsAssigned}
+                    onChange={handleToggleAllSystems}
+                    data-testid="assign-all-systems-toggle"
+                  />
+                </FormControl>
+              </Box>
+            </Flex>
+            <SearchInput
+              value={searchFilter}
+              onChange={setSearchFilter}
+              placeholder="Search for systems"
+              data-testid="system-search"
+            />
+            <DataFlowSystemsTable
+              flowType={flowType}
+              allSystems={filteredSystems}
+              dataFlowSystems={selectedDataFlows}
+              onChange={setSelectedDataFlows}
+            />
+          </Stack>
+        )}
+      </div>
     </Modal>
   );
 };

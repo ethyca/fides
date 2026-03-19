@@ -1,13 +1,5 @@
 import { CustomTextArea } from "common/form/inputs";
-import {
-  Button,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-} from "fidesui";
+import { Button, Flex, Modal } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback } from "react";
 import * as Yup from "yup";
@@ -37,63 +29,52 @@ const DenyPrivacyRequestModal = ({
   );
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      isCentered
-      returnFocusOnClose={false}
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnHidden
+      data-testid="deny-privacy-request-modal"
+      title="Privacy request denial"
+      footer={null}
     >
-      <ModalOverlay />
-      <ModalContent
-        width="100%"
-        maxWidth="456px"
-        data-testid="deny-privacy-request-modal"
+      <Formik
+        initialValues={initialValues}
+        validationSchema={Yup.object({
+          denialReason: Yup.string().required().label("Reason for denial"),
+        })}
+        onSubmit={handleSubmit}
       >
-        <Formik
-          initialValues={initialValues}
-          validationSchema={Yup.object({
-            denialReason: Yup.string().required().label("Reason for denial"),
-          })}
-          onSubmit={handleSubmit}
-        >
-          {({ isSubmitting, dirty, isValid }) => (
-            <Form>
-              <ModalHeader>Privacy request denial</ModalHeader>
-              <ModalBody color="gray.500" fontSize="14px">
-                Please enter a reason for denying this privacy request. Please
-                note: this can be seen by the user in their notification email.
-              </ModalBody>
-              <ModalBody>
-                <CustomTextArea
-                  name="denialReason"
-                  textAreaProps={{
-                    focusBorderColor: "primary.600",
-                    resize: "none",
-                  }}
-                />
-              </ModalBody>
-              <ModalFooter className="flex w-full gap-4">
-                <Button
-                  disabled={isSubmitting}
-                  onClick={onClose}
-                  className="grow"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  disabled={!dirty || !isValid}
-                  loading={isSubmitting}
-                  className="grow"
-                  data-testid="deny-privacy-request-modal-btn"
-                >
-                  Confirm
-                </Button>
-              </ModalFooter>
-            </Form>
-          )}
-        </Formik>
-      </ModalContent>
+        {({ isSubmitting, dirty, isValid }) => (
+          <Form>
+            <div className="mb-2 text-sm text-gray-500">
+              Please enter a reason for denying this privacy request. Please
+              note: this can be seen by the user in their notification email.
+            </div>
+            <CustomTextArea
+              name="denialReason"
+              textAreaProps={{
+                focusBorderColor: "primary.600",
+                resize: "none",
+              }}
+            />
+
+            <Flex justify="flex-end" className="mt-4" gap="small">
+              <Button disabled={isSubmitting} onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                htmlType="submit"
+                type="primary"
+                disabled={!dirty || !isValid}
+                loading={isSubmitting}
+                data-testid="deny-privacy-request-modal-btn"
+              >
+                Confirm
+              </Button>
+            </Flex>
+          </Form>
+        )}
+      </Formik>
     </Modal>
   );
 };

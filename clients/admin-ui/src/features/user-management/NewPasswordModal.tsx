@@ -1,14 +1,9 @@
 import {
   Button,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalFooter as ModalFooter,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
   ChakraText as Text,
+  Flex,
+  Modal,
   useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
 } from "fidesui";
@@ -87,61 +82,59 @@ const NewPasswordModal = ({ id }: Props) => {
       <Button onClick={onOpen} data-testid="reset-password-btn">
         Reset password
       </Button>
-      <Modal isCentered isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <Formik
-            initialValues={initialValues}
-            validationSchema={ValidationSchema}
-            onSubmit={handleResetPassword}
-          >
-            {({ isSubmitting, dirty, isValid }) => (
-              <Form>
-                <ModalHeader>Reset Password</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                  <Stack direction="column" spacing={4}>
-                    <Text mb={2}>Choose a new password for this user.</Text>
-                    <CustomTextInput
-                      name="password"
-                      label="Password"
-                      placeholder="********"
-                      type="password"
-                      tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                      autoComplete="new-password"
-                    />
-                    <CustomTextInput
-                      name="passwordConfirmation"
-                      label="Confirm Password"
-                      placeholder="********"
-                      type="password"
-                      tooltip="Must match above password."
-                      autoComplete="confirm-password"
-                    />
-                  </Stack>
-                </ModalBody>
+      <Modal
+        open={isOpen}
+        onCancel={onClose}
+        title="Reset Password"
+        centered
+        destroyOnHidden
+        footer={null}
+      >
+        <Formik
+          initialValues={initialValues}
+          validationSchema={ValidationSchema}
+          onSubmit={handleResetPassword}
+        >
+          {({ isSubmitting, dirty, isValid }) => (
+            <Form>
+              <Stack direction="column" spacing={4}>
+                <Text mb={2}>Choose a new password for this user.</Text>
+                <CustomTextInput
+                  name="password"
+                  label="Password"
+                  placeholder="********"
+                  type="password"
+                  tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                  autoComplete="new-password"
+                />
+                <CustomTextInput
+                  name="passwordConfirmation"
+                  label="Confirm Password"
+                  placeholder="********"
+                  type="password"
+                  tooltip="Must match above password."
+                  autoComplete="confirm-password"
+                />
+              </Stack>
 
-                <ModalFooter>
-                  <div className="w-full gap-2">
-                    <Button onClick={onClose} className="w-1/2">
-                      Cancel
-                    </Button>
-                    <Button
-                      type="primary"
-                      disabled={!dirty || !isValid}
-                      loading={isSubmitting}
-                      htmlType="submit"
-                      className="w-1/2"
-                      data-testid="submit-btn"
-                    >
-                      Change Password
-                    </Button>
-                  </div>
-                </ModalFooter>
-              </Form>
-            )}
-          </Formik>
-        </ModalContent>
+              <Flex className="mt-4 w-full" gap="small">
+                <Button onClick={onClose} className="w-1/2">
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  loading={isSubmitting}
+                  htmlType="submit"
+                  className="w-1/2"
+                  data-testid="submit-btn"
+                >
+                  Change Password
+                </Button>
+              </Flex>
+            </Form>
+          )}
+        </Formik>
       </Modal>
     </>
   );

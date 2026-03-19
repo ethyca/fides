@@ -1,4 +1,4 @@
-import { Button, Flex, Typography } from "fidesui";
+import { Button, Flex, Typography, useMessage } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
@@ -10,7 +10,6 @@ import {
   ParsedError,
   parseError,
 } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { OKTA_AUTH_DESCRIPTION } from "~/features/integrations/integration-type-info/oktaInfo";
 import {
   GenerateResponse,
@@ -97,7 +96,7 @@ const ValidationSchema = Yup.object().shape({
 const AuthenticateOktaForm = () => {
   const organizationKey = useAppSelector(selectOrganizationFidesKey);
   const dispatch = useAppDispatch();
-  const { successAlert } = useAlert();
+  const message = useMessage();
 
   const [scannerError, setScannerError] = useState<ParsedError>();
 
@@ -105,10 +104,8 @@ const AuthenticateOktaForm = () => {
     const systems: System[] = (results ?? []).filter(isSystem);
     dispatch(setSystemsForReview(systems));
     dispatch(changeStep());
-    successAlert(
+    message.success(
       `Your scan was successfully completed, with ${systems.length} new systems detected!`,
-      `Scan Successfully Completed`,
-      { isClosable: true },
     );
   };
   const handleError = (error: RTKErrorResult["error"]) => {

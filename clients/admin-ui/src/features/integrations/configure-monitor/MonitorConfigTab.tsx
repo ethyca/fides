@@ -30,6 +30,7 @@ const OKTA_MONITOR_COPY = `Configure your identity provider monitor to detect an
 const MONITOR_COPIES: Partial<Record<ConnectionType, string>> = {
   [ConnectionType.WEBSITE]: WEBSITE_MONITOR_COPY,
   [ConnectionType.OKTA]: OKTA_MONITOR_COPY,
+  [ConnectionType.ENTRA]: OKTA_MONITOR_COPY,
 } as const;
 
 const MonitorConfigTab = ({

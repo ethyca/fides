@@ -11,11 +11,10 @@ import {
   ChakraSpacer as Spacer,
   ChakraStack as Stack,
   ChakraText as Text,
-  useChakraDisclosure as useDisclosure,
+  useModal,
 } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
@@ -30,7 +29,7 @@ const PrivacyDeclarationRow = ({
   handleDelete?: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const modal = useModal();
   return (
     <>
       <LinkBox
@@ -50,37 +49,35 @@ const PrivacyDeclarationRow = ({
             </LinkOverlay>
             <Spacer />
             {handleDelete ? (
-              <>
-                <Button
-                  aria-label="delete-declaration"
-                  className="z-[2]"
-                  onClick={onOpen}
-                  data-testid="delete-btn"
-                >
-                  <DeleteIcon />
-                </Button>
-                <ConfirmationModal
-                  isOpen={isOpen}
-                  onClose={onClose}
-                  onConfirm={() => handleDelete(declaration)}
-                  title="Delete data use declaration"
-                  message={
-                    <Text>
-                      You are about to delete the data use declaration{" "}
-                      <Text
-                        color="complimentary.500"
-                        as="span"
-                        fontWeight="bold"
-                      >
-                        {title || declaration.data_use}
+              <Button
+                aria-label="delete-declaration"
+                className="z-[2]"
+                onClick={() => {
+                  modal.confirm({
+                    title: "Delete data use declaration",
+                    content: (
+                      <Text>
+                        You are about to delete the data use declaration{" "}
+                        <Text
+                          color="complimentary.500"
+                          as="span"
+                          fontWeight="bold"
+                        >
+                          {title || declaration.data_use}
+                        </Text>
+                        , including all its cookies. Are you sure you want to
+                        continue?
                       </Text>
-                      , including all its cookies. Are you sure you want to
-                      continue?
-                    </Text>
-                  }
-                  isCentered
-                />
-              </>
+                    ),
+                    centered: true,
+                    icon: null,
+                    onOk: () => handleDelete(declaration),
+                  });
+                }}
+                data-testid="delete-btn"
+              >
+                <DeleteIcon />
+              </Button>
             ) : null}
           </HStack>
         </Box>
