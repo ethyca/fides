@@ -6,7 +6,7 @@ Verifies existing cached data (legacy format) is correctly read, migrated, and c
 
 import fnmatch
 import uuid
-from typing import Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 import pytest
 
@@ -14,6 +14,47 @@ from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
 
 RedisValue = Union[bytes, float, int, str]
+
+
+class MockPipeline:
+    """Minimal Redis pipeline: buffers ops and runs them on execute()."""
+
+    def __init__(self, redis: "MockRedis") -> None:
+        self._redis = redis
+        self._ops: List[Callable[[], Any]] = []
+
+    def set(
+        self, key: str, value: RedisValue, ex: Optional[int] = None
+    ) -> "MockPipeline":
+        def op() -> bool:
+            return self._redis.set(key, value, ex=ex)
+
+        self._ops.append(op)
+        return self
+
+    def sadd(self, key: str, *members: Union[str, bytes]) -> "MockPipeline":
+        def op() -> int:
+            return self._redis.sadd(key, *members)
+
+        self._ops.append(op)
+        return self
+
+    def delete(self, *keys: str) -> "MockPipeline":
+        def op() -> int:
+            return self._redis.delete(*keys)
+
+        self._ops.append(op)
+        return self
+
+    def srem(self, key: str, *members: Union[str, bytes]) -> "MockPipeline":
+        def op() -> int:
+            return self._redis.srem(key, *members)
+
+        self._ops.append(op)
+        return self
+
+    def execute(self) -> List[Any]:
+        return [op() for op in self._ops]
 
 
 class MockRedis:
@@ -58,6 +99,9 @@ class MockRedis:
 
     def smembers(self, key: str) -> Set[Union[str, bytes]]:
         return self._sets.get(key, set()).copy()
+
+    def pipeline(self) -> MockPipeline:
+        return MockPipeline(self)
 
 
 # Test data factories
