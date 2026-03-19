@@ -237,7 +237,7 @@ def update_client(
     update_data: dict = {}
     if body.name is not None:
         update_data["name"] = body.name
-    if body.description is not None:
+    if "description" in body.model_fields_set:
         update_data["description"] = body.description
     if body.scopes is not None:
         if not all(scope in SCOPE_REGISTRY for scope in body.scopes):

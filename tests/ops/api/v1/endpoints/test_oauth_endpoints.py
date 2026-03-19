@@ -430,6 +430,46 @@ class TestUpdateClient:
         assert oauth_client.description == "A new description"
         assert oauth_client.scopes == original_scopes
 
+    def test_update_client_clears_description(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        oauth_client: ClientDetail,
+        generate_auth_header,
+    ) -> None:
+        # First set a description
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+        api_client.put(url, headers=auth_header, json={"description": "Initial"})
+        db.refresh(oauth_client)
+        assert oauth_client.description == "Initial"
+
+        # Explicitly passing null should clear it
+        response = api_client.put(
+            url, headers=auth_header, json={"description": None}
+        )
+        assert response.status_code == 200
+        db.refresh(oauth_client)
+        assert oauth_client.description is None
+
+    def test_update_client_omitting_description_leaves_it_unchanged(
+        self,
+        db,
+        api_client: TestClient,
+        url,
+        oauth_client: ClientDetail,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+        api_client.put(url, headers=auth_header, json={"description": "Keep me"})
+        db.refresh(oauth_client)
+
+        # Omitting description entirely should not clear it
+        response = api_client.put(url, headers=auth_header, json={"name": "New Name"})
+        assert response.status_code == 200
+        db.refresh(oauth_client)
+        assert oauth_client.description == "Keep me"
+
     def test_update_client_empty_name_rejected(
         self,
         api_client: TestClient,
