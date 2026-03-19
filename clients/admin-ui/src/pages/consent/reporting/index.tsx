@@ -6,7 +6,7 @@ import {
   Flex,
   Icons,
   Table,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import React, { useCallback, useMemo, useState } from "react";
 
@@ -14,7 +14,6 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { usePagination } from "~/features/common/hooks";
 import PageHeader from "~/features/common/PageHeader";
 import { InfinitePaginator } from "~/features/common/pagination/InfinitePaginator";
-import { successToastParams } from "~/features/common/toast";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
 import ConsentReportDownloadModal from "~/features/consent-reporting/ConsentReportDownloadModal";
@@ -35,7 +34,7 @@ const ConsentReportingPage = () => {
     useState(false);
   const [currentTcfPreferences, setCurrentTcfPreferences] = useState();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const { data, isLoading, isFetching, refetch } =
     useGetAllHistoricalPrivacyPreferencesQuery({
@@ -64,12 +63,7 @@ const ConsentReportingPage = () => {
   const handleClickRefresh = async () => {
     updatePageIndex(1);
     await refetch();
-    toast(
-      successToastParams(
-        "Consent report refreshed successfully.",
-        "Report Refreshed",
-      ),
-    );
+    message.success("Consent report refreshed successfully.");
   };
 
   return (

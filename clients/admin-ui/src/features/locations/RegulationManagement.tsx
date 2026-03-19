@@ -4,7 +4,7 @@ import {
   ChakraSimpleGrid as SimpleGrid,
   ChakraText as Text,
   ChakraVStack as VStack,
-  useChakraToast as useToast,
+  useMessage,
   useModal,
 } from "fidesui";
 import _ from "lodash";
@@ -14,7 +14,6 @@ import { useMemo, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
 import SearchInput from "~/features/common/SearchInput";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import {
   LocationRegulationBase,
@@ -35,7 +34,7 @@ const RegulationManagement = ({
 }: {
   data: LocationRegulationResponse;
 }) => {
-  const toast = useToast();
+  const message = useMessage();
   const modal = useModal();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.regulations ?? [],
@@ -54,7 +53,7 @@ const RegulationManagement = ({
   const router = useRouter();
   const goToLocations = () => {
     router.push(LOCATIONS_ROUTE).then(() => {
-      toast.closeAll();
+      message.destroy();
     });
   };
 
@@ -68,16 +67,14 @@ const RegulationManagement = ({
       locations: [],
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          <Text display="inline">
-            Fides has automatically associated the relevant locations with your
-            regulation choices.
-            <ToastLink onClick={goToLocations}>View locations here.</ToastLink>
-          </Text>,
-        ),
+      message.success(
+        <Text display="inline">
+          Fides has automatically associated the relevant locations with your
+          regulation choices.
+          <ToastLink onClick={goToLocations}>View locations here.</ToastLink>
+        </Text>,
       );
     }
   };

@@ -4,7 +4,7 @@ import {
   ChakraSimpleGrid as SimpleGrid,
   ChakraText as Text,
   ChakraVStack as VStack,
-  useChakraToast as useToast,
+  useMessage,
   useModal,
 } from "fidesui";
 import _ from "lodash";
@@ -13,7 +13,6 @@ import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import SearchInput from "~/features/common/SearchInput";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   LocationRegulationResponse,
   PrivacyNoticeRegion,
@@ -28,7 +27,7 @@ import { usePatchLocationsRegulationsMutation } from "./locations.slice";
 import { groupLocationsByContinent } from "./transformations";
 
 const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
-  const toast = useToast();
+  const message = useMessage();
   const modal = useModal();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
     data.locations?.filter((l) => l.id !== PrivacyNoticeRegion.GLOBAL) ?? [],
@@ -53,7 +52,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const router = useRouter();
   const goToRegulations = () => {
     router.push(REGULATIONS_ROUTE).then(() => {
-      toast.closeAll();
+      message.destroy();
     });
   };
 
@@ -67,18 +66,16 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
       regulations: [],
     });
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          <Text display="inline">
-            Fides has automatically associated the relevant regulations with
-            your location choices.{" "}
-            <ToastLink onClick={goToRegulations}>
-              View regulations here.
-            </ToastLink>
-          </Text>,
-        ),
+      message.success(
+        <Text display="inline">
+          Fides has automatically associated the relevant regulations with your
+          location choices.{" "}
+          <ToastLink onClick={goToRegulations}>
+            View regulations here.
+          </ToastLink>
+        </Text>,
       );
     }
   };

@@ -3,7 +3,7 @@ import {
   ChakraLink as Link,
   ChakraText as Text,
   TabsProps,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -19,7 +19,6 @@ import {
 } from "~/features/common/nav/routes";
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
@@ -86,7 +85,7 @@ const useSystemFormTabs = ({
 
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
-  const toast = useToast();
+  const message = useMessage();
   const dispatch = useAppDispatch();
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
@@ -116,25 +115,21 @@ const useSystemFormTabs = ({
         query: { id: system.fides_key },
       });
 
-      const toastParams = {
-        ...DEFAULT_TOAST_PARAMS,
-        description: (
-          <ToastMessage
-            onViewDatamap={() => {
-              router.push(systemOrDatamapRoute).then(() => {
-                toast.closeAll();
-              });
-            }}
-            onAddPrivacyDeclaration={() => {
-              baseOnTabChange("data-uses");
-              toast.closeAll();
-            }}
-          />
-        ),
-      };
-      toast({ ...toastParams });
+      message.success(
+        <ToastMessage
+          onViewDatamap={() => {
+            router.push(systemOrDatamapRoute).then(() => {
+              message.destroy();
+            });
+          }}
+          onAddPrivacyDeclaration={() => {
+            baseOnTabChange("data-uses");
+            message.destroy();
+          }}
+        />,
+      );
     },
-    [activeSystem, router, systemOrDatamapRoute, toast, baseOnTabChange],
+    [activeSystem, router, systemOrDatamapRoute, message, baseOnTabChange],
   );
 
   useEffect(() => {
