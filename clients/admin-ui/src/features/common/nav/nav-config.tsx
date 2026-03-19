@@ -242,6 +242,20 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Data purposes",
+        path: routes.DATA_PURPOSES_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_PURPOSE_READ],
+      },
+      {
+        title: "Data consumers",
+        path: routes.DATA_CONSUMERS_ROUTE,
+        requiresPlus: true,
+        requiresFlag: "alphaPurposeBasedAccessControl",
+        scopes: [ScopeRegistryEnum.DATA_CONSUMER_READ],
+      },
+      {
         title: "Access policies",
         path: routes.ACCESS_POLICIES_ROUTE,
         requiresPlus: true,

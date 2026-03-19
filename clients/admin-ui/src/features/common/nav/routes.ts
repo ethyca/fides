@@ -114,6 +114,16 @@ export const SANDBOX_PRIVACY_NOTICES_ROUTE = "/sandbox/privacy-notices";
 export const PRIVACY_ASSESSMENTS_ROUTE = "/privacy-assessments";
 export const PRIVACY_ASSESSMENTS_DETAIL_ROUTE = "/privacy-assessments/[id]";
 
+// Data Purposes (Core Configuration)
+export const DATA_PURPOSES_ROUTE = "/data-purposes";
+export const DATA_PURPOSES_NEW_ROUTE = "/data-purposes/new";
+export const DATA_PURPOSES_EDIT_ROUTE = "/data-purposes/[fidesKey]";
+
+// Data Consumers (Core Configuration)
+export const DATA_CONSUMERS_ROUTE = "/data-consumers";
+export const DATA_CONSUMERS_NEW_ROUTE = "/data-consumers/new";
+export const DATA_CONSUMERS_EDIT_ROUTE = "/data-consumers/[id]";
+
 // Access Policies (Core Configuration)
 export const ACCESS_POLICIES_ROUTE = "/access-policies";
 export const ACCESS_POLICIES_ONBOARDING_ROUTE = "/access-policies/onboarding";

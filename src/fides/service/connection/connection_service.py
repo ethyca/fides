@@ -248,6 +248,19 @@ class ConnectionService:
     ) -> TestStatusMessage:
         """Connect, verify with a trivial query or API request, and report the status."""
 
+        # Test connection types always succeed (no real connector to test)
+        if connection_config.connection_type in (
+            ConnectionType.test_datastore,
+            ConnectionType.test_website,
+        ):
+            connection_config.update_test_status(
+                test_status=ConnectionTestStatus.succeeded, db=self.db
+            )
+            return TestStatusMessage(
+                msg=msg,
+                test_status=ConnectionTestStatus.succeeded,
+            )
+
         connector = get_connector(connection_config)
 
         try:
