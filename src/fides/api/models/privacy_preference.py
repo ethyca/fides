@@ -211,6 +211,8 @@ class CurrentPrivacyPreference(ConsentIdentitiesMixin, Base):
         nullable=True,
     )
 
+    received_at = Column(DateTime(timezone=True), nullable=True)
+
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
