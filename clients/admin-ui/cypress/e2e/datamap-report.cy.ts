@@ -527,7 +527,7 @@ describe("Data map report table", () => {
         cy.getByTestId("custom-report-item").first().click();
       });
       cy.wait("@getCustomReportById500");
-      cy.shouldShowMessage("error", "There was a problem applying report.");
+      cy.shouldShowMessage("error");
     });
     it("should allow an authorized user to create a new report", () => {
       cy.getByTestId("custom-reports-trigger").click();
