@@ -313,7 +313,7 @@ export const ChatConfigurations = () => {
 
   return (
     <>
-      <Flex vertical gap="middle">
+      <Flex vertical gap="medium">
         <Text style={{ maxWidth: "70%" }}>
           Configure chat providers to enable notifications, alerts, and
           AI-powered privacy assessment questionnaires through platforms like

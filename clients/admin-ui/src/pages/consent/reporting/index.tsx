@@ -86,7 +86,7 @@ const ConsentReportingPage = () => {
           </Button>
         }
       />
-      <Flex vertical gap="middle">
+      <Flex vertical gap="medium">
         <Flex justify="space-between">
           <DateRangePicker
             placeholder={["From", "To"]}

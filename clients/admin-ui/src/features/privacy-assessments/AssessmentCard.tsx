@@ -110,7 +110,7 @@ export const AssessmentCard = ({
               align="center"
               className={styles.completeContainer}
             >
-              <Flex align="center" gap="middle">
+              <Flex align="center" gap="medium">
                 <Avatar
                   shape="circle"
                   size={28}
