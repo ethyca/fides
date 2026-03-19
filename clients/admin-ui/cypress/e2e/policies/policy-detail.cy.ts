@@ -328,7 +328,9 @@ describe("Policy condition builder", () => {
 
     cy.getAntTab("Conditions").click();
     cy.getByTestId("delete-condition-0-btn").click();
-    cy.contains("Delete condition").should("be.visible");
+    cy.contains(".ant-modal-confirm-title", "Delete condition").should(
+      "be.visible",
+    );
     cy.contains("Are you sure you want to delete").should("be.visible");
   });
 
