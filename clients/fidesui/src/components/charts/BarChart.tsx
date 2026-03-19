@@ -15,6 +15,7 @@ import {
   useChartAnimation,
   useTooltipContentStyle,
 } from "./chart-utils";
+import { ChartText } from "./ChartText";
 import { XAxisTick } from "./XAxisTick";
 
 export interface BarChartDataPoint {
@@ -42,11 +43,32 @@ export const BarChart = ({
   const animationActive = useChartAnimation(animationDuration);
   const fill = token[color];
 
-  const resolvedTickFormatter =
+  const formatLabel =
     tickFormatter ??
     (intervalMs != null
       ? (label: string) => formatTimestamp(label, intervalMs)
       : undefined);
+
+  const renderTick =
+    intervalMs != null ? (
+      <XAxisTick intervalMs={intervalMs} fill={token.colorTextTertiary} />
+    ) : (
+      (props: {
+        x?: string | number;
+        y?: string | number;
+        payload?: { value: string };
+      }) => (
+        <ChartText
+          x={Number(props.x ?? 0)}
+          y={Number(props.y ?? 0) + 12}
+          fill={token.colorTextTertiary}
+        >
+          {props.payload
+            ? (formatLabel?.(props.payload.value) ?? props.payload.value)
+            : null}
+        </ChartText>
+      )
+    );
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -57,15 +79,7 @@ export const BarChart = ({
       >
         <XAxis
           dataKey="label"
-          tickFormatter={resolvedTickFormatter}
-          tick={
-            intervalMs != null ? (
-              <XAxisTick
-                intervalMs={intervalMs}
-                fill={token.colorTextTertiary}
-              />
-            ) : undefined
-          }
+          tick={renderTick}
           axisLine={false}
           tickLine={false}
         />
