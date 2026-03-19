@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.1a3.dev2+gb5ce49de0"
+    "version": "2.81.1a3.dev3+g84c6de8eb"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10538,16 +10538,26 @@
         "summary": "Create Client",
         "description": "Creates a new client and returns the credentials. Only direct scopes can be added to the client via this endpoint.",
         "operationId": "create_client_api_v1_oauth_client_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "client:create"
+            ]
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array",
-                "title": "Scopes",
-                "default": []
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ClientCreateRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
               }
             }
           }
@@ -10573,17 +10583,178 @@
               }
             }
           }
-        },
+        }
+      },
+      "get": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "List Clients",
+        "description": "Returns a paginated list of all OAuth clients, excluding the root client.",
+        "operationId": "list_clients_api_v1_oauth_client_get",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "client:create"
+              "client:read"
             ]
           }
-        ]
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ClientResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/oauth/client/{client_id}": {
+      "get": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Get Client",
+        "description": "Returns the OAuth client with the given id.",
+        "operationId": "get_client_api_v1_oauth_client__client_id__get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "client:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Client Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Update Client",
+        "description": "Updates name, description, and/or scopes of the given client.",
+        "operationId": "update_client_api_v1_oauth_client__client_id__put",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "client:update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Client Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "OAuth"
@@ -10615,6 +10786,56 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oauth/client/{client_id}/secret": {
+      "post": {
+        "tags": [
+          "OAuth"
+        ],
+        "summary": "Rotate Client Secret",
+        "description": "Rotates the secret for the given client. Returns the new secret exactly once.",
+        "operationId": "rotate_client_secret_api_v1_oauth_client__client_id__secret_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "client:update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Client Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientSecretRotateResponse"
+                }
               }
             }
           },
@@ -21303,6 +21524,43 @@
         "title": "ClientConfig",
         "description": "Definition for an authenticated base HTTP client"
       },
+      "ClientCreateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "ClientCreateRequest",
+        "description": "Request schema for creating an OAuth client"
+      },
       "ClientCreatedResponse": {
         "properties": {
           "client_id": {
@@ -21321,6 +21579,112 @@
         ],
         "title": "ClientCreatedResponse",
         "description": "Response schema for client creation"
+      },
+      "ClientResponse": {
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Scopes",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id"
+        ],
+        "title": "ClientResponse",
+        "description": "Response schema for an OAuth client. Never includes the client secret."
+      },
+      "ClientSecretRotateResponse": {
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id",
+          "client_secret"
+        ],
+        "title": "ClientSecretRotateResponse",
+        "description": "Response schema for secret rotation. Secret is shown exactly once."
+      },
+      "ClientUpdateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scopes"
+          }
+        },
+        "type": "object",
+        "title": "ClientUpdateRequest",
+        "description": "Request schema for updating an OAuth client. All fields are optional."
       },
       "CollectionAddressResponse": {
         "properties": {
@@ -29240,6 +29604,46 @@
           "pages"
         ],
         "title": "Page[BasicSystemResponse]"
+      },
+      "Page_ClientResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ClientResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Page"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Size"
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size",
+          "pages"
+        ],
+        "title": "Page[ClientResponse]"
       },
       "Page_ConnectionConfigurationResponse_": {
         "properties": {
