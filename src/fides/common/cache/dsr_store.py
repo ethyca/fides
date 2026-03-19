@@ -148,11 +148,14 @@ class DSRCacheStore:
         )
 
     def cache_custom_fields(
-        self, dsr_id: str, custom_fields: Dict[str, Any], expire_seconds: Optional[int] = None
+        self,
+        dsr_id: str,
+        custom_fields: Dict[str, Any],
+        expire_seconds: Optional[int] = None,
     ) -> None:
         """
         Cache all custom privacy request fields for a DSR.
-        
+
         Writes each non-None field to dsr:{id}:custom_field:{field_key} format.
         """
         for key, value in custom_fields.items():
@@ -162,21 +165,22 @@ class DSRCacheStore:
     def get_cached_custom_fields(self, dsr_id: str) -> Dict[str, Any]:
         """
         Retrieve all cached custom fields for a DSR.
-        
+
         Returns dict with custom field values. Automatically migrates legacy keys on read.
         Returns empty dict if no custom fields cached.
         """
         result: Dict[str, Any] = {}
         all_keys = self.get_all_keys(dsr_id)
-        
+
         # Filter for custom field keys (both new and legacy formats)
         # New: dsr:{id}:custom_field:{key}
         # Legacy: id-{id}-custom-privacy-request-field-{key}
         custom_keys = [
-            k for k in all_keys 
+            k
+            for k in all_keys
             if ":custom_field:" in k or "-custom-privacy-request-field-" in k
         ]
-        
+
         for key in custom_keys:
             # Extract field name from key
             if ":custom_field:" in key:
@@ -184,17 +188,17 @@ class DSRCacheStore:
             else:
                 # Legacy format
                 field_key = key.split("-")[-1]
-            
+
             value = self.get_custom_field(dsr_id, field_key)
             if value:
                 result[field_key] = value
-        
+
         return result
 
     def has_cached_custom_fields(self, dsr_id: str) -> bool:
         """
         Check if any custom fields are cached for this DSR.
-        
+
         Returns True if any custom field keys exist (legacy or new format).
         """
         all_keys = self.get_all_keys(dsr_id)
@@ -221,11 +225,14 @@ class DSRCacheStore:
         return self.get_with_legacy(dsr_id, part, KeyMapper.identity(dsr_id, attr)[1])
 
     def cache_identity_data(
-        self, dsr_id: str, identity_dict: Dict[str, Any], expire_seconds: Optional[int] = None
+        self,
+        dsr_id: str,
+        identity_dict: Dict[str, Any],
+        expire_seconds: Optional[int] = None,
     ) -> None:
         """
         Cache all identity attributes for a DSR.
-        
+
         Writes each non-None attribute to dsr:{id}:identity:{attr} format.
         """
         for key, value in identity_dict.items():
@@ -235,16 +242,16 @@ class DSRCacheStore:
     def get_cached_identity_data(self, dsr_id: str) -> Dict[str, Any]:
         """
         Retrieve all cached identity data for a DSR.
-        
+
         Returns dict with identity attributes. Automatically migrates legacy keys on read.
         Returns empty dict if no identity data cached.
         """
         result: Dict[str, Any] = {}
         all_keys = self.get_all_keys(dsr_id)
-        
+
         # Filter for identity keys (both new and legacy formats)
         identity_keys = [k for k in all_keys if ":identity:" in k or "-identity-" in k]
-        
+
         for key in identity_keys:
             # Extract attribute name from key
             # New format: dsr:{id}:identity:{attr}
@@ -254,17 +261,17 @@ class DSRCacheStore:
             else:
                 # Legacy format
                 attr = key.split("-")[-1]
-            
+
             value = self.get_identity(dsr_id, attr)
             if value:
                 result[attr] = value
-        
+
         return result
 
     def has_cached_identity_data(self, dsr_id: str) -> bool:
         """
         Check if any identity data is cached for this DSR.
-        
+
         Returns True if any identity keys exist (legacy or new format).
         """
         all_keys = self.get_all_keys(dsr_id)
@@ -305,7 +312,10 @@ class DSRCacheStore:
         return self.get_with_legacy(dsr_id, part, KeyMapper.drp(dsr_id, attr)[1])
 
     def cache_drp_request_body(
-        self, dsr_id: str, drp_body: Dict[str, Any], expire_seconds: Optional[int] = None
+        self,
+        dsr_id: str,
+        drp_body: Dict[str, Any],
+        expire_seconds: Optional[int] = None,
     ) -> None:
         """
         Cache all DRP request body fields for a DSR.
