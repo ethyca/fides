@@ -313,6 +313,16 @@ class TestGetClient:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 404
 
+    def test_get_client_root_client_returns_404(
+        self, api_client: TestClient, generate_auth_header
+    ) -> None:
+        url = V1_URL_PREFIX + CLIENT_BY_ID.format(
+            client_id=CONFIG.security.oauth_root_client_id
+        )
+        auth_header = generate_auth_header([CLIENT_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 404
+
     def test_get_client(
         self,
         api_client: TestClient,
@@ -349,6 +359,16 @@ class TestUpdateClient:
         self, api_client: TestClient, generate_auth_header
     ) -> None:
         url = V1_URL_PREFIX + CLIENT_BY_ID.format(client_id="nonexistent_client_id")
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+        response = api_client.put(url, headers=auth_header, json={"name": "New Name"})
+        assert response.status_code == 404
+
+    def test_update_client_root_client_returns_404(
+        self, api_client: TestClient, generate_auth_header
+    ) -> None:
+        url = V1_URL_PREFIX + CLIENT_BY_ID.format(
+            client_id=CONFIG.security.oauth_root_client_id
+        )
         auth_header = generate_auth_header([CLIENT_UPDATE])
         response = api_client.put(url, headers=auth_header, json={"name": "New Name"})
         assert response.status_code == 404
@@ -441,6 +461,16 @@ class TestRotateClientSecret:
         self, api_client: TestClient, generate_auth_header
     ) -> None:
         url = V1_URL_PREFIX + CLIENT_SECRET.format(client_id="nonexistent_client_id")
+        auth_header = generate_auth_header([CLIENT_UPDATE])
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 404
+
+    def test_rotate_secret_root_client_returns_404(
+        self, api_client: TestClient, generate_auth_header
+    ) -> None:
+        url = V1_URL_PREFIX + CLIENT_SECRET.format(
+            client_id=CONFIG.security.oauth_root_client_id
+        )
         auth_header = generate_auth_header([CLIENT_UPDATE])
         response = api_client.post(url, headers=auth_header)
         assert response.status_code == 404

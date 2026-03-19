@@ -74,6 +74,16 @@ from fides.config import CONFIG
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 
 
+def _get_client_or_error(db: Session, client_id: str) -> ClientDetail:
+    """Returns the ClientDetail for client_id, raising 404 if not found or if it is the root client."""
+    if client_id == CONFIG.security.oauth_root_client_id:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    if not client:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+    return client
+
+
 @router.post(
     TOKEN,
     response_model=AccessToken,
@@ -204,10 +214,7 @@ def list_clients(
 )
 def get_client(client_id: str, db: Session = Depends(get_db)) -> ClientDetail:
     """Returns the OAuth client with the given id."""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
-    if not client:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
-    return client
+    return _get_client_or_error(db, client_id)
 
 
 @router.put(
@@ -225,9 +232,7 @@ def update_client(
     ),
 ) -> ClientDetail:
     """Updates name, description, and/or scopes of the given client."""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
-    if not client:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+    client = _get_client_or_error(db, client_id)
 
     update_data: dict = {}
     if body.name is not None:
@@ -271,9 +276,7 @@ def rotate_client_secret(
     client_id: str, db: Session = Depends(get_db)
 ) -> ClientSecretRotateResponse:
     """Rotates the secret for the given client. Returns the new secret exactly once."""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
-    if not client:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+    client = _get_client_or_error(db, client_id)
 
     logger.info("Rotating secret for client '{}'", client_id)
     new_secret = client.rotate_secret(
