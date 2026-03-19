@@ -445,9 +445,7 @@ class TestUpdateClient:
         assert oauth_client.description == "Initial"
 
         # Explicitly passing null should clear it
-        response = api_client.put(
-            url, headers=auth_header, json={"description": None}
-        )
+        response = api_client.put(url, headers=auth_header, json={"description": None})
         assert response.status_code == 200
         db.refresh(oauth_client)
         assert oauth_client.description is None
