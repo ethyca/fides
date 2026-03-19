@@ -7,13 +7,7 @@ type PageSpinnerProps = GetProps<typeof PageSpinner>;
 
 type PageSpinnerSize = NonNullable<PageSpinnerProps["size"]>;
 
-const PAGE_SPINNER_SIZE_OPTIONS: Record<PageSpinnerSize, PageSpinnerSize> = {
-  default: "default",
-  medium: "medium",
-  middle: "middle",
-  small: "small",
-  large: "large",
-};
+const PAGE_SPINNER_SIZE_OPTIONS: PageSpinnerSize[] = ["small", "default", "large"];
 
 const meta = {
   title: "Feedback/PageSpinner",

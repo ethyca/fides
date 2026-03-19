@@ -25,13 +25,7 @@ type AvatarSize = NonNullable<
   Exclude<AvatarProps["size"], number | Partial<Record<Breakpoint, number>>>
 >;
 
-const AVATAR_SIZE: Record<AvatarSize, AvatarSize> = {
-  default: "default",
-  medium: "medium",
-  middle: "middle",
-  small: "small",
-  large: "large",
-};
+const AVATAR_SIZE: AvatarSize[] = ["small", "default", "large"];
 
 const meta = {
   title: "Data Display/Avatar",
