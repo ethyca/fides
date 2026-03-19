@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Flex } from "antd/lib";
 
 import type { BarChartProps } from "../../index";
 import { BarChart, DAY_MS, HOUR_MS } from "../../index";
@@ -9,8 +10,8 @@ const generateTimeSeries = (
 ): BarChartProps["data"] => {
   const now = new Date("2026-03-18T12:00:00Z").getTime();
   const start = now - count * intervalMs;
-  return Array.from({ length: count }, (_, i) => ({
-    label: new Date(start + i * intervalMs).toISOString(),
+  return Array.from({ length: count }, (_, index) => ({
+    label: new Date(start + index * intervalMs).toISOString(),
     value: Math.floor(Math.random() * 40) + 5,
   }));
 };
@@ -61,9 +62,9 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div style={{ width: 500, height: 200 }}>
+      <Flex style={{ width: 500, height: 200 }}>
         <Story />
-      </div>
+      </Flex>
     ),
   ],
 } satisfies Meta<typeof BarChart>;

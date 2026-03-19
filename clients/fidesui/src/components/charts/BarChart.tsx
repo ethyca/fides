@@ -16,7 +16,6 @@ import {
   useTooltipContentStyle,
 } from "./chart-utils";
 import { ChartText } from "./ChartText";
-import { XAxisTick } from "./XAxisTick";
 
 export interface BarChartDataPoint {
   label: string;
@@ -51,26 +50,23 @@ export const BarChart = ({
       ? (label: string) => formatTimestamp(label, intervalMs)
       : undefined);
 
-  const renderTick =
-    intervalMs != null ? (
-      <XAxisTick intervalMs={intervalMs} fill={token.colorTextTertiary} />
-    ) : (
-      (props: {
-        x?: string | number;
-        y?: string | number;
-        payload?: { value: string };
-      }) => (
-        <ChartText
-          x={Number(props.x ?? 0)}
-          y={Number(props.y ?? 0) + 12}
-          fill={token.colorTextTertiary}
-        >
-          {props.payload
-            ? (formatLabel?.(props.payload.value) ?? props.payload.value)
-            : null}
-        </ChartText>
-      )
-    );
+  const renderTick = ({
+    x,
+    y,
+    payload,
+  }: {
+    x?: string | number;
+    y?: string | number;
+    payload?: { value: string };
+  }) => (
+    <ChartText
+      x={Number(x ?? 0)}
+      y={Number(y ?? 0) + 12}
+      fill={token.colorTextTertiary}
+    >
+      {payload ? (formatLabel?.(payload.value) ?? payload.value) : null}
+    </ChartText>
+  );
 
   return (
     <ResponsiveContainer width="100%" height="100%">
