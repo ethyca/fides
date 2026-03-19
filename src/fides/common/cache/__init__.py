@@ -15,11 +15,9 @@ from fides.common.cache.dsr_store import (
     DSR_KEY_PREFIX,
     DSRCacheStore,
 )
-
 from fides.common.cache.manager import (
     INDEX_KEY_PREFIX,
     RedisCacheManager,
 )
-
 
 __all__ = ["INDEX_KEY_PREFIX", "RedisCacheManager", "DSR_KEY_PREFIX", "DSRCacheStore"]
