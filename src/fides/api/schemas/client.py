@@ -5,6 +5,12 @@ from pydantic import field_validator
 from fides.api.schemas.base_class import FidesSchema
 
 
+def _validate_name_not_empty(v: Optional[str]) -> Optional[str]:
+    if v is not None and not v.strip():
+        raise ValueError("name must not be empty")
+    return v
+
+
 class ClientCreatedResponse(FidesSchema):
     """Response schema for client creation"""
 
@@ -22,9 +28,7 @@ class ClientCreateRequest(FidesSchema):
     @field_validator("name")
     @classmethod
     def name_must_not_be_empty(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and not v.strip():
-            raise ValueError("name must not be empty")
-        return v
+        return _validate_name_not_empty(v)
 
 
 class ClientUpdateRequest(FidesSchema):
@@ -37,9 +41,7 @@ class ClientUpdateRequest(FidesSchema):
     @field_validator("name")
     @classmethod
     def name_must_not_be_empty(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and not v.strip():
-            raise ValueError("name must not be empty")
-        return v
+        return _validate_name_not_empty(v)
 
 
 class ClientResponse(FidesSchema):
