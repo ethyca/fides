@@ -130,6 +130,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         staged_resource_urn?: string;
         include_descendant_details?: boolean;
         diff_status?: DiffStatus[];
+        child_staged_resource_urns?: string[];
       }
     >({
       query: ({
@@ -139,8 +140,12 @@ const actionCenterApi = baseApi.injectEndpoints({
         staged_resource_urn,
         include_descendant_details,
         diff_status,
+        child_staged_resource_urns,
       }) => {
-        const urlParams = buildArrayQueryParams({ diff_status });
+        const urlParams = buildArrayQueryParams({
+          diff_status,
+          child_staged_resource_urns,
+        });
 
         return {
           url: `/plus/discovery-monitor/${monitor_config_id}/tree?${urlParams}`,

@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Tree,
+  TreeDataNode,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -52,7 +53,7 @@ import {
   shouldShowBadgeDot,
   updateNodeStatus,
 } from "./treeUtils";
-import { CustomTreeDataNode, TreeNodeAction } from "./types";
+import { CustomTreeDataNode } from "./types";
 import { intoDiffStatus } from "./utils";
 
 const getIconComponent = (
@@ -244,13 +245,13 @@ export interface MonitorTreeRef {
   refreshResourcesAndAncestors: (urns: string[]) => Promise<void>;
 }
 
-interface NodeActions<Action, ActionDict extends Record<string, Action>> {
-  nodeActions: ActionDict;
-  primaryAction: keyof ActionDict;
-}
+type TreeActions<AD extends Record<string, NodeAction<TreeDataNode>>> = {
+  nodeActions: AD;
+  primaryAction: keyof AD;
+};
 
 interface MonitorTreeProps
-  extends NodeActions<TreeNodeAction, Record<string, TreeNodeAction>> {
+  extends TreeActions<Record<string, NodeAction<TreeDataNode>>> {
   setSelectedNodeKeys: (keys: Key[]) => void;
   selectedNodeKeys: Key[];
 }

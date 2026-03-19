@@ -42,3 +42,11 @@ export interface CursorPaginationQueryParams {
   cursor?: string | null;
   size?: number | null;
 }
+
+export interface CursorPaginatedResponse<T> {
+  items?: Array<T>;
+  total?: number;
+  next_page?: string;
+  current_page?: string;
+  prev_page?: string;
+}

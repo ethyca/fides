@@ -25,10 +25,11 @@ import {
   useGetDatastoreFiltersQuery,
   useGetMonitorConfigQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { DiffStatus, TreeResourceChangeIndicator } from "~/types/api";
+import { DiffStatus } from "~/types/api";
 import { ConfidenceBucket } from "~/types/api/models/ConfidenceBucket";
 import { FieldActionType } from "~/types/api/models/FieldActionType";
 
+import { AsyncMonitorTree } from "../AsyncMonitorTree";
 import {
   MonitorFieldSearchForm,
   MonitorFieldSearchFormQuerySchema,
@@ -58,7 +59,7 @@ import {
   FIELD_PAGE_SIZE,
   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL,
 } from "./MonitorFields.const";
-import MonitorTree, { MonitorTreeRef } from "./MonitorTree";
+import { MonitorTreeRef } from "./MonitorTree";
 import { ResourceDetailsDrawer } from "./ResourceDetailsDrawer";
 import type { MonitorResource } from "./types";
 import { useBulkActions } from "./useBulkActions";
@@ -269,10 +270,10 @@ const ActionCenterFields = ({
           /** Note: style attr used here due to specificity of ant css. */
           style={{ paddingRight: "var(--ant-padding-md)" }}
         >
-          <MonitorTree
+          <AsyncMonitorTree
             showIgnored={showIgnored}
             showApproved={showApproved}
-            ref={monitorTreeRef}
+            // ref={monitorTreeRef}
             setSelectedNodeKeys={setSelectedNodeKeys}
             selectedNodeKeys={selectedNodeKeys}
             primaryAction={FieldActionType.CLASSIFY}
@@ -281,30 +282,11 @@ const ActionCenterFields = ({
                 action,
                 {
                   label: FIELD_ACTION_LABEL[action],
-                  /** Logic for this should exist on the BE */
-                  disabled: (nodes) =>
-                    _(nodes)
-                      .map((node) => {
-                        if (
-                          (action === FieldActionType.PROMOTE_REMOVALS &&
-                            node.status ===
-                              TreeResourceChangeIndicator.REMOVAL) ||
-                          (action === FieldActionType.CLASSIFY &&
-                            node.classifyable &&
-                            node.diffStatus !== DiffStatus.MUTED) ||
-                          (action === FieldActionType.MUTE &&
-                            node.diffStatus !== DiffStatus.MUTED) ||
-                          (action === FieldActionType.UN_MUTE &&
-                            node.diffStatus === DiffStatus.MUTED)
-                        ) {
-                          return false;
-                        }
-
-                        return true;
-                      })
-                      .some((d) => d === true),
-                  callback: (keys) => {
-                    fieldActions[action](keys, false);
+                  callback: async (_keys, dataNodes) => {
+                    const nodeKeys = dataNodes.map((nodeKey) =>
+                      nodeKey.key.toString(),
+                    );
+                    await fieldActions[action](nodeKeys, false);
                   },
                 },
               ]),
