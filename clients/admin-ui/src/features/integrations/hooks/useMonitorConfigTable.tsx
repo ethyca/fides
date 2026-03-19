@@ -33,12 +33,14 @@ enum MonitorConfigColumnKeys {
 interface UseMonitorConfigTableConfig {
   integration: ConnectionConfigurationResponse;
   isWebsiteMonitor: boolean;
+  isAWSMonitor?: boolean;
   onEditMonitor: (monitor: EditableMonitorConfig) => void;
 }
 
 export const useMonitorConfigTable = ({
   integration,
   isWebsiteMonitor,
+  isAWSMonitor,
   onEditMonitor,
 }: UseMonitorConfigTableConfig) => {
   const tableState = useTableState<MonitorConfigColumnKeys>();
@@ -200,6 +202,7 @@ export const useMonitorConfigTable = ({
           }
           isWebsiteMonitor={isWebsiteMonitor}
           isOktaMonitor={isIdpIntegration}
+          isAWSMonitor={isAWSMonitor}
           monitorId={data.key}
         />
       ),

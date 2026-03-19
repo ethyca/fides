@@ -6,6 +6,7 @@
  * Supported types to which we can connect Fides.
  */
 export enum ConnectionType {
+  AWS = "aws",
   ATTENTIVE_EMAIL = "attentive_email",
   BIGQUERY = "bigquery",
   DATAHUB = "datahub",

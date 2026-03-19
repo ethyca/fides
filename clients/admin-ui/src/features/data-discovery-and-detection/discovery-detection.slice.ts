@@ -486,6 +486,35 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Identity Provider Monitor Results"],
     }),
+    updateInfraMonitorRegions: build.mutation<
+      { key: string },
+      { key: string; regions: string[] }
+    >({
+      query: ({ key, regions }) => ({
+        method: "PATCH",
+        url: `/plus/infra-monitors/${key}`,
+        body: { regions },
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
+    getInfraMonitorRegions: build.query<
+      { regions: string[] },
+      { key: string }
+    >({
+      query: ({ key }) => ({
+        url: `/plus/infra-monitors/${key}/regions`,
+      }),
+    }),
+    executeInfraMonitor: build.mutation<
+      { monitor_execution_id: string; task_id: string | null },
+      { monitor_config_key: string }
+    >({
+      query: ({ monitor_config_key }) => ({
+        method: "POST",
+        url: `/plus/infra-monitors/${monitor_config_key}/execute`,
+      }),
+      invalidatesTags: ["Discovery Monitor Configs"],
+    }),
   }),
 });
 
@@ -518,6 +547,9 @@ export const {
   useBulkPromoteIdentityProviderMonitorResultsMutation,
   useBulkMuteIdentityProviderMonitorResultsMutation,
   useBulkUnmuteIdentityProviderMonitorResultsMutation,
+  useUpdateInfraMonitorRegionsMutation,
+  useGetInfraMonitorRegionsQuery,
+  useExecuteInfraMonitorMutation,
 } = discoveryDetectionApi;
 
 export const discoveryDetectionSlice = createSlice({

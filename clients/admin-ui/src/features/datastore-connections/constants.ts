@@ -35,6 +35,7 @@ export const CONNECTOR_LOGOS_PATH = "/images/connector-logos/";
  * List of connection type image key/value pairs
  */
 export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
+  [ConnectionType.AWS, "aws.svg"],
   [ConnectionType.ATTENTIVE_EMAIL, "attentive.svg"],
   [ConnectionType.BIGQUERY, "bigquery.svg"],
   [ConnectionType.DATAHUB, "datahub.svg"],

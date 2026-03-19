@@ -27,10 +27,13 @@ const WEBSITE_MONITOR_COPY = `Configure your website monitor to identify active 
 
 const OKTA_MONITOR_COPY = `Configure your identity provider monitor to detect and map systems within your infrastructure. This monitor will analyze connected systems to identify their activity and ensure accurate representation in your data map. Set your preferences below to customize the monitor's scan frequency and scope. To learn more about monitors, view our docs here.`;
 
+const AWS_MONITOR_COPY = `Configure your AWS cloud infrastructure monitor to detect and map cloud services and resources across your AWS account. This monitor will analyze selected AWS regions to identify data services such as S3 buckets, RDS databases, DynamoDB tables, and more. Set your preferences below to customize the monitor's scan frequency and scope.`;
+
 const MONITOR_COPIES: Partial<Record<ConnectionType, string>> = {
   [ConnectionType.WEBSITE]: WEBSITE_MONITOR_COPY,
   [ConnectionType.OKTA]: OKTA_MONITOR_COPY,
   [ConnectionType.ENTRA]: OKTA_MONITOR_COPY,
+  [ConnectionType.AWS]: AWS_MONITOR_COPY,
 } as const;
 
 const MonitorConfigTab = ({
@@ -42,6 +45,7 @@ const MonitorConfigTab = ({
 }) => {
   const isWebsiteMonitor =
     integrationOption?.identifier === ConnectionType.WEBSITE;
+  const isAWSMonitor = integrationOption?.identifier === ConnectionType.AWS;
 
   // Check if this is a SaaS type integration
   const isSaasIntegration = integrationOption?.type === SystemType.SAAS;
@@ -75,6 +79,7 @@ const MonitorConfigTab = ({
   const { columns, tableProps, monitors, isLoading } = useMonitorConfigTable({
     integration,
     isWebsiteMonitor,
+    isAWSMonitor,
     onEditMonitor: handleEditMonitor,
   });
 
@@ -140,6 +145,7 @@ const MonitorConfigTab = ({
         integration={integration}
         integrationOption={integrationOption!}
         isWebsiteMonitor={isWebsiteMonitor}
+        isAWSMonitor={isAWSMonitor}
       />
     </>
   );

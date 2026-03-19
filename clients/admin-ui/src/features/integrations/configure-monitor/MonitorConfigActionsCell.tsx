@@ -17,6 +17,7 @@ import {
   useDeleteDiscoveryMonitorMutation,
   useExecuteDiscoveryMonitorMutation,
   useExecuteIdentityProviderMonitorMutation,
+  useExecuteInfraMonitorMutation,
   useLazyGetMonitorDeletionImpactQuery,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 
@@ -95,11 +96,13 @@ const MonitorConfigActionsCell = ({
   monitorId,
   isWebsiteMonitor,
   isOktaMonitor,
+  isAWSMonitor,
   onEditClick,
 }: {
   monitorId?: string | null;
   isWebsiteMonitor?: boolean;
   isOktaMonitor?: boolean;
+  isAWSMonitor?: boolean;
   onEditClick: () => void;
 }) => {
   const modal = useModal();
@@ -108,16 +111,21 @@ const MonitorConfigActionsCell = ({
   const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
   const [fetchDeletionImpact] = useLazyGetMonitorDeletionImpactQuery();
 
-  // Use Identity Provider Monitor endpoint for Okta, otherwise use regular endpoint
+  // Use the appropriate execute endpoint based on monitor type
   const [executeRegularMonitor, { isLoading: executeRegularIsLoading }] =
     useExecuteDiscoveryMonitorMutation();
 
   const [executeOktaMonitor, { isLoading: executeOktaIsLoading }] =
     useExecuteIdentityProviderMonitorMutation();
 
+  const [executeInfraMonitor, { isLoading: executeInfraIsLoading }] =
+    useExecuteInfraMonitorMutation();
+
   const executeIsLoading = isOktaMonitor
     ? executeOktaIsLoading
-    : executeRegularIsLoading;
+    : isAWSMonitor
+      ? executeInfraIsLoading
+      : executeRegularIsLoading;
 
   const handleOpenDeleteModal = useCallback(async () => {
     if (!monitorId) {
@@ -157,9 +165,15 @@ const MonitorConfigActionsCell = ({
   }
 
   const handleExecute = async () => {
-    const result = isOktaMonitor
-      ? await executeOktaMonitor({ monitor_config_key: monitorId })
-      : await executeRegularMonitor({ monitor_config_id: monitorId });
+    let result;
+    if (isOktaMonitor) {
+      result = await executeOktaMonitor({ monitor_config_key: monitorId });
+    } else if (isAWSMonitor) {
+      result = await executeInfraMonitor({ monitor_config_key: monitorId! });
+    } else {
+      result = await executeRegularMonitor({ monitor_config_id: monitorId });
+    }
+
     if (isErrorResult(result)) {
       message.error(
         getErrorMessage(

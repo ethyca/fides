@@ -9,7 +9,10 @@ import { getErrorMessage } from "~/features/common/helpers";
 import {
   useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
+  useUpdateInfraMonitorRegionsMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import ConfigureAWSMonitorForm from "~/features/integrations/configure-monitor/ConfigureAWSMonitorForm";
+import ConfigureAWSMonitorRegionsForm from "~/features/integrations/configure-monitor/ConfigureAWSMonitorRegionsForm";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
 import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monitor/ConfigureWebsiteMonitorForm";
@@ -40,6 +43,7 @@ const ConfigureMonitorModal = ({
   integration,
   integrationOption,
   isWebsiteMonitor,
+  isAWSMonitor,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
   monitor?: EditableMonitorConfig;
@@ -48,9 +52,13 @@ const ConfigureMonitorModal = ({
   integration: ConnectionConfigurationResponseWithSystemKey;
   integrationOption: ConnectionSystemTypeMap;
   isWebsiteMonitor?: boolean;
+  isAWSMonitor?: boolean;
 }) => {
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
+
+  const [updateInfraMonitorRegions, { isLoading: isUpdatingRegions }] =
+    useUpdateInfraMonitorRegionsMutation();
 
   const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
@@ -98,6 +106,27 @@ const ConfigureMonitorModal = ({
     }
   };
 
+  const handleAWSRegionsSubmit = async (regions: string[]) => {
+    if (!monitor?.key) return;
+    const result = await updateInfraMonitorRegions({ key: monitor.key, regions });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Error updating regions");
+      return;
+    }
+    successAlert("Monitor updated successfully");
+    onClose();
+  };
+
+  // AWS step 0: save the monitor first, then advance to the regions picker with the saved key
+  const handleAWSStep0Submit = async (values: EditableMonitorConfig) => {
+    const result = await putMonitorMutationTrigger(values);
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Error saving monitor");
+      return;
+    }
+    onAdvance({ ...values, key: (result.data as { key: string }).key } as EditableMonitorConfig);
+  };
+
   if (isWebsiteMonitor) {
     return (
       <Modal
@@ -121,6 +150,40 @@ const ConfigureMonitorModal = ({
           onSubmit={handleSubmit}
         />
       </Modal>
+    );
+  }
+
+  if (isAWSMonitor) {
+    return (
+      <FormModal
+        title={
+          monitor?.name
+            ? `Configure ${monitor.name}`
+            : "Configure AWS monitor"
+        }
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        {formStep === 0 && (
+          <ConfigureAWSMonitorForm
+            monitor={monitor}
+            isSubmitting={isSubmitting}
+            onClose={onClose}
+            onSubmit={handleAWSStep0Submit}
+          />
+        )}
+        {formStep === 1 &&
+          (monitor?.key ? (
+            <ConfigureAWSMonitorRegionsForm
+              monitor={monitor}
+              isSubmitting={isUpdatingRegions}
+              onClose={onClose}
+              onSubmit={handleAWSRegionsSubmit}
+            />
+          ) : (
+            <PageSpinner />
+          ))}
+      </FormModal>
     );
   }
 

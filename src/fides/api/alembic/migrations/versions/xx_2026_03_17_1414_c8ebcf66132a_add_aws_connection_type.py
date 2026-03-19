@@ -1,7 +1,7 @@
 """add aws connection type
 
 Revision ID: c8ebcf66132a
-Revises: ea20059aee77
+Revises: a1ca9ddf3c3c
 Create Date: 2026-03-17 14:14:15.346395
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c8ebcf66132a"
-down_revision = "ea20059aee77"
+down_revision = "a1ca9ddf3c3c"
 branch_labels = None
 depends_on = None
 
