@@ -260,7 +260,7 @@ def update_client(
 def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    client = _get_client_or_error(db, client_id)
     if not client:
         return
     logger.info("Deleting client")
@@ -318,7 +318,7 @@ def set_client_scopes(
     """Overwrites the client's directly-assigned scopes with those provided.
     Roles cannot be edited via this endpoint.
     Does nothing if the client doesn't exist"""
-    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    client = _get_client_or_error(db, client_id)
     if not client:
         return
 
