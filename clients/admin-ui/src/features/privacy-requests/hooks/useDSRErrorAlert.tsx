@@ -1,9 +1,4 @@
-import {
-  ChakraBox as Box,
-  ChakraText as Text,
-  useChakraToast as useToast,
-  useMessage,
-} from "fidesui";
+import { ChakraBox as Box, ChakraText as Text, useMessage } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { PrivacyRequestStatus } from "~/types/api";
@@ -26,7 +21,6 @@ type Requests = {
 
 export const useDSRErrorAlert = () => {
   const message = useMessage();
-  const toast = useToast();
   const [hasAlert, setHasAlert] = useState(false);
   const [requests, setRequests] = useState<Requests>({
     count: 0,
@@ -87,13 +81,11 @@ export const useDSRErrorAlert = () => {
 
   useEffect(
     () =>
-      // Cleanup: close toast on unmount
+      // Cleanup: dismiss message on unmount
       () => {
-        if (toast.isActive(TOAST_ID)) {
-          toast.close(TOAST_ID);
-        }
+        message.destroy(TOAST_ID);
       },
-    [toast],
+    [message],
   );
 
   return { processing };
