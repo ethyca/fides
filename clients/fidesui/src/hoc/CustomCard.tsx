@@ -48,6 +48,12 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
         title
       );
 
+      // styles prop can be an object or a function; only spread if it's an object
+      const stylesObj =
+        typeof stylesProp === "object" && !Array.isArray(stylesProp)
+          ? stylesProp
+          : undefined;
+
       return (
         <WrappedComponent
           ref={ref}
@@ -60,8 +66,8 @@ const withCustomProps = (WrappedComponent: typeof Card) => {
           title={resolvedTitle}
           size={size}
           styles={{
-            ...stylesProp,
-            header: { ...headerStyle, ...stylesProp?.header },
+            ...stylesObj,
+            header: { ...headerStyle, ...(stylesObj?.header ?? {}) },
           }}
           {...props}
         />
