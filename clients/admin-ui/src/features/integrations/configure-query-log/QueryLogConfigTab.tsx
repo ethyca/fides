@@ -16,7 +16,6 @@ import { RTKErrorResult } from "~/types/errors/api";
 import { POLL_INTERVAL_OPTIONS } from "./constants";
 import {
   useCreateQueryLogConfigMutation,
-  useDeleteQueryLogConfigMutation,
   useGetQueryLogConfigsQuery,
   useTestQueryLogConnectionMutation,
   useTriggerQueryLogPollMutation,
@@ -57,14 +56,12 @@ const QueryLogConfigTab = ({ integration }: QueryLogConfigTabProps) => {
     useCreateQueryLogConfigMutation();
   const [updateConfig, { isLoading: isUpdating }] =
     useUpdateQueryLogConfigMutation();
-  const [deleteConfig, { isLoading: isDeleting }] =
-    useDeleteQueryLogConfigMutation();
   const [testConnection, { isLoading: isTesting }] =
     useTestQueryLogConnectionMutation();
   const [triggerPoll, { isLoading: isPolling }] =
     useTriggerQueryLogPollMutation();
 
-  const isSaving = isCreating || isUpdating || isDeleting;
+  const isSaving = isCreating || isUpdating;
 
   const enabled = Form.useWatch("enabled", form);
 
@@ -99,22 +96,18 @@ const QueryLogConfigTab = ({ integration }: QueryLogConfigTabProps) => {
           }).unwrap();
           message.success("Query logging settings updated");
         } else if (!values.enabled && existingConfig) {
-          // Disable — delete the config
-          await deleteConfig(existingConfig.key).unwrap();
+          // Disable — keep the config but stop polling
+          await updateConfig({
+            configKey: existingConfig.key,
+            enabled: false,
+          }).unwrap();
           message.success("Query logging disabled");
         }
       } catch (err) {
         message.error(getErrorMessage(err as RTKErrorResult["error"]));
       }
     },
-    [
-      existingConfig,
-      integration,
-      createConfig,
-      updateConfig,
-      deleteConfig,
-      message,
-    ],
+    [existingConfig, integration, createConfig, updateConfig, message],
   );
 
   const handleTest = useCallback(async () => {
