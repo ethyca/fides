@@ -1,9 +1,13 @@
 export type TimeRange = "24h" | "7d" | "30d";
 
-export interface DataConsumerRequestPoint {
-  timestamp: string;
+export interface TimeseriesBucket {
+  label: string;
   requests: number;
   violations: number;
+}
+
+export interface TimeseriesResponse {
+  items: TimeseriesBucket[];
 }
 
 export interface TopPolicyViolation {
@@ -11,26 +15,22 @@ export interface TopPolicyViolation {
   count: number;
 }
 
-export interface DataConsumerRequestsResponse {
+export interface AccessControlSummaryResponse {
   violations: number;
   total_requests: number;
-  trend: number;
-  top_policies: TopPolicyViolation[];
+  trend: number | null;
+  active_consumers: number;
   total_policies: number;
-  items: DataConsumerRequestPoint[];
 }
 
-export interface DataConsumerSummary {
+export interface ConsumerRequestSummary {
   name: string;
   requests: number;
   violations: number;
 }
 
-export interface DataConsumersByViolationsResponse {
-  violations: number;
-  total_requests: number;
-  active_consumers: number;
-  items: DataConsumerSummary[];
+export interface ConsumerRequestsByConsumerResponse {
+  items: ConsumerRequestSummary[];
 }
 
 export interface PolicyViolationAggregate {
@@ -44,12 +44,12 @@ export interface PolicyViolationLog {
   id: string;
   timestamp: string;
   consumer: string;
-  consumer_email: string;
-  policy: string;
-  policy_description: string;
+  consumer_email?: string;
+  policy?: string;
+  policy_description?: string;
   dataset: string;
-  data_use: string;
-  sql_statement: string;
+  data_use?: string;
+  sql_statement?: string;
   ai_reason?: string;
 }
 
@@ -61,7 +61,13 @@ export interface PaginatedResponse<T> {
   pages: number;
 }
 
-export interface FacetOptionsResponse {
+export interface CursorPaginatedViolationLogs {
+  items: PolicyViolationLog[];
+  next_cursor: string | null;
+  size: number;
+}
+
+export interface FiltersResponse {
   consumers: string[];
   policies: string[];
   datasets: string[];

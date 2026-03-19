@@ -1,5 +1,5 @@
-import { ChartText } from "./ChartText";
 import { formatTimestamp } from "./chart-utils";
+import { ChartText } from "./ChartText";
 
 interface XAxisTickProps {
   x?: number;
@@ -10,13 +10,13 @@ interface XAxisTickProps {
 }
 
 export const XAxisTick = ({
-  x,
-  y,
+  x = 0,
+  y = 0,
   payload,
   intervalMs,
   fill,
 }: XAxisTickProps) => (
-  <ChartText x={Number(x)} y={Number(y) + 12} fill={fill}>
+  <ChartText x={x} y={y + 12} fill={fill}>
     {payload ? formatTimestamp(payload.value, intervalMs) : null}
   </ChartText>
 );

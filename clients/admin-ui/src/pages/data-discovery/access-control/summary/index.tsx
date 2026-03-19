@@ -3,8 +3,9 @@ import type { NextPage } from "next";
 import { useMemo, useState } from "react";
 
 import {
-  useGetDataConsumerRequestsQuery,
-  useGetDataConsumersByViolationsQuery,
+  useGetAccessControlSummaryQuery,
+  useGetConsumersByViolationsQuery,
+  useGetRequestsTimeseriesQuery,
 } from "~/features/access-control/access-control.slice";
 import { AccessControlTabs } from "~/features/access-control/AccessControlTabs";
 import { FindingsTable } from "~/features/access-control/summary/FindingsTable";
@@ -36,17 +37,19 @@ const AccessControlSummaryPage: NextPage = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>("7d");
   const dateRange = useMemo(() => getDateRange(timeRange), [timeRange]);
 
-  const { data: requestsData, isLoading: requestsLoading } =
-    useGetDataConsumerRequestsQuery(dateRange);
+  const { data: summaryData, isLoading: summaryLoading } =
+    useGetAccessControlSummaryQuery(dateRange);
+
+  const { data: timeseriesData, isLoading: timeseriesLoading } =
+    useGetRequestsTimeseriesQuery(dateRange);
 
   const { data: consumersData, isLoading: consumersLoading } =
-    useGetDataConsumersByViolationsQuery({
+    useGetConsumersByViolationsQuery({
       ...dateRange,
-      group_by: "consumer",
       order_by: "violation_count",
     });
 
-  const loading = requestsLoading || consumersLoading;
+  const loading = summaryLoading || timeseriesLoading || consumersLoading;
 
   return (
     <Layout title="Access control">
@@ -61,7 +64,8 @@ const AccessControlSummaryPage: NextPage = () => {
           />
         </div>
         <SummaryCards
-          requestsData={requestsData}
+          summaryData={summaryData}
+          timeseriesData={timeseriesData}
           consumersData={consumersData}
           loading={loading}
         />

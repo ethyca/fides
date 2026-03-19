@@ -1,4 +1,5 @@
 import { theme } from "antd/lib";
+import { useEffect, useRef } from "react";
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -7,14 +8,19 @@ import {
   XAxis,
 } from "recharts";
 
-import type { AntColorTokenKey } from "./chart-constants";
-import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
+import type { AntColorTokenKey, BarSize } from "./chart-constants";
+import { BAR_SIZE_TOKEN, CHART_ANIMATION, LABEL_WIDTH } from "./chart-constants";
+import type { ChartDataRequest } from "./chart-utils";
 import {
+  computeDataRequest,
+  deriveInterval,
   formatTimestamp,
   tooltipLabelFormatter,
+  useChartAnimation,
+  useContainerWidth,
   useTooltipContentStyle,
 } from "./chart-utils";
-import { XAxisTick } from "./XAxisTick";
+import { ChartText } from "./ChartText";
 
 export interface BarChartDataPoint {
   label: string;
@@ -22,70 +28,137 @@ export interface BarChartDataPoint {
 }
 
 export interface BarChartProps {
-  data: BarChartDataPoint[];
+  data?: BarChartDataPoint[];
   color?: AntColorTokenKey;
-  intervalMs?: number;
   animationDuration?: number;
-  tickFormatter?: (label: string) => string;
+  showTooltip?: boolean;
+  size?: BarSize;
+  onIntervalChange?: (request: ChartDataRequest) => void;
 }
 
 export const BarChart = ({
   data,
   color = "colorText",
-  intervalMs,
   animationDuration = CHART_ANIMATION.defaultDuration,
-  tickFormatter,
+  showTooltip = true,
+  size = "md",
+  onIntervalChange,
 }: BarChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
+  const animationActive = useChartAnimation(animationDuration);
   const fill = token[color];
+  const barWidth = token[BAR_SIZE_TOKEN[size]];
 
-  const resolvedTickFormatter =
-    tickFormatter ??
-    (intervalMs != null
-      ? (label: string) => formatTimestamp(label, intervalMs)
-      : undefined);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const containerWidth = useContainerWidth(containerRef);
+
+  const chartData = data ?? [];
+
+  const derivedIntervalMs = deriveInterval(chartData);
+  const timeRangeMs =
+    chartData.length >= 2
+      ? new Date(chartData[chartData.length - 1].label).getTime() -
+        new Date(chartData[0].label).getTime()
+      : 0;
+
+  // Stable ref prevents oscillation: re-bucketed data shifts range
+  // slightly due to bucket alignment, triggering a feedback loop.
+  const stableRangeMsRef = useRef(0);
+  useEffect(() => {
+    if (timeRangeMs > 0 && stableRangeMsRef.current === 0) {
+      stableRangeMsRef.current = timeRangeMs;
+    }
+  }, [timeRangeMs]);
+
+  const prevRequestRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      !onIntervalChange ||
+      containerWidth <= 0 ||
+      stableRangeMsRef.current <= 0
+    ) {
+      return;
+    }
+
+    const request = computeDataRequest(
+      containerWidth,
+      barWidth,
+      stableRangeMsRef.current,
+    );
+    const key = `${request.interval}:${request.rangeMs}`;
+
+    if (key !== prevRequestRef.current) {
+      prevRequestRef.current = key;
+      onIntervalChange(request);
+    }
+  }, [onIntervalChange, containerWidth, barWidth]);
+
+  const formatLabel = (label: string) =>
+    formatTimestamp(label, derivedIntervalMs);
+
+  const barCount = chartData.length;
+  const slotWidth =
+    barCount > 0 && containerWidth > 0
+      ? containerWidth / barCount
+      : LABEL_WIDTH;
+  const tickInterval = Math.max(0, Math.ceil(LABEL_WIDTH / slotWidth) - 1);
+
+  const renderTick = ({
+    x,
+    y,
+    payload,
+  }: {
+    x?: string | number;
+    y?: string | number;
+    payload?: { value: string };
+  }) => (
+    <ChartText
+      x={Number(x ?? 0)}
+      y={Number(y ?? 0) + 12}
+      fill={token.colorTextTertiary}
+      width={LABEL_WIDTH}
+    >
+      {payload ? formatLabel(payload.value) : null}
+    </ChartText>
+  );
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <RechartsBarChart
-        data={data}
-        margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-        barCategoryGap="8%"
-      >
-        <XAxis
-          dataKey="label"
-          tickFormatter={resolvedTickFormatter}
-          tick={
-            intervalMs != null ? (
-              <XAxisTick
-                intervalMs={intervalMs}
-                fill={token.colorTextTertiary}
+    <div ref={containerRef} className="h-full w-full">
+      {containerWidth > 0 && (
+        <ResponsiveContainer width="100%" height="100%">
+          <RechartsBarChart
+            data={chartData}
+            margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+            barCategoryGap="8%"
+          >
+            <XAxis
+              dataKey="label"
+              tick={renderTick}
+              interval={tickInterval}
+              axisLine={false}
+              tickLine={false}
+            />
+            {showTooltip && (
+              <Tooltip
+                cursor={false}
+                contentStyle={tooltipContentStyle}
+                labelFormatter={(label) =>
+                  tooltipLabelFormatter(String(label), derivedIntervalMs)
+                }
               />
-            ) : undefined
-          }
-          axisLine={false}
-          tickLine={false}
-        />
-        <Tooltip
-          cursor={false}
-          contentStyle={tooltipContentStyle}
-          labelFormatter={
-            intervalMs != null
-              ? (label: string) => tooltipLabelFormatter(label, intervalMs)
-              : undefined
-          }
-        />
-        <Bar
-          dataKey="value"
-          fill={fill}
-          radius={[1, 1, 0, 0]}
-          isAnimationActive={animationDuration > 0}
-          animationDuration={animationDuration}
-          animationEasing={CHART_ANIMATION.easing}
-          maxBarSize={CHART_STROKE.strokeWidth * 8}
-        />
-      </RechartsBarChart>
-    </ResponsiveContainer>
+            )}
+            <Bar
+              dataKey="value"
+              fill={fill}
+              radius={[1, 1, 0, 0]}
+              isAnimationActive={animationActive}
+              animationDuration={animationDuration}
+              animationEasing={CHART_ANIMATION.easing}
+            />
+          </RechartsBarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
   );
 };

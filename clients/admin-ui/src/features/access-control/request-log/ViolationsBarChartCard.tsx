@@ -1,32 +1,33 @@
 import {
   BarChart,
   Card,
-  deriveInterval,
   Flex,
   Statistic,
   Typography,
 } from "fidesui";
+import { useMemo } from "react";
 
-import type { DataConsumerRequestPoint } from "../types";
+import type { TimeseriesBucket } from "../types";
 
 const { Text } = Typography;
 
 interface ViolationsBarChartCardProps {
-  data: DataConsumerRequestPoint[];
-  totalViolations: number;
+  data: TimeseriesBucket[];
   loading?: boolean;
 }
 
 export const ViolationsBarChartCard = ({
   data,
-  totalViolations,
   loading,
 }: ViolationsBarChartCardProps) => {
-  const intervalMs = deriveInterval(data);
   const chartData = data.map((d) => ({
-    label: d.timestamp,
+    label: d.label,
     value: d.violations,
   }));
+  const totalViolations = useMemo(
+    () => data.reduce((sum, d) => sum + d.violations, 0),
+    [data],
+  );
 
   return (
     <Card loading={loading}>
@@ -45,7 +46,7 @@ export const ViolationsBarChartCard = ({
         </Flex>
       </div>
       <div className="h-[120px] w-full">
-        <BarChart data={chartData} intervalMs={intervalMs} />
+        <BarChart data={chartData} />
       </div>
     </Card>
   );

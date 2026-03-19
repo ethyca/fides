@@ -1,15 +1,17 @@
 import { baseApi } from "~/features/common/api.slice";
 
 import type {
-  DataConsumerRequestsResponse,
-  DataConsumersByViolationsResponse,
-  FacetOptionsResponse,
+  AccessControlSummaryResponse,
+  ConsumerRequestsByConsumerResponse,
+  CursorPaginatedViolationLogs,
+  FiltersResponse,
   PaginatedResponse,
   PolicyViolationAggregate,
   PolicyViolationLog,
+  TimeseriesResponse,
 } from "./types";
 
-interface DataConsumerRequestsParams {
+interface TimeseriesParams {
   start_date: string;
   end_date: string;
   consumer?: string | string[];
@@ -18,11 +20,19 @@ interface DataConsumerRequestsParams {
   data_use?: string | string[];
 }
 
-interface DataConsumersByViolationsParams {
+interface ConsumersByViolationsParams {
   start_date: string;
   end_date: string;
-  group_by: "consumer";
+  consumer?: string | string[];
+  policy?: string | string[];
+  dataset?: string | string[];
+  data_use?: string | string[];
   order_by?: "violation_count" | "request_count";
+}
+
+interface SummaryParams {
+  start_date?: string;
+  end_date?: string;
 }
 
 interface PaginatedParams {
@@ -30,41 +40,62 @@ interface PaginatedParams {
   size?: number;
 }
 
-interface PolicyViolationLogsParams extends PaginatedParams {
-  consumer?: string;
-  policy?: string;
-  dataset?: string;
-  data_use?: string;
+interface ViolationLogsParams {
+  cursor?: string | null;
+  size?: number;
+  consumer?: string | string[];
+  policy?: string | string[];
+  dataset?: string | string[];
+  data_use?: string | string[];
   start_date?: string;
   end_date?: string;
 }
 
 interface PolicyViolationsParams extends PaginatedParams {
-  policy?: string;
-  control?: string;
+  policy?: string | string[];
+  control?: string | string[];
   sort_by?: "violation_count" | "last_violation";
   sort_direction?: "asc" | "desc";
+  start_date?: string;
+  end_date?: string;
+}
+
+interface FiltersParams {
+  start_date?: string;
+  end_date?: string;
+  consumer?: string | string[];
+  policy?: string | string[];
+  dataset?: string | string[];
+  data_use?: string | string[];
 }
 
 const accessControlApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getDataConsumerRequests: build.query<
-      DataConsumerRequestsResponse,
-      DataConsumerRequestsParams
+    getAccessControlSummary: build.query<
+      AccessControlSummaryResponse,
+      SummaryParams
     >({
       query: (params) => ({
-        url: "data-consumer/requests",
+        url: "access-control/summary",
         params,
       }),
       providesTags: ["Access Control"],
     }),
 
-    getDataConsumersByViolations: build.query<
-      DataConsumersByViolationsResponse,
-      DataConsumersByViolationsParams
+    getRequestsTimeseries: build.query<TimeseriesResponse, TimeseriesParams>({
+      query: (params) => ({
+        url: "access-control/requests",
+        params,
+      }),
+      providesTags: ["Access Control"],
+    }),
+
+    getConsumersByViolations: build.query<
+      ConsumerRequestsByConsumerResponse,
+      ConsumersByViolationsParams
     >({
       query: (params) => ({
-        url: "data-consumer/requests",
+        url: "access-control/consumers",
         params,
       }),
       providesTags: ["Access Control"],
@@ -75,33 +106,37 @@ const accessControlApi = baseApi.injectEndpoints({
       PolicyViolationsParams
     >({
       query: (params) => ({
-        url: "policy/violations",
+        url: "access-control/violations",
         params,
       }),
       providesTags: ["Access Control"],
     }),
 
-    getPolicyViolationLogs: build.query<
-      PaginatedResponse<PolicyViolationLog>,
-      PolicyViolationLogsParams
+    getViolationLogs: build.query<
+      CursorPaginatedViolationLogs,
+      ViolationLogsParams
     >({
-      query: (params) => ({
-        url: "policy/violations/logs",
-        params,
+      query: ({ cursor, ...rest }) => ({
+        url: "access-control/violations/logs",
+        params: {
+          ...rest,
+          ...(cursor ? { cursor } : {}),
+        },
       }),
       providesTags: ["Access Control"],
     }),
 
     getViolationDetail: build.query<PolicyViolationLog, string>({
       query: (id) => ({
-        url: `policy/violations/logs/${id}`,
+        url: `access-control/violations/${id}`,
       }),
       providesTags: ["Access Control"],
     }),
 
-    getFacetOptions: build.query<FacetOptionsResponse, void>({
-      query: () => ({
-        url: "access-control/facets",
+    getFilters: build.query<FiltersResponse, FiltersParams | void>({
+      query: (params) => ({
+        url: "access-control/filters",
+        params: params ?? undefined,
       }),
       providesTags: ["Access Control"],
     }),
@@ -109,10 +144,11 @@ const accessControlApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetDataConsumerRequestsQuery,
-  useGetDataConsumersByViolationsQuery,
+  useGetAccessControlSummaryQuery,
+  useGetRequestsTimeseriesQuery,
+  useGetConsumersByViolationsQuery,
   useGetPolicyViolationsQuery,
-  useGetPolicyViolationLogsQuery,
+  useGetViolationLogsQuery,
   useGetViolationDetailQuery,
-  useGetFacetOptionsQuery,
+  useGetFiltersQuery,
 } = accessControlApi;

@@ -1,12 +1,9 @@
 import { antTheme, Card, DonutChart, Flex, Statistic, Text } from "fidesui";
 
-import type { TopPolicyViolation } from "../types";
-
 interface ViolationRateCardProps {
   violations: number;
   totalRequests: number;
   trend: number;
-  topPolicies: TopPolicyViolation[];
   totalPolicies: number;
   loading?: boolean;
 }
@@ -15,7 +12,6 @@ export const ViolationRateCard = ({
   violations,
   totalRequests,
   trend,
-  topPolicies,
   totalPolicies,
   loading,
 }: ViolationRateCardProps) => {
@@ -76,15 +72,6 @@ export const ViolationRateCard = ({
             />
           </Flex>
         </Flex>
-
-        <div>
-          <Text strong>Top violated policies</Text>
-          <div className="mt-1">
-            <Text type="secondary" style={{ fontSize: token.fontSizeSM }}>
-              {topPolicies.map((p) => `${p.name} ${p.count}`).join(" · ")}
-            </Text>
-          </div>
-        </div>
       </Flex>
     </Card>
   );

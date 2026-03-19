@@ -1,7 +1,7 @@
 import { Flex, Spin, Table } from "fidesui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useGetPolicyViolationLogsQuery } from "../access-control.slice";
+import { useGetViolationLogsQuery } from "../access-control.slice";
 import type { PolicyViolationLog } from "../types";
 import { getRequestLogColumns } from "./requestLogColumns";
 
@@ -24,7 +24,7 @@ export const RequestLogTable = ({
   liveTailItems = [],
   onRowClick,
 }: RequestLogTableProps) => {
-  const [page, setPage] = useState(1);
+  const [cursor, setCursor] = useState<string | null>(null);
   const [allItems, setAllItems] = useState<PolicyViolationLog[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -32,32 +32,32 @@ export const RequestLogTable = ({
 
   const queryParams = useMemo(
     () => ({
-      page,
+      ...(cursor ? { cursor } : {}),
       size: PAGE_SIZE,
       ...filters,
     }),
-    [page, filters],
+    [cursor, filters],
   );
 
-  const { data, isFetching } = useGetPolicyViolationLogsQuery(queryParams);
+  const { data, isFetching } = useGetViolationLogsQuery(queryParams);
 
   useEffect(() => {
-    setPage(1);
+    setCursor(null);
     setAllItems([]);
     setHasMore(true);
   }, [filters]);
 
   useEffect(() => {
-    if (!data || data.page !== page) {
+    if (!data) {
       return;
     }
-    if (page === 1) {
+    if (cursor === null) {
       setAllItems(data.items);
     } else {
       setAllItems((prev) => [...prev, ...data.items]);
     }
-    setHasMore(page < data.pages);
-  }, [data, page]);
+    setHasMore(data.next_cursor !== null);
+  }, [data, cursor]);
 
   const prevLiveTailCountRef = useRef(0);
 
@@ -89,10 +89,10 @@ export const RequestLogTable = ({
   );
 
   const loadMore = useCallback(() => {
-    if (!isFetching && hasMore) {
-      setPage((prev) => prev + 1);
+    if (!isFetching && hasMore && data?.next_cursor) {
+      setCursor(data.next_cursor);
     }
-  }, [isFetching, hasMore]);
+  }, [isFetching, hasMore, data?.next_cursor]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;

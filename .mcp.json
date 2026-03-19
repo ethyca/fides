@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "command": "uv",
+      "args": ["--directory", "/Users/karoliskrulis/Code/codegraph", "run", "codegraph-server"],
+      "env": {
+        "FIDES_REPO_PATH": "/Users/karoliskrulis/Code/fides",
+        "FIDESPLUS_REPO_PATH": "/Users/karoliskrulis/Code/fidesplus",
+        "CODEGRAPH_CONFIG": "/Users/karoliskrulis/Code/codegraph/codegraph.toml"
+      }
+    }
+  }
+}

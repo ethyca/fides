@@ -43,7 +43,7 @@ export const ViolationDetailDrawer = ({
     if (!violation) {
       return 80;
     }
-    const lineCount = violation.sql_statement.split("\n").length;
+    const lineCount = (violation.sql_statement ?? "").split("\n").length;
     return Math.max(80, lineCount * 18 + 42);
   }, [violation]);
 

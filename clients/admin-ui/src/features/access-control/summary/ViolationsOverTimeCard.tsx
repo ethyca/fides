@@ -23,10 +23,10 @@ import {
   YAxis,
 } from "recharts";
 
-import type { DataConsumerRequestPoint } from "../types";
+import type { TimeseriesBucket } from "../types";
 
 interface ViolationsOverTimeCardProps {
-  data: DataConsumerRequestPoint[];
+  data: TimeseriesBucket[];
   totalViolations: number;
   trend: number;
   loading?: boolean;
@@ -95,7 +95,7 @@ export const ViolationsOverTimeCard = ({
               vertical={false}
             />
             <XAxis
-              dataKey="timestamp"
+              dataKey="label"
               tickFormatter={(ts) => formatTimestamp(ts, intervalMs)}
               tick={
                 <XAxisTick

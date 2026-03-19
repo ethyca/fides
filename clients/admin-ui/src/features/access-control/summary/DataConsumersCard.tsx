@@ -1,10 +1,10 @@
 import { antTheme, Card, Flex, Text } from "fidesui";
 import { Fragment, useMemo } from "react";
 
-import type { DataConsumerSummary } from "../types";
+import type { ConsumerRequestSummary } from "../types";
 
 interface DataConsumersCardProps {
-  data: DataConsumerSummary[];
+  data: ConsumerRequestSummary[];
   activeCount: number;
   loading?: boolean;
 }

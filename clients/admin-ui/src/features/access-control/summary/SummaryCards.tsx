@@ -1,40 +1,42 @@
 import type {
-  DataConsumerRequestsResponse,
-  DataConsumersByViolationsResponse,
+  AccessControlSummaryResponse,
+  ConsumerRequestsByConsumerResponse,
+  TimeseriesResponse,
 } from "../types";
 import { DataConsumersCard } from "./DataConsumersCard";
 import { ViolationRateCard } from "./ViolationRateCard";
 import { ViolationsOverTimeCard } from "./ViolationsOverTimeCard";
 
 interface SummaryCardsProps {
-  requestsData?: DataConsumerRequestsResponse;
-  consumersData?: DataConsumersByViolationsResponse;
+  summaryData?: AccessControlSummaryResponse;
+  timeseriesData?: TimeseriesResponse;
+  consumersData?: ConsumerRequestsByConsumerResponse;
   loading?: boolean;
 }
 
 export const SummaryCards = ({
-  requestsData,
+  summaryData,
+  timeseriesData,
   consumersData,
   loading,
 }: SummaryCardsProps) => (
   <div className="grid grid-cols-3 gap-4">
     <ViolationsOverTimeCard
-      data={requestsData?.items ?? []}
-      totalViolations={requestsData?.violations ?? 0}
-      trend={requestsData?.trend ?? 0}
+      data={timeseriesData?.items ?? []}
+      totalViolations={summaryData?.violations ?? 0}
+      trend={summaryData?.trend ?? 0}
       loading={loading}
     />
     <ViolationRateCard
-      violations={requestsData?.violations ?? 0}
-      totalRequests={requestsData?.total_requests ?? 0}
-      trend={requestsData?.trend ?? 0}
-      topPolicies={requestsData?.top_policies ?? []}
-      totalPolicies={requestsData?.total_policies ?? 0}
+      violations={summaryData?.violations ?? 0}
+      totalRequests={summaryData?.total_requests ?? 0}
+      trend={summaryData?.trend ?? 0}
+      totalPolicies={summaryData?.total_policies ?? 0}
       loading={loading}
     />
     <DataConsumersCard
       data={consumersData?.items ?? []}
-      activeCount={consumersData?.active_consumers ?? 0}
+      activeCount={summaryData?.active_consumers ?? 0}
       loading={loading}
     />
   </div>

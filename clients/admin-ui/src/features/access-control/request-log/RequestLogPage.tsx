@@ -6,8 +6,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PolicyViolationLog } from "../types";
 
 import {
-  useGetDataConsumerRequestsQuery,
-  useGetFacetOptionsQuery,
+  useGetFiltersQuery,
+  useGetRequestsTimeseriesQuery,
 } from "../access-control.slice";
 import {
   type FacetDefinition,
@@ -25,7 +25,7 @@ export const RequestLogPage = () => {
   const policyParam =
     typeof router.query.policy === "string" ? router.query.policy : null;
 
-  const { data: facetOptions } = useGetFacetOptionsQuery();
+  const { data: facetOptions } = useGetFiltersQuery();
 
   const facets: FacetDefinition[] = useMemo(
     () => [
@@ -144,7 +144,7 @@ export const RequestLogPage = () => {
   }, [liveTail, generateMockItems]);
 
   const { data: chartData, isLoading: chartLoading } =
-    useGetDataConsumerRequestsQuery(filters);
+    useGetRequestsTimeseriesQuery(filters);
 
   return (
     <Flex vertical gap={16}>
@@ -188,7 +188,6 @@ export const RequestLogPage = () => {
 
       <ViolationsBarChartCard
         data={chartData?.items ?? []}
-        totalViolations={chartData?.violations ?? 0}
         loading={chartLoading}
       />
 

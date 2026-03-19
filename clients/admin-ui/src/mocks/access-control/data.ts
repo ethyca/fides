@@ -1,24 +1,19 @@
 import type {
-  DataConsumerRequestPoint,
-  DataConsumerRequestsResponse,
-  DataConsumerSummary,
+  AccessControlSummaryResponse,
+  ConsumerRequestSummary,
   PolicyViolationAggregate,
   PolicyViolationLog,
+  TimeseriesBucket,
+  TimeseriesResponse,
 } from "~/features/access-control/types";
 import { pickInterval } from "fidesui";
 
 const sumField = (
-  items: DataConsumerRequestPoint[],
+  items: TimeseriesBucket[],
   field: "requests" | "violations",
 ) => items.reduce((sum, item) => sum + item[field], 0);
 
-const TOP_POLICIES = [
-  { name: "HIPAA_COMPLIANCE", count: 15 },
-  { name: "PII_SECURITY", count: 12 },
-  { name: "CCPA_RESTRICT", count: 10 },
-];
-
-export const dataConsumersByViolationsData: DataConsumerSummary[] = [
+export const dataConsumersByViolationsData: ConsumerRequestSummary[] = [
   { name: "Analytics Service", requests: 620, violations: 34 },
   { name: "Marketing Pipeline", requests: 485, violations: 28 },
   { name: "Data Warehouse ETL", requests: 410, violations: 22 },
@@ -241,11 +236,14 @@ export interface LogFilters {
 }
 
 const matchesFilter = (
-  value: string,
+  value: string | undefined,
   filter: string | string[] | null | undefined,
 ): boolean => {
   if (!filter) {
     return true;
+  }
+  if (!value) {
+    return false;
   }
   return Array.isArray(filter) ? filter.includes(value) : value === filter;
 };
@@ -277,11 +275,11 @@ export const filterLogs = (
   });
 };
 
-export const aggregateLogsToChart = (
+export const aggregateLogsToTimeseries = (
   logs: PolicyViolationLog[],
   startDate: string,
   endDate: string,
-): DataConsumerRequestsResponse => {
+): TimeseriesResponse => {
   const startMs = new Date(startDate).getTime();
   const endMs = new Date(endDate).getTime();
   const interval = pickInterval(startMs, endMs);
@@ -289,8 +287,8 @@ export const aggregateLogsToChart = (
   const bucketCount = Math.max(1, Math.ceil((endMs - flooredStart) / interval));
   const rand = seededRandom(7);
 
-  const buckets = Array.from({ length: bucketCount }, (_, i) => ({
-    timestamp: new Date(flooredStart + i * interval).toISOString(),
+  const buckets: TimeseriesBucket[] = Array.from({ length: bucketCount }, (_, i) => ({
+    label: new Date(flooredStart + i * interval).toISOString(),
     requests: 0,
     violations: 0,
   }));
@@ -304,12 +302,24 @@ export const aggregateLogsToChart = (
     }
   });
 
+  return { items: buckets };
+};
+
+export const buildSummaryFromLogs = (
+  logs: PolicyViolationLog[],
+  startDate: string,
+  endDate: string,
+): AccessControlSummaryResponse => {
+  const timeseries = aggregateLogsToTimeseries(logs, startDate, endDate);
+  const violations = sumField(timeseries.items, "violations");
+  const totalRequests = sumField(timeseries.items, "requests");
+  const consumers = new Set(logs.map((l) => l.consumer));
+
   return {
-    violations: sumField(buckets, "violations"),
-    total_requests: sumField(buckets, "requests"),
+    violations,
+    total_requests: totalRequests,
     trend: -0.08,
-    top_policies: TOP_POLICIES,
+    active_consumers: consumers.size,
     total_policies: POLICIES.length,
-    items: buckets,
   };
 };
