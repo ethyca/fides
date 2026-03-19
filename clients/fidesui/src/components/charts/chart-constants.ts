@@ -30,6 +30,18 @@ export const DONUT_THICKNESS = {
   thick: 16,
 } as const;
 
+export type BarSize = "sm" | "md" | "lg";
+
+export type AntSizeTokenKey = Extract<keyof GlobalToken, `size${string}`>;
+
+export const BAR_SIZE_TOKEN: Record<BarSize, AntSizeTokenKey> = {
+  sm: "sizeXS",
+  md: "sizeSM",
+  lg: "sizeLG",
+} as const;
+
+export type ChartInterval = "1h" | "6h" | "1d" | "3d";
+
 export const COLOR_OPTIONS = [
   "colorPrimary",
   "colorSuccess",
