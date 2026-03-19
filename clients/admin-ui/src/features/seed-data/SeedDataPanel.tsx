@@ -43,11 +43,15 @@ const STATUS_COLORS: Record<string, string> = {
   error: "error",
 };
 
-const StepStatusTag = ({ status }: { status: SeedStepStatus }) => (
-  <Tag color={STATUS_COLORS[status.status] ?? "default"}>
-    {status.status.replace("_", " ")}
-  </Tag>
-);
+const StepStatusTag = ({ status }: { status: SeedStepStatus }) => {
+  const color = STATUS_COLORS[status.status] ?? "default";
+  const style = color === "processing" ? { color: "white" } : undefined;
+  return (
+    <Tag color={color} style={style}>
+      {status.status.replace("_", " ")}
+    </Tag>
+  );
+};
 
 const computeProgress = (steps: Record<string, SeedStepStatus>): number => {
   const entries = Object.values(steps);
