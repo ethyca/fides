@@ -20,10 +20,7 @@ import {
 } from "fidesui";
 import React, { useEffect, useRef, useState } from "react";
 
-import {
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import DSRCustomizationForm from "./DSRCustomizationForm";
@@ -36,16 +33,7 @@ type Props = {
 const DSRCustomizationModal = ({ connectionConfig }: Props) => {
   const mounted = useRef(false);
   const message = useMessage();
-
-  const handleError = (error: unknown) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    message.error(errorMsg);
-  };
+  const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fields, setFields] = useState([] as Field[]);
 

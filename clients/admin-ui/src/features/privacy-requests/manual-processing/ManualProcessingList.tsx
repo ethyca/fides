@@ -29,10 +29,7 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
-import {
-  isErrorWithDetail,
-  isErrorWithDetailArray,
-} from "~/features/common/helpers";
+import { useAPIHelper } from "~/features/common/hooks";
 import { getActionTypes } from "~/features/common/RequestType";
 import { ActionType } from "~/types/api";
 
@@ -87,16 +84,7 @@ const ManualProcessingList = ({
 }: ManualProcessingListProps) => {
   const dispatch = useAppDispatch();
   const message = useMessage();
-
-  const handleError = (error: unknown) => {
-    let errorMsg = "An unexpected error occurred. Please try again.";
-    if (isErrorWithDetail(error)) {
-      errorMsg = error.data.detail;
-    } else if (isErrorWithDetailArray(error)) {
-      errorMsg = error.data.detail[0].msg;
-    }
-    message.error(errorMsg);
-  };
+  const { handleError } = useAPIHelper();
   const [dataList, setDataList] = useState([] as unknown as ManualInputData[]);
   const [isCompleteDSRLoading, setIsCompleteDSRLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
