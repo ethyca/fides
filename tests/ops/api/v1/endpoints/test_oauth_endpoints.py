@@ -19,7 +19,6 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import OWNER
 from fides.api.oauth.utils import extract_payload
-from fides.api.schemas.client import ClientCreateRequest
 from fides.api.schemas.connection_configuration.connection_secrets import (
     TestStatusMessage,
 )
