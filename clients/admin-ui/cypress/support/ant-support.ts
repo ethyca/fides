@@ -391,7 +391,7 @@ Cypress.Commands.add(
   },
 );
 
-Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-content`));
+Cypress.Commands.add("getAntModal", () => cy.get(`.ant-modal-container`));
 Cypress.Commands.add("getAntModalHeader", () => cy.get(`.ant-modal-header`));
 Cypress.Commands.add("getAntModalFooter", () => cy.get(`.ant-modal-footer`));
 Cypress.Commands.add("getAntModalConfirmButtons", () =>
