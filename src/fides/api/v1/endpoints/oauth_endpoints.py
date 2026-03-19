@@ -316,7 +316,11 @@ def set_client_scopes(
     """Overwrites the client's directly-assigned scopes with those provided.
     Roles cannot be edited via this endpoint.
     Does nothing if the client doesn't exist"""
-    client = _get_client_or_error(db, client_id)
+    if client_id == CONFIG.security.oauth_root_client_id:
+        return
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    if not client:
+        return
 
     if not all(elem in SCOPE_REGISTRY for elem in scopes):
         raise HTTPException(
