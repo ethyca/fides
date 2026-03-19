@@ -1,14 +1,10 @@
 import {
   Button,
   ChakraChevronDownIcon as ChevronDownIcon,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
   ChakraStack as Stack,
   Dropdown,
   LinkIcon,
+  Modal,
   Space,
   useChakraToast as useToast,
 } from "fidesui";
@@ -16,6 +12,7 @@ import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import InfoBox from "~/features/common/InfoBox";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { usePostPrivacyRequestMutation } from "~/features/privacy-requests/privacy-requests.slice";
@@ -71,24 +68,23 @@ const SubmitPrivacyRequestModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
-      <ModalOverlay />
-      <ModalContent
-        data-testid="submit-request-modal"
-        maxHeight="80%"
-        overflowY="auto"
-      >
-        <ModalHeader>Create privacy request</ModalHeader>
-        <ModalBody>
-          <Stack spacing={4}>
-            <InfoBox title={INFO_BOX_TITLE} text={INFO_BOX_TEXT} />
-            <SubmitPrivacyRequestForm
-              onSubmit={handleSubmit}
-              onCancel={() => onClose()}
-            />
-          </Stack>
-        </ModalBody>
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnHidden
+      data-testid="submit-request-modal"
+      width={MODAL_SIZE.md}
+      title="Create privacy request"
+      footer={null}
+    >
+      <Stack spacing={4}>
+        <InfoBox title={INFO_BOX_TITLE} text={INFO_BOX_TEXT} />
+        <SubmitPrivacyRequestForm
+          onSubmit={handleSubmit}
+          onCancel={() => onClose()}
+        />
+      </Stack>
     </Modal>
   );
 };
@@ -103,19 +99,20 @@ const PrivacyRequestLinkModal = ({
   privacyCenterUrl: string;
 }) => {
   return (
-    <Modal size="md" isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Create a Privacy Request Link</ModalHeader>
-        <ModalBody>
-          <Stack spacing={4} />
-          <CopyPrivacyRequestLinkForm
-            privacyCenterUrl={privacyCenterUrl}
-            onSubmit={onClose}
-            onCancel={onClose}
-          />
-        </ModalBody>
-      </ModalContent>
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnHidden
+      title="Create a Privacy Request Link"
+      footer={null}
+    >
+      <Stack spacing={4} />
+      <CopyPrivacyRequestLinkForm
+        privacyCenterUrl={privacyCenterUrl}
+        onSubmit={onClose}
+        onCancel={onClose}
+      />
     </Modal>
   );
 };

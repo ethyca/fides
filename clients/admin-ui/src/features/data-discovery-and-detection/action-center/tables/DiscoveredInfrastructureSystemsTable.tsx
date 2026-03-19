@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Checkbox,
   Dropdown,
@@ -146,6 +147,12 @@ export const DiscoveredInfrastructureSystemsTable = ({
 
   return (
     <Flex vertical gap="middle" className="h-full overflow-hidden">
+      <Alert
+        showIcon
+        message="Fides detected the following systems"
+        description="Some may not yet be in your inventory. Review each system's detected data use — approve to add it to your inventory, or ignore if it's not relevant."
+        closable
+      />
       <Flex justify="space-between" gap="middle">
         <Flex gap="small">
           <DebouncedSearchInput

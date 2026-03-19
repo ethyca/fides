@@ -139,7 +139,6 @@ const AssessmentSettingsModal = ({
       title="Assessment settings"
       open={open}
       onCancel={onClose}
-      width={600}
       destroyOnHidden
       footer={
         <Flex justify="flex-end" gap={8}>

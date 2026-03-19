@@ -1,5 +1,6 @@
 import { Modal, Typography } from "fidesui";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import type { ConditionLeaf } from "~/types/api";
 
 import { PolicyConditionForm } from "./PolicyConditionForm";
@@ -33,7 +34,7 @@ export const AddEditPolicyConditionModal = ({
       title={isEditing ? "Edit condition" : "Add condition"}
       footer={null}
       destroyOnHidden
-      width={600}
+      width={MODAL_SIZE.md}
       data-testid="add-edit-condition-modal"
     >
       <Typography.Paragraph type="secondary">

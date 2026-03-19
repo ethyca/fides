@@ -29,6 +29,12 @@ const nextConfig = {
         source: "/:path(fides-ext-gpp.js)",
         destination: "/api/fides-ext-gpp-js",
       },
+      {
+        // Rewrite requests for "/fides-stub.js" to the static IAB TCF CMP stub
+        // in public/lib, so publishers can load it before fides.js
+        source: "/:path(fides-stub.js)",
+        destination: "/lib/fides-stub.js",
+      },
     ];
   },
 };
