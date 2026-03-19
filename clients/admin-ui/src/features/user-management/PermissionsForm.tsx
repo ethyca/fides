@@ -6,7 +6,7 @@ import {
   ChakraStack as Stack,
   ChakraText as Text,
   Tooltip,
-  useChakraToast as useToast,
+  useMessage,
   useModal,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -17,7 +17,6 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
 
@@ -38,7 +37,7 @@ const defaultInitialValues = {
 export type FormValues = typeof defaultInitialValues;
 
 const PermissionsForm = () => {
-  const toast = useToast();
+  const message = useMessage();
   const router = useRouter();
   const modal = useModal();
   const activeUserId = useAppSelector(selectActiveUserId);
@@ -89,7 +88,7 @@ const PermissionsForm = () => {
     });
 
     if (isErrorResult(userPermissionsResult)) {
-      toast(errorToastParams(getErrorMessage(userPermissionsResult.error)));
+      message.error(getErrorMessage(userPermissionsResult.error));
       return;
     }
     if (!skipAssigningSystems) {
@@ -99,11 +98,11 @@ const PermissionsForm = () => {
         fidesKeys,
       });
       if (isErrorResult(userSystemsResult)) {
-        toast(errorToastParams(getErrorMessage(userSystemsResult.error)));
+        message.error(getErrorMessage(userSystemsResult.error));
         return;
       }
     }
-    toast(successToastParams("Permissions updated"));
+    message.success("Permissions updated");
   };
 
   const handleSubmit = async (values: FormValues) => {

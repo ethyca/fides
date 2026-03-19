@@ -1,11 +1,5 @@
 import { skipToken } from "@reduxjs/toolkit/query";
-import {
-  Flex,
-  Icons,
-  List,
-  Pagination,
-  useChakraToast as useToast,
-} from "fidesui";
+import { Flex, Icons, List, Pagination, useMessage } from "fidesui";
 import { useEffect } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -28,7 +22,7 @@ import {
 } from "./MonitorList.const";
 
 const MonitorList = () => {
-  const toast = useToast();
+  const message = useMessage();
   const {
     flags: { webMonitor: webMonitorEnabled },
   } = useFeatures();
@@ -87,13 +81,9 @@ const MonitorList = () => {
 
   useEffect(() => {
     if (isError) {
-      toast({
-        title: "Error fetching data",
-        description: "Please try again later",
-        status: "error",
-      });
+      message.error("Error fetching data. Please try again later");
     }
-  }, [isError, toast]);
+  }, [isError, message]);
 
   const results =
     data?.items?.flatMap((monitor) =>

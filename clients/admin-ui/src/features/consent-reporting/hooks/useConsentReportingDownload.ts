@@ -1,12 +1,12 @@
 import { Dayjs } from "dayjs";
-import { useChakraToast as useToast } from "fidesui";
+import { useMessage } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 
 import { useLazyDownloadReportQuery } from "../consent-reporting.slice";
 
 const useConsentReportingDownload = () => {
-  const toast = useToast();
+  const message = useMessage();
 
   const [downloadReportTrigger, { isFetching }] = useLazyDownloadReportQuery();
 
@@ -19,11 +19,11 @@ const useConsentReportingDownload = () => {
   }) => {
     const result = await downloadReportTrigger({ startDate, endDate });
     if (result.isError) {
-      const message = getErrorMessage(
+      const errorMessage = getErrorMessage(
         result.error,
         "A problem occurred while generating your consent report.  Please try again.",
       );
-      toast({ status: "error", description: message });
+      message.error(errorMessage);
     } else {
       const a = document.createElement("a");
       const csvBlob = new Blob([result.data], { type: "text/csv" });

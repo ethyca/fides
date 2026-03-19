@@ -7,7 +7,7 @@ import {
   Switch,
   theme,
   Tooltip,
-  useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -17,7 +17,6 @@ import * as Yup from "yup";
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
   defaultInitialValues,
@@ -110,7 +109,7 @@ const ConfigurePrivacyExperience = ({
   const [postExperienceConfigMutation] = usePostExperienceConfigMutation();
   const [patchExperienceConfigMutation] = usePatchExperienceConfigMutation();
 
-  const toast = useToast();
+  const message = useMessage();
 
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const [mockGpcEnabled, setMockGpcEnabled] = useState(false);
@@ -167,14 +166,12 @@ const ConfigurePrivacyExperience = ({
     }
 
     if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
+      message.error(getErrorMessage(result.error));
     } else {
-      toast(
-        successToastParams(
-          `Privacy experience successfully ${
-            passedInExperience ? "updated" : "created"
-          }`,
-        ),
+      message.success(
+        `Privacy experience successfully ${
+          passedInExperience ? "updated" : "created"
+        }`,
       );
       router.push(PRIVACY_EXPERIENCE_ROUTE);
     }
