@@ -24,7 +24,6 @@ import { ValidTargets } from "~/types/api";
 
 import CalloutNavCard from "../common/CalloutNavCard";
 import { changeStep, setAddSystemsMethod } from "./config-wizard.slice";
-import DataFlowScannerOption from "./DataFlowScannerOption";
 import { SystemMethods } from "./types";
 
 const SectionTitle = ({ children }: { children: string }) => (
@@ -60,9 +59,8 @@ const AddSystem = () => {
 
         <Text>
           Fides can automatically discover new systems in your AWS
-          infrastructure or Okta accounts. For services not covered by the
-          automated scanners or analog processes, you may also manually add new
-          systems to your map.
+          infrastructure or Okta accounts. For everything else, you may
+          manually add systems to your map.
         </Text>
       </Stack>
       <Box data-testid="manual-options">
@@ -82,7 +80,7 @@ const AddSystem = () => {
               title="Add a system"
               color={palette.FIDESUI_SANDSTONE}
               icon={<ManualSetupIcon boxSize={6} />}
-              description="Manually add a system for services not covered by automated scanners"
+              description="Manually add a system for services not covered by AWS or Okta discovery"
             />
           </button>
           <button
@@ -160,12 +158,6 @@ const AddSystem = () => {
               icon={<OktaLogoIcon boxSize={6} />}
             />
           </button>
-          <DataFlowScannerOption
-            onClick={() => {
-              dispatch(changeStep());
-              dispatch(setAddSystemsMethod(SystemMethods.DATA_FLOW));
-            }}
-          />
         </SimpleGrid>
       </Box>
     </Stack>
