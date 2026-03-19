@@ -29,6 +29,7 @@ export interface BarChartProps {
   intervalMs?: number;
   animationDuration?: number;
   tickFormatter?: (label: string) => string;
+  showTooltip?: boolean;
 }
 
 export const BarChart = ({
@@ -37,6 +38,7 @@ export const BarChart = ({
   intervalMs,
   animationDuration = CHART_ANIMATION.defaultDuration,
   tickFormatter,
+  showTooltip = true,
 }: BarChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
@@ -83,15 +85,17 @@ export const BarChart = ({
           axisLine={false}
           tickLine={false}
         />
-        <Tooltip
-          cursor={false}
-          contentStyle={tooltipContentStyle}
-          labelFormatter={
-            intervalMs != null
-              ? (label) => tooltipLabelFormatter(String(label), intervalMs)
-              : undefined
-          }
-        />
+        {showTooltip && (
+          <Tooltip
+            cursor={false}
+            contentStyle={tooltipContentStyle}
+            labelFormatter={
+              intervalMs != null
+                ? (label) => tooltipLabelFormatter(String(label), intervalMs)
+                : undefined
+            }
+          />
+        )}
         <Bar
           dataKey="value"
           fill={fill}

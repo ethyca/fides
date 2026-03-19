@@ -54,6 +54,10 @@ const meta = {
       description:
         "Time interval between data points. Enables timestamp formatting when set.",
     },
+    showTooltip: {
+      control: "boolean",
+      description: "Whether to show the tooltip on hover.",
+    },
   },
   decorators: [
     (Story) => (
@@ -73,14 +77,7 @@ export const Default: Story = {
   },
 };
 
-export const Colored: Story = {
-  args: {
-    data: categoricalData,
-    color: "colorPrimary",
-  },
-};
-
-export const HourlyTimeSeries: Story = {
+export const TimeSeries: Story = {
   args: {
     data: generateTimeSeries(24, HOUR_MS),
     intervalMs: HOUR_MS,
@@ -88,30 +85,9 @@ export const HourlyTimeSeries: Story = {
   },
 };
 
-export const DailyTimeSeries: Story = {
-  args: {
-    data: generateTimeSeries(30, DAY_MS),
-    intervalMs: DAY_MS,
-    color: "colorSuccess",
-  },
-};
-
-export const NoAnimation: Story = {
+export const TooltipDisabled: Story = {
   args: {
     data: categoricalData,
-    animationDuration: 0,
-  },
-};
-
-export const CustomTickFormatter: Story = {
-  args: {
-    data: [
-      { label: "q1_2025", value: 120 },
-      { label: "q2_2025", value: 95 },
-      { label: "q3_2025", value: 140 },
-      { label: "q4_2025", value: 110 },
-    ],
-    tickFormatter: (label: string) => label.replace("_", " ").toUpperCase(),
-    color: "colorInfo",
+    showTooltip: false,
   },
 };
