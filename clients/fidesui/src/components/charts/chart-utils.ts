@@ -1,7 +1,6 @@
 import { theme } from "antd/lib";
-import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
-import type { RefObject } from "react";
+import type { CSSProperties, RefObject } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const HOUR_MS = 3_600_000;
 export const DAY_MS = 86_400_000;
@@ -62,6 +61,9 @@ export const formatTimestamp = (
   intervalMs: number,
 ): string => {
   const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return timestamp;
+  }
   if (intervalMs < DAY_MS) {
     return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -72,16 +74,18 @@ export const formatTimestamp = (
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-export const deriveInterval = (
-  data: { timestamp: string }[],
-): number => {
+/**
+ * Derives the time interval from the first two consecutive data points.
+ * Assumes the data is sorted chronologically with uniform spacing.
+ */
+export const deriveInterval = (data: { timestamp: string }[]): number => {
   if (data.length < 2) {
     return HOUR_MS;
   }
-  return (
+  const gap =
     new Date(data[1].timestamp).getTime() -
-    new Date(data[0].timestamp).getTime()
-  );
+    new Date(data[0].timestamp).getTime();
+  return gap > 0 ? gap : HOUR_MS;
 };
 
 export const tooltipLabelFormatter = (
@@ -89,6 +93,9 @@ export const tooltipLabelFormatter = (
   intervalMs: number,
 ): string => {
   const date = new Date(label);
+  if (Number.isNaN(date.getTime())) {
+    return label;
+  }
   if (intervalMs < DAY_MS) {
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -106,10 +113,18 @@ export const tooltipLabelFormatter = (
 
 export const useTooltipContentStyle = (): CSSProperties => {
   const { token } = theme.useToken();
-  return {
-    backgroundColor: token.colorBgElevated,
-    border: `1px solid ${token.colorBorder}`,
-    borderRadius: token.borderRadiusLG,
-    boxShadow: token.boxShadowSecondary,
-  };
+  return useMemo(
+    () => ({
+      backgroundColor: token.colorBgElevated,
+      border: `1px solid ${token.colorBorder}`,
+      borderRadius: token.borderRadiusLG,
+      boxShadow: token.boxShadowSecondary,
+    }),
+    [
+      token.colorBgElevated,
+      token.colorBorder,
+      token.borderRadiusLG,
+      token.boxShadowSecondary,
+    ],
+  );
 };

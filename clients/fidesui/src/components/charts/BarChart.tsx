@@ -12,6 +12,7 @@ import { CHART_ANIMATION, CHART_STROKE } from "./chart-constants";
 import {
   formatTimestamp,
   tooltipLabelFormatter,
+  useChartAnimation,
   useTooltipContentStyle,
 } from "./chart-utils";
 import { XAxisTick } from "./XAxisTick";
@@ -38,6 +39,7 @@ export const BarChart = ({
 }: BarChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
+  const animationActive = useChartAnimation(animationDuration);
   const fill = token[color];
 
   const resolvedTickFormatter =
@@ -80,7 +82,7 @@ export const BarChart = ({
           dataKey="value"
           fill={fill}
           radius={[1, 1, 0, 0]}
-          isAnimationActive={animationDuration > 0}
+          isAnimationActive={animationActive}
           animationDuration={animationDuration}
           animationEasing={CHART_ANIMATION.easing}
           maxBarSize={CHART_STROKE.strokeWidth * 8}
