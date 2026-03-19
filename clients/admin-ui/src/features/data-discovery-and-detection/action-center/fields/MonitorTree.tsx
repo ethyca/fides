@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Tree,
+  useMessage,
 } from "fidesui";
 import { useRouter } from "next/router";
 import {
@@ -22,7 +23,6 @@ import {
 } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import { Node } from "~/features/common/hooks/useNodeMap";
 import { CursorPaginationState } from "~/features/common/pagination";
 import { pluralize } from "~/features/common/utils";
@@ -30,12 +30,14 @@ import {
   useLazyGetMonitorTreeAncestorsStatusesQuery,
   useLazyGetMonitorTreeQuery,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import { StagedResourceTypeValue } from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 import { CursorPage_DatastoreStagedResourceTreeAPIResponse_ } from "~/types/api/models/CursorPage_DatastoreStagedResourceTreeAPIResponse_";
 
+import { DatastorePageSettings } from "../types";
 import {
+  DEFAULT_FILTER_STATUSES,
   MAP_DATASTORE_RESOURCE_TYPE_TO_ICON,
-  MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO,
+  MAP_DIFF_STATUS_TO_STATUS_INFO,
   TREE_NODE_LOAD_MORE_KEY_PREFIX,
   TREE_NODE_LOAD_MORE_TEXT,
   TREE_NODE_SKELETON_KEY_PREFIX,
@@ -51,21 +53,32 @@ import {
   updateNodeStatus,
 } from "./treeUtils";
 import { CustomTreeDataNode, TreeNodeAction } from "./types";
+import { intoDiffStatus } from "./utils";
+
+const getIconComponent = (
+  diffStatus?: DiffStatus | null,
+  resourceType?: StagedResourceTypeValue,
+) => {
+  if (diffStatus === DiffStatus.MUTED) {
+    return Icons.ViewOff;
+  }
+
+  return resourceType
+    ? MAP_DATASTORE_RESOURCE_TYPE_TO_ICON[resourceType]
+    : undefined;
+};
 
 const mapResponseToTreeData = (
   data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
   key?: string,
 ): CustomTreeDataNode[] => {
   const dataItems: CustomTreeDataNode[] = data.items.map((treeNode) => {
-    const IconComponent = treeNode.resource_type
-      ? MAP_DATASTORE_RESOURCE_TYPE_TO_ICON[
-          treeNode.resource_type as StagedResourceTypeValue
-        ]
-      : undefined;
-    const statusInfo = treeNode.update_status
-      ? MAP_TREE_RESOURCE_CHANGE_INDICATOR_TO_STATUS_INFO[
-          treeNode.update_status
-        ]
+    const IconComponent = getIconComponent(
+      treeNode.diff_status,
+      treeNode.resource_type as StagedResourceTypeValue,
+    );
+    const statusInfo = treeNode.diff_status
+      ? MAP_DIFF_STATUS_TO_STATUS_INFO[treeNode.diff_status]
       : undefined;
 
     return {
@@ -86,7 +99,6 @@ const mapResponseToTreeData = (
             </Tooltip>
           )
         : undefined,
-      status: treeNode.update_status,
       diffStatus: treeNode.diff_status,
       isLeaf:
         treeNode.resource_type === StagedResourceTypeValue.FIELD ||
@@ -243,15 +255,25 @@ interface MonitorTreeProps
   selectedNodeKeys: Key[];
 }
 
-const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
+const MonitorTree = forwardRef<
+  MonitorTreeRef,
+  MonitorTreeProps & DatastorePageSettings
+>(
   (
-    { setSelectedNodeKeys, selectedNodeKeys, nodeActions, primaryAction },
+    {
+      setSelectedNodeKeys,
+      selectedNodeKeys,
+      nodeActions,
+      primaryAction,
+      showApproved,
+      showIgnored,
+    },
     ref,
   ) => {
     const router = useRouter();
-    const { errorAlert } = useAlert();
+    const message = useMessage();
     const monitorId = decodeURIComponent(router.query.monitorId as string);
-    const [trigger] = useLazyGetMonitorTreeQuery();
+    const [trigger] = useLazyGetMonitorTreeQuery({});
     const [triggerAncestorsStatuses] =
       useLazyGetMonitorTreeAncestorsStatusesQuery();
     const [nodePagination, setNodePaginationState] = useState<
@@ -281,6 +303,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           staged_resource_urn?: string;
           size: number;
           cursor?: string;
+          diff_status?: DiffStatus[];
         };
         fastUpdateFn: (
           data: CursorPage_DatastoreStagedResourceTreeAPIResponse_,
@@ -292,7 +315,6 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
         // Increment sequence for this node to track this request
         const currentSequence = (requestSequenceRef.current[nodeKey] ?? 0) + 1;
         requestSequenceRef.current[nodeKey] = currentSequence;
-
         // Trigger both queries simultaneously
         const fastQuery = trigger({
           ...queryParams,
@@ -349,6 +371,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             queryParams: {
               monitor_config_id: monitorId,
               staged_resource_urn: nodeKey,
+              diff_status: [
+                ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
+                ...(showIgnored ? intoDiffStatus("Ignored") : []),
+                ...(showApproved ? intoDiffStatus("Approved") : []),
+              ],
               size: TREE_PAGE_SIZE,
             },
             fastUpdateFn: (data) => {
@@ -373,7 +400,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           resolve();
         });
       },
-      [fetchTreeDataWithDetails, monitorId],
+      [fetchTreeDataWithDetails, monitorId, showApproved, showIgnored],
     );
 
     const onLoadMore = useCallback(
@@ -399,6 +426,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             queryParams: {
               monitor_config_id: monitorId,
               staged_resource_urn: key,
+              diff_status: [
+                ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
+                ...(showIgnored ? intoDiffStatus("Ignored") : []),
+                ...(showApproved ? intoDiffStatus("Approved") : []),
+              ],
               size: TREE_PAGE_SIZE,
               cursor: currentNodePagination.cursor_end,
             },
@@ -434,7 +466,13 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           });
         }
       },
-      [nodePagination, fetchTreeDataWithDetails, monitorId],
+      [
+        nodePagination,
+        fetchTreeDataWithDetails,
+        monitorId,
+        showApproved,
+        showIgnored,
+      ],
     );
 
     /**
@@ -494,10 +532,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
             });
 
             if (result.error) {
-              errorAlert(
-                getErrorMessage(result.error),
-                "Failed to get schema explorer ancestors statuses",
-              );
+              message.error(getErrorMessage(result.error));
               return;
             }
 
@@ -523,14 +558,13 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
                   updateNodeStatus(
                     tree,
                     ancestorNode.urn,
-                    ancestorNode.update_status,
                     ancestorNode.diff_status,
                   ),
                 origin,
               ),
             );
           } catch (error) {
-            errorAlert(
+            message.error(
               "An unexpected error occurred while refreshing the schema explorer",
             );
           }
@@ -548,7 +582,7 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
         triggerAncestorsStatuses,
         monitorId,
         collapseNodeAndRemoveChildren,
-        errorAlert,
+        message,
       ],
     );
 
@@ -580,6 +614,13 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
     }));
 
     useEffect(() => {
+      setTreeData([]);
+      setExpandedKeys([]);
+      setNodePaginationState({});
+      setSelectedNodeKeys([]);
+    }, [showIgnored, showApproved, setSelectedNodeKeys]);
+
+    useEffect(() => {
       const getInitTreeData = async () => {
         // Only load if tree is empty
         if (treeData.length > 0) {
@@ -590,6 +631,11 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
           nodeKey: "root",
           queryParams: {
             monitor_config_id: monitorId,
+            diff_status: [
+              ...DEFAULT_FILTER_STATUSES.flatMap(intoDiffStatus),
+              ...(showIgnored ? intoDiffStatus("Ignored") : []),
+              ...(showApproved ? intoDiffStatus("Approved") : []),
+            ],
             size: TREE_PAGE_SIZE,
           },
           fastUpdateFn: (data) => {
@@ -599,7 +645,14 @@ const MonitorTree = forwardRef<MonitorTreeRef, MonitorTreeProps>(
       };
 
       getInitTreeData();
-    }, [fetchTreeDataWithDetails, monitorId, setTreeData, treeData.length]);
+    }, [
+      fetchTreeDataWithDetails,
+      monitorId,
+      setTreeData,
+      treeData.length,
+      showIgnored,
+      showApproved,
+    ]);
 
     return (
       <Flex gap="middle" vertical className="h-full">

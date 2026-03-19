@@ -4,7 +4,7 @@ import {
   ChakraSimpleGrid as SimpleGrid,
   ChakraStack as Stack,
   ChakraText as Text,
-  useChakraDisclosure as useDisclosure,
+  useModal,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useRouter } from "next/router";
@@ -16,7 +16,6 @@ import {
   ManualSetupIcon,
   OktaLogoIcon,
 } from "~/features/common/Icon";
-import { UpgradeModal } from "~/features/common/modals/UpgradeModal";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
@@ -44,7 +43,7 @@ const SectionTitle = ({ children }: { children: string }) => (
 const AddSystem = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { isOpen, onClose, onOpen } = useDisclosure();
+  const modal = useModal();
   const { dictionaryService: isCompassEnabled } = useFeatures();
 
   return (
@@ -66,16 +65,6 @@ const AddSystem = () => {
           systems to your map.
         </Text>
       </Stack>
-      <UpgradeModal
-        isOpen={isOpen}
-        onConfirm={() => {
-          window.open("https://ethyca.com/speak-with-us");
-        }}
-        onCancel={() => {
-          router.push(ADD_SYSTEMS_MANUAL_ROUTE);
-        }}
-        onClose={onClose}
-      />
       <Box data-testid="manual-options">
         <SectionTitle>Manually add systems</SectionTitle>
         <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing="4">
@@ -105,7 +94,21 @@ const AddSystem = () => {
                 dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
                 router.push(ADD_SYSTEMS_MULTIPLE_ROUTE);
               } else {
-                onOpen();
+                modal.confirm({
+                  title: "Upgrade to choose vendors",
+                  content:
+                    "To choose vendors and have system information auto-populated using Fides Compass, you will need to upgrade Fides. Meanwhile, you can manually add individual systems using the button below.",
+                  okText: "Upgrade",
+                  cancelText: "Add vendors manually",
+                  centered: true,
+                  icon: null,
+                  onOk: () => {
+                    window.open("https://ethyca.com/speak-with-us");
+                  },
+                  onCancel: () => {
+                    router.push(ADD_SYSTEMS_MANUAL_ROUTE);
+                  },
+                });
               }
             }}
             data-testid="multiple-btn"

@@ -3,8 +3,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
-from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
-from fides.api.task.graph_task import get_cached_data_for_erasures
 
 from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import assert_rows_match, erasure_policy
@@ -15,52 +13,14 @@ from ..task.traversal_data import integration_scylladb_graph
 @pytest.mark.integration_scylladb
 @pytest.mark.asyncio
 class TestScyllaDSRs:
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_2_0"],
-    )
-    async def test_scylladb_access_request_task_no_keyspace_dsr2(
-        self,
-        db: Session,
-        policy,
-        integration_scylladb_config,
-        scylladb_integration_no_keyspace,
-        privacy_request,
-        dsr_version,
-        request,
-    ) -> None:
-        request.getfixturevalue(dsr_version)
-
-        with pytest.raises(ScyllaConnectorMissingKeyspace) as err:
-            v = access_runner_tester(
-                privacy_request,
-                policy,
-                integration_scylladb_graph("scylla_example"),
-                [integration_scylladb_config],
-                {"email": "customer-1@example.com"},
-                db,
-            )
-
-        assert (
-            "No keyspace provided in the ScyllaDB configuration for connector scylla_example"
-            in str(err.value)
-        )
-
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
-    async def test_scylladb_access_request_task_no_keyspace_dsr3(
+    async def test_scylladb_access_request_task_no_keyspace(
         self,
         db,
         policy,
         integration_scylladb_config,
         scylladb_integration_no_keyspace,
         privacy_request: PrivacyRequest,
-        dsr_version,
-        request,
     ) -> None:
-        request.getfixturevalue(dsr_version)
         v = access_runner_tester(
             privacy_request,
             policy,
@@ -85,10 +45,6 @@ class TestScyllaDSRs:
         for access_task in privacy_request.access_tasks.offset(1):
             assert access_task.status == ExecutionLogStatus.error
 
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_2_0", "use_dsr_3_0"],
-    )
     async def test_scylladb_access_request_task(
         self,
         db,
@@ -97,11 +53,7 @@ class TestScyllaDSRs:
         scylla_reset_db,
         scylladb_integration_with_keyspace,
         privacy_request,
-        dsr_version,
-        request,
     ) -> None:
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         results = access_runner_tester(
             privacy_request,
             policy,
@@ -141,10 +93,6 @@ class TestScyllaDSRs:
             keys=["order_amount", "order_date", "order_description"],
         )
 
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_2_0", "use_dsr_3_0"],
-    )
     async def test_scylladb_erasure_task(
         self,
         db,
@@ -152,11 +100,7 @@ class TestScyllaDSRs:
         scylladb_integration_with_keyspace,
         scylla_reset_db,
         privacy_request,
-        dsr_version,
-        request,
     ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
         seed_email = "customer-1@example.com"
 
         policy = erasure_policy(
@@ -180,7 +124,7 @@ class TestScyllaDSRs:
             graph,
             [integration_scylladb_config_with_keyspace],
             {"email": seed_email},
-            get_cached_data_for_erasures(privacy_request.id),
+            {},
             db,
         )
         assert results == {

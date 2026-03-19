@@ -1,4 +1,0 @@
-type: Changed
-description: Updated propagation policy keys in notice sandbox to match backend API changes
-pr: 7378
-labels: []

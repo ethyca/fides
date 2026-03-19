@@ -16,16 +16,14 @@ import {
   Tag,
   TagProps,
   Tooltip,
-  useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
-  WarningIcon,
+  useModal,
 } from "fidesui";
 import { FastField, useFormikContext } from "formik";
 import { isBoolean } from "lodash";
 import { ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams } from "~/features/common/toast";
 import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
@@ -440,7 +438,7 @@ export const EnableCell = ({
   isDisabled,
   ...switchProps
 }: EnableCellProps) => {
-  const modal = useDisclosure();
+  const confirmModal = useModal();
   const toast = useToast();
   const handlePatch = async ({ enable }: { enable: boolean }) => {
     const result = await onToggle(enable);
@@ -453,33 +451,24 @@ export const EnableCell = ({
     if (checked) {
       await handlePatch({ enable: true });
     } else {
-      modal.onOpen();
+      confirmModal.confirm({
+        title,
+        content: <Text color="gray.500">{message}</Text>,
+        okText: "Confirm",
+        centered: true,
+        onOk: () => handlePatch({ enable: false }),
+      });
     }
   };
 
   return (
-    <>
-      <Switch
-        checked={enabled}
-        onChange={handleToggle}
-        disabled={isDisabled}
-        data-testid="toggle-switch"
-        {...switchProps}
-      />
-      <ConfirmationModal
-        isOpen={modal.isOpen}
-        onClose={modal.onClose}
-        onConfirm={() => {
-          handlePatch({ enable: false });
-          modal.onClose();
-        }}
-        title={title}
-        message={<Text color="gray.500">{message}</Text>}
-        continueButtonText="Confirm"
-        isCentered
-        icon={<WarningIcon color="orange.100" />}
-      />
-    </>
+    <Switch
+      checked={enabled}
+      onChange={handleToggle}
+      disabled={isDisabled}
+      data-testid="toggle-switch"
+      {...switchProps}
+    />
   );
 };
 

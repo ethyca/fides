@@ -43,7 +43,6 @@
     "lint:fix": "eslint --fix .",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "test:ci": "jest",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
@@ -64,6 +63,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@iabtechlabtcf/stub": "1.5.21",
     "@rollup/plugin-alias": "^5.0.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.0.0",

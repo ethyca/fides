@@ -2,17 +2,13 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { Button, DatePicker, Form, Input, Select, Switch } from "fidesui";
+import { Button, DatePicker, Form, Input, Select } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { LlmModelSelector } from "~/features/common/form/LlmModelSelector";
 import { enumToOptions } from "~/features/common/helpers";
 import { formatUser } from "~/features/common/utils";
-import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
-import {
-  getMonitorType,
-  MONITOR_TYPES,
-} from "~/features/data-discovery-and-detection/action-center/utils/getMonitorType";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { useGetAllUsersQuery } from "~/features/user-management";
 import {
@@ -100,30 +96,9 @@ const ConfigureMonitorForm = ({
 }) => {
   const isEditing = !!monitor;
 
-  const isInfrastructureMonitor =
-    getMonitorType(integrationOption.identifier as ConnectionType) ===
-    MONITOR_TYPES.INFRASTRUCTURE;
-
-  /**
-   * Show the LLM classifier option if the monitor is not an infrastructure monitor.
-   * Infrastructure monitors (e.g., Okta) don't use classification.
-   */
-  const showLLMOption = !isInfrastructureMonitor;
-
-  const { data: appConfig } = useGetConfigurationSettingsQuery({
-    api_set: false,
-  });
-
   const [form] = Form.useForm<MonitorConfigFormValues>();
   const { data: systemData, isLoading: isLoadingSystem } =
     useGetSystemByFidesKeyQuery(integrationSystem || skipToken);
-
-  /**
-   * Server-side LLM classifier capability.
-   * This determines if the backend supports LLM-based classification for monitors.
-   */
-  const serverSupportsLlmClassifier =
-    !!appConfig?.detection_discovery?.llm_classifier_enabled;
 
   const router = useRouter();
   const integrationId = Array.isArray(router.query.id)
@@ -216,7 +191,7 @@ const ConfigureMonitorForm = ({
     execution_start_date: dayjs(monitor?.execution_start_date ?? undefined),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
-    use_llm_classifier: monitorUsesLlmClassifier && serverSupportsLlmClassifier,
+    use_llm_classifier: monitorUsesLlmClassifier,
     llm_model_override: monitorUsesLlmClassifier
       ? (monitor?.classify_params?.llm_model_override ?? undefined)
       : undefined,
@@ -287,35 +262,10 @@ const ConfigureMonitorForm = ({
           className="w-full"
         />
       </Form.Item>
-      {showLLMOption && (
-        <>
-          <Form.Item
-            name="use_llm_classifier"
-            label="Use LLM classifier"
-            tooltip={
-              !serverSupportsLlmClassifier
-                ? "LLM classifier is currently disabled for this server. Contact Ethyca support to learn more."
-                : undefined
-            }
-            valuePropName="checked"
-          >
-            <Switch
-              data-testid="input-use_llm_classifier"
-              disabled={!serverSupportsLlmClassifier}
-              checked={form.getFieldValue("use_llm_classifier")}
-            />
-          </Form.Item>
-          {form.getFieldValue("use_llm_classifier") && (
-            <Form.Item
-              name="llm_model_override"
-              label="Model override"
-              tooltip="Optionally specify a custom model to use for LLM classification"
-            >
-              <Input data-testid="input-llm_model_override" />
-            </Form.Item>
-          )}
-        </>
-      )}
+      <LlmModelSelector
+        useLlmClassifier={!!form.getFieldValue("use_llm_classifier")}
+        modelOverridePlaceholder=""
+      />
       <div className="flex w-full justify-between">
         <Button
           onClick={() => {

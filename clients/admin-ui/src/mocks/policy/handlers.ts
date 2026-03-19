@@ -45,5 +45,26 @@ export const policyHandlers = () => {
         }),
       );
     }),
+
+    // PUT /api/v1/plus/dsr/policy/:key/conditions - update policy conditions
+    rest.put(
+      `${apiBase}/plus/dsr/policy/:key/conditions`,
+      async (req, res, ctx) => {
+        const { key } = req.params;
+        const policy = mockPolicies.find((p) => p.key === key);
+
+        if (!policy) {
+          return res(
+            ctx.status(404),
+            ctx.json({ detail: `Policy with key ${key} not found` }),
+          );
+        }
+
+        const body = await req.json();
+        policy.conditions = body.condition ?? null;
+
+        return res(ctx.status(200), ctx.json({ condition: policy.conditions }));
+      },
+    ),
   ];
 };

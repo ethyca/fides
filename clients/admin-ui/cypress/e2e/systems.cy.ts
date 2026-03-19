@@ -189,13 +189,15 @@ describe("System management page", () => {
           cy.getByTestId("input-description").clear().type(description);
           // then try navigating to the privacy declarations tab
           cy.getAntTab("Data uses").click({ force: true });
-          cy.getByTestId("confirmation-modal");
+          cy.get(".ant-modal-confirm").should("exist");
           // make sure canceling works
-          cy.getByTestId("cancel-btn").click();
+          cy.getAntModalConfirmButtons()
+            .find(".ant-btn:not(.ant-btn-primary)")
+            .click();
           cy.getByTestId("input-description").should("have.value", description);
           // now actually discard
           cy.getAntTab("Data uses").click({ force: true });
-          cy.getByTestId("continue-btn").click();
+          cy.getAntModalConfirmButtons().contains("OK").click();
           // should load the privacy declarations page
           cy.getByTestId("privacy-declaration-step");
           // navigate back and make sure description has the original description
@@ -540,7 +542,7 @@ describe("System management page", () => {
 
       it("can show a modal on deleting a privacy declaration", () => {
         cy.getByTestId("delete-btn").click();
-        cy.getByTestId("continue-btn").click();
+        cy.getAntModalConfirmButtons().contains("OK").click();
         cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
 
@@ -560,7 +562,7 @@ describe("System management page", () => {
           // now go through delete flow
           cy.getByTestId("delete-btn").click();
         });
-        cy.getByTestId("continue-btn").click();
+        cy.getAntModalConfirmButtons().contains("OK").click();
         cy.wait("@putFidesSystem");
         cy.getByTestId("toast-success-msg").contains("Data use deleted");
       });
@@ -570,7 +572,7 @@ describe("System management page", () => {
         cy.getByTestId("functional.service.improve-form").within(() => {
           cy.getByTestId("delete-btn").click();
         });
-        cy.getByTestId("continue-btn").click();
+        cy.getAntModalConfirmButtons().contains("OK").click();
         cy.wait("@putFidesSystem").then((interception) => {
           const { body } = interception.request;
           expect(body.privacy_declarations.length).to.eql(1);

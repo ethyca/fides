@@ -149,23 +149,17 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
     Note that this does not return actual secrets, instead we return the *types* of
     secret fields needed to authenticate.
     """
-    connection_system_types: list[ConnectionSystemTypeMap] = get_connection_types(
-        include_test_connections=True
-    )
-    if not any(item.identifier == connection_type for item in connection_system_types):
-        raise NoSuchConnectionTypeSecretSchemaError(
-            f"No connection type found with name '{connection_type}'."
-        )
-
-    if connection_type in [db_type.value for db_type in ConnectionType]:
+    # Fast path: check DB / non-SaaS types directly (no registry rebuild needed)
+    if connection_type in secrets_schemas:
         schema = secrets_schemas[connection_type].schema()
         transform_v2_to_v1_in_place(schema)
         return schema
 
+    # SaaS path: look up only this specific connector template
     connector_template = ConnectorRegistry.get_connector_template(connection_type)
     if not connector_template:
         raise NoSuchConnectionTypeSecretSchemaError(
-            f"No SaaS connector type found with name '{connection_type}'."
+            f"No connection type found with name '{connection_type}'."
         )
 
     config = SaaSConfig(**load_config_from_string(connector_template.config))
@@ -292,6 +286,7 @@ def get_connection_types(
                     ConnectionType.sovrn,
                     ConnectionType.test_website,
                 ]
+                and conn_type.system_type != SystemType.system
                 and _is_match(conn_type.value, search)
             ],
             key=lambda x: x.value,
@@ -307,6 +302,28 @@ def get_connection_types(
                 for item in database_types
             ]
         )
+    if system_type == SystemType.system or system_type is None:
+        system_types: list[ConnectionType] = sorted(
+            [
+                conn_type
+                for conn_type in ConnectionType
+                if conn_type.system_type == SystemType.system
+                and _is_match(conn_type.value, search)
+            ],
+            key=lambda x: x.value,
+        )
+        connection_system_types.extend(
+            [
+                ConnectionSystemTypeMap(
+                    identifier=item,
+                    type=SystemType.system,
+                    human_readable=item.human_readable,
+                    supported_actions=[],
+                )
+                for item in system_types
+            ]
+        )
+
     if system_type == SystemType.saas or system_type is None:
         saas_connection_types = get_saas_connection_types(
             action_types=action_types, search=search

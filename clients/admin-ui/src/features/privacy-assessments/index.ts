@@ -1,12 +1,19 @@
-/**
- * Privacy Assessments Feature
- *
- * Re-exports all types and hooks for the privacy assessments feature.
- */
-
+export * from "./AnswerStatusTags";
 export * from "./AssessmentCard";
+export * from "./AssessmentDetail";
 export * from "./AssessmentGroup";
+export { default as AssessmentSettingsModal } from "./AssessmentSettingsModal";
+export * from "./AssessmentTaskPopoverContent";
+export * from "./AssessmentTaskStatusIndicator";
 export * from "./constants";
+export * from "./EditableTextBlock";
 export * from "./EmptyState";
+export * from "./EvidenceDrawer";
+export * from "./EvidenceSection";
+export { GenerateAssessmentsModal } from "./GenerateAssessmentsModal";
 export * from "./privacy-assessments.slice";
+export * from "./QuestionCard";
+export * from "./QuestionGroupPanel";
+export * from "./QuestionnaireStatusBar";
+export * from "./SlackIcon";
 export * from "./types";

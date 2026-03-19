@@ -23,12 +23,12 @@ from fides.api.schemas.storage.storage import (
     StorageSecrets,
     StorageType,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     STORAGE_CREATE_OR_UPDATE,
     STORAGE_DELETE,
     STORAGE_READ,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     STORAGE_ACTIVE_DEFAULT,
     STORAGE_BY_KEY,
     STORAGE_CONFIG,
@@ -82,7 +82,7 @@ class TestUploadData:
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 404 == response.status_code
 
-    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.upload")
+    @mock.patch("fides.api.v1.endpoints.storage_endpoints.upload")
     def test_post_upload_data(
         self,
         mock_post_upload_data: Mock,
@@ -401,7 +401,7 @@ class TestPutStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fides.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_config_secrets_and_verify(
         self,
         mock_valid: Mock,
@@ -1165,7 +1165,7 @@ class TestPutDefaultStorageConfigSecretsS3:
             == "23451345834789"
         )
 
-    @mock.patch("fides.api.api.v1.endpoints.storage_endpoints.secrets_are_valid")
+    @mock.patch("fides.api.v1.endpoints.storage_endpoints.secrets_are_valid")
     def test_put_default_config_secrets_and_verify(
         self,
         mock_valid: Mock,

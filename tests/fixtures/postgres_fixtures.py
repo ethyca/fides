@@ -21,6 +21,7 @@ from fides.api.models.sql_models import System
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.config import CONFIG
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.ops.test_helpers.dataset_utils import remove_primary_keys
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 
@@ -339,11 +340,16 @@ def read_connection_config(
             "key": "my_postgres_db_1_read_config",
             "connection_type": ConnectionType.postgres,
             "access": AccessLevel.read,
-            "system_id": system.id,
             "secrets": integration_secrets["postgres_example"],
             "description": "Read-only connection config",
         },
     )
+    SystemIntegrationLinkRepository().create_or_update_link(
+        system_id=system.id,
+        connection_config_id=connection_config.id,
+        session=db,
+    )
+    db.commit()
     yield connection_config
     connection_config.delete(db)
 

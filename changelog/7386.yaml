@@ -1,4 +1,0 @@
-type: Fixed
-description: Fixed case-insensitive connector type matching when updating custom connector configs
-pr: 7386
-labels: []

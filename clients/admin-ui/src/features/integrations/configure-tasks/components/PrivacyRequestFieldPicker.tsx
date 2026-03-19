@@ -9,6 +9,7 @@ import {
   CONSENT_ALLOWED_PRIVACY_REQUEST_FIELDS,
   flattenPrivacyRequestFields,
   groupFieldsByCategory,
+  PrivacyRequestField,
 } from "../utils";
 
 interface PrivacyRequestFieldPickerProps {
@@ -59,7 +60,7 @@ export const PrivacyRequestFieldPicker = ({
     const customFieldOptions = Object.entries(customFieldsMap).map(
       ([fieldName, fieldDefinition]) => ({
         label: fieldDefinition.label,
-        value: `privacy_request.custom_privacy_request_fields.${fieldName}`,
+        value: `${PrivacyRequestField.CUSTOM_FIELDS_PREFIX}${fieldName}`,
       }),
     );
 

@@ -1,0 +1,87 @@
+import { Card, CardProps, theme, Typography } from "antd/lib";
+import classNames from "classnames";
+import React from "react";
+
+import styles from "./CustomCard.module.scss";
+
+export interface CustomCardProps extends CardProps {
+  /**
+   * Position of the cover image/content.
+   * - `top`: default Ant Design behaviour (cover above body)
+   * - `bottom`: cover rendered below body via CSS order
+   * @default "top"
+   */
+  coverPosition?: "top" | "bottom";
+}
+
+const withCustomProps = (WrappedComponent: typeof Card) => {
+  const WrappedCard = React.forwardRef<HTMLDivElement, CustomCardProps>(
+    (
+      {
+        coverPosition = "top",
+        className,
+        styles: stylesProp,
+        title,
+        size,
+        ...props
+      },
+      ref,
+    ) => {
+      const { token } = theme.useToken();
+
+      // String titles get heading treatment (Typography.Title, collapsed padding).
+      // JSX titles pass through unchanged. Header divider is always removed.
+      const isStringTitle = typeof title === "string";
+
+      const headerStyle: React.CSSProperties = { borderBottom: "none" };
+      if (isStringTitle) {
+        const hPad = size === "small" ? token.paddingSM : token.paddingLG;
+        headerStyle.minHeight = "unset";
+        headerStyle.padding = `${hPad}px ${hPad}px 0`;
+      }
+
+      const resolvedTitle = isStringTitle ? (
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          {title}
+        </Typography.Title>
+      ) : (
+        title
+      );
+
+      return (
+        <WrappedComponent
+          ref={ref}
+          className={classNames(
+            { [styles.bottomCover]: coverPosition === "bottom" },
+            { [styles.inlineHeader]: !!props.tabList },
+            { [styles.stringTitle]: isStringTitle },
+            className,
+          )}
+          title={resolvedTitle}
+          size={size}
+          styles={{
+            ...stylesProp,
+            header: { ...headerStyle, ...stylesProp?.header },
+          }}
+          {...props}
+        />
+      );
+    },
+  );
+
+  WrappedCard.displayName = "CustomCard";
+  return WrappedCard;
+};
+
+/**
+ * Extends Ant Design's Card. The header divider is always removed. String titles
+ * are wrapped in `<Typography.Title level={5}>` with collapsed padding. JSX titles
+ * pass through unchanged. Tabs are always rendered inline with the title.
+ *
+ * @param {"top" | "bottom"} [coverPosition="top"] - Position of the `cover` content
+ *   relative to the card body.
+ */
+export const CustomCard = Object.assign(withCustomProps(Card), {
+  Meta: Card.Meta,
+  Grid: Card.Grid,
+});

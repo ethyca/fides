@@ -1,6 +1,8 @@
 from typing import Any, ContextManager, Dict, List, Optional
 
+import celery_redis_cluster_backend  # type: ignore[import-untyped]  # noqa: F401 - registers redis+cluster/rediss+cluster backends
 from celery import Celery, Task
+from celery.signals import before_task_publish, task_postrun, task_prerun
 from celery.signals import setup_logging as celery_setup_logging
 from loguru import logger
 from sqlalchemy.exc import OperationalError
@@ -14,6 +16,7 @@ from tenacity import (
 )
 
 from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.request_context import get_request_id, set_request_id
 from fides.api.tasks import celery_healthcheck
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
@@ -105,20 +108,62 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     app = Celery(__name__)
     celery_healthcheck.register(app)  # type: ignore
 
+    # celery-redis-cluster registers under 'celery.backends' but Celery looks for
+    # 'celery.result_backends'; patch loader so redis+cluster:// uses RedisClusterBackend.
+    if config.redis.cluster_enabled:
+        from importlib.metadata import entry_points
+
+        cluster_backends = {
+            ep.name: ep.value for ep in entry_points(group="celery.backends")
+        }
+        if cluster_backends:
+            app.loader.override_backends = (
+                getattr(app.loader, "override_backends", {}) | cluster_backends
+            )
+
+    # Broker and result backend. When redis.cluster_enabled is True we use redis+cluster://
+    # (via celery-redis-cluster) unless overridden. Otherwise use redis.connection_url.
+    if config.celery.broker_url is not None:
+        broker_url = config.celery.broker_url
+    elif config.redis.cluster_enabled:
+        broker_url = config.redis.get_cluster_connection_url()
+    else:
+        connection_url = config.redis.connection_url
+        if connection_url is None:
+            raise ValueError(
+                "Redis connection_url is required when cluster is disabled"
+            )
+        broker_url = connection_url
+
+    if config.celery.result_backend is not None:
+        result_backend = config.celery.result_backend
+    elif config.redis.cluster_enabled:
+        result_backend = config.redis.get_cluster_connection_url()
+    else:
+        connection_url = config.redis.connection_url
+        if connection_url is None:
+            raise ValueError(
+                "Redis connection_url is required when cluster is disabled"
+            )
+        result_backend = connection_url
+
     celery_config: Dict[str, Any] = {
-        # Defaults for the celery config
-        "broker_url": config.redis.connection_url,
-        "result_backend": config.redis.connection_url,
+        "broker_url": broker_url,
+        "result_backend": result_backend,
         "event_queue_prefix": "fides_worker",
         "task_always_eager": True,
         # Ops requires this to route emails to separate queues
         "task_create_missing_queues": True,
         "task_default_queue": "fides",
+        "worker_prefetch_multiplier": 1,
         "healthcheck_port": config.celery.healthcheck_port,
         "healthcheck_ping_timeout": config.celery.healthcheck_ping_timeout,
     }
 
     celery_config.update(config.celery)
+    # Preserve broker/backend in case config.celery overwrote them with None
+    celery_config["broker_url"] = broker_url
+    celery_config["result_backend"] = result_backend
 
     app.conf.update(celery_config)
 
@@ -139,6 +184,41 @@ def configure_celery_logging(**kwargs: Any) -> None:
     from overriding our Loguru logging configuration. Our logging setup in _create_celery
     has already configured logging with InterceptHandler to capture all stdlib logs.
     """
+
+
+@before_task_publish.connect
+def _propagate_request_id(headers: Dict[str, Any], **kwargs: Any) -> None:
+    """Attach the current request_id to outgoing Celery task headers.
+
+    This runs in the *publisher* process (API server) so the ContextVar
+    holds the request_id set by ``LogRequestMiddleware``.
+    """
+    request_id = get_request_id()
+    if request_id is not None:
+        headers["request_id"] = request_id
+
+
+@task_prerun.connect
+def _restore_request_id(task: Task, **kwargs: Any) -> None:
+    """Restore request_id from the task headers into the worker's ContextVar.
+
+    This runs in the *worker* process before the task body executes, so all
+    logs emitted by the task are tagged with the originating request_id.
+    """
+    request_id = getattr(task.request, "request_id", None)
+    if request_id is not None:
+        set_request_id(request_id)
+
+
+@task_postrun.connect
+def _clear_request_id(**kwargs: Any) -> None:
+    """Clear request_id after task completion.
+
+    Celery workers reuse processes for multiple tasks. Without this cleanup,
+    a request_id from Task A would leak into Task B if Task B was dispatched
+    without a request_id header.
+    """
+    set_request_id(None)
 
 
 def get_worker_ids() -> List[Optional[str]]:

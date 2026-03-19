@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Optional, Set, Tuple
 
 import yaml
@@ -68,7 +69,7 @@ from fides.api.util.saas_util import (
     replace_config_placeholders,
     replace_dataset_placeholders,
 )
-from fides.common.api.v1.urn_registry import CONNECTION_TYPES
+from fides.common.urn_registry import CONNECTION_TYPES
 from fides.service.connection.merge_configs_util import (
     get_endpoint_resources,
     get_saas_config_referenced_fields,
@@ -78,6 +79,7 @@ from fides.service.connection.merge_configs_util import (
     preserve_monitored_collections_in_dataset_merge,
 )
 from fides.service.event_audit_service import EventAuditService
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 
 
 class ConnectorTemplateNotFound(Exception):
@@ -128,9 +130,15 @@ def _detect_connection_config_changes(
 
 
 class ConnectionService:
-    def __init__(self, db: Session, event_audit_service: EventAuditService):
+    def __init__(
+        self,
+        db: Session,
+        event_audit_service: EventAuditService,
+        link_repo: Optional[SystemIntegrationLinkRepository] = None,
+    ):
         self.db = db
         self.event_audit_service = event_audit_service
+        self.link_repo = link_repo or SystemIntegrationLinkRepository()
 
     def get_connection_config(self, connection_key: FidesKey) -> ConnectionConfig:
         connection_config = ConnectionConfig.get_by(
@@ -364,11 +372,15 @@ class ConnectionService:
         connection_config.secrets = self.validate_secrets(
             template_values.secrets, connection_config
         ).model_dump(mode="json")
-        if system:
-            connection_config.system_id = system.id  # type: ignore[attr-defined]
         connection_config.save(
             db=self.db
         )  # Not persisted to db until secrets are validated
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         try:
             dataset_config: DatasetConfig = self.upsert_dataset_config_from_template(
@@ -485,22 +497,21 @@ class ConnectionService:
             instance_key=config.key,
         )
 
-        if system:
-            connection_config = self.create_connection_config_from_template_no_save(
-                connector_template,
-                template_values,
-                system_id=system.id,  # type: ignore[attr-defined]
-            )
-        else:
-            connection_config = self.create_connection_config_from_template_no_save(
-                connector_template,
-                template_values,
-            )
+        connection_config = self.create_connection_config_from_template_no_save(
+            connector_template,
+            template_values,
+        )
         connection_config.secrets = self.validate_secrets(
             template_values.secrets,
             connection_config,
         ).model_dump(mode="json")
         connection_config.save(db=self.db)
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         # Create audit events for connection and secrets creation
         self.create_connection_audit_event(
@@ -541,12 +552,15 @@ class ConnectionService:
                 if isinstance(value, bool) or value
             }
 
-        if system:
-            config_dict["system_id"] = system.id  # type: ignore[attr-defined]
-
         connection_config = ConnectionConfig.create_or_update(
             self.db, data=config_dict, check_name=False
         )
+        if system:
+            self.link_repo.create_or_update_link(
+                system_id=system.id,  # type: ignore[attr-defined]
+                connection_config_id=connection_config.id,  # type: ignore[attr-defined]
+                session=self.db,
+            )
 
         # Track which connection configuration fields changed (only for updates)
         changed_fields = None
@@ -608,12 +622,19 @@ class ConnectionService:
         connection_config: ConnectionConfig,
         template: ConnectorTemplate,
         saas_config_instance: SaaSConfig,
+        stored_dataset_json: Optional[dict] = None,
     ) -> None:
         """
         Replace in the DB the existing SaaS instance configuration data
         (SaaSConfig, DatasetConfig) associated with the given ConnectionConfig
         with new instance configuration data based on the given ConnectorTemplate.
         Preserves monitored staged resources by merging them into the new configuration.
+
+        Args:
+            stored_dataset_json: Pre-read baseline template dataset to use for the 3-way
+                merge. When provided, skips the DB read of SaasTemplateDataset. Pass this
+                when updating multiple connection configs in a batch to avoid the baseline
+                being overwritten mid-loop by a previous iteration.
         """
 
         template_vals = SaasConnectionTemplateValues(
@@ -649,18 +670,18 @@ class ConnectionService:
 
         # Update dataset config with merge logic for monitored resources
         self.upsert_dataset_config_from_template(
-            connection_config, template, template_vals
+            connection_config,
+            template,
+            template_vals,
+            stored_dataset_json=stored_dataset_json,
         )
 
     def create_connection_config_from_template_no_save(
         self,
         template: ConnectorTemplate,
         template_values: SaasConnectionTemplateValues,
-        system_id: Optional[str] = None,
     ) -> ConnectionConfig:
         """Creates a SaaS connection config from a template without saving it."""
-        # Load SaaS config from template and replace every instance of "<instance_fides_key>" with the fides_key
-        # the user has chosen
         config_from_template: dict = replace_config_placeholders(
             template.config, "<instance_fides_key>", template_values.instance_key
         )
@@ -669,10 +690,6 @@ class ConnectionService:
             config_from_template=config_from_template
         )
 
-        if system_id:
-            data["system_id"] = system_id
-
-        # Create SaaS ConnectionConfig
         connection_config = ConnectionConfig.create_without_saving(self.db, data=data)
 
         return connection_config
@@ -682,6 +699,7 @@ class ConnectionService:
         connection_config: ConnectionConfig,
         template: ConnectorTemplate,
         template_values: SaasConnectionTemplateValues,
+        stored_dataset_json: Optional[dict] = None,
     ) -> DatasetConfig:
         """
         Creates a `DatasetConfig` from a template
@@ -690,6 +708,12 @@ class ConnectionService:
         then the existing record is updated.
 
         Automatically preserves any monitored staged resources during the update.
+
+        Args:
+            stored_dataset_json: Pre-read baseline template dataset to use for the 3-way
+                merge. When provided, skips the DB read of SaasTemplateDataset. Pass this
+                when updating multiple connection configs in a batch to avoid the baseline
+                being overwritten mid-loop by a previous iteration.
         """
         # Load the dataset config from template and replace every instance of "<instance_fides_key>" with the fides_key
         # the user has chosen
@@ -714,10 +738,23 @@ class ConnectionService:
         )
         stored_dataset_template = (
             SaasTemplateDataset.get_by(
-                self.db, field="connection_type", value=connector_type
+                self.db, field="connection_type", value=connector_type.lower()
             )
             if connector_type
             else None
+        )
+        # Use the pre-read snapshot if provided, otherwise fall back to what's in the DB.
+        # The snapshot path is used by batch callers to prevent a mid-loop write from
+        # corrupting the merge baseline for subsequent iterations.
+        effective_stored_dataset_json = (
+            stored_dataset_json
+            if stored_dataset_json is not None
+            else (
+                stored_dataset_template.dataset_json
+                if stored_dataset_template
+                and isinstance(stored_dataset_template.dataset_json, dict)
+                else None
+            )
         )
 
         # Get endpoint resources and preserve monitored collections in the dataset
@@ -752,11 +789,7 @@ class ConnectionService:
                 "fides_meta": ctl_dataset.fides_meta,
             }
 
-            if stored_dataset_template and isinstance(
-                stored_dataset_template.dataset_json, dict
-            ):
-                stored_dataset = stored_dataset_template.dataset_json
-
+            if effective_stored_dataset_json is not None:
                 # Extract protected fields from SaaS config to prevent deletion
                 # of fields that are referenced in param_values or postprocessors
                 saas_config = connection_config.get_saas_config()
@@ -770,7 +803,7 @@ class ConnectionService:
 
                 final_dataset = merge_datasets(
                     customer_dataset,
-                    stored_dataset,
+                    effective_stored_dataset_json,
                     upcoming_dataset,
                     template_values.instance_key,
                     protected_fields=protected_fields,
@@ -812,6 +845,20 @@ class ConnectionService:
             connector_type,
         )
 
+        # Snapshot the stored baseline before the loop. upsert_dataset_config_from_template
+        # writes back to SaasTemplateDataset on every call, so without this snapshot the
+        # first iteration would overwrite the row and corrupt the merge baseline for all
+        # subsequent iterations.
+        stored_dataset_template = SaasTemplateDataset.get_by(
+            self.db, field="connection_type", value=connector_type.lower()
+        )
+        stored_dataset_json_snapshot: Optional[dict] = (
+            copy.deepcopy(stored_dataset_template.dataset_json)
+            if stored_dataset_template
+            and isinstance(stored_dataset_template.dataset_json, dict)
+            else None
+        )
+
         for connection_config in connection_configs:
             saas_config_instance = SaaSConfig.model_validate(
                 connection_config.saas_config
@@ -821,6 +868,7 @@ class ConnectionService:
                     connection_config,
                     template,
                     saas_config_instance,
+                    stored_dataset_json=stored_dataset_json_snapshot,
                 )
                 logger.info(
                     "Updated SaaS config instance '{}' of type '{}'",

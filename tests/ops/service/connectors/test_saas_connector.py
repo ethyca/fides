@@ -47,6 +47,7 @@ from fides.api.task.create_request_tasks import (
     persist_new_access_request_tasks,
 )
 from fides.config import CONFIG
+from fides.system_integration_link.repository import SystemIntegrationLinkRepository
 from tests.ops.graph.graph_test_util import generate_node
 
 
@@ -786,7 +787,11 @@ class TestSaasConnectorRunConsentRequest:
         privacy_preference_history_us_ca_provide,
     ):
         """System has an advertising data use and this privacy notice for the preference has a provide data use"""
-        saas_example_connection_config.system_id = system.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=saas_example_connection_config.id,
+            session=db,
+        )
         privacy_preference_history_us_ca_provide.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
@@ -857,7 +862,11 @@ class TestSaasConnectorRunConsentRequest:
         """We need a matching identity for the connector in order to send the request
         saas_example set up to fail if no first_name supplied
         """
-        saas_example_connection_config.system_id = system.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=saas_example_connection_config.id,
+            session=db,
+        )
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
             status=PrivacyRequestStatus.pending,
@@ -882,7 +891,7 @@ class TestSaasConnectorRunConsentRequest:
 
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            system.fides_key: "pending"
+            saas_example_connection_config.consent_tracking_key: "pending"
         }, "Updated to error in graph task, not updated here"
 
     def test_missing_identity_data_skipped(
@@ -896,7 +905,11 @@ class TestSaasConnectorRunConsentRequest:
         """We need a matching identity for the connector in order to send the saas_example_connection_config
         Saas_Example set up to skip instead of fail if we don't have the ga client id.
         """
-        saas_example_opt_out_only_connection_config.system_id = system.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=saas_example_opt_out_only_connection_config.id,
+            session=db,
+        )
 
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
@@ -923,7 +936,7 @@ class TestSaasConnectorRunConsentRequest:
         assert "Missing needed values to propagate request" in str(exc)
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            system.fides_key: "pending"
+            saas_example_opt_out_only_connection_config.consent_tracking_key: "pending"
         }, "Updated to skipped in graph task, not updated here"
 
     def test_no_requests_of_that_type_defined(
@@ -935,7 +948,11 @@ class TestSaasConnectorRunConsentRequest:
         db,
     ):
         """User is expressing an opt in preference here but only has an opt out preference defined"""
-        saas_example_opt_out_only_connection_config.system_id = system.id
+        SystemIntegrationLinkRepository().create_or_update_link(
+            system_id=system.id,
+            connection_config_id=saas_example_opt_out_only_connection_config.id,
+            session=db,
+        )
 
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
@@ -997,7 +1014,7 @@ class TestSaasConnectorRunConsentRequest:
         assert mock_send.called
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            saas_example_consent_preferences_connection_config.system_key: "complete"
+            saas_example_consent_preferences_connection_config.consent_tracking_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
 
     def test_preferences_executable_notice_based_consent(
@@ -1068,7 +1085,7 @@ class TestSaasConnectorRunConsentRequest:
         spy.assert_called_once_with(name, SaaSRequestType.UPDATE_CONSENT)
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            saas_example_connection_config.system_key: "complete"
+            saas_example_connection_config.consent_tracking_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
 
         # Cleanup

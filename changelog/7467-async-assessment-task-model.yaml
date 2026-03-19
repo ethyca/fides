@@ -1,4 +1,0 @@
-type: Added
-description: Added PrivacyAssessmentTask model for async assessment generation
-pr: 7467
-labels: ["db-migration"]

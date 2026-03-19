@@ -91,11 +91,10 @@ class DatasetService:
                 detail = f"'{connection_name}' ({config.connection_config.connection_type.value})"  # type: ignore[attr-defined]
 
                 # Add system information if available
-                if config.connection_config.system_id:
-                    system = config.connection_config.system
-                    if system:
-                        system_name = system.name or system.fides_key
-                        detail += f" in system '{system_name}'"
+                system = config.connection_config.system
+                if system:
+                    system_name = system.name or system.fides_key
+                    detail += f" in system '{system_name}'"
 
                 integration_details.append(detail)
 

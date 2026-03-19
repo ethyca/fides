@@ -203,11 +203,11 @@ export type {
   TablePaginationConfig,
 } from "antd/es/table/interface";
 export type {
+  BadgeProps,
   ButtonProps,
   CheckboxProps,
   CollapseProps,
   DatePickerProps,
-  DrawerProps,
   DropdownProps,
   FlexProps,
   FormInstance,
@@ -233,12 +233,10 @@ export type {
   UploadProps,
 } from "antd/lib";
 export {
-  Alert,
   AutoComplete,
   Badge,
   Breadcrumb,
   Button,
-  Card,
   Cascader,
   Checkbox,
   Col,
@@ -247,8 +245,6 @@ export {
   DatePicker,
   Descriptions,
   Divider,
-  Drawer,
-  Dropdown,
   Empty,
   Flex,
   Form,
@@ -288,18 +284,28 @@ export type { DisplayValueType } from "rc-select/lib/BaseSelect";
 
 // Higher-order components
 export type {
+  CustomAlertProps as AlertProps,
   CustomAvatarProps as AvatarProps,
+  CustomCardProps as CardProps,
+  DrawerProps,
   ICustomMultiSelectProps,
   ICustomSelectProps,
   CustomInputProps as InputProps,
+  CustomStatisticProps as StatisticProps,
+  StatisticTrend,
 } from "./hoc";
 export {
+  CustomAlert as Alert,
   CustomAvatar as Avatar,
+  CustomCard as Card,
   CopyTooltip,
   CustomDateRangePicker as DateRangePicker,
+  CustomDrawer as Drawer,
+  CustomDropdown as Dropdown,
   CustomInput as Input,
   CustomList as List,
   CustomSelect as Select,
+  CustomStatistic as Statistic,
   CustomTable as Table,
   CustomTag as Tag,
   CustomTooltip as Tooltip,
@@ -324,6 +330,35 @@ export type { ISO31661Entry, ISO31662Entry } from "iso-3166";
 export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
+export type { AntColorTokenKey } from "./components/charts/chart-constants";
+export {
+  CHART_ANIMATION,
+  CHART_GRADIENT,
+  CHART_STROKE,
+  CHART_TYPOGRAPHY,
+} from "./components/charts/chart-constants";
+export type { ChartTextProps } from "./components/charts/ChartText";
+export { ChartText } from "./components/charts/ChartText";
+export type {
+  DonutChartProps,
+  DonutChartSegment,
+  DonutChartVariant,
+} from "./components/charts/DonutChart";
+export { DonutChart } from "./components/charts/DonutChart";
+export type {
+  RadarChartDataPoint,
+  RadarChartProps,
+  RadarPointStatus,
+} from "./components/charts/RadarChart";
+export { RadarChart } from "./components/charts/RadarChart";
+export { RadarTooltipContent } from "./components/charts/RadarTooltipContent";
+export type { SparklineProps } from "./components/charts/Sparkline";
+export { Sparkline } from "./components/charts/Sparkline";
+export type {
+  StackedBarChartProps,
+  StackedBarSegment,
+} from "./components/charts/StackedBarChart";
+export { StackedBarChart } from "./components/charts/StackedBarChart";
 export type { FilterProps } from "./components/data-display/Filter";
 export { Filter } from "./components/data-display/Filter";
 export type { TagListProps } from "./components/data-display/TagList";
@@ -383,8 +418,14 @@ export {
 export * as Icons from "@carbon/icons-react";
 /* end prefixed icons */
 
-export { FidesUIProvider, useMessage, useModal } from "./FidesUIProvider";
+export {
+  FidesUIProvider,
+  useMessage,
+  useModal,
+  useNotification,
+} from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
+export { getGlobalMessageApi } from "./lib/globalMessageApi";
 
 /**
  * Ant Design Theme System
@@ -401,10 +442,7 @@ export { theme as antTheme } from "antd";
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
 export { CheckboxTree } from "./components/chakra-base/checkbox-tree";
-export type { ColumnMetadata } from "./components/chakra-base/column-dropdown";
-export { ColumnDropdown } from "./components/chakra-base/column-dropdown";
 export { ConfirmationModal } from "./components/chakra-base/confirmation-modal";
-export { DataCategoryDropdown } from "./components/chakra-base/data-category-dropdown";
 export { ExampleComponent } from "./components/chakra-base/example-component";
 export { PrimaryLink, SecondaryLink } from "./components/chakra-base/links";
 export { SystemsCheckboxTable } from "./components/chakra-base/systems-checkbox-table";

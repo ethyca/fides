@@ -19,6 +19,7 @@ import {
   FIDES_DATASET_REFERENCE,
   useFormFieldsFromSchema,
 } from "~/features/common/form/useFormFieldsFromSchema";
+import DatasetSelectOption from "~/features/dataset/DatasetSelectOption";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import {
   ConnectionConfigurationResponse,
@@ -201,7 +202,6 @@ export const ConnectorParametersForm = ({
                     connection_type={connectionConfig?.connection_type}
                     access_type={connectionConfig?.access}
                     name={connectionConfig?.name ?? connectionConfig.key}
-                    isSwitch
                   />
                 ) : null}
                 {connectionConfig ? (
@@ -271,6 +271,7 @@ export const ConnectorParametersForm = ({
                     options={datasetDropdownOptions}
                     layout="inline"
                     mode="multiple"
+                    optionRender={DatasetSelectOption}
                   />
                 )}
               <div className="flex gap-4">

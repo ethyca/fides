@@ -62,8 +62,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.wait("@patchAssets");
       cy.getByTestId("system-select").should("not.exist");
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Browser request "0d22c925-3a81-4f10-bfdc-69a5d67e93bc" has been assigned to Fidesctl System.',
       );
     });
@@ -138,8 +138,8 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.wait("@patchAssets");
       cy.getByTestId("system-select").should("not.exist");
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Browser request "destination" has been assigned to Fidesctl System.',
       );
 
@@ -158,10 +158,10 @@ describe("Action center Asset Results", () => {
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("system-select").antSelect("Demo Marketing System");
       cy.wait("@patchAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.shouldShowMessage("success");
       cy.getByTestId("system-select").should("not.exist");
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Browser request "collect" has been assigned to Demo Marketing System.',
       );
     });
@@ -180,8 +180,8 @@ describe("Action center Asset Results", () => {
       cy.wait("@postSystemVendors");
       // assigns asset to new system
       cy.wait("@patchAssets");
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Test System has been added to your system inventory and the Browser request "gtm.js" has been assigned to that system.',
       );
     });
@@ -535,7 +535,7 @@ describe("Action center Asset Results", () => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
-        cy.get(".ant-tooltip-inner").should(
+        cy.getAntTooltip().should(
           "contain",
           "One or more assets were detected with compliance issues",
         );
@@ -697,7 +697,7 @@ describe("Action center Asset Results", () => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
-        cy.get(".ant-tooltip-inner").should(
+        cy.getAntTooltip().should(
           "contain",
           "One or more assets were detected with compliance issues",
         );
@@ -762,8 +762,8 @@ describe("Action center Asset Results", () => {
           },
         ]);
       });
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Consent category added to Browser request "11020051272"',
       );
     });
@@ -788,8 +788,8 @@ describe("Action center Asset Results", () => {
           },
         ]);
       });
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Consent category removed from Browser request "anchor"',
       );
 
@@ -812,8 +812,8 @@ describe("Action center Asset Results", () => {
           },
         ]);
       });
-      cy.getByTestId("success-alert").should(
-        "contain",
+      cy.shouldShowMessage(
+        "success",
         'Consent category removed from Browser request "697301175_with_a_really_long_name_that_should_b..."',
       );
     });

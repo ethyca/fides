@@ -56,9 +56,16 @@
     "test": false,
     "production": false
   },
-  "alphaDataProtectionAssessments": {
-    "label": "Alpha data protection assessments",
-    "description": "Enable data protection impact assessments feature",
+  "alphaWebMonitorLlmClassification": {
+    "label": "Web monitor LLM classification",
+    "description": "Use LLM to classify website assets that cannot be identified by Compass",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "privacyAssessments": {
+    "label": "Privacy assessments",
+    "description": "Enable privacy assessments feature",
     "development": true,
     "test": false,
     "production": false
@@ -73,6 +80,34 @@
   "alphaDarkMode": {
     "label": "Alpha light and dark theme",
     "description": "Enable switching themes on Home page",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaDashboard": {
+    "label": "Alpha new dashboard",
+    "description": "Enable the new Ant Design-only home dashboard",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaJiraIntegration": {
+    "label": "Alpha Jira integration",
+    "description": "Enable Jira DSR integration for creating and managing Jira issues from privacy requests",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "alphaPurposeBasedAccessControl": {
+    "label": "Alpha purpose-based access control",
+    "description": "Enable purpose-based access control feature",
+    "development": true,
+    "test": false,
+    "production": false
+  },
+  "entraMonitor": {
+    "label": "Entra monitor",
+    "description": "Enable Microsoft Entra ID (Azure AD) identity provider monitoring",
     "development": true,
     "test": false,
     "production": false

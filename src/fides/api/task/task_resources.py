@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 from fideslang.validation import FidesKey
 from loguru import logger
@@ -12,6 +12,7 @@ from fides.api.service.connectors import (
     BaseConnector,
     BigQueryConnector,
     DynamoDBConnector,
+    EntraConnector,
     FidesConnector,
     GoogleCloudSQLMySQLConnector,
     GoogleCloudSQLPostgresConnector,
@@ -22,6 +23,8 @@ from fides.api.service.connectors import (
     MySQLConnector,
     OktaConnector,
     PostgreSQLConnector,
+    RDSMySQLConnector,
+    RDSPostgresConnector,
     RedshiftConnector,
     SaaSConnector,
     ScyllaConnector,
@@ -30,8 +33,6 @@ from fides.api.service.connectors import (
 )
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
 from fides.api.service.connectors.s3_connector import S3Connector
-from fides.api.util.cache import get_cache
-from fides.api.util.collection_util import Row, extract_key_for_address
 
 
 class Connections:
@@ -80,6 +81,8 @@ class Connections:
             return TimescaleConnector(connection_config)
         if connection_config.connection_type == ConnectionType.dynamodb:
             return DynamoDBConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.entra:
+            return EntraConnector(connection_config)
         if connection_config.connection_type == ConnectionType.google_cloud_sql_mysql:
             return GoogleCloudSQLMySQLConnector(connection_config)
         if (
@@ -91,9 +94,16 @@ class Connections:
             return FidesConnector(connection_config)
         if connection_config.connection_type == ConnectionType.s3:
             return S3Connector(connection_config)
+        if connection_config.connection_type == ConnectionType.rds_mysql:
+            return RDSMySQLConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.rds_postgres:
+            return RDSPostgresConnector(connection_config)
         if connection_config.connection_type == ConnectionType.scylla:
             return ScyllaConnector(connection_config)
-        if connection_config.connection_type == ConnectionType.manual_task:
+        if connection_config.connection_type in (
+            ConnectionType.manual_task,
+            ConnectionType.jira_ticket,
+        ):
             return ManualTaskConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
@@ -127,10 +137,7 @@ class TaskResources:
         session: Session,
     ):
         self.request = request
-
         self.policy = policy
-        # TODO Remove when we stop support for DSR 2.0
-        self.cache = get_cache()
         self.privacy_request_task = privacy_request_task
         self.connection_configs: Dict[str, ConnectionConfig] = {
             c.key: c for c in connection_configs
@@ -145,55 +152,6 @@ class TaskResources:
     def __exit__(self, _type: Any, value: Any, traceback: Any) -> None:
         """Support 'with' usage for closing resources"""
         self.close()
-
-    # TODO Remove when we stop support for DSR 2.0
-    def cache_results_with_placeholders(self, key: str, value: Any) -> None:
-        """Cache raw results from node. Object will be
-        stored in redis under 'PLACEHOLDER_RESULTS__PRIVACY_REQUEST_ID__TYPE__COLLECTION_ADDRESS
-        """
-        self.cache.set_encoded_object(
-            f"PLACEHOLDER_RESULTS__{self.request.id}__{key}", value
-        )
-
-    # TODO Remove when we stop support for DSR 2.0
-    def cache_object(self, key: str, value: Any) -> None:
-        """Store in cache. Object will be stored in redis under 'REQUEST_ID__TYPE__ADDRESS'"""
-        self.cache.set_encoded_object(f"{self.request.id}__{key}", value)
-
-    # TODO Remove when we stop support for DSR 2.0
-    def get_all_cached_objects(self) -> Dict[str, Optional[List[Row]]]:
-        """Retrieve the access results of all steps (cache_object)"""
-        value_dict = self.cache.get_encoded_objects_by_prefix(
-            f"{self.request.id}__access_request"
-        )
-        # extract request id to return a map of address:value
-        number_of_leading_strings_to_exclude = 2
-        return {
-            extract_key_for_address(k, number_of_leading_strings_to_exclude): v
-            for k, v in value_dict.items()
-        }
-
-    # TODO Remove when we stop support for DSR 2.0
-    def cache_erasure(self, key: str, value: int) -> None:
-        """Cache that a node's masking is complete. Object will be stored in redis under
-        'REQUEST_ID__erasure_request__ADDRESS
-        '"""
-        self.cache.set_encoded_object(
-            f"{self.request.id}__erasure_request__{key}", value
-        )
-
-    # TODO Remove when we stop support for DSR 2.0
-    def get_all_cached_erasures(self) -> Dict[str, int]:
-        """Retrieve which collections have been masked and their row counts(cache_erasure)"""
-        value_dict = self.cache.get_encoded_objects_by_prefix(
-            f"{self.request.id}__erasure_request"
-        )
-        # extract request id to return a map of address:value
-        number_of_leading_strings_to_exclude = 2
-        return {
-            extract_key_for_address(k, number_of_leading_strings_to_exclude): v  # type: ignore[misc]
-            for k, v in value_dict.items()
-        }
 
     def get_connector(self, key: FidesKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""

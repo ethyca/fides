@@ -22,6 +22,9 @@ from fides.api.models.detection_discovery.core import (
 )
 from fides.api.models.event_audit import EventAuditType
 from fides.api.models.saas_template_dataset import SaasTemplateDataset
+from fides.api.models.sql_models import (
+    Dataset as CtlDataset,  # type: ignore[attr-defined]
+)
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
 )
@@ -239,7 +242,7 @@ class TestConnectionService:
     ):
         """Test that updating SaaS connector secrets creates an audit event."""
         # Test data
-        new_secrets = {"api_key": "new_api_key", "domain": "new_domain"}
+        new_secrets = {"api_key": "new_api_key", "domain": "api.stripe.com"}
 
         # Execute
         result = connection_service.update_secrets(
@@ -269,7 +272,7 @@ class TestConnectionService:
         )
         # all secrets are masked since custom connection has no secret schema
         assert events[0].event_details["secrets"]["api_key"] == "**********"
-        assert events[0].event_details["secrets"]["domain"] == "new_domain"
+        assert events[0].event_details["secrets"]["domain"] == "api.stripe.com"
 
     def test_update_secrets_saas_no_merge(
         self,
@@ -279,7 +282,7 @@ class TestConnectionService:
     ):
         """Test that updating SaaS connector secrets creates an audit event."""
         # Test data
-        new_secrets = {"api_key": "new_api_key", "domain": "new_domain"}
+        new_secrets = {"api_key": "new_api_key", "domain": "api.stripe.com"}
 
         # Execute
         result = connection_service.update_secrets(
@@ -306,7 +309,7 @@ class TestConnectionService:
         )
         # all secrets are masked since custom connection has no secret schema
         assert events[0].event_details["secrets"]["api_key"] == "**********"
-        assert events[0].event_details["secrets"]["domain"] == "new_domain"
+        assert events[0].event_details["secrets"]["domain"] == "api.stripe.com"
 
     def test_update_secrets_saas_custom(
         self,
@@ -316,7 +319,7 @@ class TestConnectionService:
     ):
         """Test that updating SaaS connector secrets creates an audit event."""
         # Test data
-        new_secrets = {"api_key": "new_api_key", "domain": "new_domain"}
+        new_secrets = {"api_key": "new_api_key", "domain": "api.stripe.com"}
 
         # Execute
         result = connection_service.update_secrets(
@@ -676,8 +679,8 @@ class TestConnectionService:
 
         # Verify connection secrets masking (should use HTTPS schema, not OAuth schema)
         connection_secrets = connection_event.event_details["secrets"]
-        # Since there's no HTTPS connection schema, all secrets are masked for security
-        assert connection_secrets["url"] == "**********"
+        # HttpsSchema marks authorization as sensitive but url is not sensitive
+        assert connection_secrets["url"] == "https://new-api.example.com/webhook"
         assert connection_secrets["authorization"] == "**********"
 
         # Clean up
@@ -1676,3 +1679,183 @@ class TestConnectionService:
 
         collection_names = {c["name"] for c in ctl_dataset.collections}
         assert "products" in collection_names
+
+    def test_update_existing_connection_configs_preserves_merge_baseline_across_multiple_configs(
+        self,
+        connection_service: ConnectionService,
+        db: Session,
+        stored_dataset: Dict[str, Any],
+    ):
+        """
+        When multiple connection configs of the same type are updated in a batch,
+        every config must be merged against the same pre-update baseline snapshot.
+
+        Without the snapshot fix, the first iteration writes the new template back to
+        SaasTemplateDataset, so the second iteration reads the new template as its
+        baseline. Any field that changed between the old and new template then looks
+        like a customer change on the second config, and the template update never lands.
+        """
+        connector_type = "multi_config_connector"
+
+        # Build a v1 stored baseline with a known field value on the "products" collection
+        v1_stored = copy.deepcopy(stored_dataset)
+
+        # Two connection configs of the same type, each with their own DatasetConfig
+        # whose field values match v1 (customers never modified them)
+        for suffix in ("alpha", "beta"):
+            instance_key = f"multi_config_{suffix}"
+            connection_config = ConnectionConfig.create(
+                db=db,
+                data={
+                    "key": f"multi_config_connection_{suffix}",
+                    "name": f"Multi Config Connection {suffix}",
+                    "connection_type": ConnectionType.saas,
+                    "access": AccessLevel.write,
+                    "saas_config": {
+                        "fides_key": instance_key,
+                        "name": "Multi Config Connector",
+                        "type": connector_type,
+                        "description": "Test connector",
+                        "version": "0.1.0",
+                        "connector_params": [],
+                        "client_config": {
+                            "protocol": "https",
+                            "host": "api.example.com",
+                        },
+                        "test_request": {"method": "GET", "path": "/test"},
+                        "endpoints": [],
+                    },
+                },
+            )
+
+            customer_dataset = copy.deepcopy(v1_stored)
+            customer_dataset["fides_key"] = instance_key
+            DatasetConfig.create_or_update(
+                db=db,
+                data={
+                    "connection_config_id": connection_config.id,
+                    "fides_key": instance_key,
+                    "dataset": customer_dataset,
+                },
+            )
+
+        # Store v1 as the baseline template
+        SaasTemplateDataset.get_or_create(
+            db=db,
+            connector_type=connector_type,
+            dataset_json=v1_stored,
+        )
+
+        # v2 template adds a new "orders" collection that was NOT in v1.
+        # Without the snapshot fix, the first iteration writes the v2 template
+        # back to SaasTemplateDataset. The second iteration then sees "orders"
+        # in the (now-updated) baseline but not in the customer dataset, and
+        # interprets it as a customer deletion — so "orders" never lands.
+        v2_template_yaml = dedent(
+            """
+            dataset:
+            - fides_key: <instance_fides_key>
+              name: Template Dataset
+              description: Dataset from template
+              collections:
+              - name: products
+                fields:
+                - name: product_id
+                  data_categories: [user.unique_id]
+                  fides_meta:
+                    data_type: string
+                    primary_key: True
+                - name: customer_id
+                  data_categories: [user.preferences]
+                  fides_meta:
+                    data_type: integer
+              - name: orders
+                fields:
+                - name: order_id
+                  data_categories: [system.operations]
+                  fides_meta:
+                    data_type: string
+                    primary_key: True
+        """
+        ).strip()
+
+        connector_template = ConnectorTemplate(
+            config=dedent(
+                f"""
+                saas_config:
+                  fides_key: <instance_fides_key>
+                  name: Multi Config Connector
+                  type: {connector_type}
+                  description: Test connector
+                  version: 1.0.0
+                  connector_params: []
+                  client_config:
+                    protocol: https
+                    host: api.example.com
+                  test_request:
+                    method: GET
+                    path: /test
+                  endpoints: []
+            """
+            ).strip(),
+            dataset=v2_template_yaml,
+            human_readable="Multi Config Connector",
+            authorization_required=False,
+            supported_actions=[ActionType.access, ActionType.erasure],
+            category=ConnectionCategory.ANALYTICS,
+        )
+
+        connection_service.update_existing_connection_configs_for_connector_type(
+            connector_type,
+            connector_template,
+        )
+
+        # Both configs must reflect the v2 template update — specifically,
+        # the new "orders" collection must appear on both configs.
+        for suffix in ("alpha", "beta"):
+            instance_key = f"multi_config_{suffix}"
+            dataset_config = DatasetConfig.filter(
+                db=db,
+                conditions=(DatasetConfig.fides_key == instance_key),
+            ).first()
+            assert dataset_config is not None, (
+                f"Missing DatasetConfig for {instance_key}"
+            )
+            ctl_dataset = dataset_config.ctl_dataset
+            assert ctl_dataset is not None
+            collection_names = {c["name"] for c in ctl_dataset.collections}
+            assert "products" in collection_names, (
+                f"Existing collection missing on {instance_key}: "
+                f"collections={collection_names}"
+            )
+            assert "orders" in collection_names, (
+                f"New template collection did not land on {instance_key}: "
+                f"collections={collection_names}"
+            )
+
+        # Clean up created test resources. DatasetConfig must be deleted before
+        # CtlDataset because datasetconfig.ctl_dataset_id has a NOT NULL constraint.
+        for suffix in ("alpha", "beta"):
+            instance_key = f"multi_config_{suffix}"
+            dataset_config = DatasetConfig.filter(
+                db=db,
+                conditions=(DatasetConfig.fides_key == instance_key),
+            ).first()
+            ctl_dataset_id = dataset_config.ctl_dataset_id if dataset_config else None
+            connection_config = ConnectionConfig.get_by(
+                db, field="key", value=f"multi_config_connection_{suffix}"
+            )
+            if connection_config:
+                connection_config.delete(db)
+            if ctl_dataset_id:
+                ctl_dataset = (
+                    db.query(CtlDataset).filter(CtlDataset.id == ctl_dataset_id).first()
+                )
+                if ctl_dataset:
+                    db.delete(ctl_dataset)
+                    db.commit()
+        stored_template = SaasTemplateDataset.get_by(
+            db, field="connection_type", value=connector_type
+        )
+        if stored_template:
+            stored_template.delete(db)

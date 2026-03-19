@@ -1,16 +1,13 @@
 import {
+  Button,
   ChakraBox as Box,
   ChakraCloseButton as CloseButton,
   ChakraFormControl as FormControl,
   ChakraHStack as HStack,
-  ChakraIconButton as IconButton,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuItem as MenuItem,
-  ChakraMenuList as MenuList,
   ChakraSpacer as Spacer,
-  ChakraText,
   ChakraVStack as VStack,
+  Dropdown,
+  MenuProps,
   Select,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
@@ -41,33 +38,29 @@ const CompassButton = ({
   disabled: boolean;
   onRefreshSuggestions: () => void;
 }) => {
-  const bgColor = { bg: active ? "complimentary.500" : "gray.100" };
+  const items: MenuProps["items"] = useMemo(
+    () => [
+      {
+        key: "reset",
+        label: "Reset to Compass defaults",
+        onClick: onRefreshSuggestions,
+      },
+    ],
+    [onRefreshSuggestions],
+  );
+
   return (
     <VStack>
       <Spacer minHeight="18px" />
-      <Menu>
-        <MenuButton
-          as={IconButton}
-          size="sm"
-          isDisabled={disabled}
-          icon={
-            <CompassIcon color={active ? "white" : "gray.700"} boxSize={4} />
-          }
+      <Dropdown menu={{ items }} disabled={disabled}>
+        <Button
+          icon={<CompassIcon boxSize={4} />}
           aria-label="Update information from Compass"
           data-testid="refresh-suggestions-btn"
-          _hover={{
-            _disabled: bgColor,
-          }}
-          {...bgColor}
+          disabled={disabled}
+          type={active ? "primary" : undefined}
         />
-        <MenuList>
-          <MenuItem onClick={onRefreshSuggestions}>
-            <ChakraText fontSize="xs" lineHeight={4}>
-              Reset to Compass defaults
-            </ChakraText>
-          </MenuItem>
-        </MenuList>
-      </Menu>
+      </Dropdown>
     </VStack>
   );
 };

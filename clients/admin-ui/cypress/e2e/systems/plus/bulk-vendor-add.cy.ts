@@ -77,8 +77,10 @@ describe("Plus Bulk Vendor Add", () => {
     });
     cy.visit(ADD_SYSTEMS_ROUTE);
     cy.getByTestId("multiple-btn").click();
-    cy.getByTestId("confirmation-modal");
-    cy.getByTestId("cancel-btn").click();
+    cy.get(".ant-modal-confirm");
+    cy.getAntModalConfirmButtons()
+      .find(".ant-btn:not(.ant-btn-primary):not(.ant-btn-dangerous)")
+      .click();
     cy.url().should("include", ADD_SYSTEMS_MANUAL_ROUTE);
   });
 
@@ -86,12 +88,18 @@ describe("Plus Bulk Vendor Add", () => {
     stubDatamap();
     cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
     cy.wait("@getSystemVendors");
+    cy.wait("@getDict");
+    // unreliable test because when dictionary loads it overrides the rows selected
+    // adding a .wait to make it more reliable
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(500);
     cy.get('[type="checkbox"').check({ force: true });
     cy.getByTestId("add-multiple-systems-btn")
       .should("exist")
       .click({ force: true });
-    cy.getByTestId("confirmation-modal");
-    cy.getByTestId("continue-btn").click({ force: true });
+    cy.get(".ant-modal-confirm");
+    cy.getAntModalConfirmButtons().contains("OK").click({ force: true });
+    cy.wait("@postSystemVendors");
     cy.url().should("include", DATAMAP_ROUTE);
   });
 

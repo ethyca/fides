@@ -9,38 +9,40 @@
  * Used by both ExternalAuthLayout and PrivacyRequestLayout to avoid duplication.
  */
 
-import { Flex, Space, Typography } from "fidesui";
+import { Flex, Link, Space, Typography } from "fidesui";
 import React from "react";
 
+import { getEffectivePrivacyCenterLinks } from "~/common/config-links";
 import { useConfig } from "~/features/common/config.slice";
+
+import styles from "./AuthFormLayout.module.scss";
 
 interface AuthFormLayoutProps {
   children: React.ReactNode;
   title?: string;
   className?: string;
-  showTitleOnDesktop?: boolean;
   dataTestId?: string;
 }
 
 export const AuthFormLayout = ({
   children,
   title,
-  className = "max-w-[640px]",
-  showTitleOnDesktop = true,
+  className,
   dataTestId = "auth-form-layout",
 }: AuthFormLayoutProps) => {
   const config = useConfig();
+  const policyLinks = getEffectivePrivacyCenterLinks(config);
 
   return (
     <Flex
       justify="center"
       align="center"
-      className="w-full min-h-screen bg-neutral-75 p-4"
       data-testid={dataTestId}
+      className={[styles.root, className].filter(Boolean).join(" ")}
     >
-      <div className={`w-full p-6 ${className}`}>
-        <Space direction="vertical" size={48} className="w-full">
-          {/* Logo */}
+      <div className={styles.container}>
+        <Space direction="vertical" size={64} style={{ width: "100%" }}>
+          {/* Fides Logo */}
           <Flex justify="center">
             <img
               src={config?.logo_path || "/logo.svg"}
@@ -51,27 +53,48 @@ export const AuthFormLayout = ({
             />
           </Flex>
 
-          {/* Form Container */}
-          <div className="bg-white rounded-md shadow-sm p-6 w-full">
-            {title && (
-              <Space direction="vertical" size={16} className="w-full mb-8">
-                {/* Desktop Title - conditionally shown */}
-                {showTitleOnDesktop && (
-                  <Flex justify="center">
-                    <Typography.Title
-                      level={2}
-                      className="text-2xl text-minos mb-0 text-center"
+          {/* Title and Form Container */}
+          <Space direction="vertical" size={24} style={{ width: "100%" }}>
+            {/* Form Box */}
+            <div className={styles.formBox}>
+              <Space direction="vertical" size={32} style={{ width: "100%" }}>
+                {title && (
+                  <div>
+                    <Space
+                      direction="vertical"
+                      size={16}
+                      style={{ width: "100%" }}
                     >
-                      {title}
-                    </Typography.Title>
-                  </Flex>
+                      <Flex justify="center">
+                        <Typography.Title level={2} className={styles.title}>
+                          {title}
+                        </Typography.Title>
+                      </Flex>
+                    </Space>
+                  </div>
                 )}
-              </Space>
-            )}
 
-            {/* Content */}
-            <div className="w-full">{children}</div>
-          </div>
+                {/* Form Content */}
+                <div className={styles.formContent}>{children}</div>
+              </Space>
+            </div>
+
+            {/* Policy Links */}
+            {policyLinks.length > 0 && (
+              <Flex vertical align="center" gap="small">
+                {policyLinks.map(({ url, label }) => (
+                  <Link
+                    key={`${url}-${label}`}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </Flex>
+            )}
+          </Space>
         </Space>
       </div>
     </Flex>

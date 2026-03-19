@@ -1,4 +1,0 @@
-type: Added
-description: Added fides_external_id option to FidesJS for custom user ID on consent APIs
-pr: 7094
-labels: []

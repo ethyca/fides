@@ -1,4 +1,0 @@
-type: Developer Experience
-description: Added a Redis cache manager for internal development use
-pr: 7462
-labels: []

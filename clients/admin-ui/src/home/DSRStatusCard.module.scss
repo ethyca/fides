@@ -1,0 +1,48 @@
+.cardContainer {
+  height: 100%;
+
+  :global(.ant-card-body) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  :global(.ant-statistic) {
+    text-align: left;
+  }
+}
+
+.subStat {
+  :global(.ant-statistic) {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: baseline;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  :global(.ant-statistic-title) {
+    font-size: var(--ant-font-size-sm);
+    margin-bottom: 0;
+    color: var(--ant-color-text-secondary);
+  }
+}
+
+.viewAllLink {
+  &:focus-visible {
+    outline: auto;
+  }
+}
+
+.overdueLink {
+  margin-top: var(--ant-margin-sm);
+  color: var(--ant-color-error);
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:focus-visible {
+    outline: auto;
+  }
+}
