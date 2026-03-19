@@ -1,5 +1,6 @@
 import json
 import os
+from contextlib import contextmanager
 from typing import Any, Dict, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
@@ -28,6 +29,8 @@ from fides.api.tasks import (
     celery_app,
 )
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
+from fides.common.cache.dsr_store import DSRCacheStore
+from fides.common.cache.manager import RedisCacheManager
 from fides.config import CONFIG
 
 # This constant represents every type a redis key may contain, and can be
@@ -316,6 +319,17 @@ def get_cache() -> FidesopsRedis:
         )
 
     return _connection
+
+
+def get_redis_cache_manager() -> RedisCacheManager:
+    """Return a RedisCacheManager wrapping the default Redis connection."""
+    return RedisCacheManager(get_cache())
+
+
+@contextmanager
+def get_dsr_cache_store() -> Generator[DSRCacheStore, None, None]:
+    """Context manager yielding a DSRCacheStore for privacy request cache operations."""
+    yield DSRCacheStore(get_redis_cache_manager())
 
 
 def get_read_only_cache() -> FidesopsRedis:
