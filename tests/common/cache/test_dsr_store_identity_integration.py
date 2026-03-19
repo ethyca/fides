@@ -11,7 +11,6 @@ import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
-
 from tests.common.cache.mock_redis import MockRedis
 
 
@@ -59,13 +58,19 @@ class TestDSRCacheStoreIdentity:
         dsr_store.cache_identity_data(pr_id, identity_data, expire_seconds=3600)
 
         # All keys written in new format
-        assert dsr_store._redis.get(f"dsr:{pr_id}:identity:email") == json.dumps("user@example.com")
-        assert dsr_store._redis.get(f"dsr:{pr_id}:identity:phone_number") == json.dumps("+1234567890")
-        
+        assert dsr_store._redis.get(f"dsr:{pr_id}:identity:email") == json.dumps(
+            "user@example.com"
+        )
+        assert dsr_store._redis.get(f"dsr:{pr_id}:identity:phone_number") == json.dumps(
+            "+1234567890"
+        )
+
         # Legacy keys do NOT exist
         assert dsr_store._redis.get(f"id-{pr_id}-identity-email") is None
 
-    def test_get_cached_identity_data_reads_all_attributes(self, dsr_store, pr_id, identity_data):
+    def test_get_cached_identity_data_reads_all_attributes(
+        self, dsr_store, pr_id, identity_data
+    ):
         """get_cached_identity_data reads all identity attributes from new-format keys."""
         # Write via store
         encoded_data = {k: json.dumps(v) for k, v in identity_data.items()}
@@ -76,7 +81,9 @@ class TestDSRCacheStoreIdentity:
         assert result["email"] == json.dumps("user@example.com")
         assert result["phone_number"] == json.dumps("+1234567890")
 
-    def test_get_cached_identity_data_migrates_legacy_keys(self, dsr_store, mock_redis, pr_id, identity_data):
+    def test_get_cached_identity_data_migrates_legacy_keys(
+        self, dsr_store, mock_redis, pr_id, identity_data
+    ):
         """get_cached_identity_data reads and migrates legacy keys on first access."""
         # Write legacy format with JSON encoding
         for key, value in identity_data.items():
@@ -92,7 +99,9 @@ class TestDSRCacheStoreIdentity:
         assert mock_redis.get(f"dsr:{pr_id}:identity:email") is not None
         assert mock_redis.get(f"id-{pr_id}-identity-email") is None
 
-    def test_has_cached_identity_data_detects_both_formats(self, dsr_store, mock_redis, pr_id):
+    def test_has_cached_identity_data_detects_both_formats(
+        self, dsr_store, mock_redis, pr_id
+    ):
         """has_cached_identity_data detects identity data in both legacy and new formats."""
         # Empty initially
         assert dsr_store.has_cached_identity_data(pr_id) is False

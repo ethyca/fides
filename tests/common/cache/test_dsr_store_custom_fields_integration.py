@@ -11,7 +11,6 @@ import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
-
 from tests.common.cache.mock_redis import MockRedis
 
 
@@ -50,11 +49,18 @@ class TestDSRCacheStoreCustomFields:
         dsr_store.cache_custom_fields(pr_id, custom_fields, expire_seconds=3600)
 
         # All keys written in new format
-        assert dsr_store._redis.get(f"dsr:{pr_id}:custom_field:department") == json.dumps("Engineering")
-        assert dsr_store._redis.get(f"dsr:{pr_id}:custom_field:employee_id") == json.dumps("E12345")
-        
+        assert dsr_store._redis.get(
+            f"dsr:{pr_id}:custom_field:department"
+        ) == json.dumps("Engineering")
+        assert dsr_store._redis.get(
+            f"dsr:{pr_id}:custom_field:employee_id"
+        ) == json.dumps("E12345")
+
         # Legacy keys do NOT exist
-        assert dsr_store._redis.get(f"id-{pr_id}-custom-privacy-request-field-department") is None
+        assert (
+            dsr_store._redis.get(f"id-{pr_id}-custom-privacy-request-field-department")
+            is None
+        )
 
     def test_get_cached_custom_fields_reads_all_fields(self, dsr_store, pr_id):
         """get_cached_custom_fields reads all fields from new-format keys."""
@@ -69,11 +75,18 @@ class TestDSRCacheStoreCustomFields:
         assert result["department"] == json.dumps("Engineering")
         assert result["employee_id"] == json.dumps("E12345")
 
-    def test_get_cached_custom_fields_migrates_legacy_keys(self, dsr_store, mock_redis, pr_id):
+    def test_get_cached_custom_fields_migrates_legacy_keys(
+        self, dsr_store, mock_redis, pr_id
+    ):
         """get_cached_custom_fields reads and migrates legacy keys on first access."""
         # Write legacy format
-        mock_redis.set(f"id-{pr_id}-custom-privacy-request-field-department", json.dumps("Engineering"))
-        mock_redis.set(f"id-{pr_id}-custom-privacy-request-field-employee_id", json.dumps("E12345"))
+        mock_redis.set(
+            f"id-{pr_id}-custom-privacy-request-field-department",
+            json.dumps("Engineering"),
+        )
+        mock_redis.set(
+            f"id-{pr_id}-custom-privacy-request-field-employee_id", json.dumps("E12345")
+        )
 
         result = dsr_store.get_cached_custom_fields(pr_id)
 
@@ -83,15 +96,23 @@ class TestDSRCacheStoreCustomFields:
 
         # Legacy keys migrated to new format
         assert mock_redis.get(f"dsr:{pr_id}:custom_field:department") is not None
-        assert mock_redis.get(f"id-{pr_id}-custom-privacy-request-field-department") is None
+        assert (
+            mock_redis.get(f"id-{pr_id}-custom-privacy-request-field-department")
+            is None
+        )
 
-    def test_has_cached_custom_fields_detects_both_formats(self, dsr_store, mock_redis, pr_id):
+    def test_has_cached_custom_fields_detects_both_formats(
+        self, dsr_store, mock_redis, pr_id
+    ):
         """has_cached_custom_fields detects fields in both legacy and new formats."""
         # Empty initially
         assert dsr_store.has_cached_custom_fields(pr_id) is False
 
         # Add legacy key
-        mock_redis.set(f"id-{pr_id}-custom-privacy-request-field-department", json.dumps("Engineering"))
+        mock_redis.set(
+            f"id-{pr_id}-custom-privacy-request-field-department",
+            json.dumps("Engineering"),
+        )
         assert dsr_store.has_cached_custom_fields(pr_id) is True
 
         # Clear and test new format
@@ -105,10 +126,15 @@ class TestDSRCacheStoreEncryption:
 
     def test_write_encryption_writes_key(self, dsr_store, pr_id):
         """write_encryption writes encryption key to new-format key."""
-        dsr_store.write_encryption(pr_id, "key", "test-encryption-key-12345", expire_seconds=3600)
+        dsr_store.write_encryption(
+            pr_id, "key", "test-encryption-key-12345", expire_seconds=3600
+        )
 
-        assert dsr_store._redis.get(f"dsr:{pr_id}:encryption:key") == "test-encryption-key-12345"
-        
+        assert (
+            dsr_store._redis.get(f"dsr:{pr_id}:encryption:key")
+            == "test-encryption-key-12345"
+        )
+
         # Legacy key does NOT exist
         assert dsr_store._redis.get(f"id-{pr_id}-encryption-key") is None
 
@@ -123,5 +149,7 @@ class TestDSRCacheStoreEncryption:
         assert value == "test-encryption-key-12345"
 
         # Legacy key migrated
-        assert mock_redis.get(f"dsr:{pr_id}:encryption:key") == "test-encryption-key-12345"
+        assert (
+            mock_redis.get(f"dsr:{pr_id}:encryption:key") == "test-encryption-key-12345"
+        )
         assert mock_redis.get(f"id-{pr_id}-encryption-key") is None

@@ -67,7 +67,6 @@ from fides.api.schemas.redis_cache import (
     LabeledIdentity,
 )
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
-from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.encryption.secrets_util import SecretsUtil
 from fides.api.util.fuzzy_search_utils import (
@@ -785,7 +784,6 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         policy,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -801,11 +799,7 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        encryption_key = get_encryption_cache_key(
-            privacy_request_id=pr.id,
-            encryption_attr="key",
-        )
-        assert cache.get(encryption_key) == "test--encryption"
+        assert pr.get_cached_encryption_key() == "test--encryption"
 
         pr.delete(db=db)
         assert run_access_request_mock.called
@@ -8032,7 +8026,6 @@ class TestCreatePrivacyRequestAuthenticated:
         generate_auth_header,
         api_client: TestClient,
         policy,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -8049,11 +8042,7 @@ class TestCreatePrivacyRequestAuthenticated:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        encryption_key = get_encryption_cache_key(
-            privacy_request_id=pr.id,
-            encryption_attr="key",
-        )
-        assert cache.get(encryption_key) == "test--encryption"
+        assert pr.get_cached_encryption_key() == "test--encryption"
         assert run_access_request_mock.called
 
     def test_create_privacy_request_no_identities(

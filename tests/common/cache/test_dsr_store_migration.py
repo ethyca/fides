@@ -11,7 +11,7 @@ import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
-from tests.common.cache.mock_redis import MockRedis, MockPipeline
+from tests.common.cache.mock_redis import MockPipeline, MockRedis
 
 
 # Test data factories

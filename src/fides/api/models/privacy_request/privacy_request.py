@@ -110,7 +110,6 @@ from fides.api.util.cache import (
     get_cache,
     get_drp_request_body_cache_key,
     get_dsr_cache_store,
-    get_encryption_cache_key,
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.constants import API_DATE_FORMAT
@@ -685,9 +684,13 @@ class PrivacyRequest(
 
     def get_cached_encryption_key(self) -> Optional[str]:
         """Gets the cached encryption key for this privacy request."""
-        cache: FidesopsRedis = get_cache()
-        encryption_key = cache.get(get_encryption_cache_key(self.id, "key"))
-        return encryption_key
+        with get_dsr_cache_store() as store:
+            raw = store.get_encryption(self.id, "key")
+        if raw is None:
+            return None
+        if isinstance(raw, bytes):
+            return raw.decode(CONFIG.security.encoding)
+        return str(raw)
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
