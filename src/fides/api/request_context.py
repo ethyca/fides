@@ -92,6 +92,6 @@ def get_request_id() -> Optional[str]:
     return ctx.request_id
 
 
-def set_request_id(request_id: str) -> None:
-    """Set the request_id in the current request context."""
+def set_request_id(request_id: Optional[str] = None) -> None:
+    """Set or clear the request_id in the current request context."""
     set_request_context(request_id=request_id)

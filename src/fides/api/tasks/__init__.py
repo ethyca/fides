@@ -16,11 +16,7 @@ from tenacity import (
 )
 
 from fides.api.db.session import get_db_engine, get_db_session
-from fides.api.request_context import (
-    get_request_id,
-    set_request_context,
-    set_request_id,
-)
+from fides.api.request_context import get_request_id, set_request_id
 from fides.api.tasks import celery_healthcheck
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
@@ -222,7 +218,7 @@ def _clear_request_id(**kwargs: Any) -> None:
     a request_id from Task A would leak into Task B if Task B was dispatched
     without a request_id header.
     """
-    set_request_context(request_id=None)
+    set_request_id(None)
 
 
 def get_worker_ids() -> List[Optional[str]]:

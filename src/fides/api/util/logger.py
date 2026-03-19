@@ -194,7 +194,7 @@ def create_handler_dicts(
     def has_custom_extra(log_record: Dict) -> bool:
         """Check if log record has custom extra context beyond Loguru's defaults."""
         extra = log_record.get("extra", {})
-        return any(k not in _PATCHER_INJECTED_KEYS for k in extra)
+        return bool(extra.keys() - _PATCHER_INJECTED_KEYS)
 
     # Helper to filter logs without custom extra
     def filter_standard(log_record: Dict) -> bool:

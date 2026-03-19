@@ -77,6 +77,26 @@ class TestRequestContext:
         assert results["a"] == "aaa"
         assert results["b"] is None
 
+    async def test_reset_request_context_isolation(self):
+        """Resetting context in one coroutine does not affect another."""
+        results = {}
+
+        async def task_a():
+            set_request_id("aaa")
+            await asyncio.sleep(0.01)
+            reset_request_context()
+            results["a"] = get_request_id()
+
+        async def task_b():
+            set_request_id("bbb")
+            await asyncio.sleep(0.02)
+            results["b"] = get_request_id()
+
+        await asyncio.gather(task_a(), task_b())
+
+        assert results["a"] is None
+        assert results["b"] == "bbb"
+
 
 class TestRequestIdMiddleware:
     """Tests for X-Request-ID handling in LogRequestMiddleware."""
