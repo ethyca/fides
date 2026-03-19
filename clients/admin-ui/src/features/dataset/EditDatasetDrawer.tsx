@@ -89,7 +89,6 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
         header={<EditDrawerHeader title={`Edit: ${dataset?.name}`} />}
         footer={
           <EditDrawerFooter
-            onClose={onClose}
             onDelete={onDeleteOpen}
             onEditYaml={() => onYamlOpen()}
             formId={FORM_ID}
@@ -106,7 +105,9 @@ const EditDatasetDrawer = ({ dataset, isOpen, onClose }: Props) => {
           isDatasetSelected={false}
           dataset={dataset}
         />
-        <EditDatasetForm values={dataset!} onSubmit={handleSubmit} />
+        {dataset && (
+          <EditDatasetForm values={dataset} onSubmit={handleSubmit} />
+        )}
       </EditDrawer>
       <ConfirmationModal
         isOpen={deleteIsOpen}

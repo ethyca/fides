@@ -1,0 +1,4 @@
+type: Changed
+description: Migrate Redux error middleware from Chakra standalone toast to Ant Design global message API ref
+pr: 7695
+labels: []
