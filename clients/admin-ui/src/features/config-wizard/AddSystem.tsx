@@ -59,8 +59,8 @@ const AddSystem = () => {
 
         <Text>
           Fides can automatically discover new systems in your AWS
-          infrastructure or Okta accounts. For everything else, you may
-          manually add systems to your map.
+          infrastructure or Okta accounts. For everything else, you may manually
+          add systems to your map.
         </Text>
       </Stack>
       <Box data-testid="manual-options">
