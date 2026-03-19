@@ -28,7 +28,7 @@ const JiraTicketOverview = () => (
   </>
 );
 
-const JIRA_TICKET_TAGS = ["DSR", "Ticketing"];
+const JIRA_TICKET_TAGS = ["Ticketing"];
 
 const JIRA_TICKET_TYPE_INFO = {
   placeholder: JIRA_TICKET_PLACEHOLDER,
