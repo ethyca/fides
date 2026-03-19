@@ -165,6 +165,7 @@ const SubmitPrivacyRequest = () => {
               },
             ],
           }}
+          trigger={["hover"]}
         >
           <Button
             type="primary"
