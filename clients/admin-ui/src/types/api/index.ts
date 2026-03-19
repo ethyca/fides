@@ -91,7 +91,6 @@ export type { ClassifySystem } from "./models/ClassifySystem";
 export type { ClientConfig } from "./models/ClientConfig";
 export type { ClientCreatedResponse } from "./models/ClientCreatedResponse";
 export type { CloudConfig } from "./models/CloudConfig";
-export { ClusterHealth } from "./models/ClusterHealth";
 export type { CollectionAddressResponse } from "./models/CollectionAddressResponse";
 export type { CollectionMeta } from "./models/CollectionMeta";
 export type { ColumnMapItem } from "./models/ColumnMapItem";
