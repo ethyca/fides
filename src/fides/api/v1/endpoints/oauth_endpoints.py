@@ -261,8 +261,6 @@ def delete_client(client_id: str, db: Session = Depends(get_db)) -> None:
     """Deletes the client associated with the client_id. Does nothing if the client does
     not exist"""
     client = _get_client_or_error(db, client_id)
-    if not client:
-        return
     logger.info("Deleting client")
     client.delete(db)
 
@@ -319,8 +317,6 @@ def set_client_scopes(
     Roles cannot be edited via this endpoint.
     Does nothing if the client doesn't exist"""
     client = _get_client_or_error(db, client_id)
-    if not client:
-        return
 
     if not all(elem in SCOPE_REGISTRY for elem in scopes):
         raise HTTPException(
