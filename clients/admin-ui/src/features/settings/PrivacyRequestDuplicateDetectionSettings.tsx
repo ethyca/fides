@@ -9,6 +9,7 @@ import {
 } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
+import { getErrorMessage } from "~/features/common/helpers";
 import {
   selectDuplicateDetectionSettings,
   useGetConfigurationSettingsQuery,
@@ -66,7 +67,7 @@ const PrivacyRequestDuplicateDetectionSettings = () => {
     const result = await patchConfigurationSettings(payload);
     if (isErrorResult(result)) {
       message.error(
-        "An error occurred while updating duplicate detection settings.",
+        `${getErrorMessage(result.error)}: An error occurred while updating duplicate detection settings.`,
       );
     } else {
       message.success("Duplicate detection settings updated successfully.");

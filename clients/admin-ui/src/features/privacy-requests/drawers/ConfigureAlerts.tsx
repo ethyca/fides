@@ -78,7 +78,9 @@ const ConfigureAlerts = () => {
       notify_after_failures: notify ? minErrorCount : 0,
     });
     if (isErrorResult(payload)) {
-      message.error(getErrorMessage(payload.error));
+      message.error(
+        `Failed to save notification settings: ${getErrorMessage(payload.error)}`,
+      );
     } else {
       message.success("Notification settings saved successfully");
     }

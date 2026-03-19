@@ -40,7 +40,7 @@ const ReprocessButton = forwardRef(
       if (isErrorResult(payload)) {
         dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
         message.error({
-          content: getErrorMessage(payload.error),
+          content: `DSR batch automation has failed due to the following: ${getErrorMessage(payload.error)}`,
           duration: 0,
         });
       } else {
@@ -74,7 +74,7 @@ const ReprocessButton = forwardRef(
       const payload = await retry(subjectRequest);
       if (isErrorResult(payload)) {
         message.error({
-          content: getErrorMessage(payload.error),
+          content: `DSR automation has failed for this privacy request due to the following: ${getErrorMessage(payload.error)}`,
           duration: 0,
         });
       } else {

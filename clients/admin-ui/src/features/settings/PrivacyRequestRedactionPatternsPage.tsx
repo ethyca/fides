@@ -69,7 +69,9 @@ const PrivacyRequestRedactionPatternsPage = () => {
     const payload = await updatePatterns({ patterns: cleanedPatterns });
 
     if (isErrorResult(payload)) {
-      message.error(getErrorMessage(payload.error));
+      message.error(
+        `Failed to update privacy request redaction patterns: ${getErrorMessage(payload.error)}`,
+      );
     } else {
       message.success(
         "Privacy request redaction patterns updated successfully.",

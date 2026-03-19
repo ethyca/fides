@@ -25,7 +25,7 @@ const useReprocessPrivacyRequest = ({
     const payload = await retry(privacyRequest);
     if ("error" in payload) {
       message.error({
-        content: getErrorMessage(payload.error!),
+        content: `DSR automation has failed for this privacy request due to the following: ${getErrorMessage(payload.error!)}`,
         duration: 0,
       });
     } else {
