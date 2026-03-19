@@ -167,6 +167,16 @@ declare global {
        * Get the Ant Design tooltip
        */
       getAntTooltip: () => Chainable;
+
+      /**
+       * Assert an Ant Design message toast is visible
+       * @param type The message type (success, error, info, warning)
+       * @param text Optional text to assert the message contains
+       */
+      shouldShowMessage: (
+        type: "success" | "error" | "info" | "warning",
+        text?: string,
+      ) => Chainable;
     }
   }
 }
@@ -404,5 +414,16 @@ Cypress.Commands.add("getAntDrawerClose", () => cy.get(".ant-drawer-close"));
 Cypress.Commands.add("getAntDrawerHeader", () => cy.get(".ant-drawer-header"));
 Cypress.Commands.add("getAntDrawerFooter", () => cy.get(".ant-drawer-footer"));
 Cypress.Commands.add("getAntTooltip", () => cy.findByRole("tooltip"));
+
+Cypress.Commands.add(
+  "shouldShowMessage",
+  (type: "success" | "error" | "info" | "warning", text?: string) => {
+    const selector = `.ant-message-${type}`;
+    cy.get(selector, { timeout: 10000 }).should("be.visible");
+    if (text) {
+      cy.get(selector).should("contain", text);
+    }
+  },
+);
 
 export {};

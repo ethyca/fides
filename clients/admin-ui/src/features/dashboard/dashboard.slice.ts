@@ -9,7 +9,6 @@ import type {
   PriorityAction,
   PriorityActionsParams,
   PriorityActionsResponse,
-  PrivacyRequestsParams,
   PrivacyRequestsResponse,
   ResetResponse,
   SystemCoverageResponse,
@@ -81,14 +80,8 @@ const dashboardApi = baseApi.injectEndpoints({
       }),
       providesTags: [{ type: "Fides Dashboard", id: "activity-feed" }],
     }),
-    getPrivacyRequests: build.query<
-      PrivacyRequestsResponse,
-      PrivacyRequestsParams | void
-    >({
-      query: (params) => ({
-        url: "plus/dashboard/privacy-requests",
-        params: params ?? {},
-      }),
+    getPrivacyRequests: build.query<PrivacyRequestsResponse, void>({
+      query: () => ({ url: "plus/dashboard/privacy-requests" }),
       providesTags: [{ type: "Fides Dashboard", id: "privacy-requests" }],
     }),
     getSystemCoverage: build.query<SystemCoverageResponse, void>({

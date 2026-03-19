@@ -1,4 +1,3 @@
-import { useAlert, useAPIHelper } from "common/hooks";
 import ConnectionTypeLogo, {
   connectionLogoFromConfiguration,
 } from "datastore-connections/ConnectionTypeLogo";
@@ -11,10 +10,12 @@ import {
   ChakraText as Text,
   Modal,
   useChakraDisclosure as useDisclosure,
+  useMessage,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { useAPIHelper } from "~/features/common/hooks";
 import {
   selectConnectionTypeFilters,
   useGetAllConnectionTypesQuery,
@@ -41,7 +42,8 @@ const OrphanedConnectionModal = ({
   const [selectedConnectionConfig, setSelectedConnectionConfig] =
     useState<ConnectionConfigurationResponse | null>(null);
 
-  const { successAlert } = useAlert();
+  const message = useMessage();
+  const { handleError } = useAPIHelper();
 
   const [patchDatastoreConnection, { isLoading }] =
     usePatchSystemConnectionConfigsMutation();
@@ -50,7 +52,6 @@ const OrphanedConnectionModal = ({
   const { data } = useGetAllConnectionTypesQuery(filters);
 
   const connectionOptions = useMemo(() => data?.items || [], [data]);
-  const { handleError } = useAPIHelper();
   const closeIfComplete = () => {
     if (isLoading) {
       return;
@@ -91,7 +92,7 @@ const OrphanedConnectionModal = ({
         );
 
         if (response.succeeded[0]) {
-          successAlert(`Integration successfully linked!`);
+          message.success(`Integration successfully linked!`);
         }
 
         setSelectedConnectionConfig(null);
