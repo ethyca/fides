@@ -119,7 +119,6 @@ from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomat
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
-from fides.common.cache import get_dsr_cache_store
 from fides.config import CONFIG
 from fides.service.attachment_service import AttachmentService
 

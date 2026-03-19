@@ -1,7 +1,7 @@
 import json
 import os
 from contextlib import contextmanager
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, Generator, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
 from loguru import logger
