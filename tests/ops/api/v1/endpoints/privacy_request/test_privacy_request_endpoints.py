@@ -67,6 +67,9 @@ from fides.api.schemas.redis_cache import (
     Identity,
     LabeledIdentity,
 )
+from fides.api.service.privacy_request.request_service import (
+    EMBEDDED_EXECUTION_LOG_LIMIT,
+)
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
@@ -77,7 +80,6 @@ from fides.api.util.fuzzy_search_utils import (
     remove_refresh_automaton_signal,
 )
 from fides.api.v1.endpoints.privacy_request_endpoints import (
-    EMBEDDED_EXECUTION_LOG_LIMIT,
     validate_manual_input,
 )
 from fides.common.scope_registry import (
