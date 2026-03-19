@@ -9,6 +9,7 @@ import { TrendPeriod } from "~/features/dashboard/types";
 
 import { AgentBriefingBanner } from "./AgentBriefingBanner";
 import { DashboardDrawer } from "./DashboardDrawer";
+import { DSRStatusCard } from "./DSRStatusCard";
 import { PostureCard } from "./PostureCard";
 import { PriorityActionsCard } from "./PriorityActionsCard";
 import { SystemCoverageCard } from "./SystemCoverageCard";
@@ -72,6 +73,9 @@ export const HomeDashboard = () => {
       <Row gutter={24}>
         <Col xs={24} md={8}>
           <SystemCoverageCard />
+        </Col>
+        <Col xs={24} md={16}>
+          <DSRStatusCard />
         </Col>
       </Row>
       <DashboardDrawer />

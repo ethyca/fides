@@ -1,17 +1,14 @@
 import { isErrorWithDetail, isErrorWithDetailArray } from "common/helpers";
-
-import { useAlert } from "./useAlert";
+import { useMessage } from "fidesui";
 
 /**
  * Custom hook for API helper methods
- * @returns
  */
 export const useAPIHelper = () => {
-  const { errorAlert } = useAlert();
+  const message = useMessage();
 
   /**
    * Display custom error toast notification as a result of an API exception
-   * @param error
    */
   const handleError = (error: any) => {
     let errorMsg = "An unexpected error occurred. Please try again.";
@@ -20,7 +17,7 @@ export const useAPIHelper = () => {
     } else if (isErrorWithDetailArray(error)) {
       errorMsg = error.data.detail[0].msg;
     }
-    errorAlert(errorMsg);
+    message.error(errorMsg);
   };
 
   return { handleError };
