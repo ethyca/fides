@@ -92,13 +92,15 @@ export const formatTimestamp = (
  * Derives the time interval from the first two consecutive data points.
  * Assumes the data is sorted chronologically with uniform spacing.
  */
-export const deriveInterval = (data: { timestamp: string }[]): number => {
+export const deriveInterval = (
+  data: { label: string }[],
+): number => {
   if (data.length < 2) {
     return HOUR_MS;
   }
   const gap =
-    new Date(data[1].timestamp).getTime() -
-    new Date(data[0].timestamp).getTime();
+    new Date(data[1].label).getTime() -
+    new Date(data[0].label).getTime();
   return gap > 0 ? gap : HOUR_MS;
 };
 
@@ -145,17 +147,6 @@ export const useContainerWidth = (
   return width;
 };
 
-// export interface TimeSeriesConfig<T> {
-//   points: T[];
-//   timestampKey: keyof T & string;
-//   valueKey: keyof T & string;
-// }
-
-// export interface BucketedResult {
-//   data: { label: string; value: number }[];
-//   interval: ChartInterval;
-// }
-
 const INTERVAL_MS: Record<ChartInterval, number> = {
   "1h": HOUR_MS,
   "6h": 6 * HOUR_MS,
@@ -176,9 +167,9 @@ export interface ChartDataRequest {
 export const pickBucketInterval = (
   rangeMs: number,
   containerWidth: number,
-  barWidth: number,
+  minPointWidth: number,
 ): ChartInterval => {
-  const maxBuckets = Math.max(1, Math.floor(containerWidth / barWidth));
+  const maxBuckets = Math.max(1, Math.floor(containerWidth / minPointWidth));
 
   return (
     INTERVAL_ORDER.find(
@@ -189,13 +180,13 @@ export const pickBucketInterval = (
 
 export const computeDataRequest = (
   containerWidth: number,
-  barWidth: number,
+  minPointWidth: number,
   timeRangeMs?: number,
 ): ChartDataRequest => {
-  const maxBuckets = Math.max(1, Math.floor(containerWidth / barWidth));
+  const maxBuckets = Math.max(1, Math.floor(containerWidth / minPointWidth));
 
   if (timeRangeMs != null) {
-    const interval = pickBucketInterval(timeRangeMs, containerWidth, barWidth);
+    const interval = pickBucketInterval(timeRangeMs, containerWidth, minPointWidth);
     return { interval, rangeMs: timeRangeMs };
   }
 
@@ -204,73 +195,6 @@ export const computeDataRequest = (
   const rangeMs = maxBuckets * INTERVAL_MS[interval];
   return { interval, rangeMs };
 };
-
-// export const bucketTimeSeries = <T>(
-//   points: T[],
-//   timestampKey: keyof T & string,
-//   valueKey: keyof T & string,
-//   interval: ChartInterval,
-// ): BucketedResult => {
-//   const ms = INTERVAL_MS[interval];
-//
-//   if (points.length === 0) {
-//     return { data: [], interval };
-//   }
-//
-//   const timestamps = points.map((p) =>
-//     new Date(p[timestampKey] as string).getTime(),
-//   );
-//   const minTs = Math.min(...timestamps);
-//   const maxTs = Math.max(...timestamps);
-//   const range = maxTs - minTs;
-//
-//   if (range === 0) {
-//     const total = points.reduce((sum, p) => sum + Number(p[valueKey]), 0);
-//     return {
-//       data: [{ label: new Date(minTs).toISOString(), value: total }],
-//       interval,
-//     };
-//   }
-//
-//   const flooredStart = Math.floor(minTs / ms) * ms;
-//   const bucketCount = Math.max(1, Math.ceil((maxTs - flooredStart) / ms));
-//
-//   const buckets = Array.from({ length: bucketCount }, (_, index) => ({
-//     label: new Date(flooredStart + index * ms).toISOString(),
-//     value: 0,
-//   }));
-//
-//   timestamps.forEach((ts, idx) => {
-//     const bucketIndex = Math.min(
-//       Math.floor((ts - flooredStart) / ms),
-//       bucketCount - 1,
-//     );
-//     buckets[bucketIndex].value += Number(points[idx][valueKey]);
-//   });
-//
-//   return { data: buckets, interval };
-// };
-
-// export const useTimeSeriesBuckets = <T>(
-//   config: TimeSeriesConfig<T> | undefined,
-//   containerWidth: number,
-//   barWidth: number,
-// ): BucketedResult | null => {
-//   return useMemo(() => {
-//     if (!config || containerWidth <= 0 || config.points.length === 0) {
-//       return null;
-//     }
-//
-//     const { points, timestampKey, valueKey } = config;
-//     const timestamps = points.map((p) =>
-//       new Date(p[timestampKey] as string).getTime(),
-//     );
-//     const rangeMs = Math.max(...timestamps) - Math.min(...timestamps);
-//     const interval = pickBucketInterval(rangeMs, containerWidth, barWidth);
-//
-//     return bucketTimeSeries(points, timestampKey, valueKey, interval);
-//   }, [config, containerWidth, barWidth]);
-// };
 
 export const useTooltipContentStyle = (): CSSProperties => {
   const { token } = theme.useToken();

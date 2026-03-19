@@ -40,6 +40,10 @@ export const BAR_SIZE_TOKEN: Record<BarSize, AntSizeTokenKey> = {
   lg: "sizeLG",
 } as const;
 
+export const LABEL_WIDTH = 110;
+
+export const MIN_PX_PER_POINT = 12;
+
 export type ChartInterval = "1h" | "6h" | "1d" | "3d";
 
 export const COLOR_OPTIONS = [

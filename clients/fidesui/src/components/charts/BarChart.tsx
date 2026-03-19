@@ -8,17 +8,13 @@ import {
   XAxis,
 } from "recharts";
 
-import type {
-  AntColorTokenKey,
-  BarSize,
-  ChartInterval,
-} from "./chart-constants";
-import { BAR_SIZE_TOKEN, CHART_ANIMATION } from "./chart-constants";
+import type { AntColorTokenKey, BarSize } from "./chart-constants";
+import { BAR_SIZE_TOKEN, CHART_ANIMATION, LABEL_WIDTH } from "./chart-constants";
 import type { ChartDataRequest } from "./chart-utils";
 import {
   computeDataRequest,
+  deriveInterval,
   formatTimestamp,
-  intervalToMs,
   tooltipLabelFormatter,
   useChartAnimation,
   useContainerWidth,
@@ -34,25 +30,19 @@ export interface BarChartDataPoint {
 export interface BarChartProps {
   data?: BarChartDataPoint[];
   color?: AntColorTokenKey;
-  interval?: ChartInterval;
   animationDuration?: number;
-  tickFormatter?: (label: string) => string;
   showTooltip?: boolean;
   size?: BarSize;
-  timeRangeMs?: number;
-  onDataRequest?: (request: ChartDataRequest) => void;
+  onIntervalChange?: (request: ChartDataRequest) => void;
 }
 
 export const BarChart = ({
   data,
   color = "colorText",
-  interval,
   animationDuration = CHART_ANIMATION.defaultDuration,
-  tickFormatter,
   showTooltip = true,
   size = "md",
-  timeRangeMs,
-  onDataRequest,
+  onIntervalChange,
 }: BarChartProps) => {
   const { token } = theme.useToken();
   const tooltipContentStyle = useTooltipContentStyle();
@@ -63,35 +53,50 @@ export const BarChart = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const containerWidth = useContainerWidth(containerRef);
 
+  const chartData = data ?? [];
+
+  const derivedIntervalMs = deriveInterval(chartData);
+  const timeRangeMs =
+    chartData.length >= 2
+      ? new Date(chartData[chartData.length - 1].label).getTime() -
+        new Date(chartData[0].label).getTime()
+      : 0;
+
+  // Stable ref prevents oscillation: re-bucketed data shifts range
+  // slightly due to bucket alignment, triggering a feedback loop.
+  const stableRangeMsRef = useRef(0);
+  useEffect(() => {
+    if (timeRangeMs > 0 && stableRangeMsRef.current === 0) {
+      stableRangeMsRef.current = timeRangeMs;
+    }
+  }, [timeRangeMs]);
+
   const prevRequestRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!onDataRequest || containerWidth <= 0) {
+    if (
+      !onIntervalChange ||
+      containerWidth <= 0 ||
+      stableRangeMsRef.current <= 0
+    ) {
       return;
     }
 
-    const request = computeDataRequest(containerWidth, barWidth, timeRangeMs);
+    const request = computeDataRequest(
+      containerWidth,
+      barWidth,
+      stableRangeMsRef.current,
+    );
     const key = `${request.interval}:${request.rangeMs}`;
 
     if (key !== prevRequestRef.current) {
-      console.log('REQUEST', request)
       prevRequestRef.current = key;
-      onDataRequest(request);
+      onIntervalChange(request);
     }
-  }, [onDataRequest, containerWidth, barWidth, timeRangeMs]);
+  }, [onIntervalChange, containerWidth, barWidth]);
 
-  const chartData = data ?? [];
-  const chartInterval = interval;
-  const chartIntervalMs = chartInterval
-    ? intervalToMs(chartInterval)
-    : undefined;
+  const formatLabel = (label: string) =>
+    formatTimestamp(label, derivedIntervalMs);
 
-  const formatLabel =
-    tickFormatter ??
-    (chartIntervalMs != null
-      ? (label: string) => formatTimestamp(label, chartIntervalMs)
-      : undefined);
-
-  const LABEL_WIDTH = 110;
   const barCount = chartData.length;
   const slotWidth =
     barCount > 0 && containerWidth > 0
@@ -114,7 +119,7 @@ export const BarChart = ({
       fill={token.colorTextTertiary}
       width={LABEL_WIDTH}
     >
-      {payload ? (formatLabel?.(payload.value) ?? payload.value) : null}
+      {payload ? formatLabel(payload.value) : null}
     </ChartText>
   );
 
@@ -138,11 +143,8 @@ export const BarChart = ({
               <Tooltip
                 cursor={false}
                 contentStyle={tooltipContentStyle}
-                labelFormatter={
-                  chartIntervalMs != null
-                    ? (label) =>
-                        tooltipLabelFormatter(String(label), chartIntervalMs)
-                    : undefined
+                labelFormatter={(label) =>
+                  tooltipLabelFormatter(String(label), derivedIntervalMs)
                 }
               />
             )}

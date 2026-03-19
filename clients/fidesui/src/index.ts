@@ -331,6 +331,12 @@ export { iso31661, iso31662 } from "iso-3166";
 
 // Export data-display components
 export type {
+  AreaChartDataPoint,
+  AreaChartProps,
+  AreaChartSeries,
+} from "./components/charts/AreaChart";
+export { AreaChart } from "./components/charts/AreaChart";
+export type {
   BarChartDataPoint,
   BarChartProps,
 } from "./components/charts/BarChart";
