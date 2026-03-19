@@ -72,7 +72,7 @@ export const BarChart = ({
           contentStyle={tooltipContentStyle}
           labelFormatter={
             intervalMs != null
-              ? (label: string) => tooltipLabelFormatter(label, intervalMs)
+              ? (label) => tooltipLabelFormatter(String(label), intervalMs)
               : undefined
           }
         />
