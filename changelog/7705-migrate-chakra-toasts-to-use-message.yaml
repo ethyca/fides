@@ -1,0 +1,4 @@
+type: Developer Experience
+description: Migrated all remaining Chakra toast consumers to Ant Design useMessage, completing the toast unification
+pr: 7705
+labels: []
