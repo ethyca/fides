@@ -2,6 +2,7 @@ import {
   ChakraBox as Box,
   ChakraLink as Link,
   ChakraText as Text,
+  Space,
   TabsProps,
   useNotification,
 } from "fidesui";
@@ -51,12 +52,12 @@ const NotificationActions = ({
   onViewDatamap: () => void;
   onAddPrivacyDeclaration: () => void;
 }) => (
-  <Box>
-    <ToastLink onClick={onViewDatamap}>View data map</ToastLink>{" "}
+  <Space>
+    <ToastLink onClick={onViewDatamap}>View data map</ToastLink>
     <ToastLink onClick={onAddPrivacyDeclaration}>
       Add privacy declarations
     </ToastLink>
-  </Box>
+  </Space>
 );
 
 const useSystemFormTabs = ({
