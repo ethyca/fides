@@ -30,7 +30,7 @@ const DataConsumerForm = ({
   const router = useRouter();
 
   const { data: purposesData, isLoading: purposesLoading } =
-    useGetAllDataPurposesQuery({ size: 500 });
+    useGetAllDataPurposesQuery({ size: 100 });
 
   const purposeOptions = useMemo(
     () =>
