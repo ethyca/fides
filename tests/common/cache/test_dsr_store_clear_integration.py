@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
 from tests.common.cache.mock_redis import create_mock_redis
@@ -35,8 +36,6 @@ class TestPrivacyRequestClearCachedValues:
         # Patch get_cache in the api.util.cache module where get_dsr_cache_store calls it
         with patch("fides.api.util.cache.get_cache", return_value=mock_redis):
             # Import here to avoid app initialization
-            from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-
             PrivacyRequest.clear_cached_values(pr)
 
         # Verify all keys deleted
@@ -57,8 +56,6 @@ class TestPrivacyRequestClearCachedValues:
         pr.id = pr_id
 
         with patch("fides.api.util.cache.get_cache", return_value=mock_redis):
-            from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-
             PrivacyRequest.clear_cached_values(pr)
 
         assert len(mock_redis.keys(f"*{pr_id}*")) == 0
@@ -81,8 +78,6 @@ class TestPrivacyRequestClearCachedValues:
         pr.id = pr_id
 
         with patch("fides.api.util.cache.get_cache", return_value=mock_redis):
-            from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-
             PrivacyRequest.clear_cached_values(pr)
 
         assert len(mock_redis.keys(f"*{pr_id}*")) == 0
@@ -103,8 +98,6 @@ class TestPrivacyRequestClearCachedValues:
         pr.id = pr_id
 
         with patch("fides.api.util.cache.get_cache", return_value=mock_redis):
-            from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-
             PrivacyRequest.clear_cached_values(pr)
 
         # Index should be deleted

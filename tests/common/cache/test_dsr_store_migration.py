@@ -10,7 +10,6 @@ import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
-from tests.common.cache.mock_redis import create_mock_redis
 
 
 # Test data factories
@@ -29,21 +28,6 @@ def make_legacy_key(dsr_id: str, field_type: str, field_name: str = "") -> str:
 def make_new_key(dsr_id: str, part: str) -> str:
     """Build new DSR key format."""
     return f"dsr:{dsr_id}:{part}"
-
-
-@pytest.fixture
-def mock_redis():
-    return create_mock_redis()
-
-
-@pytest.fixture
-def dsr_store(mock_redis):
-    return DSRCacheStore(RedisCacheManager(mock_redis))
-
-
-@pytest.fixture
-def dsr_id():
-    return make_dsr_id()
 
 
 @pytest.mark.unit

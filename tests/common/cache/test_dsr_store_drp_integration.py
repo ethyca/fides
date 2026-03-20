@@ -7,33 +7,6 @@ Focuses on service-layer methods for DRP data management, including:
 - Automatic migration on read
 """
 
-import uuid
-
-import pytest
-
-from fides.common.cache.dsr_store import DSRCacheStore
-from fides.common.cache.manager import RedisCacheManager
-from tests.common.cache.mock_redis import create_mock_redis
-
-
-@pytest.fixture
-def mock_redis():
-    """In-memory Redis mock for isolated testing."""
-    return create_mock_redis()
-
-
-@pytest.fixture
-def dsr_store(mock_redis):
-    """DSRCacheStore instance with mock Redis backend."""
-    manager = RedisCacheManager(mock_redis)
-    return DSRCacheStore(manager)
-
-
-@pytest.fixture
-def pr_id():
-    """Generate unique privacy request ID for each test."""
-    return f"test-pr-{uuid.uuid4()}"
-
 
 class TestDSRCacheStoreDRP:
     """Test DSRCacheStore DRP request body methods."""

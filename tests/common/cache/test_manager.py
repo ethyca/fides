@@ -1,20 +1,6 @@
 import pytest
 
 from fides.common.cache.manager import INDEX_TTL_EXTRA_SECONDS, RedisCacheManager
-from tests.common.cache.mock_redis import create_mock_redis
-
-# --- Fixtures ---
-
-
-@pytest.fixture
-def mock_redis():
-    return create_mock_redis()
-
-
-@pytest.fixture
-def manager(mock_redis) -> RedisCacheManager:
-    return RedisCacheManager(mock_redis)
-
 
 # --- Tests ---
 

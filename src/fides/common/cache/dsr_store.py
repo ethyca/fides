@@ -14,7 +14,7 @@ whole DSR and a different storage shape; can introduce a hash-backed backend
 later if we want to avoid index consistency concerns.
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from redis import Redis
 
@@ -128,6 +128,37 @@ class DSRCacheStore:
         key = _dsr_key(dsr_id, part)
         self._manager.delete_key_and_remove_from_index(key, _dsr_index_prefix(dsr_id))
 
+    # --- Shared get/has helpers ---
+
+    def _get_cached_by_type(
+        self,
+        dsr_id: str,
+        new_infix: str,
+        legacy_infix: str,
+        getter: Callable[[str, str], Optional[Union[str, bytes]]],
+    ) -> Dict[str, Any]:
+        """Shared implementation for get_cached_custom_fields/identity_data/drp_request_body."""
+        result: Dict[str, Any] = {}
+        for key in self.get_all_keys(dsr_id):
+            if new_infix in key:
+                field = key.split(":")[-1]
+            elif legacy_infix in key:
+                field = key.split("-")[-1]
+            else:
+                continue
+            value = getter(dsr_id, field)
+            if value:
+                result[field] = value
+        return result
+
+    def _has_cached_by_type(
+        self, dsr_id: str, new_infix: str, legacy_infix: str
+    ) -> bool:
+        """Shared implementation for has_cached_* methods."""
+        return any(
+            new_infix in k or legacy_infix in k for k in self.get_all_keys(dsr_id)
+        )
+
     # --- Convenience: custom privacy request fields ---
 
     def write_custom_field(
@@ -171,31 +202,12 @@ class DSRCacheStore:
         Returns dict with custom field values. Automatically migrates legacy keys on read.
         Returns empty dict if no custom fields cached.
         """
-        result: Dict[str, Any] = {}
-        all_keys = self.get_all_keys(dsr_id)
-
-        # Filter for custom field keys (both new and legacy formats)
-        # New: dsr:{id}:custom_field:{key}
-        # Legacy: id-{id}-custom-privacy-request-field-{key}
-        custom_keys = [
-            k
-            for k in all_keys
-            if ":custom_field:" in k or "-custom-privacy-request-field-" in k
-        ]
-
-        for key in custom_keys:
-            # Extract field name from key
-            if ":custom_field:" in key:
-                field_key = key.split(":")[-1]
-            else:
-                # Legacy format
-                field_key = key.split("-")[-1]
-
-            value = self.get_custom_field(dsr_id, field_key)
-            if value:
-                result[field_key] = value
-
-        return result
+        return self._get_cached_by_type(
+            dsr_id,
+            ":custom_field:",
+            "-custom-privacy-request-field-",
+            self.get_custom_field,
+        )
 
     def has_cached_custom_fields(self, dsr_id: str) -> bool:
         """
@@ -203,10 +215,8 @@ class DSRCacheStore:
 
         Returns True if any custom field keys exist (legacy or new format).
         """
-        all_keys = self.get_all_keys(dsr_id)
-        return any(
-            ":custom_field:" in k or "-custom-privacy-request-field-" in k
-            for k in all_keys
+        return self._has_cached_by_type(
+            dsr_id, ":custom_field:", "-custom-privacy-request-field-"
         )
 
     # --- Convenience: identity ---
@@ -248,27 +258,9 @@ class DSRCacheStore:
         Returns dict with identity attributes. Automatically migrates legacy keys on read.
         Returns empty dict if no identity data cached.
         """
-        result: Dict[str, Any] = {}
-        all_keys = self.get_all_keys(dsr_id)
-
-        # Filter for identity keys (both new and legacy formats)
-        identity_keys = [k for k in all_keys if ":identity:" in k or "-identity-" in k]
-
-        for key in identity_keys:
-            # Extract attribute name from key
-            # New format: dsr:{id}:identity:{attr}
-            # Legacy format: id-{id}-identity-{attr}
-            if ":identity:" in key:
-                attr = key.split(":")[-1]
-            else:
-                # Legacy format
-                attr = key.split("-")[-1]
-
-            value = self.get_identity(dsr_id, attr)
-            if value:
-                result[attr] = value
-
-        return result
+        return self._get_cached_by_type(
+            dsr_id, ":identity:", "-identity-", self.get_identity
+        )
 
     def has_cached_identity_data(self, dsr_id: str) -> bool:
         """
@@ -276,8 +268,7 @@ class DSRCacheStore:
 
         Returns True if any identity keys exist (legacy or new format).
         """
-        all_keys = self.get_all_keys(dsr_id)
-        return any(":identity:" in k or "-identity-" in k for k in all_keys)
+        return self._has_cached_by_type(dsr_id, ":identity:", "-identity-")
 
     # --- Convenience: encryption ---
 
@@ -333,35 +324,14 @@ class DSRCacheStore:
         Returns dict with DRP fields. Automatically migrates legacy keys on read.
         Returns empty dict if no DRP data cached.
         """
-        result: Dict[str, Any] = {}
-        all_keys = self.get_all_keys(dsr_id)
-
-        # Filter for DRP keys (both new and legacy formats)
-        drp_keys = [k for k in all_keys if ":drp:" in k or "-drp-" in k]
-
-        for key in drp_keys:
-            # Extract field name from key
-            # New format: dsr:{id}:drp:{field}
-            # Legacy format: id-{id}-drp-{field}
-            if ":drp:" in key:
-                field = key.split(":")[-1]
-            else:
-                # Legacy format
-                field = key.split("-")[-1]
-
-            value = self.get_drp(dsr_id, field)
-            if value:
-                result[field] = value
-
-        return result
+        return self._get_cached_by_type(dsr_id, ":drp:", "-drp-", self.get_drp)
 
     def has_cached_drp_request_body(self, dsr_id: str) -> bool:
         """
         Check if any DRP request body data is cached for this DSR.
         Checks both new and legacy key formats.
         """
-        all_keys = self.get_all_keys(dsr_id)
-        return any(":drp:" in k or "-drp-" in k for k in all_keys)
+        return self._has_cached_by_type(dsr_id, ":drp:", "-drp-")
 
     # --- Convenience: masking secret ---
 

@@ -1,7 +1,6 @@
 import json
 import os
-from contextlib import contextmanager
-from typing import Any, Dict, Generator, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 from urllib.parse import unquote_to_bytes
 
 from loguru import logger
@@ -326,10 +325,9 @@ def get_redis_cache_manager() -> RedisCacheManager:
     return RedisCacheManager(get_cache())
 
 
-@contextmanager
-def get_dsr_cache_store() -> Generator[DSRCacheStore, None, None]:
-    """Context manager yielding a DSRCacheStore for privacy request cache operations."""
-    yield DSRCacheStore(get_redis_cache_manager())
+def get_dsr_cache_store() -> DSRCacheStore:
+    """Return a DSRCacheStore for privacy request cache operations."""
+    return DSRCacheStore(get_redis_cache_manager())
 
 
 def get_read_only_cache() -> FidesopsRedis:

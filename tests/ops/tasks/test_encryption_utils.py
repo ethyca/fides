@@ -11,7 +11,7 @@ def mock_cache():
         "fides.api.tasks.encryption_utils.get_dsr_cache_store"
     ) as mock_get_store:
         store = MagicMock()
-        mock_get_store.return_value.__enter__.return_value = store
+        mock_get_store.return_value = store
         yield store
 
 

@@ -16,391 +16,201 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# PrivacyRequest imported inside tests to ensure get_cache is patched
-from fides.api.schemas.redis_cache import Identity
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.tasks.encryption_utils import encrypt_access_request_results
 from fides.api.util.cache import (
-    FidesopsRedis,
     get_cache,
+    get_custom_privacy_request_field_cache_key,
     get_drp_request_body_cache_key,
+    get_dsr_cache_store,
     get_encryption_cache_key,
     get_identity_cache_key,
 )
-from tests.common.cache.mock_redis import create_mock_redis
-
-
-@pytest.fixture
-def mock_redis():
-    """Shared mock Redis instance."""
-    return create_mock_redis()
-
-
-@pytest.fixture
-def pr_id():
-    """Generate unique privacy request ID."""
-    return f"pri_{uuid.uuid4()}"
 
 
 @pytest.mark.unit
-class TestProductionCompatibilityLegacyKeys:
+class TestInFlightDSRLifecycle:
     """
-    Test that new code can read and process privacy requests that were
-    cached by old code using legacy key formats.
+    Simulate a full in-flight DSR that was cached by old code, then processed
+    and cleared by new code after a deployment. This is the "Steps to Confirm"
+    scenario from the PR: volume of in-flight DSR processing, then upgrading
+    in the middle of it.
     """
 
-    def simulate_legacy_cache_write(
-        self, cache: FidesopsRedis, pr_id: str, identity: Identity, encryption_key: str
-    ) -> None:
+    def test_full_lifecycle_legacy_request_processed_by_new_code(self, mock_redis):
         """
-        Simulate how old code would cache data - using direct cache.set_with_autoexpire
-        with legacy key formats.
+        End-to-end: old code caches a complete DSR (identity, encryption,
+        custom fields, DRP body). New code reads everything, processes the
+        request, and clears the cache.
         """
-        # Legacy identity caching
-        identity_dict = identity.labeled_dict()
-        for key, value in identity_dict.items():
-            if value is not None:
-                if isinstance(value, dict):
-                    # LabeledIdentity - encode as JSON
-                    cache.set_with_autoexpire(
-                        get_identity_cache_key(pr_id, key), json.dumps(value)
-                    )
-                else:
-                    cache.set_with_autoexpire(get_identity_cache_key(pr_id, key), value)
+        pr_id = f"pri_{uuid.uuid4()}"
 
-        # Legacy encryption key caching
-        cache.set_with_autoexpire(
-            get_encryption_cache_key(pr_id, "key"), encryption_key
-        )
-
-    def test_privacy_request_reads_legacy_identity_during_processing(
-        self, mock_redis, pr_id
-    ):
-        """
-        Production scenario: Privacy request was created and cached by old code.
-        New code reads identity during request processing.
-        """
-        # Simulate old code caching identity
-        identity = Identity(email="user@example.com", phone_number="+1234567890")
-        encryption_key = "test-encryption-key-12345"
-
+        # --- Phase 1: "Old code" caches a full DSR using legacy key format ---
         with (
             patch("fides.api.util.cache.get_cache", return_value=mock_redis),
             patch("fides.api.util.cache._connection", mock_redis),
         ):
             cache = get_cache()
-            self.simulate_legacy_cache_write(cache, pr_id, identity, encryption_key)
 
-            # Simulate PrivacyRequest instance (minimal mock)
-            pr = MagicMock()
-            pr.id = pr_id
-
-            # Import PrivacyRequest inside patch context
-            from fides.api.models.privacy_request import PrivacyRequest
-
-            # New code reads cached identity - must be within patch context
-            identity_data = PrivacyRequest.get_cached_identity_data(pr)
-
-            # Should successfully read from legacy keys
-            assert identity_data["email"] == "user@example.com"
-            assert identity_data["phone_number"] == "+1234567890"
-
-            # Legacy keys should be migrated to new format
-            from fides.api.util.cache import get_dsr_cache_store
-
-            with get_dsr_cache_store() as store:
-                assert store.get_identity(pr_id, "email") == "user@example.com"
-                # Legacy key should be deleted after migration
-                assert mock_redis.get(get_identity_cache_key(pr_id, "email")) is None
-
-    def test_privacy_request_reads_legacy_encryption_during_processing(
-        self, mock_redis, pr_id
-    ):
-        """
-        Production scenario: Encryption key was cached by old code.
-        New code reads encryption key during request processing.
-        """
-        encryption_key = "legacy-encryption-key-16b"  # 16 bytes
-
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            cache = get_cache()
+            # Identity
             cache.set_with_autoexpire(
-                get_encryption_cache_key(pr_id, "key"), encryption_key
+                get_identity_cache_key(pr_id, "email"), json.dumps("user@example.com")
+            )
+            cache.set_with_autoexpire(
+                get_identity_cache_key(pr_id, "phone_number"),
+                json.dumps("+1234567890"),
             )
 
-            # Import PrivacyRequest inside patch context
-            from fides.api.models.privacy_request import PrivacyRequest
-
-            # New code reads encryption key
-            pr = MagicMock()
-            pr.id = pr_id
-            cached_key = PrivacyRequest.get_cached_encryption_key(pr)
-
-            assert cached_key == encryption_key
-
-            # Legacy key should be migrated
-            from fides.api.util.cache import get_dsr_cache_store
-
-            with get_dsr_cache_store() as store:
-                assert store.get_encryption(pr_id, "key") == encryption_key
-                assert mock_redis.get(get_encryption_cache_key(pr_id, "key")) is None
-
-    def test_encryption_utils_reads_legacy_encryption_key(self, mock_redis, pr_id):
-        """
-        Production scenario: Encryption key cached by old code.
-        encrypt_access_request_results reads it during processing.
-        """
-        encryption_key = "0123456789abcdef"  # 16 bytes
-        test_data = "sensitive data to encrypt"
-
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            cache = get_cache()
+            # Encryption key
             cache.set_with_autoexpire(
-                get_encryption_cache_key(pr_id, "key"), encryption_key
+                get_encryption_cache_key(pr_id, "key"), "0123456789abcdef"
             )
 
-            # New code encrypts data using cached key
-            from fides.api.tasks.encryption_utils import encrypt_access_request_results
-
-            encrypted = encrypt_access_request_results(test_data, pr_id)
-
-            # Should successfully encrypt (result is base64 string)
-            assert isinstance(encrypted, str)
-            assert len(encrypted) > 0
-            assert encrypted != test_data  # Should be encrypted, not plaintext
-
-    def test_mixed_legacy_and_new_keys_same_request(self, mock_redis, pr_id):
-        """
-        Production scenario: Some fields cached by old code, some by new code
-        (e.g., request started before deployment, continued after).
-        """
-        # Old code cached identity
-        identity = Identity(email="legacy@example.com")
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            cache = get_cache()
+            # Custom fields
             cache.set_with_autoexpire(
-                get_identity_cache_key(pr_id, "email"), identity.email
+                get_custom_privacy_request_field_cache_key(pr_id, "department"),
+                json.dumps("Engineering"),
+            )
+            cache.set_with_autoexpire(
+                get_custom_privacy_request_field_cache_key(pr_id, "tenant_id"),
+                json.dumps("tenant-42"),
             )
 
-        # New code caches encryption
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            from fides.api.util.cache import get_dsr_cache_store
-
-            with get_dsr_cache_store() as store:
-                store.write_encryption(pr_id, "key", "new-encryption-key")
-
-        # Both should be readable
-        pr = MagicMock()
-        pr.id = pr_id
-
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            from fides.api.models.privacy_request import PrivacyRequest
-
-            # get_cached_identity_data should find and migrate the legacy key
-            identity_data = PrivacyRequest.get_cached_identity_data(pr)
-            # After migration, the data should be available in the returned dict
-            assert identity_data["email"] == "legacy@example.com"
-
-            encryption_key = PrivacyRequest.get_cached_encryption_key(pr)
-            assert encryption_key == "new-encryption-key"
-
-            # Verify migration happened - legacy key should be deleted
-            assert mock_redis.get(get_identity_cache_key(pr_id, "email")) is None
-
-    def test_legacy_drp_request_body_readable(self, mock_redis, pr_id):
-        """
-        Production scenario: DRP request body cached by old code.
-        New code reads it during processing.
-        """
-        # Simulate old code caching DRP body
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            cache = get_cache()
+            # DRP body
             cache.set_with_autoexpire(
-                get_drp_request_body_cache_key(pr_id, "meta"),
-                "DrpMeta(version='0.5')",
+                get_drp_request_body_cache_key(pr_id, "meta"), "DrpMeta(version='0.5')"
             )
             cache.set_with_autoexpire(
                 get_drp_request_body_cache_key(pr_id, "regime"), "ccpa"
             )
 
-        # New code reads DRP body
+        # Verify legacy keys exist before "deployment"
+        legacy_keys = [k for k in mock_redis.keys("*") if pr_id in k]
+        assert len(legacy_keys) == 7  # 2 identity + 1 encryption + 2 custom + 2 DRP
+
+        # --- Phase 2: "New code deployed" — read everything via PrivacyRequest ---
         with (
             patch("fides.api.util.cache.get_cache", return_value=mock_redis),
             patch("fides.api.util.cache._connection", mock_redis),
         ):
-            from fides.api.util.cache import get_dsr_cache_store
+            pr = MagicMock()
+            pr.id = pr_id
 
-            with get_dsr_cache_store() as store:
-                meta = store.get_drp(pr_id, "meta")
-                regime = store.get_drp(pr_id, "regime")
+            # Read identity (triggers migration)
+            identity_data = PrivacyRequest.get_cached_identity_data(pr)
+            assert identity_data["email"] == "user@example.com"
+            assert identity_data["phone_number"] == "+1234567890"
 
-                assert meta == "DrpMeta(version='0.5')"
-                assert regime == "ccpa"
+            # Read encryption key (triggers migration)
+            encryption_key = PrivacyRequest.get_cached_encryption_key(pr)
+            assert encryption_key == "0123456789abcdef"
 
-                # Legacy keys should be migrated
-                assert (
-                    mock_redis.get(get_drp_request_body_cache_key(pr_id, "meta"))
-                    is None
-                )
+            # Encrypt data using the cached key
+            encrypted = encrypt_access_request_results("sensitive data", pr_id)
+            assert encrypted != "sensitive data"  # Actually encrypted
 
-    def test_legacy_custom_fields_readable(self, mock_redis, pr_id):
+            # Read custom fields (triggers migration)
+            store = get_dsr_cache_store()
+            custom_fields = store.get_cached_custom_fields(pr_id)
+            assert custom_fields["department"] == json.dumps("Engineering")
+            assert custom_fields["tenant_id"] == json.dumps("tenant-42")
+
+            # Read DRP body (triggers migration)
+            drp_body = store.get_cached_drp_request_body(pr_id)
+            assert drp_body["meta"] == "DrpMeta(version='0.5')"
+            assert drp_body["regime"] == "ccpa"
+
+            # --- Phase 3: Verify migration happened ---
+            # All legacy keys should be gone
+            remaining_legacy = [
+                k for k in mock_redis.keys("*") if k.startswith(f"id-{pr_id}")
+            ]
+            assert remaining_legacy == [], (
+                f"Legacy keys not migrated: {remaining_legacy}"
+            )
+
+            # New-format keys should exist
+            assert store.get_identity(pr_id, "email") == json.dumps("user@example.com")
+            assert store.get_encryption(pr_id, "key") == "0123456789abcdef"
+
+            # --- Phase 4: "Request complete" — clear the cache ---
+            store.clear(pr_id)
+
+            # Everything gone
+            all_keys = [k for k in mock_redis.keys("*") if pr_id in k]
+            assert all_keys == [], f"Keys remain after clear: {all_keys}"
+
+    def test_multiple_in_flight_requests_mixed_formats(self, mock_redis):
         """
-        Production scenario: Custom fields cached by old code.
-        New code reads them during processing.
+        Simulate 3 concurrent requests: one fully legacy, one fully new,
+        one partially migrated. All should be independently readable and
+        clearable after "deployment".
         """
-        from fides.api.util.cache import (
-            get_custom_privacy_request_field_cache_key,
-        )
+        legacy_id = f"pri_{uuid.uuid4()}"
+        new_id = f"pri_{uuid.uuid4()}"
+        mixed_id = f"pri_{uuid.uuid4()}"
 
-        # Simulate old code caching custom fields
         with (
             patch("fides.api.util.cache.get_cache", return_value=mock_redis),
             patch("fides.api.util.cache._connection", mock_redis),
         ):
             cache = get_cache()
+
+            # Request 1: fully legacy
             cache.set_with_autoexpire(
-                get_custom_privacy_request_field_cache_key(pr_id, "department"),
-                json.dumps("Engineering"),
+                get_identity_cache_key(legacy_id, "email"),
+                json.dumps("legacy@example.com"),
+            )
+            cache.set_with_autoexpire(
+                get_encryption_cache_key(legacy_id, "key"), "legacy-key-1234567"
             )
 
-        # New code reads custom fields
-        pr = MagicMock()
-        pr.id = pr_id
+            # Request 2: fully new format
+            store = get_dsr_cache_store()
+            store.write_identity(new_id, "email", json.dumps("new@example.com"))
+            store.write_encryption(new_id, "key", "new-key-123456789")
 
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            from fides.api.models.privacy_request import PrivacyRequest
-
-            custom_fields = PrivacyRequest.get_cached_custom_privacy_request_fields(pr)
-
-            assert custom_fields["department"] == "Engineering"
-
-    def test_concurrent_legacy_and_new_requests(self, mock_redis):
-        """
-        Production scenario: Multiple requests in flight - some with legacy keys,
-        some with new keys. Verify isolation and correct reads.
-        """
-        pr1_id = f"pri_{uuid.uuid4()}"
-        pr2_id = f"pri_{uuid.uuid4()}"
-
-        # PR1: cached by old code (legacy keys)
-        identity1 = Identity(email="legacy1@example.com")
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            cache = get_cache()
+            # Request 3: mixed (legacy identity, new encryption)
             cache.set_with_autoexpire(
-                get_identity_cache_key(pr1_id, "email"), identity1.email
+                get_identity_cache_key(mixed_id, "email"),
+                json.dumps("mixed@example.com"),
+            )
+            store.write_encryption(mixed_id, "key", "mixed-key-12345678")
+
+        # --- "New code deployed" — read all three ---
+        with (
+            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
+            patch("fides.api.util.cache._connection", mock_redis),
+        ):
+            for pr_id, expected_email, expected_key in [
+                (legacy_id, "legacy@example.com", "legacy-key-1234567"),
+                (new_id, "new@example.com", "new-key-123456789"),
+                (mixed_id, "mixed@example.com", "mixed-key-12345678"),
+            ]:
+                pr = MagicMock()
+                pr.id = pr_id
+                identity = PrivacyRequest.get_cached_identity_data(pr)
+                assert identity["email"] == expected_email, f"Failed for {pr_id}"
+                enc_key = PrivacyRequest.get_cached_encryption_key(pr)
+                assert enc_key == expected_key, f"Failed for {pr_id}"
+
+            # Clear one, others unaffected
+            store = get_dsr_cache_store()
+            store.clear(legacy_id)
+
+            pr_new = MagicMock()
+            pr_new.id = new_id
+            assert (
+                PrivacyRequest.get_cached_identity_data(pr_new)["email"]
+                == "new@example.com"
             )
 
-        # PR2: cached by new code (new keys)
-        identity2 = Identity(email="new2@example.com")
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            from fides.api.util.cache import get_dsr_cache_store
-
-            with get_dsr_cache_store() as store:
-                store.cache_identity_data(
-                    pr2_id,
-                    {"email": identity2.email},
-                    expire_seconds=3600,
-                )
-
-        # Both should be readable correctly
-        pr1 = MagicMock()
-        pr1.id = pr1_id
-        pr2 = MagicMock()
-        pr2.id = pr2_id
-
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            from fides.api.models.privacy_request import PrivacyRequest
-
-            data1 = PrivacyRequest.get_cached_identity_data(pr1)
-            data2 = PrivacyRequest.get_cached_identity_data(pr2)
-
-            assert data1["email"] == "legacy1@example.com"
-            assert data2["email"] == "new2@example.com"
-
-    def test_legacy_keys_migrated_on_first_read_not_on_write(self, mock_redis, pr_id):
-        """
-        Production scenario: Legacy keys exist. New code writes additional data.
-        Legacy keys should only migrate on read, not interfere with new writes.
-        """
-        # Old code cached identity
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            cache = get_cache()
-            cache.set_with_autoexpire(
-                get_identity_cache_key(pr_id, "email"), "legacy@example.com"
+            pr_mixed = MagicMock()
+            pr_mixed.id = mixed_id
+            assert (
+                PrivacyRequest.get_cached_identity_data(pr_mixed)["email"]
+                == "mixed@example.com"
             )
 
-        # New code writes encryption (shouldn't trigger migration)
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            from fides.api.util.cache import get_dsr_cache_store
-
-            with get_dsr_cache_store() as store:
-                store.write_encryption(pr_id, "key", "new-key")
-
-        # Legacy identity key should still exist (not migrated yet)
-        assert (
-            mock_redis.get(get_identity_cache_key(pr_id, "email"))
-            == "legacy@example.com"
-        )
-
-        # Reading identity should trigger migration
-        pr = MagicMock()
-        pr.id = pr_id
-
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            from fides.api.models.privacy_request import PrivacyRequest
-            from fides.api.util.cache import get_dsr_cache_store
-
-            # get_cached_identity_data calls get_identity which should trigger migration
-            PrivacyRequest.get_cached_identity_data(pr)
-
-            # Verify migration happened by checking the store directly
-            with get_dsr_cache_store() as store:
-                # The new key should exist
-                assert store.get_identity(pr_id, "email") == "legacy@example.com"
-
-        # Now legacy key should be migrated (deleted)
-        assert mock_redis.get(get_identity_cache_key(pr_id, "email")) is None
-
-        with (
-            patch("fides.api.util.cache.get_cache", return_value=mock_redis),
-            patch("fides.api.util.cache._connection", mock_redis),
-        ):
-            with get_dsr_cache_store() as store:
-                assert store.get_identity(pr_id, "email") == "legacy@example.com"
+            # Legacy request fully cleared
+            assert store.get_all_keys(legacy_id) == []

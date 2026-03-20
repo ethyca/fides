@@ -22,8 +22,8 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     if isinstance(data, bytes):
         data = data.decode(CONFIG.security.encoding)
 
-    with get_dsr_cache_store() as store:
-        raw = store.get_encryption(request_id, "key")
+    store = get_dsr_cache_store()
+    raw = store.get_encryption(request_id, "key")
     if raw is None:
         return data
     if isinstance(raw, bytes):

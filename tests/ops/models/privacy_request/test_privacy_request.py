@@ -272,8 +272,8 @@ def test_cache_identity_fallback_to_db(
         privacy_request_with_email_identity.get_cached_identity_data()
     )
     assert cached_identity_data != {}
-    with get_dsr_cache_store() as store:
-        store.delete(privacy_request_with_email_identity.id, "identity:email")
+    store = get_dsr_cache_store()
+    store.delete(privacy_request_with_email_identity.id, "identity:email")
     assert (
         privacy_request_with_email_identity.get_cached_identity_data()
         == cached_identity_data
@@ -338,10 +338,10 @@ def test_custom_privacy_request_fields_fallback_to_db(
     )
     assert cached_custom_privacy_request_fields is not None
     # Delete using DSR store to clear the cached custom field
-    with get_dsr_cache_store() as store:
-        store.delete(
-            privacy_request.id, f"custom_field:{custom_privacy_request_field.label}"
-        )
+    store = get_dsr_cache_store()
+    store.delete(
+        privacy_request.id, f"custom_field:{custom_privacy_request_field.label}"
+    )
     assert (
         privacy_request.get_cached_custom_privacy_request_fields()
         == cached_custom_privacy_request_fields
