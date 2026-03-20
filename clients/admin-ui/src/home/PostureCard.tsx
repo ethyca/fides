@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowUp } from "@carbon/icons-react";
 import type { RadarChartDataPoint } from "fidesui";
 import { Alert, Card, Flex, RadarChart, Statistic, Tag } from "fidesui";
 import { useCallback, useMemo } from "react";
@@ -11,14 +12,16 @@ import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 import { setDimensionFilter } from "./useDimensionFilter";
 
-function getDiffPrefix(direction: DiffDirection): string | undefined {
+function getDiffPrefix(
+  direction: DiffDirection,
+): React.ReactNode | undefined {
   if (direction === DiffDirection.UNCHANGED) {
     return undefined;
   }
   if (direction === DiffDirection.DOWN) {
-    return "↓";
+    return <ArrowDown size={12} />;
   }
-  return "↑";
+  return <ArrowUp size={12} />;
 }
 
 function getPostureAlertType(score: number): "error" | "warning" | "success" {
@@ -113,7 +116,7 @@ export const PostureCard = () => {
             }
           }}
         >
-          <Statistic value={animatedScore} />
+          <Statistic value={animatedScore} valueStyle={{ fontSize: 48 }} />
         </div>
         <Statistic
           trend={

@@ -32,10 +32,10 @@ export const defaultAntTheme: ThemeConfig = {
     borderRadiusSM: 4,
     borderRadius: 6,
     borderRadiusLG: 6,
-    colorErrorBg: generate(palette.FIDESUI_ERROR)[2], // custom override
-    colorErrorBorder: generate(palette.FIDESUI_ERROR)[3], // custom override
-    colorWarningBg: generate(palette.FIDESUI_WARNING)[2], // custom override
-    colorWarningBorder: generate(palette.FIDESUI_WARNING)[3], // custom override
+    colorErrorBg: generate(palette.FIDESUI_ERROR)[2],
+    colorErrorBorder: generate(palette.FIDESUI_ERROR)[3],
+    colorWarningBg: generate(palette.FIDESUI_WARNING)[2],
+    colorWarningBorder: generate(palette.FIDESUI_WARNING)[3],
     colorSuccessBorder: palette.FIDESUI_SUCCESS,
     colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
     colorBorder: palette.FIDESUI_NEUTRAL_100,
@@ -106,18 +106,15 @@ export const defaultAntTheme: ThemeConfig = {
       fontSizeHeading1: 24,
       fontSizeHeading2: 20,
       fontSizeHeading3: 16,
-      fontSizeXL: 24,
+      titleMarginBottom: 0,
+      fontSizeXL: 48,
       fontSizeLG: 18,
       fontSizeSM: 12,
-      titleMarginBottom: 0,
     },
     Tag: {
       colorText: palette.FIDESUI_NEUTRAL_900,
       colorIcon: palette.FIDESUI_NEUTRAL_700,
       colorIconHover: palette.FIDESUI_NEUTRAL_900,
-    },
-    Statistic: {
-      fontSizeXL: 24,
     },
   },
 };

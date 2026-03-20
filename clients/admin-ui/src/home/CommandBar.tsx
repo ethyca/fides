@@ -1,9 +1,10 @@
-import { antTheme, Flex, Statistic, Text } from "fidesui";
+import { ArrowDown, ArrowRight, ArrowUp } from "@carbon/icons-react";
+import { Flex, Statistic, Text } from "fidesui";
+import { theme } from "antd/lib";
 import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
 import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
-import { BAND_CONFIG } from "~/features/dashboard/constants";
 import {
   useGetDashboardPostureQuery,
   useGetPriorityActionsQuery,
@@ -21,18 +22,18 @@ import styles from "./CommandBar.module.scss";
 import { useCountUp } from "./useCountUp";
 import { openDashboardDrawer } from "./useDashboardDrawer";
 
-function getDiffArrow(direction: DiffDirection): string {
+function getDiffArrow(direction: DiffDirection): React.ReactNode {
   if (direction === DiffDirection.DOWN) {
-    return "↓";
+    return <ArrowDown size={12} />;
   }
   if (direction === DiffDirection.UP) {
-    return "↑";
+    return <ArrowUp size={12} />;
   }
-  return "→";
+  return <ArrowRight size={12} />;
 }
 
 export const CommandBar = () => {
-  const { token } = antTheme.useToken();
+  const { token } = theme.useToken();
   const {
     flags: { alphaDarkMode },
   } = useFlags();
@@ -47,13 +48,6 @@ export const CommandBar = () => {
 
   const animatedScore = useCountUp(score);
 
-  const scoreColorMap: Record<string, string> = {
-    success: token.colorSuccess,
-    info: token.colorInfo,
-    caution: token.colorWarning,
-    error: token.colorError,
-  };
-
   const valueColorMap: Record<PostureBand, string | undefined> = {
     [PostureBand.EXCELLENT]: undefined,
     [PostureBand.GOOD]: undefined,
@@ -61,8 +55,6 @@ export const CommandBar = () => {
     [PostureBand.CRITICAL]: token.colorError,
   };
 
-  const bandConfig = BAND_CONFIG[band];
-  const scoreColor = scoreColorMap[bandConfig.color];
   const valueColor = valueColorMap[band];
 
   const stats = useMemo(() => {

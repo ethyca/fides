@@ -16,6 +16,7 @@ import { SystemCoverageCard } from "./SystemCoverageCard";
 import { TREND_METRIC_KEYS, TrendCard } from "./TrendCard";
 
 const BRIEFING_DISMISSED_KEY = "dashboard_briefing_dismissed";
+const ROW_GUTTER = 24;
 
 export const HomeDashboard = () => {
   const [showBriefing, setShowBriefing] = useState(true);
@@ -53,7 +54,7 @@ export const HomeDashboard = () => {
         />
       )}
       <Row
-        gutter={24}
+        gutter={ROW_GUTTER}
         className="h-[350px] items-stretch lg:h-[400px] xl:h-[500px]"
       >
         <Col xs={24} md={8} lg={8} xxl={8} className="h-full">
@@ -63,7 +64,7 @@ export const HomeDashboard = () => {
           <PriorityActionsCard />
         </Col>
       </Row>
-      <Row gutter={24}>
+      <Row gutter={ROW_GUTTER}>
         {TREND_METRIC_KEYS.map((key) => (
           <Col key={key} xs={24} sm={12} md={6}>
             <TrendCard
@@ -74,7 +75,7 @@ export const HomeDashboard = () => {
           </Col>
         ))}
       </Row>
-      <Row gutter={24} className="items-stretch">
+      <Row gutter={ROW_GUTTER} className="items-stretch">
         <Col xs={24} md={8}>
           <SystemCoverageCard />
         </Col>
