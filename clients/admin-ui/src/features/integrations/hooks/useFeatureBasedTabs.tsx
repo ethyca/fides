@@ -89,7 +89,7 @@ export const useFeatureBasedTabs = ({
         label: "Connection",
         key: "connection",
         children: (
-          <Flex vertical gap="middle">
+          <Flex vertical gap="medium">
             {supportsConnectionTest && (
               <Card size="small">
                 <Flex>
@@ -98,7 +98,7 @@ export const useFeatureBasedTabs = ({
                     connectionOption={integrationOption}
                   />
                   <Spacer />
-                  <Flex gap="middle">
+                  <Flex gap="medium">
                     {needsAuthorization && (
                       <Button
                         onClick={handleAuthorize}

@@ -209,7 +209,7 @@ export const GenerateAssessmentsModal = ({
           </Item>
 
           <Item className="mb-0">
-            <Flex gap="middle" justify="flex-end">
+            <Flex gap="medium" justify="flex-end">
               <Button onClick={handleCancel}>Cancel</Button>
               <Button type="primary" htmlType="submit" loading={isCreating}>
                 Generate assessments

@@ -1,9 +1,4 @@
-import {
-  ChakraBox as Box,
-  ChakraText as Text,
-  useChakraToast as useToast,
-  useMessage,
-} from "fidesui";
+import { ChakraBox as Box, ChakraText as Text, useNotification } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { PrivacyRequestStatus } from "~/types/api";
@@ -25,8 +20,7 @@ type Requests = {
 };
 
 export const useDSRErrorAlert = () => {
-  const message = useMessage();
-  const toast = useToast();
+  const notification = useNotification();
   const [hasAlert, setHasAlert] = useState(false);
   const [requests, setRequests] = useState<Requests>({
     count: 0,
@@ -37,7 +31,7 @@ export const useDSRErrorAlert = () => {
   const DEFAULT_POLLING_INTERVAL = 15000;
   const STATUS = PrivacyRequestStatus.ERROR;
 
-  const { data: notification } = useGetNotificationQuery();
+  const { data: notificationData } = useGetNotificationQuery();
   const { data } = useGetAllPrivacyRequestsQuery(
     {
       status: [STATUS],
@@ -49,14 +43,14 @@ export const useDSRErrorAlert = () => {
   );
 
   useEffect(() => {
-    setSkip(!(notification && notification.notify_after_failures > 0));
-  }, [notification]);
+    setSkip(!(notificationData && notificationData.notify_after_failures > 0));
+  }, [notificationData]);
 
   useEffect(() => {
     const total = data?.total || 0;
 
     if (
-      total >= (notification?.notify_after_failures || 0) &&
+      total >= (notificationData?.notify_after_failures || 0) &&
       total > requests.total
     ) {
       setRequests({ count: total - requests.total, total });
@@ -64,14 +58,15 @@ export const useDSRErrorAlert = () => {
     } else {
       setHasAlert(false);
     }
-  }, [data?.total, notification?.notify_after_failures, requests.total]);
+  }, [data?.total, notificationData?.notify_after_failures, requests.total]);
 
   const processing = () => {
     if (!hasAlert) {
       return;
     }
-    message.error({
-      content: (
+    notification.error({
+      message: "DSR Error",
+      description: (
         <Box>
           DSR automation has failed for{" "}
           <Text as="span" fontWeight="semibold">
@@ -87,13 +82,11 @@ export const useDSRErrorAlert = () => {
 
   useEffect(
     () =>
-      // Cleanup: close toast on unmount
+      // Cleanup: close notification on unmount
       () => {
-        if (toast.isActive(TOAST_ID)) {
-          toast.close(TOAST_ID);
-        }
+        notification.destroy(TOAST_ID);
       },
-    [toast],
+    [notification],
   );
 
   return { processing };

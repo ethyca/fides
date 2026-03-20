@@ -315,7 +315,7 @@ const ActionCenterFields = ({
         <Splitter.Panel
           style={{ paddingLeft: "var(--ant-padding-md)", overflow: "hidden" }}
         >
-          <Flex vertical gap="middle" className="h-full">
+          <Flex vertical gap="medium" className="h-full">
             <Flex justify="space-between">
               <Title level={2} ellipsis>
                 Monitor results
@@ -404,7 +404,7 @@ const ActionCenterFields = ({
                 </Tooltip>
               </Flex>
             </Flex>
-            <Flex gap="middle" align="center">
+            <Flex gap="medium" align="center">
               <Checkbox id="select-all" {...checkboxProps} />
               <label htmlFor="select-all">Select all</label>
               {!!selectedListItemCount && (
@@ -447,7 +447,7 @@ const ActionCenterFields = ({
                             </>
                           }
                         >
-                          <Flex gap="middle" justify="center">
+                          <Flex gap="medium" justify="center">
                             <NextLink
                               href={DATASET_ROUTE}
                               passHref
