@@ -445,6 +445,12 @@ dataset:
     - name: monitors
       data_categories:
         - system.operations
+    - name: name
+      data_categories:
+        - system.operations
+    - name: description
+      data_categories:
+        - system.operations
   - name: systemmanager
     fields:
       - name: id
@@ -2829,6 +2835,8 @@ dataset:
     - name: property_id
       data_categories: [system.operations]
     - name: is_hash_migrated
+      data_categories: [system.operations]
+    - name: received_at
       data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'
