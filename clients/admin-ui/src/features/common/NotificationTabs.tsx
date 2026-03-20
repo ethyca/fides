@@ -42,7 +42,7 @@ const NotificationTabs = () => {
   let menuItems = [
     {
       key: "templates",
-      label: "Templates",
+      label: "Messaging templates",
       requiresPlus: true,
       scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
       path: NOTIFICATIONS_TEMPLATES_ROUTE,
