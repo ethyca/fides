@@ -9,6 +9,7 @@ from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from loguru import logger
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_400_BAD_REQUEST,
@@ -216,7 +217,12 @@ def list_clients(
     query = (
         ClientDetail.query(db=db)
         .filter(ClientDetail.id != CONFIG.security.oauth_root_client_id)
-        .filter(ClientDetail.fides_key != DEFAULT_OAUTH_CLIENT_KEY)
+        .filter(
+            or_(
+                ClientDetail.fides_key != DEFAULT_OAUTH_CLIENT_KEY,
+                ClientDetail.fides_key.is_(None),
+            )
+        )
         .order_by(ClientDetail.created_at.desc())
     )
     return paginate(query, params=params)
