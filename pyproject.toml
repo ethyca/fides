@@ -48,7 +48,7 @@ dependencies = [
     "cloudpickle~=3.1.2",
     "colorama~=0.4.6",
     "dask==2025.11.0",
-    "deepdiff==8.6.1",
+    "deepdiff==8.6.2",
     "defusedxml==0.7.1",
     "ecdsa~=0.19.1",
     "email-validator~=2.3.0",
