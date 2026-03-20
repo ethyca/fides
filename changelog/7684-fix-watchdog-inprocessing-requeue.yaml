@@ -1,0 +1,4 @@
+type: Fixed
+description: Fixed DSR watchdog incorrectly cancelling in_processing tasks with missing cache keys; now requeues through retry mechanism
+pr: 7684
+labels: []

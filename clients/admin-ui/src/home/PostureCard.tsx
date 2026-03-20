@@ -92,7 +92,7 @@ export const PostureCard = () => {
         variant="borderless"
         className={styles.cardContainer}
       >
-        <Flex align="baseline" gap="middle">
+        <Flex align="baseline" gap="medium">
           <div
             role="button"
             tabIndex={0}
