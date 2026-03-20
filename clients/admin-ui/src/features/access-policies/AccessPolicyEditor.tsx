@@ -232,6 +232,29 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
     [setNodes],
   );
 
+  const deleteNodeWithDescendants = useCallback(
+    (nodeId: string) => {
+      const toDelete = new Set<string>([nodeId]);
+      const queue = [nodeId];
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        edges
+          .filter((e) => e.source === current)
+          .forEach((e) => {
+            if (!toDelete.has(e.target)) {
+              toDelete.add(e.target);
+              queue.push(e.target);
+            }
+          });
+      }
+      setNodes((nds) => nds.filter((n) => !toDelete.has(n.id)));
+      setEdges((eds) =>
+        eds.filter((e) => !toDelete.has(e.source) && !toDelete.has(e.target)),
+      );
+    },
+    [edges, setNodes, setEdges],
+  );
+
   // Wrap policy-level field changes so the nodes state stays in sync for nodesToYaml
   const handleNameChange = useCallback(
     (value: string) => {
@@ -432,6 +455,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
               onAddNode,
               onAddCondition: () => handleAddConditionFromNode(node.id),
               onAddConstraint: () => handleAddConstraintFromNode(node.id),
+              onDelete: () => deleteNodeWithDescendants(node.id),
               hasChildren,
               onPropertyChange: (value: ConditionProperty) =>
                 updateNodeData(node.id, { property: value, values: [] }),
@@ -447,6 +471,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
             ...node,
             data: {
               ...node.data,
+              onDelete: () => deleteNodeWithDescendants(node.id),
               onConstraintTypeChange: (value: ConstraintType) =>
                 updateNodeData(node.id, {
                   constraintType: value,
@@ -485,6 +510,7 @@ const PolicyCanvasPanel = (props: PolicyCanvasPanelProps) => {
       handleAddConditionFromNode,
       handleAddActionFromNode,
       handleAddConstraintFromNode,
+      deleteNodeWithDescendants,
       updateNodeData,
       policyHasChildren,
     ],

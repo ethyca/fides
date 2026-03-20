@@ -1,5 +1,14 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import { Avatar, Flex, Form, Icons, Select, Text } from "fidesui";
+import {
+  Avatar,
+  Button,
+  Flex,
+  Form,
+  Icons,
+  Popconfirm,
+  Select,
+  Text,
+} from "fidesui";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import DataSubjectSelect from "~/features/common/dropdown/DataSubjectSelect";
@@ -23,6 +32,7 @@ export interface ConditionNodeData extends Record<string, unknown> {
   onAddNode?: () => void;
   onAddCondition?: () => void;
   onAddConstraint?: () => void;
+  onDelete?: () => void;
   hasChildren?: boolean;
 }
 
@@ -45,7 +55,27 @@ const ConditionNode = ({ data }: NodeProps<ConditionNodeType>) => {
           icon={<Icons.SettingsAdjust size={16} />}
           className={styles.avatar}
         />
-        <Text strong>Condition</Text>
+        <Text strong style={{ flex: 1 }}>
+          Condition
+        </Text>
+        <Popconfirm
+          title="Delete condition"
+          description="Are you sure you want to delete this condition and its children?"
+          onConfirm={data.onDelete}
+          okText="Delete"
+          okButtonProps={{ danger: true }}
+          cancelText="Cancel"
+        >
+          <Button
+            type="text"
+            size="small"
+            icon={<Icons.TrashCan size={14} />}
+            danger
+            className="nodrag"
+            aria-label="Delete condition"
+            data-testid="delete-condition-btn"
+          />
+        </Popconfirm>
       </Flex>
       <div className={styles.body}>
         <Form layout="vertical" className="nodrag">

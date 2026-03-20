@@ -1,5 +1,16 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import { Avatar, Flex, Form, Icons, Input, Radio, Select, Text } from "fidesui";
+import {
+  Avatar,
+  Button,
+  Flex,
+  Form,
+  Icons,
+  Input,
+  Popconfirm,
+  Radio,
+  Select,
+  Text,
+} from "fidesui";
 
 import {
   CONSENT_VALUE_OPTIONS,
@@ -22,6 +33,7 @@ export interface ConstraintNodeData extends Record<string, unknown> {
   onUserKeyChange?: (value: string) => void;
   onUserValueChange?: (value: string) => void;
   onUserOperatorChange?: (value: UserOperator) => void;
+  onDelete?: () => void;
 }
 
 export type ConstraintNodeType = Node<ConstraintNodeData, "constraintNode">;
@@ -36,7 +48,26 @@ const ConstraintNode = ({ data }: NodeProps<ConstraintNodeType>) => (
         icon={<Icons.Locked size={16} />}
         className={styles.avatar}
       />
-      <Text strong>Constraint</Text>
+      <Text strong style={{ flex: 1 }}>
+        Constraint
+      </Text>
+      <Popconfirm
+        title="Delete constraint"
+        description="Are you sure you want to delete this constraint?"
+        onConfirm={data.onDelete}
+        okText="Delete"
+        okButtonProps={{ danger: true }}
+        cancelText="Cancel"
+      >
+        <Button
+          type="text"
+          size="small"
+          icon={<Icons.TrashCan size={14} />}
+          danger
+          aria-label="Delete constraint"
+          data-testid="delete-constraint-btn"
+        />
+      </Popconfirm>
     </Flex>
     <div className={styles.body}>
       <Form layout="vertical" className="nodrag">
