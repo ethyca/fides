@@ -295,7 +295,7 @@ export function loadMessagesFromExperience(
     const messages = allMessages[locale] || {};
     const gpcDefaults: Record<string, string> = {};
     Object.entries(GPC_FALLBACKS).forEach(([expKey, staticKey]) => {
-      if (!messages[expKey]) {
+      if (messages[expKey] == null) {
         const localeStaticMessages =
           STATIC_MESSAGES[locale] ?? STATIC_MESSAGES[DEFAULT_LOCALE] ?? {};
         gpcDefaults[expKey] =
