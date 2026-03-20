@@ -37,7 +37,7 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
     !Number.isNaN(actionIndex) &&
     config.actions[actionIndex]?.policy_key === policyKey
       ? config.actions[actionIndex]
-      : config.actions.find((a) => a.policy_key === policyKey)
+      : config.actions.find((action) => action.policy_key === policyKey)
   ) as PrivacyRequestOption | undefined;
 
   // Update verification requirement from API
