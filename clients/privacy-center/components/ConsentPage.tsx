@@ -2,6 +2,7 @@
 
 import {
   FidesCookie,
+  GPC_FALLBACKS,
   getGpcContext,
   getOrMakeFidesCookie,
   initializeI18n,
@@ -245,15 +246,8 @@ const ConsentPage: NextPage = () => {
       // messages available
       loadMessagesFromFiles(i18n);
       // Map static GPC messages to exp.* keys so the GPC banner can find them
-      const GPC_STATIC_TO_EXP: Record<string, string> = {
-        "exp.gpc_label": "static.gpc",
-        "exp.gpc_title": "static.gpc.title",
-        "exp.gpc_description": "static.gpc.description",
-        "exp.gpc_status_applied_label": "static.gpc.status.applied",
-        "exp.gpc_status_overridden_label": "static.gpc.status.overridden",
-      };
       const gpcMessages: Record<string, string> = {};
-      Object.entries(GPC_STATIC_TO_EXP).forEach(([expKey, staticKey]) => {
+      Object.entries(GPC_FALLBACKS).forEach(([expKey, staticKey]) => {
         gpcMessages[expKey] = i18n.t(staticKey);
       });
       i18n.load(i18n.locale, gpcMessages);

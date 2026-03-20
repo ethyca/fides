@@ -49,15 +49,22 @@ describe("i18n-utils", () => {
     { locale: "en", label_en: "English", label_original: "English" },
     { locale: "es", label_en: "Spanish", label_original: "Español" },
   ];
-  // GPC fallback values produced by mock i18n.t() when GPC fields are missing
-  // from the experience config. Since mockCurrentLocale is "" at this point,
-  // the mock t() returns the raw key via the default switch case.
-  const mockGpcFallbacks = {
-    "exp.gpc_label": "static.gpc",
-    "exp.gpc_title": "static.gpc.title",
-    "exp.gpc_description": "static.gpc.description",
-    "exp.gpc_status_applied_label": "static.gpc.status.applied",
-    "exp.gpc_status_overridden_label": "static.gpc.status.overridden",
+  // GPC fallback values from static messages when GPC fields are missing
+  // from the experience config. The code now looks up STATIC_MESSAGES directly
+  // (not via i18n.t), so these are the real translated values.
+  const mockGpcFallbacksEn = {
+    "exp.gpc_label": messagesEn["static.gpc"],
+    "exp.gpc_title": messagesEn["static.gpc.title"],
+    "exp.gpc_description": messagesEn["static.gpc.description"],
+    "exp.gpc_status_applied_label": messagesEn["static.gpc.status.applied"],
+    "exp.gpc_status_overridden_label": messagesEn["static.gpc.status.overridden"],
+  };
+  const mockGpcFallbacksEs = {
+    "exp.gpc_label": messagesEs["static.gpc"],
+    "exp.gpc_title": messagesEs["static.gpc.title"],
+    "exp.gpc_description": messagesEs["static.gpc.description"],
+    "exp.gpc_status_applied_label": messagesEs["static.gpc.status.applied"],
+    "exp.gpc_status_overridden_label": messagesEs["static.gpc.status.overridden"],
   };
 
   const mockI18nCatalogLoad = [
@@ -74,7 +81,7 @@ describe("i18n-utils", () => {
       "exp.reject_button_label": "Reject Test",
       "exp.save_button_label": "Save Test",
       "exp.title": "Title Test",
-      ...mockGpcFallbacks,
+      ...mockGpcFallbacksEn,
     },
     {
       "exp.accept_button_label": "Aceptar Prueba",
@@ -90,7 +97,7 @@ describe("i18n-utils", () => {
       "exp.reject_button_label": "Rechazar Prueba",
       "exp.save_button_label": "Guardar Prueba",
       "exp.title": "Título de la Prueba",
-      ...mockGpcFallbacks,
+      ...mockGpcFallbacksEs,
     },
   ];
 
