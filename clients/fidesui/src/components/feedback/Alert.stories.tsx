@@ -27,7 +27,6 @@ export const Primary: Story = {
   args: {
     message: SUBTITLE_LOREM,
     description: PARAGRAPH_LOREM,
-    type: "info",
   },
   argTypes: {
     type: {
@@ -41,6 +40,16 @@ export const Primary: Story = {
   },
 };
 
+export const Info: Story = {
+  args: {
+    message: SUBTITLE_LOREM,
+    description: PARAGRAPH_LOREM,
+    type: "info",
+    showIcon: true,
+  },
+  parameters: { controls: { include: [] } },
+};
+
 export const Error: Story = {
   args: {
     message: SUBTITLE_LOREM,
@@ -48,6 +57,7 @@ export const Error: Story = {
     type: "error",
     showIcon: true,
   },
+  parameters: { controls: { include: [] } },
 };
 
 export const Success: Story = {
@@ -57,6 +67,7 @@ export const Success: Story = {
     type: "success",
     showIcon: true,
   },
+  parameters: { controls: { include: [] } },
 };
 
 export const Warning: Story = {
@@ -66,4 +77,40 @@ export const Warning: Story = {
     type: "warning",
     showIcon: true,
   },
+  parameters: { controls: { include: [] } },
+};
+
+export const Closable: Story = {
+  args: {
+    message: SUBTITLE_LOREM,
+    description: PARAGRAPH_LOREM,
+    closable: true,
+  },
+  parameters: { controls: { include: [] } },
+};
+
+export const Banner: Story = {
+  args: {
+    message: SUBTITLE_LOREM,
+    description: PARAGRAPH_LOREM,
+    banner: true,
+  },
+  argTypes: {
+    type: {
+      control: "select",
+      options: Object.values(ALERT_TYPE),
+    },
+    showIcon: {
+      control: "boolean",
+    },
+    icon: iconControl,
+  },
+};
+
+export const Compact: Story = {
+  args: {
+    message: SUBTITLE_LOREM,
+    showIcon: true,
+  },
+  parameters: { controls: { include: [] } },
 };

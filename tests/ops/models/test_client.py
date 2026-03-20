@@ -2,11 +2,35 @@ from sqlalchemy.orm import Session
 
 from fides.api.cryptography.cryptographic_util import hash_credential_with_salt
 from fides.api.models.client import ClientDetail
-from fides.common.api.scope_registry import SCOPE_REGISTRY
+from fides.common.scope_registry import SCOPE_REGISTRY
 from fides.config import CONFIG
 
 
 class TestClientModel:
+    def test_create_client_with_name_and_description(self, db: Session) -> None:
+        client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+            name="My Integration",
+            description="Reads privacy requests for our data pipeline",
+        )
+        db.refresh(client)
+        assert client.name == "My Integration"
+        assert client.description == "Reads privacy requests for our data pipeline"
+        client.delete(db)
+
+    def test_create_client_name_defaults_to_none(self, db: Session) -> None:
+        client, _ = ClientDetail.create_client_and_secret(
+            db,
+            CONFIG.security.oauth_client_id_length_bytes,
+            CONFIG.security.oauth_client_secret_length_bytes,
+        )
+        db.refresh(client)
+        assert client.name is None
+        assert client.description is None
+        client.delete(db)
+
     def test_create_client_and_secret(self, db: Session) -> None:
         new_client, secret = ClientDetail.create_client_and_secret(
             db,

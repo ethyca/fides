@@ -1,6 +1,7 @@
 import { Button, Flex, Modal } from "fidesui";
 import { useState } from "react";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
@@ -144,28 +145,23 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
       title={modalTitle}
       centered
       destroyOnHidden
-      width={1010}
+      width={MODAL_SIZE.xl}
       footer={renderFooter()}
       styles={{
-        content: {
-          height: 700,
-          display: "flex",
-          flexDirection: "column",
-        },
         body: {
-          flex: 1,
+          height: 700,
           padding: 0,
           display: "flex",
           flexDirection: "column",
           minHeight: 0,
         },
       }}
-      data-testid="add-modal-content"
+      wrapProps={{ "data-testid": "add-modal-content" }}
     >
       {step === IntegrationModalStep.LIST_VIEW && (
         <>
-          <Flex className="px-6 py-4">{filterBar}</Flex>
-          <Flex vertical flex={1} className="overflow-y-auto px-6 pb-4">
+          <Flex className="py-4">{filterBar}</Flex>
+          <Flex vertical flex={1} className="overflow-y-auto pb-4">
             <SelectIntegrationType
               filteredTypes={filteredTypes}
               isFiltering={isFiltering}
@@ -176,7 +172,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
         </>
       )}
       {step === IntegrationModalStep.DETAIL && (
-        <Flex vertical flex={1} className="overflow-y-auto p-6">
+        <Flex vertical flex={1} className="overflow-y-auto py-6">
           <IntegrationTypeDetail
             integrationType={integrationType}
             onConfigure={handleConfigure}
@@ -184,7 +180,7 @@ const AddIntegrationModal = ({ isOpen, onClose }: AddIntegrationModalProps) => {
         </Flex>
       )}
       {step === IntegrationModalStep.FORM && (
-        <Flex vertical flex={1} className="overflow-y-auto p-6">
+        <Flex vertical flex={1} className="overflow-y-auto py-6">
           <ConfigureIntegrationForm
             connectionOption={connectionOption!}
             onClose={handleCancel}

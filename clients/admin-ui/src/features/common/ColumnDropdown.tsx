@@ -4,12 +4,10 @@ import {
   ChakraBox as Box,
   ChakraCheckbox as Checkbox,
   ChakraCheckboxGroup as CheckboxGroup,
-  ChakraMenu as Menu,
-  ChakraMenuButton as MenuButton,
-  ChakraMenuList as MenuList,
   ChakraStack as Stack,
+  Popover,
 } from "fidesui";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
 export interface ColumnMetadata<T = Record<string, unknown>> {
   name: string;
@@ -26,6 +24,8 @@ const ColumnDropdown = <T extends Record<string, unknown>>({
   selectedColumns,
   onChange,
 }: Props<T>) => {
+  const [open, setOpen] = useState(false);
+
   const nameToColumnInfo = useMemo(() => {
     const info = new Map<string, boolean>();
     allColumns.forEach((c) =>
@@ -49,64 +49,66 @@ const ColumnDropdown = <T extends Record<string, unknown>>({
     onChange(allColumns.filter((c) => nameToColumnInfo.get(c.name)));
   };
 
+  const content = (
+    <Box px={2}>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Button
+          size="small"
+          onClick={handleClear}
+          data-testid="column-clear-btn"
+        >
+          Clear
+        </Button>
+        <Button
+          type="primary"
+          size="small"
+          onClick={() => setOpen(false)}
+          data-testid="column-done-btn"
+        >
+          Done
+        </Button>
+      </Box>
+      <CheckboxGroup colorScheme="complimentary">
+        <Stack>
+          {allColumns.map((column) => {
+            const isChecked =
+              selectedColumns.filter(
+                (selected) => selected.name === column.name,
+              ).length > 0;
+            return (
+              <Checkbox
+                id={column.name}
+                key={column.name}
+                _hover={{ bg: "gray.100" }}
+                isChecked={isChecked}
+                onChange={() => handleChange(column)}
+                data-testid={`checkbox-${column.name}`}
+              >
+                {column.name}
+              </Checkbox>
+            );
+          })}
+        </Stack>
+      </CheckboxGroup>
+    </Box>
+  );
+
   return (
-    <Menu>
-      {({ onClose }) => (
-        <>
-          <MenuButton
-            as={Button}
-            icon={<ArrowDownLineIcon />}
-            fontWeight="normal"
-            data-testid="column-dropdown"
-          >
-            Columns
-          </MenuButton>
-          <MenuList>
-            <Box px={2}>
-              <Box display="flex" justifyContent="space-between" mb={2}>
-                <Button
-                  size="small"
-                  onClick={handleClear}
-                  data-testid="column-clear-btn"
-                >
-                  Clear
-                </Button>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={onClose}
-                  data-testid="column-done-btn"
-                >
-                  Done
-                </Button>
-              </Box>
-              <CheckboxGroup colorScheme="complimentary">
-                <Stack>
-                  {allColumns.map((column) => {
-                    const isChecked =
-                      selectedColumns.filter(
-                        (selected) => selected.name === column.name,
-                      ).length > 0;
-                    return (
-                      <Checkbox
-                        id={column.name}
-                        key={column.name}
-                        _hover={{ bg: "gray.100" }}
-                        isChecked={isChecked}
-                        onChange={() => handleChange(column)}
-                        data-testid={`checkbox-${column.name}`}
-                      >
-                        {column.name}
-                      </Checkbox>
-                    );
-                  })}
-                </Stack>
-              </CheckboxGroup>
-            </Box>
-          </MenuList>
-        </>
-      )}
-    </Menu>
+    <Popover
+      content={content}
+      trigger="click"
+      open={open}
+      onOpenChange={setOpen}
+      styles={{ content: { padding: 0 } }}
+    >
+      <Button
+        icon={<ArrowDownLineIcon />}
+        className="!font-normal"
+        data-testid="column-dropdown"
+      >
+        Columns
+      </Button>
+    </Popover>
   );
 };
 

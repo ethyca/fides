@@ -1,9 +1,8 @@
-import { ChakraBox as Box, Tag } from "fidesui";
+import { ChakraBox as Box, Tag, useMessage } from "fidesui";
 import { useState } from "react";
 
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks/useAlert";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { useUpdateSystemAssetsMutation } from "~/features/system/system-assets.slice";
@@ -21,7 +20,7 @@ const SystemAssetsDataUseCell = ({
 }) => {
   const { getDataUseDisplayName } = useTaxonomies();
   const [updateSystemAssets] = useUpdateSystemAssetsMutation();
-  const { errorAlert, successAlert } = useAlert();
+  const message = useMessage();
 
   const [isAdding, setIsAdding] = useState(false);
 
@@ -32,11 +31,10 @@ const SystemAssetsDataUseCell = ({
       assets: [{ id: asset.id, data_uses: newDataUses }],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      message.error(getErrorMessage(result.error));
     } else {
-      successAlert(
+      message.success(
         `Consent category added to ${asset.asset_type} "${asset.name}".`,
-        `Confirmed`,
       );
     }
   };
@@ -48,11 +46,10 @@ const SystemAssetsDataUseCell = ({
       assets: [{ id: asset.id, data_uses: newDataUses }],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      message.error(getErrorMessage(result.error));
     } else {
-      successAlert(
+      message.success(
         `Consent category removed from ${asset.asset_type} "${asset.name}".`,
-        `Confirmed`,
       );
     }
   };

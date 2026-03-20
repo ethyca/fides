@@ -8,10 +8,6 @@ from citext import CIText
 from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy.orm import Session, relationship
-from sqlalchemy_utils.types.encrypted.encrypted_type import (
-    AesGcmEngine,
-    StringEncryptedType,
-)
 
 from fides.api.common_exceptions import SystemManagerException
 from fides.api.cryptography.cryptographic_util import (
@@ -19,11 +15,11 @@ from fides.api.cryptography.cryptographic_util import (
     hash_credential_with_salt,
 )
 from fides.api.db.base_class import Base
+from fides.api.db.encryption_utils import encrypted_type
 from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
 from fides.api.schemas.user import DisabledReason
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.detection_discovery import MonitorConfig
@@ -51,12 +47,7 @@ class FidesUser(Base):
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
     password_login_enabled = Column(Boolean, nullable=True)
     totp_secret = Column(
-        StringEncryptedType(
-            type_in=String(),
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
+        encrypted_type(type_in=String()),
         nullable=True,
     )
 

@@ -15,13 +15,13 @@ from fides.api.schemas.connection_configuration.enums.system_type import SystemT
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.common.api.scope_registry import (
+from fides.common.scope_registry import (
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
     CONNECTOR_TEMPLATE_READ,
     SAAS_CONNECTION_INSTANTIATE,
 )
-from fides.common.api.v1.urn_registry import (
+from fides.common.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
     CONNECTOR_TEMPLATES,
@@ -387,10 +387,21 @@ class TestGetConnections:
         data = resp.json()["items"]
         assert len(data) == len(ConnectorRegistry.connector_types())
 
+        resp = api_client.get(url + "system_type=system", headers=auth_header)
+        assert resp.status_code == 200
+        data = resp.json()["items"]
+        identifiers = {item["identifier"] for item in data}
+        assert "entra" in identifiers
+        assert "okta" in identifiers
+        assert all(item["type"] == "system" for item in data)
+
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 22  # Includes test_datastore
+        identifiers = {item["identifier"] for item in data}
+        assert "entra" not in identifiers
+        assert "okta" not in identifiers
+        assert all(item["type"] != "system" for item in data)
 
     def test_search_system_type_and_connection_type(
         self,

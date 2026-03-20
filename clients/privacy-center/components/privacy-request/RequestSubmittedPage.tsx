@@ -15,7 +15,7 @@ const RequestSubmittedPage = () => {
   };
 
   return (
-    <Flex gap="middle" vertical align="center">
+    <Flex gap="medium" vertical align="center">
       <Image
         src="/green-check.svg"
         alt="green-checkmark"

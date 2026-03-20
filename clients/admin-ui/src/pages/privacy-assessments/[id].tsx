@@ -22,6 +22,7 @@ import PageHeader from "~/features/common/PageHeader";
 import {
   AssessmentDetail,
   useDeletePrivacyAssessmentMutation,
+  useDownloadAssessmentReportMutation,
   useGetPrivacyAssessmentQuery,
 } from "~/features/privacy-assessments";
 import { RTKErrorResult } from "~/types/errors/api";
@@ -44,6 +45,22 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
   const [deleteAssessment, { isLoading: isDeleting }] =
     useDeletePrivacyAssessmentMutation();
 
+  const [downloadReport, { isLoading: isDownloading }] =
+    useDownloadAssessmentReportMutation();
+
+  const handleDownloadReport = async () => {
+    try {
+      await downloadReport(assessmentId).unwrap();
+    } catch (error) {
+      message.error(
+        getErrorMessage(
+          error as RTKErrorResult["error"],
+          "Failed to download report. Please try again.",
+        ),
+      );
+    }
+  };
+
   const isComplete =
     !!assessment &&
     (assessment.question_groups ?? [])
@@ -54,7 +71,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     modalApi.confirm({
       title: "Delete assessment",
       content: (
-        <Space direction="vertical" size="middle" className="w-full">
+        <Space direction="vertical" size="medium" className="w-full">
           <Text>Are you sure you want to delete this assessment?</Text>
           <Text type="secondary">
             This action cannot be undone. All assessment data, including any
@@ -82,7 +99,7 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
     });
   };
 
-  if (!flags?.alphaDataProtectionAssessments) {
+  if (!flags?.privacyAssessments) {
     return (
       <Layout title="Privacy assessment">
         <Result
@@ -156,7 +173,12 @@ const PrivacyAssessmentDetailPage: NextPage = () => {
                   : undefined
               }
             >
-              <Button type="primary" disabled={!isComplete}>
+              <Button
+                type="primary"
+                disabled={!isComplete}
+                loading={isDownloading}
+                onClick={handleDownloadReport}
+              >
                 Generate report
               </Button>
             </Tooltip>

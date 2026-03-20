@@ -13,7 +13,6 @@ import palette from "../palette/palette.module.scss";
  */
 
 export const defaultAntTheme: ThemeConfig = {
-  cssVar: true,
   token: {
     fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
     fontFamilyCode: `"Basier Square Mono", 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`,
@@ -48,8 +47,9 @@ export const defaultAntTheme: ThemeConfig = {
       colorTextPlaceholder: palette.FIDESUI_BG_DEFAULT,
     },
     Alert: {
-      colorInfoBg: palette.FIDESUI_FULL_WHITE,
-      colorInfo: palette.FIDESUI_NEUTRAL_500,
+      colorInfo: palette.FIDESUI_MINOS,
+      colorInfoBg: palette.FIDESUI_NEUTRAL_50,
+      colorInfoBorder: palette.FIDESUI_NEUTRAL_100,
     },
     Button: {
       primaryShadow: undefined,

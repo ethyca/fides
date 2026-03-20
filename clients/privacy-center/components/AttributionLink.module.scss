@@ -1,0 +1,13 @@
+.wrapper {
+  text-align: center;
+  padding: var(--fides-attribution-padding, 8px 0);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-size: var(--fides-attribution-font-size, 11px);
+  color: var(--fides-attribution-color, #718096);
+}
