@@ -431,11 +431,9 @@ describe("RBAC UI Management", () => {
           cy.contains("button", "Delete").click();
         });
 
-        cy.get('[data-testid="delete-role-confirmation-modal"]').should(
-          "be.visible",
-        );
+        cy.get(".delete-role-confirmation-modal").should("be.visible");
 
-        cy.get('[data-testid="delete-role-confirmation-modal"]')
+        cy.get(".delete-role-confirmation-modal")
           .contains("button", "Delete")
           .click();
 
