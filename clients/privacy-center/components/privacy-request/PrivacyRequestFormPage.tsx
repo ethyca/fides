@@ -4,7 +4,7 @@ import { useMessage } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-import { decodePolicyKey, encodePolicyKey } from "~/common/policy-key";
+import { decodePolicyKey } from "~/common/policy-key";
 import { useConfig } from "~/features/common/config.slice";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { PrivacyRequestOption } from "~/types/config";
@@ -61,9 +61,7 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
 
   const handleSetCurrentView = (view: string) => {
     if (view === "identityVerification") {
-      router.push(
-        `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/verify`,
-      );
+      router.push(`${basePath}/privacy-request/${actionKey}/verify`);
     }
   };
 
@@ -74,9 +72,7 @@ const PrivacyRequestFormPage = ({ actionKey }: PrivacyRequestFormPageProps) => {
   };
 
   const handleSuccessWithoutVerification = () => {
-    router.push(
-      `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/success`,
-    );
+    router.push(`${basePath}/privacy-request/${actionKey}/success`);
   };
 
   return (

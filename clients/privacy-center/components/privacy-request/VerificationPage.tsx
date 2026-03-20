@@ -4,7 +4,6 @@ import { Flex } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-import { decodePolicyKey, encodePolicyKey } from "~/common/policy-key";
 import { ModalViews, VerificationType } from "~/components/modals/types";
 
 import VerificationForm from "../modals/verification-request/VerificationForm";
@@ -20,20 +19,16 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
   const basePath = propertyPath ? `/${propertyPath}` : "";
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
 
-  const policyKey = decodePolicyKey(actionKey);
-
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedId = sessionStorage.getItem("privacyRequestId");
       if (storedId) {
         setPrivacyRequestId(storedId);
       } else {
-        router.push(
-          `${basePath}/privacy-request/${encodePolicyKey(policyKey)}`,
-        );
+        router.push(`${basePath}/privacy-request/${actionKey}`);
       }
     }
-  }, [policyKey, router, basePath]);
+  }, [actionKey, router, basePath]);
 
   if (!privacyRequestId) {
     return null;
@@ -45,14 +40,12 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
 
   const handleSetCurrentView = (view: string) => {
     if (view === "privacyRequest") {
-      router.push(`${basePath}/privacy-request/${encodePolicyKey(policyKey)}`);
+      router.push(`${basePath}/privacy-request/${actionKey}`);
     }
   };
 
   const handleSuccess = () => {
-    router.push(
-      `${basePath}/privacy-request/${encodePolicyKey(policyKey)}/success`,
-    );
+    router.push(`${basePath}/privacy-request/${actionKey}/success`);
   };
 
   return (
