@@ -1,0 +1,4 @@
+type: Changed
+description: Migrate IDP staged resources from per-provider types (Okta App, Entra App) to unified IDP App type with provider stored in meta.
+pr: 7712
+labels: ["db-migration"]
