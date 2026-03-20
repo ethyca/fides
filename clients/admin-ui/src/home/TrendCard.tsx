@@ -1,10 +1,7 @@
-import classNames from "classnames";
 import { antTheme, Card, Flex, Skeleton, Sparkline, Statistic } from "fidesui";
 
 import { nFormatter } from "~/features/common/utils";
 import type { TrendMetric } from "~/features/dashboard/types";
-
-import cardStyles from "./dashboard-card.module.scss";
 
 type StatType = "number" | "percent";
 
@@ -67,7 +64,7 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
             value={formattedDiff}
             suffix={suffix}
             prefix={metric.diff > 0 ? "↑" : "↓"}
-            className={cardStyles.smallStatistic}
+            size="sm"
           />
         )}
       </Flex>
@@ -78,7 +75,7 @@ export const TrendCard = ({ metricKey, metric, isLoading }: TrendCardProps) => {
     <Card
       variant="borderless"
       title={config?.label ?? metricKey}
-      className={classNames("overflow-clip h-full", cardStyles.dashboardCard)}
+      className="overflow-clip h-full"
       cover={
         !isLoading ? (
           <div className="h-16">

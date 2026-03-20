@@ -4,6 +4,7 @@
   :global(.ant-card-body) {
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
 
   :global(.ant-statistic) {

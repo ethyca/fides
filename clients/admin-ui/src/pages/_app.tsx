@@ -27,11 +27,6 @@ import LoginWithOIDC from "./login/[provider]";
 
 dayjs.extend(utc);
 
-if (process.env.NEXT_PUBLIC_MOCK_API) {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  import("../mocks").then(({ initMocks }) => initMocks());
-}
-
 const SafeHydrate = ({ children }: { children: ReactNode }) => (
   <div suppressHydrationWarning style={{ height: "100%", display: "flex" }}>
     {typeof window === "undefined" ? null : children}
@@ -39,6 +34,15 @@ const SafeHydrate = ({ children }: { children: ReactNode }) => (
 );
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
+  const [mswReady, setMswReady] = React.useState(!process.env.NEXT_PUBLIC_MOCK_API);
+
+  React.useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_MOCK_API) return;
+    import("../mocks")
+      .then(({ initMocks }) => initMocks())
+      .then(() => setMswReady(true));
+  }, []);
+
   // Expose Redux store to window for Cypress testing
   React.useEffect(() => {
     if (typeof window !== "undefined" && window.Cypress) {
@@ -46,6 +50,8 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       window.__REDUX_STORE__ = store;
     }
   }, []);
+
+  if (!mswReady) return null;
 
   return (
     <SafeHydrate>

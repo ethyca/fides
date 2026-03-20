@@ -40,7 +40,11 @@ export const HomeDashboard = () => {
   }, []);
 
   return (
-    <Flex vertical gap={24} className="px-10 py-6">
+    <Flex
+      vertical
+      gap={24}
+      className="mx-auto w-full max-w-[1600px] px-10 py-6"
+    >
       {briefing && showBriefing && (
         <AgentBriefingBanner
           briefing={briefing.briefing}
@@ -70,7 +74,7 @@ export const HomeDashboard = () => {
           </Col>
         ))}
       </Row>
-      <Row gutter={24}>
+      <Row gutter={24} className="items-stretch">
         <Col xs={24} md={8}>
           <SystemCoverageCard />
         </Col>

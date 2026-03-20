@@ -292,6 +292,7 @@ export type {
   ICustomSelectProps,
   CustomInputProps as InputProps,
   CustomStatisticProps as StatisticProps,
+  StatisticSize,
   StatisticTrend,
 } from "./hoc";
 export {

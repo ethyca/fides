@@ -64,13 +64,19 @@ const StackedBarTooltipContent = ({
         padding: `${token.paddingXXS}px ${token.paddingXS}px`,
         boxShadow: token.boxShadow,
         fontSize: token.fontSizeSM,
+        color: token.colorText,
       }}
     >
-      <Text strong>{entry.category}</Text>
+      <Text strong style={{ color: token.colorText }}>
+        {entry.category}
+      </Text>
       {segments
         .filter((segment) => (entry[`raw_${segment.key}`] as number) > 0)
         .map((segment) => (
-          <Text key={segment.key} type="secondary">
+          <Text
+            key={segment.key}
+            style={{ color: token.colorTextSecondary }}
+          >
             {segment.label}: {entry[`raw_${segment.key}`]}
           </Text>
         ))}

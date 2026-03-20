@@ -1,4 +1,4 @@
-import { Flex, Statistic, Text } from "fidesui";
+import { antTheme, Flex, Statistic, Text } from "fidesui";
 import { useCallback, useMemo } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -31,21 +31,8 @@ function getDiffArrow(direction: DiffDirection): string {
   return "→";
 }
 
-const SCORE_COLOR: Record<string, string> = {
-  success: "var(--ant-color-success)",
-  info: "var(--ant-color-info)",
-  caution: "var(--ant-color-warning)",
-  error: "var(--ant-color-error)",
-};
-
-const VALUE_COLOR: Record<PostureBand, string | undefined> = {
-  [PostureBand.EXCELLENT]: undefined,
-  [PostureBand.GOOD]: undefined,
-  [PostureBand.AT_RISK]: "var(--ant-color-warning)",
-  [PostureBand.CRITICAL]: "var(--ant-color-error)",
-};
-
 export const CommandBar = () => {
+  const { token } = antTheme.useToken();
   const {
     flags: { alphaDarkMode },
   } = useFlags();
@@ -60,9 +47,23 @@ export const CommandBar = () => {
 
   const animatedScore = useCountUp(score);
 
+  const scoreColorMap: Record<string, string> = {
+    success: token.colorSuccess,
+    info: token.colorInfo,
+    caution: token.colorWarning,
+    error: token.colorError,
+  };
+
+  const valueColorMap: Record<PostureBand, string | undefined> = {
+    [PostureBand.EXCELLENT]: undefined,
+    [PostureBand.GOOD]: undefined,
+    [PostureBand.AT_RISK]: token.colorWarning,
+    [PostureBand.CRITICAL]: token.colorError,
+  };
+
   const bandConfig = BAND_CONFIG[band];
-  const scoreColor = SCORE_COLOR[bandConfig.color];
-  const valueColor = VALUE_COLOR[band];
+  const scoreColor = scoreColorMap[bandConfig.color];
+  const valueColor = valueColorMap[band];
 
   const stats = useMemo(() => {
     const items = actions?.items ?? [];
@@ -97,8 +98,10 @@ export const CommandBar = () => {
   return (
     <Flex
       align="center"
-      className="h-12 shrink-0 select-none bg-[var(--ant-color-bg-layout)] px-10"
+      className="h-12 shrink-0 select-none px-10"
+      style={{ backgroundColor: token.colorBgLayout }}
     >
+      <div className="mx-auto flex w-full max-w-[1600px] items-center">
       <Flex align="center" gap="large" className="flex-1">
         <Flex
           align="center"
@@ -117,23 +120,25 @@ export const CommandBar = () => {
           <Statistic
             value={animatedScore}
             valueStyle={{ color: scoreColor }}
+            size="lg"
             className={styles.scoreStatistic}
           />
           <Statistic
             value={diffPercent}
             prefix={getDiffArrow(diffDirection)}
+            size="sm"
             className={styles.diffStatistic}
           />
         </Flex>
 
-        <Text style={{ color: "var(--ant-color-border)" }}>·</Text>
+        <Text style={{ color: token.colorBorder }}>·</Text>
 
         {stats.map((stat, i) => (
           <Flex key={stat.label} align="center" gap={4}>
             {i > 0 && (
               <Text
                 className="mr-2"
-                style={{ color: "var(--ant-color-border)" }}
+                style={{ color: token.colorBorder }}
               >
                 ·
               </Text>
@@ -148,6 +153,7 @@ export const CommandBar = () => {
         ))}
       </Flex>
       {alphaDarkMode && <ThemeModeSegmented />}
+      </div>
     </Flex>
   );
 };

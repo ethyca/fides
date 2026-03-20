@@ -20,11 +20,71 @@ import { ChartText } from "./ChartText";
 import styles from "./RadarChart.module.scss";
 import { RadarTooltipContent } from "./RadarTooltipContent";
 
+/**
+ * Build a smooth closed Catmull-Rom spline SVG path through `points`.
+ * `alpha` controls curve tightness (0 = uniform, 0.5 = centripetal, 1 = chordal).
+ */
+function catmullRomClosedPath(
+  points: { x: number; y: number }[],
+  alpha = 0.5,
+): string {
+  const n = points.length;
+  if (n < 3) {
+    return "";
+  }
+
+  const segments: string[] = [];
+  for (let i = 0; i < n; i++) {
+    const p0 = points[(i - 1 + n) % n];
+    const p1 = points[i];
+    const p2 = points[(i + 1) % n];
+    const p3 = points[(i + 2) % n];
+
+    const d1 = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+    const d0 = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+    const d2 = Math.hypot(p3.x - p2.x, p3.y - p2.y);
+
+    const a0 = d0 ** alpha;
+    const a1 = d1 ** alpha;
+    const a2 = d2 ** alpha;
+
+    const cp1x =
+      (a0 * a0 * p2.x -
+        a1 * a1 * p0.x +
+        (2 * a0 * a0 + 3 * a0 * a1 + a1 * a1) * p1.x) /
+      (3 * a0 * (a0 + a1));
+    const cp1y =
+      (a0 * a0 * p2.y -
+        a1 * a1 * p0.y +
+        (2 * a0 * a0 + 3 * a0 * a1 + a1 * a1) * p1.y) /
+      (3 * a0 * (a0 + a1));
+
+    const cp2x =
+      (a2 * a2 * p1.x -
+        a1 * a1 * p3.x +
+        (2 * a2 * a2 + 3 * a2 * a1 + a1 * a1) * p2.x) /
+      (3 * a2 * (a2 + a1));
+    const cp2y =
+      (a2 * a2 * p1.y -
+        a1 * a1 * p3.y +
+        (2 * a2 * a2 + 3 * a2 * a1 + a1 * a1) * p2.y) /
+      (3 * a2 * (a2 + a1));
+
+    if (i === 0) {
+      segments.push(`M${p1.x},${p1.y}`);
+    }
+    segments.push(`C${cp1x},${cp1y},${cp2x},${cp2y},${p2.x},${p2.y}`);
+  }
+  segments.push("Z");
+  return segments.join(" ");
+}
+
 export type RadarPointStatus = "success" | "warning" | "error";
 
 export interface RadarChartDataPoint {
   subject: string;
   value: number;
+  weight?: number;
   status?: RadarPointStatus;
 }
 
@@ -46,6 +106,7 @@ export interface RadarChartProps {
   color?: AntColorTokenKey;
   animationDuration?: number;
   outerRadius?: string;
+  showGrid?: boolean;
   onDimensionClick?: (index: number, point: RadarChartDataPoint) => void;
   tooltipContent?: (point: RadarChartDataPoint) => ReactNode;
   className?: string;
@@ -101,7 +162,6 @@ const RadarTick = ({
         y={y}
         fill={statusColor ?? chartColor}
         fillOpacity={statusColor ? 1 : 0.75}
-        fontSize={10}
       >
         {payload.value}
       </ChartText>
@@ -167,6 +227,7 @@ export const RadarChart = ({
   data,
   color,
   outerRadius = "70%",
+  showGrid = true,
   animationDuration = CHART_ANIMATION.defaultDuration,
   onDimensionClick,
   tooltipContent,
@@ -177,6 +238,8 @@ export const RadarChart = ({
   const chartColor = color ? token[color] : token.colorText;
 
   const gradientId = `radar-gradient-${useId()}`;
+  const weightGradientId = `radar-weight-gradient-${useId()}`;
+  const hasWeights = !empty && data!.some((d) => d.weight != null);
 
   const animationActive = useChartAnimation(animationDuration);
 
@@ -210,25 +273,63 @@ export const RadarChart = ({
             type="radial"
             inverse
           />
+          {hasWeights && (
+            <ChartGradient
+              id={weightGradientId}
+              color={chartColor}
+              type="radial"
+            />
+          )}
 
-          <PolarGrid
-            stroke={chartColor}
-            strokeWidth={CHART_STROKE.strokeWidth * 0.25}
-            strokeOpacity={CHART_STROKE.strokeOpacity * 0.25}
-          />
+          {showGrid && (
+            <PolarGrid
+              stroke={chartColor}
+              strokeWidth={CHART_STROKE.strokeWidth * 0.25}
+              strokeOpacity={CHART_STROKE.strokeOpacity * 0.25}
+              gridType="circle"
+            />
+          )}
 
           <PolarRadiusAxis tick={false} axisLine={false} />
 
-          <Radar
-            dataKey="value"
-            stroke={chartColor}
-            strokeWidth={CHART_STROKE.strokeWidth}
-            strokeOpacity={CHART_STROKE.strokeOpacity}
-            strokeLinecap={CHART_STROKE.strokeLinecap}
-            strokeLinejoin={CHART_STROKE.strokeLinejoin}
-            fill={`url(#${gradientId})`}
-            dot={
-              !empty ? (
+          {hasWeights && (
+            <Radar
+              dataKey="weight"
+              stroke={chartColor}
+              strokeWidth={CHART_STROKE.strokeWidth * 0.5}
+              strokeOpacity={0.15}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill={`url(#${weightGradientId})`}
+              dot={false}
+              activeDot={false}
+              isAnimationActive={animationDuration > 0 && animationActive}
+              animationDuration={animationDuration}
+              animationEasing={CHART_ANIMATION.easing}
+              shape={(props: { points: { x: number; y: number }[] }) => (
+                <path
+                  d={catmullRomClosedPath(props.points)}
+                  stroke={chartColor}
+                  strokeWidth={CHART_STROKE.strokeWidth * 0.5}
+                  strokeOpacity={0.15}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill={`url(#${weightGradientId})`}
+                />
+              )}
+            />
+          )}
+
+          {!empty && (
+            <Radar
+              dataKey="value"
+              stroke={chartColor}
+              strokeWidth={CHART_STROKE.strokeWidth}
+              strokeOpacity={CHART_STROKE.strokeOpacity}
+              strokeLinecap={CHART_STROKE.strokeLinecap}
+              strokeLinejoin={CHART_STROKE.strokeLinejoin}
+              fill={`url(#${gradientId})`}
+              dot={
                 <RadarDot
                   data={data!}
                   statusColors={STATUS_COLORS}
@@ -236,17 +337,13 @@ export const RadarChart = ({
                   bgColor={token.colorBgContainer}
                   onDimensionClick={onDimensionClick}
                 />
-              ) : (
-                false
-              )
-            }
-            activeDot={false}
-            isAnimationActive={
-              !empty && animationDuration > 0 && animationActive
-            }
-            animationDuration={animationDuration}
-            animationEasing={CHART_ANIMATION.easing}
-          />
+              }
+              activeDot={false}
+              isAnimationActive={animationDuration > 0 && animationActive}
+              animationDuration={animationDuration}
+              animationEasing={CHART_ANIMATION.easing}
+            />
+          )}
 
           {interactive && !empty && (
             <Tooltip

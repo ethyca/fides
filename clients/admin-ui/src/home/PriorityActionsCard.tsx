@@ -119,9 +119,7 @@ export const PriorityActionsCard = () => {
                   href={cta.route(action.action_data)}
                   passHref
                 >
-                  <Button size="small" className="mt-1">
-                    {cta.label}
-                  </Button>
+                  <Button size="small">{cta.label}</Button>
                 </NextLink>,
               ]}
             >
