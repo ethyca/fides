@@ -47,7 +47,7 @@ const VerificationForm = ({
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
   return (
-    <Flex gap="middle" vertical>
+    <Flex gap="medium" vertical>
       <Text type="secondary">
         A verification code has been sent. Return to this window and enter the
         code below.
@@ -72,7 +72,7 @@ const VerificationForm = ({
             value={values.code}
           />
         </Form.Item>
-        <Flex justify="stretch" gap="middle">
+        <Flex justify="stretch" gap="medium">
           <Button variant="outlined" onClick={resetVerificationProcess} block>
             Resend code
           </Button>

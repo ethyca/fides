@@ -149,7 +149,7 @@ const PrivacyRequestActionsDropdown = ({
       <Dropdown
         menu={{ items: menuItems }}
         trigger={["click"]}
-        overlayStyle={{ minWidth: "160px" }}
+        styles={{ root: { minWidth: "160px" } }}
       >
         <Button
           icon={<Icons.CaretDown />}

@@ -41,12 +41,12 @@ import {
   Tooltip,
   useChakraDisclosure as useDisclosure,
   useChakraToast as useToast,
+  useModal,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { INDEX_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
@@ -130,7 +130,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     onOpen: onOpenFilter,
     onClose: onCloseFilter,
   } = useDisclosure();
-  const { isOpen, onClose, onOpen } = useDisclosure();
+  const modal = useModal();
   const [isRowSelectionBarOpen, setIsRowSelectionBarOpen] =
     useState<boolean>(false);
 
@@ -322,19 +322,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       overflow="auto"
       data-testid="add-multiple-systems-tbl"
     >
-      <ConfirmationModal
-        isOpen={isOpen}
-        isCentered
-        onCancel={onClose}
-        onClose={onClose}
-        onConfirm={addVendors}
-        title="Confirmation"
-        message={`You are about to add ${totalSelectSystemsLength.toLocaleString(
-          "en",
-        )} ${SYSTEM_TEXT.toLocaleLowerCase()}${
-          totalSelectSystemsLength > 1 ? "s" : ""
-        }`}
-      />
       <MultipleSystemsFilterModal
         isOpen={isFilterOpen}
         onClose={onCloseFilter}
@@ -356,7 +343,19 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               </Text>
               <Tooltip title={toolTipText}>
                 <Button
-                  onClick={onOpen}
+                  onClick={() => {
+                    modal.confirm({
+                      title: "Confirmation",
+                      content: `You are about to add ${totalSelectSystemsLength.toLocaleString(
+                        "en",
+                      )} ${SYSTEM_TEXT.toLocaleLowerCase()}${
+                        totalSelectSystemsLength > 1 ? "s" : ""
+                      }`,
+                      centered: true,
+                      icon: null,
+                      onOk: addVendors,
+                    });
+                  }}
                   data-testid="add-multiple-systems-btn"
                   disabled={!anyNewSelectedRows}
                   className="ml-4"

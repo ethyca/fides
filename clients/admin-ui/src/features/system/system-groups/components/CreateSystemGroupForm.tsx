@@ -92,7 +92,7 @@ const CreateSystemGroupForm = ({
       {({ isValid, dirty }) => {
         return (
           <Form>
-            <Flex vertical gap="middle">
+            <Flex vertical gap="medium">
               <Typography.Title level={2}>Create system group</Typography.Title>
               <CustomTextInput
                 name="name"

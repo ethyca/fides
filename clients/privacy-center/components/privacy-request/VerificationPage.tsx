@@ -56,7 +56,7 @@ const VerificationPage = ({ actionKey }: VerificationPageProps) => {
   };
 
   return (
-    <Flex vertical gap="middle" data-testid="verification-page">
+    <Flex vertical gap="medium" data-testid="verification-page">
       <VerificationForm
         isOpen
         onClose={handleClose}

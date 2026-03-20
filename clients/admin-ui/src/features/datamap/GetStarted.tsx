@@ -27,9 +27,9 @@ const GetStarted = () => {
             here to simplify this.
           </Text>
           <Text>
-            Start by scanning your infrastructure. The scanner will connect to
-            your infrastructure to automatically scan and create a list of all
-            systems available and then classify each system containing PII.
+            Start by adding systems. You can connect to AWS or Okta to discover
+            services automatically, add vendors in bulk with Compass, or enter
+            systems manually—then classify systems that process personal data.
           </Text>
           <Text>Let&apos;s get started!</Text>
           <Box>

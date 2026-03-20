@@ -103,17 +103,11 @@ SYSTEM_CONNECTION_INSTANTIATE_ROUTER = APIRouter(
     ],
     status_code=HTTP_200_OK,
     response_model=Page[ConnectionConfigurationResponse],
-    deprecated=True,
 )
 def get_system_connections(
     fides_key: str, params: Params = Depends(), db: Session = Depends(deps.get_db)
 ) -> AbstractPage[ConnectionConfigurationResponse]:
-    """
-    Return all the connection configs related to a system.
-
-    Deprecated: Use GET /connection with `linked_systems` in the response,
-    or GET /connection/{connection_key}/system-links to manage links directly.
-    """
+    """Return all the connection configs related to a system."""
     system = get_system(db, fides_key)
     query = (
         ConnectionConfig.query(db)

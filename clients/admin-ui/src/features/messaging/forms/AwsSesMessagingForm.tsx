@@ -38,11 +38,10 @@ interface AwsSesMessagingFormProps {
 
 const AwsSesMessagingForm = ({ configKey }: AwsSesMessagingFormProps) => {
   const router = useRouter();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
   const { verifyConfiguration, isVerifying, getVerificationData } =
     useVerifyConfiguration();
-
-  const message = useMessage();
 
   const isEditMode = !!configKey;
 

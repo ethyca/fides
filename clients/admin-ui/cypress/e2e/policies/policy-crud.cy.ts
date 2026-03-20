@@ -179,7 +179,9 @@ describe("Policy CRUD", () => {
 
       cy.getByTestId("delete-policy-btn").should("not.be.disabled");
       cy.getByTestId("delete-policy-btn").click();
-      cy.contains("Delete policy").should("be.visible");
+      cy.contains(".ant-modal-confirm-title", "Delete policy").should(
+        "be.visible",
+      );
       cy.contains("Are you sure you want to delete").should("be.visible");
       cy.getAntModalConfirmButtons().contains("Delete").click();
       cy.wait("@deleteDSRPolicy");

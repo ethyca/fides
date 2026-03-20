@@ -1,0 +1,4 @@
+type: Changed
+description: Migrated remaining Chakra UI drawers to Ant Design with CustomDrawer HOC
+pr: 7654
+labels: []

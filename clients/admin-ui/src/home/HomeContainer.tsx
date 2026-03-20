@@ -3,6 +3,7 @@ import {
   darkAntTheme,
   defaultAntTheme,
   Flex,
+  Layout as AntLayout,
   ThemeModeProvider,
   useThemeMode,
 } from "fidesui";
@@ -11,15 +12,16 @@ import * as React from "react";
 
 import { useFlags } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { ThemeModeSegmented } from "~/features/common/ThemeModeToggle";
 
+import { CommandBar } from "./CommandBar";
 import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
+import { HomeDashboard } from "./HomeDashboard";
 
 const HomeContainerInner = () => {
   const { resolvedMode } = useThemeMode();
   const {
-    flags: { alphaDarkMode },
+    flags: { alphaDashboard },
   } = useFlags();
 
   const activeTheme = resolvedMode === "dark" ? darkAntTheme : defaultAntTheme;
@@ -28,19 +30,24 @@ const HomeContainerInner = () => {
       ? palette.FIDESUI_BG_MINOS
       : palette.FIDESUI_FULL_WHITE;
 
+  if (alphaDashboard) {
+    return (
+      <ConfigProvider theme={activeTheme}>
+        <AntLayout className="h-screen">
+          <CommandBar />
+          <AntLayout.Content className="overflow-auto">
+            <HomeDashboard />
+          </AntLayout.Content>
+        </AntLayout>
+      </ConfigProvider>
+    );
+  }
+
   return (
     <ConfigProvider theme={activeTheme}>
-      {/* this wrapping div can be removed once global theming is applied */}
       <div className="min-h-full w-full" style={{ backgroundColor: bgColor }}>
         <Layout title="Home" padded={false}>
           <Flex vertical gap={40} className="pb-6">
-            {/* NOTE: temporary button placement for testing */}
-            {alphaDarkMode && (
-              <Flex className="absolute pl-2 pt-2">
-                <ThemeModeSegmented />
-              </Flex>
-            )}
-
             <HomeBanner />
             <HomeContent />
           </Flex>
@@ -52,12 +59,12 @@ const HomeContainerInner = () => {
 
 const HomeContainer = () => {
   const {
-    flags: { alphaDarkMode },
+    flags: { alphaDarkMode, alphaDashboard },
   } = useFlags();
   return (
     <ThemeModeProvider
       defaultMode="light"
-      locked={!alphaDarkMode}
+      locked={!alphaDarkMode && !alphaDashboard}
       wrapperStyle={{ width: "100%" }}
     >
       <HomeContainerInner />
