@@ -22,6 +22,7 @@ from fides.api.common_exceptions import (
     OAuth2TokenException,
 )
 from fides.api.db.encryption_utils import get_encryption_key
+from fides.api.db.seed import DEFAULT_OAUTH_CLIENT_KEY
 from fides.api.deps import get_db
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
@@ -74,21 +75,27 @@ from fides.config import CONFIG
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)
 
 
+def _is_system_client(client_id: str, client: Optional[ClientDetail]) -> bool:
+    """Returns True if this client is a system-internal client that should not be exposed via the API."""
+    return client_id == CONFIG.security.oauth_root_client_id or (
+        client is not None and client.fides_key == DEFAULT_OAUTH_CLIENT_KEY
+    )
+
+
 def _get_client_or_error(db: Session, client_id: str) -> ClientDetail:
-    """Returns the ClientDetail for client_id, raising 404 if not found or if it is the root client."""
-    if client_id == CONFIG.security.oauth_root_client_id:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
+    """Returns the ClientDetail for client_id, raising 404 if not found or if it is a system client."""
     client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
-    if not client:
+    if not client or _is_system_client(client_id, client):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Client not found.")
     return client
 
 
 def _get_client_or_none(db: Session, client_id: str) -> Optional[ClientDetail]:
-    """Returns the ClientDetail for client_id, or None if not found or if it is the root client."""
-    if client_id == CONFIG.security.oauth_root_client_id:
+    """Returns the ClientDetail for client_id, or None if not found or if it is a system client."""
+    client = ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    if _is_system_client(client_id, client):
         return None
-    return ClientDetail.get(db, object_id=client_id, config=CONFIG)
+    return client
 
 
 @router.post(
@@ -204,11 +211,12 @@ def list_clients(
     db: Session = Depends(get_db),
     params: Params = Depends(),
 ) -> AbstractPage[ClientDetail]:
-    """Returns a paginated list of all OAuth clients, excluding the root client."""
+    """Returns a paginated list of all OAuth clients, excluding the root client and internal system clients."""
     logger.info("Listing OAuth clients")
     query = (
         ClientDetail.query(db=db)
         .filter(ClientDetail.id != CONFIG.security.oauth_root_client_id)
+        .filter(ClientDetail.fides_key != DEFAULT_OAUTH_CLIENT_KEY)
         .order_by(ClientDetail.created_at.desc())
     )
     return paginate(query, params=params)
