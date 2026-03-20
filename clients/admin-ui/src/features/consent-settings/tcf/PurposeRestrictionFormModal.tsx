@@ -3,6 +3,7 @@ import {
   ChakraCollapse as Collapse,
   ChakraText as Text,
   Flex,
+  Modal,
   Tooltip,
   useChakraToast as useToast,
 } from "fidesui";
@@ -11,7 +12,6 @@ import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { isErrorResult } from "~/features/common/helpers";
-import FormModal from "~/features/common/modals/FormModal";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   TCFPublisherRestrictionRequest,
@@ -217,7 +217,14 @@ export const PurposeRestrictionFormModal = ({
   };
 
   return (
-    <FormModal isOpen={isOpen} onClose={onClose} title="Edit restriction">
+    <Modal
+      open={isOpen}
+      onCancel={onClose}
+      centered
+      destroyOnClose
+      title="Edit restriction"
+      footer={null}
+    >
       <Formik
         initialValues={{
           ...initialValues,
@@ -320,6 +327,6 @@ export const PurposeRestrictionFormModal = ({
           </Form>
         )}
       </Formik>
-    </FormModal>
+    </Modal>
   );
 };

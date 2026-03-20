@@ -33,7 +33,7 @@ export const AssessmentGroup = ({
   return (
     <div>
       <Flex justify="space-between" align="flex-end">
-        <Flex gap="middle" align="center">
+        <Flex gap="medium" align="center">
           <Avatar
             shape="square"
             variant="outlined"

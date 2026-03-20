@@ -1,17 +1,6 @@
-import {
-  ChakraFlex as Flex,
-  ChakraHeading as Heading,
-  ChakraModal as Modal,
-  ChakraModalBody as ModalBody,
-  ChakraModalCloseButton as ModalCloseButton,
-  ChakraModalContent as ModalContent,
-  ChakraModalHeader as ModalHeader,
-  ChakraModalOverlay as ModalOverlay,
-  ChakraSpacer as Spacer,
-  Tag,
-} from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
+import { ChakraFlex as Flex, Modal, Tag } from "fidesui";
 
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { SystemHistoryResponse } from "~/types/api";
 
 import SelectedHistoryProvider from "./SelectedHistoryContext";
@@ -56,60 +45,50 @@ interface Props {
 }
 
 const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
-  <Modal isOpen={isOpen} onClose={onClose} size="4xl">
-    <ModalOverlay />
-    <ModalContent>
-      <ModalHeader
-        backgroundColor={palette.FIDESUI_NEUTRAL_50}
-        borderTopLeftRadius="8px"
-        borderTopRightRadius="8px"
-        borderBottom="1px solid #E2E8F0"
-      >
-        <Heading size="xs">
-          <span style={{ verticalAlign: "middle" }}>Change detail</span>
-          {selectedHistory && (
-            <>
-              {getBadges(selectedHistory.before, selectedHistory.after).map(
-                (badge, index) => (
-                  <Tag
-                    // eslint-disable-next-line react/no-array-index-key
-                    key={index}
-                    color="minos"
-                    className="ml-2"
-                  >
-                    {badge}
-                  </Tag>
-                ),
-              )}
-            </>
+  <Modal
+    open={isOpen}
+    onCancel={onClose}
+    centered
+    destroyOnHidden
+    width={MODAL_SIZE.xl}
+    title={
+      <span className="pr-6">
+        Change detail
+        {selectedHistory &&
+          getBadges(selectedHistory.before, selectedHistory.after).map(
+            (badge, index) => (
+              <Tag
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
+                color="minos"
+                className="ml-2"
+              >
+                {badge}
+              </Tag>
+            ),
           )}
-        </Heading>
-        <>
-          <Spacer />
-          <ModalCloseButton />
-        </>
-      </ModalHeader>
-      <ModalBody paddingTop={0} paddingBottom={6}>
-        <Flex justifyContent="space-between">
-          <div style={{ flex: "0 50%", marginRight: "12px" }}>
-            <SelectedHistoryProvider
-              selectedHistory={selectedHistory}
-              formType="before"
-            >
-              <SystemDataForm initialValues={selectedHistory?.before} />
-            </SelectedHistoryProvider>
-          </div>
-          <div style={{ flex: "0 50%", marginLeft: "12px" }}>
-            <SelectedHistoryProvider
-              selectedHistory={selectedHistory}
-              formType="after"
-            >
-              <SystemDataForm initialValues={selectedHistory?.after} />
-            </SelectedHistoryProvider>
-          </div>
-        </Flex>
-      </ModalBody>
-    </ModalContent>
+      </span>
+    }
+    footer={null}
+  >
+    <Flex justifyContent="space-between">
+      <div style={{ flex: "0 50%", marginRight: "12px" }}>
+        <SelectedHistoryProvider
+          selectedHistory={selectedHistory}
+          formType="before"
+        >
+          <SystemDataForm initialValues={selectedHistory?.before} />
+        </SelectedHistoryProvider>
+      </div>
+      <div style={{ flex: "0 50%", marginLeft: "12px" }}>
+        <SelectedHistoryProvider
+          selectedHistory={selectedHistory}
+          formType="after"
+        >
+          <SystemDataForm initialValues={selectedHistory?.after} />
+        </SelectedHistoryProvider>
+      </div>
+    </Flex>
   </Modal>
 );
 

@@ -199,11 +199,6 @@ describe("Consent settings", () => {
           core_fides_version: "1.9.6",
           fidesplus_server: "healthy",
           fidesplus_version: "1.9.6",
-          system_scanner: {
-            enabled: false,
-            cluster_health: null,
-            cluster_error: null,
-          },
           dictionary: {
             enabled: false,
             service_health: null,
@@ -390,7 +385,7 @@ describe("Consent settings", () => {
       it("allows deleting an existing restriction", () => {
         cy.getByTestId("edit-restriction-btn-2").click({ force: true });
         cy.getByTestId("delete-restriction-button").first().click();
-        cy.getByTestId("continue-btn").click();
+        cy.getAntModalConfirmButtons().contains("Delete").click();
         cy.wait("@deleteRestriction");
         cy.contains("Publisher restriction deleted successfully").should(
           "be.visible",

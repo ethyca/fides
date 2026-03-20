@@ -1,6 +1,6 @@
-import { useAPIHelper } from "common/hooks";
 import { useMessage } from "fidesui";
 
+import { useAPIHelper } from "~/features/common/hooks";
 import { useLazyGetAuthorizationUrlQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import {
   ConnectionConfigurationResponse,
@@ -27,7 +27,6 @@ export const useIntegrationAuthorization = ({
 }: UseIntegrationAuthorizationProps): UseIntegrationAuthorizationResult => {
   const [getAuthorizationUrl] = useLazyGetAuthorizationUrlQuery();
   const { handleError } = useAPIHelper();
-
   const message = useMessage();
 
   const handleAuthorize = async () => {

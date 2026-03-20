@@ -81,7 +81,7 @@ export const ActionButtons = ({ task }: Props) => {
           menu={{ items: menuItems }}
           trigger={["click"]}
           placement="bottomRight"
-          overlayStyle={{ minWidth: 120 }}
+          styles={{ root: { minWidth: 120 } }}
         >
           <Button
             size="small"

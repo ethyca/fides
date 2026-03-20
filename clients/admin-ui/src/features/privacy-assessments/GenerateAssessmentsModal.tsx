@@ -15,6 +15,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage } from "~/features/common/helpers";
+import { MODAL_SIZE } from "~/features/common/modals/modal-sizes";
 import { RTKErrorResult } from "~/types/errors/api";
 
 import {
@@ -117,7 +118,7 @@ export const GenerateAssessmentsModal = ({
       open={open}
       onCancel={handleCancel}
       footer={null}
-      width={600}
+      width={MODAL_SIZE.md}
     >
       <Space direction="vertical" size="large" className="w-full pt-2">
         <Form
@@ -208,7 +209,7 @@ export const GenerateAssessmentsModal = ({
           </Item>
 
           <Item className="mb-0">
-            <Flex gap="middle" justify="flex-end">
+            <Flex gap="medium" justify="flex-end">
               <Button onClick={handleCancel}>Cancel</Button>
               <Button type="primary" htmlType="submit" loading={isCreating}>
                 Generate assessments

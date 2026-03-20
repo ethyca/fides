@@ -1,9 +1,8 @@
-import { Space, Tag } from "fidesui";
+import { Space, Tag, useMessage } from "fidesui";
 import { truncate } from "lodash";
 import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import styles from "~/features/common/table/cells/Cells.module.scss";
 import { TagExpandableCell } from "~/features/common/table/cells/TagExpandableCell";
@@ -30,7 +29,7 @@ const DiscoveredAssetDataUseCell = ({
   );
 
   const [updateAssetsDataUseMutation] = useUpdateAssetsDataUseMutation();
-  const { successAlert, errorAlert } = useAlert();
+  const message = useMessage();
 
   const { getDataUseDisplayName } = useTaxonomies();
 
@@ -45,11 +44,10 @@ const DiscoveredAssetDataUseCell = ({
       dataUses: [...currentDataUses, newDataUse],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      message.error(getErrorMessage(result.error));
     } else {
-      successAlert(
+      message.success(
         `Consent category added to ${asset.resource_type} "${truncatedAssetName}".`,
-        `Confirmed`,
       );
       onChange?.([...currentDataUses, newDataUse]);
     }
@@ -63,11 +61,10 @@ const DiscoveredAssetDataUseCell = ({
       dataUses: currentDataUses.filter((use) => use !== useToDelete),
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      message.error(getErrorMessage(result.error));
     } else {
-      successAlert(
+      message.success(
         `Consent category removed from ${asset.resource_type} "${truncatedAssetName}".`,
-        `Confirmed`,
       );
       onChange?.(currentDataUses.filter((use) => use !== useToDelete));
     }

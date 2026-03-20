@@ -53,7 +53,7 @@ const ConsentRequestForm = ({
   useEffect(() => resetForm(), [isOpen, resetForm]);
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical gap="medium">
       <Text>{config.consent?.button.description}</Text>
       {config.consent?.button.description_subtext?.map((paragraph) => (
         <Text key={paragraph}>{paragraph}</Text>
@@ -163,7 +163,7 @@ const ConsentRequestForm = ({
             </Form.Item>
           );
         })}
-        <Flex justify="stretch" gap="middle">
+        <Flex justify="stretch" gap="medium">
           <Button type="default" variant="outlined" onClick={onClose} block>
             {config.consent?.button.cancelButtonText || "Cancel"}
           </Button>

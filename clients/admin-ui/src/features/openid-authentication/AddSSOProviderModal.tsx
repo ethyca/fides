@@ -1,15 +1,24 @@
-import { ChakraUseDisclosureReturn as UseDisclosureReturn } from "fidesui";
+import {
+  ChakraUseDisclosureReturn as UseDisclosureReturn,
+  Modal,
+} from "fidesui";
 
-import FormModal from "~/features/common/modals/FormModal";
 import SSOProviderForm from "~/features/openid-authentication/SSOProviderForm";
 
 const AddSSOProviderModal = ({
   isOpen,
   onClose,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose">) => (
-  <FormModal isOpen={isOpen} onClose={onClose} title="Add SSO Provider">
+  <Modal
+    open={isOpen}
+    onCancel={onClose}
+    centered
+    destroyOnClose
+    title="Add SSO Provider"
+    footer={null}
+  >
     <SSOProviderForm onClose={onClose} />
-  </FormModal>
+  </Modal>
 );
 
 export default AddSSOProviderModal;

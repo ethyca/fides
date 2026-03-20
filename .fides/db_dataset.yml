@@ -445,6 +445,12 @@ dataset:
     - name: monitors
       data_categories:
         - system.operations
+    - name: name
+      data_categories:
+        - system.operations
+    - name: description
+      data_categories:
+        - system.operations
   - name: systemmanager
     fields:
       - name: id
@@ -1869,6 +1875,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: asset_disclosure_include_types
       data_categories: [ system.operations ]
+    - name: resurface_behavior
+      data_categories: [ system.operations ]
   - name: privacyexperienceconfighistory
     description: 'Historical table to store all versions of Experience Config History for record keeping'
     fields:
@@ -1953,6 +1961,8 @@ dataset:
     - name: allow_vendor_asset_disclosure
       data_categories: [ system.operations ]
     - name: asset_disclosure_include_types
+      data_categories: [ system.operations ]
+    - name: resurface_behavior
       data_categories: [ system.operations ]
   - name: privacynoticetemplate
     data_categories: []
@@ -2826,6 +2836,8 @@ dataset:
       data_categories: [system.operations]
     - name: is_hash_migrated
       data_categories: [system.operations]
+    - name: received_at
+      data_categories: [system.operations]
   - name: lastservednoticev2
     description: 'Stores the last notices that were served to a user'
     data_categories: [system.operations]
@@ -2972,6 +2984,8 @@ dataset:
     - name: allow_vendor_asset_disclosure
       data_categories: [ system.operations ]
     - name: asset_disclosure_include_types
+      data_categories: [ system.operations ]
+    - name: resurface_behavior
       data_categories: [ system.operations ]
   - name: experiencenotices
     description: 'The table that links Privacy Notices to Experience Configs (many-to-many)'
@@ -3940,3 +3954,18 @@ dataset:
         data_categories: [system.operations]
       - name: question_index
         data_categories: [system.operations]
+  - name: encryption_keys
+    description: 'Store encrypted Data Encryption Keys'
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: wrapped_dek
+      data_categories: [system.operations]
+    - name: kek_id_hash
+      data_categories: [system.operations]
+    - name: provider
+      data_categories: [system.operations]
