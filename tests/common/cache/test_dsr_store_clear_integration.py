@@ -11,7 +11,7 @@ import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
-from tests.common.cache.mock_redis import MockRedis
+from tests.common.cache.mock_redis import create_mock_redis
 
 
 @pytest.mark.unit
@@ -20,7 +20,7 @@ class TestPrivacyRequestClearCachedValues:
 
     def test_clear_removes_legacy_keys(self):
         """clear_cached_values removes legacy cache keys."""
-        mock_redis = MockRedis()
+        mock_redis = create_mock_redis()
         pr_id = f"test-pr-{uuid.uuid4()}"
 
         # Simulate legacy cached data
@@ -44,7 +44,7 @@ class TestPrivacyRequestClearCachedValues:
 
     def test_clear_removes_new_keys(self):
         """clear_cached_values removes new-format cache keys."""
-        mock_redis = MockRedis()
+        mock_redis = create_mock_redis()
         pr_id = f"test-pr-{uuid.uuid4()}"
 
         # Simulate new cached data via store
@@ -65,7 +65,7 @@ class TestPrivacyRequestClearCachedValues:
 
     def test_clear_removes_mixed_keys(self):
         """clear_cached_values removes both legacy and new keys."""
-        mock_redis = MockRedis()
+        mock_redis = create_mock_redis()
         pr_id = f"test-pr-{uuid.uuid4()}"
 
         # Mixed: legacy identity, new encryption
@@ -89,7 +89,7 @@ class TestPrivacyRequestClearCachedValues:
 
     def test_clear_removes_index(self):
         """clear_cached_values removes the DSR index."""
-        mock_redis = MockRedis()
+        mock_redis = create_mock_redis()
         pr_id = f"test-pr-{uuid.uuid4()}"
 
         manager = RedisCacheManager(mock_redis)

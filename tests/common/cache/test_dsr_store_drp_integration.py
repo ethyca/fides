@@ -8,19 +8,18 @@ Focuses on service-layer methods for DRP data management, including:
 """
 
 import uuid
-from typing import Any, Dict
 
 import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
-from tests.common.cache.mock_redis import MockRedis
+from tests.common.cache.mock_redis import create_mock_redis
 
 
 @pytest.fixture
 def mock_redis():
     """In-memory Redis mock for isolated testing."""
-    return MockRedis()
+    return create_mock_redis()
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ whole DSR and a different storage shape; can introduce a hash-backed backend
 later if we want to avoid index consistency concerns.
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from redis import Redis
 
@@ -91,12 +91,14 @@ class DSRCacheStore:
         Get value for part; if missing, try legacy_key. If found in legacy only
         and migrate_legacy_on_read, copy to new key, delete legacy, add to index.
         """
-        val = self._redis.get(_dsr_key(dsr_id, part))
+        new_key = _dsr_key(dsr_id, part)
+        val = self._redis.get(new_key)
         if val is not None:
             return val
         val = self._redis.get(legacy_key)
         if val is None:
-            return None
+            # Re-check: another reader may have migrated between our two GETs
+            return self._redis.get(new_key)
         if self._migrate_on_read:
             self.set(dsr_id, part, val)
             self._redis.delete(legacy_key)
@@ -252,17 +254,6 @@ class DSRCacheStore:
         # Filter for identity keys (both new and legacy formats)
         identity_keys = [k for k in all_keys if ":identity:" in k or "-identity-" in k]
 
-        # Also scan for legacy identity keys directly, since get_all_keys() may return early
-        # if an index exists (e.g., when other fields like encryption are cached)
-        legacy_identity_prefix = f"id-{dsr_id}-identity-"
-        legacy_keys = list(
-            self._redis.scan_iter(match=f"{legacy_identity_prefix}*", count=500)
-        )
-        # Add legacy keys that aren't already in identity_keys
-        for legacy_key in legacy_keys:
-            if legacy_key not in identity_keys:
-                identity_keys.append(legacy_key)
-
         for key in identity_keys:
             # Extract attribute name from key
             # New format: dsr:{id}:identity:{attr}
@@ -286,16 +277,7 @@ class DSRCacheStore:
         Returns True if any identity keys exist (legacy or new format).
         """
         all_keys = self.get_all_keys(dsr_id)
-        has_identity = any(":identity:" in k or "-identity-" in k for k in all_keys)
-        if has_identity:
-            return True
-        # Also check for legacy identity keys directly, since get_all_keys() may return early
-        # if an index exists (e.g., when other fields like encryption are cached)
-        legacy_identity_prefix = f"id-{dsr_id}-identity-"
-        legacy_keys = list(
-            self._redis.scan_iter(match=f"{legacy_identity_prefix}*", count=500)
-        )
-        return len(legacy_keys) > 0
+        return any(":identity:" in k or "-identity-" in k for k in all_keys)
 
     # --- Convenience: encryption ---
 
@@ -441,41 +423,67 @@ class DSRCacheStore:
         part = "retry_count"
         return self.get_with_legacy(dsr_id, part, KeyMapper.retry_count(dsr_id)[1])
 
-    # --- List / clear (unchanged) ---
+    # --- List / clear ---
 
-    def get_all_keys(self, dsr_id: str) -> List[str]:
+    def get_all_keys(self, dsr_id: str) -> list[str]:
         """
         Return all cache keys for this DSR.
-        Uses the index first; if empty, falls back to SCAN for legacy keys
-        and optionally backfills the index.
+
+        Uses the index first. If a migration flag confirms no legacy keys remain,
+        returns index contents directly. Otherwise, does a one-time SCAN to find
+        legacy stragglers, backfills them into the index, and sets the migration
+        flag so future calls skip the SCAN.
         """
         index_prefix = _dsr_index_prefix(dsr_id)
         keys = self._manager.get_keys_by_index(index_prefix)
-        if keys:
+
+        # If we've already confirmed no legacy keys remain, index is authoritative
+        migration_key = f"__migrated:{dsr_id}"
+        if keys and self._redis.exists(migration_key):
             return keys
-        legacy_keys = list(self._redis.scan_iter(match=f"*{dsr_id}*", count=500))
-        if not legacy_keys:
+
+        # SCAN for legacy keys (one-time per DSR until migration confirmed)
+        # Filter out internal keys (__migrated:, __idx:) that match the SCAN pattern
+        legacy_keys = [
+            k
+            for k in self._redis.scan_iter(match=f"*{dsr_id}*", count=500)
+            if not k.startswith("__migrated:") and not k.startswith("__idx:")
+        ]
+        indexed = set(keys)
+        legacy_set = set(legacy_keys)
+        all_keys = list(indexed | legacy_set) if keys else legacy_keys
+
+        if not all_keys:
             return []
+
         if self._backfill:
             for k in legacy_keys:
-                self._manager.add_key_to_index(index_prefix, k)
-        return list(legacy_keys)
+                if k not in indexed:
+                    self._manager.add_key_to_index(index_prefix, k)
+
+        # If index existed and no legacy keys found outside it, mark as migrated
+        if keys and not (legacy_set - indexed):
+            self._redis.setex(migration_key, 86400, "1")  # 24h TTL
+
+        return all_keys
 
     def clear(self, dsr_id: str) -> None:
         """
         Delete all cache keys for this DSR and remove the index.
 
         Always uses SCAN to find all keys (both indexed and legacy) to ensure
-        complete cleanup in mixed-key scenarios.
+        complete cleanup in mixed-key scenarios. Does a second SCAN pass to
+        catch keys written by concurrent migrations between the first SCAN
+        and DELETE.
         """
-        # Use SCAN to find ALL keys (indexed + legacy)
-        all_keys_via_scan = list(self._redis.scan_iter(match=f"*{dsr_id}*", count=500))
-
+        all_keys = list(self._redis.scan_iter(match=f"*{dsr_id}*", count=500))
         index_prefix = _dsr_index_prefix(dsr_id)
-
-        # Delete all found keys in batch
-        if all_keys_via_scan:
-            self._redis.delete(*all_keys_via_scan)
-
-        # Delete the index itself
+        if all_keys:
+            self._redis.delete(*all_keys)
         self._manager.delete_index(index_prefix)
+        # Invalidate migration flag so future reads re-scan
+        self._redis.delete(f"__migrated:{dsr_id}")
+        # Second pass: catch keys written by concurrent migrations
+        stragglers = list(self._redis.scan_iter(match=f"*{dsr_id}*", count=500))
+        if stragglers:
+            self._redis.delete(*stragglers)

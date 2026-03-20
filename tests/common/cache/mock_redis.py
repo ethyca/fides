@@ -1,143 +1,189 @@
 """
-Shared in-memory Redis mock for cache tests.
+Autospec'd Redis mock with in-memory backing store for cache tests.
 
-Provides MockPipeline and MockRedis with pipeline(), ttl(), expire(), scan_iter(),
-and the operations needed by RedisCacheManager and DSRCacheStore.
+Uses ``create_autospec(redis.Redis)`` so that:
+- Method signatures are validated against the real Redis client
+- Missing methods surface as clear errors, not silent misbehavior
+- New Redis methods used in production code are auto-available
 """
 
 import fnmatch
-from typing import Any, Iterator, List, Optional, Set, Union
+from typing import Any
+from unittest.mock import MagicMock, create_autospec
+
+import redis as redis_lib
+
+__all__ = ["create_mock_redis"]
 
 
-class MockPipeline:
-    """In-memory pipeline that batches commands and executes atomically."""
+def create_mock_redis() -> MagicMock:
+    """
+    Create an autospec'd ``redis.Redis`` mock with in-memory state.
 
-    def __init__(self, data: dict, sets: dict) -> None:
-        self._data = data
-        self._sets = sets
-        self._commands: list = []
+    The mock validates method signatures against real ``redis.Redis``,
+    while providing stateful in-memory behavior via side_effects.
 
-    def set(self, key: str, value: Any, ex: Optional[int] = None) -> "MockPipeline":
-        self._commands.append(("set", (key, value, ex)))
-        return self
+    Internal state is accessible for test assertions::
 
-    def sadd(self, key: str, member: str) -> "MockPipeline":
-        self._commands.append(("sadd", (key, member)))
-        return self
+        mock._data  -- dict of string keys to values
+        mock._sets  -- dict of set keys to set[str]
+        mock._ttls  -- dict of keys to TTL seconds
+    """
+    mock = create_autospec(redis_lib.Redis, instance=True)
 
-    def delete(self, *keys: str) -> "MockPipeline":
-        self._commands.append(("delete", keys))
-        return self
+    _data: dict[str, Any] = {}
+    _sets: dict[str, set[str]] = {}
+    _ttls: dict[str, int] = {}
 
-    def srem(self, key: str, member: str) -> "MockPipeline":
-        self._commands.append(("srem", (key, member)))
-        return self
+    # Expose state for test assertions
+    mock._data = _data
+    mock._sets = _sets
+    mock._ttls = _ttls
 
-    def execute(self) -> list:
-        results = []
-        for op, args in self._commands:
-            if op == "set":
-                key, value, _ = args
-                self._data[key] = value
-                results.append(True)
-            elif op == "sadd":
-                key, member = args
-                if key not in self._sets:
-                    self._sets[key] = set()
-                self._sets[key].add(member)
-                results.append(1)
-            elif op == "delete":
-                for k in args:
-                    self._data.pop(k, None)
-                    self._sets.pop(k, None)
-                results.append(len(args))
-            elif op == "srem":
-                key, member = args
-                if key in self._sets:
-                    self._sets[key].discard(member)
-                    if not self._sets[key]:
-                        del self._sets[key]
-                results.append(1)
-        self._commands = []
-        return results
+    # --- Core Redis methods ---
 
+    def _get(name):
+        return _data.get(name)
 
-class MockRedis:
-    """In-memory Redis mock for RedisCacheManager and DSRCacheStore tests."""
-
-    def __init__(self) -> None:
-        self._data: dict = {}
-        self._sets: dict = {}
-        self._ttl: dict = {}  # key -> seconds until expiry (simplified; no decay)
-
-    def get(self, key: str) -> Optional[Any]:
-        return self._data.get(key)
-
-    def set(self, key: str, value: Any, ex: Optional[int] = None) -> bool:
-        self._data[key] = value
+    def _set(name, value, ex=None, **kwargs):
+        _data[name] = value
+        if ex is not None:
+            _ttls[name] = ex
         return True
 
-    def delete(self, *keys: str) -> int:
+    def _setex(name, time, value):
+        _data[name] = value
+        _ttls[name] = time
+        return True
+
+    def _delete(*names):
         count = 0
-        for k in keys:
-            if k in self._data:
-                del self._data[k]
+        for n in names:
+            if n in _data:
+                del _data[n]
                 count += 1
-            if k in self._sets:
-                del self._sets[k]
+            if n in _sets:
+                del _sets[n]
                 count += 1
-            self._ttl.pop(k, None)
+            _ttls.pop(n, None)
         return count
 
-    def sadd(self, key: str, member: str) -> int:
-        if key not in self._sets:
-            self._sets[key] = set()
-        self._sets[key].add(member)
-        return 1
+    def _exists(*names):
+        return sum(1 for n in names if n in _data or n in _sets)
 
-    def srem(self, key: str, member: str) -> int:
-        if key in self._sets:
-            self._sets[key].discard(member)
-            if not self._sets[key]:
-                del self._sets[key]
-            return 1
-        return 0
+    def _sadd(name, *values):
+        _sets.setdefault(name, set()).update(values)
+        return len(values)
 
-    def smembers(self, key: str) -> Set[Union[str, bytes]]:
-        return self._sets.get(key, set()).copy()
+    def _srem(name, *values):
+        if name in _sets:
+            for v in values:
+                _sets[name].discard(v)
+            if not _sets[name]:
+                del _sets[name]
+        return len(values)
 
-    def keys(self, pattern: str = "*") -> List[str]:
-        all_keys = set(self._data) | set(self._sets)
+    def _smembers(name):
+        return _sets.get(name, set()).copy()
+
+    def _keys(pattern="*"):
+        all_keys = set(_data) | set(_sets)
         return [k for k in all_keys if fnmatch.fnmatch(k, pattern)]
 
-    def scan_iter(self, match: str = "*", count: Optional[int] = None) -> Iterator[str]:
-        """Iterate over keys matching the pattern (used by DSRCacheStore.clear)."""
-        yield from self.keys(match)
+    def _scan_iter(match="*", count=None, **kwargs):
+        return iter(_keys(match))
 
-    def ttl(self, key: str) -> int:
-        if key not in self._data and key not in self._sets:
+    def _ttl_fn(name):
+        if name not in _data and name not in _sets:
             return -2
-        return self._ttl.get(key, -1)
+        return _ttls.get(name, -1)
 
-    def expire(self, key: str, seconds: int) -> bool:
-        if key in self._data or key in self._sets:
-            self._ttl[key] = seconds
+    def _expire(name, time):
+        if name in _data or name in _sets:
+            _ttls[name] = time
             return True
         return False
 
-    def ping(self) -> bool:
-        """Mock ping - always returns True."""
+    def _ping(**kwargs):
         return True
 
-    def get_keys_by_prefix(self, prefix: str) -> List[str]:
-        """Get all keys matching the prefix."""
-        return [k for k in self.keys() if k.startswith(prefix)]
+    mock.get.side_effect = _get
+    mock.set.side_effect = _set
+    mock.setex.side_effect = _setex
+    mock.delete.side_effect = _delete
+    mock.exists.side_effect = _exists
+    mock.sadd.side_effect = _sadd
+    mock.srem.side_effect = _srem
+    mock.smembers.side_effect = _smembers
+    mock.keys.side_effect = _keys
+    mock.scan_iter.side_effect = _scan_iter
+    mock.ttl.side_effect = _ttl_fn
+    mock.expire.side_effect = _expire
+    mock.ping.side_effect = _ping
 
-    def set_with_autoexpire(
-        self, key: str, value: Any, ex: Optional[int] = None
-    ) -> bool:
-        """Set a key with optional expiration."""
-        return self.set(key, value, ex=ex)
+    # --- Pipeline ---
 
-    def pipeline(self) -> MockPipeline:
-        return MockPipeline(self._data, self._sets)
+    def _make_pipeline(**kwargs):
+        pipe = MagicMock()
+        commands: list = []
+
+        def pipe_set(name, value, ex=None, **kw):
+            commands.append(("set", name, value, ex))
+            return pipe
+
+        def pipe_sadd(name, *values):
+            commands.append(("sadd", name, values))
+            return pipe
+
+        def pipe_delete(*names):
+            commands.append(("delete", names))
+            return pipe
+
+        def pipe_srem(name, *values):
+            commands.append(("srem", name, values))
+            return pipe
+
+        def pipe_execute(**kw):
+            results = []
+            for cmd in commands:
+                if cmd[0] == "set":
+                    _data[cmd[1]] = cmd[2]
+                    if cmd[3] is not None:
+                        _ttls[cmd[1]] = cmd[3]
+                    results.append(True)
+                elif cmd[0] == "sadd":
+                    _sets.setdefault(cmd[1], set()).update(cmd[2])
+                    results.append(len(cmd[2]))
+                elif cmd[0] == "delete":
+                    for k in cmd[1]:
+                        _data.pop(k, None)
+                        _sets.pop(k, None)
+                        _ttls.pop(k, None)
+                    results.append(len(cmd[1]))
+                elif cmd[0] == "srem":
+                    for v in cmd[2]:
+                        if cmd[1] in _sets:
+                            _sets[cmd[1]].discard(v)
+                    results.append(len(cmd[2]))
+            commands.clear()
+            return results
+
+        pipe.set.side_effect = pipe_set
+        pipe.sadd.side_effect = pipe_sadd
+        pipe.delete.side_effect = pipe_delete
+        pipe.srem.side_effect = pipe_srem
+        pipe.execute.side_effect = pipe_execute
+        return pipe
+
+    mock.pipeline.side_effect = _make_pipeline
+
+    # --- FidesopsRedis-specific methods (used in production compatibility tests) ---
+
+    mock.set_with_autoexpire = MagicMock(
+        side_effect=lambda key, value, ex=None: _set(key, value, ex=ex)
+    )
+    mock.get_keys_by_prefix = MagicMock(
+        side_effect=lambda prefix: [k for k in _keys() if k.startswith(prefix)]
+    )
+
+    return mock

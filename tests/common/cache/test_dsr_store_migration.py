@@ -5,13 +5,12 @@ Verifies existing cached data (legacy format) is correctly read, migrated, and c
 """
 
 import uuid
-from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
-from tests.common.cache.mock_redis import MockPipeline, MockRedis
+from tests.common.cache.mock_redis import create_mock_redis
 
 
 # Test data factories
@@ -34,7 +33,7 @@ def make_new_key(dsr_id: str, part: str) -> str:
 
 @pytest.fixture
 def mock_redis():
-    return MockRedis()
+    return create_mock_redis()
 
 
 @pytest.fixture

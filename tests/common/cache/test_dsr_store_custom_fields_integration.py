@@ -11,13 +11,13 @@ import pytest
 
 from fides.common.cache.dsr_store import DSRCacheStore
 from fides.common.cache.manager import RedisCacheManager
-from tests.common.cache.mock_redis import MockRedis
+from tests.common.cache.mock_redis import create_mock_redis
 
 
 @pytest.fixture
 def mock_redis():
-    """Shared MockRedis instance."""
-    return MockRedis()
+    """Shared mock Redis instance."""
+    return create_mock_redis()
 
 
 @pytest.fixture
