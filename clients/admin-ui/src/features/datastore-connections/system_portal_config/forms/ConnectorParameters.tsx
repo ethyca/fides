@@ -1,5 +1,3 @@
-import { useAPIHelper } from "common/hooks";
-import { useAlert } from "common/hooks/useAlert";
 import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   CreateSaasConnectionConfig,
@@ -17,12 +15,14 @@ import {
   ChakraSpacer as Spacer,
   ChakraUseToastOptions as UseToastOptions,
   useChakraToast as useToast,
+  useMessage,
 } from "fidesui";
 import router from "next/router";
 import { useMemo, useState } from "react";
 
 import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
+import { useAPIHelper } from "~/features/common/hooks";
 import RightArrow from "~/features/common/Icon/RightArrow";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
@@ -193,7 +193,7 @@ export const useConnectorForm = ({
 > & {
   secretsSchema?: ConnectionTypeSecretSchemaResponse;
 }) => {
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const { handleError } = useAPIHelper();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -229,7 +229,7 @@ export const useConnectorForm = ({
     try {
       await deleteDatastoreConnection(systemFidesKey);
       setSelectedConnectionOption(undefined);
-      successAlert(`Integration successfully deleted!`);
+      message.success(`Integration successfully deleted!`);
     } catch (e) {
       handleError(e);
     }
@@ -298,7 +298,7 @@ export const useConnectorForm = ({
         });
       }
 
-      successAlert(
+      message.success(
         `Integration successfully ${
           isCreatingConnectionConfig ? "added" : "updated"
         }!`,

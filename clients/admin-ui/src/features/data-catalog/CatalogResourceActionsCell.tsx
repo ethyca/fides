@@ -1,6 +1,10 @@
-import { Button, ChakraFlex as Flex, ChakraSpacer as Spacer } from "fidesui";
+import {
+  Button,
+  ChakraFlex as Flex,
+  ChakraSpacer as Spacer,
+  useMessage,
+} from "fidesui";
 
-import { useAlert } from "~/features/common/hooks";
 import CatalogResourceOverflowMenu from "~/features/data-catalog/staged-resources/CatalogResourceOverflowMenu";
 import {
   CatalogResourceStatus,
@@ -20,7 +24,7 @@ const CatalogResourceActionsCell = ({
   resource: StagedResourceAPIResponse;
   onDetailClick?: () => void;
 }) => {
-  const { successAlert } = useAlert();
+  const message = useMessage();
   const status = getCatalogResourceStatus(resource);
   const [confirmResource, { isLoading: classifyIsLoading }] =
     useConfirmResourceMutation();
@@ -36,7 +40,7 @@ const CatalogResourceActionsCell = ({
       unmute_children: true,
       classify_monitored_resources: true,
     });
-    successAlert(
+    message.success(
       `Started classification on ${resource.name ?? "this resource"}`,
     );
   };
@@ -45,14 +49,14 @@ const CatalogResourceActionsCell = ({
     await promoteResource({
       staged_resource_urn: resource.urn,
     });
-    successAlert(`Approved ${resource.name ?? " resource"}`);
+    message.success(`Approved ${resource.name ?? " resource"}`);
   };
 
   const hideResource = async () => {
     await muteResource({
       staged_resource_urn: resource.urn,
     });
-    successAlert(`Hid ${resource.name ?? " resource"}`);
+    message.success(`Hid ${resource.name ?? " resource"}`);
   };
 
   const anyActionIsLoading =

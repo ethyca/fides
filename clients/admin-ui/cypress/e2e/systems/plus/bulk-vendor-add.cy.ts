@@ -57,11 +57,6 @@ describe("Plus Bulk Vendor Add", () => {
     stubPlus(true, {
       core_fides_version: "2.2.0",
       fidesplus_server: "healthy",
-      system_scanner: {
-        enabled: true,
-        cluster_health: null,
-        cluster_error: null,
-      },
       dictionary: {
         enabled: false,
         service_health: null,
@@ -142,11 +137,6 @@ describe("Plus Bulk Vendor Add", () => {
     stubPlus(true, {
       core_fides_version: "2.2.0",
       fidesplus_server: "healthy",
-      system_scanner: {
-        enabled: true,
-        cluster_health: null,
-        cluster_error: null,
-      },
       dictionary: {
         enabled: true,
         service_health: null,
@@ -197,11 +187,6 @@ describe("Plus Bulk Vendor Add", () => {
     stubPlus(true, {
       core_fides_version: "2.2.0",
       fidesplus_server: "healthy",
-      system_scanner: {
-        enabled: true,
-        cluster_health: null,
-        cluster_error: null,
-      },
       dictionary: {
         enabled: false,
         service_health: null,
