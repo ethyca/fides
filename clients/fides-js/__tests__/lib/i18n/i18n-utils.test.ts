@@ -49,6 +49,23 @@ describe("i18n-utils", () => {
     { locale: "en", label_en: "English", label_original: "English" },
     { locale: "es", label_en: "Spanish", label_original: "Español" },
   ];
+  // GPC fallback values produced by mock i18n.t() when GPC fields are missing
+  // from the experience config (returns "mock translation" for en, "traducción simulada" for es)
+  const mockGpcFallbacksEn = {
+    "exp.gpc_label": "mock translation",
+    "exp.gpc_title": "mock translation",
+    "exp.gpc_description": "mock translation",
+    "exp.gpc_status_applied_label": "mock translation",
+    "exp.gpc_status_overridden_label": "mock translation",
+  };
+  const mockGpcFallbacksEs = {
+    "exp.gpc_label": "traducción simulada",
+    "exp.gpc_title": "traducción simulada",
+    "exp.gpc_description": "traducción simulada",
+    "exp.gpc_status_applied_label": "traducción simulada",
+    "exp.gpc_status_overridden_label": "traducción simulada",
+  };
+
   const mockI18nCatalogLoad = [
     {
       "exp.accept_button_label": "Accept Test",
@@ -63,6 +80,7 @@ describe("i18n-utils", () => {
       "exp.reject_button_label": "Reject Test",
       "exp.save_button_label": "Save Test",
       "exp.title": "Title Test",
+      ...mockGpcFallbacksEn,
     },
     {
       "exp.accept_button_label": "Aceptar Prueba",
@@ -78,6 +96,7 @@ describe("i18n-utils", () => {
       "exp.reject_button_label": "Rechazar Prueba",
       "exp.save_button_label": "Guardar Prueba",
       "exp.title": "Título de la Prueba",
+      ...mockGpcFallbacksEs,
     },
   ];
 
