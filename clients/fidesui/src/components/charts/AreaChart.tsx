@@ -11,12 +11,16 @@ import {
 } from "recharts";
 
 import type { AntColorTokenKey } from "./chart-constants";
-import { CHART_ANIMATION, CHART_STROKE, MIN_PX_PER_POINT } from "./chart-constants";
+import {
+  CHART_ANIMATION,
+  CHART_STROKE,
+  MIN_PX_PER_POINT,
+} from "./chart-constants";
 import {
   deriveInterval,
   formatTimestamp,
-  intervalToMs,
-  pickBucketInterval,
+  HOUR_MS,
+  pickIntervalHours,
   tooltipLabelFormatter,
   useChartAnimation,
   useContainerWidth,
@@ -70,12 +74,12 @@ export const AreaChart = ({
     const rangeMs = maxTs - minTs;
     if (rangeMs <= 0) return rawData;
 
-    const interval = pickBucketInterval(
+    const intervalHours = pickIntervalHours(
       rangeMs,
       containerWidth,
       MIN_PX_PER_POINT,
     );
-    const intervalMs = intervalToMs(interval);
+    const intervalMs = intervalHours * HOUR_MS;
     const flooredStart = Math.floor(minTs / intervalMs) * intervalMs;
     const bucketCount = Math.max(
       1,
@@ -87,9 +91,7 @@ export const AreaChart = ({
       { length: bucketCount },
       (_, index) => {
         const point: AreaChartDataPoint = {
-          label: new Date(
-            flooredStart + index * intervalMs,
-          ).toISOString(),
+          label: new Date(flooredStart + index * intervalMs).toISOString(),
         };
         for (const key of seriesKeys) {
           point[key] = 0;
@@ -104,9 +106,7 @@ export const AreaChart = ({
         bucketCount - 1,
       );
       for (const key of seriesKeys) {
-        (buckets[bucketIndex][key] as number) += Number(
-          rawData[idx][key] ?? 0,
-        );
+        (buckets[bucketIndex][key] as number) += Number(rawData[idx][key] ?? 0);
       }
     });
 

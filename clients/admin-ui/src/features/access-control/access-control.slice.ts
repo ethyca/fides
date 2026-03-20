@@ -11,22 +11,28 @@ import type {
   TimeseriesResponse,
 } from "./types";
 
-interface TimeseriesParams {
-  start_date: string;
-  end_date: string;
+interface FacetFilters {
   consumer?: string | string[];
   policy?: string | string[];
   dataset?: string | string[];
   data_use?: string | string[];
+  control?: string | string[];
 }
 
-interface ConsumersByViolationsParams {
+interface DateRange {
+  start_date?: string;
+  end_date?: string;
+}
+
+interface TimeseriesParams extends FacetFilters {
   start_date: string;
   end_date: string;
-  consumer?: string | string[];
-  policy?: string | string[];
-  dataset?: string | string[];
-  data_use?: string | string[];
+  interval?: number;
+}
+
+interface ConsumersByViolationsParams extends FacetFilters {
+  start_date: string;
+  end_date: string;
   order_by?: "violation_count" | "request_count";
 }
 
@@ -40,34 +46,19 @@ interface PaginatedParams {
   size?: number;
 }
 
-interface ViolationLogsParams {
+interface ViolationLogsParams extends FacetFilters, DateRange {
   cursor?: string | null;
   size?: number;
-  consumer?: string | string[];
-  policy?: string | string[];
-  dataset?: string | string[];
-  data_use?: string | string[];
-  start_date?: string;
-  end_date?: string;
 }
 
-interface PolicyViolationsParams extends PaginatedParams {
+interface PolicyViolationsParams extends PaginatedParams, DateRange {
   policy?: string | string[];
   control?: string | string[];
   sort_by?: "violation_count" | "last_violation";
   sort_direction?: "asc" | "desc";
-  start_date?: string;
-  end_date?: string;
 }
 
-interface FiltersParams {
-  start_date?: string;
-  end_date?: string;
-  consumer?: string | string[];
-  policy?: string | string[];
-  dataset?: string | string[];
-  data_use?: string | string[];
-}
+type FiltersParams = FacetFilters & DateRange;
 
 const accessControlApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -86,6 +77,14 @@ const accessControlApi = baseApi.injectEndpoints({
       query: (params) => ({
         url: "access-control/requests",
         params,
+      }),
+      transformResponse: (response: {
+        items: Array<{ timestamp: string; requests: number; violations: number }>;
+      }): TimeseriesResponse => ({
+        items: response.items.map(({ timestamp, ...rest }) => ({
+          label: timestamp,
+          ...rest,
+        })),
       }),
       providesTags: ["Access Control"],
     }),

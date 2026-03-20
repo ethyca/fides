@@ -8,6 +8,7 @@ import {
   dataConsumersByViolationsData,
   filterLogs,
   LOG_CONSUMERS,
+  LOG_CONTROLS,
   LOG_DATA_USES,
   LOG_DATASETS,
   POLICIES,
@@ -30,6 +31,7 @@ const getFilters = (url: URL) => ({
   policy: getParam(url, "policy"),
   dataset: getParam(url, "dataset"),
   data_use: getParam(url, "data_use"),
+  control: getParam(url, "control"),
   start_date: url.searchParams.get("start_date"),
   end_date: url.searchParams.get("end_date"),
 });
@@ -146,6 +148,7 @@ export const accessControlHandlers = () => {
       const policies = [...new Set(filtered.map((l) => l.policy).filter(Boolean))].sort() as string[];
       const datasets = [...new Set(filtered.map((l) => l.dataset))].sort();
       const dataUses = [...new Set(filtered.map((l) => l.data_use).filter(Boolean))].sort() as string[];
+      const controls = [...new Set(filtered.map((l) => l.control).filter(Boolean))].sort() as string[];
 
       return res(
         ctx.status(200),
@@ -154,6 +157,7 @@ export const accessControlHandlers = () => {
           policies: filters.policy ? policies : POLICIES,
           datasets: filters.dataset ? datasets : LOG_DATASETS,
           data_uses: filters.data_use ? dataUses : LOG_DATA_USES,
+          controls: filters.control ? controls : LOG_CONTROLS,
         }),
       );
     }),

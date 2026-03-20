@@ -56,8 +56,10 @@ export const ViolationDetailDrawer = ({
       width={480}
       footer={
         <Flex gap="small" justify="flex-end">
-          <Button>Edit policy</Button>
-          <Button type="primary">Create new policy</Button>
+          <Button disabled>Edit policy</Button>
+          <Button type="primary" disabled>
+            Create new policy
+          </Button>
         </Flex>
       }
     >
@@ -96,12 +98,14 @@ export const ViolationDetailDrawer = ({
                   <Text strong className="block">
                     {violation.consumer}
                   </Text>
-                  <a
-                    href={`mailto:${violation.consumer_email}`}
-                    className="text-sm text-neutral-10/60 hover:underline"
-                  >
-                    {violation.consumer_email}
-                  </a>
+                  {violation.consumer_email && (
+                    <a
+                      href={`mailto:${violation.consumer_email}`}
+                      className="text-sm text-neutral-10/60 hover:underline"
+                    >
+                      {violation.consumer_email}
+                    </a>
+                  )}
                 </div>
               </Flex>
             </Flex>
@@ -125,7 +129,7 @@ export const ViolationDetailDrawer = ({
                 <Text className="mb-1 block text-xs text-neutral-10">
                   Data use
                 </Text>
-                <Text className="text-sm">{violation.data_use}</Text>
+                <Text className="text-sm">{violation.data_use ?? "N/A"}</Text>
               </div>
               <div className="rounded-lg bg-gray-50 px-4 py-3">
                 <Text className="mb-1 block text-xs text-neutral-10">
@@ -137,7 +141,7 @@ export const ViolationDetailDrawer = ({
                 <Text className="mb-1 block text-xs text-neutral-10">
                   Policy
                 </Text>
-                <Text className="text-sm">{violation.policy}</Text>
+                <Text className="text-sm">{violation.policy ?? "N/A"}</Text>
               </div>
             </div>
           </div>
@@ -177,25 +181,37 @@ export const ViolationDetailDrawer = ({
             <Text className="mb-2 block text-xs font-semibold text-neutral-10">
               Policy deviated
             </Text>
-            <div className="rounded-lg border border-gray-200 p-5">
-              <Flex align="center" gap="small" className="mb-2">
-                <Title level={5} className="!m-0">
-                  {violation.policy}
-                </Title>
-                <Tag color={CUSTOM_TAG_COLOR.SANDSTONE}>
-                  {violation.data_use}
-                </Tag>
-              </Flex>
-              <Text type="secondary" className="block text-sm leading-relaxed">
-                {violation.policy_description}
-              </Text>
-              <Flex align="center" gap={4} className="mt-3">
-                <Text type="secondary" className="text-sm font-medium">
-                  View policy
+            {violation.policy ? (
+              <div className="rounded-lg border border-gray-200 p-5">
+                <Flex align="center" gap="small" className="mb-2">
+                  <Title level={5} className="!m-0">
+                    {violation.policy}
+                  </Title>
+                  <Tag color={CUSTOM_TAG_COLOR.SANDSTONE}>
+                    {violation.data_use}
+                  </Tag>
+                </Flex>
+                <Text
+                  type="secondary"
+                  className="block text-sm leading-relaxed"
+                >
+                  {violation.policy_description}
                 </Text>
-                <Icons.ArrowRight size={14} />
-              </Flex>
-            </div>
+                <Flex align="center" gap={4} className="mt-3">
+                  <Text type="secondary" className="text-sm font-medium">
+                    View policy
+                  </Text>
+                  <Icons.ArrowRight size={14} />
+                </Flex>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-gray-300 p-5 text-center">
+                <Text type="secondary" className="mb-2 block text-sm">
+                  No policy associated with this violation
+                </Text>
+                <Button size="small">Add policy</Button>
+              </div>
+            )}
           </div>
         </div>
       )}

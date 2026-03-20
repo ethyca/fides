@@ -47,6 +47,7 @@ export interface PolicyViolationLog {
   consumer_email?: string;
   policy?: string;
   policy_description?: string;
+  control?: string;
   dataset: string;
   data_use?: string;
   sql_statement?: string;
@@ -72,4 +73,5 @@ export interface FiltersResponse {
   policies: string[];
   datasets: string[];
   data_uses: string[];
+  controls: string[];
 }

@@ -27,7 +27,7 @@ export const FindingsTable = () => {
     (record: PolicyViolationAggregate) => {
       router.push({
         pathname: ACCESS_CONTROL_REQUEST_LOG_ROUTE,
-        query: { policy: record.policy },
+        query: { policy: record.policy, control: record.control },
       });
     },
     [router],
@@ -42,7 +42,6 @@ export const FindingsTable = () => {
         columns={columns}
         dataSource={data?.items}
         loading={isLoading}
-        pagination={false}
         rowKey={(record) => `${record.policy}-${record.control}`}
         size="small"
         bordered={false}
@@ -51,15 +50,6 @@ export const FindingsTable = () => {
           onClick: () => handleRowClick(record),
         })}
       />
-      {(data?.total ?? 0) > 0 && (
-        <Flex justify="end" className="mt-4">
-          <Pagination
-            {...paginationProps}
-            total={data?.total}
-            showTotal={(t, range) => `${range[0]}-${range[1]} of ${t} items`}
-          />
-        </Flex>
-      )}
     </div>
   );
 };

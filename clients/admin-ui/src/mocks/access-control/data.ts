@@ -141,6 +141,10 @@ export const LOG_DATA_USES = [
   "collect.provide",
 ];
 
+export const LOG_CONTROLS = [
+  ...new Set(Object.values(CONTROLS).flat()),
+].sort();
+
 const POLICY_DESCRIPTIONS: Record<string, string> = {
   "Marketing Data Policy":
     "Governs how customer data may be used for marketing purposes, including advertising, targeting, and profiling.",
@@ -206,6 +210,8 @@ const generateStableLogs = (): PolicyViolationLog[] => {
     const gap = 3 * 60_000 + Math.floor(rand() * 12 * 60_000);
     const consumer = LOG_CONSUMERS[Math.floor(rand() * LOG_CONSUMERS.length)];
     const policy = allPolicies[Math.floor(rand() * allPolicies.length)];
+    const controls = CONTROLS[policy];
+    const control = controls[Math.floor(rand() * controls.length)];
     return {
       id: `viol-${String(i).padStart(4, "0")}`,
       timestamp: new Date(now - i * gap).toISOString(),
@@ -213,6 +219,7 @@ const generateStableLogs = (): PolicyViolationLog[] => {
       consumer_email: `${consumer.toLowerCase().replace(/\s+/g, "-")}@company.com`,
       policy,
       policy_description: POLICY_DESCRIPTIONS[policy] ?? "",
+      control,
       dataset: LOG_DATASETS[Math.floor(rand() * LOG_DATASETS.length)],
       data_use: LOG_DATA_USES[Math.floor(rand() * LOG_DATA_USES.length)],
       sql_statement: SQL_STATEMENTS[Math.floor(rand() * SQL_STATEMENTS.length)],
@@ -231,6 +238,7 @@ export interface LogFilters {
   policy?: string | string[] | null;
   dataset?: string | string[] | null;
   data_use?: string | string[] | null;
+  control?: string | string[] | null;
   start_date?: string | null;
   end_date?: string | null;
 }
@@ -263,6 +271,9 @@ export const filterLogs = (
       return false;
     }
     if (!matchesFilter(log.data_use, filters.data_use)) {
+      return false;
+    }
+    if (!matchesFilter(log.control, filters.control)) {
       return false;
     }
     if (filters.start_date && log.timestamp < filters.start_date) {

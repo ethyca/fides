@@ -344,7 +344,6 @@ export { BarChart } from "./components/charts/BarChart";
 export type {
   AntColorTokenKey,
   BarSize,
-  ChartInterval,
 } from "./components/charts/chart-constants";
 export {
   CHART_ANIMATION,
@@ -359,8 +358,7 @@ export {
   deriveInterval,
   formatTimestamp,
   HOUR_MS,
-  intervalToMs,
-  pickBucketInterval,
+  pickIntervalHours,
   pickInterval,
   tooltipLabelFormatter,
   useContainerWidth,

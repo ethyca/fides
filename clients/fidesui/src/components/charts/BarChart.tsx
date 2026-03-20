@@ -9,7 +9,11 @@ import {
 } from "recharts";
 
 import type { AntColorTokenKey, BarSize } from "./chart-constants";
-import { BAR_SIZE_TOKEN, CHART_ANIMATION, LABEL_WIDTH } from "./chart-constants";
+import {
+  BAR_SIZE_TOKEN,
+  CHART_ANIMATION,
+  LABEL_WIDTH,
+} from "./chart-constants";
 import type { ChartDataRequest } from "./chart-utils";
 import {
   computeDataRequest,

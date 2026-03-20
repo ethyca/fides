@@ -1,36 +1,28 @@
-import {
-  BarChart,
-  Card,
-  Flex,
-  Statistic,
-  Typography,
-} from "fidesui";
+import { BarChart, Card, Flex, Statistic, Typography } from "fidesui";
 import { useMemo } from "react";
 
-import type { TimeseriesBucket } from "../types";
+import { useGetRequestsTimeseriesQuery } from "../access-control.slice";
+import { useRequestLogFilterContext } from "./useRequestLogFilters";
 
 const { Text } = Typography;
 
-interface ViolationsBarChartCardProps {
-  data: TimeseriesBucket[];
-  loading?: boolean;
-}
+export const ViolationsBarChartCard = () => {
+  const { timeseriesFilters, onChartIntervalChange } =
+    useRequestLogFilterContext();
+  const { data, isLoading } = useGetRequestsTimeseriesQuery(timeseriesFilters);
 
-export const ViolationsBarChartCard = ({
-  data,
-  loading,
-}: ViolationsBarChartCardProps) => {
-  const chartData = data.map((d) => ({
-    label: d.label,
-    value: d.violations,
-  }));
+  const chartData = useMemo(
+    () => data?.items.map((d) => ({ label: d.label, value: d.violations })),
+    [data],
+  );
+
   const totalViolations = useMemo(
-    () => data.reduce((sum, d) => sum + d.violations, 0),
+    () => data?.items.reduce((sum, d) => sum + d.violations, 0) ?? 0,
     [data],
   );
 
   return (
-    <Card loading={loading}>
+    <Card loading={isLoading}>
       <div className="mb-2">
         <Text type="secondary" className="text-xs font-semibold">
           Violations over time
@@ -46,7 +38,11 @@ export const ViolationsBarChartCard = ({
         </Flex>
       </div>
       <div className="h-[120px] w-full">
-        <BarChart data={chartData} />
+        <BarChart
+          data={chartData}
+          size="lg"
+          onIntervalChange={onChartIntervalChange}
+        />
       </div>
     </Card>
   );

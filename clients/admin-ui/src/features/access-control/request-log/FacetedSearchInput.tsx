@@ -1,8 +1,8 @@
 import { Select, Tag } from "fidesui";
-import type { CustomTagProps } from "rc-select/lib/BaseSelect";
 import { useMemo } from "react";
 
 export const SEPARATOR = "::";
+export const MISSING_LABEL = "Missing";
 
 export interface FacetDefinition {
   key: string;
@@ -26,14 +26,19 @@ export const FacetedSearchInput = ({
       facets.map((facet) => ({
         label: facet.label,
         options: facet.options.map((option) => ({
-          label: option,
+          label: option || MISSING_LABEL,
           value: `${facet.key}${SEPARATOR}${option}`,
         })),
       })),
     [facets],
   );
 
-  const tagRender = (props: CustomTagProps) => {
+  const tagRender = (props: {
+    label: React.ReactNode;
+    value: string;
+    closable: boolean;
+    onClose: () => void;
+  }) => {
     const { label: tagLabel, value: tagValue, closable, onClose } = props;
     const facetKey = String(tagValue).split(SEPARATOR)[0];
     const facet = facets.find((f) => f.key === facetKey);

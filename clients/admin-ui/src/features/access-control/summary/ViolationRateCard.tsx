@@ -63,10 +63,15 @@ export const ViolationRateCard = ({
             <Statistic
               value={Math.abs(trend * 100)}
               precision={1}
-              prefix={trend <= 0 ? "-" : "+"}
+              prefix={trend < 0 ? "-" : trend > 0 ? "+" : ""}
               suffix="% vs last mo"
               valueStyle={{
-                color: trend <= 0 ? token.colorSuccess : token.colorError,
+                color:
+                  trend < 0
+                    ? token.colorSuccess
+                    : trend > 0
+                      ? token.colorError
+                      : token.colorTextSecondary,
                 fontSize: token.fontSizeSM,
               }}
             />
