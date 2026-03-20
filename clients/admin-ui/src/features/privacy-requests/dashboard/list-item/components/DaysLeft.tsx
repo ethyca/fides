@@ -34,7 +34,7 @@ export const DaysLeft = ({
       percentage < 25 ? CUSTOM_TAG_COLOR.ERROR : CUSTOM_TAG_COLOR.DEFAULT;
     return (
       <div>
-        <Tag color={color} variant="filled">
+        <Tag color={color}>
           <Tooltip title={formatDate(dayjs().add(daysLeft, "day").toDate())}>
             <>{daysLeft} days left</>
           </Tooltip>

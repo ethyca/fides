@@ -11,7 +11,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const TABLE_SIZE: TableProps["size"][] = ["small", "medium", "large"];
+const TABLE_SIZE: TableProps["size"][] = ["small", "middle", "large"];
 
 export const Primary: Story = {
   args: {

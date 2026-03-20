@@ -196,7 +196,6 @@ export {
 } from "@chakra-ui/icons";
 
 // Unmodified component exported directly from Ant Design
-export type { DisplayValueType } from "@rc-component/select/lib/interface";
 export type { ThemeConfig } from "antd/es";
 export type {
   FilterValue,
@@ -281,6 +280,7 @@ export type {
 export type { ListItemProps } from "antd/lib/list";
 export type { BaseOptionType, DefaultOptionType } from "antd/lib/select";
 export type { UploadChangeParam } from "antd/lib/upload";
+export type { DisplayValueType } from "rc-select/lib/interface";
 
 // Higher-order components
 export type {

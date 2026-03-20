@@ -16,7 +16,7 @@ const SELECT_VARIANT: Record<
 
 type SelectSize = NonNullable<CustomSelectProps<unknown>["size"]>;
 
-const SELECT_SIZE: SelectSize[] = ["small", "medium", "large"];
+const SELECT_SIZE: SelectSize[] = ["small", "middle", "large"];
 
 const SELECT_MODE: Record<
   NonNullable<CustomSelectProps<unknown>["mode"]>,

@@ -116,9 +116,9 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           ...style,
         },
         className: `${styles.tag} ${className ?? ""}`.trim(),
-        // Default to outlined (bordered) to preserve v5 appearance.
-        // Brand-color tags that explicitly opted out of the border keep "filled".
-        variant: retainDefaultBorder || !brandColor ? "outlined" : "filled",
+        // Default to bordered to preserve v5 appearance.
+        // Brand-color tags that explicitly opted out of the border keep borderless (filled).
+        bordered: retainDefaultBorder || !brandColor,
         ...props,
         closeIcon:
           (props.closable ?? props.onClose) ? (

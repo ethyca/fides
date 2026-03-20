@@ -9,7 +9,7 @@ const LayoutOptions: Array<FormProps["layout"]> = [
   "inline",
   "horizontal",
 ];
-const SizeOptions: Array<FormProps["size"]> = ["medium", "small", "large"];
+const SizeOptions: Array<FormProps["size"]> = ["middle", "small", "large"];
 
 const meta = {
   title: "Data Entry/Form",

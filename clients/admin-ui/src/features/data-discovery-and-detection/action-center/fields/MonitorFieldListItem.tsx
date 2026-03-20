@@ -163,7 +163,6 @@ const renderMonitorFieldListItem: RenderMonitorFieldListItem = ({
             </Button>
             {diff_status && diff_status !== DiffStatus.ADDITION && (
               <Tag
-                variant="filled"
                 color={
                   MAP_DIFF_STATUS_TO_RESOURCE_STATUS_LABEL[diff_status].color
                 }
