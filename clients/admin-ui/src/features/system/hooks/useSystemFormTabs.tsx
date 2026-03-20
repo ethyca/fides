@@ -2,8 +2,9 @@ import {
   ChakraBox as Box,
   ChakraLink as Link,
   ChakraText as Text,
+  Space,
   TabsProps,
-  useChakraToast as useToast,
+  useNotification,
 } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -19,7 +20,6 @@ import {
 } from "~/features/common/nav/routes";
 import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
@@ -45,26 +45,19 @@ enum SystemTabKeys {
   HISTORY = "history",
 }
 
-// The toast doesn't seem to handle next links well, so use buttons with onClick
-// handlers instead
-const ToastMessage = ({
+const NotificationActions = ({
   onViewDatamap,
   onAddPrivacyDeclaration,
 }: {
   onViewDatamap: () => void;
   onAddPrivacyDeclaration: () => void;
 }) => (
-  <Box>
-    <Text fontWeight="700">System has been saved successfully</Text>
-    <Text textColor="gray.700" whiteSpace="inherit">
-      Your system has been added to your data map. You can{" "}
-      <ToastLink onClick={onViewDatamap}>view it now</ToastLink> or{" "}
-      <ToastLink onClick={onAddPrivacyDeclaration}>
-        add privacy declarations in the next tab
-      </ToastLink>
-      .
-    </Text>
-  </Box>
+  <Space>
+    <ToastLink onClick={onViewDatamap}>View data map</ToastLink>
+    <ToastLink onClick={onAddPrivacyDeclaration}>
+      Add privacy declarations
+    </ToastLink>
+  </Space>
 );
 
 const useSystemFormTabs = ({
@@ -86,7 +79,7 @@ const useSystemFormTabs = ({
 
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
-  const toast = useToast();
+  const notification = useNotification();
   const dispatch = useAppDispatch();
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
@@ -116,25 +109,25 @@ const useSystemFormTabs = ({
         query: { id: system.fides_key },
       });
 
-      const toastParams = {
-        ...DEFAULT_TOAST_PARAMS,
-        description: (
-          <ToastMessage
+      notification.success({
+        message: "System saved",
+        description: "Your system has been added to your data map.",
+        actions: (
+          <NotificationActions
             onViewDatamap={() => {
               router.push(systemOrDatamapRoute).then(() => {
-                toast.closeAll();
+                notification.destroy();
               });
             }}
             onAddPrivacyDeclaration={() => {
               baseOnTabChange("data-uses");
-              toast.closeAll();
+              notification.destroy();
             }}
           />
         ),
-      };
-      toast({ ...toastParams });
+      });
     },
-    [activeSystem, router, systemOrDatamapRoute, toast, baseOnTabChange],
+    [activeSystem, router, systemOrDatamapRoute, notification, baseOnTabChange],
   );
 
   useEffect(() => {
