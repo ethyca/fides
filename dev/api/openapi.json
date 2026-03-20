@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.81.2b2.dev3+g8f03c6567"
+    "version": "2.81.2b2.dev4+g3d8d1a6c0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10590,7 +10590,7 @@
           "OAuth"
         ],
         "summary": "List Clients",
-        "description": "Returns a paginated list of all OAuth clients, excluding the root client.",
+        "description": "Returns a paginated list of all OAuth clients, excluding the root client and internal system clients.",
         "operationId": "list_clients_api_v1_oauth_client_get",
         "security": [
           {
