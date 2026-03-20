@@ -172,13 +172,13 @@ describe("Integration Management - Manual Task Configuration", () => {
         });
 
       // Confirm deletion
-      cy.getByTestId("continue-btn").click();
+      cy.getAntModalConfirmButtons().contains("Delete").click();
 
       cy.wait("@deleteManualField");
       cy.wait("@getManualFields");
 
       // Verify task is removed
-      cy.getByTestId("confirmation-modal").should("not.exist");
+      cy.get(".ant-modal-confirm").should("not.exist");
     });
   });
 

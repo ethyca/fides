@@ -56,7 +56,6 @@ export const baseApi = createApi({
     "Monitor Tasks",
     "Dictionary",
     "System Vendors",
-    "Latest Scan",
     "Managed Systems",
     "Notification",
     "Organization",
@@ -105,6 +104,7 @@ export const baseApi = createApi({
     "Privacy Assessment Tasks",
     "User Monitors",
     "Datastore Filters",
+    "Fides Dashboard",
   ],
   endpoints: () => ({}),
 });

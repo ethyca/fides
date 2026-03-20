@@ -42,7 +42,8 @@ jobs:
 
   Privacy-Center-Cypress:
     needs: Check-FidesJS-Changes
-    if: needs.Check-FidesJS-Changes.outputs.has_fidesjs_changes == 'true'
+    # Skip on merge_group — these checks already passed on the PR
+    if: needs.Check-FidesJS-Changes.outputs.has_fidesjs_changes == 'true' && github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     defaults:
       run:

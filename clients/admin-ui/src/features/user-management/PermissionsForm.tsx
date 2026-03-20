@@ -1,5 +1,13 @@
 import { useHasPermission } from "common/Restrict";
-import { Button, Flex, Spin, Tooltip, Typography, useMessage } from "fidesui";
+import {
+  Button,
+  Flex,
+  Spin,
+  Tooltip,
+  Typography,
+  useMessage,
+  useModal,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -7,7 +15,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
-import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
@@ -39,12 +46,12 @@ const { Text } = Typography;
 const PermissionsForm = () => {
   const message = useMessage();
   const router = useRouter();
+  const modal = useModal();
 
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
   });
-  const [isChooseApproverOpen, setIsChooseApproverOpen] = useState(false);
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
     initialManagedSystems,
@@ -85,7 +92,7 @@ const PermissionsForm = () => {
     return userPermissions?.roles?.includes(RoleRegistryEnum.OWNER);
   }, [userPermissions?.roles]);
 
-  const updatePermissionsLegacy = async (values: FormValues) => {
+  const updatePermissions = async (values: FormValues) => {
     if (!activeUserId) {
       return;
     }
@@ -120,17 +127,6 @@ const PermissionsForm = () => {
     message.success("Permissions updated");
   };
 
-  const updatePermissions = async (values: FormValues) => {
-    if (isChooseApproverOpen) {
-      setIsChooseApproverOpen(false);
-    }
-    if (!activeUserId) {
-      return;
-    }
-
-    await updatePermissionsLegacy(values);
-  };
-
   const handleSubmit = async (values: FormValues) => {
     if (!activeUserId) {
       return;
@@ -140,7 +136,20 @@ const PermissionsForm = () => {
       values.roles.includes(RoleRegistryEnum.APPROVER)
     ) {
       // approvers cannot be system managers on back-end
-      setIsChooseApproverOpen(true);
+      modal.confirm({
+        title: "Change role to Approver",
+        content: (
+          <Text>
+            Switching to an approver role will remove all assigned systems. Do
+            you wish to proceed?
+          </Text>
+        ),
+        okText: "Yes",
+        centered: true,
+        icon: null,
+        onOk: () => updatePermissions(values),
+        className: "downgrade-to-approver-confirmation-modal",
+      });
     } else {
       await updatePermissions(values);
     }
@@ -250,20 +259,6 @@ const PermissionsForm = () => {
               </Tooltip>
             </div>
           </Flex>
-          <ConfirmationModal
-            isOpen={isChooseApproverOpen}
-            onClose={() => setIsChooseApproverOpen(false)}
-            onConfirm={() => updatePermissions(values)}
-            title="Change role to Approver"
-            testId="downgrade-to-approver-confirmation-modal"
-            continueButtonText="Yes"
-            message={
-              <Text>
-                Switching to an approver role will remove all assigned systems.
-                Do you wish to proceed?
-              </Text>
-            }
-          />
         </Form>
       )}
     </Formik>
