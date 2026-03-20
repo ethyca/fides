@@ -276,9 +276,26 @@ export function loadMessagesFromExperience(
     });
   }
 
-  // Load all the extracted messages into the i18n module
+  // GPC fields that should fall back to static messages when the API doesn't
+  // provide them (e.g. when the experience was created without GPC text)
+  const GPC_FALLBACKS: Record<string, string> = {
+    "exp.gpc_label": "static.gpc",
+    "exp.gpc_title": "static.gpc.title",
+    "exp.gpc_description": "static.gpc.description",
+    "exp.gpc_status_applied_label": "static.gpc.status.applied",
+    "exp.gpc_status_overridden_label": "static.gpc.status.overridden",
+  };
+
+  // Load all the extracted messages into the i18n module, falling back to
+  // static messages for any missing GPC fields
   availableLocales.forEach((locale) => {
-    i18n.load(locale, allMessages[locale]);
+    const messages = allMessages[locale] || {};
+    Object.entries(GPC_FALLBACKS).forEach(([expKey, staticKey]) => {
+      if (!messages[expKey]) {
+        messages[expKey] = i18n.t(staticKey);
+      }
+    });
+    i18n.load(locale, messages);
   });
 }
 

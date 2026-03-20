@@ -244,6 +244,19 @@ const ConsentPage: NextPage = () => {
       // still load the static messages in order to have default english
       // messages available
       loadMessagesFromFiles(i18n);
+      // Map static GPC messages to exp.* keys so the GPC banner can find them
+      const GPC_STATIC_TO_EXP: Record<string, string> = {
+        "exp.gpc_label": "static.gpc",
+        "exp.gpc_title": "static.gpc.title",
+        "exp.gpc_description": "static.gpc.description",
+        "exp.gpc_status_applied_label": "static.gpc.status.applied",
+        "exp.gpc_status_overridden_label": "static.gpc.status.overridden",
+      };
+      const gpcMessages: Record<string, string> = {};
+      Object.entries(GPC_STATIC_TO_EXP).forEach(([expKey, staticKey]) => {
+        gpcMessages[expKey] = i18n.t(staticKey);
+      });
+      i18n.load(i18n.locale, gpcMessages);
       setI18nInstance(i18n);
       setIsI18nInitialized(true);
       return;
